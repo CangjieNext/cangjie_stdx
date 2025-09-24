@@ -22,7 +22,7 @@ class ImmediateFrameErrorWrapper {
 
 // This class is used internally when an immediate handler case finishes
 // execution without resuming
-// 
+//
 // Note: there's an issue with generics in Cangjie that don't allow us to
 // have the type of result be generic
 class ImmediateEarlyReturn {
@@ -31,19 +31,19 @@ class ImmediateEarlyReturn {
 
 class ImmediateHandlerCase<Cmd, Res, Ret> <: HandlerCase {
     ImmediateHandlerCase(let frame: HandlerFrame, let h: (Cmd) -> ImmediateHandlerReturn<Res>) {}
-    protected override func tryHandle<R1>(maybeCmd: Command<R1>): Option<R1> {
+    protected override func tryHandle<R1>(maybeCmd: Command<R1>, box!: FrameBox): Option<R1> {
         match (maybeCmd as Cmd) {
             case Some(cmd) =>
-                let oldFrame = HandlerFrame.getActiveFrame()
+                let oldFrame = box.ref
                 try {
-                    HandlerFrame.setActiveFrame(frame.parent)
+                    box.ref = frame.parent
                     match (this.h(cmd)) {
                         case Result(v) => v as R1
                         case Exc(e) => throw e
                         case Err(e) => throw e
                     }
                 } finally {
-                    HandlerFrame.setActiveFrame(oldFrame)
+                    box.ref = oldFrame
                 }
             case None => None
         }
@@ -53,13 +53,14 @@ class ImmediateHandlerCase<Cmd, Res, Ret> <: HandlerCase {
 class ImmediateFrame<Ret> <: HandlerFrame {
     public ImmediateFrame(let fn: () -> Ret) {}
     public func start(): Ret {
-        let previous = HandlerFrame.getActiveFrame()
+        let box = HandlerFrame.getActiveFrameBox()
+        let previous = box.ref
         this.parent = previous
         try {
-            HandlerFrame.setActiveFrame(this)
+            box.ref = this
             fn()
         } finally {
-            HandlerFrame.setActiveFrame(previous)
+            box.ref = previous
             this.finalizer()
         }
     }

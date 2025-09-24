@@ -8,8 +8,16 @@
 
 package stdx.effect
 
+class FrameBox {
+    var ref: Option<HandlerFrame>
+
+    init() {
+        this.ref = None
+    }
+}
+
 abstract class HandlerCase {
-    protected open func tryHandle<R1>(cmd: Command<R1>): Option<R1>
+    protected open func tryHandle<R1>(cmd: Command<R1>, box!: FrameBox): Option<R1>
 }
 
 // This class represents the possible returns of an immediate handler
@@ -20,12 +28,23 @@ enum ImmediateHandlerReturn<T> {
 }
 
 abstract class HandlerFrame {
-    static let ACTIVE_FRAME_KEY = ThreadLocal<HandlerFrame>()
+    static let ACTIVE_FRAME_KEY = ThreadLocal<FrameBox>()
+
+    public static func getActiveFrameBox(): FrameBox {
+        match (ACTIVE_FRAME_KEY.get()) {
+            case Some(box) => box
+            case None =>
+                let newBox = FrameBox()
+                ACTIVE_FRAME_KEY.set(newBox)
+                newBox
+        }
+    }
+
     public static func getActiveFrame(): Option<HandlerFrame> {
-        ACTIVE_FRAME_KEY.get()
+        getActiveFrameBox().ref
     }
     static func setActiveFrame(f: Option<HandlerFrame>) {
-        ACTIVE_FRAME_KEY.set(f)
+        getActiveFrameBox().ref = f
     }
 
     var handlers = Array<HandlerCase>()
@@ -44,15 +63,17 @@ abstract class HandlerFrame {
             }
         }
     }
+
     public func setImmediateHandler<Cmd, Res, Ret>(h: (Cmd) -> ImmediateHandlerReturn<Res>): Unit {
         this.addHandlerCase(ImmediateHandlerCase<Cmd, Res, Ret>(this, h))
     }
 
     public static func perf<Cmd, Res>(cmd: Cmd): Res where Cmd <: Command<Res> {
+        let mainBox = getActiveFrameBox()
         var maybeFrame = getActiveFrame()
         while (let Some(frame) <- maybeFrame) {
             for (handlerCase in frame.handlers) {
-                if (let Some(result) <- handlerCase.tryHandle(cmd)) {
+                if (let Some(result) <- handlerCase.tryHandle(cmd, box: mainBox)) {
                     return result
                 }
             }
