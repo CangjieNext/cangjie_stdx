@@ -72,8 +72,8 @@ abstract class HandlerFrame {
         let mainBox = getActiveFrameBox()
         var maybeFrame = getActiveFrame()
         while (let Some(frame) <- maybeFrame) {
-            for (handlerCase in frame.handlers) {
-                if (let Some(result) <- handlerCase.tryHandle(cmd, box: mainBox)) {
+            for (i in 0..frame.handlers.size) {
+                if (let Some(result) <- frame.handlers[i].tryHandle(cmd, box: mainBox)) {
                     return result
                 }
             }
