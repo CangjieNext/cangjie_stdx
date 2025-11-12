@@ -8,15 +8,17 @@
 
 package stdx.effect
 
+internal abstract class ImmediateEffectHandlerEarlyExit {}
+
 // This class is used internally when an Exception occurs within an immediate
 // handler case
-class ImmediateFrameExceptionWrapper {
+class ImmediateFrameExceptionWrapper <: ImmediateEffectHandlerEarlyExit {
     ImmediateFrameExceptionWrapper(let frame: Option<HandlerFrame>, let exception: Exception) {}
 }
 
 // This class is used internally when an Error occurs within an immediate
 // handler case
-class ImmediateFrameErrorWrapper {
+class ImmediateFrameErrorWrapper <: ImmediateEffectHandlerEarlyExit {
     ImmediateFrameErrorWrapper(let frame: Option<HandlerFrame>, let error: Error) {}
 }
 
@@ -25,7 +27,7 @@ class ImmediateFrameErrorWrapper {
 //
 // Note: there's an issue with generics in Cangjie that don't allow us to
 // have the type of result be generic
-class ImmediateEarlyReturn {
+class ImmediateEarlyReturn <: ImmediateEffectHandlerEarlyExit {
     ImmediateEarlyReturn(let frame: Option<HandlerFrame>, let result: Any) {}
 }
 
