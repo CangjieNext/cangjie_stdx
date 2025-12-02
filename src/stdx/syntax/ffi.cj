@@ -38,6 +38,18 @@ func getInt32FromUnsafePointer(ptr: CPointer<UInt8>): Int32 {
     return getInt32(buf[0..4])
 }
 
+func genDeclFromBytes(input: Tokens): Decl {
+    // to be impletement, use ast node serialize/deserialize
+    let node = parseTokens(input)
+    return (node.node.getOrThrow() as Decl).getOrThrow()
+}
+
+func genExprFromBytes(input: Tokens): Expr {
+    // to be impletement, use ast node serialize/deserialize
+    let node = parseTokens(input)
+    return (node.node.getOrThrow() as Expr).getOrThrow()
+}
+
 @C
 struct ParseRes {
     let node: CPointer<UInt8> = CPointer<UInt8>()

@@ -995,7 +995,6 @@ install(TARGETS stdx.syntax DESTINATION ${output_triple_name}_cjnative/static/st
 
 add_cangjie_library(
     cangjie${BACKEND_TYPE}Syntax
-    NO_SUB_PKG
     IS_STDXLIB
     IS_PACKAGE
     IS_CJNATIVE_BACKEND
