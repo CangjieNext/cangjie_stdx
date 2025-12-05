@@ -22,7 +22,7 @@ extend Token {
  *
  * This class serves as a base for other syntax tree node classes.
  */
-sealed abstract class SyntaxTreeNode <: ToString & Hashable & Equatable<SyntaxTreeNode> {
+sealed abstract class SyntaxTreeNode <: ToString & Hashable & Equatable<SyntaxTreeNode> & ToTokens{
     /**
      * @brief The parent node of this node.
      *

@@ -40,14 +40,24 @@ func getInt32FromUnsafePointer(ptr: CPointer<UInt8>): Int32 {
 
 func genDeclFromBytes(input: Tokens): Decl {
     // to be impletement, use ast node serialize/deserialize
-    let node = parseTokens(input)
-    return (node.node.getOrThrow() as Decl).getOrThrow()
+    try {
+        let node = parseTokens(input, refreshPos: false)
+        return (node.node.getOrThrow() as Decl).getOrThrow()
+    } catch (_: Exception) {
+        let node = parseTokens(input)
+        return (node.node.getOrThrow() as Decl).getOrThrow()
+    }
 }
 
 func genExprFromBytes(input: Tokens): Expr {
     // to be impletement, use ast node serialize/deserialize
-    let node = parseTokens(input)
-    return (node.node.getOrThrow() as Expr).getOrThrow()
+    try {
+        let node = parseTokens(input, refreshPos: false)
+        return (node.node.getOrThrow() as Expr).getOrThrow()
+    } catch (_: Exception) {
+        let node = parseTokens(input)
+        return (node.node.getOrThrow() as Expr).getOrThrow()
+    }
 }
 
 @C
