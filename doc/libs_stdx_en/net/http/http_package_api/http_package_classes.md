@@ -1029,6 +1029,7 @@ Return Value:
 ```cangjie
 public class FileHandler <: HttpRequestHandler {
     public init(path: String, handlerType!: FileHandlerType = DownLoad, bufferSize!: Int64 = 64 * 1024)
+    public init(path: String, handlerType!: FileHandlerType = DownLoad, bufferSize!: Int64 = 64 * 1024, validator!: (String) -> Bool)
 }
 ```
 
@@ -1067,6 +1068,26 @@ Parameters:
 - path: String - The file or directory path string for [FileHandler](http_package_classes.md#class-filehandler) construction. In upload mode, only existing directory paths are allowed. If the path contains "../", ensure the normalized absolute path matches the intended input.
 - handlerType!: [FileHandlerType](http_package_enums.md#enum-filehandlertype) - Specifies the working mode of [FileHandler](http_package_classes.md#class-filehandler). Default is DownLoad mode.
 - bufferSize!: Int64 - Internal buffer size for network read/write operations. Default is 64*1024 (64k). If less than 4096, 4096 is used.
+
+Exceptions:
+
+- [HttpException](http_package_exceptions.md#class-httpexception) - Thrown if the path does not exist.
+- IllegalArgumentException - Thrown for parameter errors (e.g., empty path or invalid strings).
+
+### init(String, FileHandlerType, Int64, (String) -> Bool)
+
+```cangjie
+public init(path: String, handlerType!: FileHandlerType = DownLoad, bufferSize!: Int64 = 64 * 1024, validator!: (String) -> Bool)
+```
+
+Function: Constructor for [FileHandler](http_package_classes.md#class-filehandler).
+
+Parameters:
+
+- path: String - The file or directory path string for [FileHandler](http_package_classes.md#class-filehandler) construction. In upload mode, only existing directory paths are allowed. If the path contains "../", ensure the normalized absolute path matches the intended input.
+- handlerType!: [FileHandlerType](http_package_enums.md#enum-filehandlertype) - Specifies the working mode of [FileHandler](http_package_classes.md#class-filehandler). Default is DownLoad mode.
+- bufferSize!: Int64 - Internal buffer size for network read/write operations. Default is 64*1024 (64k). If less than 4096, 4096 is used.
+- validator!: (String) -> Bool - The user-defined file name validation function(only effective in upload mode). It takes the filename of the uploaded file as the parameter from the multipart request, and returns the validation result from the user-defined function. If the result is false, the upload request is interrupted, a '400 Bad Request' response is returned, and any files already uploaded to the path directory are deleted. 
 
 Exceptions:
 

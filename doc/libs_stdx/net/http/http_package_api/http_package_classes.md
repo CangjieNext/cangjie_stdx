@@ -1029,6 +1029,7 @@ public func toSetCookieString(): String
 ```cangjie
 public class FileHandler <: HttpRequestHandler {
     public init(path: String, handlerType!: FileHandlerType = DownLoad, bufferSize!: Int64 = 64 * 1024)
+    public init(path: String, handlerType!: FileHandlerType = DownLoad, bufferSize!: Int64 = 64 * 1024, validator!: (String) -> Bool)
 }
 ```
 
@@ -1067,6 +1068,26 @@ public init(path: String, handlerType!: FileHandlerType = DownLoad, bufferSize!:
 - path: String - [FileHandler](http_package_classes.md#class-filehandler) 构造时需要传入的文件或者目录路径字符串，上传模式中只能传入存在的目录路径；路径中存在../时，用户需要确认标准化后的绝对路径是期望传入的路径。
 - handlerType!: [FileHandlerType](http_package_enums.md#enum-filehandlertype) - 构造 [FileHandler](http_package_classes.md#class-filehandler) 时指定当前 [FileHandler](http_package_classes.md#class-filehandler) 的工作模式，默认为 DownLoad 下载模式。
 - bufferSize!: Int64 - 内部从网络读取或者写入的缓冲区大小，默认值为 64*1024（64k），若小于 4096，则使用 4096 作为缓冲区大小。
+
+异常：
+
+- [HttpException](http_package_exceptions.md#class-httpexception) - 当 path 不存在时，抛出异常。
+- IllegalArgumentException - 参数错误时抛出异常，如 path 为空或者包含空字符串等。
+
+### init(String, FileHandlerType, Int64, (String) -> Bool)
+
+```cangjie
+public init(path: String, handlerType!: FileHandlerType = DownLoad, bufferSize!: Int64 = 64 * 1024, validator!: (String) -> Bool)
+```
+
+功能：[FileHandler](http_package_classes.md#class-filehandler) 的构造函数。
+
+参数：
+
+- path: String - [FileHandler](http_package_classes.md#class-filehandler) 构造时需要传入的文件或者目录路径字符串，上传模式中只能传入存在的目录路径；路径中存在../时，用户需要确认标准化后的绝对路径是期望传入的路径。
+- handlerType!: [FileHandlerType](http_package_enums.md#enum-filehandlertype) - 构造 [FileHandler](http_package_classes.md#class-filehandler) 时指定当前 [FileHandler](http_package_classes.md#class-filehandler) 的工作模式，默认为 DownLoad 下载模式。
+- bufferSize!: Int64 - 内部从网络读取或者写入的缓冲区大小，默认值为 64*1024（64k），若小于 4096，则使用 4096 作为缓冲区大小。
+- validator!: (String) -> Bool - 用户自定义的文件名校验函数，仅上传模式有效。入参是上传的文件在 multipart 数据报文中的 filename，返回值是用户自定义函数的校验结果。如果校验结果是 false，则中断上传请求，并返回“400 Bad Request”，同时删除本次请求已上传到 path 目录的文件。
 
 异常：
 

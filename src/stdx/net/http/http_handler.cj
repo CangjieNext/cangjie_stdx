@@ -184,11 +184,14 @@ public class FileHandler <: HttpRequestHandler {
     /* buffer size used when copying, default size is 64KB */
     private let bufferSize: Int64
 
+    private var filenameValidator: Option<(String) -> Bool> = None
+
     /*
      * Create a new FileHandler object.
      * Construction with parameters.
      *
      * @param path the path of file
+     * @param handlerType the type of this file handler, the default value is DownLoad.
      * @param bufferSize buffer size used when copying
      *
      * @throws HttpException if file or directory does not exist
@@ -215,6 +218,23 @@ public class FileHandler <: HttpRequestHandler {
                     throw HttpException("No such file or directory.")
                 }
         }
+    }
+
+    /*
+     * Create a new FileHandler object.
+     * Construction with parameters.
+     *
+     * @param path the path of file
+     * @param handlerType the type of this file handler, the default value is DownLoad.
+     * @param bufferSize buffer size used when copying
+     * @param validator filename validator function for upload handler
+     *
+     * @throws HttpException if file or directory does not exist
+     */
+    public init(path: String, handlerType!: FileHandlerType = DownLoad, bufferSize!: Int64 = 64 * 1024,
+        validator!: (String) -> Bool) {
+        this(path, handlerType: handlerType, bufferSize: bufferSize)
+        filenameValidator = validator
     }
 
     /*
@@ -280,8 +300,13 @@ public class FileHandler <: HttpRequestHandler {
                         return
                     }
                     let reader = MultipartReader(ctx.request.body, boundary, bufferSize)
-                    let parser = MultipartParser(reader, this.path)
-                    parser.parse()
+                    let parser = MultipartParser(reader, this.path, this.filenameValidator)
+                    try {
+                        parser.parse()
+                    } catch (e: Exception) {
+                        parser.cleanUploadedFiles()
+                        throw e
+                    }
                 } else {
                     handleError(ctx, HttpStatusCode.STATUS_BAD_REQUEST) // 400
                     return
@@ -327,25 +352,21 @@ public class FileHandler <: HttpRequestHandler {
  * check out the path for upload path
  */
 @When[os != "Windows"]
-func checkUploadPath(fileName: String): Bool {
-    let filePathList = fileName.split(SLASH)
-    for (filePath in filePathList) {
-        if (filePath == "..") {
-            return false
-        }
+func basename(fileName: String): String {
+    if (fileName.size == 0) {
+        return fileName
     }
-    return true
+    let filePathList = fileName.split(SLASH)
+    return filePathList[filePathList.size - 1]
 }
 
 @When[os == "Windows"]
-func checkUploadPath(fileName: String): Bool {
-    let filePathList = fileName.replace("\\", SLASH).split(SLASH)
-    for (filePath in filePathList) {
-        if (filePath == "..") {
-            return false
-        }
+func basename(fileName: String): String {
+    if (fileName.size == 0) {
+        return fileName
     }
-    return true
+    let filePathList = fileName.replace("\\", SLASH).split(SLASH)
+    return filePathList[filePathList.size - 1]
 }
 
 // read multipart/form-data
@@ -441,10 +462,9 @@ class MultipartReader {
             if (curRead >= curParse + startBoundary.size + 2) {
                 curParse += startBoundary.size + 2
                 // boundary--   ->   body end
-                readMultipartEnd = checkBoundaryEnd(buffer[curParse - 2], buffer[curParse - 1]).getOrThrow(
-                    {
-                        => HttpStatusException(HttpStatusCode.STATUS_BAD_REQUEST, "Malformed multipart body.")
-                    })
+                readMultipartEnd = checkBoundaryEnd(buffer[curParse - 2], buffer[curParse - 1]).getOrThrow({ /*cjlint-ignore !G.ERR.03 */
+                    => HttpStatusException(HttpStatusCode.STATUS_BAD_REQUEST, "Malformed multipart body.")
+                })
             } else {
                 // not sure \r\n or -- after boundary
                 // need read again
@@ -506,7 +526,10 @@ class MultipartParser {
     let headers = HttpHeaders()
     var parseEnd = false
 
-    MultipartParser(let reader: MultipartReader, let basePath: String) {}
+    // uploaded files(full path), used for clean up when exception occurred
+    var uploadedFiles: ArrayList<String> = ArrayList<String>()
+
+    MultipartParser(let reader: MultipartReader, let basePath: String, let filenameValidator: Option<(String) -> Bool>) {}
 
     /**
      * parse multipart/form-data
@@ -537,30 +560,39 @@ class MultipartParser {
         }
 
         parseContentDisposition(headers)
-        let fileName = match (headers.getFirst("filename")) {
+        var fileName = match (headers.getFirst("filename")) {
             case Some(name) => name
             case None => throw HttpStatusException(HttpStatusCode.STATUS_BAD_REQUEST, "Filename not found.")
         }
-        if (!checkUploadPath(fileName)) {
-            throw HttpStatusException(HttpStatusCode.STATUS_BAD_REQUEST, "The filename field contains \"..\".")
+
+        // if filenameValidator is set, validate the filename
+        if (let Some(validator) <- filenameValidator && !validator(fileName)) {
+            throw HttpStatusException(HttpStatusCode.STATUS_BAD_REQUEST, "The filename `${fileName}` is invalid.") /*cjlint-ignore !G.ERR.01 */
         }
-        let file = createFile(fileName)
+
+        // strip any directory info in the fileName
+        fileName = basename(fileName)
+        let fullPath = concatPath(fileName)
+        if (exists(fullPath)) {
+            throw FSException("File `${fileName}` already exist.") /*cjlint-ignore !G.ERR.01 !G.ERR.02*/
+        }
+        let file = File(fullPath, Write)
         var parseEnd = false
         try {
             parseEnd = writeFile(file)
         } catch (e: Exception) {
-            if (!file.isClosed()) {
-                file.close()
-            }
-            if (exists(concatPath(fileName))) {
-                remove(concatPath(fileName))
+            file.close()
+            if (exists(fullPath)) {
+                remove(fullPath)
             }
             throw e
         } finally {
-            if (!file.isClosed()) {
-                file.close()
-            }
+            file.close()
         }
+
+        // store the uploaded file path for clean up when exception occurred
+        uploadedFiles.add(fullPath)
+
         // clear headers map for next section parse
         if (!parseEnd) {
             headers.clear()
@@ -568,12 +600,17 @@ class MultipartParser {
         return parseEnd
     }
 
-    private func createFile(fileName: String): File {
-        let fullPath = concatPath(fileName)
-        if (exists(fullPath)) {
-            throw FSException("File already exist.")
+    /*
+     * clean up uploaded files when exception occurred
+     */
+    func cleanUploadedFiles() {
+        for (filePath in uploadedFiles) {
+            try {
+                removeIfExists(filePath)
+            } catch (e: Exception) { /*cjlint-ignore !G.ERR.01 */
+                // ignore exception
+            }
         }
-        File(fullPath, Write)
     }
 
     private func concatPath(fileName: String): String {
