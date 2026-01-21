@@ -203,6 +203,10 @@ sealed abstract class SyntaxTreeNode <: ToString & ToTokens & Hashable & Equatab
         df.finish()
     }
 
+    public func getId(): UInt64 {
+        return nodeImpl.id
+    }
+
     func transCommentGroupList(node: NonTerminal, startPos: CodePosition, parent: ?SyntaxTreeNode): Array<CommentGroup> {
         let lp = LocalParser(node.children)
 

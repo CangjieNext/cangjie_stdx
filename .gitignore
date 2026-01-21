@@ -22,3 +22,11 @@ src/stdx/syntax/builder.cj
 src/stdx/syntax/constants.cj
 src/stdx/syntax/exception.cj
 build-script-cache
+
+src/stdx/semantic/SemanticType_generated.cj
+src/stdx/semantic/table_semantic.cj
+src/stdx/semantic/flatbuffer_object_semantic.cj
+src/stdx/semantic/decode_semantic.cj
+src/stdx/semantic/builder_semantic.cj
+src/stdx/semantic/constants_semantic.cj
+src/stdx/semantic/exception_semantic.cj

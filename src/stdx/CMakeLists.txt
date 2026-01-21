@@ -24,6 +24,7 @@ add_subdirectory(chir)
 message(STATUS "CMAKE_BUILD_STAGE ${CMAKE_BUILD_STAGE}")
 if(NOT CANGJIE_CJPM_BUILD_TYPE AND NOT TRIPLE STREQUAL "arm-linux-ohos")
     add_subdirectory(syntax)
+    add_subdirectory(semantic)
 endif()
 
 if(CANGJIE_CODEGEN_CJNATIVE_BACKEND AND "$ENV{NO_ASPECTCJ}" STREQUAL "" AND NOT CANGJIE_CJPM_BUILD_TYPE)

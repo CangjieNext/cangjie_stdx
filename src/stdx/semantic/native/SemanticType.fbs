@@ -1,0 +1,26 @@
+namespace SemanticType;
+
+table ASTType {
+    kind: uint16;
+    name: string;
+    typeArgs: [ASTType];
+    rawPointer: uint64;
+}
+
+table SemanticTypeMap {
+    id: uint64;
+    type: ASTType;
+}
+
+table SymbolRefMap {
+    id: uint64;
+    decl: uint64;
+}
+
+table NodeTypeMap {
+    declMapList: [SemanticTypeMap];
+    exprMapList: [SemanticTypeMap];
+    refMapList: [SymbolRefMap];
+}
+
+root_type NodeTypeMap;
