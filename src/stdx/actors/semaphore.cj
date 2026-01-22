@@ -15,7 +15,9 @@
 
 package stdx.actors
 
-import std.sync.*
+import std.sync.AtomicUInt64
+import std.sync.Mutex
+import std.sync.Condition
 
 class SingleConsumerSemaphore {
     private let cnt = AtomicUInt64(0)

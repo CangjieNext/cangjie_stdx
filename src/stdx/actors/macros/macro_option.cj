@@ -16,8 +16,8 @@
 macro package stdx.actors.macros
 
 import std.ast.*
-import std.collection.*
-import std.convert.*
+import std.collection.{HashMap, HashSet}
+import std.convert.Parsable
 
 enum MacroOptionKey <: Hashable & ToString & Equatable<MacroOptionKey> {
     EnableReceiverPriority
@@ -131,13 +131,11 @@ class MacroOptionParser {
 
             // next token must be a COMMA or nothing
             match (it.next()) {
-                case Some(n) where n.kind == TokenKind.COMMA =>
-                    continue
+                case Some(n) where n.kind == TokenKind.COMMA => continue
                 case Some(_) =>
                     errors.add(MacroError.MacroOptionInvalidFormat)
                     break
-                case None =>
-                    break // we are done
+                case None => break // we are done
             }
         }
     }

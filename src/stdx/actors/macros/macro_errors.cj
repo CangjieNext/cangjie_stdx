@@ -15,14 +15,13 @@
 
 macro package stdx.actors.macros
 
-import std.collection.*
+import std.collection.HashSet
 
 enum MacroError <: ToString {
     ActorMacroInvalidDecl
     | ActorMacroInvalidClassModifier
     | ActorMacroInvalidMacroOption(MacroOptionKey)
     | ActorMacroInternalError
-
     | ReceiverMacroInsideActor
     | ReceiverMacroInvalidDecl
     | ReceiverMacroInvalidModifier(String)
@@ -30,7 +29,6 @@ enum MacroError <: ToString {
     | ReceiverMacroPriorityInsideActor
     | ReceiverMacroPriorityNameParameter
     | ReceiverMacroInvalidOption(MacroOptionKey)
-
     | MacroOptionInvalidOption(String)
     | MacroOptionInvalidFormat
     | MacroOptionUnexpectedToken(String)

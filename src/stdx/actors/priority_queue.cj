@@ -15,7 +15,7 @@
 
 package stdx.actors
 
-import std.collection.concurrent.*
+import std.collection.concurrent.ConcurrentLinkedQueue
 
 const DEFAULT_CAPACITY = 10
 
