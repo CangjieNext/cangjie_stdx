@@ -16,7 +16,6 @@
 macro package stdx.actors.macros
 
 import std.ast.*
-import std.collection.*
 
 /**
  * This macro can be only defined at function declaration inside @Actor.
@@ -50,7 +49,7 @@ class ReceiverMacro {
             @Annotation1 // this is the head
             @Annotation2
             func foo()
-    */
+     */
     private let headDecl: Decl
     private var fd: FuncDecl = unsafe { zeroValue<FuncDecl>() }
 
@@ -104,11 +103,12 @@ class ReceiverMacro {
     }
 
     private func checkOptions(): Unit {
-        opts.iterate { key, _ =>
-            if (key != Priority) {
-                errors.add(MacroError.ReceiverMacroInvalidOption(key))
-            }
-            true
+        opts.iterate {
+            key, _ =>
+                if (key != Priority) {
+                    errors.add(MacroError.ReceiverMacroInvalidOption(key))
+                }
+                true
         }
         errors.report()
     }
@@ -134,8 +134,12 @@ class ReceiverMacro {
             =>
             @prefixReceiver[expr]
             func foo(arg1: Ty1, ..., argN: TyN): RetTy { body }
-        */
-        let options = if (attrs.size == 0) { Tokens() } else { quote([$attrs]) }
+         */
+        let options = if (attrs.size == 0) {
+            Tokens()
+        } else {
+            quote([$attrs])
+        }
         quote(
             @$receiverMarkerToken$options
             $headDecl

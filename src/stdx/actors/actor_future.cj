@@ -15,8 +15,8 @@
 
 package stdx.actors
 
-import std.sync.*
-import std.time.*
+import std.sync.{AtomicBool, Mutex, Condition}
+import std.time.DateTime
 
 /**
  * ActorFuture<T> class corresponds to the pending result of a closure.

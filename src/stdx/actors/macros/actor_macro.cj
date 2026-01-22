@@ -47,7 +47,7 @@ class ActorMacro {
             @Annotation1 // this is the head
             @Annotation2
             class MyActor { ... }
-    */
+     */
     private let headDecl: Decl
     private var cd: ClassDecl = unsafe { zeroValue<ClassDecl>() }
 
@@ -98,11 +98,12 @@ class ActorMacro {
     }
 
     private func checkOptions(): Unit {
-        opts.iterate{ key, _ =>
-            if (key != EnableReceiverPriority) {
-                errors.add(MacroError.ActorMacroInvalidMacroOption(key))
-            }
-            true
+        opts.iterate {
+            key, _ =>
+                if (key != EnableReceiverPriority) {
+                    errors.add(MacroError.ActorMacroInvalidMacroOption(key))
+                }
+                true
         }
         errors.report()
     }
@@ -194,11 +195,12 @@ private class ReceiverModification {
 
     private func checkReceiverOptions(): Unit {
         if (!actorOpts.hasEnabledReceiverPriority()) {
-            receiverOptions.iterate{ key, _ =>
-                if (key == Priority) {
-                    errors.add(MacroError.ReceiverMacroPriorityInsideActor)
-                }
-                true
+            receiverOptions.iterate {
+                key, _ =>
+                    if (key == Priority) {
+                        errors.add(MacroError.ReceiverMacroPriorityInsideActor)
+                    }
+                    true
             }
         }
         errors.report()
@@ -229,11 +231,12 @@ private class ReceiverModification {
             func foo(arg1: Ty1, ..., argN: TyN): RetTy {
                 actorInstance.post<RetTy>({ => body })
             }
-        */
+         */
         let retTy = fd.declType
         fd.declType = actorFutureType(retTy)
 
-        let retExpr = ReturnExpr(quote(
+        let retExpr = ReturnExpr(
+            quote(
             return $actorInstanceToken.post<$retTy>({=> $(fd.block.nodes) })
         ))
 
@@ -249,11 +252,13 @@ private class ReceiverModification {
             func foo(arg1: Ty1, ..., argN: TyN, priority!: Int64 = $defaultPriority): RetTy {
                 actorInstance.post<RetTy>({ => body })
             }
-        */
+         */
         let defaultPriorityBox: Box<Int64> = Box(DEFAULT_PRIORITY)
-        receiverOptions.iterate{ _, opt =>
-            match (opt) {
-                case Priority(p) => defaultPriorityBox.value = Int64(p); false
+        receiverOptions.iterate {
+            _, opt => match (opt) {
+                case Priority(p) =>
+                    defaultPriorityBox.value = Int64(p)
+                    false
                 case _ => true
             }
         }
@@ -263,7 +268,8 @@ private class ReceiverModification {
         fd.declType = actorFutureType(retTy)
         fd.funcParams.add(FuncParam(quote(priority!: Int64 = $defaultPriority)))
 
-        let retExpr = ReturnExpr(quote(
+        let retExpr = ReturnExpr(
+            quote(
             return $actorInstanceToken.post<$retTy>({ => $(fd.block.nodes) }, priority: priority)
         ))
 
