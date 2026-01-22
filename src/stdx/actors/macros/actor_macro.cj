@@ -16,7 +16,7 @@
 macro package stdx.actors.macros
 
 import std.ast.*
-import std.collection.*
+import std.collection.ArrayList
 
 const DEFAULT_PRIORITY = 5
 
