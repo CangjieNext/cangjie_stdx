@@ -59,7 +59,32 @@ add_custom_command(
 
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
 
-add_custom_target(FLATC_OUTPUTS ALL DEPENDS ${FLATC_CJ_OUTPUT} ${FLATC_CPP_OUTPUT})
+# for serialize syntax node impl
+set(SYNTAX_NODE_IMPL SyntaxNodeFormat.fbs)
+get_filename_component(SYNTAX_NODE_FBS_FILENAME ${SYNTAX_NODE_IMPL} NAME_WE)
+set(SYNTAX_NODE_IMPL_CPP_OUTPUT "${CMAKE_BINARY_DIR}/include/flatbuffers/${SYNTAX_NODE_IMPL}_generated.h")
+add_custom_command(
+    OUTPUT ${SYNTAX_NODE_IMPL_CPP_OUTPUT}
+    COMMAND ${FLATC_EXECUTABLE} ARGS --no-warnings -c -o "${CMAKE_BINARY_DIR}/include/flatbuffers" ${SYNTAX_NODE_IMPL}
+    DEPENDS flatbuffers ${SYNTAX_NODE_IMPL} # flatc defined in flatbuffers project: add_executable(flatc..)
+    COMMENT "generate cpp file using flatc"
+    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
+
+set(SYNTAX_NODE_IMPL_CJ_OUTPUT "${CMAKE_BINARY_DIR}/${SYNTAX_NODE_IMPL}_generated.cj")
+add_custom_command(
+    OUTPUT ${SYNTAX_NODE_IMPL_CJ_OUTPUT}
+    COMMAND ${FLATC_EXECUTABLE} ARGS --no-warnings --cangjie -o "${CMAKE_BINARY_DIR}" ${SYNTAX_NODE_IMPL}
+    DEPENDS flatbuffers ${SYNTAX_NODE_IMPL} # flatc defined in flatbuffers project: add_executable(flatc..)
+
+    COMMAND sed 's/std.ast/stdx.syntax/g' ${CMAKE_BINARY_DIR}/${SYNTAX_NODE_FBS_FILENAME}_generated.cj > ${CMAKE_BINARY_DIR}/${SYNTAX_NODE_FBS_FILENAME}_generated_update.cj
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different ${CMAKE_BINARY_DIR}/${SYNTAX_NODE_FBS_FILENAME}_generated_update.cj
+            ${CMAKE_SOURCE_DIR}/src/stdx/syntax/${SYNTAX_NODE_FBS_FILENAME}_generated.cj
+    COMMENT "generate cangjie file using flatc"
+
+    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
+
+add_custom_target(FLATC_OUTPUTS ALL DEPENDS ${FLATC_CJ_OUTPUT} ${FLATC_CPP_OUTPUT} 
+    ${SYNTAX_NODE_IMPL_CPP_OUTPUT} ${SYNTAX_NODE_IMPL_CJ_OUTPUT})
 
 # build syntax ffi lib using object library
 file(GLOB synatx_ffi_src

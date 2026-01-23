@@ -3,17 +3,31 @@ import stdx.syntax.*
 
 let BUFFER_HEADER_SIZE = 4
 
-foreign func CJ_Analyze(jsonStr: CString): CPointer<UInt8>
+foreign func CJ_Analyze(fptr: CPointer<UInt8>, length: UIntNative): CPointer<UInt8>
 foreign func CJ_GetSemanticResult(fptr: CPointer<Unit>): CPointer<UInt8>
 
-unsafe func analyzeImpl(jsonStr: String) : SemanticType_NodeTypeMap {
+unsafe func analyzeImpl(arr: Array<UInt8>) : SemanticType_NodeTypeMap {
     var typeListPtr : CPointer<UInt8> = CPointer<UInt8>()
     var semanticTypeMap = SemanticType_NodeTypeMap(Array<UInt8>(), 0)
-    try(pCStr = LibC.mallocCString(jsonStr).asResource()) {
-        typeListPtr = CJ_Analyze(pCStr.value)
+    
+    let arrSize: Int64 = arr.size
+    if (arrSize <= 0) {
+        return semanticTypeMap
+    }
+    var ptr: CPointer<UInt8> = unsafe { LibC.malloc<UInt8>(count: arrSize) }
+    if (ptr.isNull()) {
+        throw IllegalMemoryException("unsafePointerCastFromUint8Array malloc failed!")
+    }
+    for (i in 0..arrSize) {
+        unsafe { ptr.write(i, arr[i]) }
+    }
+    try{
+        let length = UIntNative(arrSize)
+        typeListPtr = CJ_Analyze(ptr, length)
         semanticTypeMap = genSemanticTypeMap(typeListPtr)
     } finally {
         LibC.free(typeListPtr)
+        LibC.free(ptr)
     }
     return semanticTypeMap
 }

@@ -1,4 +1,4 @@
-#include "typeWrite.h"
+#include "semantic.h"
 
 #include "cangjie/AST/Node.h"
 #include "cangjie/AST/Symbol.h"
