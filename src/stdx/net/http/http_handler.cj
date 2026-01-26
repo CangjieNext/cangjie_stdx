@@ -124,7 +124,7 @@ public class RedirectHandler <: HttpRequestHandler {
 func redirect(ctx: HttpContext, url: String, code: UInt16): Unit {
     ctx.responseBuilder.status(code)
     ctx.responseBuilder.header("location", url)
-    // 304 don't have body 
+    // 304 has no body
     if (code != HttpStatusCode.STATUS_NOT_MODIFIED) {
         if (let Some(text) <- STATUS_TEXT.get(code)) {
             let body = StringBuilder("<a href=\"")
@@ -388,7 +388,7 @@ class MultipartReader {
 
     /**
      * for read boundary line or header field
-     * read until \r\n, but return bytes doesn`t contain \r\n
+     * read until \r\n, but return bytes without \r\n
      * @throw HttpStatusException if multipart header size exceed 8M
      */
     func readLine(): Array<UInt8> {
@@ -508,10 +508,10 @@ class MultipartReader {
         curParse = 0
     }
 
-    // there`s three status at boundary end
+    // there are three statuses at boundary end
     // read boundary--    represent the body read finish, return true in this status
-    // read boundary\r\n  represent one part of body read finish and 
-    // there`s other part behind, return false in this status
+    // read boundary\r\n  represent one part of body read finish and
+    // there is another part behind, return false in this status
     // if boundary is not followed by "--" or "\r\n", then it is illegal, return None
     private func checkBoundaryEnd(a: UInt8, b: UInt8): ?Bool {
         let boundaryEnd = a == b'-' && b == b'-'

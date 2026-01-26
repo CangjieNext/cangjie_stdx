@@ -505,7 +505,7 @@ public class HttpRequest <: ToString {
         }
     }
 
-    /** 
+    /**
      * Gets the trailers of this request, which save the trailer key-value pair in the same format as the header field.
      * Default provide an empty HttpHeaders.
      */

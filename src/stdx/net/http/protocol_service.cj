@@ -41,7 +41,7 @@ public abstract class ProtocolService {
         }
     }
 
-    /* 
+    /*
      * HttpRequestDistributor
      */
     protected prop distributor: HttpRequestDistributor {
@@ -50,7 +50,7 @@ public abstract class ProtocolService {
         }
     }
 
-    /* 
+    /*
      * Logger
      */
     protected prop logger: Logger {
@@ -69,7 +69,7 @@ public abstract class ProtocolService {
         }
     }
 
-    /* 
+    /*
      * Write response timeout.
      */
     protected prop writeTimeout: Duration {
@@ -87,7 +87,7 @@ public abstract class ProtocolService {
         }
     }
 
-    /* 
+    /*
      * Http keep-alive timeout.
      */
     protected prop httpKeepAliveTimeout: Duration {

@@ -214,15 +214,15 @@ extend TlsContext {
         var dynMsg = DynMsg()
         let status = unsafe { DYN_CJ_TLS_InitEmbeddedKeylessProvider(inout dynMsg) }
         if (status == KEYLESS_LOAD_SUCCESS) {
-            checkDynMsg(dynMsg)        
+            checkDynMsg(dynMsg)
         } else if (status == KEYLESS_PROVIDER_ADD_FAILED) {
             throw TlsException("Failed to add builtin keyless provider.")
         } else if (status == KEYLESS_PROVIDER_LOAD_FAILED) {
             throw TlsException("Failed to load keyless provider.")
         }
-        
+
         let (cert, _) = cfg.serverCertificate // The server certificate is not supposed to be null
-        setCertificateChainAndCallback(cert, cfg._keylessSignFunc, cfg._keylessDecryptFunc)
+        setCertificateChainAndCallback(cert)
 
         setDHParam(cfg.dhParameters)
 

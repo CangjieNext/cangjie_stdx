@@ -400,7 +400,7 @@ extern SSL_CTX* CJ_TLS_DYN_CreateContext(int server, void (*keylogCallback)(cons
 
     /**
      * Set default locations for trusted CA certificates, including the default path and file name.
-     * The default certificate path is "certs" under the OpenSSL default path, and the default certificate name is "cert.pem". 
+     * The default certificate path is "certs" under the OpenSSL default path, and the default certificate name is "cert.pem".
      * The default certificate path can be changed through the environment variable "SSL_CERT_DIR".
      * The default certificate name can be changed through the environment variable "SSL_CERT_FILE".
      */

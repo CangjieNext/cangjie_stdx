@@ -196,7 +196,7 @@ class HttpEngineConn1 <: HttpEngineConn & BodyProviderConn {
 
     var writeTimer = HttpTimer.empty
 
-    let trush = Array<Byte>(4096, repeat: 0)
+    let trash = Array<Byte>(4096, repeat: 0)
     let dateArr: Array<Byte> = "xxx, xx xxx xxxxxxxxxxxxxxxxxxxxxx xx:xx:xx GMT".toArray() //47 byte
 
     public prop isReadTimeout: AtomicBool {
@@ -443,7 +443,7 @@ class HttpEngineConn1 <: HttpEngineConn & BodyProviderConn {
             if (line.isEmpty()) {
                 line = readLine()
             }
-        } catch (e: HttpException) { // maybe return none is better (but such case occurs very occationally), the length of line should be checked when read from socket
+        } catch (e: HttpException) { // maybe return none is better (but such case occurs very occasionally), the length of line should be checked when read from socket
             throw HttpStatusException(HttpStatusCode.STATUS_BAD_REQUEST, e.toString())
         }
 
@@ -902,7 +902,7 @@ class HttpEngineConn1 <: HttpEngineConn & BodyProviderConn {
             case (Some(bodySize), None) =>
                 response.headers.set("content-length", bodySize.toString())
                 return bodySize
-            case (None, None) => throw HttpException("Unkonw body size for Content-Length.")
+            case (None, None) => throw HttpException("Unknown body size for Content-Length.")
         }
     }
 
@@ -910,7 +910,7 @@ class HttpEngineConn1 <: HttpEngineConn & BodyProviderConn {
         try {
             // clear request body
             httpLogDebug(logger, "[HttpEngineConn1#consumeRequest]: start read unfinished body")
-            while (ctx.request.body.read(trush) > 0) {}
+            while (ctx.request.body.read(trash) > 0) {}
             httpLogDebug(logger, "[HttpEngineConn1#consumeRequest]: finish read body")
         } catch (e: HttpStatusException) {
             if (!ctx.responseFlushedByUser) {

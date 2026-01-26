@@ -13,7 +13,7 @@ import std.collection.{ArrayList, HashMap}
 let H2_EXCLUDE_HEADERS: Array<String> = ["host", "connection", "transfer-encoding", "keep-alive", "upgrade",
     "proxy-connection"]
 
-// connection preface, "".toArray() can`t auto escape, must use toArray()
+// connection preface, "".toArray() can't auto escape, must use toArray()
 let PREFACE: Array<UInt8> = "PRI * HTTP/2.0\r\n\r\nSM\r\n\r\n".toArray()
 
 // flag types of frame
@@ -80,7 +80,7 @@ func getSettingByCode(code: UInt16): H2Setting {
 
 func validSetting(setting: H2Setting, value: UInt32) {
     match (setting) {
-        case SettingsHeaderTableSize => () // no limit 
+        case SettingsHeaderTableSize => () // no limit
         case SettingsEnablePush => zeroOrOne(value)
         case SettingsMaxConcurrentStreams => () // no limit
         case SettingsInitialWindowSize =>
@@ -114,7 +114,7 @@ func initializeSettings(): HashMap<UInt16, UInt32> {
     let settings = HashMap<UInt16, UInt32>()
     settings.add(1, 4096)
     settings.add(2, 1)
-    settings.add(3, 100) // should NOT be smaller than 100 
+    settings.add(3, 100) // should NOT be smaller than 100
     settings.add(4, UInt32(2 ** 16 - 1))
     settings.add(5, MIN_FRAME_SIZE)
     settings.add(6, UInt32.Max) // no limit

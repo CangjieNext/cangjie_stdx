@@ -105,7 +105,7 @@ static int KeylessImportRsa(KeylessKey* k, const OSSL_PARAM params[])
     DynMsg* dynMsg = KeylessProviderGetThreadDynMsg();
 
     /**
-     * pN: OSSL_PKEY_PARAM_RSA_N 
+     * pN: OSSL_PKEY_PARAM_RSA_N
      * pE: OSSL_PKEY_PARAM_RSA_E
      */
     const OSSL_PARAM* pN = DYN_OSSL_PARAM_locate_const(params, OSSL_PKEY_PARAM_RSA_N, dynMsg);
@@ -538,7 +538,7 @@ static const OSSL_PARAM* KeylessImportTypes(int selection)
                                         OSSL_PARAM_utf8_string(OSSL_PKEY_PARAM_GROUP_NAME, NULL, 0),
                                         OSSL_PARAM_utf8_string("KEYLESS_ID", NULL, 0),
                                         OSSL_PARAM_END};
-                                        
+
     unsigned int sel = (unsigned int)selection;
     if (sel & OSSL_KEYMGMT_SELECT_PUBLIC_KEY) {
         return params;

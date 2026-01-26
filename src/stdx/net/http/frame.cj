@@ -82,9 +82,9 @@ enum FrameTypes {
  * }
  */
 open class Frame <: ToString {
-    // the payloadLen is an unsigned 24-bit integer in units of octets. 
+    // the payloadLen is an unsigned 24-bit integer in units of octets.
     // the default max value in spec is 2^14 (16,384) and theoretical maximum is 16,777,216
-    // since we don`t have UInt24, use UInt32 instead, but the first byte must be zero 
+    // since we don't have UInt24, use UInt32 instead, but the first byte must be zero
     var payloadLen: UInt32 = 0
     var frameType: FrameTypes = FrameTypes.Unknown
     var flags: UInt8 = 0
@@ -128,7 +128,7 @@ open class Frame <: ToString {
         let flag = header[4]
         var streamId = readUInt32(header[5..])
 
-        // the reserved bit is 1, rfc said the reserved bit MUST be ignored when receiving 
+        // the reserved bit is 1, rfc said the reserved bit MUST be ignored when receiving
         if (streamIdOverflow(streamId)) {
             streamId = streamId - MAX_STREAM_ID - 1
         }
@@ -233,7 +233,7 @@ class DataFrame <: Frame {
         this.payloadLen = UInt32(payloadLen64)
         this.payloadWrapper = payloadWrapper
         this.flags = getFlag()
-        // if padded: first byte of payload is pad length, should add 1 in payloadLen 
+        // if padded: first byte of payload is pad length, should add 1 in payloadLen
         if (padded) {
             this.payloadLen += UInt32(padLen) + 1
         }
@@ -254,7 +254,7 @@ class DataFrame <: Frame {
         this.payloadLen = UInt32(payloadLen64)
         this.payloadWrapper = ArrayWrapper(payload)
         this.flags = getFlag()
-        // if padded: first byte of payload is pad length, should add 1 in payloadLen 
+        // if padded: first byte of payload is pad length, should add 1 in payloadLen
         if (padded) {
             this.payloadLen += UInt32(padLen) + 1
         }
@@ -899,7 +899,7 @@ class ConnectRstStreamFrame <: Frame {
     }
 }
 
-// for server 
+// for server
 class UnblockFrame <: Frame {
     public func toString(): String {
         return "unblock frame"

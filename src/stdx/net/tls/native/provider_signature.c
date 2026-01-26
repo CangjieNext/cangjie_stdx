@@ -633,21 +633,21 @@ static int KeylessSigSignInit(void* vctx, void* keydata, const OSSL_PARAM params
     return 1;
 }
 
-/** 
+/**
  * @brief Set context parameters for keyless signature.
- * 
+ *
  * @param vctx   Pointer to KeylessSignCtx.
  * @param params Array of OSSL_PARAM to set.
- * 
+ *
  * @return 1 on success, 0 on failure.
- * 
+ *
  * @note If vctx or params is NULL, returns 1 (no-op).
  * @note Recognizes and sets:
  *  - OSSL_SIGNATURE_PARAM_PAD_MODE (int): RSA padding mode (e.g., RSA_PKCS1_PSS_PADDING).
  *  - OSSL_SIGNATURE_PARAM_DIGEST (string): Digest algorithm name (e.g., "sha256").
  *  - OSSL_SIGNATURE_PARAM_MGF1_DIGEST (string): MGF1 digest algorithm name (e.g., "sha256").
  *  - OSSL_SIGNATURE_PARAM_PSS_SALTLEN (int): RSA-PSS salt length.
- * 
+ *
  *  Behavior:
  *  - If PAD_MODE is PSS and MGF1_DIGEST is not set, defaults MGF1_DIGEST to DIGEST.
  *  - Ignores unrecognized parameters.
@@ -705,12 +705,12 @@ static const OSSL_PARAM* KeylessSigSettableCtxParams(void* provctx)
 {
     (void)provctx;
 
-    /** 
-     * OSSL_SIGNATURE_PARAM_DIGEST for the digest algorithm name. 
+    /**
+     * OSSL_SIGNATURE_PARAM_DIGEST for the digest algorithm name.
      * OSSL_SIGNATURE_PARAM_MGF1_DIGEST for the MGF1 digest algorithm name.
      * OSSL_SIGNATURE_PARAM_PSS_SALTLEN for the RSA-PSS salt length.
      * OSSL_SIGNATURE_PARAM_PAD_MODE for the RSA padding mode.
-     * 
+     *
      * RSA-PKCS#1 v1.5(TLS 1.2 common scenario) need OSSL_SIGNATURE_PARAM_DIGEST
      * RSA-PSS(TLS1.3 or TLS1.2 variant) need OSSL_SIGNATURE_PARAM_PAD_MODE, OSSL_SIGNATURE_PARAM_DIGEST. OSSL_SIGNATURE_PARAM_MGF1_DIGEST, OSSL_SIGNATURE_PARAM_PSS_SALTLEN is optional.
      * ECDSA(TLS1.2/TLS1.3) need OSSL_SIGNATURE_PARAM_DIGEST
@@ -1237,8 +1237,8 @@ static void* KeylessSigDupctx(void* vctx)
     return c;
 }
 
-/* 
-* Provider only needs to perform server-side signing for TLS. 
+/*
+* Provider only needs to perform server-side signing for TLS.
 * Verification is handled entirely on the client side (or by OpenSSL itself),
 * We don't support remote verify (not needed for TLS server side), just fail gracefully
 */
@@ -1250,8 +1250,8 @@ static int KeylessSigVerifyInit(void* vctx, void* keydata, const OSSL_PARAM para
     return 0;
 }
 
-/* 
-* Provider only needs to perform server-side signing for TLS. 
+/*
+* Provider only needs to perform server-side signing for TLS.
 * Verification is handled entirely on the client side (or by OpenSSL itself),
 * We don't support remote verify (not needed for TLS server side), just fail gracefully
 */

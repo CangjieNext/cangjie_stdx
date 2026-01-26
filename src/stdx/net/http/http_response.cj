@@ -36,7 +36,7 @@ public class HttpResponseBuilder {
 
     public init() {}
 
-    /** 
+    /**
      * Sets the HTTP-version of this response.
      *
      * @param version the protocol version of the response.

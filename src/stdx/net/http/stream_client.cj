@@ -243,7 +243,7 @@ class ClientStream {
             if (H2_EXCLUDE_HEADERS.contains(k.toString())) {
                 continue
             }
-            // we don`t send content-length header
+            // we don't send content-length header
             if (k == Str("content-length") || k.startWith(b':')) {
                 continue
             }
@@ -355,7 +355,7 @@ class ClientStream {
 
     /* for push request, must no body */
     private func decodeRequest(): HttpRequest {
-        // this request is from push frame, which doesn`t have streamEnd flag
+        // this request is from push frame, which doesn't have streamEnd flag
         let frame = match (inputQueue.dequeue().getOrThrow({=> HttpException("Response queue closed.")}) as FieldsFrame) {
             case Some(v) => v
             case None => throw HttpException("Push request lost.")
@@ -475,7 +475,7 @@ class ClientStream {
             case Open =>
                 if (request?.trailers.isEmpty() ?? false) {
                     throw HttpConnectionException(ProtocolError,
-                        "Send header in Open state, but request don`t have trailer.")
+                        "Send header in Open state, but request don't have trailer.")
                 }
                 if (!frame.streamEnd) {
                     throw HttpConnectionException(ProtocolError, "Trailer must have streamEnd flag.")
@@ -484,7 +484,7 @@ class ClientStream {
             case HalfClosedRemote =>
                 if (request?.trailers.isEmpty() ?? false) {
                     throw HttpConnectionException(ProtocolError,
-                        "Send header in Open state, but request don`t have trailer.")
+                        "Send header in Open state, but request don't have trailer.")
                 }
                 if (!frame.streamEnd) {
                     throw HttpConnectionException(ProtocolError, "Trailer must have streamEnd flag.")

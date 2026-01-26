@@ -124,7 +124,7 @@ open class DefaultQueue<T> {
         if (isFull()) { // need grow or evict or reject
             match {
                 case evictEnable => match {
-                    case capacity == 0 => return false // no capacity to evict              
+                    case capacity == 0 => return false // no capacity to evict
                     case _ =>
                         front = adjustment(front + 1) // evict from front
                         size_--

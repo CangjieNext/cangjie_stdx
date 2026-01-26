@@ -21,7 +21,7 @@ import stdx.encoding.url.*
 import stdx.log.*
 
 /*
- * user have to build Client with ClientBuilder, Client doesn`t have public constructor
+ * Users have to build Client with ClientBuilder; Client doesn't have a public constructor
  */
 public class ClientBuilder {
     private var _noProxy: Bool = false
@@ -331,13 +331,13 @@ public class Client {
     var _tlsConfig: ?TlsConfig = None
     var _readTimeout: Duration = Duration.second * 15
     var _writeTimeout: Duration = Duration.second * 15
-    var _headerTableSize: UInt32 = 409632
+    var _headerTableSize: UInt32 = 4096
     var _enablePush: Bool = true
     var _maxConcurrentStreams: UInt32 = UInt32(2 ** 31 - 1)
     var _initialWindowSize: UInt32 = 65535
     var _maxFrameSize: UInt32 = MIN_FRAME_SIZE
     var _maxHeaderListSize: UInt32 = UInt32.Max
-    // only used when create httpClient, seldom effect to performance
+    // only used when create httpClient, seldom affects performance
     private let singletonLock: Mutex = Mutex()
 
     init() {}
@@ -502,7 +502,7 @@ public class Client {
      * do redirect in this level
      * do proxy in low level client
      *
-     * @throws HttpException, if request or response didn`t conform protocol
+     * @throws HttpException, if request or response didn't conform to the protocol
      * @throws SocketException or ConnectionException, if connection to server broken
      * @throws TlsException, if something wrong happened in TLS.
      */
@@ -731,7 +731,7 @@ public class Client {
      * @param req the request to be sent to the server.
      * @return HttpResponse.
      *
-     * @throws HttpException, if request or response didn`t conform protocol
+     * @throws HttpException, if request or response didn't conform to the protocol
      * or send an upgrade request
      * or send a TRACE request with a non empty body.
      * @throws SocketException or ConnectionException, if connection to server broken
@@ -763,7 +763,7 @@ public class Client {
      * @param url the target url.
      * @return HttpResponse.
      *
-     * @throws HttpException, if request or response didn`t conform protocol
+     * @throws HttpException, if request or response didn't conform to the protocol
      * @throws SocketException or ConnectionException, if connection to server broken
      * @throws TlsException, if something wrong happened in TLS.
      * @throws UrlSyntaxException if 'url' is empty or invalid.
@@ -780,7 +780,7 @@ public class Client {
      * @param url the target url.
      * @return HttpResponse.
      *
-     * @throws HttpException, if request or response didn`t conform protocol
+     * @throws HttpException, if request or response didn't conform to the protocol
      * @throws SocketException or ConnectionException, if connection to server broken
      * @throws TlsException, if something wrong happened in TLS.
      * @throws UrlSyntaxException if 'url' is empty or invalid.
@@ -798,7 +798,7 @@ public class Client {
      * @param body the body to be sent.
      * @return HttpResponse.
      *
-     * @throws HttpException, if request or response didn`t conform protocol
+     * @throws HttpException, if request or response didn't conform to the protocol
      * @throws SocketException or ConnectionException, if connection to server broken
      * @throws TlsException, if something wrong happened in TLS.
      * @throws UrlSyntaxException if 'url' is empty or invalid.
@@ -824,7 +824,7 @@ public class Client {
      * @param body the body to be sent.
      * @return HttpResponse.
      *
-     * @throws HttpException, if request or response didn`t conform protocol
+     * @throws HttpException, if request or response didn't conform to the protocol
      * @throws SocketException or ConnectionException, if connection to server broken
      * @throws TlsException, if something wrong happened in TLS.
      * @throws UrlSyntaxException if 'url' is empty or invalid.
@@ -848,7 +848,7 @@ public class Client {
      * @param url the target url.
      * @return HttpResponse.
      *
-     * @throws HttpException, if request or response didn`t conform protocol
+     * @throws HttpException, if request or response didn't conform to the protocol
      * @throws SocketException or ConnectionException, if connection to server broken
      * @throws TlsException, if something wrong happened in TLS.
      * @throws UrlSyntaxException if 'url' is empty or invalid.
@@ -868,7 +868,7 @@ public class Client {
      * @return HttpResponse.
      * @return StreamingSocket is CONNECT is success, None if failed(no 2xx response)
      *
-     * @throws HttpException, if request or response didn`t conform protocol
+     * @throws HttpException, if request or response didn't conform to the protocol
      * @throws SocketException or ConnectionException, if connection to server broken
      * @throws TlsException, if something wrong happened in TLS.
      * @throws UrlSyntaxException if 'url' is empty or invalid.
@@ -897,7 +897,7 @@ public class Client {
      * @param url the target url.
      * @return HttpResponse.
      *
-     * @throws HttpException, if request or response didn`t conform protocol
+     * @throws HttpException, if request or response didn't conform to the protocol
      * @throws SocketException or ConnectionException, if connection to server broken
      * @throws TlsException, if something wrong happened in TLS.
      * @throws UrlSyntaxException if 'url' is empty or invalid.
@@ -916,7 +916,7 @@ public class Client {
      * @return HttpResponse
      * @return StreamingSocket if upgrade is success, None if failed(no 101 response)
      *
-     * @throws HttpException, if request or response didn`t conform protocol
+     * @throws HttpException, if request or response didn't conform to the protocol
      * or request header does not contain Upgrade header,
      * or send a request other than HTTP/1.1,
      * or send a CONNECT request,

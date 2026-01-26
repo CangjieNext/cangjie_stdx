@@ -146,7 +146,7 @@ class HttpClient2 <: HttpClient {
         let response = try {
             request(req)
         } catch (e: NegotiateException) {
-            throw HttpException("The server doesn`t support HTTP/2.")
+            throw HttpException("The server doesn't support HTTP/2.")
         }
         var socket = None<StreamingSocket>
         if (response.status / 100 == 2) {
@@ -597,7 +597,7 @@ class HttpClientEngine2 {
      */
     func request(req: HttpRequest): HttpResponse {
         if (req.method == "CONNECT" && remoteSettings[SettingsEnableConnectProtocol.code] == 0) {
-            throw HttpException("Target HTTP/2 server doesn`t allow CONNECT method.")
+            throw HttpException("Target HTTP/2 server doesn't allow CONNECT method.")
         }
         checkUserAgent(req._version, req.headers)
 
@@ -612,7 +612,7 @@ class HttpClientEngine2 {
         if (conn.isClosed()) {
             throw HttpException("Connection closed.") // client should start a new connection
         }
-        // throw to user thread, doesn`t effect existing thread
+        // throw to user thread, doesn't affect existing thread
         if (activeClientStreamNum.fetchAdd(1) > remoteSettings[SettingsMaxConcurrentStreams.code]) {
             activeClientStreamNum.fetchSub(1)
             // try to block follow requests instead of throw exception

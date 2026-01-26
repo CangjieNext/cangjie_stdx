@@ -20,9 +20,9 @@ enum HandshakeConfig {
 
 extend TlsContext {
 
-    func setCertificateChainAndCallback(chain: Array<X509Certificate>, signCallback: KeylessSignFunc, decryptCallback: ?KeylessDecryptFunc): Unit {
+    func setCertificateChainAndCallback(chain: Array<X509Certificate>): Unit {
         withContext<Unit> {
-            nativeContext, exception => setCertificateChainAndCallback(nativeContext, chain, signCallback, decryptCallback, exception)
+            nativeContext, exception => setCertificateChainAndCallback(nativeContext, chain, exception)
         }
     }
     func setCertificateChainAndPrivateKey(chain: Array<X509Certificate>, key: PrivateKey): Unit {
@@ -102,6 +102,7 @@ extend TlsContext {
                     }
                     written.write(plain.size)
                 }
+                plain.fill(0)
                 return cipherPtr
 
         }
@@ -110,8 +111,6 @@ extend TlsContext {
     private func setCertificateChainAndCallback(
         context: CPointer<Ctx>,
         chain: Array<X509Certificate>, // should not be empty, no need to check
-        signCallback: KeylessSignFunc,
-        decryptCallback: ?KeylessDecryptFunc,
         exception: CPointer<ExceptionData>
     ): Unit {
         var firstAdded = false

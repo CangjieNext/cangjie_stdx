@@ -127,7 +127,7 @@ static inline unsigned int CtLtSizeT(size_t a, size_t b)
  * side channels commonly introduced by conditional branches. It is intended for
  * use in cryptographic or other sensitive code paths.
  *
- * @param mask Selection mask. 
+ * @param mask Selection mask.
  * @param a Value returned when mask is non-zero (true).
  * @param b Value returned when mask is zero (false).
  *
@@ -182,8 +182,8 @@ static int Pkcs1V15Unpad(unsigned char* out, size_t outLen, const unsigned char*
     unsigned int validMask = CtIsZero8(em[0]);
     /*
     * PKCS#1 v1.5: EM = 0x00 || 0x02 || PS || 0x00 || M
-    * 0x02 denotes "block type 2" 
-    * (RSAES-PKCS1-v1_5; PS is at least 8 non-zero random bytes; signatures use 0x01) 
+    * 0x02 denotes "block type 2"
+    * (RSAES-PKCS1-v1_5; PS is at least 8 non-zero random bytes; signatures use 0x01)
     */
     validMask &= CtEq8(em[1], 0x02);
 
@@ -484,11 +484,17 @@ cleanup:
         DYN_OPENSSL_cleanse(cipher, modlen, dynMsg);
         DYN_OPENSSL_secure_free(cipher, dynMsg);
     }
+
     if (em) {
         DYN_OPENSSL_cleanse(em, modlen, dynMsg);
         DYN_OPENSSL_secure_free(em, dynMsg);
     }
+
+    if (remote != NULL && written > 0) {
+        (void)memset_s(remote, (size_t)written, 0, (size_t)written);
+    }
     free(remote);
+
     KeylessCheckDynMsg(dynMsg, "KeylessAcDecrypt");
     return ok;
 }

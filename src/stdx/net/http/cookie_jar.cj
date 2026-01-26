@@ -104,7 +104,7 @@ public interface CookieJar {
             }
             let nameAndValue = nameValueAndAttributes[0].trimAscii()
 
-            // if the name-value-pair string lacks a %x3D ("=") character, 
+            // if the name-value-pair string lacks a %x3D ("=") character,
             // ignore the set-cookie-string entirely
             if (!nameAndValue.contains("=")) {
                 continue
@@ -214,8 +214,8 @@ class CookieJarImpl <: CookieJar {
         // if the cookie.domain is not set, the domain is an empty string
         var domain = cookie.domain.toLower().removePrefix(".")
         var hostOnlyFlag = true
-        // if the user agent is configured to reject "public suffixes" and 
-        // the domain-attribute is a public suffix. 
+        // if the user agent is configured to reject "public suffixes" and
+        // the domain-attribute is a public suffix.
         if (_rejectPublicSuffixes.contains(domain)) {
             // if domain-attribute is identical to the canonicalized request-host
             // let the domain-attribute be the empty string, otherwise, ignore the cookie
@@ -235,7 +235,7 @@ class CookieJarImpl <: CookieJar {
         // path
         let path = getCookiePath(cookie) ?? defaultPath
         // if the cookie was received from a "non-HTTP" API and the
-        // cookie’s http-only-flag is set, 
+        // cookie’s http-only-flag is set,
         // abort these steps and ignore the cookie entirely
         if (cookie.httpOnly && !isHttp) {
             return
@@ -245,7 +245,7 @@ class CookieJarImpl <: CookieJar {
         let cookieEntry = CookieEntry(name, value, expiryTime, domain, path, creationTime, lastAccessTime,
             persistentFlag, hostOnlyFlag, cookie.secure, cookie.httpOnly)
 
-        // check cookie counts, cookieJar will remove at least 1000 
+        // check cookie counts, cookieJar will remove at least 1000
         // cookies if the number reaches the boundary
         if (cookieCount >= MAXCOOKIECOUNT) {
             removeExcessCookies()
@@ -390,7 +390,7 @@ class CookieJarImpl <: CookieJar {
             // domain:<path:<name:entry>>
             if (let Some(pathCookieMap) <- cookieEntries.get(domain)) {
                 // path:<name:entry>
-                // count the number of cookies need to be removed 
+                // count the number of cookies need to be removed
                 for ((_, nameCookieMap) in pathCookieMap) {
                     cookieCount -= nameCookieMap.size
                 }
@@ -559,7 +559,7 @@ func getAttributeNameAndValue(cookieAttribute: String): ?(String, String) {
     return (attributeName, attributeValue)
 }
 
-/** 
+/**
  * the algorithm to parse attributes
  * RFC 6265 5.2.
  */
@@ -594,7 +594,7 @@ func parseAttributes(cookie: Cookie, cookieAttributesList: Array<String>, defaul
                     attributeValue.toLower()
                 }
             case "path" =>
-                // if the attribute-value is empty or 
+                // if the attribute-value is empty or
                 // if the first character of the attribute-value is not %x2F ("/"),
                 // let cookie-path be the default-path
                 // RFC 6265 5.2.4.
@@ -667,7 +667,7 @@ func domainMatch(hostString: String, domain: String): Bool {
         return true
     }
     // the domain string is a suffix of the string,
-    // and the last character of the string that is not 
+    // and the last character of the string that is not
     // included in the domain string is "."
     // and the string is a host name (not an IP address)
     // for example:

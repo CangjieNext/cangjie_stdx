@@ -252,7 +252,7 @@ class HttpChunkedBodyProvider <: InputStream & Resource {
         var dstReadLen = 0
         try {
             // parse the existing content in the buffer.
-            // chunk-data is from the buffer, 
+            // chunk-data is from the buffer,
             // but CRLF
             // and chunk-size [ chunk-ext ] CRLF
             // and 1*("0") [ chunk-ext ] CRLF may not.

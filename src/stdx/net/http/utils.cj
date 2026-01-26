@@ -578,7 +578,7 @@ func checkOtherClStr(cl: String, first: Str): Unit {
 }
 
 func checkConnection(headers: HttpHeaders): Unit {
-    // if some value in header names and hohByHop list, but not in connection values, add it to connection values
+    // if some value in header names and hopByHop list, but not in connection values, add it to connection values
     for (i in 0..HopByHopHeaders.size where !headers.getInternal(HopByHopHeaders[i]).isNone()) {
         if (let Some(hv) <- headers.getInternal("connection")) {
             if (hv.splitAnyMatch(SYMBOL_COMMA, HopByHopHeaders[i])) {
