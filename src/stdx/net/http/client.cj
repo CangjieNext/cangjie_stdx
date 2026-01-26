@@ -874,7 +874,7 @@ public class Client {
      * @throws UrlSyntaxException if 'url' is empty or invalid.
      * @throws IllegalArgumentException if there is an invalid UTF-8 leading code in 'url'.
      */
-    public func connect(url: String, header!: HttpHeaders = HttpHeaders(), version!: Protocol = HTTP1_1): (HttpResponse,
+    public func connect(url: String, header!: HttpHeaders = HttpHeaders(), version!: Protocol = HTTP1_1): (HttpResponse, 
         ?StreamingSocket) {
         if (isClosed.load()) {
             throw HttpException("This client has already closed.")
@@ -1027,7 +1027,92 @@ interface HttpClient {
     func connect(req: HttpRequest): (HttpResponse, ?StreamingSocket)
 }
 
-// read no_proxy from environment and split with comma
+func normalizeHostLower(host: String): String {
+    var h = host.trimAscii()
+
+    // Strip optional IPv6 brackets: [::1] -> ::1
+    if (h.size >= 2 && h[0] == b'[' && h[h.size - 1] == b']') {
+        h = h[1..h.size - 1]
+    }
+
+    h = h.toAsciiLower()
+
+    // Strip trailing dot (FQDN): example.com. -> example.com
+    if (h.endsWith(".")) {
+        h = h[..h.size - 1]
+    }
+    return h
+}
+
+func splitNoProxyHostPort(domain: String): (String, String) {
+    let s = domain.trimAscii()
+
+    // [ipv6]:port
+    if (s.size >= 2 && s[0] == b'[') {
+        if (let Some(end) <- s.indexOf(b']')) {
+            let hostPart = s[1..end]
+            let rest = s[end + 1..]
+            return if (!rest.isEmpty() && rest[0] == b':') {
+                (hostPart, rest[1..])
+            } else {
+                (hostPart, "")
+            }
+        }
+    }
+
+    // host:port only when there is exactly one ':'
+    let firstColon = s.indexOf(b':')
+    let lastColon = s.lastIndexOf(b':')
+    match ((firstColon, lastColon)) {
+        case (Some(first), Some(last)) where first == last =>
+            let hostPart = s[..first]
+            let portPart = s[first + 1..]
+            return (hostPart, portPart)
+        case _ => (s, "")
+    }
+}
+
+func isIpLiteral(hostLower: String): Bool {
+    // IPv6 literal (basic heuristic)
+    if (let Some(_) <- hostLower.indexOf(b':')) {
+        return true
+    }
+
+    // IPv4 heuristic: only digits/dots AND contains at least one dot
+    var hasDot = false
+    for (i in 0..hostLower.size) {
+        let b = hostLower[i]
+        if (b == b'.') {
+            hasDot = true
+            continue
+        }
+        if (!b.isAsciiNumber()) {
+            return false
+        }
+    }
+    return hasDot
+}
+
+func hostMatchesDomain(hostLower: String, domainLower: String): Bool {
+    var d = domainLower
+    if (d.endsWith(".")) {
+        d = d[..d.size - 1]
+    }
+
+    let domain = if (d.startsWith(".")) {
+        d[1..]
+    } else {
+        d
+    }
+    if (domain.isEmpty()) {
+        return false
+    }
+    if (hostLower == domain) {
+        return true
+    }
+    return hostLower.endsWith("." + domain)
+}
+
 func getNoProxy(): ?Array<String> {
     let noProxy = getVariable("no_proxy") ?? getVariable("NO_PROXY") ?? ""
     if (!noProxy.isEmpty()) {
@@ -1037,28 +1122,41 @@ func getNoProxy(): ?Array<String> {
 }
 
 func matchNoProxy(host: String, port: String): Bool {
-    if (let Some(noProxy) <- getNoProxy()) {
-        for (item in noProxy) {
-            let domain = item.trim()
-            if (domain.isEmpty()) {
-                continue
-            }
-            // * matches all host
-            if (domain == ASTERISK) {
-                return true
-            }
-            let (noProxyHost, noProxyPort) = match (domain.lastIndexOf(":")) {
-                case Some(v) => (domain[..v], domain[v + 1..])
-                case None => (domain, "")
-            }
-            let isIP = (noProxyHost[noProxyHost.size - 1] >= 48 && noProxyHost[noProxyHost.size - 1] <= 57)
+    let hostLower = normalizeHostLower(host)
+    let noProxy = getNoProxy()
+    if (noProxy.isNone()) {
+        return false
+    }
 
-            if (isIP && noProxyHost == host && (noProxyPort.isEmpty() || noProxyPort == port)) {
+    for (item in noProxy.getOrThrow()) {
+        let domain = item.trimAscii()
+        if (domain.isEmpty()) {
+            continue
+        }
+        if (domain == ASTERISK) {
+            return true
+        }
+
+        let (noProxyHostRaw, noProxyPortRaw) = splitNoProxyHostPort(domain)
+        let noProxyHost = noProxyHostRaw.trimAscii()
+        if (noProxyHost.isEmpty()) {
+            continue
+        }
+        let noProxyPort = noProxyPortRaw.trimAscii()
+        if (!noProxyPort.isEmpty() && noProxyPort != port) {
+            continue
+        }
+
+        let noProxyHostLower = normalizeHostLower(noProxyHost)
+        if (isIpLiteral(noProxyHostLower)) {
+            if (noProxyHostLower == hostLower) {
                 return true
             }
-            if (!isIP && host.endsWith(noProxyHost) && (noProxyPort.isEmpty() || noProxyPort == port)) {
-                return true
-            }
+            continue
+        }
+
+        if (hostMatchesDomain(hostLower, noProxyHostLower)) {
+            return true
         }
     }
     return false
