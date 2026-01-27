@@ -47,10 +47,11 @@ class ParserImpl {
         let builder = SyntaxNodeBuilder()
         let preChildren = ArrayList<SyntaxNodeImpl>()
         var cnt = 0
+        text = text.replace("\r\n", "\n")
         for (i in 0..text.size) {
             let cur = text[i..i + 1]
             // whitespace ended
-            if (cur != NEWLINE && cur != " ") {
+            if (cur != "\n" && cur != " ") {
                 break
             }
             // cnt increase
@@ -59,7 +60,7 @@ class ParserImpl {
             }
             // cnt downto 0, add current whitespace to array
             if (text[i + 1..i + 2] != cur) {
-                if (cur == NEWLINE) {
+                if (cur == "\n") {
                     preChildren.add(builder.buildNewline(cnt))
                 } else {
                     preChildren.add(builder.buildSpace(cnt))
