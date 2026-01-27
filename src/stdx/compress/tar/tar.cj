@@ -108,6 +108,10 @@ public class Tar {
         for (entry in tarReader) {
             let entryPath = destAbsoluteDir.join(entry.name)
 
+            if (!entryPath.normalize().toString().startsWith(destAbsoluteDir.toString())) {
+                throw TarException("Zip Slip detected: ${entry.name}.")
+            }
+
             if (exists(entryPath)) {
                 if (!overwrite) {
                     throw TarException("File ${entryPath} already exists and overwrite is false.")
@@ -133,12 +137,21 @@ public class Tar {
                         }
                     }
                 case TarEntryType.Symlink =>
+                    checkLinkTarget(entry.linkName, destAbsoluteDir)
                     SymbolicLink.create(entryPath, to: Path(entry.linkName))
                 case TarEntryType.HardLink =>
+                    checkLinkTarget(entry.linkName, destAbsoluteDir)
                     HardLink.create(entryPath, to: Path(entry.linkName))
                 case _ => continue
             }
             Native.setFileAttributes(entryPath, entry)
+        }
+    }
+
+    private static func checkLinkTarget(linkName: String, destDir: Path) {
+        let linkTarget = canonicalize(Path(linkName))
+        if (!linkTarget.toString().startsWith(destDir.toString())) {
+            throw TarException("Symlink points outside target dir.")
         }
     }
 }
