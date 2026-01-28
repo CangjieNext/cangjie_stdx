@@ -10,6 +10,7 @@ package stdx.crypto.x509
 
 struct PrincipalOids {
     // X500
+    // cjlint-ignore -start !G.OTH.03
     static let COMMON_NAME: Oid = Oid("2.5.4.3")
     static let COUNTRY_NAME: Oid = Oid("2.5.4.6")
     static let LOCALITY_NAME: Oid = Oid("2.5.4.7")
@@ -38,4 +39,5 @@ struct PrincipalOids {
     static let RSA: Oid = Oid("1.2.840.113549.1.1.1")
     static let DSA: Oid = Oid("1.2.840.10040.4.1")
     static let ECDSA: Oid = Oid("1.2.840.10045.2.1")
+    // cjlint-ignore -end
 }

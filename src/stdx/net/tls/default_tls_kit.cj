@@ -18,10 +18,10 @@ public class DefaultTlsKit <: TlsKit {
 
     public func getTlsServer(socket: StreamingSocket, config: TlsConfig, session!: ?TlsSession): TlsConnection {
         let serverConfig = config as TlsServerConfig ??
-            throw IllegalArgumentException("Unsupported config type: expected TlsServerConfig.")
+            throw IllegalArgumentException("Unsupported config type: expected TlsServerConfig.") // cjlint-ignore !G.EXP.03
         let serverSession: ?TlsServerSession = match (session) {
             case Some(s) => s as TlsServerSession ??
-                throw IllegalArgumentException("Unsupported session type: expected TlsServerSession.")
+                throw IllegalArgumentException("Unsupported session type: expected TlsServerSession.") // cjlint-ignore !G.EXP.03
             case None => None
         }
         TlsSocket.server(socket, serverConfig: serverConfig, session: serverSession)
@@ -29,10 +29,10 @@ public class DefaultTlsKit <: TlsKit {
 
     public func getTlsClient(socket: StreamingSocket, config: TlsConfig, session!: ?TlsSession): TlsConnection {
         let clientConfig = config as TlsClientConfig ??
-            throw IllegalArgumentException("Unsupported config type: expected TlsClientConfig.")
+            throw IllegalArgumentException("Unsupported config type: expected TlsClientConfig.") // cjlint-ignore !G.EXP.03
         let clientSession: ?TlsClientSession = match (session) {
             case Some(s) => s as TlsClientSession ??
-                throw IllegalArgumentException("Unsupported session type: expected TlsClientSession.")
+                throw IllegalArgumentException("Unsupported session type: expected TlsClientSession.") // cjlint-ignore !G.EXP.03
             case None => None
         }
         TlsSocket.client(socket, clientConfig: clientConfig, session: clientSession)

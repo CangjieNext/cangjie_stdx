@@ -17,12 +17,14 @@ const NULL_BYTE = "\0"
 const CHUNK_SIZE = 8 * 1024
 const DEFAULT_HEADER_CAPACITY = 8
 let VALID_HOST_SYMBOLS: Array<Byte> = [
+    // cjlint-ignore -start !G.OTH.03
     // Refer to RFC spec, where sub-delims is:
     // https://www.rfc-editor.org/rfc/rfc3986#section-2.2
     //      sub-delims  = "!" / "$" / "&" / "'" / "(" / ")" / "*" / "+" / "," / ";" / "="
     //
     // Where unreserved is:
     // https://www.rfc-editor.org/rfc/rfc3986#section-2.3
+    // cjlint-ignore -end
     //      unreserved  = ALPHA / DIGIT / "-" / "." / "_" / "~"
     b'!', // sub-delims
     b'$', // sub-delims

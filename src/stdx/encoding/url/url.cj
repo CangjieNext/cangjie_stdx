@@ -160,10 +160,12 @@ public class URL <: ToString {
 
     private init() {}
 
+    // cjlint-ignore -start !G.OTH.03
     /**
      * The scheme and host should be lowercase.
      * Ref: https://www.rfc-editor.org/rfc/rfc3986#section-6.2.2.1
      */
+    // cjlint-ignore -end
     public init(scheme!: String, hostName!: String, path!: String) {
         verifyInit(scheme, hostName, path)
         if (!scheme.isEmpty()) {
@@ -538,7 +540,7 @@ public class URL <: ToString {
         try {
             let name = checkAndDecode(USERINFO, _rawUrl[nameStart..nameEnd])
             if (passwordStart != -1) {
-                let password = checkAndDecode(USERINFO, _rawUrl[passwordStart..passwordEnd])
+                let password = checkAndDecode(USERINFO, _rawUrl[passwordStart..passwordEnd]) // cjlint-ignore !G.OTH.02
                 _userInfo = UserInfo(name, password)
                 _rawUserInfo = UserInfo(_rawUrl[nameStart..nameEnd], _rawUrl[passwordStart..passwordEnd])
             } else {

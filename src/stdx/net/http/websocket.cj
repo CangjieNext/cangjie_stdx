@@ -186,6 +186,7 @@ public class WebSocket {
         }
     }
 
+    // cjlint-ignore -start !G.OTH.03
     /**
      * Implementations that have implementation- and/or platform-specific
      * limitations regarding the frame size or total message size after
@@ -197,6 +198,7 @@ public class WebSocket {
      * because it has received a message that is too big for it to
      * process.
      */
+    // cjlint-ignore -end
     private func checkFramePayloadLimit(payloadLength: Int64) {
         if (payloadLength >= MAX_FRAME_PAYLOAD_LENGTH) {
             failTheWebSocketConnection(WebSocketStatusCode.MESSAGE_TOO_BIG,
@@ -714,7 +716,7 @@ func parseUpgradeRequest1(ctx: HttpContext): String {
 
     // a sec-websocket-key header field with a base64-encoded value that,
     // when decoded, is 16 bytes in length.
-    let keyValues = ctx.request.headers.getInternal("sec-websocket-key") ?? responseAndThrows(ctx,
+    let keyValues = ctx.request.headers.getInternal("sec-websocket-key") ?? responseAndThrows(ctx, // cjlint-ignore !G.EXP.03
         HttpStatusCode.STATUS_BAD_REQUEST, "the upgrade request lacks sec-websocket-key header field")
     if (!keyValues.isSingle() || ((fromBase64String(keyValues.single)?.size ?? 0) != 16)) {
         responseAndThrows(ctx, HttpStatusCode.STATUS_BAD_REQUEST,
@@ -730,7 +732,7 @@ func parseUpgradeRequestCommon(ctx: HttpContext, origins: ArrayList<String>, sub
     // the server may use this information as part of a determination of whether to accept the incoming connection.
     // if the server does not validate the origin (origins.isEmpty() == true), it will accept connections from anywhere.
     if (!origins.isEmpty()) {
-        let originValues = ctx.request.headers.getInternal("origin") ?? responseAndThrows(ctx,
+        let originValues = ctx.request.headers.getInternal("origin") ?? responseAndThrows(ctx, // cjlint-ignore !G.EXP.03
             HttpStatusCode.STATUS_FORBIDDEN, "the upgrade request lacks Origin field")
         if (!originValues.isSingle() || !origins.contains(originValues.single)) {
             responseAndThrows(ctx, HttpStatusCode.STATUS_FORBIDDEN,
@@ -753,7 +755,7 @@ func parseUpgradeRequestCommon(ctx: HttpContext, origins: ArrayList<String>, sub
     }
 
     // a sec-websocket-version header field, with a value of 13
-    let versionValues = ctx.request.headers.getInternal("sec-websocket-version") ?? responseAndThrows(ctx,
+    let versionValues = ctx.request.headers.getInternal("sec-websocket-version") ?? responseAndThrows(ctx, // cjlint-ignore !G.EXP.03
         HttpStatusCode.STATUS_BAD_REQUEST, "the upgrade request lacks sec-websocket-version header field")
     if (!versionValues.isSingle() || versionValues.single != "13") {
         responseAndThrows(ctx, HttpStatusCode.STATUS_UPGRADE_REQUIRED,

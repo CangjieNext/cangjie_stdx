@@ -34,7 +34,7 @@ class LRUMemoryCache<K, V> <: BaseDoubleLinkedListMemoryCache<K, V> where K <: H
      *
      * @param cacheObj Indicates the cache that is updated or added to the current cache.
      */
-    protected func adjustCacheAfterPut(cacheObj: ICacheObj<K, V>, oldObj!: ?ICacheObj<K, V>): Unit {
+    protected func adjustCacheAfterPut(cacheObj: ICacheObj<K, V>, oldObj!: ?ICacheObj<K, V>): Unit { // cjlint-ignore !G.FUN.02
         super.cacheKeyLinkList.prepend(cacheObj.key)
     }
 }

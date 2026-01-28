@@ -10,6 +10,7 @@ package stdx.encoding.json.stream
 
 
 public enum JsonToken <: Equatable<JsonToken> & Hashable {
+    // cjlint-ignore -start !G.ENU.01
     | JsonNull
     | JsonBool
     | JsonNumber
@@ -19,6 +20,7 @@ public enum JsonToken <: Equatable<JsonToken> & Hashable {
     | BeginObject
     | EndObject
     | Name
+    // cjlint-ignore -end
 
     public operator func ==(that: JsonToken): Bool {
         return match ((this, that)) {

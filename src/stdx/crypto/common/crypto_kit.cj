@@ -29,6 +29,6 @@ public func setGlobalCryptoKit(kit: CryptoKit): Unit {
 }
 
 public func getGlobalCryptoKit(): CryptoKit {
-    globalCryptoKit ?? throw CryptoException("Global crypto kit is not set. " +
+    globalCryptoKit ?? throw CryptoException("Global crypto kit is not set. " + // cjlint-ignore !G.EXP.03
         "If you want to use the default implementation, make sure that package `stdx.crypto.kit` is imported.")
 }

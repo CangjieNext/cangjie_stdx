@@ -17,6 +17,7 @@ package stdx.net.http
 import stdx.log.*
 import std.collection.*
 
+// cjlint-ignore -start !G.OTH.03
 /**
  * HPACK HeaderTable
  * HeaderTable is used to support both `Static Table` and `Dynamic Table` operations of HPACK.
@@ -25,6 +26,7 @@ import std.collection.*
  * Dynamic Table: https://www.rfc-editor.org/rfc/rfc7541#section-2.3.2
  * Index Address Space: https://www.rfc-editor.org/rfc/rfc7541#section-2.3.3
  */
+// cjlint-ignore -end
 class HeaderTable {
     private static let STATIC_TABLE = [
         ("", ""),
@@ -93,11 +95,13 @@ class HeaderTable {
 
     let dynamicTable = DefaultQueue<HeaderField>()
 
+    // cjlint-ignore -start !G.OTH.03
     /**
      * This limit is the last value of the SETTINGS_HEADER_TABLE_SIZE parameter received from the decoder and acknowledged by the encoder.
      * Reducing the maximum size of the dynamic table can cause entries to be evicted.
      * https://www.rfc-editor.org/rfc/rfc7541.html#section-6.3
      */
+    // cjlint-ignore -end
     var maxSize: Int64 = 4096
 
     var size: Int64 = 0
@@ -157,6 +161,7 @@ class HeaderTable {
         )
     }
 
+    // cjlint-ignore -start !G.OTH.03
     /**
      * Insert HTTP header field to `Dynamic Table`
      *
@@ -167,6 +172,7 @@ class HeaderTable {
      *
      * @param field new entry to be insert.
      */
+    // cjlint-ignore -end
     func insert(field: HeaderField): Unit {
         let incrSize = fieldSize(field)
         reduceSizeTo(maxSize - incrSize) // make sure `size + incrSize <= maxSize`
@@ -249,6 +255,7 @@ class HeaderTable {
         }
     }
 
+    // cjlint-ignore -start !G.OTH.03
     /**
      * Table size change or insert may cause entry evection.
      * Reduce util size <= limit.
@@ -256,6 +263,7 @@ class HeaderTable {
      * https://www.rfc-editor.org/rfc/rfc7541#section-4.3
      * https://www.rfc-editor.org/rfc/rfc7541#section-4.4
      */
+    // cjlint-ignore -end
     private func reduceSizeTo(limit: Int64) {
         while (size > limit && !dynamicTable.isEmpty()) { // evict fields until the max size is met, or dynamic table is empty
             let evictedField = dynamicTable.dequeue() ?? throw HpackException(

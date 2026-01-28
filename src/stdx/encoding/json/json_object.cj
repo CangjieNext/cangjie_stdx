@@ -18,7 +18,7 @@ import std.collection.*
 /**
  * JsonNull class used for encapsulate JSON data: null.
  */
-public class JsonNull <: JsonValue {
+public class JsonNull <: JsonValue { // cjlint-ignore !G.ENU.01
 
     /**
      * Determine the JSON type to which the JsonNull belongs.
@@ -75,7 +75,7 @@ public class JsonNull <: JsonValue {
 /**
  * JsonBool class used for encapsulate JSON data: true or false.
  */
-public class JsonBool <: JsonValue {
+public class JsonBool <: JsonValue { // cjlint-ignore !G.ENU.01
     /* Json data of the JsonBool(Bool). */
     private var value: Bool
 
@@ -333,7 +333,7 @@ public class JsonFloat <: JsonValue {
 /**
  * JsonString class used for encapsulate JSON data: string.
  */
-public class JsonString <: JsonValue {
+public class JsonString <: JsonValue { // cjlint-ignore !G.ENU.01
     /* Json data of the JsonString(String). */
     var value: String
 

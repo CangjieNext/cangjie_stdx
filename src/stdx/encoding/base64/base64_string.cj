@@ -138,6 +138,7 @@ func verifyBase64(value: Array<UInt8>): Bool {
     return true
 }
 
+// cjlint-ignore -start !G.OTH.02
 /*
  * Convert the UInt8 set to a character string (Base64ToString encoding).
  * In step 1, the ASCII values of "M", "a", and "n" are 77, 97, and 110 respectively
@@ -153,6 +154,7 @@ func verifyBase64(value: Array<UInt8>): Bool {
  *
  * @since 0.17.4
  */
+// cjlint-ignore -end
 func toBase64(data: Array<UInt8>): String {
     if (data.size <= 0) {
         return ""

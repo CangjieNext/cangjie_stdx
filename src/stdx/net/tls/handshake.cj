@@ -13,8 +13,8 @@ import stdx.crypto.x509.*
 import stdx.crypto.common.*
 
 enum HandshakeConfig {
-    | Client(TlsClientConfig, ?TlsClientSession)
-    | Server(TlsServerConfig, ?TlsServerSession)
+    | Client(TlsClientConfig, ?TlsClientSession) // cjlint-ignore !G.ENU.01
+    | Server(TlsServerConfig, ?TlsServerSession) // cjlint-ignore !G.ENU.01
     | KeylessServer(KeylessTlsServerConfig, ?TlsServerSession)
 }
 
@@ -299,7 +299,7 @@ extend TlsContext {
         }
     }
 
-    private func setContextCustomVerify(callback: CertificateVerifyCallbackFunction): Unit {
+    private func setContextCustomVerify(callback: CertificateVerifyCallbackFunction): Unit { // cjlint-ignore !G.FUN.02
         withContext<Unit> {
             nativeContext, _ =>
                 var dynMsg = DynMsg()

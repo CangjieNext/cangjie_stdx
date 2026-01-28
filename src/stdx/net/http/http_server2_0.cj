@@ -179,6 +179,7 @@ class HttpServer2 <: ProtocolService {
     }
 
     /***************************************************** h2 preface *****************************************************/
+    // cjlint-ignore -start !G.OTH.03
     /*
      * Initialize h2 connection:
      *      step 1: receive and check client preface, "PRI * HTTP/2.0\r\n\r\nSM\r\n\r\n".toArray()
@@ -189,6 +190,7 @@ class HttpServer2 <: ProtocolService {
      * @throws SocketException, ConnectionException or TlsException, if something wrong with socket
      * @throws HttpConnectionException, if some h2 connection error occurs
      */
+    // cjlint-ignore -end
     private func exchangePreface() {
         var prefaceReceived = Array<UInt8>(PREFACE.size, repeat: 0)
         let _ = conn.readFull(prefaceReceived)
@@ -360,7 +362,7 @@ class HttpServer2 <: ProtocolService {
                         {
                             => HttpConnectionException(ProtocolError,
                                 "Headers and continuation frames should be continuous on connection level.")
-                        }) as ContinuationFrame ?? throw HttpConnectionException(ProtocolError,
+                        }) as ContinuationFrame ?? throw HttpConnectionException(ProtocolError, // cjlint-ignore !G.EXP.03
                     "Headers and continuation frames should be continuous on connection level.")
                 if (cf.streamId != streamId) {
                     throw HttpConnectionException(ProtocolError, "Unexpected Continuation on stream ${streamId}.")
@@ -824,9 +826,11 @@ class HttpServer2 <: ProtocolService {
         sendSettings(ack: true)
     }
 
+    // cjlint-ignore -start !G.OTH.03
     /*
      * see https://www.rfc-editor.org/rfc/rfc9113.html#InitialWindowSize
      */
+    // cjlint-ignore -end
     private func setActiveStreamWindow(initialWindow: UInt32) {
         let increment = Int64(initialWindow) - Int64(this.remoteSettings[SettingsInitialWindowSize.code])
 
@@ -877,6 +881,7 @@ class HttpServer2 <: ProtocolService {
         shutdown(shouldSleep: false)
     }
 
+    // cjlint-ignore -start !G.OTH.03
     /*
      * the value of parameter urgency will be set on related stream
      * if the related stream has not been created yet, and the streamId is valid (odd, > lastClientStreamId, < MAX_STREAM_ID), a new Idle stream with the specified urgency will be created
@@ -885,6 +890,7 @@ class HttpServer2 <: ProtocolService {
      *
      * @throws HttpConnectionException if streamId invalid
      */
+    // cjlint-ignore -end
     private func onPriorityUpdateRead(frame: PriorityUpdateFrame): Unit {
         let (streamOp, isPurged) = getStream(frame.prioritizedId)
         if (streamOp.isNone() && !isPurged) {

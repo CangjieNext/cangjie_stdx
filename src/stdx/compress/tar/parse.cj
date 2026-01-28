@@ -10,6 +10,7 @@ package stdx.compress.tar
 
 import std.time.DateTime
 
+// cjlint-ignore -start !G.OTH.03
 /**
  * Utility class for parsing GNU Base256 encoded numbers.
  *
@@ -25,6 +26,7 @@ import std.time.DateTime
  * - Leading bytes other than 0xff, 0x80, and ASCII octal digits are reserved for future use.
  *   Base-256 representations of values that would be in range for the basic format are also reserved.
  */
+// cjlint-ignore -end
 private class GnuBase256 {
     private init() { }
 

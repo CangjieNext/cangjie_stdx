@@ -35,7 +35,9 @@ const MAX_URGENCY = 7
 const DEFAULT_URGENCY = 3
 let h2UpgradeProtocols: Array<String> = ["HTTP", "TLS", "WebSocket", "websocket", "h2c", "connect-udp", "connect-ip"]
 
+// cjlint-ignore -start !G.OTH.03
 // https://www.rfc-editor.org/rfc/rfc9113.html#SETTINGS
+// cjlint-ignore -end
 enum H2Setting {
     SettingsHeaderTableSize
     | SettingsEnablePush
@@ -147,9 +149,11 @@ class HttpStreamException <: Exception {
     }
 }
 
+// cjlint-ignore -start !G.OTH.03
 /*
  * https://www.rfc-editor.org/rfc/rfc9113.html#ErrorCodes
  */
+// cjlint-ignore -end
 enum H2Error {
     | NoError
     | ProtocolError

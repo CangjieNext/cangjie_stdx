@@ -241,7 +241,7 @@ public class GeneralPrivateKey <: PrivateKey {
             }
         }
 
-        return description ?? throw CryptoException("Failed to load private key")
+        return description ?? throw CryptoException("Failed to load private key") // cjlint-ignore !G.EXP.03
     }
 
     protected static func decodeFromDer(blob: DerBlob, password: ?String) {
@@ -271,7 +271,7 @@ public class GeneralPrivateKey <: PrivateKey {
                 }
                 let cipherName = dekInfoComponents[0]
                 let iv = fromHexString(dekInfoComponents[1])
-                let password = password ?? throwPasswordIsMissing()
+                let password = password ?? throwPasswordIsMissing() // cjlint-ignore !G.OTH.02
                 decrypt(body, password, iv, cipherName)
             case (Some(unsupportedProcType), _) => throw CryptoException("Unsupported Proc-Type = ${unsupportedProcType}")
             case (None, Some(_)) => throw CryptoException("DEK-Info requires Proc-Type header")
@@ -284,7 +284,7 @@ public class GeneralPrivateKey <: PrivateKey {
     }
 
     private static func throwPasswordIsMissing(): Nothing {
-        throw CryptoException("The private key is encrypted but no password provided to decrypt it")
+        throw CryptoException("The private key is encrypted but no password provided to decrypt it") // cjlint-ignore !G.ERR.02
     }
 
     private static func decrypt(
@@ -305,14 +305,14 @@ public class GeneralPrivateKey <: PrivateKey {
         cipherName: ?String
     ): GeneralPrivateKey {
         if (password.contains(NULL_BYTE)) {
-            throw CryptoException("Password shouldn't contain zero byte.")
+            throw CryptoException("Password shouldn't contain zero byte.") // cjlint-ignore !G.ERR.02
         }
         if (password.isEmpty()) {
-            throw CryptoException("Password shouldn't be empty.")
+            throw CryptoException("Password shouldn't be empty.") // cjlint-ignore !G.ERR.02
         }
         var decryptedBody: ?DerBlob = None
         var keyDescription: ?String = None
-        try (passwordCStr = mallocCString(password), cipherCStr = mallocCString(cipherName), ivBuffer = mallocCopyOf(iv), resultBody = malloc<CPointer<Byte>>(
+        try (passwordCStr = mallocCString(password), cipherCStr = mallocCString(cipherName), ivBuffer = mallocCopyOf(iv), resultBody = malloc<CPointer<Byte>>( // cjlint-ignore !G.OTH.02
             initial: CPointer()), resultSize = malloc<UIntNative>(initial: 0), description = malloc<CPointer<Byte>>(
             initial: CPointer()), exception = malloc<ExceptionData>(initial: ExceptionData())) {
             var params = EncryptedKeyParams()
@@ -363,7 +363,7 @@ public class GeneralPrivateKey <: PrivateKey {
             }
         }
         return GeneralPrivateKey(
-            decryptedBody ?? throw CryptoException("Failed to decrypt private key"),
+            decryptedBody ?? throw CryptoException("Failed to decrypt private key"), // cjlint-ignore !G.EXP.03
             keyDescription ?? ""
         )
     }
@@ -373,13 +373,13 @@ public class GeneralPrivateKey <: PrivateKey {
         password: String
     ): DerBlob {
         if (password.contains(NULL_BYTE)) {
-            throw CryptoException("Password shouldn't contain zero byte.")
+            throw CryptoException("Password shouldn't contain zero byte.") // cjlint-ignore !G.ERR.02
         }
         if (password.isEmpty()) {
-            throw CryptoException("Password shouldn't be empty.")
+            throw CryptoException("Password shouldn't be empty.") // cjlint-ignore !G.ERR.02
         }
         var encryptedBody: ?DerBlob = None
-        try (passwordCStr = LibC.mallocCString(password).asResource(), resultBody = malloc<CPointer<Byte>>(
+        try (passwordCStr = LibC.mallocCString(password).asResource(), resultBody = malloc<CPointer<Byte>>( // cjlint-ignore !G.OTH.02
             initial: CPointer()), resultSize = malloc<UIntNative>(initial: 0), exception = malloc<ExceptionData>(
             initial: ExceptionData())) {
             let keySize = UIntNative(input.size) // we do it outside of acq-release
@@ -408,7 +408,7 @@ public class GeneralPrivateKey <: PrivateKey {
                 exception.value = data
             }
         }
-        return encryptedBody ?? throw CryptoException("Failed to encrypt private key")
+        return encryptedBody ?? throw CryptoException("Failed to encrypt private key") // cjlint-ignore !G.EXP.03
     }
 
     private static unsafe func describeImpl(
@@ -445,7 +445,7 @@ public class GeneralPrivateKey <: PrivateKey {
             exception.read().throwException(fallback: "Failed to load private key")
         }
 
-        return messageString ?? throw CryptoException("Failed to load private key")
+        return messageString ?? throw CryptoException("Failed to load private key") // cjlint-ignore !G.EXP.03
     }
 }
 
@@ -569,7 +569,7 @@ foreign {
 // see api.h for the native declaration
 @C
 protected struct EncryptedKeyParams {
-    var password: CString = CString(CPointer()) // const char* password
+    var password: CString = CString(CPointer()) // const char* password // cjlint-ignore !G.OTH.02
     var iv: CPointer<Byte> = CPointer() // const unsigned char* iv
     var ivLength: UIntNative = 0 // size_t ivLength
     var cipherName: CString = CString(CPointer()) // const char* cipherName

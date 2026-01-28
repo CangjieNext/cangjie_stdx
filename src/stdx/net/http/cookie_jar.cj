@@ -52,9 +52,10 @@ class CookieEntry {
  * then use storeCookies to store the cookie
  */
 public interface CookieJar {
-
+    // cjlint-ignore -start !G.OTH.03
     // the rejectPublicSuffixes is configured to reject public suffixes for security reasons
     // users can configured them from http://publicsuffix.org/
+    // cjlint-ignore -end
     prop rejectPublicSuffixes: ArrayList<String>
     prop isHttp: Bool
     func storeCookies(url: URL, cookies: ArrayList<Cookie>): Unit
@@ -137,12 +138,14 @@ public interface CookieJar {
         return cookieList
     }
 
+    // cjlint-ignore -start !G.OTH.03
     /*
      * @param rejectPublicSuffixes the public suffixes to be configured.
      *  public suffixes can be obtained from https://publicsuffix.org/.
      * @param isHttp whether the cookieJar is managed by HTTP.
      * @return a default CookieJar instance.
      */
+    // cjlint-ignore -end
     static func createDefaultCookieJar(rejectPublicSuffixes: ArrayList<String>, isHttp: Bool): CookieJar {
         return CookieJarImpl(rejectPublicSuffixes, isHttp)
     }

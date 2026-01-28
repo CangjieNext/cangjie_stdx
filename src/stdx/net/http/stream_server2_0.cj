@@ -502,11 +502,13 @@ class Stream {
     }
 
     /********************************************* closing *********************************************/
+    // cjlint-ignore -start !G.OTH.03
     /*
      * According to https://www.rfc-editor.org/rfc/rfc9113.html#rfc.section.5.4.2,
      * if frames on this stream are received in a round-trip, they should be processed minimally.
      * We will send global WINDOW_UPDATE, if received DATA. Other frames will be ignored.
      */
+    // cjlint-ignore -end
     func close(h2Error: H2Error, message: String, slow!: Bool = false): Unit {
         if (h2Error.code != NoError.code) {
             httpLogWarn(server.logger, "[Stream#close] stream ${streamId}: ${message}")
@@ -666,7 +668,7 @@ class HttpEngineConn2 <: HttpEngineConn & InputStream {
             checkAndSetRequestHeaders(fields[pseudoHeadersNum..])
         }
 
-        if (request._headers.isSome() && expected100Continue(request.headers)) {
+        if (request._headers.isSome() && expected100Continue(request.headers)) { // cjlint-ignore !G.EXP.03
             request._body = HttpExpectBodyProviderH2(this)
         } else {
             request._body = this
@@ -675,7 +677,9 @@ class HttpEngineConn2 <: HttpEngineConn & InputStream {
         request._remoteAddr = stream.server.remoteAddress
     }
 
+    // cjlint-ignore -start !G.OTH.03
     /* see https://www.rfc-editor.org/rfc/rfc9113.html#HttpRequest */
+    // cjlint-ignore -end
     private func checkAndSetPseudoHeaders(pseudoHeaders: ArrayList<(String, String)>): Unit {
         var method: String = String.empty
         var scheme: String = String.empty
@@ -977,7 +981,9 @@ class HttpEngineConn2 <: HttpEngineConn & InputStream {
             throw HttpException("In http/2 build a tunnel is supported only when request method is CONNECT.")
         }
         // in http/2, response to CONNECT request must have status 2XX, and should not contain header field "content-length"
+        // cjlint-ignore -start !G.OTH.03
         // ref: https://www.rfc-editor.org/rfc/rfc9113.html#CONNECT
+        // cjlint-ignore -end
         let status = ctx.responseBuilder._status ?? HttpStatusCode.STATUS_OK
         if (status / 100 != 2) {
             throw HttpException("Status of response to CONNECT request must be 2XX, if tunnel is built successfully.")
@@ -992,7 +998,7 @@ class HttpEngineConn2 <: HttpEngineConn & InputStream {
             return
         }
         let readBufWrapperOp = arrayPool?.get(Int64(maxFrameSize))
-        let readBuf = readBufWrapperOp?.data ?? Array<UInt8>(Int64(maxFrameSize), repeat: 0)
+        let readBuf = readBufWrapperOp?.data ?? Array<UInt8>(Int64(maxFrameSize), repeat: 0) // cjlint-ignore !G.EXP.03
         var readLen = body.read(readBuf) //may throw exceptions from user code
         while (readLen > 0) { // if readLen < 0?
             writeBody(readBuf[..readLen], streamEnd: false) // split according stream remoteWindow
@@ -1019,13 +1025,13 @@ class HttpEngineConn2 <: HttpEngineConn & InputStream {
             let remainLen = bodyData.size - bodyIndex
             let permitLen = min(Int64(maxFrameSize), stream.remoteWindow.load())
             let (frame, writeLen) = if (remainLen <= permitLen) {
-                let cache = arrayPool?.get(remainLen) ?? ArrayWrapper(remainLen)
+                let cache = arrayPool?.get(remainLen) ?? ArrayWrapper(remainLen) // cjlint-ignore !G.EXP.03
                 bodyData.copyTo(cache.data, bodyIndex, 0, remainLen)
                 let f = DataFrame(stream.streamId, cache, remainLen, last: streamEnd)
                 bodyIndex = bodyData.size
                 (f, remainLen)
             } else {
-                let cache = arrayPool?.get(permitLen) ?? ArrayWrapper(permitLen)
+                let cache = arrayPool?.get(permitLen) ?? ArrayWrapper(permitLen) // cjlint-ignore !G.EXP.03
                 bodyData.copyTo(cache.data, bodyIndex, 0, permitLen)
                 let f = DataFrame(stream.streamId, cache, permitLen)
                 bodyIndex += permitLen

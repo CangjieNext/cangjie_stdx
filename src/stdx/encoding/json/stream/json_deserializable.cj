@@ -34,7 +34,7 @@ extend Bool <: JsonDeserializable<Bool> {
 
 extend<T> Option<T> <: JsonDeserializable<Option<T>> where T <: JsonDeserializable<T> {
     public static func fromJson(r: JsonReader): Option<T> {
-        if (r.peeked == PEEK_STATE_NULL || r.nextNonJsonWhitespace() == b'n') {
+        if (r.peeked == PEEK_STATE_NULL || r.nextNonJsonWhitespace() == b'n') { // cjlint-ignore !G.EXP.03
             r.readNull()
             return None
         }

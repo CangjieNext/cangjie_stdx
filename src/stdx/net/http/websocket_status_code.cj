@@ -8,11 +8,13 @@
 
 package stdx.net.http
 
+// cjlint-ignore -start !G.OTH.03
 /**
  * defined status codes
  * RFC 6455 7.4.1.
  * https://www.iana.org/assignments/websocket/websocket.xhtml
  */
+// cjlint-ignore -end
 struct WebSocketStatusCode {
     // RFC 6455 7.4.1.
     static const NORMAL_CLOSURE: UInt16 = 1000
@@ -25,7 +27,9 @@ struct WebSocketStatusCode {
     static const MANDATORY_EXTENSION: UInt16 = 1010
     static const INTERNAL_ERROR: UInt16 = 1011
 
+    // cjlint-ignore -start !G.OTH.03
     // https://www.iana.org/assignments/websocket/websocket.xhtml
+    // cjlint-ignore -end
     static const SERVICE_RESTART: UInt16 = 1012
     static const TRY_AGAIN_LATER: UInt16 = 1013
     static const INVALID_RESPONSE: UInt16 = 1014
