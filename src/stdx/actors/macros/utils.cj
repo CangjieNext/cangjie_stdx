@@ -21,9 +21,7 @@ const PREFIX = "___actors__9723459842301294657___"
 const ACTOR_MACRO_NAME = "Actor"
 const RECEIVER_MARKER_NAME = PREFIX + "Receiver"
 const ACTOR_INSTANCE_NAME = PREFIX + "actorInstance"
-
 let receiverMarkerToken = Token(IDENTIFIER, RECEIVER_MARKER_NAME)
-
 let actorInstanceToken = Token(IDENTIFIER, ACTOR_INSTANCE_NAME)
 
 func actorFutureType(t: TypeNode): RefType {

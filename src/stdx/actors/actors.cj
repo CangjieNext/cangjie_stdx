@@ -15,8 +15,7 @@
 
 package stdx.actors
 
-import std.collection.concurrent.*
-
+import std.collection.concurrent.ConcurrentLinkedQueue
 
 public class SequentialDispatcher {
     let mailbox: Mailbox
