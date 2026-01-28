@@ -65,7 +65,8 @@ add_custom_target(FLATC_OUTPUTS_SEMA ALL DEPENDS ${FLATC_CJ_OUTPUT_SEMA} ${FLATC
 # build semantic ffi lib shared
 file(GLOB semantic_ffi_src
     analyze.cpp
-    typeWrite.cpp)
+    typeWrite.cpp
+    syntaxNodeDeserializer.cpp)
 set(libname stdx.semanticFFI)
 add_library(${libname} SHARED ${semantic_ffi_src})
 set_target_properties(${libname} PROPERTIES COMPILE_FLAGS "-fPIC")

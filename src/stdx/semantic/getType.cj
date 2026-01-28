@@ -24,5 +24,4 @@ func generateSemanticType(t: Option<SemanticType_ASTType>): SemanticType {
         case TYPE_INT64 => Int64SType(rawPointer)
         case _ => throw Exception("Not Impl")
     }
-
 }
