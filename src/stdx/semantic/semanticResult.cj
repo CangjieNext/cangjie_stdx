@@ -7,10 +7,8 @@ public class SemanticResult {
     public let diags: Array<Diagnostic> = []
     
     public static func analyze(pkgAST: Package, importedPkgContexts!: Array<SemanticContext> = []): SemanticResult {
-        let maps = unsafe{ analyzeImpl("") }
-        println("analyzeImpl finish")
+        let maps = unsafe{ analyzeImpl(serializePkg(pkgAST)) }
         let declMaps = getDeclTypeMap(pkgAST, maps)
-        println("getDeclTypeMap finish")
         SemanticResult(declMaps)
     }
 
@@ -25,12 +23,10 @@ public class SemanticResult {
         for (semanticTypeMapOption in maps.GetDeclMapList()) {
             if (let Some(semanticTypeMap) <- semanticTypeMapOption) {
                 let id = semanticTypeMap.GetId()
-                // println("id: ${id}")
                 let nf = NodeFinder(pkgAST, id)
                 nf.walk(pkgAST)
                 let decl = nf.res.getOrThrow()
                 let ty = generateSemanticType(semanticTypeMap.GetType())
-                println("${id}, ${ty}")
                 if (tyPtrToSemanticType.contains(ty.rawPointer)) {
                     declMap.add(decl, tyPtrToSemanticType[ty.rawPointer])
                 } else {
@@ -64,7 +60,6 @@ class NodeFinder <: ASTVisitor {
     public override func preAction(node: SyntaxTreeNode): PreActionMode {
         if (node.getId() == targetID) {
             res = node
-            println("targetID: ${targetID}, node.getId(): ${node.getId()}")
             PreActionMode.Stop
         }
         return PreActionMode.Continue

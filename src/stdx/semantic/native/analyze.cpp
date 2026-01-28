@@ -14,7 +14,8 @@
 #include "cangjie/Sema/Desugar.h"
 #include "cangjie/Macro/MacroCommon.h"
 
-#include "typeWrite.h"
+#include "semantic.h"
+#include "flatbuffers/SyntaxNodeFormat_generated.h"
 
 using json = nlohmann::json;
 
@@ -359,7 +360,6 @@ public:
         }
         auto nonTerminal = std::static_pointer_cast<NonTerminal>(syntaxNode);
         std::vector<Ptr<AST::Node>> collect = collectChild(node.get());
-        std::cout << nonTerminal->kind << "----" << collect.size() << std::endl;
         // 修改判断
         size_t i = 0;
         size_t j = 0;
@@ -379,12 +379,137 @@ public:
     }
 };
 
-extern "C"{
-uint8_t* CJ_Analyze(const char* jsonStr)
-{
-    std::string jsonString = R"({"type":"NonTerminal","kind":"Package","id":25,"children":[{"type":"NonTerminal","kind":"File","id":22,"children":[{"type":"NonTerminal","kind":"VarDecl","id":10,"children":[{"type":"Terminal","kind":"let","id":1},{"type":"RepeatedTerminal","kind":"Space","id":2,"repeat":1},{"type":"NonTerminal","kind":"VarPattern","id":4,"children":[{"type":"ValuedTerminal","kind":"IdentToken","id":3,"value":"a"}]},{"type":"RepeatedTerminal","kind":"Space","id":5,"repeat":1},{"type":"Terminal","kind":"=","id":6},{"type":"RepeatedTerminal","kind":"Space","id":7,"repeat":1},{"type":"ValuedTerminal","kind":"IntegerLiteralToken","id":9,"value":"1"}]},{"type":"RepeatedTerminal","kind":"NL","id":11,"repeat":1},{"type":"NonTerminal","kind":"VarDecl","id":21,"children":[{"type":"Terminal","kind":"let","id":12},{"type":"RepeatedTerminal","kind":"Space","id":13,"repeat":1},{"type":"NonTerminal","kind":"VarPattern","id":15,"children":[{"type":"ValuedTerminal","kind":"IdentToken","id":14,"value":"b"}]},{"type":"RepeatedTerminal","kind":"Space","id":16,"repeat":1},{"type":"Terminal","kind":"=","id":17},{"type":"RepeatedTerminal","kind":"Space","id":18,"repeat":1},{"type":"NonTerminal","kind":"VarPattern","id":20,"children":[{"type":"ValuedTerminal","kind":"IdentToken","id":19,"value":"a"}]}]}]}]})";
-    SyntaxNodePtr root = SyntaxTreeDeserializer::deserialize(jsonString);
+class SyntaxNodeFlatBufferDeserializer {
+public:
+    static std::shared_ptr<SyntaxNode> deserialize(
+        const uint8_t* buffer, 
+        size_t length) {
+        
+        auto root = SyntaxNodeFormat::GetNonTerminal(buffer);
+        return deserializeNonTerminal(root);
+    }
+    
+private:
+    
+    static std::shared_ptr<SyntaxNode> deserializeNonTerminal(
+        const SyntaxNodeFormat::NonTerminal* nonTerm) {
+        
+        if (!nonTerm) {return nullptr;}
+        
+        auto node = std::make_shared<NonTerminal>();
+        node->id = nonTerm->id();
 
+        node->kind = getNodeKindName(nonTerm->kind());
+        
+        // deserialize children
+        if (nonTerm->children() && nonTerm->children_type()) {
+            auto children = nonTerm->children();
+            auto childrenType = nonTerm->children_type();
+            for (size_t i = 0; i < children->size(); ++i) {
+
+                auto childTypeValue = childrenType->Get(i);
+                auto childType = SyntaxNodeFormat::EnumValuesSyntaxNodeImpl()[static_cast<uint8_t>(childTypeValue)];
+
+                auto childNode = getChildNodeByType(children->Get(i), childType);
+                if (childNode) {
+                    node->children.push_back(childNode);
+                }
+            }
+        }
+        
+        return node;
+    }
+    
+    static std::shared_ptr<SyntaxNode> deserializeTerminal(
+        const SyntaxNodeFormat::Terminal* term) {
+        
+        if (!term) { return nullptr;} 
+        
+        auto node = std::make_shared<Terminal>();
+        node->id = term->id();
+        node->kind = getNodeKindName(term->kind());
+        
+        return node;
+    }
+
+    static std::shared_ptr<SyntaxNode> deserializeValuedTerminal(
+        const SyntaxNodeFormat::ValuedTerminal* valTerm) {
+        
+        if (!valTerm) { return nullptr;} 
+        
+        auto node = std::make_shared<ValuedTerminal>();
+        node->id = valTerm->id();
+        node->kind = getNodeKindName(valTerm->kind());
+        
+        if (valTerm->value()) {
+            node->value = valTerm->value()->str();
+        }
+        
+        return node;
+    }
+    
+    static std::shared_ptr<SyntaxNode> deserializeRepeatedTerminal(
+        const SyntaxNodeFormat::RepeatedTerminal* repTerm) {
+        
+        if (!repTerm) { return nullptr; }
+        
+        auto node = std::make_shared<RepeatedTerminal>();
+        node->id = repTerm->id();
+        node->kind = getNodeKindName(repTerm->kind());
+        node->repeat = repTerm->repeat();
+        
+        return node;
+    }
+    
+    static std::shared_ptr<SyntaxNode> getChildNodeByType(
+        const void* offset,
+        SyntaxNodeFormat::SyntaxNodeImpl type) {
+        
+        switch (type) {
+            case SyntaxNodeFormat::SyntaxNodeImpl_NonTerminal:
+                return deserializeNonTerminal(
+                    reinterpret_cast<const SyntaxNodeFormat::NonTerminal*>(offset));
+            case SyntaxNodeFormat::SyntaxNodeImpl_Terminal:
+                return deserializeTerminal(
+                    reinterpret_cast<const SyntaxNodeFormat::Terminal*>(offset));
+            case SyntaxNodeFormat::SyntaxNodeImpl_ValuedTerminal:
+                return deserializeValuedTerminal(
+                    reinterpret_cast<const SyntaxNodeFormat::ValuedTerminal*>(offset));
+            case SyntaxNodeFormat::SyntaxNodeImpl_RepeatedTerminal:
+                return deserializeRepeatedTerminal(
+                    reinterpret_cast<const SyntaxNodeFormat::RepeatedTerminal*>(offset));
+            default:
+                return nullptr;
+        }
+    }
+    
+    static std::string getNodeKindName(SyntaxNodeFormat::NodeImplKind kind) {
+        switch (kind) {
+            case SyntaxNodeFormat::NodeImplKind_Package: return "Package";
+            case SyntaxNodeFormat::NodeImplKind_File: return "File";
+            case SyntaxNodeFormat::NodeImplKind_VarDecl: return "VarDecl";
+            case SyntaxNodeFormat::NodeImplKind_FuncDecl: return "FuncDecl";
+            case SyntaxNodeFormat::NodeImplKind_BinaryExpr: return "BinaryExpr";
+            case SyntaxNodeFormat::NodeImplKind_RefExpr: return "SymbolRef";
+            case SyntaxNodeFormat::NodeImplKind_VarBindingPattern: return "VarPattern";
+            case SyntaxNodeFormat::NodeImplKind_IdentToken: return "IdentToken";
+            case SyntaxNodeFormat::NodeImplKind_IntegerLiteralToken: return "IntegerLiteralToken";
+            case SyntaxNodeFormat::NodeImplKind_SpaceToken: return "Space";
+            case SyntaxNodeFormat::NodeImplKind_NewlineToken: return "NL";
+            case SyntaxNodeFormat::NodeImplKind_LetToken: return "let";
+            case SyntaxNodeFormat::NodeImplKind_AssignToken: return "=";
+            case SyntaxNodeFormat::NodeImplKind_AddToken: return "+";
+            default:
+                std::cout << "UnknownKind_" + std::to_string(static_cast<int>(kind)) << std::endl;
+                return "";
+        }
+    }
+};
+
+extern "C"{
+uint8_t* CJ_Analyze(const uint8_t* node, size_t length)
+{
+    SyntaxNodePtr root = SyntaxNodeFlatBufferDeserializer::deserialize(node, length);
 
     std::string code = root->toString();
     printSyntaxNode(root);
@@ -440,7 +565,6 @@ uint8_t* CJ_Analyze(const char* jsonStr)
 
 void CJ_GetSemanticResult(void* fptr) {
     auto macCall = reinterpret_cast<MacroCall*>(fptr);
-    std::cout << macCall->GetFullName() << std::endl;
     // auto curFile = macCall->getNode()->curFile;
     // auto pkg = curFile->curPackage;
 }

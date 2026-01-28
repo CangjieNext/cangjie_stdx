@@ -9,6 +9,7 @@ using AstTy = Ptr<const Cangjie::AST::Ty>;
 const size_t INITIAL_FILE_SIZE = 65536;
 
 using namespace Cangjie;
+
 class TypeWrite {
 public:
     TypeWrite(std::map<int, Ptr<const AST::Node>> declTypeMap, std::map<int, Ptr<const AST::Node>> exprTypeMap,
@@ -30,3 +31,5 @@ private:
     flatbuffers::Offset<SemanticType::NodeTypeMap> SerializeNodeTypeMap();
     flatbuffers::FlatBufferBuilder builder;
 };
+
+
