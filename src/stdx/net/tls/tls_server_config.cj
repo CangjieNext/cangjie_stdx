@@ -432,7 +432,7 @@ public class KeylessTlsServerConfig <: TlsConfig {
     }
 
 
-    private static let dummyPrivateKey = RSAPrivateKey(2048)
+    private let dummyPrivateKey = RSAPrivateKey(2048)
 
     public init(certChain: Array<X509Certificate>, signCallback: KeylessSignFunc, decryptCallback!: ?KeylessDecryptFunc = None<KeylessDecryptFunc>) {
         if (certChain.isEmpty()) {
