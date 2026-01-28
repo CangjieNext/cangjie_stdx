@@ -14,11 +14,11 @@ flatbuffers::Offset<SemanticType::ASTType> TypeWrite::SerializeSemanticType(AstT
     auto kind = static_cast<uint16_t>(ty->kind);
     std::vector<flatbuffers::Offset<SemanticType::ASTType>> lateTypeVector;
 
-    for (const auto item: ty->typeArgs) {
+    for (const auto item : ty->typeArgs) {
         lateTypeVector.push_back(SerializeSemanticType(item));
     }
     if (ty->kind == TypeKind::TYPE_GENERICS) {
-        for (const auto item: (static_cast<const GenericsTy*>(ty.get()))->upperBounds) {
+        for (const auto item : (static_cast<const GenericsTy*>(ty.get()))->upperBounds) {
             lateTypeVector.push_back(SerializeSemanticType(item));
         }
     }
@@ -26,7 +26,6 @@ flatbuffers::Offset<SemanticType::ASTType> TypeWrite::SerializeSemanticType(AstT
     auto name = builder.CreateString(ty->name);
     auto rPointer = uint64_t(ty.get());
     return SemanticType::CreateASTType(builder, kind, name, args, rPointer);
-
 }
 
 flatbuffers::Offset<SemanticType::SemanticTypeMap> TypeWrite::SerializeSemanticTypeMap(int id, AstTy ty) {
@@ -39,17 +38,17 @@ flatbuffers::Offset<SemanticType::NodeTypeMap> TypeWrite::SerializeNodeTypeMap()
     std::vector<flatbuffers::Offset<SemanticType::SemanticTypeMap>> exprTypeVector;
     std::vector<flatbuffers::Offset<SemanticType::SymbolRefMap>> refVector;
 
-    for (const auto &pair: declTypeMap){
+    for (const auto& pair : declTypeMap) {
         declTypeVector.push_back(SerializeSemanticTypeMap(pair.first, pair.second.get()->ty));
     }
     auto declTypeFlatbufferVector = builder.CreateVector(declTypeVector);
     auto exprTypeFlatbufferVector = builder.CreateVector(exprTypeVector);
     auto refFlatbufferVector = builder.CreateVector(refVector);
-    return SemanticType::CreateNodeTypeMap(builder, declTypeFlatbufferVector, exprTypeFlatbufferVector, refFlatbufferVector);
+    return SemanticType::CreateNodeTypeMap(
+        builder, declTypeFlatbufferVector, exprTypeFlatbufferVector, refFlatbufferVector);
 }
 
-uint8_t* TypeWrite::ExportType()
-{
+uint8_t* TypeWrite::ExportType() {
     auto map = SerializeNodeTypeMap();
     builder.Finish(map);
 
@@ -71,7 +70,6 @@ uint8_t* TypeWrite::ExportType()
     (void)std::copy_n(bufferData.begin(), bufferData.size(), rawPtr);
     return rawPtr;
 }
-
 
 // uint8_t* TypeWrite::ExportDeclAndType()
 // {
