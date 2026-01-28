@@ -1056,8 +1056,8 @@ if(NOT CANGJIE_CJPM_BUILD_TYPE)
         OBJECTS ${output_cj_object_dir}/stdx/syntax.o
         FORCE_LINK_ARCHIVES stdx.syntaxFFI
         FLAGS ${syntaxFFI_flags}
-            $<$<NOT:$<BOOL:${WIN32}>>:-ldl>
             -lstdx.syntaxFFI
+            $<$<NOT:$<BOOL:${WIN32}>>:-ldl>
         )
     get_target_property(SYNTAXFFI_OBJS stdx.syntaxFFI SOURCES)
     add_library(stdx.syntax STATIC ${SYNTAXFFI_OBJS} ${output_cj_object_dir}/stdx/syntax.o)
