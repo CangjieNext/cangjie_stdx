@@ -85,9 +85,9 @@ struct Str <: ToString & Equatable<Str> & Hashable {
         var beg = 0
         var end = size - 1
 
-        while (beg <= end && isBlank(raw[beg])) {
+        while (beg <= end && isBlank(raw[beg])) { // cjlint-ignore !G.EXP.03
             beg++ /* trim left */ }
-        while (beg <= end && isBlank(raw[end])) {
+        while (beg <= end && isBlank(raw[end])) { // cjlint-ignore !G.EXP.03
             end-- /* trim right */ }
 
         return Str(raw.slice(beg, end - beg + 1))

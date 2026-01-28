@@ -36,7 +36,7 @@ class CacheProxy<K, V> <: Cache<K, V> where K <: Hashable & Equatable<K> & ToStr
         this.cache.put(DefaultCacheObj(key, value))
     }
 
-    public func clear() {
+    public func clear() { // cjlint-ignore !G.DCL.02
         cache.removeAll()
     }
 

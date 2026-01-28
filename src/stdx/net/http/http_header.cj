@@ -191,7 +191,7 @@ public class HttpHeaders <: Iterable<(String, Collection<String>)> {
     }
 
     private func checkField(name: String, value: String): Bool {
-        if (name.isEmpty() || !Str(name).byteMatches(isTokenByte)) {
+        if (name.isEmpty() || !Str(name).byteMatches(isTokenByte)) { // cjlint-ignore !G.EXP.03
             throw HttpException("Invalid header name: ${name}.")
         }
         if (value.isEmpty()) {

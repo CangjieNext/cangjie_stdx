@@ -94,7 +94,7 @@ open class Frame <: ToString {
     static func read(conn: BufferedConn, maxFrameSize!: UInt32 = MIN_FRAME_SIZE, headerBuf!: ?Array<Byte> = None,
         arrayPool!: ?ArrayPool = None): ?Frame {
         // conn.read must read until the buf is full, no need to check
-        let header = headerBuf ?? Array<UInt8>(FRAME_HEAD_LEN, repeat: 0)
+        let header = headerBuf ?? Array<UInt8>(FRAME_HEAD_LEN, repeat: 0) // cjlint-ignore !G.EXP.03
         conn.readFull(header)
 
         let payloadLen64 = Int64(readUInt32(header[..3]))
@@ -103,7 +103,7 @@ open class Frame <: ToString {
         }
         // payloadWrapper is the array which cover payload, it may larger than payload
         // the valid part of payloadWrapper is payloadWrapper[..payloadLength]
-        let payloadWrapper = arrayPool?.get(payloadLen64) ?? ArrayWrapper(payloadLen64)
+        let payloadWrapper = arrayPool?.get(payloadLen64) ?? ArrayWrapper(payloadLen64) // cjlint-ignore !G.EXP.03
         if (payloadLen64 != 0) {
             conn.readFull(payloadWrapper.data)
         }
@@ -727,7 +727,7 @@ class GoawayFrame <: Frame {
 
     // for write
     init(lastStreamId: UInt32, errorCode: UInt32, data!: ?Array<UInt8> = None) {
-        this.debugData = data ?? Array<UInt8>(0, repeat: 0)
+        this.debugData = data ?? Array<UInt8>(0, repeat: 0) // cjlint-ignore !G.EXP.03
         this.payloadLen = UInt32(debugData.size) + 8
         this.frameType = Goaway
         this.streamId = 0

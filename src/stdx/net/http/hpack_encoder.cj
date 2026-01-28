@@ -82,6 +82,7 @@ class Encoder {
      * @throws HpackException, if encoded size greater than SettingsMaxHeaderListSize .
      */
     func encodeTo(headerList: Iterable<(String, String)>, writer: FieldsWriter): Unit {
+        // cjlint-ignore -start !G.OTH.03
         /*
          * Dynamic Table Size Update
          * Dynamic table size update MUST occur at the beginning of the first header block following the change to the dynamic table size.
@@ -93,6 +94,7 @@ class Encoder {
          *  | 0 | 0 | 1 |   Max size (5+)   |
          *  +---+---------------------------+
          */
+        // cjlint-ignore -end
         if (headerTableSizeChanged) {
             encodeIntTo(headerTable.headerTableSize, "001", writer) // set headerTableSize
             headerTableSizeChanged = false
@@ -122,6 +124,7 @@ class Encoder {
                                 "[${this.name}.Encoder#encode] sensitive header:(${field[0]}: ${field[1]}), EntryIndex(${idx})"
                             )
                         }
+                    // cjlint-ignore -start !G.OTH.03
                     /*
                      * Literal Header Field Never Indexed
                      * https://www.rfc-editor.org/rfc/rfc7541#section-6.2.3
@@ -135,6 +138,7 @@ class Encoder {
                      *  | Value String (Length octets)  |
                      *  +-------------------------------+
                      */
+                    // cjlint-ignore -end
                     case NameIndex(idx) =>
                         encodeIntTo(idx, "0001", writer) // encode name index
                         if (logger.enabled(LogLevel.TRACE)) {
@@ -142,6 +146,7 @@ class Encoder {
                                 "[${this.name}.Encoder#encode] sensitive header:(${field[0]}: ${field[1]}), NameIndex(${idx})"
                             )
                         }
+                    // cjlint-ignore -start !G.OTH.03
                     /*
                      * Literal Header Field Never Indexed
                      * https://www.rfc-editor.org/rfc/rfc7541#section-6.2.3
@@ -159,6 +164,7 @@ class Encoder {
                      *  | Value String (Length octets)  |
                      *  +-------------------------------+
                      */
+                    // cjlint-ignore -end
                     case NoneIndex =>
                         0x10 |> writer.write
                         encodeStringTo(field[0], writer)
@@ -171,6 +177,7 @@ class Encoder {
             } else {
                 let index = headerTable.indexOf(field)
                 match (index) {
+                    // cjlint-ignore -start !G.OTH.03
                     /*
                      * Indexed Header Field Representation
                      * https://www.rfc-editor.org/rfc/rfc7541#section-6.1
@@ -180,12 +187,14 @@ class Encoder {
                      *  | 1 |        Index (7+)         |
                      *  +---+---------------------------+
                      */
+                    // cjlint-ignore -end
                     case EntryIndex(idx) =>
                         encodeIntTo(idx, "1", writer)
                         if (logger.enabled(LogLevel.TRACE)) {
                             httpLogTrace(logger,
                                 "[${this.name}.Encoder#encode] header:(${field[0]}: ${field[1]}), EntryIndex(${idx})")
                         }
+                    // cjlint-ignore -start !G.OTH.03
                     /*
                      * Literal Header Field with Incremental Indexing
                      * https://www.rfc-editor.org/rfc/rfc7541#section-6.2.1
@@ -199,6 +208,7 @@ class Encoder {
                      *  | Value String (Length octets)  |
                      *  +-------------------------------+
                      */
+                    // cjlint-ignore -end
                     case NameIndex(idx) =>
                         encodeIntTo(idx, "01", writer)
                         encodeStringTo(field[1], writer)
@@ -209,6 +219,7 @@ class Encoder {
                                 "[${this.name}.Encoder#encode] header:(${field[0]}: ${field[1]}), NameIndex(${idx})")
                         }
 
+                    // cjlint-ignore -start !G.OTH.03
                     /*
                      * Literal Header Field with Incremental Indexing
                      * https://www.rfc-editor.org/rfc/rfc7541#section-6.2.1
@@ -226,6 +237,7 @@ class Encoder {
                      *  | Value String (Length octets)  |
                      *  +-------------------------------+
                      */
+                    // cjlint-ignore -end
                     case NoneIndex =>
                         0x40 |> writer.write
                         encodeStringTo(field[0], writer)
@@ -266,6 +278,7 @@ class Encoder {
         return sensitiveFields.contains(key.toAsciiLower())
     }
 
+    // cjlint-ignore -start !G.OTH.03
     /**
      * String Literal Representation
      * https://www.rfc-editor.org/rfc/rfc7541#section-5.2
@@ -277,6 +290,7 @@ class Encoder {
      *  |  String Data (Length octets)  |
      *  +-------------------------------+
      */
+    // cjlint-ignore -end
     func encodeStringTo(string: String, writer: FieldsWriter): Unit {
         let rawBytes = unsafe { string.rawData() }
         let huffmanLength = QuickHuffmanEncoder.lengthOf(rawBytes)
@@ -318,6 +332,7 @@ class Encoder {
         }
     }
 
+    // cjlint-ignore -start !G.OTH.03
     /**
      * Integer Representation
      * https://www.rfc-editor.org/rfc/rfc7541#section-5.1
@@ -340,6 +355,7 @@ class Encoder {
      *  | 0 |    Value-(2^N-1) MSB      |
      *  +---+---------------------------+
      */
+    // cjlint-ignore -end
     func encodeIntTo(value: Int64, prefix: String, writer: FieldsWriter): Unit {
         let n = 8 - prefix.size
         if (n <= 0) {

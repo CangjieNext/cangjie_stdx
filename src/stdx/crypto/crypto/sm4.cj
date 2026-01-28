@@ -310,7 +310,7 @@ public class SM4 <: BlockCipher {
                 if (cipherCtxSetPadding(ctx, paddingMode.paddingType) != 1) {
                     throw CryptoException("Decrypt failed due to set padding error.")
                 }
-                if (optMode == OperationMode.GCM && aad.size > 0 && (decryptUpdate(ctx, CPointer<Byte>(),
+                if (optMode == OperationMode.GCM && aad.size > 0 && (decryptUpdate(ctx, CPointer<Byte>(), // cjlint-ignore !G.EXP.03
                     outlenPtr.value, aadM.pointer, aad.size) != 1)) {
                     throw CryptoException("Decrypt failed due to update aad error.")
                 }

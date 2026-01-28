@@ -530,7 +530,7 @@ class HttpClientEngine2 {
                     {
                         => HttpConnectionException(ProtocolError,
                             "Headers and continuation frames should be continuous on connection level.")
-                    }) as ContinuationFrame ?? throw HttpConnectionException(ProtocolError,
+                    }) as ContinuationFrame ?? throw HttpConnectionException(ProtocolError, // cjlint-ignore !G.EXP.03
                 "Headers and continuation frames should be continuous on connection level.")
 
             if (cf.streamId != streamId) {

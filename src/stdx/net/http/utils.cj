@@ -133,7 +133,7 @@ extend Int64 {
             throw IllegalArgumentException("Invalid hex string.")
         }
         if (hexRaw.size > 16 || (hexRaw.size == 16 &&
-            (fromHexByte(hexRaw[0]) ?? throw IllegalArgumentException("Invalid hex string.")) > 7)) {
+            (fromHexByte(hexRaw[0]) ?? throw IllegalArgumentException("Invalid hex string.")) > 7)) { // cjlint-ignore !G.EXP.03
             throw IllegalArgumentException("The hex number is too big.")
         }
         var number: Int64 = 0
@@ -437,9 +437,9 @@ func parseAndCheckResponseLine(line: Str): (String, UInt16) {
 
 func parseAndCheckRequestLine(line: Str): (String, String, String) {
     // parse and check method
-    let method = line.splitFirst(WS) ?? throw HttpStatusException(HttpStatusCode.STATUS_BAD_REQUEST,
+    let method = line.splitFirst(WS) ?? throw HttpStatusException(HttpStatusCode.STATUS_BAD_REQUEST, // cjlint-ignore !G.EXP.03
         "Invalid request method, request line: ${line}.")
-    if (method.isEmpty() || !method.byteMatches(isTokenByte)) {
+    if (method.isEmpty() || !method.byteMatches(isTokenByte)) { // cjlint-ignore !G.EXP.03
         throw HttpStatusException(HttpStatusCode.STATUS_METHOD_NOT_ALLOWED, "Invalid request method: ${method}.")
     }
     if (method.size > MAX_METHOD_SIZE) {
@@ -448,14 +448,14 @@ func parseAndCheckRequestLine(line: Str): (String, String, String) {
 
     // parse target
     var i = method.size + 1
-    let target = line.splitFirst(WS, i) ?? throw HttpStatusException(HttpStatusCode.STATUS_BAD_REQUEST,
+    let target = line.splitFirst(WS, i) ?? throw HttpStatusException(HttpStatusCode.STATUS_BAD_REQUEST, // cjlint-ignore !G.EXP.03
         "Invalid request target, request line: ${line}.")
 
     // parse and check version
     i += target.size + 1
-    let version = line.splitFirst(WS, i) ?? throw HttpStatusException(HttpStatusCode.STATUS_BAD_REQUEST,
+    let version = line.splitFirst(WS, i) ?? throw HttpStatusException(HttpStatusCode.STATUS_BAD_REQUEST, // cjlint-ignore !G.EXP.03
         "Invalid request version, request line: ${line}.")
-    if (version != Str("HTTP/1.1") && version != Str("HTTP/1.0")) {
+    if (version != Str("HTTP/1.1") && version != Str("HTTP/1.0")) { // cjlint-ignore !G.EXP.03
         throw HttpStatusException(HttpStatusCode.STATUS_HTTP_VERSION_NOT_SUPPORTED, "Incorrect version: ${version}.")
     }
 
@@ -468,7 +468,7 @@ func parseAndCheckRequestLine(line: Str): (String, String, String) {
 
 func parseAndCheckHeaderLine(line: Str, isReq: Bool): (String, String) {
     // parse and check name
-    let name = line.splitFirst(SYMBOL_COLON) ?? throw chooseException("Invalid field line: ${line}.", isReq)
+    let name = line.splitFirst(SYMBOL_COLON) ?? throw chooseException("Invalid field line: ${line}.", isReq) // cjlint-ignore !G.EXP.03
     if (!name.byteMatches(isTokenByte)) {
         throw chooseException("Invalid field line: ${line}.", isReq)
     }
@@ -591,8 +591,8 @@ func checkConnection(headers: HttpHeaders): Unit {
     // if there is not "close", "keep-alive", "upgrade" in connection values, add "keep-alive" to connection values
     match (headers.getInternal("connection")) {
         case Some(hv) =>
-            if (hv.splitAnyMatch(SYMBOL_COMMA, "close") || hv.splitAnyMatch(SYMBOL_COMMA, "keep-alive") ||
-                hv.splitAnyMatch(SYMBOL_COMMA, "upgrade")) {
+            if (hv.splitAnyMatch(SYMBOL_COMMA, "close") || hv.splitAnyMatch(SYMBOL_COMMA, "keep-alive") || // cjlint-ignore !G.EXP.03
+                hv.splitAnyMatch(SYMBOL_COMMA, "upgrade")) { // cjlint-ignore !G.EXP.03
                 return
             }
         case _ => ()

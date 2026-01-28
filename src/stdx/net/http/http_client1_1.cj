@@ -815,7 +815,7 @@ class ConnNode <: BodyProviderConn {
                     requestTarget.append(request.url.port)
                 }
             }
-
+        // cjlint-ignore -start !G.OTH.03
         // when a client wishes to request OPTIONS for the server as a whole, as opposed to a specific
         // named resource of that server, the client send only "*" (%x2A) as the request-target.
         // for example
@@ -824,6 +824,7 @@ class ConnNode <: BodyProviderConn {
         // OPTIONS * HTTP/1.1
         // Host: www.example.org:8001
         // RFC 9112 3.2.4.
+        // cjlint-ignore -end
         } else if (request.method == "OPTIONS") {
             // asterisk-form
             if (request.url.path.isEmpty()) {
@@ -872,7 +873,7 @@ class ConnNode <: BodyProviderConn {
             if (values.splitAnyMatch(b',', "close")) {
                 shouldClose.store(true)
             }
-            if (version == "HTTP/1.0" && !values.splitAnyMatch(b',', "keep-alive")) {
+            if (version == "HTTP/1.0" && !values.splitAnyMatch(b',', "keep-alive")) { // cjlint-ignore !G.EXP.03
                 shouldClose.store(true)
             }
         } else if (version == "HTTP/1.0") {

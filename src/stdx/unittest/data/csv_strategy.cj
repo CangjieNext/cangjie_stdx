@@ -168,11 +168,11 @@ class CsvParser {
             let c = buf[i]
             match {
                 // comment
-                case isCommented && buf.isNewLine(at: i) => isCommented = false
+                case isCommented && buf.isNewLine(at: i) => isCommented = false // cjlint-ignore !G.EXP.03
                 case isCommented => continue
                 case isAtLineStart && Some(c) == commentChar => isCommented = true
                 // empty line
-                case isAtLineStart && skipEmptyLines && buf.isNewLine(at: i) => continue
+                case isAtLineStart && skipEmptyLines && buf.isNewLine(at: i) => continue // cjlint-ignore !G.EXP.03
                 // escape in quote
                 case isEscaped && shouldBeEscaped(c) =>
                     currentColumnData.add(c)
@@ -194,7 +194,7 @@ class CsvParser {
                     isQuoted = true
                     continue
                 // end of row
-                case !isQuoted && !isEscaped && (c == delimiter || buf.isNewLine(at: i)) =>
+                case !isQuoted && !isEscaped && (c == delimiter || buf.isNewLine(at: i)) => // cjlint-ignore !G.EXP.03
                     bufferStartIdx = i
                     return true
                 // row's char
@@ -311,7 +311,7 @@ extend Array<Rune> {
     }
 
     func isNewLine(at!: Int64) {
-        isLF(at: at) || isCRLF(at: at)
+        isLF(at: at) || isCRLF(at: at) // cjlint-ignore !G.EXP.03
     }
 }
 

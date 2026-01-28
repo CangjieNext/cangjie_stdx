@@ -190,7 +190,7 @@ class Native {
     }
 
     @When[os != "Windows"]
-    static func setChangeTime(path: Path, timestamp: Int64): Unit {
+    static func setChangeTime(path: Path, timestamp: Int64): Unit { // cjlint-ignore !G.FUN.02
         // Can not modify change time on unix
     }
 

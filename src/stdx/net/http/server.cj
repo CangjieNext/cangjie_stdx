@@ -366,8 +366,8 @@ public class ServerBuilder {
         var addr = ""
         var port: UInt16 = 0
         if (_listener.isNone()) {
-            addr = _addr ?? throw IllegalArgumentException("The IP address number is not set.")
-            port = _port ?? throw IllegalArgumentException("The port number is not set.")
+            addr = _addr ?? throw IllegalArgumentException("The IP address number is not set.") // cjlint-ignore !G.EXP.03
+            port = _port ?? throw IllegalArgumentException("The port number is not set.") // cjlint-ignore !G.EXP.03
         }
         return Server(
             _listener: _listener ?? TcpServerSocket(bindAt: IPSocketAddress(addr, port)),
@@ -395,7 +395,7 @@ public class ServerBuilder {
     }
 }
 
-public class Server {
+public class Server { // cjlint-ignore !G.ENU.01
     let pool: CoroutinePool
     var tlsServerSession: ?TlsSession = None
 
@@ -803,7 +803,9 @@ public class Server {
     }
 
     private func alpn(alpnProtocolName: ?String): Protocol {
+        // cjlint-ignore -start !G.OTH.03
         // alpn protocol ids ref: https://www.iana.org/assignments/tls-extensiontype-values/tls-extensiontype-values.xhtml#alpn-protocol-ids
+        // cjlint-ignore -end
         return match (alpnProtocolName) {
             case Some("h2") => HTTP2_0
             case Some("http/1.1") | None => HTTP1_1

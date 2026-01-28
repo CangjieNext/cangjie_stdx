@@ -121,10 +121,12 @@ class QuickHuffmanDecoder {
     }
 }
 
+// cjlint-ignore -start !G.OTH.03
 /**
  * Static Huffman encoding used by HPACK.
  * https://www.rfc-editor.org/rfc/rfc7541#appendix-B
  */
+// cjlint-ignore -end
 class QuickHuffman {
     static const EOS_LSB: UInt64 = 0x3f_ff_ff_ffu64
     static const EOS_LEN: UInt64 = 30

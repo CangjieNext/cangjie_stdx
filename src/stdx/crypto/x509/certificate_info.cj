@@ -39,7 +39,7 @@ public struct X509CertificateInfo {
             }
         }
 
-        this.serialNumber = serialNumber ?? SerialNumber()
+        this.serialNumber = serialNumber ?? SerialNumber() // cjlint-ignore !G.EXP.03
 
         match (notBefore) {
             case Some(time) => this.notBefore = time

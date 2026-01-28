@@ -14,16 +14,16 @@ public class NoopLogger <: Logger {
         get() {
             LogLevel.OFF
         }
-        set(v) {
+        set(v) { // cjlint-ignore !G.FUN.02
         }
     }
-    public func log(record: LogRecord): Unit {}
+    public func log(record: LogRecord): Unit {} // cjlint-ignore !G.FUN.02
 
-    public func log(level: LogLevel, message: String, attrs: Array<Attr>): Unit {}
+    public func log(level: LogLevel, message: String, attrs: Array<Attr>): Unit {} // cjlint-ignore !G.FUN.02
 
-    public func log(level: LogLevel, message: () -> String, attrs: Array<Attr>): Unit {}
+    public func log(level: LogLevel, message: () -> String, attrs: Array<Attr>): Unit {} // cjlint-ignore !G.FUN.02
 
-    public func withAttrs(attrs: Array<Attr>): Logger {
+    public func withAttrs(attrs: Array<Attr>): Logger { // cjlint-ignore !G.FUN.02
         return this
     }
 

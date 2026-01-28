@@ -315,7 +315,7 @@ public class ClientBuilder {
     }
 }
 
-public class Client {
+public class Client { // cjlint-ignore !G.ENU.01
     let isClosed: AtomicBool = AtomicBool(false)
     private var client1_1: ?HttpClient1 = None
     private var client2_0: ?HttpClient2 = None
@@ -657,10 +657,12 @@ public class Client {
         (redirectReq, newResponse)
     }
 
+    // cjlint-ignore -start !G.OTH.03 
     /*
      * https://www.rfc-editor.org/rfc/rfc9110.html#field.referer
      * A user agent MUST NOT send a Referer header field in an unsecured HTTP request if the referring resource was accessed with a secure protocol.
      */
+    // cjlint-ignore -end
     private func getReferer(lastUrl: URL, newUrl: URL): String {
         if (lastUrl.scheme == "https" && newUrl.scheme == "http") {
             return ""

@@ -77,7 +77,7 @@ public class TlsSocket <: TlsConnection & Equatable<TlsSocket> & Hashable {
 
     public static func server(
         socket: StreamingSocket,
-        session!: ?TlsServerSession = None,
+        session!: ?TlsServerSession = None, // cjlint-ignore !G.FUN.02
         serverConfig!: KeylessTlsServerConfig
     ): TlsSocket {
         let (cert, _) = serverConfig.serverCertificate
@@ -654,7 +654,7 @@ public class TlsSocket <: TlsConnection & Equatable<TlsSocket> & Hashable {
         // we bind the peer certs, which were bound to the resumed session, to the new session.
         if (let Some(id) <- newSessionId) {
             if (let Some(holder) <- store.tryGetHolder(SessionKey(id))) {
-                certsOp = certsOp ?? stream.getPeerCertificate()
+                certsOp = certsOp ?? stream.getPeerCertificate() // cjlint-ignore !G.EXP.03
                 if (let Some(certs) <- certsOp) {
                     holder.setCerts(certs)
                 }

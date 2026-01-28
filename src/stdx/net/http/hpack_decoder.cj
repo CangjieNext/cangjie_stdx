@@ -16,12 +16,14 @@ package stdx.net.http
 
 import stdx.log.*
 
+// cjlint-ignore -start !G.OTH.03
 /**
  * HPACK Decoder
  * A decoder decode HPACK-encoded data frame to HTTP header list.
  *
  * https://www.rfc-editor.org/rfc/rfc7541#section-3
  */
+// cjlint-ignore -end
 class Decoder {
     private let headerTable: HeaderTable
     /**
@@ -57,6 +59,7 @@ class Decoder {
         }
     }
 
+    // cjlint-ignore -start !G.OTH.03
     /**
      * Decode HPACK-encoded data frame to HTTP header list.
      *
@@ -67,6 +70,7 @@ class Decoder {
      *
      * @throws HpackException, if index not exists.
      */
+    // cjlint-ignore -end
     func decode(headerBlock: Array<UInt8>): FieldsList {
         let headerList = FieldsList()
         let iterator = ByteIterator(headerBlock.iterator())
@@ -76,6 +80,7 @@ class Decoder {
 
         while (let Some(b) <- iterator.next()) {
             let field: HeaderField = match {
+                // cjlint-ignore -start !G.OTH.03
                 /*
                  * Indexed Header Field Representation
                  * https://www.rfc-editor.org/rfc/rfc7541#section-6.1
@@ -85,6 +90,7 @@ class Decoder {
                  *  | 1 |        Index (7+)         |
                  *  +---+---------------------------+
                  */
+                // cjlint-ignore -end
                 case (b & 0x80) == 0x80 =>
                     let index = decodeInt(b, 7, iterator)
                     let field = headerTable.get(index) // Will throw exception while index not exists
@@ -94,6 +100,7 @@ class Decoder {
                     }
                     field
 
+                // cjlint-ignore -start !G.OTH.03
                 /*
                  * Literal Header Field with Incremental Indexing
                  * https://www.rfc-editor.org/rfc/rfc7541#section-6.2.1
@@ -122,11 +129,13 @@ class Decoder {
                  *  | Value String (Length octets)  |
                  *  +-------------------------------+
                  */
+                // cjlint-ignore -end
                 case (b & 0x40) == 0x40 =>
                     let field = parseLiteral(b, 6, iterator)
                     headerTable.insert(field)
                     field
 
+                // cjlint-ignore -start !G.OTH.03
                 /*
                  * Dynamic Table Size Update
                  * https://www.rfc-editor.org/rfc/rfc7541#section-6.3
@@ -136,6 +145,7 @@ class Decoder {
                  *  | 0 | 0 | 1 |   Max size (5+)   |
                  *  +---+---------------------------+
                  */
+                // cjlint-ignore -end
                 case (b & 0x20) == 0x20 =>
                     if (!isFirstByte) {
                         throw HpackException(
@@ -148,6 +158,7 @@ class Decoder {
                     }
                     continue
 
+                // cjlint-ignore -start !G.OTH.03
                 /*
                  * Literal Header Field Never Indexed
                  * https://www.rfc-editor.org/rfc/rfc7541#section-6.2.3
@@ -176,12 +187,14 @@ class Decoder {
                  *  | Value String (Length octets)  |
                  *  +-------------------------------+
                  */
+                // cjlint-ignore -end
                 case (b & 0x10) == 0x10 =>
                     let field = parseLiteral(b, 4, iterator)
                     // Intermediaries MUST use the same representation for encoding this header field.
                     encoder.setSensitive(field)
                     field
 
+                // cjlint-ignore -start !G.OTH.03
                 /*
                  * Literal Header Field without Indexing
                  * https://www.rfc-editor.org/rfc/rfc7541#section-6.2.2
@@ -210,6 +223,7 @@ class Decoder {
                  *  | Value String (Length octets)  |
                  *  +-------------------------------+
                  */
+                // cjlint-ignore -end
                 case _ => parseLiteral(b, 4, iterator)
             }
             isFirstByte = false // used by check 0x20
@@ -261,6 +275,7 @@ class Decoder {
         headerTable.headerTableSize = newMaxSize
     }
 
+    // cjlint-ignore -start !G.OTH.03
     /**
      * String Literal Representation
      * https://www.rfc-editor.org/rfc/rfc7541#section-5.2
@@ -272,6 +287,7 @@ class Decoder {
      *  |  String Data (Length octets)  |
      *  +-------------------------------+
      */
+    // cjlint-ignore -end
     func decodeString(b: Byte, nextBytes: ByteIterator): String {
         let len = decodeInt(b, 7, nextBytes)
         // check header size
@@ -295,6 +311,7 @@ class Decoder {
     }
 }
 
+// cjlint-ignore -start !G.OTH.03
 /**
  * Integer Representation
  * https://www.rfc-editor.org/rfc/rfc7541#section-5.1
@@ -317,6 +334,7 @@ class Decoder {
  *  | 0 |    Value-(2^N-1) MSB      |
  *  +---+---------------------------+
  */
+// cjlint-ignore -end
 func decodeInt(b: Byte, n: Int64, nextBytes: ByteIterator): Int64 {
     let maskN = (1 << n) - 1
     var value = Int64(b) & maskN

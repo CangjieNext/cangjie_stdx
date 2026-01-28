@@ -269,7 +269,7 @@ class HttpEngineConn1 <: HttpEngineConn & BodyProviderConn {
             // check 100-continue
             // A server that receives a 100-continue expectation in an HTTP/1.0 request ignore that expectation.
             // RFC 9110 10.1.1. Expect
-            let expectContinue = (version != "HTTP/1.0") && expected100Continue(headers)
+            let expectContinue = (version != "HTTP/1.0") && expected100Continue(headers) // cjlint-ignore !G.EXP.03
             // 3. set body && build request
             let request = HttpRequestBuilder()
                 .method(method.toString())
@@ -581,7 +581,7 @@ class HttpEngineConn1 <: HttpEngineConn & BodyProviderConn {
         // host should be and only one
         let hv = match (version) {
             case "HTTP/1.0" => headers.getInternal("host") ?? return ()
-            case _ => headers.getInternal("host") ?? throw HttpStatusException(HttpStatusCode.STATUS_BAD_REQUEST,
+            case _ => headers.getInternal("host") ?? throw HttpStatusException(HttpStatusCode.STATUS_BAD_REQUEST, // cjlint-ignore !G.EXP.03
                 "Host should be and only one.")
         }
 
@@ -597,6 +597,7 @@ class HttpEngineConn1 <: HttpEngineConn & BodyProviderConn {
      * validHostHeader reports whether h is a valid host header.
      */
     func validHostByte(b: Byte): Bool {
+        // cjlint-ignore -start !G.OTH.03
         /*
          * Refer to RFC latest spec, where Host is:
          * https://www.rfc-editor.org/rfc/rfc9110.html#name-host-and-authority
@@ -610,6 +611,7 @@ class HttpEngineConn1 <: HttpEngineConn & BodyProviderConn {
          *
          * For now, we search for any byte that's not a valid byte in any of those expressions.
          */
+        // cjlint-ignore -end
         if (b.isAsciiNumberOrLetter()) {
             return true
         }
@@ -866,7 +868,9 @@ class HttpEngineConn1 <: HttpEngineConn & BodyProviderConn {
     public func writeUpgradeResponse(ctx: HttpContext): Unit {
         if (ctx.request.method == "CONNECT") {
             // http/1.X response to CONNECT request must have status 2XX, and headers should not contain content-length / transfer-encoding
+            // cjlint-ignore -start !G.OTH.03
             // ref: https://www.rfc-editor.org/rfc/rfc9110.html#name-connect
+            // cjlint-ignore -end
             let response = ctx.responseBuilder.build()
             if (response.status / 100 != 2) {
                 throw HttpException(
@@ -877,7 +881,9 @@ class HttpEngineConn1 <: HttpEngineConn & BodyProviderConn {
             writeWithoutBody(response)
         } else {
             // http/1.X response to upgrade request must have status 101
+            // cjlint-ignore -start !G.OTH.03
             // ref: https://www.rfc-editor.org/rfc/rfc9110.html#name-upgrade
+            // cjlint-ignore -end
             if (ctx.responseBuilder._status.isNone()) {
                 ctx.responseBuilder.status(HttpStatusCode.STATUS_SWITCHING_PROTOCOLS)
             }

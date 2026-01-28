@@ -44,7 +44,7 @@ func parsePem(content: Array<Byte>): Array<PemEntry> {
         }
         checkIndex(content, current, bodyEnd)
         let body = String.fromUtf8(trimInnerSpaces(content[current..bodyEnd]))
-        let bodyBytes = fromBase64String(body) ?? throw CryptoException(
+        let bodyBytes = fromBase64String(body) ?? throw CryptoException( // cjlint-ignore !G.EXP.03
             "Failed to parse PEM: Failed to parse base64 encoded PEM body: ${body}.")
 
         current = afterEnd
@@ -76,7 +76,7 @@ func parsePreeb(start: Int64, content: Array<Byte>): ?(String, Int64) {
 
 func searchEnd(start: Int64, content: Array<Byte>, label: String): (Int64, Int64) {
     let it = concat3(CLOSE_ARRAY, label.toArray(), END_ARRAY)
-    let index = indexOf(content, start, it) ?? throw CryptoException(
+    let index = indexOf(content, start, it) ?? throw CryptoException( // cjlint-ignore !G.EXP.03
         "Failed to parse PEM: Failed to find PEM entry end, ${String.fromUtf8(it)}.")
     return (index, index + it.size)
 }
