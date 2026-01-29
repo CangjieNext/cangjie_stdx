@@ -24,7 +24,7 @@ class ImmediateFrameErrorWrapper <: ImmediateEffectHandlerEarlyExit {
 
 // This class is used internally when an immediate handler case finishes
 // execution without resuming
-//
+// 
 // Note: there's an issue with generics in Cangjie that don't allow us to
 // have the type of result be generic
 class ImmediateEarlyReturn <: ImmediateEffectHandlerEarlyExit {
@@ -33,19 +33,19 @@ class ImmediateEarlyReturn <: ImmediateEffectHandlerEarlyExit {
 
 class ImmediateHandlerCase<Cmd, Res, Ret> <: HandlerCase {
     ImmediateHandlerCase(let frame: HandlerFrame, let h: (Cmd) -> ImmediateHandlerReturn<Res>) {}
-    protected override func tryHandle<R1>(maybeCmd: Command<R1>, box!: FrameBox): Option<R1> {
+    protected override func tryHandle<R1>(maybeCmd: Command<R1>): Option<R1> {
         match (maybeCmd as Cmd) {
             case Some(cmd) =>
-                let oldFrame = box.ref
+                let oldFrame = HandlerFrame.getActiveFrame()
                 try {
-                    box.ref = frame.parent
+                    HandlerFrame.setActiveFrame(frame.parent)
                     match (this.h(cmd)) {
                         case Result(v) => v as R1
                         case Exc(e) => throw e
                         case Err(e) => throw e
                     }
                 } finally {
-                    box.ref = oldFrame
+                    HandlerFrame.setActiveFrame(oldFrame)
                 }
             case None => None
         }
@@ -55,14 +55,13 @@ class ImmediateHandlerCase<Cmd, Res, Ret> <: HandlerCase {
 class ImmediateFrame<Ret> <: HandlerFrame {
     public ImmediateFrame(let fn: () -> Ret) {}
     public func start(): Ret {
-        let box = HandlerFrame.getActiveFrameBox()
-        let previous = box.ref
+        let previous = HandlerFrame.getActiveFrame()
         this.parent = previous
         try {
-            box.ref = this
+            HandlerFrame.setActiveFrame(this)
             fn()
         } finally {
-            box.ref = previous
+            HandlerFrame.setActiveFrame(previous)
             this.finalizer()
         }
     }
