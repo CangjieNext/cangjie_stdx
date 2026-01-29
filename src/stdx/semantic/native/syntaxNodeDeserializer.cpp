@@ -360,7 +360,7 @@ std::string SyntaxNodeFlatBufferDeserializer::getNodeKindName(SyntaxNodeFormat::
         case SyntaxNodeFormat::NodeImplKind_Terminal:
             return "Terminal";
         case SyntaxNodeFormat::NodeImplKind_Token:
-            return "Token";
+            return "";
         case SyntaxNodeFormat::NodeImplKind_DotToken:
             return ".";
         case SyntaxNodeFormat::NodeImplKind_CommaToken:
