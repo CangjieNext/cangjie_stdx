@@ -1089,10 +1089,11 @@ if(NOT CANGJIE_CJPM_BUILD_TYPE)
         FLAGS ${syntaxFFI_flags}
             $<$<NOT:$<BOOL:${WIN32}>>:-ldl>
             -lstdx.semanticFFI
+            -lcangjie-sema-support
+            $<$<NOT:$<BOOL:${WIN32}>>:-pthread>
         )
-    
-    add_library(stdx.semantic STATIC ${output_cj_object_dir}/stdx/semantic.o)
-    target_link_libraries(stdx.semantic stdx.semanticFFI)
+    get_target_property(SEMANTICFFI_OBJS stdx.semanticFFI SOURCES)
+    add_library(stdx.semantic STATIC ${SEMANTICFFI_OBJS} ${output_cj_object_dir}/stdx/semantic.o)
     set_target_properties(stdx.semantic PROPERTIES LINKER_LANGUAGE C)
     install(TARGETS stdx.semantic DESTINATION ${output_triple_name}_cjnative/static/stdx)
     
