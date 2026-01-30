@@ -68,9 +68,12 @@ file(GLOB semantic_ffi_src
     typeWrite.cpp
     syntaxNodeDeserializer.cpp)
 set(libname stdx.semanticFFI)
-add_library(${libname} SHARED ${semantic_ffi_src})
-set_target_properties(${libname} PROPERTIES COMPILE_FLAGS "-fPIC")
-add_dependencies(${libname} FLATC_OUTPUTS_SEMA)
+add_library(${libname}-objs SHARED ${semantic_ffi_src})
+set_target_properties(${libname}-objs PROPERTIES COMPILE_FLAGS "-fPIC")
+add_dependencies(${libname}-objs FLATC_OUTPUTS_SEMA)
+
+# build static library
+add_library(${libname} STATIC $<TARGET_OBJECTS:${libname}-objs>)
 
 set(CANGJIE_INC_DIR)
 set(AST_SUPPORT_LIB_DIR)
@@ -96,15 +99,14 @@ else()
     message(FATAL_ERROR "NOT FOUND CJC")
 endif()
 
-target_compile_options(${libname} PRIVATE ${CMAKE_C_COVERAGE_FLAGS})
-target_include_directories(${libname} PRIVATE ${CANGJIE_INC_DIR} ${CMAKE_BINARY_DIR}/include )
+target_compile_options(${libname}-objs PRIVATE ${CMAKE_C_COVERAGE_FLAGS})
+target_include_directories(${libname}-objs PRIVATE ${CANGJIE_INC_DIR} ${CMAKE_BINARY_DIR}/include )
 if(CANGJIE_BUILD_STDLIB_WITH_COVERAGE)
-    target_compile_options(${libname} PUBLIC "-fno-exceptions")
-    target_compile_definitions(${libname} PRIVATE CANGJIE_ENABLE_GCOV)
+    target_compile_options(${libname}-objs PUBLIC "-fno-exceptions")
+    target_compile_definitions(${libname}-objs PRIVATE CANGJIE_ENABLE_GCOV)
 endif()
 
-target_link_directories(${libname} PRIVATE ${LSP_LIB_DIR})
-target_link_libraries(${libname} PRIVATE cangjie-lsp)
+target_link_libraries(${libname} PUBLIC "$ENV{CANGJIE_HOME}/lib/${output_cj_lib_dir}/libcangjie-sema-support.a")
 
 # install for dynamic and static lib
 install_cangjie_library_ffi(${libname})
