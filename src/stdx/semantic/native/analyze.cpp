@@ -69,6 +69,7 @@ void printSyntaxNode(const SyntaxNodePtr& node, int depth = 0) {
 
 class TypeCollector {
 public:
+    // Nonterminal id -> ast ptr
     std::map<int, Ptr<const AST::Node>> declMap;
     std::map<int, Ptr<const AST::Node>> exprMap;
     std::map<int, int> refTarget;
@@ -139,7 +140,8 @@ public:
         size_t i = 0;
         size_t j = 0;
         while (i < nonTerminal->children.size() && j < collect.size()) {
-            if (nonTerminal->children[i]->kind == "VarPattern") {
+            if (nonTerminal->children[i]->kind == "VarPattern" || nonTerminal->children[i]->kind == "ImportSpec"
+            || nonTerminal->children[i]->kind == "PackageSpec") {
                 i++;
                 continue;
             }
@@ -190,7 +192,7 @@ uint8_t* CJ_Analyze(const uint8_t* node, size_t length)
     package->files.push_back(std::move(file));
     ci.srcPkgs.push_back(std::move(package));
 
-    // SEMA
+
     TypeCollector tyCollector;
     tyCollector.collect(root, ci.srcPkgs[0].get());
     std::cout << "----------before sema---------" << std::endl;
@@ -198,8 +200,10 @@ uint8_t* CJ_Analyze(const uint8_t* node, size_t length)
         std::cout << "key: " << pair.first << ", value: " << pair.second.get()
             << ", ty: " << pair.second.get()->ty->String() << std::endl;
     }
+
     ci.PerformImportPackage();
     ci.PerformSema();
+
     std::cout << "----------after sema---------" << std::endl;
     for (const auto &pair : tyCollector.declMap) {
         std::cout << "key: " << pair.first << ", value: " << pair.second.get()
@@ -208,6 +212,68 @@ uint8_t* CJ_Analyze(const uint8_t* node, size_t length)
 
     // serialize
     TypeWrite typeWriter(tyCollector.declMap, tyCollector.exprMap, tyCollector.refTarget);
+    
+    return typeWriter.ExportType();
+}
+
+uint8_t* CJ_Analyze_With_Path(const uint8_t* node, size_t length, const char* cjoPath)
+{
+    SyntaxNodePtr root = SyntaxNodeFlatBufferDeserializer::deserialize(node, length);
+
+    std::string code = root->toString();
+    // printSyntaxNode(root);
+    std::cout << "code: " << code << std::endl;
+    DiagnosticEngine diag;
+    CompilerInvocation compilerInvocation;
+    CompilerInstance ci(compilerInvocation, diag);
+    
+    const char* path = getenv("CANGJIE_HOME");
+    std::string cangjieHome(path);
+    ci.invocation.globalOptions.cangjieHome = cangjieHome;
+    ci.invocation.globalOptions.outputMode = FrontendOptions::OutputMode::STATIC_LIB;
+    ci.cangjieHome = cangjieHome;
+    ci.invocation.globalOptions.environment.cangjieHome = cangjieHome;
+    std::string cjo(cjoPath);
+    std::cout << "cjoPath: " << cjo << std::endl;
+    ci.invocation.globalOptions.importPaths.emplace_back(cjo);
+    // PARSER
+    auto package = MakeOwned<AST::Package>();
+    auto fileID = ci.GetSourceManager().AddSource("", code);
+    Parser parser(fileID, code, diag, ci.GetSourceManager(), ci.invocation.globalOptions.enableAddCommentToAst,
+        ci.invocation.globalOptions.compileCjd);
+    parser.SetCompileOptions(ci.invocation.globalOptions);
+    auto file = parser.ParseTopLevel();
+    ci.GetSourceManager().AddComments(parser.GetCommentsMap());
+    if (!file->package) {
+        package->fullPackageName = DEFAULT_PACKAGE_NAME;
+    } else {
+        package->fullPackageName = file->package->packageName;
+    }
+    file->curPackage = package.get();
+    package->files.push_back(std::move(file));
+    ci.srcPkgs.push_back(std::move(package));
+
+
+    TypeCollector tyCollector;
+    tyCollector.collect(root, ci.srcPkgs[0].get());
+    std::cout << "----------before sema---------" << std::endl;
+    for (const auto &pair : tyCollector.declMap) {
+        std::cout << "key: " << pair.first << ", value: " << pair.second.get()
+            << ", ty: " << pair.second.get()->ty->String() << std::endl;
+    }
+
+    ci.PerformImportPackage();
+    ci.PerformSema();
+
+    std::cout << "----------after sema---------" << std::endl;
+    for (const auto &pair : tyCollector.declMap) {
+        std::cout << "key: " << pair.first << ", value: " << pair.second.get()
+            << ", ty: " << pair.second.get()->ty->String() << std::endl;
+    }
+
+    // serialize
+    TypeWrite typeWriter(tyCollector.declMap, tyCollector.exprMap, tyCollector.refTarget);
+    
     return typeWriter.ExportType();
 }
 

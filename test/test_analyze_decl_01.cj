@@ -6,7 +6,7 @@
  * See https://cangjie-lang.cn/pages/LICENSE for license information.
  */
 // DEPENDENCE: sourceFile/package/package_decl_01
-// (not Windows) EXEC: dos2unix comment_3.cj
+// (not Windows) EXEC: dos2unix package_decl_01/decls.cj
 // EXEC: %compiler %import-cangjie-stdx %cmp_opt -o %n.%suffix %f %cmp_utest_opt
 // RUN-EXEC: %set_stdx_path %run %run_opt %n.%suffix %run_utest_opt %run_args
 
@@ -26,7 +26,7 @@ class Test {
 
     @BeforeAll
     func readDecls(): Unit {
-        let parsingRes: ParsingResult<Package> = parsePackage("./sourceFile/package/package_decl_01")
+        let parsingRes: ParsingResult<Package> = parsePackage("package_decl_01")
         let pkgAST: Package = parsingRes.node.getOrThrow()
 
         semaRes = SemanticResult.analyze(pkgAST, importedPkgContexts: [])
@@ -36,8 +36,18 @@ class Test {
     }
 
     @TestCase
-    func testDecl01() {
+    func testDecl00() {
         let decl = decls[0]
+        let declTyInfo: Option<SemanticType> = semaRes.getTypeInfo(decl)
+        match (declTyInfo) {
+            case Some(funcTy: SemanticType) => @Expect(funcTy.toString(), "Int64")
+            case None => @FailExpect("no type info")
+        }
+    }
+
+    @TestCase
+    func testDecl01() {
+        let decl = decls[1]
         let declTyInfo: Option<SemanticType> = semaRes.getTypeInfo(decl)
         match (declTyInfo) {
             case Some(funcTy: SemanticType) => @Expect(funcTy.toString(), "Float64")
@@ -47,7 +57,7 @@ class Test {
 
     @TestCase
     func testDecl02() {
-        let decl = decls[1]
+        let decl = decls[2]
         let declTyInfo: Option<SemanticType> = semaRes.getTypeInfo(decl)
         match (declTyInfo) {
             case Some(funcTy: SemanticType) => @Expect(funcTy.toString(), "String")
@@ -57,7 +67,7 @@ class Test {
 
     @TestCase
     func testDecl03() {
-        let decl = decls[2]
+        let decl = decls[3]
         let declTyInfo: Option<SemanticType> = semaRes.getTypeInfo(decl)
         match (declTyInfo) {
             case Some(funcTy: SemanticType) => @Expect(funcTy.toString(), "Rune")
@@ -67,7 +77,7 @@ class Test {
 
     @TestCase
     func testDecl04() {
-        let decl = decls[3]
+        let decl = decls[4]
         let declTyInfo: Option<SemanticType> = semaRes.getTypeInfo(decl)
         match (declTyInfo) {
             case Some(funcTy: SemanticType) => @Expect(funcTy.toString(), "Bool")
@@ -77,7 +87,7 @@ class Test {
 
     @TestCase
     func testDecl05() {
-        let decl = decls[4]
+        let decl = decls[5]
         let declTyInfo: Option<SemanticType> = semaRes.getTypeInfo(decl)
         match (declTyInfo) {
             case Some(funcTy: SemanticType) => @Expect(funcTy.toString(), "(Bool, Float64, Int64)")
@@ -87,7 +97,7 @@ class Test {
 
     @TestCase
     func testDecl06() {
-        let decl = decls[5]
+        let decl = decls[6]
         let declTyInfo: Option<SemanticType> = semaRes.getTypeInfo(decl)
         match (declTyInfo) {
             case Some(funcTy: SemanticType) => @Expect(funcTy.toString(), "AnnotationKind")
@@ -97,7 +107,7 @@ class Test {
 
     @TestCase
     func testDecl07() {
-        let decl = decls[6]
+        let decl = decls[7]
         let declTyInfo: Option<SemanticType> = semaRes.getTypeInfo(decl)
         match (declTyInfo) {
             case Some(funcTy: SemanticType) => @Expect(funcTy.toString(), "(Int64) -> Int64")
@@ -107,7 +117,7 @@ class Test {
 
     @TestCase
     func testDecl08() {
-        let decl = decls[7]
+        let decl = decls[8]
         let declTyInfo: Option<SemanticType> = semaRes.getTypeInfo(decl)
         match (declTyInfo) {
             case Some(funcTy: SemanticType) => @Expect(funcTy.toString(), "Array<Int64>")
@@ -117,7 +127,7 @@ class Test {
 
     @TestCase
     func testDecl09() {
-        let decl = decls[8]
+        let decl = decls[9]
         let declTyInfo: Option<SemanticType> = semaRes.getTypeInfo(decl)
         match (declTyInfo) {
             case Some(funcTy: SemanticType) => @Expect(funcTy.toString(), "Duration")

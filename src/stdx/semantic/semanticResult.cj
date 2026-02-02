@@ -12,6 +12,13 @@ public class SemanticResult {
         SemanticResult(declMaps)
     }
 
+    public static func analyze(pkgAST: Package, cjoPath: String) {
+        let maps = unsafe{ analyzeImplWithPath(serializePkg(pkgAST), cjoPath) }
+        let declMaps = getDeclTypeMap(pkgAST, maps)
+        SemanticResult(declMaps)
+        // TODO: 内部应该存一份对应 cjoPath 的 SemanticContext
+    }
+
     public func getTypeInfo(decl: Decl): Option<SemanticType> {
         declTypeInfoMap.get(decl)
     }
@@ -49,7 +56,12 @@ public class SemanticResult {
 
 public class SemanticContext {
     // cjo 
-    // private let declTypeInfoMap: HashMap<SyntaxTreeNode, SemanticType>
+    // private let declTypeInfoMap: HashMap<Decl, SemanticType>
+    // public static func createFromCJOFile(cjoFilePath: String): SemanticContext {
+    //     let maps = unsafe{ createFromCJOImpl(cjoFilePath) }
+    //     // let declMaps = getDeclTypeMap(pkgAST, maps)
+    //     SemanticContext(maps)
+    // }
 }
   
 class NodeFinder <: ASTVisitor {
