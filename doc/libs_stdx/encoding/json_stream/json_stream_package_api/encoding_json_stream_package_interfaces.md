@@ -116,7 +116,7 @@ public static func fromJson(r: JsonReader): DateTime
 
 功能：从 [JsonReader](../json_stream_package_api/encoding_json_stream_package_classes.md#class-jsonreader) 中读取一个 DateTime 实例。
 
-该函数将会把读取到的字符串按照 `RFC3339` 的规范解析，可包含小数秒格式，函数的行为参考DateTime的func parse(String)。
+该函数将会把读取到的字符串按照 `RFC3339` 的规范解析，可包含小数秒格式，函数的行为参考 DateTime 的 func parse(String)。
 
 参数：
 
@@ -276,7 +276,7 @@ public static func fromJson(r: JsonReader): String
 
 根据下一个 `JsonToken` 的不同，`String` 的反序列化结果将会不同：
 
-- 当下一个 `JsonToken` 是 `JsonString` 时， 反序列化过程会按照标准[ECMA-404 The JSON Data Interchange Standard](https://www.ecma-international.org/publications-and-standards/standards/ecma-404/)对读到的 `String` 进行转义。
+- 当下一个 `JsonToken` 是 `JsonString` 时， 反序列化过程会按照标准 [ECMA-404 The JSON Data Interchange Standard](https://www.ecma-international.org/publications-and-standards/standards/ecma-404/) 对读到的 `String` 进行转义。
 - 当下一个 `JsonToken` 是 `JsonNumber` `JsonBool` `JsonNull` 其中一个时，将会读取下一个 `value` 字段的原始字符串并返回。
 - 当下一个 `JsonToken` 是其它类型时，调用此接口会抛异常。
 
@@ -682,7 +682,7 @@ extend<T> Option<T> <: JsonDeserializable<Option<T>> where T <: JsonDeserializab
 public static func fromJson(r: JsonReader): Option<T>
 ```
 
-功能：从 [JsonReader](../json_stream_package_api/encoding_json_stream_package_classes.md#class-jsonreader) 中读取一个Option。
+功能：从 [JsonReader](../json_stream_package_api/encoding_json_stream_package_classes.md#class-jsonreader) 中读取一个 Option。
 
 参数：
 
@@ -812,7 +812,7 @@ public func toJson(w: JsonWriter): Unit
 
 功能：提供 DateTime 类型序列化到流的功能。
 
-该接口的功能与 [JsonWriter](encoding_json_stream_package_classes.md#class-jsonwriter) 的 [writeConfig](./encoding_json_stream_package_classes.md#var-writeconfig)中的属性 [dateTimeFormat](./encoding_json_stream_package_structs.md#prop-datetimeformat)有关联，将会把 DateTime 按照[dateTimeFormat](./encoding_json_stream_package_structs.md#prop-datetimeformat)中的格式输出到目标流中，可以通过修改[dateTimeFormat](./encoding_json_stream_package_structs.md#prop-datetimeformat)实现不同的格式控制。
+该接口的功能与 [JsonWriter](encoding_json_stream_package_classes.md#class-jsonwriter) 的 [writeConfig](./encoding_json_stream_package_classes.md#var-writeconfig) 中的属性 [dateTimeFormat](./encoding_json_stream_package_structs.md#prop-datetimeformat) 有关联，将会把 DateTime 按照 [dateTimeFormat](./encoding_json_stream_package_structs.md#prop-datetimeformat) 中的格式输出到目标流中，可以通过修改 [dateTimeFormat](./encoding_json_stream_package_structs.md#prop-datetimeformat) 实现不同的格式控制。
 
 参数：
 
@@ -932,7 +932,7 @@ extend String <: JsonSerializable
 public func toJson(w: JsonWriter): Unit
 ```
 
-功能：将 String 类型写入参数 `w` 指定的 [JsonWriter](encoding_json_stream_package_classes.md#class-jsonwriter) 实例中。写入的String
+功能：将 String 类型写入参数 `w` 指定的 [JsonWriter](encoding_json_stream_package_classes.md#class-jsonwriter) 实例中。
 
 参数：
 

@@ -54,7 +54,7 @@ public static let pretty: WriteConfig
 > pretty 的各属性值为：
 >
 > - newline: "\n"。
-> - indent: "&emsp;&emsp;&emsp;&emsp;"，包含4个空格的字符串。
+> - indent: "&emsp;&emsp;&emsp;&emsp;"，包含 4 个空格的字符串。
 > - useSpaceAfterSeparators: true。
 > - htmlSafe: false。
 > - dateTimeFormat: DateTimeFormat.RFC3339。

@@ -10,7 +10,9 @@ public class JsonReader {
 
 功能：此类提供 JSON 数据流转仓颉对象的反序列化能力。
 
-使用示例见[使用 Json Stream 进行反序列化](../json_stream_samples/sample_json_reader.md)
+示例：
+
+使用示例见[使用 Json Stream 进行反序列化](../json_stream_samples/sample_json_reader.md)。
 
 ### init(InputStream)
 
@@ -114,7 +116,7 @@ public func readValue<T>(): T where T <: JsonDeserializable<T>
 public func readValueBytes(): Array<Byte>
 ```
 
-功能：读取输入流的下一组原始数据(字节数组)，不进行转义等操作。
+功能：读取输入流的下一组原始数据（字节数组），不进行转义等操作。
 
 > **说明：**
 >
@@ -207,7 +209,7 @@ public class JsonWriter {
 
 示例：
 
-使用示例见[使用 Json Stream 进行序列化](../json_stream_samples/sample_json_writer.md)
+使用示例见[使用 Json Stream 进行序列化](../json_stream_samples/sample_json_writer.md)。
 
 ### var writeConfig
 
@@ -267,11 +269,11 @@ public func flush(): Unit
 public func jsonValue(value: String): JsonWriter
 ```
 
-功能：将符合JSON value规范的原始字符串写入stream。
+功能：将符合 JSON value 规范的原始字符串写入 stream。
 
 > **注意：**
 >
-> 此函数不会对值 value 进行转义，也不会为入参添加双引号。如果使用者能够保证输入的值 value 符合数据转换标准[ECMA-404 The JSON Data Interchange Standard](https://www.ecma-international.org/publications-and-standards/standards/ecma-404/)， 建议使用该函数。
+> 此函数不会对值 value 进行转义，也不会为入参添加双引号。如果使用者能够保证输入的值 value 符合数据转换标准 [ECMA-404 The JSON Data Interchange Standard](https://www.ecma-international.org/publications-and-standards/standards/ecma-404/)，建议使用该函数。
 
 返回值：
 
@@ -345,7 +347,7 @@ public func writeValue<T>(v: T): JsonWriter where T <: JsonSerializable
 
 功能：将实现了 [JsonSerializable](encoding_json_stream_package_interfaces.md#interface-jsonserializable) 接口的类型写入到 Stream 中。该接口会调用泛型 T 的 toJson 方法向输出流中写入数据。
 
-json.stream 包已经为基础类型 Int64、UInt64、Float64、Bool、String类型扩展实现了 [JsonSerializable](encoding_json_stream_package_interfaces.md#interface-jsonserializable)， 并且为 Collection 类型 Array、ArrayList和 HashMap 扩展实现了 [JsonSerializable](encoding_json_stream_package_interfaces.md#interface-jsonserializable)。
+json.stream 包已经为基础类型 Int64、UInt64、Float64、Bool、String 类型扩展实现了 [JsonSerializable](encoding_json_stream_package_interfaces.md#interface-jsonserializable)， 并且为 Collection 类型 Array、ArrayList 和 HashMap 扩展实现了 [JsonSerializable](encoding_json_stream_package_interfaces.md#interface-jsonserializable)。
 
 返回值：
 
