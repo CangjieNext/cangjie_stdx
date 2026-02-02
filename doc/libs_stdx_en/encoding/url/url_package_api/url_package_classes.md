@@ -11,7 +11,7 @@ public class Form {
 
 Functionality: [Form](url_package_classes.md#class-form) stores HTTP request form information in key-value pairs, typically representing the query component of a request [URL](url_package_classes.md#class-url).
 
-A single key can correspond to multiple values, stored as an array. Key-value pairs are separated by `&`; the left side of `=` serves as the key, and the right side as the value (absence of `=` or empty values are both permitted). For usage examples, see [Form Construction and Usage](../url_samples/form.md#form-construction-and-usage).
+A single key can correspond to multiple values, stored as an array. Key-value pairs are separated by `&`; the left side of `=` serves as the key, and the right side as the value (absence of `=` or empty values are both permitted). For usage examples, see [Form Construction and Usage](../url_samples/form.md).
 
 ### init()
 
@@ -400,7 +400,7 @@ Function: Parses a raw URL string into a [URL](url_package_classes.md#class-url)
 
 This function decomposes the [URL](url_package_classes.md#class-url) into components, decodes them, and stores them in respective properties. The rawXXX properties store the original undecoded values.
 
-For usage examples, see [URL parse function usage](./../url_samples/url_parse.md#url-parse-function-usage).
+For usage examples, see [URL parse function usage](./../url_samples/url_parse.md).
 
 > **Note:**
 >

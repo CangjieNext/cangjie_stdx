@@ -21,7 +21,7 @@ public class SecureRandom <: RandomGenerator {
 - 随机数生成： Random 使用了梅森旋转伪随机生成器；[SecureRandom](crypto_package_classes.md#class-securerandom) 则使用了 openssl 库提供的 [MD5](../../digest/digest_package_api/digest_package_classes.md#class-md5) 等随机算法，使用熵源生成真随机数；如果硬件支持，还可以使用硬件随机数生成器来生成安全性更强的随机数。
 - 安全性： Random 不能用于加密安全的应用或者隐私数据的保护，可以使用 [SecureRandom](crypto_package_classes.md#class-securerandom)。
 
-使用示例见 [SecureRandom 使用](../crypto_samples/sample_secure_random.md#securerandom-使用)。
+使用示例见 [SecureRandom 使用](../crypto_samples/sample_secure_random.md)。
 
 ### init(Bool)
 
@@ -551,7 +551,7 @@ tagSize 设置摘要长度，仅在 GCM 模式下使用，默认值为 SM4_GCM_T
 
 如果是 GCM 工作模式。加密结果的后 tagSize 字节是摘要数据。
 
-使用示例见 [SM4 使用](../crypto_samples/sample_crypto.md#sm4-使用)。
+使用示例见 [SM4 使用](../crypto_samples/sample_crypto.md)。
 
 > **注意：**
 >

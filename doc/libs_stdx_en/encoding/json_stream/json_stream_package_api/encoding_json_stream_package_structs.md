@@ -13,7 +13,7 @@ Function: Used to represent the serialization format configuration for [JsonWrit
 
 Example:
 
-For usage examples, see [WriteConfig Usage Example](../json_stream_samples/sample_json_writeconfig.md#writeconfig-usage-example).
+For usage examples, see [WriteConfig Usage Example](../json_stream_samples/sample_json_writeconfig.md).
 
 ### static let compact
 

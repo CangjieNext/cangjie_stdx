@@ -82,7 +82,7 @@ Parameters:
 
 Return Value:
 
-- [Logger](../../log/log_package_api/#class-logger) - An instance of the [Logger](../../log/log_package_api/#class-logger) class.
+- [Logger](../../log/log_package_api/log_package_classes.md#class-logger) - An instance of the [Logger](../../log/log_package_api/log_package_classes.md#class-logger) class.
 
 ## class SimpleLogger
 
@@ -166,7 +166,7 @@ Parameters:
 
 Return Value:
 
-- [Logger](../../log/log_package_api/#class-logger) - An instance of the [Logger](../../log/log_package_api/#class-logger) class.
+- [Logger](../../log/log_package_api/log_package_classes.md#class-logger) - An instance of the [Logger](../../log/log_package_api/log_package_classes.md#class-logger) class.
 
 ## class TextLogger
 
@@ -250,4 +250,4 @@ Parameters:
 
 Return Value:
 
-- [Logger](../../log/log_package_api/#class-logger) - An instance of the [Logger](../../log/log_package_api/#class-logger) class.
+- [Logger](../../log/log_package_api/log_package_classes.md#class-logger) - An instance of the [Logger](../../log/log_package_api/log_package_classes.md#class-logger) class.

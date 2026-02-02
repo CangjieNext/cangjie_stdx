@@ -20,24 +20,24 @@ User-defined types can support serialization and deserialization by implementing
 
 | Interface Name                                               | Description                  |
 | ------------------------------------------------------------ | ---------------------------- |
-| [Serializable](./serialization_package_api/serialization_package_interfaces.md/#interface-serializable) | Used to standardize serialization. |
+| [Serializable](./serialization_package_api/serialization_package_interfaces.md#interface-serializable) | Used to standardize serialization. |
 
 ### Classes
 
 | Class Name                                                    | Description                                                  |
 | ------------------------------------------------------------ | ------------------------------------------------------------ |
-| [DataModel](./serialization_package_api/serialization_package_classes.md/#class-datamodel) | Intermediate data layer.                                     |
-| [DataModelBool](./serialization_package_api/serialization_package_classes.md/#class-datamodelbool) | This class is a subclass of `DataModel`, implementing encapsulation for `Bool` type data. |
-| [DataModelFloat](./serialization_package_api/serialization_package_classes.md/#class-datamodelfloat) | This class is a subclass of `DataModel`, implementing encapsulation for `Float64` type data. |
-| [DataModelInt](./serialization_package_api/serialization_package_classes.md/#class-datamodelint) | This class is a subclass of `DataModel`, implementing encapsulation for `Int64` type data. |
-| [DataModelNull](./serialization_package_api/serialization_package_classes.md/#class-datamodelnull) | This class is a subclass of `DataModel`, implementing encapsulation for `Null` type data. |
-| [DataModelSeq](./serialization_package_api/serialization_package_classes.md/#class-datamodelseq) | This class is a subclass of `DataModel`, implementing encapsulation for ArrayList\<DataModel> type data. |
-| [DataModelString](./serialization_package_api/serialization_package_classes.md/#class-datamodelstring) | This class is a subclass of `DataModel`, implementing encapsulation for `String` type data. |
-| [DataModelStruct](./serialization_package_api/serialization_package_classes.md/#class-datamodelstruct) | This class is a subclass of `DataModel`, used to convert `class` objects to `DataModel`. |
-| [Field](./serialization_package_api/serialization_package_classes.md/#class-field) | Used to store elements of `DataModelStruct`.                 |
+| [DataModel](./serialization_package_api/serialization_package_classes.md#class-datamodel) | Intermediate data layer.                                     |
+| [DataModelBool](./serialization_package_api/serialization_package_classes.md#class-datamodelbool) | This class is a subclass of `DataModel`, implementing encapsulation for `Bool` type data. |
+| [DataModelFloat](./serialization_package_api/serialization_package_classes.md#class-datamodelfloat) | This class is a subclass of `DataModel`, implementing encapsulation for `Float64` type data. |
+| [DataModelInt](./serialization_package_api/serialization_package_classes.md#class-datamodelint) | This class is a subclass of `DataModel`, implementing encapsulation for `Int64` type data. |
+| [DataModelNull](./serialization_package_api/serialization_package_classes.md#class-datamodelnull) | This class is a subclass of `DataModel`, implementing encapsulation for `Null` type data. |
+| [DataModelSeq](./serialization_package_api/serialization_package_classes.md#class-datamodelseq) | This class is a subclass of `DataModel`, implementing encapsulation for ArrayList\<DataModel> type data. |
+| [DataModelString](./serialization_package_api/serialization_package_classes.md#class-datamodelstring) | This class is a subclass of `DataModel`, implementing encapsulation for `String` type data. |
+| [DataModelStruct](./serialization_package_api/serialization_package_classes.md#class-datamodelstruct) | This class is a subclass of `DataModel`, used to convert `class` objects to `DataModel`. |
+| [Field](./serialization_package_api/serialization_package_classes.md#class-field) | Used to store elements of `DataModelStruct`.                 |
 
 ### Exception Classes
 
 | Exception Class Name                                         | Description                  |
 | ------------------------------------------------------------ | ---------------------------- |
-| [DataModelException](./serialization_package_api/serialization_package_exceptions.md/#class-datamodelexception) | Exception class for `DataModel`. |
+| [DataModelException](./serialization_package_api/serialization_package_exceptions.md#class-datamodelexception) | Exception class for `DataModel`. |

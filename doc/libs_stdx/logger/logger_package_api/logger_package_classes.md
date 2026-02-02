@@ -82,7 +82,7 @@ public func withAttrs(attrs: Array<Attr>): Logger
 
 返回值：
 
-- [Logger](../../log/log_package_api/#class-logger) - [Logger](../../log/log_package_api/#class-logger) 类的对象实例。
+- [Logger](../../log/log_package_api/log_package_classes.md#class-logger) - [Logger](../../log/log_package_api/log_package_classes.md#class-logger) 类的对象实例。
 
 ## class SimpleLogger
 
@@ -166,7 +166,7 @@ public func withAttrs(attrs: Array<Attr>): Logger
 
 返回值：
 
-- [Logger](../../log/log_package_api/#class-logger) - [Logger](../../log/log_package_api/#class-logger) 类的对象实例。
+- [Logger](../../log/log_package_api/log_package_classes.md#class-logger) - [Logger](../../log/log_package_api/log_package_classes.md#class-logger) 类的对象实例。
 
 ## class TextLogger
 
@@ -250,4 +250,4 @@ public func withAttrs(attrs: Array<Attr>): Logger
 
 返回值：
 
-- [Logger](../../log/log_package_api/#class-logger) - [Logger](../../log/log_package_api/#class-logger) 类的对象实例。
+- [Logger](../../log/log_package_api/log_package_classes.md#class-logger) - [Logger](../../log/log_package_api/log_package_classes.md#class-logger) 类的对象实例。

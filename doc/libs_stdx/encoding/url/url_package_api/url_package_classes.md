@@ -11,7 +11,7 @@ public class Form {
 
 功能：[Form](url_package_classes.md#class-form) 以 key-value 键值对形式存储 http 请求的表单信息，通常为请求 [URL](url_package_classes.md#class-url) 中的 query 部分。
 
-同一个 key 可以对应多个 value，value 以数组形式存储。`&` 符号分隔多个键值对；`=` 分隔的左侧作为 key 值，右侧作为 value 值（没有 `=` 或者 value 为空，均是允许的）。使用示例见 [Form 的构造使用](../url_samples/form.md#form-的构造使用)。
+同一个 key 可以对应多个 value，value 以数组形式存储。`&` 符号分隔多个键值对；`=` 分隔的左侧作为 key 值，右侧作为 value 值（没有 `=` 或者 value 为空，均是允许的）。使用示例见 [Form 的构造使用](../url_samples/form.md)。
 
 ### init()
 
@@ -403,7 +403,7 @@ public static func parse(rawUrl: String): URL
 
 这个函数会将 [URL](url_package_classes.md#class-url) 按照组件分解，然后分别进行解码并存储在相应的组件属性中，而 rawXXX (此处泛指前缀是 raw 的 URL 属性)属性部分存储的是原始值，不做编解码处理。
 
-使用示例请参见[URL 解析函数 parse 的使用](./../url_samples/url_parse.md#url-解析函数-parse-的使用)。
+使用示例请参见[URL 解析函数 parse 的使用](./../url_samples/url_parse.md)。
 
 > **注意：**
 >

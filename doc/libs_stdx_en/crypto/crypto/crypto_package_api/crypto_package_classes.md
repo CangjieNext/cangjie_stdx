@@ -18,7 +18,7 @@ Compared with Random, there are three main differences:
 
 - Security: Random should not be used for cryptographic security applications or privacy data protection, whereas [SecureRandom](crypto_package_classes.md#class-securerandom) can be used for such purposes.
 
-For usage examples, see [SecureRandom Usage](../crypto_samples/sample_secure_random.md#securerandom-usage).
+For usage examples, see [SecureRandom Usage](../crypto_samples/sample_secure_random.md).
 
 ### init(Bool)
 
@@ -552,7 +552,7 @@ If `NoPadding` is selected, the user is responsible for ensuring data can be div
 
 In GCM mode, the last `tagSize` bytes of the encrypted result are the digest data.
 
-For usage examples, see [SM4 Usage](../crypto_samples/sample_crypto.md#sm4-usage).
+For usage examples, see [SM4 Usage](../crypto_samples/sample_crypto.md).
 
 > **Note:**
 >

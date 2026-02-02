@@ -284,7 +284,7 @@ public static func decodeFromDer(der: DerBlob): X509Certificate
 
 参数：
 
-- der: [DerBlob](x509_package_structs.md#struct-derblob) - DER 格式的二进制数据。
+- der: [DerBlob](../../common/crypto_common_package_api/crypto_common_package_structs.md#struct-derblob) - DER 格式的二进制数据。
 
 返回值：
 
