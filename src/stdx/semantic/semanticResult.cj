@@ -8,19 +8,25 @@ public class SemanticResult {
     
     public static func analyze(pkgAST: Package, importedPkgContexts!: Array<SemanticContext> = []): SemanticResult {
         let maps = unsafe{ analyzeImpl(serializePkg(pkgAST)) }
-        let declMaps = getDeclTypeMap(pkgAST, maps)
-        SemanticResult(declMaps)
+        let declMap = getDeclTypeMap(pkgAST, maps)
+        let refMap = getRefMap(pkgAST, maps)
+        SemanticResult(declMap, refMap)
     }
 
     public static func analyze(pkgAST: Package, cjoPath: String) {
         let maps = unsafe{ analyzeImplWithPath(serializePkg(pkgAST), cjoPath) }
         let declMaps = getDeclTypeMap(pkgAST, maps)
-        SemanticResult(declMaps)
+        let refMap = getRefMap(pkgAST, maps)
+        SemanticResult(declMaps, refMap)
         // TODO: 内部应该存一份对应 cjoPath 的 SemanticContext
     }
 
     public func getTypeInfo(decl: Decl): Option<SemanticType> {
         declTypeInfoMap.get(decl)
+    }
+
+    public func getSymbolRef(symbol: SymbolRef): Option<SyntaxTreeNode> {
+        target.get(symbol.getId())
     }
 
     private static func getDeclTypeMap(pkgAST: Package, maps: SemanticType_NodeTypeMap) {
@@ -45,12 +51,34 @@ public class SemanticResult {
         declMap
     }
 
+    private static func getRefMap(pkgAST: Package, maps: SemanticType_NodeTypeMap) {
+        let target = HashMap<UInt64, SyntaxTreeNode>()
+
+        let refIdToDeclId = HashMap<UInt64, UInt64>()
+        for (refMapOption in maps.GetRefMapList()) {
+            if (let Some(refMap) <- refMapOption) {
+                let refId = refMap.GetId()
+                let declId = refMap.GetDecl()
+                println("ref - decl: ${refId}, ${declId}")
+                let nf = NodeFinder(pkgAST, declId)
+                nf.walk(pkgAST)
+                if (let Some(decl) <- nf.res) {
+                    target.add(refId, decl)
+                }
+            }
+        }
+        target
+    }
+
     private let declTypeInfoMap: HashMap<SyntaxTreeNode, SemanticType>
     // private let exprTypeInfoMap: HashMap<SyntaxTreeNode, SemanticType>
+    private let target: HashMap<UInt64, SyntaxTreeNode>
     // private let target: HashMap<SyntaxTreeNode, SyntaxTreeNode>
-
-    init(declTypeInfoMap: HashMap<SyntaxTreeNode, SemanticType>){
+    
+    init(declTypeInfoMap: HashMap<SyntaxTreeNode, SemanticType>, 
+    target: HashMap<UInt64, SyntaxTreeNode>) {
         this.declTypeInfoMap = declTypeInfoMap
+        this.target = target
     }
 }
 

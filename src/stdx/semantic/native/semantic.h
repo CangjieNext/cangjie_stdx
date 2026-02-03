@@ -1,6 +1,7 @@
 #include "flatbuffers/SemanticType_generated.h"
 #include "flatbuffers/SyntaxNodeFormat_generated.h"
 
+#include "cangjie/AST/Walker.h"
 #include "cangjie/AST/Node.h"
 #include "cangjie/Basic/Print.h"
 
@@ -13,11 +14,12 @@ const size_t INITIAL_FILE_SIZE = 65536;
 class SyntaxNode;
 using SyntaxNodePtr = std::shared_ptr<SyntaxNode>;
 using namespace Cangjie;
+using namespace AST;
 
 class TypeWrite {
 public:
-    TypeWrite(std::map<int, Ptr<const AST::Node>> declTypeMap, std::map<int, Ptr<const AST::Node>> exprTypeMap,
-        std::map<int, int> refMap)
+    TypeWrite(std::map<Ptr<const AST::Node>, int> declTypeMap, std::map<Ptr<const AST::Node>, int> exprTypeMap,
+        std::map<int, Ptr<const AST::Expr>> refMap)
         : declTypeMap(declTypeMap), exprTypeMap(exprTypeMap), refMap(refMap), builder(INITIAL_FILE_SIZE) {
     }
 
@@ -28,11 +30,13 @@ public:
 
 private:
     std::vector<uint8_t> bufferData;
-    std::map<int, Ptr<const AST::Node>> declTypeMap;
-    std::map<int, Ptr<const AST::Node>> exprTypeMap;
-    std::map<int, int> refMap;
+    std::map<Ptr<const AST::Node>, int> declTypeMap;
+    std::map<Ptr<const AST::Node>, int> exprTypeMap;
+    // ref id -> decl ptr
+    std::map<int, Ptr<const AST::Expr>> refMap;
     flatbuffers::Offset<SemanticType::ASTType> SerializeSemanticType(AstTy ty);
     flatbuffers::Offset<SemanticType::SemanticTypeMap> SerializeSemanticTypeMap(int id, AstTy ty);
+    flatbuffers::Offset<SemanticType::SymbolRefMap> SerializeRefMap(int refId, int declId);
     flatbuffers::Offset<SemanticType::NodeTypeMap> SerializeNodeTypeMap();
     flatbuffers::FlatBufferBuilder builder;
 };
@@ -98,6 +102,13 @@ public:
         }
         return false;
     }
+
+    bool isMemberAccess() {
+        if (kind == "MemberAccess") {
+            return true;
+        }
+        return false;
+    }
 };
 
 class Terminal : public SyntaxNode {
@@ -137,6 +148,29 @@ public:
             }
         }
         return ss.str();
+    }
+
+    SyntaxNodePtr findFirstSymbolNode() const {
+        return findSymbolNodeRecursive(children);
+    }
+
+private:
+    SyntaxNodePtr findSymbolNodeRecursive(const std::vector<SyntaxNodePtr>& nodeList) const {
+        for (const auto& node : nodeList) {
+            if (!node) {
+                continue; 
+            }
+            if (node->kind == "SymbolRef") {
+                return node; 
+            }
+            if (auto nt = std::dynamic_pointer_cast<NonTerminal>(node)) {
+                auto foundNode = findSymbolNodeRecursive(nt->children);
+                if (foundNode) {
+                    return foundNode;
+                }
+            }
+        }
+        return nullptr;
     }
 };
 
@@ -179,4 +213,18 @@ public:
         }
         return "";
     }
+};
+
+class TypeCollector {
+public:
+    // Nonterminal id -> ast ptr
+    std::map<Ptr<const AST::Node>, int> declMap;
+    std::map<Ptr<const AST::Node>, int> exprMap;
+    // Nonterminal id -> refExpr/MemberAccess 
+    // refExpr->ref.target is null when collecting type before sema
+    std::map<int, Ptr<const AST::Expr>> refTarget;
+
+    std::vector<Ptr<AST::Node>> collectChild(const Ptr<AST::Node> &node);
+
+    void collect(const SyntaxNodePtr &syntaxNode, const Ptr<AST::Node> &node);
 };
