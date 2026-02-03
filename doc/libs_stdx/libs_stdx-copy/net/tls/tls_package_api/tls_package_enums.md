@@ -1,0 +1,572 @@
+# 枚举
+
+## enum SignatureAlgorithm
+
+```cangjie
+public enum SignatureAlgorithm <: ToString & Equatable<SignatureAlgorithm> {
+    | SignatureAndHashAlgorithm(SignatureType, HashType)
+    | SignatureScheme(SignatureSchemeType)
+}
+```
+
+功能：签名算法类型，签名算法用于确保传输数据的身份验证、完整性和真实性。
+
+父类型：
+
+- ToString
+- Equatable\<[SignatureAlgorithm](../../../crypto/x509/x509_package_api/x509_package_enums.md#enum-signaturealgorithm)>
+
+### SignatureAndHashAlgorithm(SignatureType, HashType)
+
+```cangjie
+SignatureAndHashAlgorithm(SignatureType, HashType)
+```
+
+功能：表明哪个签名和哈希算法对会被用于数字签名，自 TLS 1.2 及以后版本，包含签名和哈希算法类型。
+
+### SignatureScheme(SignatureSchemeType)
+
+```cangjie
+SignatureScheme(SignatureSchemeType)
+```
+
+功能：签名方案，自 TLS 1.3 及以后版本，业界更为推荐的指定签名算法的方式。
+
+### func toString()
+
+```cangjie
+public func toString():String
+```
+
+功能：转换签名算法的字符串表示。
+
+返回值：
+
+- String - 签名算法名称。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.net.tls.*
+
+main() {
+    let sigAlg = SignatureAlgorithm.SignatureScheme(RSA_PKCS1_SHA256)
+    let str = sigAlg.toString()
+    println("签名算法的字符串表示: ${str}")
+    return 0
+}
+```
+
+运行结果：
+
+```text
+签名算法的字符串表示: rsa_pkcs1_sha256
+```
+
+### operator func !=(SignatureAlgorithm)
+
+```cangjie
+public operator func !=(other: SignatureAlgorithm): Bool
+```
+
+功能：判断签名算法类型是否不同。
+
+参数：
+
+- other: [SignatureAlgorithm](tls_package_enums.md#enum-signaturealgorithm) - 对比的签名算法类型。
+
+返回值：
+
+- Bool - 不相同返回 `true`；否则，返回 `false`。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.net.tls.*
+import stdx.crypto.digest.*
+
+main() {
+    let sigAlg1 = SignatureAlgorithm.SignatureAndHashAlgorithm(SignatureType.RSA, HashType.SHA256)
+    let sigAlg2 = SignatureAlgorithm.SignatureAndHashAlgorithm(SignatureType.ECDSA, HashType.SHA256)
+    let isNotEqual = sigAlg1 != sigAlg2
+    println("签名算法是否不同: ${isNotEqual}")
+    return 0
+}
+```
+
+运行结果：
+
+```text
+签名算法是否不同: true
+```
+
+### operator func ==(SignatureAlgorithm)
+
+```cangjie
+public operator func ==(other: SignatureAlgorithm): Bool
+```
+
+功能：判断签名算法类型是否相同。
+
+参数：
+
+- other: [SignatureAlgorithm](tls_package_enums.md#enum-signaturealgorithm) - 对比的签名算法类型。
+
+返回值：
+
+- Bool - 相同返回 `true`；否则，返回 `false`。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.net.tls.*
+import stdx.crypto.digest.*
+
+main() {
+    let sigAlg1 = SignatureAlgorithm.SignatureAndHashAlgorithm(SignatureType.RSA, HashType.SHA256)
+    let sigAlg2 = SignatureAlgorithm.SignatureAndHashAlgorithm(SignatureType.RSA, HashType.SHA256)
+    let isEqual = sigAlg1 == sigAlg2
+    println("签名算法是否相同: ${isEqual}")
+    return 0
+}
+```
+
+运行结果：
+
+```text
+签名算法是否相同: true
+```
+
+## enum SignatureSchemeType
+
+```cangjie
+public enum SignatureSchemeType <: ToString & Equatable<SignatureSchemeType> {
+    | RSA_PKCS1_SHA256
+    | RSA_PKCS1_SHA384
+    | RSA_PKCS1_SHA512
+    | ECDSA_SECP256R1_SHA256
+    | ECDSA_SECP384R1_SHA384
+    | ECDSA_SECP521R1_SHA512
+    | RSA_PSS_RSAE_SHA256
+    | RSA_PSS_RSAE_SHA384
+    | RSA_PSS_RSAE_SHA512
+    | ED25519
+    | ED448
+    | RSA_PSS_PSS_SHA256
+    | RSA_PSS_PSS_SHA384
+    | RSA_PSS_PSS_SHA512
+}
+```
+
+功能：加密算法类型，用于保护网络通信的安全性和隐私性。
+
+父类型：
+
+- ToString
+- Equatable\<[SignatureSchemeType](#enum-signatureschemetype)>
+
+### ECDSA_SECP256R1_SHA256
+
+```cangjie
+ECDSA_SECP256R1_SHA256
+```
+
+功能：创建一个 `ECDSA_SECP256R1_SHA256` 类型的枚举实例，表示加密算法类型使用 `ECDSA_SECP256R1_SHA256`。
+
+### ECDSA_SECP384R1_SHA384
+
+```cangjie
+ECDSA_SECP384R1_SHA384
+```
+
+功能：创建一个 `ECDSA_SECP384R1_SHA384` 类型的枚举实例，表示加密算法类型使用 `ECDSA_SECP384R1_SHA384`。
+
+### ECDSA_SECP521R1_SHA512
+
+```cangjie
+ECDSA_SECP521R1_SHA512
+```
+
+功能：创建一个 `ECDSA_SECP521R1_SHA512` 类型的枚举实例，表示加密算法类型使用 `ECDSA_SECP521R1_SHA512`。
+
+### ED25519
+
+```cangjie
+ED25519
+```
+
+功能：创建一个 `ED25519` 类型的枚举实例，表示加密算法类型使用 ED25519。
+
+### ED448
+
+```cangjie
+ED448
+```
+
+功能：创建一个 `ED448` 类型的枚举实例，表示加密算法类型使用 ED448。
+
+### RSA_PKCS1_SHA256
+
+```cangjie
+RSA_PKCS1_SHA256
+```
+
+功能：创建一个 `RSA_PKCS1_SHA256` 类型的枚举实例，表示加密算法类型使用 `RSA_PKCS1_SHA256`。
+
+### RSA_PKCS1_SHA384
+
+```cangjie
+RSA_PKCS1_SHA384
+```
+
+功能：创建一个 `RSA_PKCS1_SHA384` 类型的枚举实例，表示加密算法类型使用 `RSA_PKCS1_SHA384`。
+
+### RSA_PKCS1_SHA512
+
+```cangjie
+RSA_PKCS1_SHA512
+```
+
+功能：创建一个 `RSA_PKCS1_SHA512` 类型的枚举实例，表示加密算法类型使用 `RSA_PKCS1_SHA512`。
+
+### RSA_PSS_PSS_SHA256
+
+```cangjie
+RSA_PSS_PSS_SHA256
+```
+
+功能：创建一个 `RSA_PSS_PSS_SHA256` 类型的枚举实例，表示加密算法类型使用 `RSA_PSS_PSS_SHA256`。
+
+### RSA_PSS_PSS_SHA384
+
+```cangjie
+RSA_PSS_PSS_SHA384
+```
+
+功能：创建一个 `RSA_PSS_PSS_SHA384` 类型的枚举实例，表示加密算法类型使用 `RSA_PSS_PSS_SHA384`。
+
+### RSA_PSS_PSS_SHA512
+
+```cangjie
+RSA_PSS_PSS_SHA512
+```
+
+功能：创建一个 `RSA_PSS_PSS_SHA512` 类型的枚举实例，表示加密算法类型使用 `RSA_PSS_PSS_SHA512`。
+
+### RSA_PSS_RSAE_SHA256
+
+```cangjie
+RSA_PSS_RSAE_SHA256
+```
+
+功能：创建一个 `RSA_PSS_RSAE_SHA256` 类型的枚举实例，表示加密算法类型使用 `RSA_PSS_RSAE_SHA256`。
+
+### RSA_PSS_RSAE_SHA384
+
+```cangjie
+RSA_PSS_RSAE_SHA384
+```
+
+功能：创建一个 `RSA_PSS_RSAE_SHA384` 类型的枚举实例，表示加密算法类型使用 `RSA_PSS_RSAE_SHA384`。
+
+### RSA_PSS_RSAE_SHA512
+
+```cangjie
+RSA_PSS_RSAE_SHA512
+```
+
+功能：创建一个 `RSA_PSS_RSAE_SHA512` 类型的枚举实例，表示加密算法类型使用 `RSA_PSS_RSAE_SHA384`。
+
+### func toString()
+
+```cangjie
+public func toString(): String
+```
+
+功能：加密算法类型的字符串表示。
+
+如 `RSA_PKCS1_SHA256` 的字符串表示为 "rsa_pkcs1_sha256"。
+
+返回值：
+
+- String - 加密算法类型的字符串表示。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.net.tls.*
+
+main() {
+    let schemeType = SignatureSchemeType.RSA_PKCS1_SHA256
+    let str = schemeType.toString()
+    println("签名方案类型的字符串表示: ${str}")
+    return 0
+}
+```
+
+运行结果：
+
+```text
+签名方案类型的字符串表示: rsa_pkcs1_sha256
+```
+
+### operator func !=(SignatureSchemeType)
+
+```cangjie
+public operator func !=(other: SignatureSchemeType): Bool
+```
+
+功能：判断两者是否为不同加密算法类型。
+
+参数：
+
+- other: [SignatureSchemeType](tls_package_enums.md#enum-signatureschemetype) - 对比的加密算法类型。
+
+返回值：
+
+- Bool - 不相同返回 true；否则，返回 false。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.net.tls.*
+
+main() {
+    let schemeType1 = SignatureSchemeType.RSA_PKCS1_SHA256
+    let schemeType2 = SignatureSchemeType.ECDSA_SECP256R1_SHA256
+    let isNotEqual = schemeType1 != schemeType2
+    println("签名方案类型是否不同: ${isNotEqual}")
+    return 0
+}
+```
+
+运行结果：
+
+```text
+签名方案类型是否不同: true
+```
+
+### operator func ==(SignatureSchemeType)
+
+```cangjie
+public operator func ==(other: SignatureSchemeType): Bool
+```
+
+功能：判断两者是否为同一加密算法类型。
+
+参数：
+
+- other: [SignatureSchemeType](tls_package_enums.md#enum-signatureschemetype) - 对比的加密算法类型。
+
+返回值：
+
+- Bool - 相同返回 true；否则，返回 false。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.net.tls.*
+
+main() {
+    let schemeType1 = SignatureSchemeType.RSA_PKCS1_SHA256
+    let schemeType2 = SignatureSchemeType.RSA_PKCS1_SHA256
+    let isEqual = schemeType1 == schemeType2
+    println("签名方案类型是否相同: ${isEqual}")
+    return 0
+}
+```
+
+运行结果：
+
+```text
+签名方案类型是否相同: true
+```
+
+## enum SignatureType
+
+```cangjie
+public enum SignatureType <: ToString & Equatable<SignatureType> {
+    | DSA
+    | ECDSA
+    | RSA
+}
+```
+
+功能：签名算法类型，用于认证真实性。参见 [RFC5246 7.4.1.4.1](https://www.rfc-editor.org/rfc/rfc5246.html#section-7.4.1.4.1) 章节。
+
+父类型：
+
+- ToString
+- Equatable\<[SignatureType](#enum-signaturetype)>
+
+### DSA
+
+```cangjie
+DSA
+```
+
+功能：创建一个 `DSA` 类型的枚举实例，表示采用数字签名算法。
+
+### ECDSA
+
+```cangjie
+ECDSA
+```
+
+功能：创建一个 `ECDSA` 类型的枚举实例，表示采用椭圆曲线数字签名算法。
+
+### RSA
+
+```cangjie
+RSA
+```
+
+功能：创建一个 `RSA` 类型的枚举实例，表示采用 RSA 加密算法。
+
+### func toString()
+
+```cangjie
+public func toString(): String
+```
+
+功能：转换为签名算法的字符串表示。
+
+返回值：
+
+- String - 签名算法的名称。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.net.tls.*
+
+main() {
+    let sigType = SignatureType.RSA
+    let str = sigType.toString()
+    println("签名类型的字符串表示: ${str}")
+    return 0
+}
+```
+
+运行结果：
+
+```text
+签名类型的字符串表示: RSA
+```
+
+### operator func !=(SignatureType)
+
+```cangjie
+public operator func !=(other: SignatureType): Bool
+```
+
+功能：判断两者是否为不同的签名算法。
+
+参数：
+
+- other: [SignatureType](tls_package_enums.md#enum-signaturetype) - 对比的签名算法类型。
+
+返回值：
+
+- Bool - 不相同返回 `true`；否则，返回 `false`。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.net.tls.*
+
+main() {
+    let sigType1 = SignatureType.RSA
+    let sigType2 = SignatureType.ECDSA
+    let isNotEqual = sigType1 != sigType2
+    println("签名类型是否不同: ${isNotEqual}")
+    return 0
+}
+```
+
+运行结果：
+
+```text
+签名类型是否不同: true
+```
+
+### operator func ==(SignatureType)
+
+```cangjie
+public operator func ==(other: SignatureType): Bool
+```
+
+功能：判断两者是否为相同的签名算法。
+
+参数：
+
+- other: [SignatureType](tls_package_enums.md#enum-signaturetype) - 对比的签名算法类型。
+
+返回值：
+
+- Bool - 相同返回 `true`；否则，返回 `false`。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.net.tls.*
+
+main() {
+    let sigType1 = SignatureType.RSA
+    let sigType2 = SignatureType.RSA
+    let isEqual = sigType1 == sigType2
+    println("签名类型是否相同: ${isEqual}")
+    return 0
+}
+```
+
+运行结果：
+
+```text
+签名类型是否相同: true
+```
+
+## enum TlsClientIdentificationMode
+
+```cangjie
+public enum TlsClientIdentificationMode {
+    | Disabled
+    | Optional
+    | Required
+}
+```
+
+功能：服务端对客户端证书的认证模式。
+
+### Disabled
+
+```cangjie
+Disabled
+```
+
+功能：表示服务端不校验客户端证书，客户端可以不发送证书和公钥，即单向认证。
+
+### Optional
+
+```cangjie
+Optional
+```
+
+功能：表示服务端校验客户端证书，但客户端可以不提供证书及公钥，不提供时则单向认证，提供时则为双向认证。
+
+### Required
+
+```cangjie
+Required
+```
+
+功能：表示服务端校验客户端证书，并且要求客户端必须提供证书和公钥，即双向认证。
