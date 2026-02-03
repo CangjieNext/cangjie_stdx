@@ -186,53 +186,53 @@ Donald Sweet,28
 
     具体示例为：
 
-<!-- compile -->
-```cangjie
-import std.collection.HashMap
-import stdx.unittest.data.*
+    <!-- compile -->
+    ```cangjie
+    import std.collection.HashMap
+    import stdx.unittest.data.*
 
-@Test[user in csv("testdata.csv")]
-func testUser(user: HashMap<String, String>) {
-    @Assert(user["username"] == "Alex Great" || user["username"] == "Donald Sweet")
-    @Assert(user["age"] == "21" || user["age"] == "28")
-}
-```
+    @Test[user in csv("testdata.csv")]
+    func testUser(user: HashMap<String, String>) {
+        @Assert(user["username"] == "Alex Great" || user["username"] == "Donald Sweet")
+        @Assert(user["age"] == "21" || user["age"] == "28")
+    }
+    ```
 
 2. 将数据表示为 [Serializable](../../../serialization/serialization_package_api/serialization_package_interfaces.md#interface-serializable)\<T> 类型数据，其 String 类型的数据可被反序列化为 [DataModelStruct](../../../serialization/serialization_package_api/serialization_package_classes.md#class-datamodelstruct) 格式对象。
 
-具体示例为：
+    具体示例为：
 
-<!-- compile -->
-```cangjie
-import stdx.serialization.serialization.*
-import std.convert.*
-import stdx.unittest.data.*
+    <!-- compile -->
+    ```cangjie
+    import stdx.serialization.serialization.*
+    import std.convert.*
+    import stdx.unittest.data.*
 
-public class User <: Serializable<User> {
-    public User(let name: String, let age: UInt32) {}
+    public class User <: Serializable<User> {
+        public User(let name: String, let age: UInt32) {}
 
-    public func serialize(): DataModel {
-        let dms = DataModelStruct()
-        dms.add(Field("username", DataModelString(name)))
-        dms.add(Field("age", DataModelString(age.toString())))
-        return dms
-    }
-
-    public static func deserialize(dm: DataModel): User {
-        var data: DataModelStruct = match (dm) {
-            case dms: DataModelStruct => dms
-            case _ => throw DataModelException("this data is not DataModelStruct")
+        public func serialize(): DataModel {
+            let dms = DataModelStruct()
+            dms.add(Field("username", DataModelString(name)))
+            dms.add(Field("age", DataModelString(age.toString())))
+            return dms
         }
 
-        let name = String.deserialize(data.get("username"))
-        let age = String.deserialize(data.get("age"))
-        return User(name, UInt32.parse(age))
-    }
-}
+        public static func deserialize(dm: DataModel): User {
+            var data: DataModelStruct = match (dm) {
+                case dms: DataModelStruct => dms
+                case _ => throw DataModelException("this data is not DataModelStruct")
+            }
 
-@Test[user in csv("testdata.csv")]
-func testUser(user: User) {
-   @Assert(user.name == "Alex Great" || user.name == "Donald Sweet")
-   @Assert(user.age == 21 || user.age == 28)
-}
-```
+            let name = String.deserialize(data.get("username"))
+            let age = String.deserialize(data.get("age"))
+            return User(name, UInt32.parse(age))
+        }
+    }
+
+    @Test[user in csv("testdata.csv")]
+    func testUser(user: User) {
+    @Assert(user.name == "Alex Great" || user.name == "Donald Sweet")
+    @Assert(user.age == 21 || user.age == 28)
+    }
+    ```
