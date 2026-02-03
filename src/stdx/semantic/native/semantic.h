@@ -66,13 +66,28 @@ public:
     virtual NodeType getType() const = 0;
     virtual std::string toString() const = 0;
     bool isDecl() {
-        if (kind == "VarDecl" || kind == "FuncDecl") {
+        if (kind == "VarDecl" || kind == "FuncDecl" || kind == "MainDecl" || kind == "TypeAlias" || 
+            kind == "ClassDecl" || kind == "StructDecl" || kind == "InterfaceDecl" || kind == "ExtendDecl" || 
+            kind == "EnumDecl" || kind == "MacroDecl" || kind == "MacroExpandDecl" || kind == "PropDecl" || 
+            kind == "StaticInit") {
             return true;
         }
         return false;
     }
     bool isExpr() {
-        if (kind == "BinaryExpr") {
+        if (kind == "BinaryExpr" || kind == "SymbolRef" || kind == "ValuedLiteral" || kind == "UnitLiteral" || 
+            kind == "RuneLiteral" || kind == "LineStringLiteral" || kind == "MultiLineStringLiteral" || 
+            kind == "MultiLineRawStringLiteral" || kind == "ArrayLiteral" || kind == "TupleLiteral" || 
+            kind == "AssignExpr" || kind == "VArrayExpr" || kind == "MemberAccess" || kind == "UnaryExpr" || 
+            kind == "CallExpr" || kind == "IsExpr" || kind == "AsExpr" || kind == "ParenExpr" || 
+            kind == "ReturnExpr" || kind == "IncOrDecExpr" || kind == "RangeExpr" || kind == "TypeConvExpr" || 
+            kind == "OptionalExpr" || kind == "BreakExpr" || kind == "ContinueExpr" || kind == "SubscriptExpr" || 
+            kind == "Lambda" || kind == "MatchExpr" || kind == "TryCatch" || kind == "ThrowExpr" || 
+            kind == "SynchronizedExpr" || kind == "SpawnExpr" || kind == "IfExpr" || kind == "WhileExpr" || 
+            kind == "DoWhileExpr" || kind == "ForInExpr" || kind == "JumpExpr" || kind == "LambdaExpr" || 
+            kind == "TryExpr" || kind == "InterpolationExpr" || kind == "QuoteTokenExpr" || kind == "QuoteExpr" || 
+            kind == "QuoteInterpolationExpr" || kind == "TrailingClosureExpr" || kind == "UnsafeExpr" || 
+            kind == "MacroExpandExpr") {
             return true;
         }
         return false;
