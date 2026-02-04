@@ -31,3 +31,5 @@ src/stdx/semantic/decode_semantic.cj
 src/stdx/semantic/builder_semantic.cj
 src/stdx/semantic/constants_semantic.cj
 src/stdx/semantic/exception_semantic.cj
+test/target
+*.lock

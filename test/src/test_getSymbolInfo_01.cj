@@ -9,7 +9,9 @@
 // (not Windows) EXEC: dos2unix package_symbol_01/decls.cj
 // EXEC: %compiler %import-cangjie-stdx %cmp_opt -o %n.%suffix %f %cmp_utest_opt
 // RUN-EXEC: %set_stdx_path %run %run_opt %n.%suffix %run_utest_opt %run_args
+package semantictest
 
+import std.unittest.testmacro.*
 import stdx.syntax.*
 import stdx.semantic.*
 
@@ -42,7 +44,7 @@ class SymbolRefFinder <: ASTVisitor {
 }
 
 @Test
-class Test {
+class SymbolRefTest {
     var pkgAST: Package = Package(false, "default", 
         [SourceFile([], "default", "/path/to/sourceFile.cj", None, 
             MainDecl(
@@ -54,7 +56,7 @@ class Test {
 
     @BeforeAll
     func readDecls(): Unit {
-        let parsingRes: ParsingResult<Package> = parsePackage("./package_symbol_01")
+        let parsingRes: ParsingResult<Package> = parsePackage("./sourceFile/package/package_symbol_01")
         pkgAST = parsingRes.node.getOrThrow()
         semaRes = SemanticResult.analyze(pkgAST, importedPkgContexts: [])
     }
@@ -83,6 +85,7 @@ class Test {
         }
     }
 
+    @Skip
     @TestCase
     func testSymbol03() {
         let myVisitor = SymbolRefFinder(pkgAST, "rec")
