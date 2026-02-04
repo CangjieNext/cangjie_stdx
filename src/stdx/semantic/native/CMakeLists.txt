@@ -66,6 +66,7 @@ add_custom_target(FLATC_OUTPUTS_SEMA ALL DEPENDS ${FLATC_CJ_OUTPUT_SEMA} ${FLATC
 file(GLOB semantic_ffi_src
     analyze.cpp
     typeWrite.cpp
+    typeCollector.cpp
     syntaxNodeDeserializer.cpp)
 set(libname stdx.semanticFFI)
 add_library(${libname}-objs SHARED ${semantic_ffi_src})

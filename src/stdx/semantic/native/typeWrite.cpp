@@ -2,6 +2,7 @@
 
 #include "cangjie/AST/Node.h"
 #include "cangjie/AST/Symbol.h"
+#include "cangjie/AST/Match.h"
 
 using namespace Cangjie;
 using namespace AST;
@@ -33,13 +34,30 @@ flatbuffers::Offset<SemanticType::SemanticTypeMap> TypeWrite::SerializeSemanticT
     return SemanticType::CreateSemanticTypeMap(builder, id, type);
 }
 
+flatbuffers::Offset<SemanticType::SymbolRefMap> TypeWrite::SerializeRefMap(int refId, int declId) {
+    return SemanticType::CreateSymbolRefMap(builder, refId, declId);
+}
+
 flatbuffers::Offset<SemanticType::NodeTypeMap> TypeWrite::SerializeNodeTypeMap() {
     std::vector<flatbuffers::Offset<SemanticType::SemanticTypeMap>> declTypeVector;
     std::vector<flatbuffers::Offset<SemanticType::SemanticTypeMap>> exprTypeVector;
     std::vector<flatbuffers::Offset<SemanticType::SymbolRefMap>> refVector;
 
     for (const auto& pair : declTypeMap) {
-        declTypeVector.push_back(SerializeSemanticTypeMap(pair.first, pair.second.get()->ty));
+        declTypeVector.push_back(SerializeSemanticTypeMap(pair.second, pair.first.get()->ty));
+    }
+
+    for (const auto& pair : refMap) {
+        auto symbolExpr = pair.second.get();
+        Ptr<Decl> target{nullptr};
+        if (symbolExpr->astKind == ASTKind::REF_EXPR) {
+            auto re = StaticAs<ASTKind::REF_EXPR>(symbolExpr);
+            target = re->ref.target;
+        } else if (symbolExpr->astKind == ASTKind::MEMBER_ACCESS) {
+            auto ma = StaticAs<ASTKind::MEMBER_ACCESS>(symbolExpr);
+            target = ma->target;
+        }
+        refVector.push_back(SerializeRefMap(pair.first, declTypeMap[target]));
     }
     auto declTypeFlatbufferVector = builder.CreateVector(declTypeVector);
     auto exprTypeFlatbufferVector = builder.CreateVector(exprTypeVector);
