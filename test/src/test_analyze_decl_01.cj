@@ -9,12 +9,15 @@
 // (not Windows) EXEC: dos2unix package_decl_01/decls.cj
 // EXEC: %compiler %import-cangjie-stdx %cmp_opt -o %n.%suffix %f %cmp_utest_opt
 // RUN-EXEC: %set_stdx_path %run %run_opt %n.%suffix %run_utest_opt %run_args
+package semantictest
 
+internal import std.unittest.*
+import std.unittest.testmacro.*
 import stdx.syntax.*
 import stdx.semantic.*
 
 @Test
-class Test {
+class AnalyzeTest001 {
     var decls: Array<Decl> = []
     var semaRes: SemanticResult = SemanticResult.analyze(Package(false, "default", 
         [SourceFile([], "default", "/path/to/sourceFile.cj", None, 
@@ -26,7 +29,7 @@ class Test {
 
     @BeforeAll
     func readDecls(): Unit {
-        let parsingRes: ParsingResult<Package> = parsePackage("package_decl_01")
+        let parsingRes: ParsingResult<Package> = parsePackage("sourceFile/package/package_decl_01")
         let pkgAST: Package = parsingRes.node.getOrThrow()
 
         semaRes = SemanticResult.analyze(pkgAST, importedPkgContexts: [])
