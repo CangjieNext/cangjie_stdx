@@ -47,7 +47,6 @@ class DocStubGenerator <: ASTRewriter {
         match (node) {
             case fn: FuncDecl =>
                 let comment = Comment(
-                    CommentKind.Document,
                     "// @brief describe ${fn.name}"
                 )
                 let newComments = ArrayList<Comment>(fn.comments)
