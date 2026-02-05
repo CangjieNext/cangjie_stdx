@@ -1,6 +1,8 @@
 # HashSet 和 HashMap 序列化
-<!-- verify -->
 
+示例：
+
+<!-- verify -->
 ```cangjie
 import std.collection.*
 import stdx.serialization.serialization.*
@@ -54,7 +56,7 @@ class Values <: Hashable & Equatable<Values> & Serializable<Values> {
 }
 ```
 
-运行结果如下：
+运行结果：
 
 ```text
 [
