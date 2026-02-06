@@ -5,19 +5,21 @@ import std.collection.HashMap
 
 public class SemanticResult {
     public let diags: Array<Diagnostic> = []
+    private let impl: AnalyzerImpl
     
     public static func analyze(pkgAST: Package, importedPkgContexts!: Array<SemanticContext> = []): SemanticResult {
         let maps = unsafe{ analyzeImpl(serializePkg(pkgAST)) }
         let declMap = getDeclTypeMap(pkgAST, maps)
         let refMap = getRefMap(pkgAST, maps)
-        SemanticResult(declMap, refMap)
+        let declMaps = getDeclTypeMap(pkgAST, maps)
+        SemanticResult(declMaps, refMap, AnalyzerImpl(pkgAST))
     }
 
     public static func analyze(pkgAST: Package, cjoPath: String) {
         let maps = unsafe{ analyzeImplWithPath(serializePkg(pkgAST), cjoPath) }
         let declMaps = getDeclTypeMap(pkgAST, maps)
         let refMap = getRefMap(pkgAST, maps)
-        SemanticResult(declMaps, refMap)
+        SemanticResult(declMaps, refMap, AnalyzerImpl(pkgAST))
         // TODO: 内部应该存一份对应 cjoPath 的 SemanticContext
     }
 
@@ -27,6 +29,26 @@ public class SemanticResult {
 
     public func getSymbolRef(symbol: SymbolRef): Option<SyntaxTreeNode> {
         target.get(symbol.getId())
+    }
+
+    // get decl by TypeAnnotation
+    public func getDecl(ty: TypeAnnotation): Option<Decl> {
+        impl.get(ty)
+    }
+
+    // get members of decl, including extend members
+    public func getMembers(decl: Decl): Array<Decl> {
+        impl.getMembers(decl)
+    }
+
+    // get super tys of decl, including extend implementation
+    public func getSuperTys(decl: Decl): Array<Decl> {
+        impl.getSuperTys(decl)
+    }
+
+    // get sub tys of decl, including extend implementation
+    public func getSubTys(decl: Decl): Array<Decl> {
+        impl.getSubTys(decl)
     }
 
     private static func getDeclTypeMap(pkgAST: Package, maps: SemanticType_NodeTypeMap) {
@@ -75,10 +97,10 @@ public class SemanticResult {
     private let target: HashMap<UInt64, SyntaxTreeNode>
     // private let target: HashMap<SyntaxTreeNode, SyntaxTreeNode>
     
-    init(declTypeInfoMap: HashMap<SyntaxTreeNode, SemanticType>, 
-    target: HashMap<UInt64, SyntaxTreeNode>) {
+    init(declTypeInfoMap: HashMap<SyntaxTreeNode, SemanticType>, target: HashMap<UInt64, SyntaxTreeNode>, impl: AnalyzerImpl){
         this.declTypeInfoMap = declTypeInfoMap
         this.target = target
+        this.impl = impl
     }
 }
 
