@@ -61,7 +61,7 @@ public class SemanticResult {
                 let nf = NodeFinder(pkgAST, id)
                 nf.walk(pkgAST)
                 let decl = nf.res.getOrThrow()
-                let ty = generateSemanticType(semanticTypeMap.GetType())
+                let ty = generateSemanticType(semanticTypeMap.GetType(), pkgAST)
                 if (tyPtrToSemanticType.contains(ty.rawPointer)) {
                     declMap.add(decl, tyPtrToSemanticType[ty.rawPointer])
                 } else {

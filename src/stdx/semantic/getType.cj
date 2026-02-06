@@ -2,8 +2,9 @@ package stdx.semantic
 
 import std.collection.HashMap
 import std.collection.ArrayList
+import stdx.syntax.*
 
-func generateSemanticType(t: Option<SemanticType_ASTType>): SemanticType {
+func generateSemanticType(t: Option<SemanticType_ASTType>, pkgAST: Package): SemanticType {
     let semanticType = match (t) {
         case Some(v) => v
         case None => throw Exception("no semanticType")
@@ -18,8 +19,12 @@ func generateSemanticType(t: Option<SemanticType_ASTType>): SemanticType {
     let typeArgs = ArrayList<SemanticType>()
 
     for (arg in typeArgsNode) {
-        typeArgs.add(generateSemanticType(arg))
+        typeArgs.add(generateSemanticType(arg, pkgAST))
     }
+    // find ty->declaration
+    let nf = NodeFinder(pkgAST, semanticType.GetDeclId())
+    nf.walk(pkgAST)
+
     return match(kind) {
         case TYPE_INVALID => throw Exception("Invalid type")
         case TYPE_UNIT => UnitSType(rawPointer)
@@ -42,15 +47,35 @@ func generateSemanticType(t: Option<SemanticType_ASTType>): SemanticType {
         case TYPE_NOTHING => NothingSType(rawPointer)
         case TYPE_BOOLEAN => BoolSType(rawPointer)
         case TYPE_TUPLE => TupleSType(typeArgs.toArray(), rawPointer)
-        case TYPE_ENUM => EnumSType(name, typeArgs.toArray(), None, rawPointer)
+        case TYPE_ENUM =>
+            var decl = Option<EnumDecl>.None
+            if (let Some(realRes) <- nf.res) {
+                decl = realRes as EnumDecl
+            }
+            EnumSType(name, typeArgs.toArray(), decl, rawPointer)
         case TYPE_FUNC => FuncSType(typeArgs.toArray(), rawPointer)
-        case TYPE_STRUCT => StructSType(name, typeArgs.toArray(), None, rawPointer)
+        case TYPE_STRUCT =>
+            var decl = Option<StructDecl>.None
+            if (let Some(realRes) <- nf.res) {
+                decl = realRes as StructDecl
+            }
+            StructSType(name, typeArgs.toArray(), decl, rawPointer)
         case TYPE_ARRAY => ArraySType(typeArgs[0], rawPointer)
         case TYPE_VARRAY => VArraySType(typeArgs[0], 0, rawPointer)  // Assuming default length of 0
         case TYPE_POINTER => CPointerSType(typeArgs[0], rawPointer)
         case TYPE_CSTRING => CStringSType(rawPointer)
-        case TYPE_CLASS => ClassSType(name, typeArgs.toArray(), None, rawPointer)
-        case TYPE_INTERFACE => InterfaceSType(name, typeArgs.toArray(), None, rawPointer)
+        case TYPE_CLASS =>
+            var decl = Option<ClassDecl>.None
+            if (let Some(realRes) <- nf.res) {
+                decl = realRes as ClassDecl
+            }
+            ClassSType(name, typeArgs.toArray(), decl, rawPointer)
+        case TYPE_INTERFACE =>
+            var decl = Option<InterfaceDecl>.None
+            if (let Some(realRes) <- nf.res) {
+                decl = realRes as InterfaceDecl
+            }
+            InterfaceSType(name, typeArgs.toArray(), decl, rawPointer)
         case TYPE_ALIAS => throw Exception("Alias type not implemented")
         case TYPE_GENERICS => GenericSTypeParameter(name, typeArgs.toArray(), rawPointer)
         case TYPE_ANY => AnySType(rawPointer)

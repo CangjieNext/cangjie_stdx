@@ -3,6 +3,7 @@
 #include "cangjie/AST/Node.h"
 #include "cangjie/AST/Symbol.h"
 #include "cangjie/AST/Match.h"
+#include "cangjie/AST/Types.h"
 
 using namespace Cangjie;
 using namespace AST;
@@ -26,7 +27,11 @@ flatbuffers::Offset<SemanticType::ASTType> TypeWrite::SerializeSemanticType(AstT
     auto args = builder.CreateVector(lateTypeVector);
     auto name = builder.CreateString(ty->name);
     auto rPointer = uint64_t(ty.get());
-    return SemanticType::CreateASTType(builder, kind, name, args, rPointer);
+    auto declIndex = 0xFFFFFFFF; // invalid index
+    if (declTypeMap.find(Ty::GetDeclPtrOfTy(ty)) != declTypeMap.end()) {
+        declIndex = declTypeMap[Ty::GetDeclPtrOfTy(ty)];
+    }
+    return SemanticType::CreateASTType(builder, kind, name, args, rPointer, declIndex);
 }
 
 flatbuffers::Offset<SemanticType::SemanticTypeMap> TypeWrite::SerializeSemanticTypeMap(int id, AstTy ty) {
