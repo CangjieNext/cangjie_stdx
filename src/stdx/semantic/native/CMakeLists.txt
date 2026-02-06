@@ -59,7 +59,22 @@ add_custom_command(
 
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
 
-add_custom_target(FLATC_OUTPUTS_SEMA ALL DEPENDS ${FLATC_CJ_OUTPUT_SEMA} ${FLATC_CPP_OUTPUT_SEMA})
+set(CJO_SCHEMA_SRC ModuleFormat.fbs)
+get_filename_component(CJO_FBS_FILENAME ${CJO_SCHEMA_SRC} NAME_WE)
+set(FLATC_CJ_OUTPUT_CJO "${CMAKE_BINARY_DIR}/${CJO_FBS_FILENAME}_generated.cj")
+add_custom_command(
+    OUTPUT ${FLATC_CJ_OUTPUT_CJO}
+    COMMAND ${FLATC_EXECUTABLE} ARGS --no-warnings --cangjie -o "${CMAKE_BINARY_DIR}" ${CJO_SCHEMA_SRC}
+    DEPENDS flatbuffers ${CJO_SCHEMA_SRC} # flatc defined in flatbuffers project: add_executable(flatc..)
+
+    COMMAND sed 's/std.ast/stdx.semantic/g' ${CMAKE_BINARY_DIR}/${CJO_FBS_FILENAME}_generated.cj > ${CMAKE_BINARY_DIR}/${CJO_FBS_FILENAME}_generated_semantic.cj
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different ${CMAKE_BINARY_DIR}/${CJO_FBS_FILENAME}_generated_semantic.cj
+            ${CMAKE_SOURCE_DIR}/src/stdx/semantic/${CJO_FBS_FILENAME}_generated.cj
+    COMMENT "generate cangjie cjo serialize file using flatc"
+
+    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
+
+add_custom_target(FLATC_OUTPUTS_SEMA ALL DEPENDS ${FLATC_CJ_OUTPUT_SEMA} ${FLATC_CPP_OUTPUT_SEMA} ${FLATC_CJ_OUTPUT_CJO})
 
 
 # build semantic ffi lib shared

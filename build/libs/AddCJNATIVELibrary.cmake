@@ -1083,7 +1083,7 @@ if(NOT CANGJIE_CJPM_BUILD_TYPE)
             cangjie${BACKEND_TYPE}Semantic
             stdx.semanticFFI
         CANGJIE_STDX_LIB_DEPENDS syntax
-        CANGJIE_STD_LIB_LINK std-core std-collection std-sync std-convert std-fs std-sort std-ast
+        CANGJIE_STD_LIB_LINK std-core std-collection std-sync std-convert std-fs std-io std-ast
         OBJECTS ${output_cj_object_dir}/stdx/semantic.o
         FORCE_LINK_ARCHIVES stdx.semanticFFI
         FLAGS ${syntaxFFI_flags}
