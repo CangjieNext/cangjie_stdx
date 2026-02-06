@@ -130,8 +130,13 @@ public:
         return NodeType::NON_TERMINAL;
     }
     std::string toString() const override {
-        std::stack<SyntaxNodePtr, std::vector<SyntaxNodePtr>> stack(children);
+        std::stack<SyntaxNodePtr, std::vector<SyntaxNodePtr>> stack;
         std::stringstream ss;
+
+        // Push children in reverse order to maintain correct sequence
+        for (int i = static_cast<int>(children.size()) - 1; i >= 0; i--) {
+            stack.push(children[i]);
+        }
 
         while (!stack.empty()) {
             auto node = stack.top();

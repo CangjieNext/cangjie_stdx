@@ -70,9 +70,6 @@ uint8_t* CJ_Analyze(const uint8_t* node, size_t length)
 {
     SyntaxNodePtr root = SyntaxNodeFlatBufferDeserializer::deserialize(node, length);
 
-    std::string code = root->toString();
-    // printSyntaxNode(root);
-    std::cout << "code: " << code << std::endl;
     DiagnosticEngine diag;
     CompilerInvocation compilerInvocation;
     CompilerInstance ci(compilerInvocation, diag);
@@ -86,19 +83,26 @@ uint8_t* CJ_Analyze(const uint8_t* node, size_t length)
 
     // PARSER
     auto package = MakeOwned<AST::Package>();
-    auto fileID = ci.GetSourceManager().AddSource("", code);
-    Parser parser(fileID, code, diag, ci.GetSourceManager(), ci.invocation.globalOptions.enableAddCommentToAst,
-        ci.invocation.globalOptions.compileCjd);
-    parser.SetCompileOptions(ci.invocation.globalOptions);
-    auto file = parser.ParseTopLevel();
-    ci.GetSourceManager().AddComments(parser.GetCommentsMap());
-    if (!file->package) {
-        package->fullPackageName = DEFAULT_PACKAGE_NAME;
-    } else {
-        package->fullPackageName = file->package->packageName;
+    if (root->getType() == SyntaxNode::NodeType::NON_TERMINAL) {
+        auto nonTerminal = std::static_pointer_cast<NonTerminal>(root);
+        for (const auto& child : nonTerminal->children) {
+            std::string code = child->toString();
+            std::cout << "code: " << code << std::endl;
+            auto fileID = ci.GetSourceManager().AddSource("", code);
+            Parser parser(fileID, code, diag, ci.GetSourceManager(), ci.invocation.globalOptions.enableAddCommentToAst,
+                ci.invocation.globalOptions.compileCjd);
+            parser.SetCompileOptions(ci.invocation.globalOptions);
+            auto file = parser.ParseTopLevel();
+            ci.GetSourceManager().AddComments(parser.GetCommentsMap());
+            if (!file->package) {
+                package->fullPackageName = DEFAULT_PACKAGE_NAME;
+            } else {
+                package->fullPackageName = file->package->packageName;
+            }
+            file->curPackage = package.get();
+            package->files.push_back(std::move(file));
+        }
     }
-    file->curPackage = package.get();
-    package->files.push_back(std::move(file));
     ci.srcPkgs.push_back(std::move(package));
 
 
@@ -129,9 +133,6 @@ uint8_t* CJ_Analyze_With_Path(const uint8_t* node, size_t length, const char* cj
 {
     SyntaxNodePtr root = SyntaxNodeFlatBufferDeserializer::deserialize(node, length);
 
-    std::string code = root->toString();
-    // printSyntaxNode(root);
-    std::cout << "code: " << code << std::endl;
     DiagnosticEngine diag;
     CompilerInvocation compilerInvocation;
     CompilerInstance ci(compilerInvocation, diag);
@@ -147,19 +148,26 @@ uint8_t* CJ_Analyze_With_Path(const uint8_t* node, size_t length, const char* cj
     ci.invocation.globalOptions.importPaths.emplace_back(cjo);
     // PARSER
     auto package = MakeOwned<AST::Package>();
-    auto fileID = ci.GetSourceManager().AddSource("", code);
-    Parser parser(fileID, code, diag, ci.GetSourceManager(), ci.invocation.globalOptions.enableAddCommentToAst,
-        ci.invocation.globalOptions.compileCjd);
-    parser.SetCompileOptions(ci.invocation.globalOptions);
-    auto file = parser.ParseTopLevel();
-    ci.GetSourceManager().AddComments(parser.GetCommentsMap());
-    if (!file->package) {
-        package->fullPackageName = DEFAULT_PACKAGE_NAME;
-    } else {
-        package->fullPackageName = file->package->packageName;
+    if (root->getType() == SyntaxNode::NodeType::NON_TERMINAL) {
+        auto nonTerminal = std::static_pointer_cast<NonTerminal>(root);
+        for (const auto& child : nonTerminal->children) {
+            std::string code = child->toString();
+            std::cout << "code: " << code << std::endl;
+            auto fileID = ci.GetSourceManager().AddSource("", code);
+            Parser parser(fileID, code, diag, ci.GetSourceManager(), ci.invocation.globalOptions.enableAddCommentToAst,
+                ci.invocation.globalOptions.compileCjd);
+            parser.SetCompileOptions(ci.invocation.globalOptions);
+            auto file = parser.ParseTopLevel();
+            ci.GetSourceManager().AddComments(parser.GetCommentsMap());
+            if (!file->package) {
+                package->fullPackageName = DEFAULT_PACKAGE_NAME;
+            } else {
+                package->fullPackageName = file->package->packageName;
+            }
+            file->curPackage = package.get();
+            package->files.push_back(std::move(file));
+        }
     }
-    file->curPackage = package.get();
-    package->files.push_back(std::move(file));
     ci.srcPkgs.push_back(std::move(package));
 
 
