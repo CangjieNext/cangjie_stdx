@@ -5,6 +5,7 @@ table ASTType {
     name: string;
     typeArgs: [ASTType];
     rawPointer: uint64;
+    declId: uint64;
 }
 
 table SemanticTypeMap {
