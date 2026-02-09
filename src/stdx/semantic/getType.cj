@@ -1,8 +1,26 @@
 package stdx.semantic
 
+import std.convert.*
 import std.collection.HashMap
 import std.collection.ArrayList
 import stdx.syntax.*
+
+
+func parseVArrayLength(name: String): Int64 {
+    let dollarPos = name.indexOf("$")
+    var gtPos: Option<Int64> = 0
+    
+    if (let Some(pos) <- dollarPos) {
+        gtPos = name.indexOf(">", pos)
+    }
+
+    if (let Some(startPos) <- dollarPos && let Some(endPos) <- gtPos) {
+        let lengthStr = name[startPos + 1..endPos]
+        let length = Int64.parse(lengthStr)
+        return length
+    }
+    return 0
+}
 
 func generateSemanticType(t: Option<SemanticType_ASTType>, pkgAST: Package): SemanticType {
     let semanticType = match (t) {
@@ -61,7 +79,10 @@ func generateSemanticType(t: Option<SemanticType_ASTType>, pkgAST: Package): Sem
             }
             StructSType(name, typeArgs.toArray(), decl, rawPointer)
         case TYPE_ARRAY => ArraySType(typeArgs[0], rawPointer)
-        case TYPE_VARRAY => VArraySType(typeArgs[0], 0, rawPointer)  // Assuming default length of 0
+        case TYPE_VARRAY => 
+            // Parse length from name field, which format is "VArray<elementType, $length>"
+            let length = parseVArrayLength(name)
+            VArraySType(typeArgs[0], length, rawPointer)
         case TYPE_POINTER => CPointerSType(typeArgs[0], rawPointer)
         case TYPE_CSTRING => CStringSType(rawPointer)
         case TYPE_CLASS =>
