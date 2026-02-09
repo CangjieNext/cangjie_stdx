@@ -1,5 +1,6 @@
 package testPackage
 
+
 enum A {
     | X | Y | Z
 }
@@ -31,4 +32,36 @@ public enum G {
 
 enum H {
     | A
+}
+
+interface I<X, Y> { }
+
+class J<Z> <: I<Z, Z> { }
+
+public enum k<T, E> {
+
+    Ok(T)
+
+    | Err(E)
+
+    public func unwrap(): T {
+        match (this) {
+            case Ok(v) => v
+            case Err(e) => throw e
+        }
+    }
+
+    public func isOk(): Bool {
+        match (this) {
+            case Ok(_) => true
+            case Err(_) => false
+        }
+    }
+
+    public func isErr(): Bool {
+        match (this) {
+            case Ok(_) => false
+            case Err(_) => true
+        }
+    }
 }

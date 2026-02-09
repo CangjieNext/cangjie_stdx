@@ -44,11 +44,35 @@ class EnumAnalyzeTest {
     @TestCase
     func testEnumA_Type() {
         let decl = decls[0]
-        let declTyInfo: Option<SemanticType> = semaRes.getTypeInfo(decl)
+        var declTyInfo: Option<SemanticType> = semaRes.getTypeInfo(decl)
         match (declTyInfo) {
             case Some(ty: SemanticType) => @Expect(ty.toString(), "A")
             case None => @FailExpect("no type info")
         }
+        // let decl_1 = (decls[0] as EnumDecl).getOrThrow()
+
+        // let nodes = decl_1.body.memberDecls
+
+        // var constructor = (nodes[0] as EnumConstructor).getOrThrow()
+        // declTyInfo = semaRes.getTypeInfo(constructor)
+        // match (declTyInfo) {
+        //     case Some(funcTy: SemanticType) => @Expect(funcTy.toString(), "() -> A")
+        //     case None => @FailExpect("no type info")
+        // }
+
+        // constructor = (nodes[1] as EnumConstructor).getOrThrow()
+        // declTyInfo = semaRes.getTypeInfo(constructor)
+        // match (declTyInfo) {
+        //     case Some(funcTy: SemanticType) => @Expect(funcTy.toString(), "() -> A")
+        //     case None => @FailExpect("no type info")
+        // }
+
+        // constructor = (nodes[2] as EnumConstructor).getOrThrow()
+        // declTyInfo = semaRes.getTypeInfo(constructor)
+        // match (declTyInfo) {
+        //     case Some(funcTy: SemanticType) => @Expect(funcTy.toString(), "() -> A")
+        //     case None => @FailExpect("no type info")
+        // }
     }
 
     @TestCase
@@ -119,6 +143,36 @@ class EnumAnalyzeTest {
         let declTyInfo: Option<SemanticType> = semaRes.getTypeInfo(decl)
         match (declTyInfo) {
             case Some(ty: SemanticType) => @Expect(ty.toString(), "H")
+            case None => @FailExpect("no type info")
+        }
+    }
+    
+    @TestCase
+    func testEnumI_Type() {
+        let decl = decls[8]
+        let declTyInfo: Option<SemanticType> = semaRes.getTypeInfo(decl)
+        match (declTyInfo) {
+            case Some(ty: SemanticType) => @Expect(ty.toString(), "I<X, Y>")
+            case None => @FailExpect("no type info")
+        }
+    }
+
+    @TestCase
+    func testEnumJ_Type() {
+        let decl = decls[9]
+        let declTyInfo: Option<SemanticType> = semaRes.getTypeInfo(decl)
+        match (declTyInfo) {
+            case Some(ty: SemanticType) => @Expect(ty.toString(), "J<Z>")
+            case None => @FailExpect("no type info")
+        }
+    }
+
+    @TestCase
+    func testEnumk_Type() {
+        let decl = decls[10]
+        let declTyInfo: Option<SemanticType> = semaRes.getTypeInfo(decl)
+        match (declTyInfo) {
+            case Some(ty: SemanticType) => @Expect(ty.toString(), "k<T, E>")
             case None => @FailExpect("no type info")
         }
     }
