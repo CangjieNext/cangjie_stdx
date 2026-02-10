@@ -24,7 +24,7 @@ main() {
         .header("Accept-Encoding", "gzip")
         .build()
 
-    // 3. 发送 http 请求并获取相应
+    // 3. 发送 http 请求并获取响应
     let client = ClientBuilder().build()
     let rsp = client.send(request)
 
