@@ -882,7 +882,7 @@ main() {
             tls.write("这是一个由客户端发送的消息".toArray())
         }
     } catch (e: Exception) {
-        println("客户端连接失败 ${e}, 重试中...")
+        println("客户端连接失败: ${e.message}")
     }
     // 删除生成的证书和私钥文件
     removeIfExists(serverKey)
@@ -1246,7 +1246,7 @@ main() {
             let _: StreamingSocket = tls.socket
         }
     } catch (e: Exception) {
-        println("client connection failed ${e}, retrying...")
+        println("客户端连接失败: ${e.message}")
     }
     removeIfExists(serverKey)
     removeIfExists(serverCrt)
@@ -1466,7 +1466,7 @@ main() {
             tls.write("这是一个由客户端发送的消息".toArray())
         }
     } catch (e: Exception) {
-        println("client connection failed ${e}, retrying...")
+        println("客户端连接失败: ${e.message}")
     }
     removeIfExists(serverKey)
     removeIfExists(serverCrt)
@@ -1565,7 +1565,7 @@ main() {
             // 后续其他行为
         }
     } catch (e: Exception) {
-        println("client connection failed ${e}, retrying...")
+        println("客户端连接失败: ${e.message}")
     }
     removeIfExists(serverKey)
     removeIfExists(serverCrt)
@@ -1694,7 +1694,7 @@ main() {
         tls.close()
         println("客户端成功关闭连接: ${tls.isClosed()}")
     } catch (e: Exception) {
-        println("client connection failed ${e}, retrying...")
+        println("客户端连接失败: ${e.message}")
     }
     removeIfExists(serverKey)
     removeIfExists(serverCrt)
@@ -1884,7 +1884,7 @@ main() {
             println("客户端 hashCode: ${tls.hashCode()}")
         }
     } catch (e: Exception) {
-        println("client connection failed ${e}, retrying...")
+        println("客户端连接失败: ${e.message}")
     }
     removeIfExists(serverKey)
     removeIfExists(serverCrt)
@@ -2008,7 +2008,7 @@ main() {
             tls.write("这是一个由客户端发送的消息".toArray())
         }
     } catch (e: Exception) {
-        println("client connection failed ${e}, retrying...")
+        println("客户端连接失败: ${e.message}")
     }
     removeIfExists(serverKey)
     removeIfExists(serverCrt)
