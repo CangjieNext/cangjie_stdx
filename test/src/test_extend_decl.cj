@@ -45,8 +45,8 @@ class ExtendAnalyzeTest {
         let decl = decls[0]
         let declTyInfo: Option<SemanticType> = semaRes.getTypeInfo(decl)
         match (declTyInfo) {
-            case Some(ty: SemanticType) => @Expect(ty.toString(), "A")
-            case None => @FailExpect("no type info")
+            case Some(ty: SemanticType) => @FailExpect("ExtendDecl should has no SemanticType")
+            case None => ()
         }
     }
 
@@ -55,8 +55,8 @@ class ExtendAnalyzeTest {
         let decl = decls[1]
         let declTyInfo: Option<SemanticType> = semaRes.getTypeInfo(decl)
         match (declTyInfo) {
-            case Some(ty: SemanticType) => @Expect(ty.toString(), "B")
-            case None => @FailExpect("no type info")
+            case Some(ty: SemanticType) => @FailExpect("ExtendDecl should has no SemanticType")
+            case None => ()
         }
     }
 
@@ -65,8 +65,8 @@ class ExtendAnalyzeTest {
         let decl = decls[2]
         let declTyInfo: Option<SemanticType> = semaRes.getTypeInfo(decl)
         match (declTyInfo) {
-            case Some(ty: SemanticType) => @Expect(ty.toString(), "C")
-            case None => @FailExpect("no type info")
+            case Some(ty: SemanticType) => @FailExpect("ExtendDecl should has no SemanticType")
+            case None => ()
         }
     }
 
@@ -75,8 +75,8 @@ class ExtendAnalyzeTest {
         let decl = decls[3]
         let declTyInfo: Option<SemanticType> = semaRes.getTypeInfo(decl)
         match (declTyInfo) {
-            case Some(ty: SemanticType) => @Expect(ty.toString(), "D<X, Y>")
-            case None => @FailExpect("no type info")
+            case Some(ty: SemanticType) => @FailExpect("ExtendDecl should has no SemanticType")
+            case None => ()
         }
     }
    
@@ -85,8 +85,8 @@ class ExtendAnalyzeTest {
         let decl = decls[4]
         let declTyInfo: Option<SemanticType> = semaRes.getTypeInfo(decl)
         match (declTyInfo) {
-            case Some(ty: SemanticType) => @Expect(ty.toString(), "ToStringImpl")
-            case None => @FailExpect("no type info")
+            case Some(ty: SemanticType) => @FailExpect("ExtendDecl should has no SemanticType")
+            case None => ()
         }
     }
 
@@ -95,8 +95,8 @@ class ExtendAnalyzeTest {
         let decl = decls[5]
         let declTyInfo: Option<SemanticType> = semaRes.getTypeInfo(decl)
         match (declTyInfo) {
-            case Some(ty: SemanticType) => @Expect(ty.toString(), "Foo")
-            case None => @FailExpect("no type info")
+            case Some(ty: SemanticType) => @FailExpect("ExtendDecl should has no SemanticType")
+            case None => ()
         }
     }
 
@@ -105,8 +105,8 @@ class ExtendAnalyzeTest {
         let decl = decls[6]
         var declTyInfo: Option<SemanticType> = semaRes.getTypeInfo(decl)
         match (declTyInfo) {
-            case Some(ty: SemanticType) => @Expect(ty.toString(), "A")
-            case None => @FailExpect("no type info")
+            case Some(ty: SemanticType) => @FailExpect("ExtendDecl should has no SemanticType")
+            case None => ()
         }
         
     }
@@ -117,8 +117,8 @@ class ExtendAnalyzeTest {
 
         let declTyInfo: Option<SemanticType> = semaRes.getTypeInfo(decl)
         match (declTyInfo) {
-            case Some(ty: SemanticType) => @Expect(ty.toString(), "B")
-            case None => @FailExpect("no type info")
+            case Some(ty: SemanticType) => @FailExpect("ExtendDecl should has no SemanticType")
+            case None => ()
         }
        
     }
@@ -128,8 +128,8 @@ class ExtendAnalyzeTest {
         let decl = decls[8]
         let declTyInfo: Option<SemanticType> = semaRes.getTypeInfo(decl)
         match (declTyInfo) {
-            case Some(ty: SemanticType) => @Expect(ty.toString(), "C")
-            case None => @FailExpect("no type info")
+            case Some(ty: SemanticType) => @FailExpect("ExtendDecl should has no SemanticType")
+            case None => ()
         }
     }
 
@@ -138,8 +138,8 @@ class ExtendAnalyzeTest {
         let decl = decls[9]
         let declTyInfo: Option<SemanticType> = semaRes.getTypeInfo(decl)
         match (declTyInfo) {
-            case Some(ty: SemanticType) => @Expect(ty.toString(), "D<Int64, ToStringImpl>")
-            case None => @FailExpect("no type info")
+            case Some(ty: SemanticType) => @FailExpect("ExtendDecl should has no SemanticType")
+            case None => ()
         }
     }
 

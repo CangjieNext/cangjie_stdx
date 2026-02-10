@@ -204,7 +204,7 @@ class TypealiasAnalyzeTest {
     }
    
     @TestCase
-    func testtypeB_Type() {
+    func testtypeBX_Type() {
         let decl = decls[16]
         let declTyInfo: Option<SemanticType> = semaRes.getTypeInfo(decl)
         match (declTyInfo) {
