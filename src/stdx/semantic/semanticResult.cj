@@ -24,7 +24,7 @@ public class SemanticResult {
     }
 
     public func getTypeInfo(decl: Decl): Option<SemanticType> {
-        declTypeInfoMap.get(decl)
+        declTypeInfoMap.get(decl.getId())
     }
 
     public func getSymbolRef(symbol: SymbolRef): Option<SyntaxTreeNode> {
@@ -52,20 +52,17 @@ public class SemanticResult {
     }
 
     private static func getDeclTypeMap(pkgAST: Package, maps: SemanticType_NodeTypeMap) {
-        let declMap = HashMap<SyntaxTreeNode, SemanticType>()
+        let declMap = HashMap<UInt64, SemanticType>()
 
         let tyPtrToSemanticType = HashMap<UInt64, SemanticType>()
         for (semanticTypeMapOption in maps.GetDeclMapList()) {
             if (let Some(semanticTypeMap) <- semanticTypeMapOption) {
                 let id = semanticTypeMap.GetId()
-                let nf = NodeFinder(pkgAST, id)
-                nf.walk(pkgAST)
-                let decl = nf.res.getOrThrow()
                 let ty = generateSemanticType(semanticTypeMap.GetType(), pkgAST)
                 if (tyPtrToSemanticType.contains(ty.rawPointer)) {
-                    declMap.add(decl, tyPtrToSemanticType[ty.rawPointer])
+                    declMap.add(id, tyPtrToSemanticType[ty.rawPointer])
                 } else {
-                    declMap.add(decl, ty)
+                    declMap.add(id, ty)
                     tyPtrToSemanticType.add(ty.rawPointer, ty)
                 }
             }
@@ -92,12 +89,12 @@ public class SemanticResult {
         target
     }
 
-    private let declTypeInfoMap: HashMap<SyntaxTreeNode, SemanticType>
+    private let declTypeInfoMap: HashMap<UInt64, SemanticType>
     // private let exprTypeInfoMap: HashMap<SyntaxTreeNode, SemanticType>
     private let target: HashMap<UInt64, SyntaxTreeNode>
     // private let target: HashMap<SyntaxTreeNode, SyntaxTreeNode>
     
-    init(declTypeInfoMap: HashMap<SyntaxTreeNode, SemanticType>, target: HashMap<UInt64, SyntaxTreeNode>, impl: AnalyzerImpl){
+    init(declTypeInfoMap: HashMap<UInt64, SemanticType>, target: HashMap<UInt64, SyntaxTreeNode>, impl: AnalyzerImpl){
         this.declTypeInfoMap = declTypeInfoMap
         this.target = target
         this.impl = impl
@@ -137,6 +134,35 @@ class NodeFinder <: ASTVisitor {
         targetID = 0
     }
 
+}
+
+class TopDeclFinder <: ASTVisitor {
+    var res = Option<SyntaxTreeNode>.None
+    var targetID: UInt64 = 0
+    let pkg: SyntaxTreeNode
+
+    public override func preAction(node: SyntaxTreeNode): PreActionMode {
+        if (node.getId() == targetID) {
+            res = node
+            return PreActionMode.Stop
+        }
+        match (node) {
+            case _: Package => return PreActionMode.Continue
+            case _: SourceFile => return PreActionMode.Continue
+            case _ => return PreActionMode.Skip
+        }
+        return PreActionMode.Skip
+    }
+
+    init (pkgAST: Package, id: UInt64) {
+        this.targetID = id
+        this.pkg = pkgAST
+    }
+
+    func clear() {
+        res = Option<SyntaxTreeNode>.None
+        targetID = 0
+    }
 }
 
 // // need std.ast.MACRO_OBJECT

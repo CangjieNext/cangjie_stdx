@@ -39,19 +39,18 @@ func generateSemanticType(t: Option<SemanticType_ASTType>, pkgAST: Package): Sem
     for (arg in typeArgsNode) {
         typeArgs.add(generateSemanticType(arg, pkgAST))
     }
-    // find ty->declaration
-    let nf = NodeFinder(pkgAST, semanticType.GetDeclId())
-    nf.walk(pkgAST)
 
     return match(kind) {
-        case TYPE_INVALID => throw Exception("Invalid type")
+        case TYPE_INVALID => 
+                println("Invalid type")
+                NothingSType(rawPointer)
         case TYPE_UNIT => UnitSType(rawPointer)
         case TYPE_INT8 => Int8SType(rawPointer)
         case TYPE_INT16 => Int16SType(rawPointer)
         case TYPE_INT32 => Int32SType(rawPointer)
         case TYPE_INT64 => Int64SType(rawPointer)
         case TYPE_INT_NATIVE => IntNativeSType(rawPointer)
-        case TYPE_IDEAL_INT => throw Exception("Ideal int not implemented")
+        case TYPE_IDEAL_INT => Int64SType(rawPointer)
         case TYPE_UINT8 => UInt8SType(rawPointer)
         case TYPE_UINT16 => UInt16SType(rawPointer)
         case TYPE_UINT32 => UInt32SType(rawPointer)
@@ -60,24 +59,18 @@ func generateSemanticType(t: Option<SemanticType_ASTType>, pkgAST: Package): Sem
         case TYPE_FLOAT16 => Float16SType(rawPointer)
         case TYPE_FLOAT32 => Float32SType(rawPointer)
         case TYPE_FLOAT64 => Float64SType(rawPointer)
-        case TYPE_IDEAL_FLOAT => throw Exception("Ideal float not implemented")
+        case TYPE_IDEAL_FLOAT => Float64SType(rawPointer)
         case TYPE_RUNE => RuneSType(rawPointer)
         case TYPE_NOTHING => NothingSType(rawPointer)
         case TYPE_BOOLEAN => BoolSType(rawPointer)
         case TYPE_TUPLE => TupleSType(typeArgs.toArray(), rawPointer)
         case TYPE_ENUM =>
-            var decl = Option<EnumDecl>.None
-            if (let Some(realRes) <- nf.res) {
-                decl = realRes as EnumDecl
-            }
-            EnumSType(name, typeArgs.toArray(), decl, rawPointer)
+            let nf = TopDeclFinder(pkgAST, semanticType.GetDeclId())
+            EnumSType(name, typeArgs.toArray(), nf, rawPointer)
         case TYPE_FUNC => FuncSType(typeArgs.toArray(), rawPointer)
         case TYPE_STRUCT =>
-            var decl = Option<StructDecl>.None
-            if (let Some(realRes) <- nf.res) {
-                decl = realRes as StructDecl
-            }
-            StructSType(name, typeArgs.toArray(), decl, rawPointer)
+            let nf = TopDeclFinder(pkgAST, semanticType.GetDeclId())
+            StructSType(name, typeArgs.toArray(), nf, rawPointer)
         case TYPE_ARRAY => ArraySType(typeArgs[0], rawPointer)
         case TYPE_VARRAY => 
             // Parse length from name field, which format is "VArray<elementType, $length>"
@@ -86,24 +79,30 @@ func generateSemanticType(t: Option<SemanticType_ASTType>, pkgAST: Package): Sem
         case TYPE_POINTER => CPointerSType(typeArgs[0], rawPointer)
         case TYPE_CSTRING => CStringSType(rawPointer)
         case TYPE_CLASS =>
-            var decl = Option<ClassDecl>.None
-            if (let Some(realRes) <- nf.res) {
-                decl = realRes as ClassDecl
-            }
-            ClassSType(name, typeArgs.toArray(), decl, rawPointer)
+            let nf = TopDeclFinder(pkgAST, semanticType.GetDeclId())
+            ClassSType(name, typeArgs.toArray(), nf, rawPointer)
         case TYPE_INTERFACE =>
-            var decl = Option<InterfaceDecl>.None
-            if (let Some(realRes) <- nf.res) {
-                decl = realRes as InterfaceDecl
-            }
-            InterfaceSType(name, typeArgs.toArray(), decl, rawPointer)
-        case TYPE_ALIAS => throw Exception("Alias type not implemented")
+            let nf = TopDeclFinder(pkgAST, semanticType.GetDeclId())
+            InterfaceSType(name, typeArgs.toArray(), nf, rawPointer)
+        case TYPE_ALIAS => 
+                    println("Alias type not implemented")
+                    NothingSType(rawPointer)
         case TYPE_GENERICS => GenericSTypeParameter(name, typeArgs.toArray(), rawPointer)
         case TYPE_ANY => AnySType(rawPointer)
-        case TYPE_INTERSECTION => throw Exception("Intersection type not implemented")
-        case TYPE_UNION => throw Exception("Union type not implemented")
-        case TYPE_QUEST => throw Exception("Quest type not implemented")
-        case TYPE_INITIAL => throw Exception("Initial type not implemented")
-        case _ => throw Exception("Not Impl")
+        case TYPE_INTERSECTION => 
+                    println("Intersection type not implemented")
+                    NothingSType(rawPointer)
+        case TYPE_UNION => 
+                    println("Union type not implemented")
+                    NothingSType(rawPointer)
+        case TYPE_QUEST => 
+                    println("Quest type not implemented")
+                    NothingSType(rawPointer)        
+        case TYPE_INITIAL => 
+                    println("Initial type not implemented")
+                    NothingSType(rawPointer)
+        case _ => 
+                    println("Not Impl")
+                    NothingSType(rawPointer)
     }
 }
