@@ -410,7 +410,8 @@ public class FuncSType <: SemanticType {
 
 
 public class ClassSType <: SemanticType {
-    private let decl_: Option<ClassDecl>
+    private var decl_: Option<ClassDecl> = None
+    private var nodeFinder_: Option<TopDeclFinder> = None
 
     public let identifier: String
     public let typeArguments: Array<SemanticType>
@@ -422,7 +423,20 @@ public class ClassSType <: SemanticType {
         this.typeArguments = typeArguments
     }
 
+    init(identifier: String, typeArguments: Array<SemanticType>, nodeFinder: TopDeclFinder, rawPointer: UInt64) {
+        super(rawPointer)
+        this.identifier = identifier
+        this.typeArguments = typeArguments
+        this.nodeFinder_ = nodeFinder
+    }
+
     public func getDecl(): Option<ClassDecl> {
+        if (let Some(nf) <- nodeFinder_) {
+            nf.walk(nf.pkg)
+            if (let Some(realRes) <- nf.res) {
+                decl_ = realRes as ClassDecl
+            }
+        }
         return decl_
     }
 
@@ -433,7 +447,8 @@ public class ClassSType <: SemanticType {
 
 
 public class StructSType <: SemanticType {
-    private let decl_: Option<StructDecl>
+    private var decl_: Option<StructDecl> = None
+    private var nodeFinder_: Option<TopDeclFinder> = None
 
     public let identifier: String
     public let typeArguments: Array<SemanticType>
@@ -445,7 +460,20 @@ public class StructSType <: SemanticType {
         this.typeArguments = typeArguments
     }
 
+    init(identifier: String, typeArguments: Array<SemanticType>, nodeFinder: TopDeclFinder, rawPointer: UInt64) {
+        super(rawPointer)
+        this.identifier = identifier
+        this.typeArguments = typeArguments
+        this.nodeFinder_ = nodeFinder
+    }
+
     public func getDecl(): Option<StructDecl> {
+        if (let Some(nf) <- nodeFinder_) {
+            nf.walk(nf.pkg)
+            if (let Some(realRes) <- nf.res) {
+                decl_ = realRes as StructDecl
+            }
+        }
         return decl_
     }
 
@@ -455,7 +483,8 @@ public class StructSType <: SemanticType {
 }
 
 public class EnumSType <: SemanticType {
-    private let decl_: Option<EnumDecl>
+    private var decl_: Option<EnumDecl> = None
+    private var nodeFinder_: Option<TopDeclFinder> = None
 
     public let identifier: String
     public let typeArguments: Array<SemanticType>
@@ -467,7 +496,20 @@ public class EnumSType <: SemanticType {
         this.typeArguments = typeArguments
     }
 
+    init(identifier: String, typeArguments: Array<SemanticType>, nodeFinder: TopDeclFinder, rawPointer: UInt64) {
+        super(rawPointer)
+        this.identifier = identifier
+        this.typeArguments = typeArguments
+        this.nodeFinder_ = nodeFinder
+    }
+
     public func getDecl(): Option<EnumDecl> {
+        if (let Some(nf) <- nodeFinder_) {
+            nf.walk(nf.pkg)
+            if (let Some(realRes) <- nf.res) {
+                decl_ = realRes as EnumDecl
+            }
+        }
         return decl_
     }
 
@@ -495,7 +537,8 @@ public class CPointerSType <: SemanticType {
 
 
 public class InterfaceSType <: SemanticType {
-    private let decl_: Option<InterfaceDecl>
+    private var decl_: Option<InterfaceDecl> = None
+    private var nodeFinder_: Option<TopDeclFinder> = None
 
     public let identifier: String
     public let typeArguments: Array<SemanticType>
@@ -507,7 +550,20 @@ public class InterfaceSType <: SemanticType {
         this.typeArguments = typeArguments
     }
 
+    init(identifier: String, typeArguments: Array<SemanticType>, nodeFinder: TopDeclFinder, rawPointer: UInt64) {
+        super(rawPointer)
+        this.identifier = identifier
+        this.typeArguments = typeArguments
+        this.nodeFinder_ = nodeFinder
+    }
+
     public func getDecl(): Option<InterfaceDecl> {
+        if (let Some(nf) <- nodeFinder_) {
+            nf.walk(nf.pkg)
+            if (let Some(realRes) <- nf.res) {
+                decl_ = realRes as InterfaceDecl
+            }
+        }
         return decl_
     }
 

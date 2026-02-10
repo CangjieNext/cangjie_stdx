@@ -73,7 +73,7 @@ public:
         if (kind == "VarDecl" || kind == "FuncDecl" || kind == "MainDecl" || kind == "TypeAlias" || 
             kind == "ClassDecl" || kind == "StructDecl" || kind == "InterfaceDecl" || kind == "ExtendDecl" || 
             kind == "EnumDecl" || kind == "MacroDecl" || kind == "MacroExpandDecl" || kind == "PropDecl" || 
-            kind == "StaticInit") {
+            kind == "StaticInit" || kind == "EnumConstructor") {
             return true;
         }
         return false;
