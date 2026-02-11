@@ -1,6 +1,8 @@
 package stdx.semantic
-import stdx.syntax.*
+internal import stdx.syntax.*
 import std.collection.HashMap
+import std.fs.*
+import std.io.*
 // import std.ast.MACRO_OBJECT
 
 public class SemanticResult {
@@ -99,16 +101,6 @@ public class SemanticResult {
         this.target = target
         this.impl = impl
     }
-}
-
-public class SemanticContext {
-    // cjo 
-    // private let declTypeInfoMap: HashMap<Decl, SemanticType>
-    // public static func createFromCJOFile(cjoFilePath: String): SemanticContext {
-    //     let maps = unsafe{ createFromCJOImpl(cjoFilePath) }
-    //     // let declMaps = getDeclTypeMap(pkgAST, maps)
-    //     SemanticContext(maps)
-    // }
 }
   
 class NodeFinder <: ASTVisitor {
