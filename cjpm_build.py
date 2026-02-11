@@ -248,11 +248,10 @@ CJPM_DIR = find_ancestor_and_cwd("cjpm")
 
 STDX_DIR = os.path.dirname(os.path.abspath(__file__))
 BUILD_DIR = os.path.join(STDX_DIR, "build_temp")
-SYNTAX_DIR = os.path.join(STDX_DIR, "src/stdx/syntax")
-FUZZ_DIR = os.path.join(STDX_DIR, "src/stdx/fuzz")
-ASPECTCJ_DIR = os.path.join(STDX_DIR, "src/stdx/aspectCJ")
+SYNTAX_DIR = os.path.join(STDX_DIR, "src/syntax")
+FUZZ_DIR = os.path.join(STDX_DIR, "src/fuzz")
+ASPECTCJ_DIR = os.path.join(STDX_DIR, "src/aspectCJ")
 CMAKE_BUILD_DIR = os.path.join(BUILD_DIR, "build")
-CMAKE_OUTPUT_DIR = os.path.join(CJPM_DIR, "target/" + BUILD_TYPE_CJPM)
 LOG_DIR = os.path.join(BUILD_DIR, "logs")
 LOG_FILE = os.path.join(LOG_DIR, "cangjie.log")
 
@@ -474,6 +473,9 @@ def build(args):
     global CJPM_DIR
     global DEVECO_OH_NATIVE_HOME
     
+    if args.cjpm_dir:
+        CJPM_DIR = args.cjpm_dir
+    
     if not HAS_DEBUG_FLAG:
         args.build_type = BuildType.release
     else:
@@ -486,7 +488,7 @@ def build(args):
     LOG.info("DEVECO_OH_NATIVE_HOME: " + str(DEVECO_OH_NATIVE_HOME))
     if args.build_stage.value == "preBuild":
         clean(args)
-        cleanLibs()
+        # cleanLibs()
     
     if DEVECO_OH_NATIVE_HOME:
         if IS_WINDOWS:
@@ -703,6 +705,12 @@ def main():
         help="Generate installation package for the host",
     )
     build_parser.add_argument("--prefix", dest="prefix", help="target install prefix")
+    build_parser.add_argument(
+        "--cjpm-dir",
+        dest="cjpm_dir",
+        type=str,
+        help="specify cjpm directory path directly",
+    )
     build_parser.set_defaults(func=build)
 
     clean_parser = subparsers.add_parser("clean", help="clean build")

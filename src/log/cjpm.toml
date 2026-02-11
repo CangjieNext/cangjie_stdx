@@ -1,0 +1,17 @@
+[package]
+  cjc-version = "1.1.0"
+  name = "log"
+  organization = "cangjie_stdx"
+  description = "nothing here"
+  version = "1.0.0"
+  target-dir = ""
+  script-dir = ""
+  output-type = "dynamic"
+  compile-option = "-O2 -Woff unused"
+  override-compile-option = ""
+  link-option = ""
+  package-configuration = {}
+  src-dir = "./src"
+  exclude = ["*.txt"]
+
+[dependencies]

@@ -47,7 +47,7 @@ main(): Int64 {
     let pyCommand: String = getPythonCommand()
     match (getCommandLine()[1]) {
         case "pre-build" => stagePreBuild(pyCommand)              
-        case "post-build" => stagePostBuild(pyCommand)
+        // case "post-build" => stagePostBuild(pyCommand)
         case "pre-clean" => stagePreClean(pyCommand)
         case _ => 0
     }

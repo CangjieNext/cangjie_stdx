@@ -1,0 +1,44 @@
+[package]
+  cjc-version = "1.1.0"
+  name = "compress"
+  organization = "cangjie_stdx"
+  description = "nothing here"
+  version = "1.0.0"
+  target-dir = ""
+  script-dir = ""
+  output-type = "dynamic"
+  compile-option = "-O2"
+  override-compile-option = ""
+  link-option = ""
+  package-configuration = {}
+  src-dir = "./src"
+  exclude = ["src/tar/CMakeLists", "src/zlib/CMakeLists.txt"]
+
+[package.package-configuration."cangjie_stdx::compress.zlib"]
+  compile-option = "-lcompress.zlibFFI"
+
+[package.package-configuration."cangjie_stdx::compress.tar"]
+  compile-option = "-lcompress.tarFFI"
+
+[dependencies]
+
+[target.x86_64-unknown-linux-gnu]
+  link-option = "-L ../../target/linux_ohos_aarch64_cjnative/static/stdx -L ../../target/linux_x86_64_cjnative/static/stdx -L target/linux_ohos_aarch64_cjnative/static/stdx -L target/linux_x86_64_cjnative/static/stdx"
+
+[target.aarch64-unknown-linux-gnu]
+  link-option = "-L ../../target/linux_ohos_aarch64_cjnative/static/stdx -L ../../target/linux_aarch64_cjnative/static/stdx -L target/linux_ohos_aarch64_cjnative/static/stdx -L target/linux_aarch64_cjnative/static/stdx"
+
+[target.aarch64-apple-darwin]
+  link-option = "-L ../../target/darwin_aarch64_cjnative/static/stdx -L target/darwin_aarch64_cjnative/static/stdx "
+
+[target.x86_64-apple-darwin]
+  link-option = "-L ../../target/darwin_x86_64_cjnative/static/stdx  -L target/darwin_x86_64_cjnative/static/stdx"
+
+[target.x86_64-w64-mingw32]
+  link-option = "-L ${LOCALAPPDATA}/stdx/target/release/stdx -lpthread -lws2_32 -lcrypt32"
+
+[target.x86_64-linux-ohos]
+  compile-option = "-B \"${DEVECO_CANGJIE_HOME}/build-tools/third_party/llvm/bin\" -B \"${DEVECO_OH_NATIVE_HOME}/sysroot/usr/lib/x86_64-linux-ohos\" -L \"${DEVECO_OH_NATIVE_HOME}/sysroot/usr/lib/x86_64-linux-ohos\" -L \"${DEVECO_OH_NATIVE_HOME}/llvm/lib/clang/15.0.4/lib/x86_64-linux-ohos\" -L \"${DEVECO_OH_NATIVE_HOME}/llvm/lib/x86_64-linux-ohos\" --sysroot \"${DEVECO_OH_NATIVE_HOME}/sysroot\""
+
+[target.aarch64-linux-ohos]
+  compile-option = "-B \"${DEVECO_CANGJIE_HOME}/build-tools/third_party/llvm/bin\" -B \"${DEVECO_OH_NATIVE_HOME}/sysroot/usr/lib/aarch64-linux-ohos\" -L \"${DEVECO_OH_NATIVE_HOME}/sysroot/usr/lib/aarch64-linux-ohos\" -L \"${DEVECO_OH_NATIVE_HOME}/llvm/lib/clang/15.0.4/lib/aarch64-linux-ohos\" -L \"${DEVECO_OH_NATIVE_HOME}/llvm/lib/aarch64-linux-ohos\" --sysroot \"${DEVECO_OH_NATIVE_HOME}/sysroot\""
