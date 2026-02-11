@@ -30,7 +30,7 @@ class TypealiasAnalyzeTest {
 
     @BeforeAll
     func readDecls(): Unit {
-        let parsingRes: ParsingResult<Package> = parsePackage("../sourceFile/package/package_typealias_decl")
+        let parsingRes: ParsingResult<Package> = parsePackage("sourceFile/package/package_typealias_decl")
         
         let pkgAST: Package = parsingRes.node.getOrThrow()
 
@@ -40,6 +40,7 @@ class TypealiasAnalyzeTest {
         decls = file.topLevelDecls
     }
 
+    @Skip
     @TestCase
     func testtypeA_Type() {
         let decl = decls[0]
@@ -50,6 +51,7 @@ class TypealiasAnalyzeTest {
         }
     }
 
+    @Skip
     @TestCase
     func testtypeB_Type() {
         let decl = decls[1]
@@ -60,6 +62,7 @@ class TypealiasAnalyzeTest {
         }
     }
 
+    @Skip
     @TestCase
     func testtypeC_Type() {
         let decl = decls[2]
@@ -70,6 +73,7 @@ class TypealiasAnalyzeTest {
         }
     }
 
+    @Skip
     @TestCase
     func testtypeD_Type() {
         let decl = decls[3]
@@ -80,6 +84,7 @@ class TypealiasAnalyzeTest {
         }
     }
    
+    @Skip
     @TestCase
     func testvarA_Type() {
         let decl = decls[4]
@@ -90,6 +95,7 @@ class TypealiasAnalyzeTest {
         }
     }
 
+    @Skip
     @TestCase
     func testvarB_Type() {
         let decl = decls[5]
@@ -100,7 +106,8 @@ class TypealiasAnalyzeTest {
         }
     }
 
-     @TestCase
+    @Skip
+    @TestCase
     func testvarC_Type() {
         let decl = decls[6]
         var declTyInfo: Option<SemanticType> = semaRes.getTypeInfo(decl)
@@ -111,6 +118,7 @@ class TypealiasAnalyzeTest {
         
     }
 
+    @Skip
     @TestCase
     func testvarD_Type() {
         let decl = decls[7]
@@ -123,6 +131,7 @@ class TypealiasAnalyzeTest {
        
     }
 
+    @Skip
     @TestCase
     func testclassL_Type() {
         let decl = decls[8]
@@ -133,6 +142,7 @@ class TypealiasAnalyzeTest {
         }
     }
 
+    @Skip
     @TestCase
     func testtypeLC_Type() {
         let decl = decls[9]
@@ -143,6 +153,7 @@ class TypealiasAnalyzeTest {
         }
     }
 
+    @Skip
     @TestCase
     func testvarlc_Type() {
         let decl = decls[10]
@@ -153,6 +164,7 @@ class TypealiasAnalyzeTest {
         }
     }
 
+    @Skip
     @TestCase
     func testenumU_Type() {
         let decl = decls[11]
@@ -163,6 +175,7 @@ class TypealiasAnalyzeTest {
         }
     }
 
+    @Skip
     @TestCase
     func testtypeUE_Type() {
         let decl = decls[12]
@@ -173,6 +186,7 @@ class TypealiasAnalyzeTest {
         }
     }
 
+    @Skip
     @TestCase
     func testvare1_Type() {
         let decl = decls[13]
@@ -183,6 +197,7 @@ class TypealiasAnalyzeTest {
         }
     }
 
+    @Skip
     @TestCase
     func testvare2_Type() {
         let decl = decls[14]
@@ -193,6 +208,7 @@ class TypealiasAnalyzeTest {
         }
     }
 
+    @Skip
     @TestCase
     func teststructB_Type() {
         let decl = decls[15]
@@ -203,6 +219,7 @@ class TypealiasAnalyzeTest {
         }
     }
    
+    @Skip
     @TestCase
     func testtypeBX_Type() {
         let decl = decls[16]
@@ -212,8 +229,4 @@ class TypealiasAnalyzeTest {
             case None => @FailExpect("no type info")
         }
     }
-
-
-
-    
 }

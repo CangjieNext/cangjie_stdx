@@ -1,5 +1,6 @@
 package stdx.semantic
 import stdx.syntax.*
+import std.time.*
 
 let BUFFER_HEADER_SIZE = 4
 
@@ -27,7 +28,12 @@ unsafe func analyzeImpl(arr: Array<UInt8>) : SemanticType_NodeTypeMap {
     try{
         let length = UIntNative(arrSize)
         typeListPtr = CJ_Analyze(ptr, length)
+
+        let genMapStart = MonoTime.now()
         semanticTypeMap = genSemanticTypeMap(typeListPtr)
+        let genMapEnd = MonoTime.now()
+        let result = genMapEnd - genMapStart
+        println("Stage 4. Deserialize SemanticTypeMap time: ${result.toNanoseconds()}ns")
     } finally {
         LibC.free(typeListPtr)
         LibC.free(ptr)
