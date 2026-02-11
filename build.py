@@ -124,7 +124,9 @@ def generate_cmake_defs(args):
         "-DCANGJIE_TARGET_SYSROOT=" + (args.target_sysroot if args.target_sysroot else ""),
         "-DCANGJIE_BUILD_WITHOUT_EFFECT_HANDLERS=" + bool_to_opt(args.without_effect_handlers),
         "-DCANGJIE_BUILD_STDLIB_WITH_COVERAGE=" + bool_to_opt(args.stdlib_coverage),
-        "-DCANGJIE_BUILD_ARGS=" + (";".join(args.build_args) if args.build_args else "")]
+        "-DCANGJIE_BUILD_ARGS=" + (";".join(args.build_args) if args.build_args else ""),
+        "-DCANGJIE_NATIVE_ONLY=" + bool_to_opt(args.native_only),
+        "-DCANGJIE_NATIVE_LIB=" + (args.native_lib if args.native_lib else "")]
     if args.target and "aarch64-linux-android" in args.target:
         android_api_level = re.match(r'aarch64-linux-android(\d{2})?', args.target).group(1)
         result.append("-DCMAKE_ANDROID_NDK=" + os.path.join(args.target_toolchain, "../../../../.."))
@@ -383,6 +385,12 @@ def main():
     )
     parser_build.add_argument(
         "--without-effect-handlers", dest="without_effect_handlers", action="store_true", help="build a version without effect handlers"
+    )
+    parser_build.add_argument(
+        "--native-only", dest="native_only", action="store_true", help="build native only"
+    )
+    parser_build.add_argument(
+        "--native-lib", dest="native_lib", type=str, help="build target native lib"
     )
     parser_build.set_defaults(func=build)
 

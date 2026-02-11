@@ -4,30 +4,30 @@ OAT.xml @xuanjz
 
 *.md @luojianing
 
-/src/stdx/chir/ @Mr_Kang_Yi
-/src/stdx/compress/ @jiyaun_99
-/src/stdx/encoding/ @jiyaun_99
-/src/stdx/serialization/ @jiyaun_99
+/src/chir/ @Mr_Kang_Yi
+/src/compress/ @jiyaun_99
+/src/encoding/ @jiyaun_99
+/src/serialization/ @jiyaun_99
 
-/src/stdx/crypto/ @chongweizhi
+/src/crypto/ @chongweizhi
 
-/src/stdx/log/ @ChaosJohn
-/src/stdx/logger/ @ChaosJohn
+/src/log/ @ChaosJohn
+/src/logger/ @ChaosJohn
 
-/src/stdx/net/ @ovy
+/src/net/ @ovy
 
-/src/stdx/syntax/ @mini-tang
+/src/syntax/ @mini-tang
 
 #stdx docs
 /doc/ @luojianing
-/doc/libs_stdx/chir/ @Mr_Kang_Yi @luojianing
-/doc/libs_stdx/compress/ @jiyaun_99 @luojianing
-/doc/libs_stdx/encoding/ @jiyaun_99 @luojianing
-/doc/libs_stdx/serialization/ @jiyaun_99 @luojianing
-/doc/libs_stdx/crypto/ @chongweizhi @luojianing
-/doc/libs_stdx/log/ @ChaosJohn @luojianing
-/doc/libs_stdx/logger/ @ChaosJohn @luojianing
-/doc/libs_stdx/net/ @ovy @luojianing
-/doc/libs_stdx/syntax/ @mini-tang @luojianing
+/doc/libs_chir/ @Mr_Kang_Yi @luojianing
+/doc/libs_compress/ @jiyaun_99 @luojianing
+/doc/libs_encoding/ @jiyaun_99 @luojianing
+/doc/libs_serialization/ @jiyaun_99 @luojianing
+/doc/libs_crypto/ @chongweizhi @luojianing
+/doc/libs_log/ @ChaosJohn @luojianing
+/doc/libs_logger/ @ChaosJohn @luojianing
+/doc/libs_net/ @ovy @luojianing
+/doc/libs_syntax/ @mini-tang @luojianing
 
 /doc/libs_stdx_en/chir/ @Mr_Kang_Yi @luojianing

@@ -1,0 +1,1059 @@
+# Copyright (c) Huawei Technologies Co., Ltd. 2025. All rights reserved.
+#
+# This source file is part of the Cangjie project, licensed under Apache-2.0
+# with Runtime Library Exception.
+#
+# See https://cangjie-lang.cn/pages/LICENSE for license information.
+
+include(AddAndCombineStaticLib)
+include(ExtractArchive)
+
+set(BACKEND_TYPE CJNATIVE)
+
+##  Make shared/static library.
+# If we support cross-compiling, we need to change here for target type.
+string(TOLOWER ${TARGET_TRIPLE_DIRECTORY_PREFIX}_${BACKEND_TYPE} output_cj_object_dir)
+string(TOLOWER ${TARGET_TRIPLE_DIRECTORY_PREFIX} output_triple_name)
+string(TOLOWER "${CMAKE_BUILD_TYPE}" lowercase_build_type)
+set(CJNATIVE_BACKEND "cjnative")
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib/${output_triple_name}_${CJNATIVE_BACKEND}${SANITIZER_SUBPATH})
+message(STATUS "CANGJIE_CJPM_DIR ${CANGJIE_CJPM_DIR}")
+if(CMAKE_BUILD_STAGE STREQUAL "postBuild")
+    if(CMAKE_CROSSCOMPILING)
+        set(output_cj_object_dir ${CANGJIE_CJPM_DIR}/target/${TRIPLE}/${lowercase_build_type}/)
+    else()
+        set(output_cj_object_dir ${CANGJIE_CJPM_DIR}/target/${lowercase_build_type}/)
+    endif()
+else()
+    set(output_cj_object_dir ${CMAKE_BINARY_DIR}/modules/${output_cj_object_dir})
+endif()
+
+if(CMAKE_BUILD_STAGE STREQUAL "postBuild")
+    if(CMAKE_CROSSCOMPILING)
+        set(stdxo_path ${CANGJIE_CJPM_DIR}/target/${TRIPLE}/${lowercase_build_type}/stdx)
+    else()
+        set(stdxo_path ${CANGJIE_CJPM_DIR}/target/${lowercase_build_type}/stdx)
+    endif()
+    
+else()
+    set(stdxo_path ${output_cj_object_dir})
+endif()
+
+make_cangjie_lib(
+    encoding IS_SHARED
+    DEPENDS cangjie${BACKEND_TYPE}Encoding
+    CANGJIE_STD_LIB_LINK std-core
+    OBJECTS ${output_cj_object_dir}/stdx/encoding.o)
+
+add_library(stdx.encoding STATIC ${output_cj_object_dir}/stdx/encoding.o)
+set_target_properties(stdx.encoding PROPERTIES LINKER_LANGUAGE C OUTPUT_NAME "encoding@cangjie_stdx")
+install(TARGETS stdx.encoding DESTINATION ${output_triple_name}_${CJNATIVE_BACKEND}${SANITIZER_SUBPATH}/static/stdx)
+
+make_cangjie_lib(
+    encoding.base64 IS_SHARED
+    DEPENDS cangjie${BACKEND_TYPE}Base64
+    CANGJIE_STD_LIB_LINK std-core
+    OBJECTS ${output_cj_object_dir}/stdx/encoding.base64.o)
+
+add_library(stdx.encoding.base64 STATIC ${output_cj_object_dir}/stdx/encoding.base64.o)
+set_target_properties(stdx.encoding.base64 PROPERTIES LINKER_LANGUAGE C OUTPUT_NAME "encoding.base64@cangjie_stdx")
+install(TARGETS stdx.encoding.base64 DESTINATION ${output_triple_name}_${CJNATIVE_BACKEND}${SANITIZER_SUBPATH}/static/stdx)
+
+make_cangjie_lib(
+    serialization IS_SHARED
+    DEPENDS cangjie${BACKEND_TYPE}StdxSerialization
+    CANGJIE_STD_LIB_LINK std-core
+    OBJECTS ${output_cj_object_dir}/stdx/serialization.o)
+
+add_library(stdx.serialization STATIC ${output_cj_object_dir}/stdx/serialization.o)
+set_target_properties(stdx.serialization PROPERTIES LINKER_LANGUAGE C OUTPUT_NAME "serialization@cangjie_stdx")
+install(TARGETS stdx.serialization DESTINATION ${output_triple_name}_${CJNATIVE_BACKEND}${SANITIZER_SUBPATH}/static/stdx)
+
+make_cangjie_lib(
+    serialization.serialization IS_SHARED
+    DEPENDS cangjie${BACKEND_TYPE}Serialization
+    CANGJIE_STD_LIB_LINK
+        std-core
+        std-collection
+        std-sort
+        std-math
+    OBJECTS ${output_cj_object_dir}/stdx/serialization.serialization.o)
+
+add_library(stdx.serialization.serialization STATIC ${output_cj_object_dir}/stdx/serialization.serialization.o)
+set_target_properties(stdx.serialization.serialization PROPERTIES LINKER_LANGUAGE C OUTPUT_NAME "serialization.serialization@cangjie_stdx")
+install(TARGETS stdx.serialization.serialization
+        DESTINATION ${output_triple_name}_${CJNATIVE_BACKEND}${SANITIZER_SUBPATH}/static/stdx)
+
+make_cangjie_lib(
+    encoding.json IS_SHARED
+    DEPENDS cangjie${BACKEND_TYPE}Json encoding.jsonFFI
+    CANGJIE_STDX_LIB_DEPENDS  serialization.serialization
+    CANGJIE_STD_LIB_LINK
+        std-core
+        std-collection
+        std-convert
+        std-sort
+        std-math
+    OBJECTS ${output_cj_object_dir}/stdx/encoding.json.o
+    FLAGS -lencoding.jsonFFI)
+get_target_property(JSONFFI_OBJS encoding.jsonFFI SOURCES)
+
+add_library(stdx.encoding.json STATIC ${JSONFFI_OBJS} ${output_cj_object_dir}/stdx/encoding.json.o)
+set_target_properties(stdx.encoding.json PROPERTIES LINKER_LANGUAGE C OUTPUT_NAME "encoding.json@cangjie_stdx")
+install(TARGETS stdx.encoding.json DESTINATION ${output_triple_name}_${CJNATIVE_BACKEND}${SANITIZER_SUBPATH}/static/stdx)
+
+make_cangjie_lib(
+    encoding.json.stream IS_SHARED
+    DEPENDS cangjie${BACKEND_TYPE}JsonStream
+        encoding.json.streamFFI
+        encoding.jsonFFI
+    CANGJIE_STD_LIB_LINK
+        std-core
+        std-collection
+        std-collection.concurrent
+        std-io
+        std-math.numeric
+        std-math
+        std-time
+        std-sort
+        std-convert
+    OBJECTS ${output_cj_object_dir}/stdx/encoding.json.stream.o
+    FLAGS
+        -lencoding.json.streamFFI
+        -lencoding.jsonFFI)
+get_target_property(JSONFFI_OBJS encoding.jsonFFI SOURCES)
+
+add_library(
+    stdx.encoding.json.stream STATIC
+    $<TARGET_OBJECTS:encoding.json.streamFFI-objs>
+    ${JSONFFI_OBJS}
+    ${output_cj_object_dir}/stdx/encoding.json.stream.o)
+set_target_properties(stdx.encoding.json.stream PROPERTIES LINKER_LANGUAGE C OUTPUT_NAME "encoding.json.stream@cangjie_stdx")
+install(TARGETS stdx.encoding.json.stream DESTINATION ${output_triple_name}_${CJNATIVE_BACKEND}${SANITIZER_SUBPATH}/static/stdx)
+
+if(NOT WIN32)
+    make_cangjie_lib(
+        fuzz IS_SHARED ALLOW_UNDEFINED
+        DEPENDS cangjie${BACKEND_TYPE}StdxFuzz
+        CANGJIE_STD_LIB_LINK std-core
+        OBJECTS ${output_cj_object_dir}/stdx/fuzz.o)
+
+    add_library(stdx.fuzz STATIC ${output_cj_object_dir}/stdx/fuzz.o)
+    set_target_properties(stdx.fuzz PROPERTIES LINKER_LANGUAGE C OUTPUT_NAME "fuzz@cangjie_stdx")
+    install(TARGETS stdx.fuzz DESTINATION ${output_triple_name}_${CJNATIVE_BACKEND}${SANITIZER_SUBPATH}/static/stdx)
+
+    make_cangjie_lib(
+        fuzz.fuzz IS_SHARED ALLOW_UNDEFINED
+        DEPENDS
+            cangjie${BACKEND_TYPE}Fuzz
+            fuzz.fuzzFFI
+        CANGJIE_STD_LIB_LINK
+            std-core
+            std-collection
+            std-process
+            std-convert
+        OBJECTS ${output_cj_object_dir}/stdx/fuzz.fuzz.o
+        FORCE_LINK_ARCHIVES fuzz.fuzzFFI
+        FLAGS -lfuzz.fuzzFFI)
+    get_target_property(FUZZFFI_OBJS fuzz.fuzzFFI SOURCES)
+
+    add_library(stdx.fuzz.fuzz STATIC ${FUZZFFI_OBJS} ${output_cj_object_dir}/stdx/fuzz.fuzz.o)
+    set_target_properties(stdx.fuzz.fuzz PROPERTIES LINKER_LANGUAGE C OUTPUT_NAME "fuzz.fuzz@cangjie_stdx")
+    install(TARGETS stdx.fuzz.fuzz DESTINATION ${output_triple_name}_${CJNATIVE_BACKEND}${SANITIZER_SUBPATH}/static/stdx)
+endif()
+
+make_cangjie_lib(
+    compress.zlib IS_SHARED
+    DEPENDS cangjie${BACKEND_TYPE}ZLIB compress.zlibFFI
+    CANGJIE_STD_LIB_LINK std-core std-collection std-io std-math
+
+    OBJECTS ${output_cj_object_dir}/stdx/compress.zlib.o
+    FLAGS -lcompress.zlibFFI)
+
+get_target_property(ZLIBFFI_OBJS compress.zlibFFI SOURCES)
+
+add_library(stdx.compress.zlib STATIC ${ZLIBFFI_OBJS} ${output_cj_object_dir}/stdx/compress.zlib.o)
+set_target_properties(stdx.compress.zlib PROPERTIES LINKER_LANGUAGE C OUTPUT_NAME "compress.zlib@cangjie_stdx")
+install(TARGETS stdx.compress.zlib DESTINATION ${output_triple_name}_${CJNATIVE_BACKEND}${SANITIZER_SUBPATH}/static/stdx)
+
+make_cangjie_lib(
+    compress.tar IS_SHARED
+    DEPENDS cangjie${BACKEND_TYPE}Tar compress.tarFFI
+    CANGJIE_STD_LIB_LINK std-core std-collection std-io std-math std-time std-convert std-fs std-env
+
+    OBJECTS ${output_cj_object_dir}/stdx/compress.tar.o
+    FLAGS -lcompress.tarFFI)
+
+get_target_property(TARFFI_OBJS compress.tarFFI SOURCES)
+
+add_library(stdx.compress.tar STATIC ${TARFFI_OBJS} ${output_cj_object_dir}/stdx/compress.tar.o)
+set_target_properties(stdx.compress.tar PROPERTIES LINKER_LANGUAGE C OUTPUT_NAME "compress.tar@cangjie_stdx")
+install(TARGETS stdx.compress.tar DESTINATION ${output_triple_name}_${CJNATIVE_BACKEND}${SANITIZER_SUBPATH}/static/stdx)
+
+make_cangjie_lib(
+    compress IS_SHARED
+    DEPENDS cangjie${BACKEND_TYPE}StdxCompress cangjie${BACKEND_TYPE}Tar cangjie${BACKEND_TYPE}ZLIB
+    CANGJIE_STDX_LIB_DEPENDS compress.tar compress.zlib
+    CANGJIE_STD_LIB_LINK std-core std-fs std-io
+    OBJECTS ${output_cj_object_dir}/stdx/compress.o)
+
+add_library(stdx.compress STATIC ${output_cj_object_dir}/stdx/compress.o)
+set_target_properties(stdx.compress PROPERTIES LINKER_LANGUAGE C OUTPUT_NAME "compress@cangjie_stdx")
+install(TARGETS stdx.compress DESTINATION ${output_triple_name}_${CJNATIVE_BACKEND}${SANITIZER_SUBPATH}/static/stdx)
+
+make_cangjie_lib(
+    encoding.url IS_SHARED
+    DEPENDS cangjie${BACKEND_TYPE}Url
+    CANGJIE_STD_LIB_LINK
+        std-core
+        std-collection
+        std-sort
+        std-math
+    OBJECTS ${output_cj_object_dir}/stdx/encoding.url.o)
+
+add_library(stdx.encoding.url STATIC ${output_cj_object_dir}/stdx/encoding.url.o)
+set_target_properties(stdx.encoding.url PROPERTIES LINKER_LANGUAGE C OUTPUT_NAME "encoding.url@cangjie_stdx")
+install(TARGETS stdx.encoding.url DESTINATION ${output_triple_name}_${CJNATIVE_BACKEND}${SANITIZER_SUBPATH}/static/stdx)
+
+make_cangjie_lib(
+    unittest IS_SHARED
+    DEPENDS cangjie${BACKEND_TYPE}StdxUnittest
+    CANGJIE_STD_LIB_LINK std-core
+    OBJECTS ${output_cj_object_dir}/stdx/unittest.o)
+
+add_library(stdx.unittest STATIC ${output_cj_object_dir}/stdx/unittest.o)
+set_target_properties(stdx.unittest PROPERTIES LINKER_LANGUAGE C OUTPUT_NAME "unittest@cangjie_stdx")
+install(TARGETS stdx.unittest DESTINATION ${output_triple_name}_${CJNATIVE_BACKEND}${SANITIZER_SUBPATH}/static/stdx)
+
+make_cangjie_lib(
+    unittest.data IS_SHARED
+    DEPENDS cangjie${BACKEND_TYPE}UnittestData
+    CANGJIE_STDX_LIB_DEPENDS serialization.serialization encoding.json
+    CANGJIE_STD_LIB_LINK
+        std-core
+        std-collection
+        std-convert
+        std-sort
+        std-math
+        std-io
+        std-fs
+        std-unittest.common
+    OBJECTS ${output_cj_object_dir}/stdx/unittest.data.o)
+
+add_library(stdx.unittest.data STATIC ${output_cj_object_dir}/stdx/unittest.data.o)
+set_target_properties(stdx.unittest.data PROPERTIES LINKER_LANGUAGE C OUTPUT_NAME "unittest.data@cangjie_stdx")
+install(TARGETS stdx.unittest.data DESTINATION ${output_triple_name}_${CJNATIVE_BACKEND}${SANITIZER_SUBPATH}/static/stdx)
+
+make_cangjie_lib(
+    net IS_SHARED
+    DEPENDS cangjie${BACKEND_TYPE}StdxNet
+    CANGJIE_STD_LIB_LINK std-core
+    OBJECTS ${output_cj_object_dir}/stdx/net.o)
+
+add_library(stdx.net STATIC ${output_cj_object_dir}/stdx/net.o)
+set_target_properties(stdx.net PROPERTIES LINKER_LANGUAGE C OUTPUT_NAME "net@cangjie_stdx")
+install(TARGETS stdx.net DESTINATION ${output_triple_name}_${CJNATIVE_BACKEND}${SANITIZER_SUBPATH}/static/stdx)
+
+if(DARWIN)
+    set(openssl_flags -lcangjie-dynamicLoader-opensslFFI)
+    set(tlsFFI_flags -lnet.tlsFFI)
+    set(keysFFI_flags -lcrypto.keysFFI)
+    set(x509FFI_flags -lcrypto.x509FFI)
+else()
+    set(openssl_flags -l:libcangjie-dynamicLoader-opensslFFI${CMAKE_SHARED_LIBRARY_SUFFIX})
+    set(tlsFFI_flags -l:libnet.tlsFFI${CMAKE_SHARED_LIBRARY_SUFFIX})
+    set(keysFFI_flags -l:libcrypto.keysFFI${CMAKE_SHARED_LIBRARY_SUFFIX})
+    set(x509FFI_flags -l:libcrypto.x509FFI${CMAKE_SHARED_LIBRARY_SUFFIX})
+endif()
+
+make_cangjie_lib(
+    net.tls IS_SHARED
+    DEPENDS cangjie${BACKEND_TYPE}Tls net.tlsFFI-shared  cangjie-dynamicLoader-opensslFFI-shared
+    CANGJIE_STDX_LIB_DEPENDS
+        encoding.hex
+        crypto.x509
+        crypto.digest
+        crypto.common
+        crypto.keys
+        net.tls.common
+    CANGJIE_STD_LIB_LINK
+        std-core
+        std-math
+        std-collection
+        std-collection.concurrent
+        std-io
+        std-net
+        std-sync
+        std-time
+        std-sort
+    OBJECTS ${output_cj_object_dir}/stdx/net.tls.o
+    FLAGS
+        ${tlsFFI_flags}
+        ${openssl_flags}
+        ${ssl_dependencies}
+        $<$<BOOL:${MINGW}>:-pthread>
+        $<$<BOOL:${MINGW}>:-lws2_32>
+        $<$<NOT:$<BOOL:${WIN32}>>:-ldl>)
+if(CMAKE_BUILD_STAGE STREQUAL "postBuild")
+    set(tls_depends net.tlsFFI ${CANGJIE_OPENSSL_FFI_OBJECTS_TARGET})
+else()
+    set(tls_depends cangjie${BACKEND_TYPE}Tls net.tlsFFI ${CANGJIE_OPENSSL_FFI_OBJECTS_TARGET})
+endif()
+add_and_combine_static_lib(
+    TARGET stdx-net-tls
+    OUTPUT_NAME libnet.tls.a
+    LIBRARIES
+        $<TARGET_OBJECTS:net.tlsFFI-objs>
+        ${output_cj_object_dir}/stdx/net.tls.o
+        $<TARGET_OBJECTS:${CANGJIE_OPENSSL_FFI_OBJECTS_TARGET}>
+    DEPENDS
+        ${tls_depends})
+install(FILES ${CMAKE_ARCHIVE_OUTPUT_DIRECTORY}/libnet.tls.a
+        DESTINATION ${output_triple_name}_${CJNATIVE_BACKEND}${SANITIZER_SUBPATH}/static/stdx)
+
+make_cangjie_lib(
+    net.tls.common IS_SHARED
+    DEPENDS cangjie${BACKEND_TYPE}TlsCommon
+    CANGJIE_STDX_LIB_DEPENDS
+        crypto.common
+    CANGJIE_STD_LIB_LINK
+        std-core
+        std-collection
+        std-net
+        std-io
+    OBJECTS ${output_cj_object_dir}/stdx/net.tls.common.o)
+
+add_library(stdx.net.tls.common STATIC ${output_cj_object_dir}/stdx/net.tls.common.o)
+set_target_properties(stdx.net.tls.common PROPERTIES LINKER_LANGUAGE C OUTPUT_NAME "net.tls.common@cangjie_stdx")
+install(TARGETS stdx.net.tls.common DESTINATION ${output_triple_name}_${CJNATIVE_BACKEND}${SANITIZER_SUBPATH}/static/stdx)
+
+make_cangjie_lib(
+    net.http IS_SHARED
+    DEPENDS cangjie${BACKEND_TYPE}Http cangjie-dynamicLoader-opensslFFI-shared
+    CANGJIE_STDX_LIB_DEPENDS
+        encoding.base64
+        encoding.url
+        log
+        logger
+        net.tls.common
+        crypto.common
+    CANGJIE_STD_LIB_LINK
+        std-core
+        std-sync
+        std-time
+        std-fs
+        std-collection
+        std-collection.concurrent
+        std-io
+        std-convert
+        std-random
+        std-console
+        std-sort
+        std-unicode
+        std-net
+        std-process
+        std-overflow
+        std-math
+        std-env
+    OBJECTS ${output_cj_object_dir}/stdx/net.http.o
+    FLAGS
+    ${openssl_flags}
+    $<$<BOOL:${MINGW}>:-lws2_32>
+    $<$<NOT:$<BOOL:${WIN32}>>:-ldl>)
+add_library(stdx.net.http STATIC ${output_cj_object_dir}/stdx/net.http.o)
+set_target_properties(stdx.net.http PROPERTIES LINKER_LANGUAGE C OUTPUT_NAME "net.http@cangjie_stdx")
+install(TARGETS stdx.net.http DESTINATION ${output_triple_name}_${CJNATIVE_BACKEND}${SANITIZER_SUBPATH}/static/stdx)
+
+make_cangjie_lib(
+    crypto IS_SHARED
+    DEPENDS cangjie${BACKEND_TYPE}StdxCrypto
+    CANGJIE_STD_LIB_LINK std-core
+    OBJECTS ${output_cj_object_dir}/stdx/crypto.o)
+
+add_library(stdx.crypto STATIC ${output_cj_object_dir}/stdx/crypto.o)
+set_target_properties(stdx.crypto PROPERTIES LINKER_LANGUAGE C OUTPUT_NAME "crypto@cangjie_stdx")
+install(TARGETS stdx.crypto DESTINATION ${output_triple_name}_${CJNATIVE_BACKEND}${SANITIZER_SUBPATH}/static/stdx)
+
+make_cangjie_lib(
+    crypto.digest IS_SHARED
+    DEPENDS cangjie${BACKEND_TYPE}Digest
+        cangjie-dynamicLoader-opensslFFI-shared
+    CANGJIE_STDX_LIB_DEPENDS crypto.common
+    CANGJIE_STD_LIB_LINK
+        std-core
+        std-crypto.digest
+    OBJECTS ${output_cj_object_dir}/stdx/crypto.digest.o
+    FLAGS ${openssl_flags} $<$<BOOL:${MINGW}>:-lws2_32>
+    $<$<NOT:$<BOOL:${WIN32}>>:-ldl>)
+
+get_target_property(DIGESTFFI_OBJS cangjie-dynamicLoader-opensslFFI SOURCES)
+add_library(stdx.crypto.digest STATIC ${DIGESTFFI_OBJS} ${output_cj_object_dir}/stdx/crypto.digest.o)
+
+set_target_properties(stdx.crypto.digest PROPERTIES LINKER_LANGUAGE C OUTPUT_NAME "crypto.digest@cangjie_stdx")
+install(TARGETS stdx.crypto.digest DESTINATION ${output_triple_name}_${CJNATIVE_BACKEND}${SANITIZER_SUBPATH}/static/stdx)
+
+make_cangjie_lib(
+    crypto.keys IS_SHARED
+    DEPENDS cangjie${BACKEND_TYPE}Keys
+        crypto.keysFFI-shared
+        cangjie-dynamicLoader-opensslFFI-shared
+    CANGJIE_STDX_LIB_DEPENDS crypto.digest crypto.common encoding.hex
+    CANGJIE_STD_LIB_LINK
+        std-core
+        std-io
+        std-crypto.digest
+        std-math.numeric
+        std-sync
+    OBJECTS ${output_cj_object_dir}/stdx/crypto.keys.o
+    FLAGS
+        ${keysFFI_flags}
+        ${openssl_flags}
+        $<$<BOOL:${MINGW}>:-lws2_32>
+        $<$<NOT:$<BOOL:${WIN32}>>:-ldl>)
+
+get_target_property(KEYSFFI_OBJS crypto.keysFFI SOURCES)
+get_target_property(OPENSSLFFI_OBJS cangjie-dynamicLoader-opensslFFI SOURCES)
+add_library(stdx.crypto.keys  STATIC ${KEYSFFI_OBJS} ${OPENSSLFFI_OBJS} ${output_cj_object_dir}/stdx/crypto.keys.o)
+set_target_properties(stdx.crypto.keys PROPERTIES LINKER_LANGUAGE C OUTPUT_NAME "crypto.keys@cangjie_stdx")
+install(TARGETS stdx.crypto.keys DESTINATION ${output_triple_name}_${CJNATIVE_BACKEND}${SANITIZER_SUBPATH}/static/stdx)
+
+make_cangjie_lib(
+    crypto.crypto IS_SHARED
+    DEPENDS cangjie${BACKEND_TYPE}Crypto cangjie-dynamicLoader-opensslFFI-shared
+    CANGJIE_STDX_LIB_DEPENDS crypto.digest crypto.common
+    CANGJIE_STD_LIB_LINK  std-core std-math std-sync std-crypto.cipher std-io
+    OBJECTS ${output_cj_object_dir}/stdx/crypto.crypto.o
+    FLAGS ${openssl_flags} $<$<BOOL:${MINGW}>:-lws2_32>
+    $<$<NOT:$<BOOL:${WIN32}>>:-ldl>)
+get_target_property(CRYPTOCRYPTOFFI_OBJS cangjie-dynamicLoader-opensslFFI SOURCES)
+add_library(stdx.crypto.crypto STATIC ${CRYPTOCRYPTOFFI_OBJS} ${output_cj_object_dir}/stdx/crypto.crypto.o)
+set_target_properties(stdx.crypto.crypto PROPERTIES LINKER_LANGUAGE C OUTPUT_NAME "crypto.crypto@cangjie_stdx")
+install(TARGETS stdx.crypto.crypto DESTINATION ${output_triple_name}_${CJNATIVE_BACKEND}${SANITIZER_SUBPATH}/static/stdx)
+
+make_cangjie_lib(
+    actors IS_SHARED
+    DEPENDS cangjie${BACKEND_TYPE}Actors
+    CANGJIE_STD_LIB_LINK std-core std-collection.concurrent std-sync std-time
+    OBJECTS ${output_cj_object_dir}/stdx/actors.o)
+
+add_library(stdx.actors STATIC ${output_cj_object_dir}/stdx/actors.o)
+set_target_properties(stdx.actors PROPERTIES LINKER_LANGUAGE C OUTPUT_NAME "actors@cangjie_stdx")
+install(TARGETS stdx.actors DESTINATION ${output_triple_name}_${CJNATIVE_BACKEND}${SANITIZER_SUBPATH}/static/stdx)
+
+if(NOT CMAKE_BUILD_STAGE STREQUAL "postBuild")
+    make_cangjie_lib(
+        actors.macros IS_SHARED IS_MACRO
+        DEPENDS cangjie${BACKEND_TYPE}ActorsMacros
+        CANGJIE_STD_LIB_LINK std-core std-ast std-collection std-convert
+        OBJECTS ${output_cj_object_dir}/stdx/actors.macros.o)
+else()
+    string(TOLOWER ${TARGET_TRIPLE_DIRECTORY_PREFIX}_${CJNATIVE_BACKEND} output_stdx_cj_lib_dir)
+    set(output_stdx_cj_lib_dir ${output_stdx_cj_lib_dir}${SANITIZER_SUBPATH})
+    set(actors_macros_full_name ${CANGJIE_CJPM_DIR}/target/${lowercase_build_type}/stdx/lib-macro_actors.macros${CMAKE_SHARED_LIBRARY_SUFFIX})
+    install(FILES ${actors_macros_full_name} DESTINATION ${output_stdx_cj_lib_dir}/dynamic/stdx)
+    install(FILES ${actors_macros_full_name} DESTINATION ${output_stdx_cj_lib_dir}/static/stdx)
+endif()
+
+if(NOT CANGJIE_BUILD_WITHOUT_EFFECT_HANDLERS)
+make_cangjie_lib(
+    effect IS_SHARED
+    DEPENDS cangjie${BACKEND_TYPE}Effect
+    CANGJIE_STD_LIB_LINK std-core std-collection std-sync
+    OBJECTS ${output_cj_object_dir}/stdx/effect.o)
+ 
+add_library(stdx.effect STATIC ${output_cj_object_dir}/stdx/effect.o)
+set_target_properties(stdx.effect PROPERTIES LINKER_LANGUAGE C OUTPUT_NAME "effect@cangjie_stdx")
+install(TARGETS stdx.effect DESTINATION ${output_triple_name}_${CJNATIVE_BACKEND}${SANITIZER_SUBPATH}/static/stdx)
+endif()
+make_cangjie_lib(
+    crypto.common IS_SHARED
+    DEPENDS cangjie${BACKEND_TYPE}CryptoCommon
+    CANGJIE_STDX_LIB_DEPENDS
+        encoding.base64
+    CANGJIE_STD_LIB_LINK
+        std-core
+        std-io
+    OBJECTS ${output_cj_object_dir}/stdx/crypto.common.o)
+
+add_library(stdx.crypto.common STATIC ${output_cj_object_dir}/stdx/crypto.common.o)
+set_target_properties(stdx.crypto.common PROPERTIES LINKER_LANGUAGE C OUTPUT_NAME "crypto.common@cangjie_stdx")
+install(TARGETS stdx.crypto.common DESTINATION ${output_triple_name}_${CJNATIVE_BACKEND}/static/stdx)
+
+make_cangjie_lib(
+    crypto.kit IS_SHARED
+    DEPENDS cangjie${BACKEND_TYPE}CryptoKit
+    CANGJIE_STDX_LIB_DEPENDS
+        crypto.common
+        crypto.keys
+        crypto.crypto
+        crypto.x509
+    CANGJIE_STD_LIB_LINK
+        std-core
+        std-net
+    OBJECTS ${output_cj_object_dir}/stdx/crypto.kit.o)
+
+add_library(stdx.crypto.kit STATIC ${output_cj_object_dir}/stdx/crypto.kit.o)
+set_target_properties(stdx.crypto.kit PROPERTIES LINKER_LANGUAGE C OUTPUT_NAME "crypto.kit@cangjie_stdx")
+install(TARGETS stdx.crypto.kit DESTINATION ${output_triple_name}_${CJNATIVE_BACKEND}/static/stdx)
+
+# Testmacro has no need to cross-compile because it is always used on host platforms.
+# Macros should NOT use sanitizers
+make_cangjie_lib(
+    encoding.hex IS_SHARED
+    DEPENDS cangjie${BACKEND_TYPE}Hex
+    CANGJIE_STD_LIB_LINK std-core
+    OBJECTS ${output_cj_object_dir}/stdx/encoding.hex.o)
+
+add_library(stdx.encoding.hex STATIC ${output_cj_object_dir}/stdx/encoding.hex.o)
+set_target_properties(stdx.encoding.hex PROPERTIES LINKER_LANGUAGE C OUTPUT_NAME "encoding.hex@cangjie_stdx")
+install(TARGETS stdx.encoding.hex DESTINATION ${output_triple_name}_${CJNATIVE_BACKEND}${SANITIZER_SUBPATH}/static/stdx)
+
+make_cangjie_lib(
+    crypto.x509 IS_SHARED
+    DEPENDS cangjie${BACKEND_TYPE}X509 crypto.x509FFI-shared cangjie-dynamicLoader-opensslFFI-shared
+    CANGJIE_STDX_LIB_DEPENDS
+        encoding.hex
+        encoding.base64
+        crypto.crypto
+        crypto.common
+        crypto.keys
+    CANGJIE_STD_LIB_LINK
+        std-core
+        std-convert
+        std-sort
+        std-math
+        std-time
+        std-collection
+        std-fs
+        std-io
+    OBJECTS
+        ${output_cj_object_dir}/stdx/crypto.x509.o
+    FLAGS
+        ${x509FFI_flags}
+        ${openssl_flags}
+        $<$<BOOL:${WIN32}>:-lcrypt32>
+        ${ssl_dependencies} $<$<BOOL:${MINGW}>:-lws2_32>
+        $<$<NOT:$<BOOL:${WIN32}>>:-ldl>)
+if(CMAKE_BUILD_STAGE STREQUAL "postBuild")
+    set(x509_depends crypto.x509FFI ${CANGJIE_OPENSSL_FFI_OBJECTS_TARGET})
+else()
+    set(x509_depends cangjie${BACKEND_TYPE}X509 crypto.x509FFI ${CANGJIE_OPENSSL_FFI_OBJECTS_TARGET})
+endif()
+add_and_combine_static_lib(
+    OUTPUT_NAME libcrypto.x509.a
+    TARGET stdx.crypto.x509
+    LIBRARIES
+        $<TARGET_OBJECTS:crypto.x509FFI-objs>
+        ${output_cj_object_dir}/stdx/crypto.x509.o
+        $<TARGET_OBJECTS:${CANGJIE_OPENSSL_FFI_OBJECTS_TARGET}>
+    DEPENDS
+        ${x509_depends})
+install(FILES ${CMAKE_ARCHIVE_OUTPUT_DIRECTORY}/libcrypto.x509.a
+        DESTINATION ${output_triple_name}_${CJNATIVE_BACKEND}${SANITIZER_SUBPATH}/static/stdx)
+
+make_cangjie_lib(
+    log IS_SHARED
+    DEPENDS cangjie${BACKEND_TYPE}Log
+    CANGJIE_STD_LIB_LINK std-core std-time std-collection std-sync std-sort std-math std-convert
+    OBJECTS ${output_cj_object_dir}/stdx/log.o)
+
+add_library(stdx.log STATIC ${output_cj_object_dir}/stdx/log.o)
+set_target_properties(stdx.log PROPERTIES LINKER_LANGUAGE C OUTPUT_NAME "log@cangjie_stdx")
+install(TARGETS stdx.log DESTINATION ${output_triple_name}_${CJNATIVE_BACKEND}${SANITIZER_SUBPATH}/static/stdx)
+
+make_cangjie_lib(
+    logger IS_SHARED
+    DEPENDS cangjie${BACKEND_TYPE}Logger
+    CANGJIE_STDX_LIB_DEPENDS log encoding.json.stream
+    CANGJIE_STD_LIB_LINK std-core std-collection std-collection.concurrent std-io std-sync std-time std-sort std-math
+    OBJECTS ${output_cj_object_dir}/stdx/logger.o)
+
+add_library(stdx.logger STATIC ${output_cj_object_dir}/stdx/logger.o)
+set_target_properties(stdx.logger PROPERTIES LINKER_LANGUAGE C OUTPUT_NAME "logger@cangjie_stdx")
+install(TARGETS stdx.logger DESTINATION ${output_triple_name}_${CJNATIVE_BACKEND}${SANITIZER_SUBPATH}/static/stdx)
+
+if(NOT CANGJIE_CJPM_BUILD_TYPE)
+    make_cangjie_lib(
+        aspectCJ IS_SHARED
+        DEPENDS cangjie${BACKEND_TYPE}AspectCJ
+        CANGJIE_STD_LIB_LINK std-core
+        OBJECTS ${output_cj_object_dir}/stdx/aspectCJ.o)
+
+    add_library(stdx.aspectCJ STATIC ${output_cj_object_dir}/stdx/aspectCJ.o)
+    set_target_properties(stdx.aspectCJ PROPERTIES LINKER_LANGUAGE C OUTPUT_NAME "aspectCJ@cangjie_stdx")
+    install(TARGETS stdx.aspectCJ DESTINATION ${output_triple_name}_${CJNATIVE_BACKEND}/static/stdx)
+endif()
+
+make_cangjie_lib(
+    string_intern IS_SHARED
+    DEPENDS cangjie${BACKEND_TYPE}StringIntern
+    CANGJIE_STD_LIB_LINK
+        std-core
+        std-collection
+        std-sync
+        std-time
+    OBJECTS ${output_cj_object_dir}/stdx/string_intern.o)
+
+add_library(
+    stdx.string_intern STATIC
+    ${output_cj_object_dir}/stdx/string_intern.o)
+set_target_properties(stdx.string_intern PROPERTIES LINKER_LANGUAGE C OUTPUT_NAME "string_intern@cangjie_stdx")
+install(TARGETS stdx.string_intern DESTINATION ${output_triple_name}_${CJNATIVE_BACKEND}/static/stdx)
+
+
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
+
+# Defined all xxx_DEPENDENCIES, which are for all backends.
+if(CMAKE_BUILD_STAGE STREQUAL "postBuild")
+    include(LibraryDependenciesV2)
+else()
+    include(LibraryDependencies)
+endif()
+
+add_cangjie_library(
+    cangjie${BACKEND_TYPE}Chir
+    NO_SUB_PKG
+    IS_STDXLIB
+    IS_PACKAGE
+    IS_CJNATIVE_BACKEND
+    PACKAGE_NAME "chir"
+    MODULE_NAME "stdx"
+    SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/chir/src
+    DEPENDS ${CHIR_DEPENDENCIES})
+
+make_cangjie_lib(
+    chir IS_SHARED
+    DEPENDS cangjie${BACKEND_TYPE}Chir
+    CANGJIE_STD_LIB_LINK
+        std-core
+        std-collection
+    OBJECTS ${output_cj_object_dir}/stdx/chir.o)
+add_library(stdx.chir STATIC ${output_cj_object_dir}/stdx/chir.o)
+set_target_properties(stdx.chir PROPERTIES LINKER_LANGUAGE C OUTPUT_NAME "chir@cangjie_stdx")
+install(TARGETS stdx.chir DESTINATION ${output_triple_name}_${CJNATIVE_BACKEND}${SANITIZER_SUBPATH}/static/stdx)
+
+add_cangjie_library(
+    cangjie${BACKEND_TYPE}Encoding
+    NO_SUB_PKG
+    IS_STDXLIB
+    IS_PACKAGE
+    IS_CJNATIVE_BACKEND
+    OUTPUT_NAME "cangjieEncoding"
+    PACKAGE_NAME "encoding"
+    MODULE_NAME "stdx"
+    SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/encoding/src
+    DEPENDS ${ENCODING_DEPENDENCIES})
+
+add_cangjie_library(
+    cangjie${BACKEND_TYPE}Base64
+    NO_SUB_PKG
+    IS_STDXLIB
+    IS_PACKAGE
+    IS_CJNATIVE_BACKEND
+    OUTPUT_NAME "cangjieBase64"
+    PACKAGE_NAME "encoding.base64"
+    MODULE_NAME "stdx"
+    SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/encoding/src/base64
+    DEPENDS ${ENCODING_BASE64_DEPENDENCIES})
+
+
+add_cangjie_library(
+    cangjie${BACKEND_TYPE}Log
+    NO_SUB_PKG
+    IS_STDXLIB
+    IS_PACKAGE
+    IS_CJNATIVE_BACKEND
+    PACKAGE_NAME "log"
+    MODULE_NAME "stdx"
+    SOURCES ${LOG_SRCS}
+    SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/log/src
+    DEPENDS ${LOG_DEPENDENCIES})
+
+add_cangjie_library(
+    cangjie${BACKEND_TYPE}Logger
+    NO_SUB_PKG
+    IS_STDXLIB
+    IS_PACKAGE
+    IS_CJNATIVE_BACKEND
+    PACKAGE_NAME "logger"
+    MODULE_NAME "stdx"
+    SOURCES ${LOGGER_SRCS}
+    SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/logger/src
+    DEPENDS ${LOGGER_DEPENDENCIES})
+
+if(NOT CANGJIE_CJPM_BUILD_TYPE)
+    add_cangjie_library(
+        cangjie${BACKEND_TYPE}AspectCJ
+        NO_SUB_PKG
+        IS_STDXLIB
+        IS_PACKAGE
+        IS_CJNATIVE_BACKEND
+        PACKAGE_NAME "aspectCJ"
+        MODULE_NAME "stdx"
+        SOURCES ${ASPECTCJ_SRCS}
+        SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/aspectCJ
+        DEPENDS ${ASPECTCJ_DEPENDENCIES})
+endif()
+
+add_cangjie_library(
+    cangjie${BACKEND_TYPE}StdxSerialization
+    NO_SUB_PKG
+    IS_STDXLIB
+    IS_PACKAGE
+    IS_CJNATIVE_BACKEND
+    PACKAGE_NAME "serialization"
+    MODULE_NAME "stdx"
+    SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/serialization/src
+    DEPENDS ${SERIALIZATIONBASE_DEPENDENCIES})
+
+add_cangjie_library(
+    cangjie${BACKEND_TYPE}Serialization
+    NO_SUB_PKG
+    IS_STDXLIB
+    IS_PACKAGE
+    IS_CJNATIVE_BACKEND
+    PACKAGE_NAME "serialization.serialization"
+    MODULE_NAME "stdx"
+    SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/serialization/src/serialization
+    DEPENDS ${SERIALIZATION_DEPENDENCIES})
+
+add_cangjie_library(
+    cangjie${BACKEND_TYPE}Json
+    IS_STDXLIB
+    IS_PACKAGE
+    IS_CJNATIVE_BACKEND
+    PACKAGE_NAME "encoding.json"
+    MODULE_NAME "stdx"
+    SOURCES ${JSON_SRCS}
+    SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/encoding/src/json
+    DEPENDS ${ENCODING_JSON_DEPENDENCIES})
+
+add_cangjie_library(
+    cangjie${BACKEND_TYPE}JsonStream
+    NO_SUB_PKG
+    IS_STDXLIB
+    IS_PACKAGE
+    IS_CJNATIVE_BACKEND
+    OUTPUT_NAME "cangjieJson"
+    PACKAGE_NAME "encoding.json.stream"
+    MODULE_NAME "stdx"
+    SOURCES ${JSON_STREAM_SRCS}
+    SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/encoding/src/json/stream
+    DEPENDS ${ENCODING_JSON_STREAM_DEPENDENCIES})
+
+if(NOT WIN32)
+    # Fuzz library is not expect to be sancov instrumented:
+    # Fuzz library is utilizing sancov to guide fuzz input generation,
+    # instrumentation in fuzz library is useless and make fuzzing less
+    # effecient.
+
+    add_cangjie_library(
+        cangjie${BACKEND_TYPE}StdxFuzz
+        NO_SUB_PKG
+        IS_STDXLIB
+        IS_PACKAGE
+        IS_CJNATIVE_BACKEND
+        PACKAGE_NAME "fuzz"
+        MODULE_NAME "stdx"
+        SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/fuzz/src
+        DEPENDS ${FUZZBASE_DEPENDENCIES})
+
+    add_cangjie_library(
+        cangjie${BACKEND_TYPE}Fuzz
+        NO_SUB_PKG
+        IS_STDXLIB IS_PACKAGE
+        IS_CJNATIVE_BACKEND
+        PACKAGE_NAME "fuzz.fuzz"
+        MODULE_NAME "stdx"
+        SOURCES ${FUZZ_SRCS}
+        SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/fuzz/src/fuzz
+        DEPENDS ${FUZZ_FUZZ_DEPENDENCIES})
+endif()
+
+add_cangjie_library(
+    cangjie${BACKEND_TYPE}StdxCrypto
+    NO_SUB_PKG
+    IS_STDXLIB
+    IS_PACKAGE
+    IS_CJNATIVE_BACKEND
+    PACKAGE_NAME "crypto"
+    MODULE_NAME "stdx"
+    SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/crypto/src
+    DEPENDS ${CRYPTOBASE_DEPENDENCIES})
+
+
+add_cangjie_library(
+    cangjie${BACKEND_TYPE}Digest
+    NO_SUB_PKG
+    IS_STDXLIB
+    IS_CJNATIVE_BACKEND
+    PACKAGE_NAME "crypto.digest"
+    MODULE_NAME "stdx"
+    SOURCES ${CRYPTODIGEST_SRCS}
+    SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/crypto/src/digest
+    DEPENDS ${CRYPTO_DIGEST_DEPENDENCIES})
+
+add_cangjie_library(
+    cangjie${BACKEND_TYPE}Keys
+    NO_SUB_PKG
+    IS_STDXLIB
+    IS_PACKAGE
+    IS_CJNATIVE_BACKEND
+    PACKAGE_NAME "crypto.keys"
+    MODULE_NAME "stdx"
+    SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/crypto/src/keys
+    DEPENDS ${CRYPTO_KEYS_DEPENDENCIES})
+
+
+add_cangjie_library(
+    cangjie${BACKEND_TYPE}X509
+    NO_SUB_PKG
+    IS_STDXLIB
+    IS_PACKAGE
+    IS_CJNATIVE_BACKEND
+    PACKAGE_NAME "crypto.x509"
+    MODULE_NAME "stdx"
+    SOURCES ${X509_SRCS}
+    SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/crypto/src/x509
+    DEPENDS ${X509_DEPENDENCIES})
+
+add_cangjie_library(
+    cangjie${BACKEND_TYPE}Crypto
+    NO_SUB_PKG
+    IS_STDXLIB
+    IS_PACKAGE
+    IS_CJNATIVE_BACKEND
+    PACKAGE_NAME "crypto.crypto"
+    MODULE_NAME "stdx"
+    SOURCES ${CRYPTO_SRCS}
+    SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/crypto/src/crypto
+    DEPENDS ${CRYPTO_DEPENDENCIES})
+
+add_cangjie_library(
+    cangjie${BACKEND_TYPE}CryptoCommon
+    NO_SUB_PKG
+    IS_STDXLIB
+    IS_PACKAGE
+    IS_CJNATIVE_BACKEND
+    PACKAGE_NAME "crypto.common"
+    MODULE_NAME "stdx"
+    SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/crypto/src/common
+    DEPENDS ${CRYPTO_COMMON_DEPENDENCIES})
+
+add_cangjie_library(
+    cangjie${BACKEND_TYPE}CryptoKit
+    NO_SUB_PKG
+    IS_STDXLIB
+    IS_PACKAGE
+    IS_CJNATIVE_BACKEND
+    PACKAGE_NAME "crypto.kit"
+    MODULE_NAME "stdx"
+    SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/crypto/src/kit
+    DEPENDS ${CRYPTO_KIT_DEPENDENCIES})
+
+add_cangjie_library(
+    cangjie${BACKEND_TYPE}ZLIB
+    NO_SUB_PKG
+    IS_STDXLIB
+    IS_PACKAGE
+    IS_CJNATIVE_BACKEND
+    PACKAGE_NAME "compress.zlib"
+    MODULE_NAME "stdx"
+    SOURCES ${ZLIB_SRCS}
+    SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/compress/src/zlib
+    DEPENDS ${COMPRESS_ZLIB_DEPENDENCIES})
+
+add_cangjie_library(
+    cangjie${BACKEND_TYPE}Tar
+    NO_SUB_PKG
+    IS_STDXLIB
+    IS_PACKAGE
+    IS_CJNATIVE_BACKEND
+    PACKAGE_NAME "compress.tar"
+    MODULE_NAME "stdx"
+    SOURCES ${TAR_SRCS}
+    SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/compress/src/tar
+    DEPENDS ${COMPRESS_TAR_DEPENDENCIES})
+
+add_cangjie_library(
+    cangjie${BACKEND_TYPE}StdxCompress
+    NO_SUB_PKG
+    IS_STDXLIB
+    IS_CJNATIVE_BACKEND
+    OUTPUT_NAME "cangjieCompress"
+    PACKAGE_NAME "compress"
+    MODULE_NAME "stdx"
+    SOURCES ${COMPRESS_SRCS}
+    SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/compress
+    DEPENDS ${COMPRESS_DEPENDENCIES})
+
+add_cangjie_library(
+    cangjie${BACKEND_TYPE}Url
+    NO_SUB_PKG
+    IS_STDXLIB
+    IS_PACKAGE
+    IS_CJNATIVE_BACKEND
+    PACKAGE_NAME "encoding.url"
+    MODULE_NAME "stdx"
+    SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/encoding/src/url
+    DEPENDS ${ENCODING_URL_DEPENDENCIES})
+
+add_cangjie_library(
+    cangjie${BACKEND_TYPE}StdxUnittest
+    IS_STDXLIB
+    IS_PACKAGE
+    IS_CJNATIVE_BACKEND
+    PACKAGE_NAME "unittest"
+    MODULE_NAME "stdx"
+    SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/unittest/src
+    DEPENDS ${UNITTESTBASE_DEPENDENCIES})
+
+add_cangjie_library(
+    cangjie${BACKEND_TYPE}UnittestData
+    NO_SUB_PKG
+    IS_STDXLIB
+    IS_PACKAGE
+    IS_CJNATIVE_BACKEND
+    PACKAGE_NAME "unittest.data"
+    MODULE_NAME "stdx"
+    SOURCES ${UNITTEST_DATA_SRCS}
+    SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/unittest/src/data
+    DEPENDS ${UNITTEST_DATA_DEPENDENCIES})
+
+add_cangjie_library(
+    cangjie${BACKEND_TYPE}StdxNet
+    NO_SUB_PKG
+    IS_STDXLIB
+    IS_PACKAGE
+    IS_CJNATIVE_BACKEND
+    PACKAGE_NAME "net"
+    MODULE_NAME "stdx"
+    SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/net/src
+    DEPENDS ${NETBASE_DEPENDENCIES})
+
+add_cangjie_library(
+    cangjie${BACKEND_TYPE}StringIntern
+    NO_SUB_PKG
+    IS_STDXLIB
+    IS_PACKAGE
+    IS_CJNATIVE_BACKEND
+    PACKAGE_NAME "string_intern"
+    MODULE_NAME "stdx"
+    SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/string_intern/src
+    DEPENDS ${STRING_INTERN_DEPENDENCIES})
+
+add_cangjie_library(
+    cangjie${BACKEND_TYPE}Tls
+    IS_STDXLIB
+    IS_PACKAGE
+    IS_CJNATIVE_BACKEND
+    PACKAGE_NAME "net.tls"
+    MODULE_NAME "stdx"
+    SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/net/src/tls
+    DEPENDS ${NET_TLS_DEPENDENCIES})
+
+add_cangjie_library(
+    cangjie${BACKEND_TYPE}TlsCommon
+    NO_SUB_PKG
+    IS_STDXLIB
+    IS_PACKAGE
+    IS_CJNATIVE_BACKEND
+    PACKAGE_NAME "net.tls.common"
+    MODULE_NAME "stdx"
+    SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/net/src/tls/common
+    DEPENDS ${NET_TLS_COMMON_DEPENDENCIES})
+
+add_cangjie_library(
+    cangjie${BACKEND_TYPE}Http IS_STDXLIB IS_CJNATIVE_BACKEND
+    NO_SUB_PKG
+    PACKAGE_NAME "net.http"
+    MODULE_NAME "stdx"
+    SOURCES ${HTTP_SRCS}
+    SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/net/src/http
+    DEPENDS ${NET_HTTP_DEPENDENCIES})
+
+if(NOT CANGJIE_BUILD_WITHOUT_EFFECT_HANDLERS)
+add_cangjie_library(
+    cangjie${BACKEND_TYPE}Effect
+    IS_STDXLIB
+    IS_PACKAGE
+    IS_CJNATIVE_BACKEND
+    PACKAGE_NAME "effect"
+    MODULE_NAME "stdx"
+    SOURCES ${EFFECT_SRCS}
+    SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/effect/src
+    DEPENDS ${EFFECT_DEPENDENCIES})
+endif()
+
+add_cangjie_library(
+    cangjie${BACKEND_TYPE}Hex
+    NO_SUB_PKG
+    IS_STDXLIB
+    IS_PACKAGE
+    IS_CJNATIVE_BACKEND
+    PACKAGE_NAME "encoding.hex"
+    MODULE_NAME "stdx"
+    SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/encoding/src/hex/
+    DEPENDS ${ENCODING_HEX_DEPENDENCIES})
+
+add_cangjie_library(
+    cangjie${BACKEND_TYPE}Actors
+    IS_STDXLIB
+    IS_PACKAGE
+    IS_CJNATIVE_BACKEND
+    PACKAGE_NAME "actors"
+    MODULE_NAME "stdx"
+    SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/actors/src
+    DEPENDS ${ACTORS_DEPENDENCIES})
+
+add_cangjie_library(
+    cangjie${BACKEND_TYPE}ActorsMacros
+    NO_SUB_PKG
+    IS_STDXLIB
+    IS_PACKAGE
+    IS_CJNATIVE_BACKEND
+    PACKAGE_NAME "actors.macros"
+    MODULE_NAME "stdx"
+    SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/actors/src/macros
+    DEPENDS ${ACTORS_MACROS_DEPENDENCIES})
+
+if(NOT CANGJIE_CJPM_BUILD_TYPE)
+    if(DARWIN)
+        set(syntaxFFI_flags -lc++)
+    elseif(OHOS)
+        set(syntaxFFI_flags -l:libc++.a)
+    else()
+        set(syntaxFFI_flags -lstdc++)
+    endif()
+
+    make_cangjie_lib(
+        syntax IS_SHARED
+        DEPENDS
+            cangjie${BACKEND_TYPE}Syntax
+            syntaxFFI
+        CANGJIE_STD_LIB_LINK std-core std-collection std-sync std-convert std-fs std-sort std-ast
+        OBJECTS ${output_cj_object_dir}/stdx/syntax.o
+        FORCE_LINK_ARCHIVES syntaxFFI
+        FLAGS ${syntaxFFI_flags}
+            -lsyntaxFFI
+            $<$<BOOL:${OHOS}>:-lunwind>
+            $<$<NOT:$<BOOL:${WIN32}>>:-ldl>
+        )
+    get_target_property(SYNTAXFFI_OBJS syntaxFFI SOURCES)
+    add_library(stdx.syntax STATIC ${SYNTAXFFI_OBJS} ${output_cj_object_dir}/stdx/syntax.o)
+    target_link_libraries(stdx.syntax syntaxFFI)
+    set_target_properties(stdx.syntax PROPERTIES LINKER_LANGUAGE C  OUTPUT_NAME "syntax@cangjie_stdx")
+    install(TARGETS stdx.syntax DESTINATION ${output_triple_name}_cjnative/static/stdx)
+
+    add_cangjie_library(
+        cangjie${BACKEND_TYPE}Syntax
+        NO_SUB_PKG
+        IS_STDXLIB
+        IS_PACKAGE
+        IS_CJNATIVE_BACKEND
+        PACKAGE_NAME "syntax"
+        MODULE_NAME "stdx"
+        SOURCES ${SYNTAX_SRCS}
+        SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/syntax
+        DEPENDS ${SYNTAX_DEPENDENCIES})
+endif()

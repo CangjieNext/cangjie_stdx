@@ -75,22 +75,19 @@ function(add_cangjie_library target_name
             list(APPEND cangjie_compile_flags "${CMAKE_SOURCE_DIR}/src/")
         endif()
     endif()
+    list(APPEND cangjie_compile_flags "--import-path=${CMAKE_BINARY_DIR}/modules/${TARGET_TRIPLE_DIRECTORY_PREFIX}_${BACKEND}/stdx")
 
     if(NOT ("${CANGJIELIB_MODULE_NAME}" STREQUAL ""))
-        set(output_full_name "${CMAKE_BINARY_DIR}/${output_dir}/${CANGJIELIB_MODULE_NAME}.${CANGJIELIB_PACKAGE_NAME}")
+        set(output_full_name "${CMAKE_BINARY_DIR}/${output_dir}/${CANGJIELIB_MODULE_NAME}.${CANGJIELIB_PACKAGE_NAME}@cangjie_stdx")
     else()
-        set(output_full_name "${CMAKE_BINARY_DIR}/${output_dir}/${CANGJIELIB_PACKAGE_NAME}")
+        set(output_full_name "${CMAKE_BINARY_DIR}/${output_dir}/${CANGJIELIB_PACKAGE_NAME}@cangjie_stdx")
     endif()
 
     set(output_full_name_prefix "${CMAKE_BINARY_DIR}/${output_dir}/${CANGJIELIB_PACKAGE_NAME}")
     if(CANGJIE_CODEGEN_CJNATIVE_BACKEND)
         set(output_full_name "${output_full_name}.a") # Set output path and output name
-        if(NOT ("${CANGJIELIB_MODULE_NAME}" STREQUAL ""))
-            set(output_lto_bc_full_name "${CMAKE_BINARY_DIR}/${output_bc_dir}/lib${CANGJIELIB_MODULE_NAME}.${CANGJIELIB_PACKAGE_NAME}")
-        else()
-            set(output_lto_bc_full_name "${CMAKE_BINARY_DIR}/${output_bc_dir}/lib${CANGJIELIB_PACKAGE_NAME}")
-        endif()
-        set(output_lto_bc_full_name "${output_lto_bc_full_name}.bc") # Set output path and output name
+        set(output_lto_bc_full_name "${CMAKE_BINARY_DIR}/${output_bc_dir}/lib${CANGJIELIB_PACKAGE_NAME}")
+        set(output_lto_bc_full_name "${output_lto_bc_full_name}@cangjie_stdx.bc") # Set output path and output name
     endif()
 
     if(CANGJIE_CODEGEN_CJNATIVE_BACKEND)
@@ -261,7 +258,7 @@ function(add_cangjie_library target_name
             set(install_files "${CANGJIE_CJPM_DIR}/target/${lowercase_build_type}/stdx/${file_name}.cjo")
         endif()
     else()
-        set(install_files "${CMAKE_BINARY_DIR}/${output_dir}/${file_name}.cjo")
+        set(install_files "${CMAKE_BINARY_DIR}/${output_dir}/${CANGJIELIB_PACKAGE_NAME}@cangjie_stdx.cjo")
     endif()
     if(CANGJIE_CODEGEN_CJNATIVE_BACKEND)
     else()
