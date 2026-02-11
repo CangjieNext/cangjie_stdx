@@ -10,11 +10,6 @@ class AnalyzerImpl {
         visitor = CollectVisitor()
         visitor.walk(pkg)
         visitor.updateExtendInheritMap()
-
-        println("Collect Result:")
-        println("TypeMap: ${visitor.typeMap.size}")
-        println("ExtendMap: ${visitor.extendMap.size}")
-        println("InheritMap: ${visitor.inheritMap.size}")
     }
 
     func get(ty: TypeAnnotation): ?Decl {

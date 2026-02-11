@@ -3,6 +3,7 @@ internal import stdx.syntax.*
 import std.collection.HashMap
 import std.fs.*
 import std.io.*
+import std.time.*
 // import std.ast.MACRO_OBJECT
 
 public class SemanticResult {
@@ -10,11 +11,32 @@ public class SemanticResult {
     private let impl: AnalyzerImpl
     
     public static func analyze(pkgAST: Package, importedPkgContexts!: Array<SemanticContext> = []): SemanticResult {
-        let maps = unsafe{ analyzeImpl(serializePkg(pkgAST)) }
+        let analyzeStart = MonoTime.now()
+        let serialStart = MonoTime.now()
+        let buf: Array<UInt8> = serializePkg(pkgAST)
+        let serialEnd = MonoTime.now()
+        var result = serialEnd - serialStart
+        println("Stage 2. Serialize GreenTree time: ${result.toNanoseconds()}ns")
+
+        let maps = unsafe{ analyzeImpl(buf) }
+        
+        let declMapStart = MonoTime.now()
         let declMap = getDeclTypeMap(pkgAST, maps)
+        let declMapEnd = MonoTime.now()
+        result = declMapEnd - declMapStart
+        println("Stage 5. Build DeclTypeMap time: ${result.toNanoseconds()}ns")
+
+        let refMapStart = MonoTime.now()
         let refMap = getRefMap(pkgAST, maps)
-        let declMaps = getDeclTypeMap(pkgAST, maps)
-        SemanticResult(declMaps, refMap, AnalyzerImpl(pkgAST))
+        let refMapEnd = MonoTime.now()
+        result = refMapEnd - refMapStart
+        println("Stage 5. Build RefMap time: ${result.toNanoseconds()}ns")
+        
+        let analyzeEnd = MonoTime.now()
+        result = analyzeEnd - analyzeStart
+        println("Total Analyze time: ${result.toNanoseconds()}ns")
+        
+        SemanticResult(declMap, refMap, AnalyzerImpl(pkgAST))
     }
 
     public static func analyze(pkgAST: Package, cjoPath: String) {
@@ -80,7 +102,7 @@ public class SemanticResult {
             if (let Some(refMap) <- refMapOption) {
                 let refId = refMap.GetId()
                 let declId = refMap.GetDecl()
-                println("ref - decl: ${refId}, ${declId}")
+                // println("ref - decl: ${refId}, ${declId}")
                 let nf = NodeFinder(pkgAST, declId)
                 nf.walk(pkgAST)
                 if (let Some(decl) <- nf.res) {

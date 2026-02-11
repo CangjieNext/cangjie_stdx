@@ -1,6 +1,8 @@
 #include <iostream>
 #include <vector>
 #include <memory>
+#include <chrono>
+
 
 #include "cangjie/Basic/DiagnosticEmitter.h"
 #include "cangjie/Basic/SourceManager.h"
@@ -15,6 +17,7 @@
 #include "flatbuffers/SyntaxNodeFormat_generated.h"
 
 using namespace Cangjie;
+using namespace std::chrono;
 
 void printSyntaxNode(const SyntaxNodePtr& node, int depth = 0) {
     if (!node) {
@@ -68,7 +71,11 @@ void printSyntaxNode(const SyntaxNodePtr& node, int depth = 0) {
 extern "C"{
 uint8_t* CJ_Analyze(const uint8_t* node, size_t length)
 {
+    steady_clock::time_point deserialStart = steady_clock::now();
     SyntaxNodePtr root = SyntaxNodeFlatBufferDeserializer::deserialize(node, length);
+    steady_clock::time_point deserialEnd = steady_clock::now();
+    auto duration = duration_cast<nanoseconds>(deserialEnd - deserialStart);
+    std::cout << "Stage 2. Deserialize GreenTree time: " << duration.count() << " ns" << std::endl;
 
     DiagnosticEngine diag;
     CompilerInvocation compilerInvocation;
@@ -83,11 +90,12 @@ uint8_t* CJ_Analyze(const uint8_t* node, size_t length)
 
     // PARSER
     auto package = MakeOwned<AST::Package>();
+
+    steady_clock::time_point parseStart = steady_clock::now();
     if (root->getType() == SyntaxNode::NodeType::NON_TERMINAL) {
         auto nonTerminal = std::static_pointer_cast<NonTerminal>(root);
         for (const auto& child : nonTerminal->children) {
             std::string code = child->toString();
-            std::cout << "code: " << code << std::endl;
             auto fileID = ci.GetSourceManager().AddSource("", code);
             Parser parser(fileID, code, diag, ci.GetSourceManager(), ci.invocation.globalOptions.enableAddCommentToAst,
                 ci.invocation.globalOptions.compileCjd);
@@ -104,27 +112,34 @@ uint8_t* CJ_Analyze(const uint8_t* node, size_t length)
         }
     }
     ci.srcPkgs.push_back(std::move(package));
+    steady_clock::time_point parseEnd = steady_clock::now();
+    duration = duration_cast<nanoseconds>(parseEnd - parseStart);
+    std::cout << "Stage 3. Parser time: " << duration.count() << " ns" << std::endl;
 
 
     TypeCollector tyCollector;
     tyCollector.collect(root, ci.srcPkgs[0].get());
-    std::cout << "----------before sema---------" << std::endl;
-    for (const auto &pair : tyCollector.declMap) {
-        std::cout << "key: " << pair.second << ", value: " << pair.first.get()
-            << ", ty: " << pair.first.get()->ty->String() << std::endl;
-    }
+    // std::cout << "----------before sema---------" << std::endl;
+    // for (const auto &pair : tyCollector.declMap) {
+    //     std::cout << "key: " << pair.second << ", value: " << pair.first.get()
+    //         << ", ty: " << pair.first.get()->ty->String() << std::endl;
+    // }
 
     ci.PerformImportPackage();
     ci.PerformSema();
 
-    std::cout << "----------after sema---------" << std::endl;
-    for (const auto &pair : tyCollector.declMap) {
-        std::cout << "key: " << pair.second << ", value: " << pair.first.get()
-            << ", ty: " << pair.first.get()->ty->String() << std::endl;
-    }
+    // std::cout << "----------after sema---------" << std::endl;
+    // for (const auto &pair : tyCollector.declMap) {
+    //     std::cout << "key: " << pair.second << ", value: " << pair.first.get()
+    //         << ", ty: " << pair.first.get()->ty->String() << std::endl;
+    // }
 
-    // serialize
+    // serialize type
+    steady_clock::time_point typeStart = steady_clock::now();
     TypeWrite typeWriter(tyCollector.declMap, tyCollector.exprMap, tyCollector.refTarget);
+    steady_clock::time_point typeEnd = steady_clock::now();
+    duration = duration_cast<nanoseconds>(typeEnd - typeStart);
+    std::cout << "Stage 4. Serialize SemanticTypeMap time: " << duration.count() << " ns" << std::endl;
     
     return typeWriter.ExportType();
 }
@@ -144,7 +159,6 @@ uint8_t* CJ_Analyze_With_Path(const uint8_t* node, size_t length, const char* cj
     ci.cangjieHome = cangjieHome;
     ci.invocation.globalOptions.environment.cangjieHome = cangjieHome;
     std::string cjo(cjoPath);
-    std::cout << "cjoPath: " << cjo << std::endl;
     ci.invocation.globalOptions.importPaths.emplace_back(cjo);
     // PARSER
     auto package = MakeOwned<AST::Package>();
@@ -152,7 +166,6 @@ uint8_t* CJ_Analyze_With_Path(const uint8_t* node, size_t length, const char* cj
         auto nonTerminal = std::static_pointer_cast<NonTerminal>(root);
         for (const auto& child : nonTerminal->children) {
             std::string code = child->toString();
-            std::cout << "code: " << code << std::endl;
             auto fileID = ci.GetSourceManager().AddSource("", code);
             Parser parser(fileID, code, diag, ci.GetSourceManager(), ci.invocation.globalOptions.enableAddCommentToAst,
                 ci.invocation.globalOptions.compileCjd);
@@ -173,20 +186,20 @@ uint8_t* CJ_Analyze_With_Path(const uint8_t* node, size_t length, const char* cj
 
     TypeCollector tyCollector;
     tyCollector.collect(root, ci.srcPkgs[0].get());
-    std::cout << "----------before sema---------" << std::endl;
-    for (const auto &pair : tyCollector.declMap) {
-        std::cout << "key: " << pair.second << ", value: " << pair.first.get()
-            << ", ty: " << pair.first.get()->ty->String() << std::endl;
-    }
+    // std::cout << "----------before sema---------" << std::endl;
+    // for (const auto &pair : tyCollector.declMap) {
+    //     std::cout << "key: " << pair.second << ", value: " << pair.first.get()
+    //         << ", ty: " << pair.first.get()->ty->String() << std::endl;
+    // }
 
     ci.PerformImportPackage();
     ci.PerformSema();
 
-    std::cout << "----------after sema---------" << std::endl;
-    for (const auto &pair : tyCollector.declMap) {
-        std::cout << "key: " << pair.second << ", value: " << pair.first.get()
-            << ", ty: " << pair.first.get()->ty->String() << std::endl;
-    }
+    // std::cout << "----------after sema---------" << std::endl;
+    // for (const auto &pair : tyCollector.declMap) {
+    //     std::cout << "key: " << pair.second << ", value: " << pair.first.get()
+    //         << ", ty: " << pair.first.get()->ty->String() << std::endl;
+    // }
 
     // serialize
     TypeWrite typeWriter(tyCollector.declMap, tyCollector.exprMap, tyCollector.refTarget);

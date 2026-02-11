@@ -30,7 +30,7 @@ class EnumAnalyzeTest {
 
     @BeforeAll
     func readDecls(): Unit {
-        let parsingRes: ParsingResult<Package> = parsePackage("../sourceFile/package/package_enum_decl")
+        let parsingRes: ParsingResult<Package> = parsePackage("sourceFile/package/package_enum_decl")
         
         let pkgAST: Package = parsingRes.node.getOrThrow()
 
