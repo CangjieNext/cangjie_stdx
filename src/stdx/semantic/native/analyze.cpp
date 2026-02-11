@@ -125,8 +125,12 @@ uint8_t* CJ_Analyze(const uint8_t* node, size_t length)
     //         << ", ty: " << pair.first.get()->ty->String() << std::endl;
     // }
 
+    steady_clock::time_point performStart = steady_clock::now();
     ci.PerformImportPackage();
     ci.PerformSema();
+    steady_clock::time_point performEnd = steady_clock::now();
+    duration = duration_cast<nanoseconds>(performEnd - performStart);
+    std::cout << "Stage 4. PerformSema time: " << duration.count() << " ns" << std::endl;
 
     // std::cout << "----------after sema---------" << std::endl;
     // for (const auto &pair : tyCollector.declMap) {
