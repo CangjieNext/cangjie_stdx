@@ -236,8 +236,8 @@ An exception has occurred:
 Exception: Balance for account Hamid is not enough.
          at default.BalanceNotEnoughException::init(std.core::String)(/home/.../main.cj:6)
          at default.Account::withdraw::lambda.0()(/home/.../main.cj:25)
-         at stdx.actors.ActorFuture<...>::execute()(stdx/actors/actor_future.cj:90)
-         at stdx.actors.SequentialDispatcher::startActorLoop::lambda.0()(stdx/actors/actors.cj:46)
+         at stdx.actors.ActorFuture<...>::execute()(actors/actor_future.cj:90)
+         at stdx.actors.SequentialDispatcher::startActorLoop::lambda.0()(actors/actors.cj:46)
 ```
 
 当一个接收函数抛出异常后， 该 actor 的附属线程会继续执行下一个在队列里面的接收函数调用：
@@ -267,8 +267,8 @@ An exception has occurred:
 Exception: Balance for account Hamid is not enough.
          at default.BalanceNotEnoughException::init(std.core::String)(/home/.../main.cj:6)
          at default.Account::withdraw::lambda.0()(/home/.../main.cj:25)
-         at stdx.actors.ActorFuture<...>::execute()(stdx/actors/actor_future.cj:90)
-         at stdx.actors.SequentialDispatcher::startActorLoop::lambda.0()(stdx/actors/actors.cj:46)
+         at stdx.actors.ActorFuture<...>::execute()(actors/actor_future.cj:90)
+         at stdx.actors.SequentialDispatcher::startActorLoop::lambda.0()(actors/actors.cj:46)
 
 Balance = 0.0
 ```

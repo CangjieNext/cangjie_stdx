@@ -1,0 +1,19 @@
+[package]
+  cjc-version = "1.1.0"
+  name = "unittest"
+  organization = "cangjie_stdx"
+  description = "nothing here"
+  version = "1.0.0"
+  target-dir = ""
+  script-dir = ""
+  output-type = "dynamic"
+  compile-option = "-O2"
+  override-compile-option = ""
+  link-option = ""
+  package-configuration = {}
+  src-dir = "./src"
+  exclude = ["*.txt"]
+
+[dependencies]
+  "cangjie_stdx::encoding" = { path = "../encoding" }
+  "cangjie_stdx::serialization" = { path = "../serialization" }
