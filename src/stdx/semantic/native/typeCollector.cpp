@@ -117,7 +117,19 @@ std::vector<Ptr<AST::Node>> TypeCollector::collectChild(const Ptr<AST::Node> &no
             case ASTKind::FUNC_DECL: {
                 auto funcDecl = StaticAs<ASTKind::FUNC_DECL>(node);
                 if (funcDecl->funcBody.get()) {
-                    collect.emplace_back(funcDecl->funcBody);
+                    auto funcBody = StaticAs<ASTKind::FUNC_BODY>(funcDecl->funcBody.get());
+                    if (funcBody->generic.get()) {
+                        collect.emplace_back(funcBody->generic);
+                    }
+                    for (auto& paramList : funcBody->paramLists) {
+                        collect.emplace_back(paramList);
+                    }
+                    if (funcBody->retType.get()) {
+                        collect.emplace_back(funcBody->retType);
+                    }
+                    if (funcBody->body.get()) {
+                        collect.emplace_back(funcBody->body);
+                    }
                 }
                 return VisitAction::SKIP_CHILDREN;
             }
@@ -343,6 +355,7 @@ std::vector<Ptr<AST::Node>> TypeCollector::collectChild(const Ptr<AST::Node> &no
                 for (auto& decl : classBody->decls) {
                     collect.emplace_back(decl);
                 }
+                std::cout<<"collect class body decls: "<<classBody->decls.size()<<std::endl;
                 return VisitAction::SKIP_CHILDREN;
             }
             case ASTKind::INTERFACE_BODY: {
