@@ -124,6 +124,10 @@ uint8_t* CJ_Analyze(const uint8_t* node, size_t length)
     //     std::cout << "key: " << pair.second << ", value: " << pair.first.get()
     //         << ", ty: " << pair.first.get()->ty->String() << std::endl;
     // }
+    // for (const auto &pair : tyCollector.exprMap) {
+    //     std::cout << "key: " << pair.second << ", value: " << pair.first.get()
+    //         << ", ty: " << pair.first.get()->ty->String() << std::endl;
+    // }
 
     steady_clock::time_point performStart = steady_clock::now();
     ci.PerformImportPackage();
@@ -134,6 +138,10 @@ uint8_t* CJ_Analyze(const uint8_t* node, size_t length)
 
     // std::cout << "----------after sema---------" << std::endl;
     // for (const auto &pair : tyCollector.declMap) {
+    //     std::cout << "key: " << pair.second << ", value: " << pair.first.get()
+    //         << ", ty: " << pair.first.get()->ty->String() << std::endl;
+    // }
+    // for (const auto &pair : tyCollector.exprMap) {
     //     std::cout << "key: " << pair.second << ", value: " << pair.first.get()
     //         << ", ty: " << pair.first.get()->ty->String() << std::endl;
     // }

@@ -34,11 +34,11 @@ func func_15(args: Array<String>): Unit {}
 
 func func_16<T>(x: T): Array<T> { [x] }
 
-func func_17(a: Int64, b: Int64): Int64 { a + b }
+open func func_17(a: Int64, b: Int64): Int64 { a + b }
 
-func func_18(a!: (Int32) -> Int16){
+abstract func func_18(a!: (Int32) -> Int16){
     let b = a(1)
     b
 }
 
-func func_19(a!: (Int32) -> Int16) { a }
+public func func_19(a!: (Int32) -> Int16) { a }

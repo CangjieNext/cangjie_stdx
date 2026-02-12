@@ -31,24 +31,35 @@ public class SemanticResult {
         let refMapEnd = MonoTime.now()
         result = refMapEnd - refMapStart
         println("Stage 5. Build RefMap time: ${result.toNanoseconds()}ns")
+
+        let exprMapStart = MonoTime.now()
+        let exprMap = getExprTypeMap(pkgAST, maps)
+        let exprMapEnd = MonoTime.now()
+        result = exprMapEnd - exprMapStart
+        println("Stage 5. Build ExprTypeMap time: ${result.toNanoseconds()}ns")
         
         let analyzeEnd = MonoTime.now()
         result = analyzeEnd - analyzeStart
         println("Total Analyze time: ${result.toNanoseconds()}ns")
         
-        SemanticResult(declMap, refMap, AnalyzerImpl(pkgAST))
+        SemanticResult(declMap, exprMap, refMap, AnalyzerImpl(pkgAST))
     }
 
     public static func analyze(pkgAST: Package, cjoPath: String) {
         let maps = unsafe{ analyzeImplWithPath(serializePkg(pkgAST), cjoPath) }
         let declMaps = getDeclTypeMap(pkgAST, maps)
         let refMap = getRefMap(pkgAST, maps)
-        SemanticResult(declMaps, refMap, AnalyzerImpl(pkgAST))
+        let exprMap = getExprTypeMap(pkgAST, maps)
+        SemanticResult(declMaps, exprMap, refMap, AnalyzerImpl(pkgAST))
         // TODO: 内部应该存一份对应 cjoPath 的 SemanticContext
     }
 
     public func getTypeInfo(decl: Decl): Option<SemanticType> {
         declTypeInfoMap.get(decl.getId())
+    }
+
+    public func getTypeInfo(expr: Expr): Option<SemanticType> {
+        exprTypeInfoMap.get(expr.getId())
     }
 
     public func getSymbolRef(symbol: SymbolRef): Option<SyntaxTreeNode> {
@@ -94,6 +105,26 @@ public class SemanticResult {
         declMap
     }
 
+    private static func getExprTypeMap(pkgAST: Package, maps: SemanticType_NodeTypeMap) {
+        let exprMap = HashMap<UInt64, SemanticType>()
+
+        let tyPtrToSemanticType = HashMap<UInt64, SemanticType>()
+        for (semanticTypeMapOption in maps.GetExprMapList()) {
+            if (let Some(semanticTypeMap) <- semanticTypeMapOption) {
+                let id = semanticTypeMap.GetId()
+                println("expr - id: ${id}")
+                let ty = generateSemanticType(semanticTypeMap.GetType(), pkgAST)
+                if (tyPtrToSemanticType.contains(ty.rawPointer)) {
+                    exprMap.add(id, tyPtrToSemanticType[ty.rawPointer])
+                } else {
+                    exprMap.add(id, ty)
+                    tyPtrToSemanticType.add(ty.rawPointer, ty)
+                }
+            }
+        }
+        exprMap
+    }
+
     private static func getRefMap(pkgAST: Package, maps: SemanticType_NodeTypeMap) {
         let target = HashMap<UInt64, SyntaxTreeNode>()
 
@@ -114,12 +145,13 @@ public class SemanticResult {
     }
 
     private let declTypeInfoMap: HashMap<UInt64, SemanticType>
-    // private let exprTypeInfoMap: HashMap<SyntaxTreeNode, SemanticType>
+    private let exprTypeInfoMap: HashMap<UInt64, SemanticType>
     private let target: HashMap<UInt64, SyntaxTreeNode>
     // private let target: HashMap<SyntaxTreeNode, SyntaxTreeNode>
     
-    init(declTypeInfoMap: HashMap<UInt64, SemanticType>, target: HashMap<UInt64, SyntaxTreeNode>, impl: AnalyzerImpl){
+    init(declTypeInfoMap: HashMap<UInt64, SemanticType>, exprTypeInfoMap: HashMap<UInt64, SemanticType>, target: HashMap<UInt64, SyntaxTreeNode>, impl: AnalyzerImpl){
         this.declTypeInfoMap = declTypeInfoMap
+        this.exprTypeInfoMap = exprTypeInfoMap
         this.target = target
         this.impl = impl
     }

@@ -52,6 +52,10 @@ flatbuffers::Offset<SemanticType::NodeTypeMap> TypeWrite::SerializeNodeTypeMap()
         declTypeVector.push_back(SerializeSemanticTypeMap(pair.second, pair.first.get()->ty));
     }
 
+    for (const auto& pair : exprTypeMap) {
+        exprTypeVector.push_back(SerializeSemanticTypeMap(pair.second, pair.first.get()->ty));
+    }
+
     for (const auto& pair : refMap) {
         auto symbolExpr = pair.second.get();
         Ptr<Decl> target{nullptr};
