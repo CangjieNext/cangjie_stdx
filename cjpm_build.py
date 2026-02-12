@@ -742,10 +742,13 @@ def check_compiler(args):
         else:
             LOG.error("cannot find available compiler in $PATH")
         LOG.error("clang/clang++ or gcc/g++ is required to build cangjie compiler")
-
-    os.environ["CC"] = c_compiler
-    os.environ["CXX"] = cxx_compiler
-
+    if c_compiler:
+        os.environ["CC"] = c_compiler
+    if cxx_compiler:
+        os.environ["CXX"] = cxx_compiler
+    else:
+        LOG.error("cannot find available compiler in $PATH")
+        LOG.error("clang/clang++ or gcc/g++ is required to build cangjie compiler")
 
 def install(args):
     """install targets"""
