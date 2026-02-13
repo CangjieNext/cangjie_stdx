@@ -394,6 +394,12 @@ public class FuncSType <: SemanticType {
         returnType = typeArguments[typeArguments.size - 1]
     }
 
+    init(paramTypes: Array<SemanticType>, returnType: SemanticType) {
+        super(0)
+        this.paramTypes = paramTypes
+        this.returnType = returnType
+    }
+
     public func toString(): String {
         var str = "("
         for (i in 0..paramTypes.size) {

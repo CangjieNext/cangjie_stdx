@@ -4,10 +4,11 @@ import std.collection.{ArrayList, HashMap}
 import std.fs.{File, Path, OpenMode}
 import std.io.{readToEnd}
 
+
 public class SemanticContext {
     // cjo 
     public let syntaxTree: SyntaxTreeNode
-    private let declTypeInfoMap: HashMap<SyntaxTreeNode, SemanticType>
+    private let declTypeInfoMap: HashMap<UInt64, SemanticType>
     public static func createFromCJOFile(cjoFilePath: String): SemanticContext {
         let cjoPath: Path = Path(cjoFilePath)
         let file: File = File(cjoPath, OpenMode.Read)
@@ -15,8 +16,16 @@ public class SemanticContext {
         let creator = SemanticContextCreator()
         creator.createPackageFromCJO(allBytes)
     }
-    
-    init(syntaxTree: SyntaxTreeNode, declTypeInfoMap: HashMap<SyntaxTreeNode, SemanticType>){
+
+    public static func createFromSemanticResult(semaRes: SemanticResult): SemanticContext {
+        SemanticContext(semaRes.pkgAST, semaRes.declTypeInfoMap)
+    }
+
+    public func getTypeInfo(decl: Decl): Option<SemanticType> {
+        declTypeInfoMap.get(decl.getId())
+    }
+
+    init(syntaxTree: SyntaxTreeNode, declTypeInfoMap: HashMap<UInt64, SemanticType>){
         this.declTypeInfoMap = declTypeInfoMap
         this.syntaxTree = syntaxTree
     }
@@ -24,7 +33,7 @@ public class SemanticContext {
 
 class SemanticContextCreator {
     SemanticContextCreator() {}
-    private let declTypeInfoMap = HashMap<SyntaxTreeNode, SemanticType>()
+    private let declTypeInfoMap = HashMap<UInt64, SemanticType>()
 
     func createPackageFromCJO(bytes: Array<Byte>): SemanticContext {
         let cjoPackage = PackageFormat_Package(bytes, 0)
@@ -35,7 +44,6 @@ class SemanticContextCreator {
         let file = SourceFile(Array<ImportList>(), pkgName + ".cj", pkgName + ".cj", 
         PackageHeader(Option<Modifier>.None, isMacroPkg, [pkgName]), topLevelDecls)
         let pkg = Package(isMacroPkg, cjoPackage.GetFullPkgName(), [file])
-        println(pkg)
         SemanticContext(pkg, declTypeInfoMap)
     }
 
@@ -56,7 +64,7 @@ class SemanticContextCreator {
         // NOTE: valid index start from 1!
         let index = Int64(declIndex) - 1
         if (index < 0 || index >= cjoPackage.GetAllDecls().size) {
-            throw Exception("createDecl.GetAllDecls.size: ${index}, ${cjoPackage.GetAllDecls().size}")
+            throw Exception("The length of the all decls is ${cjoPackage.GetAllDecls().size}, but the index is ${index}.")
         }
         let declInfo = cjoPackage.GetAllDecls()[index]
         return if (let Some(decl) <- declInfo) { 
@@ -92,7 +100,7 @@ class SemanticContextCreator {
 
         let classDecl = ClassDecl(body, genericConstraints, genericParams, name, superTyAnnotations,
         annotations : [], modifiers : [], comments : [])
-        // declTypeInfoMap.add(classDecl, createSemanticType(cjoPackage, decl.GetType()))
+        declTypeInfoMap.add(classDecl.getId(), createSemanticType(cjoPackage, decl.GetType()))
         return classDecl
     }
 
@@ -119,7 +127,7 @@ class SemanticContextCreator {
         }
         let funcDecl = FuncDecl(body, genericConstraints, genericParams, kind, name, params, retTyAnnotation,
         annotations : [], modifiers : [], comments : [])
-        // declTypeInfoMap.add(funcDecl, createSemanticType(cjoPackage, decl.GetType()))
+        declTypeInfoMap.add(funcDecl.getId(), createSemanticType(cjoPackage, decl.GetType()))
         return funcDecl
     }
 
@@ -156,7 +164,7 @@ class SemanticContextCreator {
         let tyAnnotation = createTyAnnotation(cjoPackage, decl.GetType())
         let varDecl = VarDecl(initializer, kind, name, pattern, tyAnnotation,
         annotations : [], modifiers : [], comments : [])
-        // declTypeInfoMap.add(varDecl, createSemanticType(cjoPackage, decl.GetType()))
+        declTypeInfoMap.add(varDecl.getId(), createSemanticType(cjoPackage, decl.GetType()))
         return varDecl
     }
 
@@ -164,7 +172,7 @@ class SemanticContextCreator {
         // NOTE: valid index start from 1!
         let index = Int64(tyIndex) - 1
         if (index < 0 || index >= cjoPackage.GetAllTypes().size) {
-            throw Exception("tyIndex out of range createDecl.GetAllTypes.size: ${index}, ${cjoPackage.GetAllDecls().size}")
+            throw Exception("The length of the all types is ${cjoPackage.GetAllTypes().size}, but the index is ${index}.")
         }
         let typeInfo = cjoPackage.GetAllTypes()[index]
         return if (let Some(ty) <- typeInfo) {
@@ -185,9 +193,11 @@ class SemanticContextCreator {
         let kind =  Option<VarKind>.None // TODO: var kind
 
         let typeAnnotation = createTyAnnotation(cjoPackage, decl.GetType())
-
-        return FuncParam(defaultValue, kind, decl.GetIdentifier(), typeAnnotation,
+        
+        let param = FuncParam(defaultValue, kind, decl.GetIdentifier(), typeAnnotation,
         isNamed: paramInfo.GetIsNamedParam(), annotations: [], modifiers: [], comments: [])
+        declTypeInfoMap.add(param.getId(), createSemanticType(cjoPackage, decl.GetType()))
+        return param
     }
 
     // private func createExpr(cjoPackage: PackageFormat_Package, exprIndex: UInt32): Expr {
@@ -199,7 +209,7 @@ class SemanticContextCreator {
     //     let exprInfo = cjoPackage.GetAllExprs()[index]
     //     return if (let Some(expr) <- exprInfo) { 
     //         match (expr.GetKind()) {
-    //             case PackageFormat_ExprKind.ExprKind_BLOCK => // createBlock(cjoPackage, expr)
+    //             case PackageFormat_ExprKind.ExprKind_BLOCK => // block is not Expr in Syntax
     //             case _ => throw Exception("Not implement this PackageFormat_ExprKind ${EnumPackageFormat_ExprKindValues(expr.GetKind())}")
     //     }
     //     } else {
@@ -208,70 +218,95 @@ class SemanticContextCreator {
     // }
     
     // TODO  
-    // private func createBlock(cjoPackage: PackageFormat_Package, expr: PackageFormat_Expr): Expr {
+    // private func createBlock(cjoPackage: PackageFormat_Package, expr: PackageFormat_Expr): Block {
     //     Block([])
     // }
 
-    // private func createSemanticType(cjoPackage: PackageFormat_Package, tyIndex: UInt32): SemanticType {
-    //     let index = Int64(tyIndex) - 1
-    //     if (index < 0 || index >= cjoPackage.GetAllTypes().size) {
-    //         throw Exception("tyIndex out of range createDecl.GetAllTypes.size: ${index}, ${cjoPackage.GetAllDecls().size}")
-    //     }
-    //     if (let Some(ty) <- typeInfo) {
-    //         return match (ty.GetKind()) {
-    //             case PackageFormat_TypeKind.TypeKind_UNIT => UnitSType(0)
-    //             case PackageFormat_TypeKind.TypeKind_INT64 => Int64SType(0)
-    //             case PackageFormat_TypeKind.TypeKind_FUNC => createSemanticFuncType(cjoPackage, tyIndex)
-    //             case PackageFormat_TypeKind.TypeKind_CLASS => createSemanticClassType(cjoPackage, tyIndex)
-    //             case _ => throw Exception("Not implement this PackageFormat_TypeKind ${EnumPackageFormat_TypeKindValues(ty.GetKind())}")
-    //         }
-    //     } else {
-    //         throw Exception("Failed to create SemanticType")
-    //     }
-    // }
+    private func createSemanticType(cjoPackage: PackageFormat_Package, tyIndex: UInt32): SemanticType {
+        let index = Int64(tyIndex) - 1
+        if (index < 0 || index >= cjoPackage.GetAllTypes().size) {
+            throw Exception("The length of the all types is ${cjoPackage.GetAllTypes().size}, but the index is ${index}.")
+        }
+        let typeInfo = cjoPackage.GetAllTypes()[index]
+        if (let Some(ty) <- typeInfo) {
+            return match (ty.GetKind()) {
+                case PackageFormat_TypeKind.TypeKind_UNIT => UnitSType(0)
+                case PackageFormat_TypeKind.TypeKind_INT64 => Int64SType(0)
+                case PackageFormat_TypeKind.TypeKind_FUNC => createSemanticFuncType(cjoPackage, tyIndex)
+                case PackageFormat_TypeKind.TypeKind_CLASS => createSemanticClassType(cjoPackage, tyIndex)
+                case _ => throw Exception("Not implement this PackageFormat_TypeKind ${EnumPackageFormat_TypeKindValues(ty.GetKind())}")
+            }
+        } else {
+            throw Exception("Failed to create SemanticType")
+        }
+    }
 
-    // private func createSemanticFuncType(cjoPackage: PackageFormat_Package, tyIndex: UInt32): SemanticType {
-    //     let index = Int64(tyIndex) - 1
-    //     if (index < 0 || index >= cjoPackage.GetAllTypes().size) {
-    //         throw Exception("tyIndex out of range createDecl.GetAllTypes.size: ${index}, ${cjoPackage.GetAllDecls().size}")
-    //     }
-    //     let typeInfo = cjoPackage.GetAllTypes()[index]
-    //     return if (let Some(ty) <- typeInfo) {
-    //         let funcTyInfo = ty.GetInfoAsFuncTyInfo().getOrThrow()
-    //         let returnType = createSemanticType(cjoPackage, funcTyInfo.GetRetType())
-    //         let paramTypes = ArrayList<SemanticType>()
-    //         for (i in ty.GetTypeArgs()) {
-    //             paramTypes.add(createSemanticType(cjoPackage, i))
-    //         }
-    //         return FuncSType(paramTypes.toArray(), returnType)
-    //     } else { 
-    //         throw Exception("Failed to create SemanticFuncType")
-    //     }
-    // }
+    private func createSemanticFuncType(cjoPackage: PackageFormat_Package, tyIndex: UInt32): SemanticType {
+        let index = Int64(tyIndex) - 1
+        if (index < 0 || index >= cjoPackage.GetAllTypes().size) {
+            throw Exception("The length of the all types is ${cjoPackage.GetAllTypes().size}, but the index is ${index}.")
+        }
+        let typeInfo = cjoPackage.GetAllTypes()[index]
+        return if (let Some(ty) <- typeInfo) {
+            let funcTyInfo = ty.GetInfoAsFuncTyInfo().getOrThrow()
+            let returnType = createSemanticType(cjoPackage, funcTyInfo.GetRetType())
+            let paramTypes = ArrayList<SemanticType>()
+            for (i in ty.GetTypeArgs()) {
+                paramTypes.add(createSemanticType(cjoPackage, i))
+            }
+            let f = FuncSType(paramTypes.toArray(), returnType)
+            return f
+        } else { 
+            throw Exception("Failed to create SemanticFuncType")
+        }
+    }
 
-    // private func createSemanticClassType(cjoPackage: PackageFormat_Package, tyIndex: UInt32): SemanticType {
-    //     let index = Int64(tyIndex) - 1
-    //     if (index < 0 || index >= cjoPackage.GetAllTypes().size) {
-    //         throw Exception("tyIndex out of range createDecl.GetAllTypes.size: ${index}, ${cjoPackage.GetAllDecls().size}")
-    //     }
-    //     return if (let Some(ty) <- typeInfo) {
-    //         let compositeTyInfo = ty.GetInfoAsCompositeTyInfo().getOrThrow()
-    //         if (compositeTyInfo.GetIsThisTy()) { 
-    //             return ThisSType(0) 
-    //         }
-    //         let fullDeclId = compositeTyInfo.GetDeclPtr()
-    //         if (let Some(fullId) <- fullDeclId) { 
-    //             println("fullId.GetDecl(): ${fullId.GetDecl()}")
-    //         }
-    //         return ClassSType("classss", [], Option<ClassDecl>.None, 0)
-    //     } else { 
-    //         throw Exception("Failed to create SemanticFuncType")
-    //     }
-    // }
+    private func createSemanticClassType(cjoPackage: PackageFormat_Package, tyIndex: UInt32): SemanticType {
+        let index = Int64(tyIndex) - 1
+        if (index < 0 || index >= cjoPackage.GetAllTypes().size) {
+            throw Exception("The length of the all types is ${cjoPackage.GetAllTypes().size}, but the index is ${index}.")
+        }
+        let typeInfo = cjoPackage.GetAllTypes()[index]
+        let res = if (let Some(ty) <- typeInfo) {
+            let compositeTyInfo = ty.GetInfoAsCompositeTyInfo().getOrThrow()
+            if (compositeTyInfo.GetIsThisTy()) {
+                return ThisSType(0) 
+            }
+            let fullDeclId = compositeTyInfo.GetDeclPtr()
+            let className = if (let Some(fullId) <- fullDeclId) {
+                // println("fullId.GetDecl(): ${fullId.GetDecl()}") 读取字符串有bug，flatbuffer接口问题？
+                GetDeclInfoFromIndex(cjoPackage, fullId)
+            } else {
+                ""
+            }
+            return ClassSType(className, [], Option<ClassDecl>.None, 0)
+        } else { 
+            throw Exception("Failed to create SemanticFuncType")
+        }
+        return res
+    }
 
 
-    // constexpr PackageIndex INVALID_PACKAGE_INDEX = -1L;
-    // constexpr PackageIndex CURRENT_PKG_INDEX = -2L;
-    // constexpr PackageIndex PKG_REFERENCE_INDEX = -3L;
-    // private func GetDeclFromIndex(fullId: PackageFormat_FullId)
+    static const INVALID_PACKAGE_INDEX: Int32 = -1
+    static const CURRENT_PKG_INDEX: Int32 = -2
+    static const PKG_REFERENCE_INDEX: Int32 = -3
+
+    // get name TODO: get args
+    private func GetDeclInfoFromIndex(cjoPackage: PackageFormat_Package, fullId: PackageFormat_FullId): String {
+        return if (fullId.GetPkgId() == CURRENT_PKG_INDEX) {
+            let index = Int64(fullId.GetIndex()) - 1
+            if (index < 0 || index >= cjoPackage.GetAllDecls().size) {
+                throw Exception("The length of the all decls is ${cjoPackage.GetAllDecls().size}, but the index is ${index}.")
+            }
+            let declInfo = cjoPackage.GetAllDecls()[index]
+            
+            if (let Some(decl) <- declInfo) { 
+                decl.GetIdentifier()
+            } else {
+                throw Exception("Failed to get decl infos")
+            }
+        } else {
+            ""
+        }
+    }
 }
