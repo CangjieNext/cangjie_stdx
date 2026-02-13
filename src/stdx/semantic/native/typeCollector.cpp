@@ -880,6 +880,9 @@ void TypeCollector::collect(const SyntaxNodePtr &syntaxNode, const Ptr<AST::Node
         refTarget[symbolNode->id] = memberAccess;
         return;
     }
+    if (syntaxNode->isExpr()) {
+        exprMap[node.get()] = syntaxNode->id;
+    }
 
     auto nonTerminal = std::static_pointer_cast<NonTerminal>(syntaxNode);
     std::vector<Ptr<AST::Node>> collect = collectChild(node.get());
@@ -890,6 +893,11 @@ void TypeCollector::collect(const SyntaxNodePtr &syntaxNode, const Ptr<AST::Node
     while (i < nonTerminal->children.size() && j < collect.size()) {
         if (nonTerminal->children[i]->kind == "VarPattern" || nonTerminal->children[i]->kind == "ImportSpec"
         || nonTerminal->children[i]->kind == "PackageSpec") {
+            i++;
+            continue;
+        }
+
+        if (nonTerminal->children[i]->kind == "ModifierList" || nonTerminal->children[i]->kind == "AnnotationList") {
             i++;
             continue;
         }
