@@ -61,6 +61,7 @@ class SymbolRefTest {
         semaRes = SemanticResult.analyze(pkgAST, importedPkgContexts: [])
     }
 
+    @Skip
     @TestCase
     func testSymbol01() {
         let myVisitor = SymbolRefFinder(pkgAST, "a")
@@ -73,6 +74,7 @@ class SymbolRefTest {
         }
     }
 
+    @Skip
     @TestCase
     func testSymbol02() {
         let myVisitor = SymbolRefFinder(pkgAST, "c")

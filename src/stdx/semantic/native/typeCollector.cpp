@@ -355,7 +355,7 @@ std::vector<Ptr<AST::Node>> TypeCollector::collectChild(const Ptr<AST::Node> &no
                 for (auto& decl : classBody->decls) {
                     collect.emplace_back(decl);
                 }
-                std::cout<<"collect class body decls: "<<classBody->decls.size()<<std::endl;
+                // std::cout<<"collect class body decls: "<<classBody->decls.size()<<std::endl;
                 return VisitAction::SKIP_CHILDREN;
             }
             case ASTKind::INTERFACE_BODY: {

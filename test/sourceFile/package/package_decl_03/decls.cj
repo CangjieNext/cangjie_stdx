@@ -1,5 +1,7 @@
 package pkg3
 
+const x = 1
+
 public interface I {
     func foo(): Unit
 }
@@ -17,5 +19,10 @@ public class B {
 }
 
 extend B <: I {
-    public func foo() {}
+    public func foo() {
+    }
+}
+
+func printx() {
+    println("${x}")
 }

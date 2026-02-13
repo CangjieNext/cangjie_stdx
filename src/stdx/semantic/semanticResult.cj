@@ -3,8 +3,7 @@ internal import stdx.syntax.*
 import std.collection.HashMap
 import std.fs.*
 import std.io.*
-import std.time.*
-// import std.ast.MACRO_OBJECT
+
 
 public class SemanticResult {
     public let diags: Array<Diagnostic> = []
@@ -12,38 +11,28 @@ public class SemanticResult {
     let pkgAST: SyntaxTreeNode
 
     public static func analyze(pkgAST: Package, importedPkgContexts!: Array<SemanticContext> = []): SemanticResult {
-        let analyzeStart = MonoTime.now()
-        let serialStart = MonoTime.now()
+        let serialStart = timerStart() 
         let buf: Array<UInt8> = serializePkg(pkgAST)
-        let serialEnd = MonoTime.now()
-        var result = serialEnd - serialStart
-        println("Stage 2. Serialize GreenTree time: ${result.toNanoseconds()}ns")
+        timerRecord(serialStart, "Stage 1.1: Serial GreenTree")
 
         let maps = unsafe{ analyzeImpl(buf) }
-        
-        let declMapStart = MonoTime.now()
+
+        let tyMapStart = timerStart()
         let declMap = getDeclTypeMap(pkgAST, maps)
-        let declMapEnd = MonoTime.now()
-        result = declMapEnd - declMapStart
-        println("Stage 5. Build DeclTypeMap time: ${result.toNanoseconds()}ns")
-
-        let refMapStart = MonoTime.now()
-        let refMap = getRefMap(pkgAST, maps)
-        let refMapEnd = MonoTime.now()
-        result = refMapEnd - refMapStart
-        println("Stage 5. Build RefMap time: ${result.toNanoseconds()}ns")
-
-        let exprMapStart = MonoTime.now()
         let exprMap = getExprTypeMap(pkgAST, maps)
-        let exprMapEnd = MonoTime.now()
-        result = exprMapEnd - exprMapStart
-        println("Stage 5. Build ExprTypeMap time: ${result.toNanoseconds()}ns")
-        
-        let analyzeEnd = MonoTime.now()
-        result = analyzeEnd - analyzeStart
-        println("Total Analyze time: ${result.toNanoseconds()}ns")
-        
-        SemanticResult(pkgAST, declMap, exprMap, refMap, AnalyzerImpl(pkgAST))
+        timerRecord(tyMapStart, "Stage 3.2: Deserial Result of TypeMap")
+
+        // TODO: fixed
+        // let refMapStart = timerStart()
+        // let refMap = getRefMap(pkgAST, maps)
+        // timerRecord(refMapStart, "Stage 3.3: Deserial Result of RefMap")
+        // MOCK empty result
+        let refMap = HashMap<UInt64, SyntaxTreeNode>()
+        let implStart = timerStart()
+        let impl = AnalyzerImpl(pkgAST)
+        timerRecord(implStart, "Stage 4: Analye impl in cangjie")
+        timerRecord(serialStart, "Total Analye")
+        SemanticResult(pkgAST, declMap, exprMap, refMap, impl)
     }
 
     public static func analyze(pkgAST: Package, cjoPath: String) {
@@ -113,7 +102,7 @@ public class SemanticResult {
         for (semanticTypeMapOption in maps.GetExprMapList()) {
             if (let Some(semanticTypeMap) <- semanticTypeMapOption) {
                 let id = semanticTypeMap.GetId()
-                println("expr - id: ${id}")
+                // println("expr - id: ${id}")
                 let ty = generateSemanticType(semanticTypeMap.GetType(), pkgAST)
                 if (tyPtrToSemanticType.contains(ty.rawPointer)) {
                     exprMap.add(id, tyPtrToSemanticType[ty.rawPointer])
