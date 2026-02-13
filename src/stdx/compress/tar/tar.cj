@@ -137,9 +137,10 @@ public class Tar {
                         }
                     }
                 case TarEntryType.Symlink =>
-                    checkLinkTarget(entry.linkName, destAbsoluteDir)
+                    checkSymbolicLinkTarget(entry.linkName, destAbsoluteDir)
                     SymbolicLink.create(entryPath, to: Path(entry.linkName))
                 case TarEntryType.HardLink =>
+                    checkHardLinkTarget(entry.linkName, destAbsoluteDir)
                     HardLink.create(entryPath, to: Path(entry.linkName))
                 case _ => continue
             }
@@ -147,13 +148,25 @@ public class Tar {
         }
     }
 
-    private static func checkLinkTarget(linkName: String, destDir: Path) {
+    private static func checkSymbolicLinkTarget(linkName: String, destDir: Path) {
         var linkTarget = Path(linkName)
         if (linkTarget.isRelative()) {
             linkTarget = destDir.join(linkTarget).normalize()
         }
         if (!linkTarget.toString().startsWith(destDir.toString())) {
             throw TarException("Symlink points outside target dir.")
+        }
+    }
+
+    private static func checkHardLinkTarget(linkName: String, destDir: Path) {
+        var linkTarget = Path(linkName)
+        if (linkTarget.isRelative()) {
+            linkTarget = destDir.join(linkTarget).normalize()
+        } else {
+            throw TarException("Hardlink points to absolute path outside target dir.")
+        }
+        if (!linkTarget.toString().startsWith(destDir.toString())) {
+            throw TarException("Hardlink points outside target dir.")
         }
     }
 }
