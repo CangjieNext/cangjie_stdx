@@ -34,3 +34,7 @@ src/stdx/semantic/exception_semantic.cj
 src/stdx/semantic/ModuleFormat_generated.cj
 test/target
 *.lock
+.clang-format
+.cache
+.cmake
+compile_commands.json

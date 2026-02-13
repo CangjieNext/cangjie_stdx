@@ -1,6 +1,5 @@
 package stdx.semantic
 import stdx.syntax.*
-import std.time.*
 
 let BUFFER_HEADER_SIZE = 4
 
@@ -11,6 +10,7 @@ foreign func CJ_GetSemanticResult(fptr: CPointer<Unit>): CPointer<UInt8>
 foreign func CJ_CreateFromCJO(path: CString): CPointer<UInt8>
 
 unsafe func analyzeImpl(arr: Array<UInt8>) : SemanticType_NodeTypeMap {
+    let prepareStart = timerStart()
     var typeListPtr : CPointer<UInt8> = CPointer<UInt8>()
     var semanticTypeMap = SemanticType_NodeTypeMap(Array<UInt8>(), 0)
     
@@ -25,15 +25,16 @@ unsafe func analyzeImpl(arr: Array<UInt8>) : SemanticType_NodeTypeMap {
     for (i in 0..arrSize) {
         unsafe { ptr.write(i, arr[i]) }
     }
+    timerRecord(prepareStart, "Stage 1.2: CFFI memory copy data")
     try{
+        let cffiStart = timerStart()
         let length = UIntNative(arrSize)
         typeListPtr = CJ_Analyze(ptr, length)
-
-        let genMapStart = MonoTime.now()
+        timerRecord(cffiStart, "Stage 2: CFFI")
+        
+        let deserialStart = timerStart()
         semanticTypeMap = genSemanticTypeMap(typeListPtr)
-        let genMapEnd = MonoTime.now()
-        let result = genMapEnd - genMapStart
-        println("Stage 4. Deserialize SemanticTypeMap time: ${result.toNanoseconds()}ns")
+        timerRecord(deserialStart, "Stage 3.1: Deserial semantic result")
     } finally {
         LibC.free(typeListPtr)
         LibC.free(ptr)
