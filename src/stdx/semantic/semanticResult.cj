@@ -8,20 +8,26 @@ import std.io.*
 public class SemanticResult {
     public let diags: Array<Diagnostic> = []
     private let impl: AnalyzerImpl
-    
+    let pkgAST: SyntaxTreeNode
+
+    let declTypeInfoMap: HashMap<UInt64, SemanticType>
+    // private let exprTypeInfoMap: HashMap<SyntaxTreeNode, SemanticType>
+    private let target: HashMap<UInt64, SyntaxTreeNode>
+    // private let target: HashMap<SyntaxTreeNode, SyntaxTreeNode>
+
     public static func analyze(pkgAST: Package, importedPkgContexts!: Array<SemanticContext> = []): SemanticResult {
         let maps = unsafe{ analyzeImpl(serializePkg(pkgAST)) }
         let declMap = getDeclTypeMap(pkgAST, maps)
         let refMap = getRefMap(pkgAST, maps)
         let declMaps = getDeclTypeMap(pkgAST, maps)
-        SemanticResult(declMaps, refMap, AnalyzerImpl(pkgAST))
+        SemanticResult(pkgAST, declMaps, refMap, AnalyzerImpl(pkgAST))
     }
 
     public static func analyze(pkgAST: Package, cjoPath: String) {
         let maps = unsafe{ analyzeImplWithPath(serializePkg(pkgAST), cjoPath) }
         let declMaps = getDeclTypeMap(pkgAST, maps)
         let refMap = getRefMap(pkgAST, maps)
-        SemanticResult(declMaps, refMap, AnalyzerImpl(pkgAST))
+        SemanticResult(pkgAST, declMaps, refMap, AnalyzerImpl(pkgAST))
         // TODO: 内部应该存一份对应 cjoPath 的 SemanticContext
     }
 
@@ -91,12 +97,8 @@ public class SemanticResult {
         target
     }
 
-    private let declTypeInfoMap: HashMap<UInt64, SemanticType>
-    // private let exprTypeInfoMap: HashMap<SyntaxTreeNode, SemanticType>
-    private let target: HashMap<UInt64, SyntaxTreeNode>
-    // private let target: HashMap<SyntaxTreeNode, SyntaxTreeNode>
-    
-    init(declTypeInfoMap: HashMap<UInt64, SemanticType>, target: HashMap<UInt64, SyntaxTreeNode>, impl: AnalyzerImpl){
+    init(pkgAST: SyntaxTreeNode, declTypeInfoMap: HashMap<UInt64, SemanticType>, target: HashMap<UInt64, SyntaxTreeNode>, impl: AnalyzerImpl){
+        this.pkgAST = pkgAST
         this.declTypeInfoMap = declTypeInfoMap
         this.target = target
         this.impl = impl

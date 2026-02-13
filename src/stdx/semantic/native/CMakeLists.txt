@@ -41,6 +41,7 @@ add_custom_command(
     COMMAND sed 's/std.ast/stdx.semantic/g' ${FLATBUFFER_DEPEND_CJ_DIR}/constants.cj > ${CMAKE_BINARY_DIR}/constants_semantic.cj
     COMMAND sed 's/std.ast/stdx.semantic/g' ${FLATBUFFER_DEPEND_CJ_DIR}/exception.cj > ${CMAKE_BINARY_DIR}/exception_semantic.cj
     COMMAND sed 's/std.ast/stdx.semantic/g' ${CMAKE_BINARY_DIR}/${FILENAME}_generated.cj > ${CMAKE_BINARY_DIR}/${FILENAME}_generated_semantic.cj
+
     COMMAND ${CMAKE_COMMAND} -E copy_if_different ${CMAKE_BINARY_DIR}/flatbuffer_object_semantic.cj
             ${CMAKE_SOURCE_DIR}/src/stdx/semantic/
     COMMAND ${CMAKE_COMMAND} -E copy_if_different ${CMAKE_BINARY_DIR}/decode_semantic.cj
@@ -58,6 +59,29 @@ add_custom_command(
     COMMENT "generate cangjie file using flatc"
 
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
+
+set(TARGET_FILE ${FLATBUFFER_DEPEND_CJ_DIR}/table.cj)
+
+file(READ ${TARGET_FILE} FILE_CONTENT)
+string(REPLACE "\n" ";" FILE_LINES ${FILE_CONTENT})  # 按换行符分割为列表
+
+list(GET FILE_LINES 160 LINE_CONTENT)        
+if("${LINE_CONTENT}" STREQUAL "        let offsetVal: UInt16 = this.offset(slot)")
+    message(STATUS "table.cj is correct!")
+else()
+    # 3. 替换指定行
+    list(INSERT FILE_LINES 160 "        let offsetVal: UInt16 = this.offset(slot)")
+    list(REMOVE_AT FILE_LINES 161)
+    list(INSERT FILE_LINES 161 "        if ( offsetVal == 0 ) {return default}")
+    list(REMOVE_AT FILE_LINES 162)
+    list(INSERT FILE_LINES 162 "        return this.getInt32 ( this.pos + UInt32 ( offsetVal ) )}")
+endif()
+
+# 4. 将修改后的列表重新拼接为字符串（恢复换行符）
+string(REPLACE ";" "\n" NEW_FILE_CONTENT "${FILE_LINES}")
+
+# 5. 写入修改后的内容到原文件（或新文件）
+file(WRITE ${TARGET_FILE} "${NEW_FILE_CONTENT}")
 
 set(CJO_SCHEMA_SRC ModuleFormat.fbs)
 get_filename_component(CJO_FBS_FILENAME ${CJO_SCHEMA_SRC} NAME_WE)
