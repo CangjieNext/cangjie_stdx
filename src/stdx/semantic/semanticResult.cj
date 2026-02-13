@@ -9,7 +9,8 @@ import std.time.*
 public class SemanticResult {
     public let diags: Array<Diagnostic> = []
     private let impl: AnalyzerImpl
-    
+    let pkgAST: SyntaxTreeNode
+
     public static func analyze(pkgAST: Package, importedPkgContexts!: Array<SemanticContext> = []): SemanticResult {
         let analyzeStart = MonoTime.now()
         let serialStart = MonoTime.now()
@@ -42,7 +43,7 @@ public class SemanticResult {
         result = analyzeEnd - analyzeStart
         println("Total Analyze time: ${result.toNanoseconds()}ns")
         
-        SemanticResult(declMap, exprMap, refMap, AnalyzerImpl(pkgAST))
+        SemanticResult(pkgAST, declMap, exprMap, refMap, AnalyzerImpl(pkgAST))
     }
 
     public static func analyze(pkgAST: Package, cjoPath: String) {
@@ -50,7 +51,7 @@ public class SemanticResult {
         let declMaps = getDeclTypeMap(pkgAST, maps)
         let refMap = getRefMap(pkgAST, maps)
         let exprMap = getExprTypeMap(pkgAST, maps)
-        SemanticResult(declMaps, exprMap, refMap, AnalyzerImpl(pkgAST))
+        SemanticResult(pkgAST, declMaps, exprMap, refMap, AnalyzerImpl(pkgAST))
         // TODO: 内部应该存一份对应 cjoPath 的 SemanticContext
     }
 
@@ -144,16 +145,16 @@ public class SemanticResult {
         target
     }
 
-    private let declTypeInfoMap: HashMap<UInt64, SemanticType>
+    let declTypeInfoMap: HashMap<UInt64, SemanticType>
     private let exprTypeInfoMap: HashMap<UInt64, SemanticType>
     private let target: HashMap<UInt64, SyntaxTreeNode>
-    // private let target: HashMap<SyntaxTreeNode, SyntaxTreeNode>
     
-    init(declTypeInfoMap: HashMap<UInt64, SemanticType>, exprTypeInfoMap: HashMap<UInt64, SemanticType>, target: HashMap<UInt64, SyntaxTreeNode>, impl: AnalyzerImpl){
+    init(pkgAST: SyntaxTreeNode, declTypeInfoMap: HashMap<UInt64, SemanticType>, exprTypeInfoMap: HashMap<UInt64, SemanticType>, target: HashMap<UInt64, SyntaxTreeNode>, impl: AnalyzerImpl){
         this.declTypeInfoMap = declTypeInfoMap
         this.exprTypeInfoMap = exprTypeInfoMap
         this.target = target
         this.impl = impl
+        this.pkgAST = pkgAST
     }
 }
   
