@@ -67,8 +67,7 @@ set(UNITTEST_DATA_DEPENDENCIES
     cangjie${BACKEND_TYPE}Json_bc)
     
 set(COMPRESS_DEPENDENCIES
-    cangjie${BACKEND_TYPE}ZLIB_bc
-    cangjie${BACKEND_TYPE}Tar_bc)
+    cangjie${BACKEND_TYPE}ZLIB_bc)
 
 set(ASPECTCJ_DEPENDENCIES)
 

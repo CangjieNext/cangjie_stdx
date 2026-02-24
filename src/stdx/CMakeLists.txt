@@ -20,11 +20,6 @@ add_subdirectory(unittest)
 add_subdirectory(actors)
 add_subdirectory(string_intern)
 
-message(STATUS "CMAKE_BUILD_STAGE ${CMAKE_BUILD_STAGE}")
-if(NOT CANGJIE_CJPM_BUILD_TYPE)
-    add_subdirectory(syntax)
-endif()
-
 if(CANGJIE_CODEGEN_CJNATIVE_BACKEND AND "$ENV{NO_ASPECTCJ}" STREQUAL "" AND NOT CANGJIE_CJPM_BUILD_TYPE)
     if(CMAKE_CROSSCOMPILING)
         if ("$ENV{CANGJIE_LSP_PATH}" STREQUAL "")
