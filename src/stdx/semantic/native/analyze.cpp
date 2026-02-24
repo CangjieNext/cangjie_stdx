@@ -3,6 +3,8 @@
 #include <iostream>
 #include <memory>
 #include <vector>
+#include <mutex>
+#include <filesystem>
 
 #include "cangjie/Basic/DiagnosticEmitter.h"
 #include "cangjie/Basic/SourceManager.h"
@@ -18,6 +20,7 @@
 
 using namespace Cangjie;
 using namespace std::chrono;
+using namespace std::filesystem;
 
 void printSyntaxNode(const SyntaxNodePtr& node, int depth = 0)
 {
@@ -71,11 +74,42 @@ steady_clock::time_point TimerStart()
 }
 
 static bool enableProfile = false;
+static const std::string CSV_FILE_PATH = "./timeSave.csv";
+static const std::string CSV_HEADER = "info,time,timestamp";
+static std::mutex csvMutex;
+
+void TimerSave(const std::string& info, double time)
+{
+    std::lock_guard<std::mutex> lock(csvMutex);
+    try {
+        bool fileExists = exists(CSV_FILE_PATH);
+        std::ofstream file(CSV_FILE_PATH, std::ios::app);
+        
+        if (!file.is_open()) {
+            std::cerr << "Failed to open CSV file: " << CSV_FILE_PATH << std::endl;
+            return;
+        }
+        
+        if (!fileExists) {
+            file << CSV_HEADER << "\n";
+        }
+        
+        auto now = system_clock::now();
+        auto timestamp = duration_cast<nanoseconds>(now.time_since_epoch()).count();
+        file << info << "," << time << "," << timestamp << "\n";
+        file.close();
+    } catch (const std::exception& e) {
+        std::cerr << "Failed to write to CSV file: " << e.what() << std::endl;
+    }
+}
+
 void TimerRecord(steady_clock::time_point start, const std::string& info)
 {
     if (enableProfile) {
         auto duration = duration_cast<nanoseconds>(steady_clock::now() - start);
-        std::cout << info << " time: " << duration.count() / 1000000.0 << " ms" << std::endl;
+        double elapsed = duration.count() / 1000000.0;
+        std::cout << info << " time: " << elapsed << " ms" << std::endl;
+        TimerSave(info, elapsed);
     }
 }
 
