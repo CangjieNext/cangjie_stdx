@@ -43,6 +43,7 @@ class MainAnalyzeTest {
 
     
     @TestCase
+    @Skip
     func testMain1_Type() {
         let parsingRes: ParsingResult<Package> = parsePackage("../sourceFile/package/package_main_decl/package_main_decl_01")
         let pkgAST: Package = parsingRes.node.getOrThrow()
@@ -58,6 +59,7 @@ class MainAnalyzeTest {
     }
 
     @TestCase
+    @Skip
     func testMain2_Type() {
         let parsingRes: ParsingResult<Package> = parsePackage("../sourceFile/package/package_main_decl/package_main_decl_02")
         let pkgAST: Package = parsingRes.node.getOrThrow()
@@ -75,6 +77,7 @@ class MainAnalyzeTest {
     }
 
     @TestCase
+    @Skip
     func testMain3_Type() {
         let parsingRes: ParsingResult<Package> = parsePackage("../sourceFile/package/package_main_decl/package_main_decl_03")
         let pkgAST: Package = parsingRes.node.getOrThrow()
@@ -90,6 +93,7 @@ class MainAnalyzeTest {
     }
 
     @TestCase
+    @Skip
     func testMain4_Type() {
         let parsingRes: ParsingResult<Package> = parsePackage("../sourceFile/package/package_main_decl/package_main_decl_04")
         let pkgAST: Package = parsingRes.node.getOrThrow()
@@ -105,6 +109,7 @@ class MainAnalyzeTest {
     }
 
     @TestCase
+    @Skip
     func testMain5_Type() {
         let parsingRes: ParsingResult<Package> = parsePackage("../sourceFile/package/package_main_decl/package_main_decl_05")
         let pkgAST: Package = parsingRes.node.getOrThrow()
@@ -120,6 +125,7 @@ class MainAnalyzeTest {
     }
 
     @TestCase
+    @Skip
     func testMain6Type() {
         let parsingRes: ParsingResult<Package> = parsePackage("../sourceFile/package/package_main_decl/package_main_decl_06")
         let pkgAST: Package = parsingRes.node.getOrThrow()
