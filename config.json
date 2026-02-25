@@ -1,0 +1,13 @@
+{
+  "line_chart": {
+    "show_infos": [
+      "Stage 2.1: Deserial GreenTree",
+      "Stage 2.2: Parse",
+      "Stage 2.3: TypeCollector",
+      "Stage 2.4: Import",
+      "Stage 2.5: Sema",
+      "Stage 2.6: Serial semantic result"
+    ],
+    "show_all": false
+  }
+}
