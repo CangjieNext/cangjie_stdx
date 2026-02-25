@@ -72,6 +72,18 @@ dynamic/stdx 是动态产物，包含动态文件、cjo、bc 文件。
 
 static/stdx 是静态产物，包含静态文件、cjo、bc 文件。
 
+#### 使用 Openssl 静态库链接
+
+假设存放 Openssl 静态库的目录为 `STATIC_OPENSSL_DIR`，则命令如下。
+
+```bash
+# GNU ld64
+cjc -L $STATIC_OPENSSL_DIR --link-option "-Bstatic" --link-option "--whole-archive" -lssl -lcrypto --link-option "--no-whole-archive" --link-option "-Bdynamic" main.cj
+
+# Apple ld64
+cjc -L $STATIC_OPENSSL_DIR --link-option "-force_load" --link-option "$STATIC_OPENSSL_DIR/libssl.a" --link-option "-force_load" --link-option "$STATIC_OPENSSL_DIR/libcrypto.a" main.cj
+```
+
 ### 包依赖
 
 | 导入库名                                  | 依赖包                                                                                                                                                                                                                         |

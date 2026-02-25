@@ -8,6 +8,10 @@
 
 #ifndef HEADFILE_SSL
 #define HEADFILE_SSL
+#ifdef X509_NAME
+/* Avoid wincrypt.h macro collision with OpenSSL's X509_NAME type. */
+#undef X509_NAME
+#endif
 #include <openssl/bio.h>
 #include <openssl/dh.h>
 #include <openssl/err.h>

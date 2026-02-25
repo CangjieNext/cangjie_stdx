@@ -199,7 +199,20 @@ python3 build.py install
 >
 > - `cjpm.toml` 是仓颉包管理工具 CJPM 的配置文件，详情请参见《仓颉编程语言工具使用指南》。
 > - Windows、Linux、MacOS 的配置方式相同。
-> - 如果导入 `stdx` 的静态库，使用 crypto 和 net 包时，由于需要依赖系统符号，所以在 `cjpm.toml`的 `compile-option`配置项里在  `Windows`操作系统下需要额外添加`-lcrypt32`，`Linux`操作系统下需要额外添加`-ldl`。
+> - 如果导入 `stdx` 的静态库并使用 crypto、net 包：`Windows` 需要在 `compile-option` 里额外添加 `-lcrypt32`。
+> - 使用 `stdx` 动态二进制（`.so`/`.dll`）时，OpenSSL 会通过运行时加载方式解析：类 Unix 使用 `dlopen/dlsym`，Windows 使用 `LoadLibrary/GetProcAddress`；此时即使应用侧以静态方式链接 OpenSSL（`.a`/`.lib`），也不会被该运行时解析路径直接使用。
+> - `Linux` 下静态 `stdx` 使用 OpenSSL 解析 `auto` 模式：优先直连 OpenSSL 符号，必要时才回退到 `dlopen/dlsym`（若会走回退，需额外添加 `-ldl`）。当以静态方式链接 OpenSSL（`.a`）时，可能需要使用 `--whole-archive` 确保 `.a` 被真正拉入产物；否则回退路径可能尝试加载系统的 `libssl/libcrypto`。
+> - 以静态方式链接 OpenSSL 时，请将 `-lssl -lcrypto` 放在引用它们的 `stdx` 静态库之后，避免因静态链接顺序导致 “undefined reference”。
+
+**静态 Openssl 链接命令行示例**: 假设存放 Openssl 静态库的目录为 `STATIC_OPENSSL_DIR`，则命令如下。
+
+```bash
+# GNU ld64
+cjc -L $STATIC_OPENSSL_DIR --link-option "-Bstatic" --link-option "--whole-archive" -lssl -lcrypto --link-option "--no-whole-archive" --link-option "-Bdynamic" main.cj
+
+# Apple ld64
+cjc -L $STATIC_OPENSSL_DIR --link-option "-force_load" --link-option "$STATIC_OPENSSL_DIR/libssl.a" --link-option "-force_load" --link-option "$STATIC_OPENSSL_DIR/libcrypto.a" main.cj
+```
 
 **配置示例**：假设开发环境为 Windows（架构为 x86_64），导入 `stdx` 的动态二进制，则 `cjpm.toml` 配置示例如下。
 

@@ -8,7 +8,7 @@
 set(CMAKE_SYSTEM_NAME Darwin)
 set(DARWIN ON)
 
-set(WARNINGS_SETTINGS "-Wall -Werror -Wdate-time")
+set(WARNINGS_SETTINGS "-Wall -Werror -Wdate-time -Wno-unknown-pragmas")
 set(C_OTHER_FLAGS "-fsigned-char")
 set(CXX_OTHER_FLAGS "-Weffc++")
 set(OTHER_FLAGS "-pipe -fno-common -fno-strict-aliasing -fPIC -fstack-protector-all")

@@ -28,8 +28,8 @@ if(CANGJIE_CODEGEN_CJNATIVE_BACKEND)
         OUTPUT_NAME lib${libname}.a
         LIBRARIES
             $<TARGET_OBJECTS:${libname}-objs>
-            $<TARGET_OBJECTS:cangjie-dynamicLoader-opensslFFI-objs>
-        DEPENDS ${libname}-objs cangjie-dynamicLoader-opensslFFI )
+            $<TARGET_OBJECTS:${CANGJIE_OPENSSL_FFI_OBJECTS_TARGET}>
+        DEPENDS ${libname}-objs ${CANGJIE_OPENSSL_FFI_OBJECTS_TARGET} )
 
 
     string(TOLOWER ${TARGET_TRIPLE_DIRECTORY_PREFIX} output_lib_dir)

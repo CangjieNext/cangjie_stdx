@@ -203,9 +203,22 @@ explain:
 >
 > - `cjpm.toml` is the configuration file of the Cangjie package management tool CJPM. For details, please refer to the Cangjie Programming Language Tool User Guide.
 > - The configuration method is the same for Windows, Linux, and MacOS.
-> - If you import the static library of `stdx` and use the crypto and net packages, you need to add `-lcrypt32` to the `compile-option` configuration item of `cjpm.toml` under the `Windows` operating system, and `-ldl` under the `Linux` operating system, because they need to rely on system symbols.
+> - If you import the static library of `stdx` and use the crypto and net packages, you need to add `-lcrypt32` to `compile-option` on `Windows`.
+> - When using dynamic `stdx` binaries (`.so`/`.dll`), OpenSSL is resolved at runtime via `dlopen/dlsym` (Unix-like) or `LoadLibrary/GetProcAddress` (Windows); linking OpenSSL statically (`.a`/`.lib`) into the application will not be used by this runtime resolver.
+> - On `Linux`, static `stdx` uses an OpenSSL resolver in `auto` mode: it prefers direct linking when OpenSSL symbols are available, and falls back to `dlopen/dlsym` only when needed (add `-ldl` if the fallback is used). When linking OpenSSL statically (`.a`), you may need `--whole-archive` to ensure the archive is actually pulled in; otherwise the fallback may try to load system `libssl/libcrypto`.
+> - When linking OpenSSL statically, place `-lssl -lcrypto` after `stdx` libraries that reference them to avoid “undefined reference” due to static link order.
 
-**Configuration example**：Assuming the development environment is Windows x86_64, import the dynamic binary of `stdx`, then the `cjpm.toml` configuration example is as follows:
+**Static OpenSSL linking example**: Assuming the directory that stores OpenSSL static libraries is `STATIC_OPENSSL_DIR`, the command is as follows.
+
+```bash
+# GNU ld
+cjc -L $STATIC_OPENSSL_DIR --link-option "-Bstatic" --link-option "--whole-archive" -lssl -lcrypto --link-option "--no-whole-archive" --link-option "-Bdynamic" main.cj
+
+# Apple ld64
+cjc -L $STATIC_OPENSSL_DIR --link-option "-force_load" --link-option "$STATIC_OPENSSL_DIR/libssl.a" --link-option "-force_load" --link-option "$STATIC_OPENSSL_DIR/libcrypto.a" main.cj
+```
+
+**Configuration example**：Assuming the development environment is Windows x86_64 and importing the dynamic binary of `stdx`, the `cjpm.toml` configuration example is as follows:
 
 ```toml
 [dependencies]
@@ -291,4 +304,5 @@ main () {
 Please see [LICENSE](LICENSE) for more information.
 
 ## Contribution Guidelines
+
 Developers are welcome to make contributions in any form, including but not limited to code, documentation, and issues.

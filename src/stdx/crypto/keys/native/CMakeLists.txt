@@ -18,7 +18,13 @@ set(libname stdx.crypto.keysFFI)
 add_library(${libname}-objs OBJECT ${keys_ffi_src})
 
 if(CANGJIE_CODEGEN_CJNATIVE_BACKEND)
-    add_library(${libname} STATIC $<TARGET_OBJECTS:${libname}-objs>)
+    add_library(
+        ${libname}
+        STATIC
+        $<TARGET_OBJECTS:${libname}-objs>
+        $<TARGET_OBJECTS:${CANGJIE_OPENSSL_FFI_OBJECTS_TARGET}>
+    )
+    add_dependencies(${libname} ${CANGJIE_OPENSSL_FFI_OBJECTS_TARGET})
 endif()
 
 target_include_directories(${libname}-objs PRIVATE ${CMAKE_SOURCE_DIR}/src/stdx/dynamicLoader)

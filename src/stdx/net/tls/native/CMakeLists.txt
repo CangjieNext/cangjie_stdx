@@ -39,8 +39,8 @@ if(CANGJIE_CODEGEN_CJNATIVE_BACKEND)
         OUTPUT_NAME lib${libname}.a
         LIBRARIES
             $<TARGET_OBJECTS:${libname}-objs>
-            $<TARGET_OBJECTS:cangjie-dynamicLoader-opensslFFI-objs>
-        DEPENDS ${libname}-objs cangjie-dynamicLoader-opensslFFI)
+            $<TARGET_OBJECTS:${CANGJIE_OPENSSL_FFI_OBJECTS_TARGET}>
+        DEPENDS ${libname}-objs ${CANGJIE_OPENSSL_FFI_OBJECTS_TARGET})
     string(TOLOWER ${TARGET_TRIPLE_DIRECTORY_PREFIX} output_lib_dir)
     set(CJNATIVE_BACKEND "cjnative")
     install(FILES ${CMAKE_BINARY_DIR}/lib/lib${libname}.a DESTINATION ${output_lib_dir}_${CJNATIVE_BACKEND}${SANITIZER_SUBPATH}/static/stdx)
