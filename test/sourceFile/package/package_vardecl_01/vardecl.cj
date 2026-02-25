@@ -50,3 +50,5 @@ let lambda_no_arg_a = { => 0 }
 let lambda_no_arg_b: () -> Int64 = { => 1 }
 
 let annotation_a = AnnotationKind.Init
+
+let arr = Array<UInt8>(4, {i => UInt8(i+1)})
