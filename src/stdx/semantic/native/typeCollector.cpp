@@ -877,7 +877,7 @@ void TypeCollector::collect(const SyntaxNodePtr &syntaxNode, const Ptr<AST::Node
         auto nonTerminal = std::static_pointer_cast<NonTerminal>(syntaxNode);
         auto symbolNode = nonTerminal->findFirstSymbolNode();
         auto memberAccess = StaticAs<ASTKind::MEMBER_ACCESS>(node);
-        refTarget[symbolNode->id] = memberAccess;
+        refTarget[symbolNode->id] = memberAccess->baseExpr;
         return;
     }
     if (syntaxNode->isExpr()) {

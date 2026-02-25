@@ -22,12 +22,10 @@ public class SemanticResult {
         let exprMap = getExprTypeMap(pkgAST, maps)
         timerRecord(tyMapStart, "Stage 3.2: Deserial Result of TypeMap")
 
-        // TODO: fixed
-        // let refMapStart = timerStart()
-        // let refMap = getRefMap(pkgAST, maps)
-        // timerRecord(refMapStart, "Stage 3.3: Deserial Result of RefMap")
-        // MOCK empty result
-        let refMap = HashMap<UInt64, SyntaxTreeNode>()
+        let refMapStart = timerStart()
+        let refMap = getRefMap(pkgAST, maps)
+        timerRecord(refMapStart, "Stage 3.3: Deserial Result of RefMap")
+
         let implStart = timerStart()
         let impl = AnalyzerImpl(pkgAST)
         timerRecord(implStart, "Stage 4: Analye impl in cangjie")
@@ -53,7 +51,15 @@ public class SemanticResult {
     }
 
     public func getSymbolRef(symbol: SymbolRef): Option<SyntaxTreeNode> {
-        target.get(symbol.getId())
+        let declId = refMap.get(symbol.getId())
+        if (let Some(id) <- declId && let Some(pkg) <- (pkgAST as Package)) {
+            let nf = NodeFinder(pkg, id)
+            nf.walk(pkgAST)
+            if (let Some(decl) <- nf.res) {
+                return decl
+            }
+        }
+        None
     }
 
     // get decl by TypeAnnotation
@@ -102,7 +108,6 @@ public class SemanticResult {
         for (semanticTypeMapOption in maps.GetExprMapList()) {
             if (let Some(semanticTypeMap) <- semanticTypeMapOption) {
                 let id = semanticTypeMap.GetId()
-                // println("expr - id: ${id}")
                 let ty = generateSemanticType(semanticTypeMap.GetType(), pkgAST)
                 if (tyPtrToSemanticType.contains(ty.rawPointer)) {
                     exprMap.add(id, tyPtrToSemanticType[ty.rawPointer])
@@ -116,19 +121,13 @@ public class SemanticResult {
     }
 
     private static func getRefMap(pkgAST: Package, maps: SemanticType_NodeTypeMap) {
-        let target = HashMap<UInt64, SyntaxTreeNode>()
+        let target = HashMap<UInt64, UInt64>()
 
-        let refIdToDeclId = HashMap<UInt64, UInt64>()
         for (refMapOption in maps.GetRefMapList()) {
             if (let Some(refMap) <- refMapOption) {
                 let refId = refMap.GetId()
                 let declId = refMap.GetDecl()
-                // println("ref - decl: ${refId}, ${declId}")
-                let nf = NodeFinder(pkgAST, declId)
-                nf.walk(pkgAST)
-                if (let Some(decl) <- nf.res) {
-                    target.add(refId, decl)
-                }
+                target.add(refId, declId)
             }
         }
         target
@@ -136,12 +135,12 @@ public class SemanticResult {
 
     let declTypeInfoMap: HashMap<UInt64, SemanticType>
     private let exprTypeInfoMap: HashMap<UInt64, SemanticType>
-    private let target: HashMap<UInt64, SyntaxTreeNode>
+    private let refMap: HashMap<UInt64, UInt64>
     
-    init(pkgAST: SyntaxTreeNode, declTypeInfoMap: HashMap<UInt64, SemanticType>, exprTypeInfoMap: HashMap<UInt64, SemanticType>, target: HashMap<UInt64, SyntaxTreeNode>, impl: AnalyzerImpl){
+    init(pkgAST: SyntaxTreeNode, declTypeInfoMap: HashMap<UInt64, SemanticType>, exprTypeInfoMap: HashMap<UInt64, SemanticType>, refMap: HashMap<UInt64, UInt64>, impl: AnalyzerImpl){
         this.declTypeInfoMap = declTypeInfoMap
         this.exprTypeInfoMap = exprTypeInfoMap
-        this.target = target
+        this.refMap = refMap
         this.impl = impl
         this.pkgAST = pkgAST
     }
