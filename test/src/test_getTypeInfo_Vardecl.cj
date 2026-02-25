@@ -408,4 +408,14 @@ class AnalyzeTestVarDecl001 {
             case None => @FailExpect("no type info")
         }
     }
+
+    @TestCase
+    func testDecl37() {
+        let decl = decls[37] // let annotation_a = AnnotationKind.Init
+        let declTyInfo: Option<SemanticType> = semaRes.getTypeInfo(decl)
+        match (declTyInfo) {
+            case Some(funcTy: SemanticType) => @Expect(funcTy.toString(), "Array<UInt8>")
+            case None => @FailExpect("no type info")
+        }
+    }
 }

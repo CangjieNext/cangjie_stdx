@@ -65,7 +65,8 @@ class DeserializerBase {
 
     public func readInt32(): Int32 {
         this.checkCapacity(4)
-        let arr = Array<UInt8>(4, {i => UInt8(DeserializerBase.readu8(this.buffer, this.position + Int32(i), this.length))})
+        let arr = Array<UInt8>(4, {i => UInt8(i+1)}) 
+        //Array<UInt8>(4, {i => UInt8(DeserializerBase.readu8(this.buffer, this.position + Int32(i), this.length))})
         this.position += 4
         return Int32.readLittleEndian(arr)
     }
@@ -150,6 +151,9 @@ class DeserializerBase {
 class pointer {
     public var x: Int64 = 10
     var y: String = "Hello" 
+
+    init() {
+    }
 }
 
 public open class Tag {
@@ -169,3 +173,7 @@ public open class Tag {
 func myFunc(): Unit {
     var a = 1
 }
+
+let arr = Array<Int64>(4, {i => i+1})
+
+var res = DeserializerBase.readu8(pointer(), 0, 0)
