@@ -44,6 +44,26 @@ public func toString():String
 
 - String - 签名算法名称。
 
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.net.tls.*
+
+main() {
+    let sigAlg = SignatureAlgorithm.SignatureScheme(RSA_PKCS1_SHA256)
+    let str = sigAlg.toString()
+    println("签名算法的字符串表示: ${str}")
+    return 0
+}
+```
+
+运行结果：
+
+```text
+签名算法的字符串表示: rsa_pkcs1_sha256
+```
+
 ### operator func !=(SignatureAlgorithm)
 
 ```cangjie
@@ -60,6 +80,28 @@ public operator func !=(other: SignatureAlgorithm): Bool
 
 - Bool - 不相同返回 `true`；否则，返回 `false`。
 
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.net.tls.*
+import stdx.crypto.digest.*
+
+main() {
+    let sigAlg1 = SignatureAlgorithm.SignatureAndHashAlgorithm(SignatureType.RSA, HashType.SHA256)
+    let sigAlg2 = SignatureAlgorithm.SignatureAndHashAlgorithm(SignatureType.ECDSA, HashType.SHA256)
+    let isNotEqual = sigAlg1 != sigAlg2
+    println("签名算法是否不同: ${isNotEqual}")
+    return 0
+}
+```
+
+运行结果：
+
+```text
+签名算法是否不同: true
+```
+
 ### operator func ==(SignatureAlgorithm)
 
 ```cangjie
@@ -75,6 +117,28 @@ public operator func ==(other: SignatureAlgorithm): Bool
 返回值：
 
 - Bool - 相同返回 `true`；否则，返回 `false`。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.net.tls.*
+import stdx.crypto.digest.*
+
+main() {
+    let sigAlg1 = SignatureAlgorithm.SignatureAndHashAlgorithm(SignatureType.RSA, HashType.SHA256)
+    let sigAlg2 = SignatureAlgorithm.SignatureAndHashAlgorithm(SignatureType.RSA, HashType.SHA256)
+    let isEqual = sigAlg1 == sigAlg2
+    println("签名算法是否相同: ${isEqual}")
+    return 0
+}
+```
+
+运行结果：
+
+```text
+签名算法是否相同: true
+```
 
 ## enum SignatureSchemeType
 
@@ -230,6 +294,26 @@ public func toString(): String
 
 - String - 加密算法类型的字符串表示。
 
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.net.tls.*
+
+main() {
+    let schemeType = SignatureSchemeType.RSA_PKCS1_SHA256
+    let str = schemeType.toString()
+    println("签名方案类型的字符串表示: ${str}")
+    return 0
+}
+```
+
+运行结果：
+
+```text
+签名方案类型的字符串表示: rsa_pkcs1_sha256
+```
+
 ### operator func !=(SignatureSchemeType)
 
 ```cangjie
@@ -246,6 +330,27 @@ public operator func !=(other: SignatureSchemeType): Bool
 
 - Bool - 不相同返回 true；否则，返回 false。
 
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.net.tls.*
+
+main() {
+    let schemeType1 = SignatureSchemeType.RSA_PKCS1_SHA256
+    let schemeType2 = SignatureSchemeType.ECDSA_SECP256R1_SHA256
+    let isNotEqual = schemeType1 != schemeType2
+    println("签名方案类型是否不同: ${isNotEqual}")
+    return 0
+}
+```
+
+运行结果：
+
+```text
+签名方案类型是否不同: true
+```
+
 ### operator func ==(SignatureSchemeType)
 
 ```cangjie
@@ -261,6 +366,27 @@ public operator func ==(other: SignatureSchemeType): Bool
 返回值：
 
 - Bool - 相同返回 true；否则，返回 false。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.net.tls.*
+
+main() {
+    let schemeType1 = SignatureSchemeType.RSA_PKCS1_SHA256
+    let schemeType2 = SignatureSchemeType.RSA_PKCS1_SHA256
+    let isEqual = schemeType1 == schemeType2
+    println("签名方案类型是否相同: ${isEqual}")
+    return 0
+}
+```
+
+运行结果：
+
+```text
+签名方案类型是否相同: true
+```
 
 ## enum SignatureType
 
@@ -315,6 +441,26 @@ public func toString(): String
 
 - String - 签名算法的名称。
 
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.net.tls.*
+
+main() {
+    let sigType = SignatureType.RSA
+    let str = sigType.toString()
+    println("签名类型的字符串表示: ${str}")
+    return 0
+}
+```
+
+运行结果：
+
+```text
+签名类型的字符串表示: RSA
+```
+
 ### operator func !=(SignatureType)
 
 ```cangjie
@@ -331,6 +477,27 @@ public operator func !=(other: SignatureType): Bool
 
 - Bool - 不相同返回 `true`；否则，返回 `false`。
 
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.net.tls.*
+
+main() {
+    let sigType1 = SignatureType.RSA
+    let sigType2 = SignatureType.ECDSA
+    let isNotEqual = sigType1 != sigType2
+    println("签名类型是否不同: ${isNotEqual}")
+    return 0
+}
+```
+
+运行结果：
+
+```text
+签名类型是否不同: true
+```
+
 ### operator func ==(SignatureType)
 
 ```cangjie
@@ -346,6 +513,27 @@ public operator func ==(other: SignatureType): Bool
 返回值：
 
 - Bool - 相同返回 `true`；否则，返回 `false`。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.net.tls.*
+
+main() {
+    let sigType1 = SignatureType.RSA
+    let sigType2 = SignatureType.RSA
+    let isEqual = sigType1 == sigType2
+    println("签名类型是否相同: ${isEqual}")
+    return 0
+}
+```
+
+运行结果：
+
+```text
+签名类型是否相同: true
+```
 
 ## enum TlsClientIdentificationMode
 

@@ -64,7 +64,7 @@ main() {
     }
 }"##
 
-    /* 实现从 JSON 字符串到自定义类型的转换 */
+    // 实现从 JSON 字符串到自定义类型的转换
     var jv = JsonValue.fromStr(js)
     var dm = DataModel.fromJson(jv)
     var A = Person.deserialize(dm)
@@ -74,7 +74,7 @@ main() {
     println("province == ${A.loc.getOrThrow().province}")
     println("====================")
 
-    /* 实现从自定义类型到 JSON 字符串的转换 */
+    // 实现从自定义类型到 JSON 字符串的转换
     dm = A.serialize()
     var jo = dm.toJson().asObject()
     println(jo.toJsonString())

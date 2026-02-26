@@ -28,6 +28,27 @@ public init(reason: String)
 
 - reason: String - 解析错误的原因。
 
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.encoding.url.*
+
+main() {
+    try {
+        throw UrlSyntaxException("URL格式错误")
+    } catch (e: UrlSyntaxException) {
+        println("异常信息: ${e.message}")
+    }
+}
+```
+
+运行结果：
+
+```text
+异常信息: URL格式错误
+```
+
 ### init(String, String)
 
 ```cangjie
@@ -40,6 +61,27 @@ public init(input: String, reason: String)
 
 - input: String - 原生 URL 或其片段。
 - reason: String - 解析错误的原因。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.encoding.url.*
+
+main() {
+    try {
+        throw UrlSyntaxException("https://example.com%", "URL格式错误")
+    } catch (e: UrlSyntaxException) {
+        println("异常信息: ${e.message}")
+    }
+}
+```
+
+运行结果：
+
+```text
+异常信息: URL格式错误 Input = https://example.com%.
+```
 
 ### init(String, String, String)
 
@@ -54,3 +96,25 @@ public init(input: String, reason: String, pos: String)
 - input: String - 原生 URL 或其片段。
 - reason: String - 解析错误的原因。
 - pos: String - 给定 URL 字符串中解析失败的部分。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.encoding.url.*
+
+main() {
+    try {
+        let url = "https://example.com%"
+        throw UrlSyntaxException(url, "URL格式错误", url[8..])
+    } catch (e: UrlSyntaxException) {
+        println("异常信息: ${e.message}")
+    }
+}
+```
+
+运行结果：
+
+```text
+异常信息: URL格式错误 Input = https://example.com% (at 'example.com%').
+```

@@ -4,7 +4,7 @@
 
 ```cangjie
 public func api2(dp: FuzzDataProvider): Int32 {
-    if(dp.consumeBool() && dp.consumeByte() == b'A' && dp.consumeUint32() == 0xdeadbeef){
+    if(dp.consumeBool() && dp.consumeByte() == b'A' && dp.consumeUInt32() == 0xdeadbeef){
         throw Exception("TRAP")
     }
     return 0

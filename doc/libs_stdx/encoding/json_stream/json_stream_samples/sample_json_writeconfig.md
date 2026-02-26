@@ -8,18 +8,18 @@ import stdx.encoding.json.stream.{JsonWriter, WriteConfig, JsonSerializable}
 import std.io.ByteBuffer
 
 main() {
-    /* 构造 JsonWriter */
+    // 构造 JsonWriter 
     let buffer = ByteBuffer()
     let writer = JsonWriter(buffer)
 
-    /* 设置 JSON 写格式配置 */
+    // 设置 JSON 写格式配置 
     let fmtCfg = WriteConfig.pretty
     writer.writeConfig = fmtCfg
 
-    /* 写 JSON  */
+    // 写 JSON  
     writer.writeValue(MyObj())
 
-    /* 打印 JSON 序列化字符串 */
+    // 打印 JSON 序列化字符串 
     println(String.fromUtf8(buffer.bytes()))
 }
 

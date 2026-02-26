@@ -338,6 +338,16 @@ public static const STATUS_MOVED_PERMANENTLY: UInt16 = 301
 >
 > 请求的资源已被永久的移动到新 URI，返回信息会包括新的 URI，浏览器会自动定向到新 URI。
 
+### static const STATUS_MULTI_STATUS
+
+```cangjie
+public static const STATUS_MULTI_STATUS: UInt16 = 207
+```
+
+功能：DAV 绑定的成员已经在（多状态）响应之前的部分被列举，且未被再次包含。
+
+类型：UInt16
+
 ### static const STATUS_MULTIPLE_CHOICES
 
 ```cangjie
@@ -352,16 +362,6 @@ public static const STATUS_MULTIPLE_CHOICES: UInt16 = 300
 >
 > 用户或浏览器能够自行选择一个首选的地址进行重定向。
 
-### static const STATUS_MULTI_STATUS
-
-```cangjie
-public static const STATUS_MULTI_STATUS: UInt16 = 207
-```
-
-功能：DAV 绑定的成员已经在（多状态）响应之前的部分被列举，且未被再次包含。
-
-类型：UInt16
-
 ### static const STATUS_NETWORK_AUTHENTICATION_REQUIRED
 
 ```cangjie
@@ -369,6 +369,16 @@ public static const STATUS_NETWORK_AUTHENTICATION_REQUIRED: UInt16 = 511
 ```
 
 功能：要求网络认证。
+
+类型：UInt16
+
+### static const STATUS_NO_CONTENT
+
+```cangjie
+public static const STATUS_NO_CONTENT: UInt16 = 204
+```
+
+功能：服务器成功处理，但未返回内容。
 
 类型：UInt16
 
@@ -439,16 +449,6 @@ public static const STATUS_NOT_MODIFIED: UInt16 = 304
 > **说明：**
 >
 > 客户端通常会缓存访问过的资源，通过提供一个头信息指出客户端希望只返回在指定日期之后修改的资源。
-
-### static const STATUS_NO_CONTENT
-
-```cangjie
-public static const STATUS_NO_CONTENT: UInt16 = 204
-```
-
-功能：服务器成功处理，但未返回内容。
-
-类型：UInt16
 
 ### static const STATUS_OK
 
@@ -530,21 +530,6 @@ public static const STATUS_PROXY_AUTH_REQUIRED: UInt16 = 407
 
 类型：UInt16
 
-### static const STATUS_REQUESTED_RANGE_NOT_SATISFIABLE
-
-```cangjie
-public static const STATUS_REQUESTED_RANGE_NOT_SATISFIABLE: UInt16 = 416
-```
-
-功能：客户端请求的范围无效。
-
-类型：UInt16
-
-> **说明：**
->
-> 请求中包含了 `Range` 请求头，并且 `Range` 中指定的任何数据范围都与当前资源的可用范围不重合；
-> 同时请求中又没有定义 `If-Range` 请求头。
-
 ### static const STATUS_REQUEST_CONTENT_TOO_LARGE
 
 ```cangjie
@@ -584,6 +569,21 @@ public static const STATUS_REQUEST_URI_TOO_LONG: UInt16 = 414
 功能：求的 URI 长度超过了服务器能够解释的长度。
 
 类型：UInt16
+
+### static const STATUS_REQUESTED_RANGE_NOT_SATISFIABLE
+
+```cangjie
+public static const STATUS_REQUESTED_RANGE_NOT_SATISFIABLE: UInt16 = 416
+```
+
+功能：客户端请求的范围无效。
+
+类型：UInt16
+
+> **说明：**
+>
+> 请求中包含了 `Range` 请求头，并且 `Range` 中指定的任何数据范围都与当前资源的可用范围不重合；
+> 同时请求中又没有定义 `If-Range` 请求头。
 
 ### static const STATUS_RESET_CONTENT
 
@@ -771,6 +771,25 @@ public let capacity: Int64
 
 类型：Int64
 
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.net.http.*
+
+main() {
+    // 读取 ServicePoolConfig.capacity
+    let cfg = ServicePoolConfig(capacity: 100, queueCapacity: 200, preheat: 10)
+    println("capacity = ${cfg.capacity}")
+}
+```
+
+运行结果：
+
+```text
+capacity = 100
+```
+
 ### let preheat
 
 ```cangjie
@@ -781,6 +800,25 @@ public let preheat: Int64
 
 类型：Int64
 
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.net.http.*
+
+main() {
+    // 读取 ServicePoolConfig.preheat
+    let cfg = ServicePoolConfig(capacity: 100, queueCapacity: 200, preheat: 10)
+    println("preheat = ${cfg.preheat}")
+}
+```
+
+运行结果：
+
+```text
+preheat = 10
+```
+
 ### let queueCapacity
 
 ```cangjie
@@ -790,6 +828,25 @@ public let queueCapacity: Int64
 功能：获取缓冲区等待任务的最大数量。
 
 类型：Int64
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.net.http.*
+
+main() {
+    // 读取 ServicePoolConfig.queueCapacity
+    let cfg = ServicePoolConfig(capacity: 100, queueCapacity: 200, preheat: 10)
+    println("queueCapacity = ${cfg.queueCapacity}")
+}
+```
+
+运行结果：
+
+```text
+queueCapacity = 200
+```
 
 ### init(Int64, Int64, Int64)
 
@@ -813,6 +870,18 @@ public init(
 
 - IllegalArgumentException - 当参数 capacity/queueCapacity/preheat 小于 0，或参数 preheat 大于 capacity。
 
+示例：
+
+<!-- run -->
+```cangjie
+import stdx.net.http.*
+
+main() {
+    // 初始化
+    let _ = ServicePoolConfig(capacity: 100, queueCapacity: 200, preheat: 10)
+}
+```
+
 ## struct TransportConfig
 
 ```cangjie
@@ -831,6 +900,38 @@ public mut prop keepAliveConfig: SocketKeepAliveConfig
 
 类型：SocketKeepAliveConfig
 
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.net.http.*
+import std.net.*
+
+main() {
+    var tc = TransportConfig()
+
+    // 设置并读取 TransportConfig.keepAliveConfig
+    tc.keepAliveConfig = SocketKeepAliveConfig(
+        idle: Duration.second * 1,
+        interval: Duration.second * 2,
+        count: 3
+    )
+
+    let k = tc.keepAliveConfig
+    println("idle: ${k.idle}")
+    println("interval: ${k.interval}")
+    println("count: ${k.count}")
+}
+```
+
+运行结果：
+
+```text
+idle: 1s
+interval: 2s
+count: 3
+```
+
 ### prop readBufferSize
 
 ```cangjie
@@ -845,6 +946,37 @@ public mut prop readBufferSize: ?Int64
 
 类型：?Int64
 
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.net.http.*
+
+main() {
+    var tc = TransportConfig()
+
+    // 读取默认 TransportConfig.readBufferSize
+    match (tc.readBufferSize) {
+        case Some(v) => println("default = ${v}")
+        case None => println("default = None")
+    }
+
+    // 设置并读取 TransportConfig.readBufferSize
+    tc.readBufferSize = Some(4096)
+    match (tc.readBufferSize) {
+        case Some(v) => println("readBufferSize = ${v}")
+        case None => println("readBufferSize = None")
+    }
+}
+```
+
+运行结果：
+
+```text
+default = None
+readBufferSize = 4096
+```
+
 ### prop readTimeout
 
 ```cangjie
@@ -854,6 +986,31 @@ public mut prop readTimeout: Duration
 功能：设定和读取传输层连接的读超时时间，如果设置的时间小于 0 将置为 0，默认值为 Duration.Max。
 
 类型：Duration
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.net.http.*
+
+main() {
+    var tc = TransportConfig()
+
+    // 读取默认 TransportConfig.readTimeout
+    println("defaultIsMax == Duration.Max: ${tc.readTimeout == Duration.Max}")
+
+    // 设置并读取 TransportConfig.readTimeout
+    tc.readTimeout = Duration.second * 3
+    println("readTimeout: ${tc.readTimeout}")
+}
+```
+
+运行结果：
+
+```text
+defaultIsMax == Duration.Max: true
+readTimeout: 3s
+```
 
 ### prop writeBufferSize
 
@@ -869,6 +1026,37 @@ public mut prop writeBufferSize: ?Int64
 
 类型：?Int64
 
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.net.http.*
+
+main() {
+    var tc = TransportConfig()
+
+    // 读取默认 TransportConfig.writeBufferSize
+    match (tc.writeBufferSize) {
+        case Some(v) => println("default = ${v}")
+        case None => println("default = None")
+    }
+
+    // 设置并读取 TransportConfig.writeBufferSize
+    tc.writeBufferSize = Some(8192)
+    match (tc.writeBufferSize) {
+        case Some(v) => println("writeBufferSize = ${v}")
+        case None => println("writeBufferSize = None")
+    }
+}
+```
+
+运行结果：
+
+```text
+default = None
+writeBufferSize = 8192
+```
+
 ### prop writeTimeout
 
 ```cangjie
@@ -878,3 +1066,28 @@ public mut prop writeTimeout: Duration
 功能：设定和读取传输层连接的写超时时间，如果设置的时间小于 0 将置为 0，默认值为 Duration.Max。
 
 类型：Duration
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.net.http.*
+
+main() {
+    var tc = TransportConfig()
+
+    // 读取默认 TransportConfig.writeTimeout
+    println("defaultIsMax == Duration.Max: ${tc.writeTimeout == Duration.Max}")
+
+    // 设置并读取 TransportConfig.writeTimeout
+    tc.writeTimeout = Duration.second * 5
+    println("writeTimeout: ${tc.writeTimeout}")
+}
+```
+
+运行结果：
+
+```text
+defaultIsMax == Duration.Max: true
+writeTimeout: 5s
+```

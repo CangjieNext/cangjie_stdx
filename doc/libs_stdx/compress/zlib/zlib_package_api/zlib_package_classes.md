@@ -37,6 +37,22 @@ public init(inputStream: InputStream, wrap!: WrapType = DeflateFormat, compressL
 
 - [ZlibException](zlib_package_exceptions.md#class-zlibexception) - 当 `bufLen` 小于等于 0，输入流分配内存失败，或压缩资源初始化失败，抛出异常。
 
+示例：
+
+<!-- run -->
+```cangjie
+import stdx.compress.zlib.*
+import std.io.*
+
+main(): Unit {
+    let arr1 = "Hello, World!Hello, World!Hello, World!Hello, World!Hello, World!".toArray()
+    let byteBuffer = ByteBuffer(arr1)
+    let bufferedInputStream = BufferedInputStream(byteBuffer)
+    var compressInputStream: CompressInputStream = CompressInputStream(bufferedInputStream)
+    compressInputStream.close()
+}
+```
+
 ### func close()
 
 ```cangjie
@@ -50,6 +66,33 @@ public func close(): Unit
 异常：
 
 - [ZlibException](zlib_package_exceptions.md#class-zlibexception) - 如果释放压缩资源失败，抛出异常。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.compress.zlib.*
+import std.io.*
+
+main(): Unit {
+    let arr1 = "Hello, World!Hello, World!Hello, World!Hello, World!Hello, World!".toArray()
+    let byteBuffer = ByteBuffer(arr1)
+    let bufferedInputStream = BufferedInputStream(byteBuffer)
+    var compressInputStream: CompressInputStream = CompressInputStream(bufferedInputStream)
+    // 使用压缩输入流进行一些操作
+    var arr: Array<Byte> = Array<Byte>(1024, repeat: 0)
+    var len = compressInputStream.read(arr)
+    println("Read ${len} bytes.")
+    // 关闭压缩输入流
+    compressInputStream.close()
+}
+```
+
+运行结果：
+
+```text
+Read 18 bytes.
+```
 
 ### func read(Array\<Byte>)
 
@@ -76,7 +119,6 @@ public func read(outBuf: Array<Byte>): Int64
 <!-- verify -->
 ```cangjie
 import stdx.compress.zlib.*
-import std.fs.*
 import std.io.*
 
 main(): Unit {
@@ -85,9 +127,9 @@ main(): Unit {
     let bufferedInputStream = BufferedInputStream(byteBuffer)
     var compressInputStream: CompressInputStream = CompressInputStream(bufferedInputStream)
     var arr: Array<Byte> = Array<Byte>(1024, repeat: 0)
-    println(arr1.size)
+    println("原始数据长度: ${arr1.size}")
     var len = compressInputStream.read(arr)
-    println(len)
+    println("压缩后的数据长度: ${len}")
     compressInputStream.close()
 }
 ```
@@ -95,8 +137,8 @@ main(): Unit {
 运行结果：
 
 ```text
-65
-18
+原始数据长度: 65
+压缩后的数据长度: 18
 ```
 
 ## class CompressOutputStream
@@ -134,6 +176,21 @@ public init(outputStream: OutputStream, wrap!: WrapType = DeflateFormat, compres
 
 - [ZlibException](zlib_package_exceptions.md#class-zlibexception) - 如果 `bufLen` 小于等于 0，输出流分配内存失败，或压缩资源初始化失败，抛出异常。
 
+示例：
+
+<!-- run -->
+```cangjie
+import stdx.compress.zlib.*
+import std.io.*
+
+main(): Unit {
+    var byteBuffer = ByteBuffer()
+    var compressOutputStream: CompressOutputStream = CompressOutputStream(byteBuffer, wrap: GzipFormat,
+        compressLevel: BestCompression, bufLen: 1024)
+    compressOutputStream.close()
+}
+```
+
 ### func close()
 
 ```cangjie
@@ -148,6 +205,30 @@ public func close(): Unit
 
 - [ZlibException](zlib_package_exceptions.md#class-zlibexception) - 如果当前压缩输出流已经被关闭，或释放压缩资源失败，抛出异常。
 
+示例：
+
+<!-- run -->
+```cangjie
+import stdx.compress.zlib.*
+import std.io.*
+
+main(): Unit {
+    var byteBuffer = ByteBuffer()
+    var compressOutputStream: CompressOutputStream = CompressOutputStream(byteBuffer, bufLen: 39)
+
+    var arr = "Hello, World!Hello, World!Hello, World!".toArray()
+
+    /* 将字节数组压缩后写入压缩输出流的缓冲区 */
+    compressOutputStream.write(arr)
+
+    /* 将内部缓冲区里已压缩的数据刷出并写入绑定的输出流，然后刷新绑定的输出流 */
+    compressOutputStream.flush()
+
+    /* 关闭压缩输出流 */
+    compressOutputStream.close()
+}
+```
+
 ### func flush()
 
 ```cangjie
@@ -159,6 +240,30 @@ public func flush(): Unit
 异常：
 
 - [ZlibException](zlib_package_exceptions.md#class-zlibexception) - 如果当前压缩输出流已经被关闭，抛出异常。
+
+示例：
+
+<!-- run -->
+```cangjie
+import stdx.compress.zlib.*
+import std.io.*
+
+main(): Unit {
+    var byteBuffer = ByteBuffer()
+    var compressOutputStream: CompressOutputStream = CompressOutputStream(byteBuffer, bufLen: 39)
+
+    var arr = "Hello, World!Hello, World!Hello, World!".toArray()
+
+    /* 将字节数组压缩后写入压缩输出流的缓冲区 */
+    compressOutputStream.write(arr)
+
+    /* 将内部缓冲区里已压缩的数据刷出并写入绑定的输出流，然后刷新绑定的输出流 */
+    compressOutputStream.flush()
+
+    /* 关闭压缩输出流 */
+    compressOutputStream.close()
+}
+```
 
 ### func write(Array\<Byte>)
 
@@ -236,6 +341,32 @@ public init(inputStream: InputStream, wrap!: WrapType = DeflateFormat, bufLen!: 
 
 - [ZlibException](zlib_package_exceptions.md#class-zlibexception) - 如果 `bufLen` 小于等于 0，输入流分配内存失败，或待解压资源初始化失败，抛出异常。
 
+示例：
+
+<!-- run -->
+```cangjie
+import stdx.compress.zlib.*
+import std.io.*
+
+main(): Unit {
+    let arr1 = "Hello, World!Hello, World!Hello, World!Hello, World!Hello, World!".toArray()
+
+    /* 使用压缩输入流进行数据压缩 */
+    let byteBuffer = ByteBuffer(arr1)
+    var compressInputStream: CompressInputStream = CompressInputStream(byteBuffer)
+    var arr2: Array<Byte> = Array<Byte>(1024, repeat: 0)
+    var len1 = compressInputStream.read(arr2)
+
+    /* 使用解压缩输入流进行数据解压 */
+    var decompressInputStream: DecompressInputStream = DecompressInputStream(ByteBuffer(arr2[..len1]), wrap: GzipFormat,
+        bufLen: 1024)
+
+    /* 关闭输入流 */
+    compressInputStream.close()
+    decompressInputStream.close()
+}
+```
+
 ### func close()
 
 ```cangjie
@@ -249,6 +380,42 @@ public func close(): Unit
 异常：
 
 - [ZlibException](zlib_package_exceptions.md#class-zlibexception) - 如果释放解压资源失败，抛出异常。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.compress.zlib.*
+import std.io.*
+
+main(): Unit {
+    let arr1 = "Hello, World!Hello, World!Hello, World!Hello, World!Hello, World!".toArray()
+
+    /* 使用压缩输入流进行数据压缩 */
+    let byteBuffer = ByteBuffer(arr1)
+    var compressInputStream: CompressInputStream = CompressInputStream(byteBuffer)
+    var arr2: Array<Byte> = Array<Byte>(1024, repeat: 0)
+    var len1 = compressInputStream.read(arr2)
+
+    /* 使用解压缩输入流进行数据解压 */
+    var decompressInputStream: DecompressInputStream = DecompressInputStream(ByteBuffer(arr2[..len1]))
+    var arr3: Array<Byte> = Array<Byte>(1024, repeat: 0)
+    var len2 = decompressInputStream.read(arr3)
+    println(String.fromUtf8(arr3[..len2]))
+
+    /* 关闭输入流 */
+    compressInputStream.close()
+    decompressInputStream.close()
+    println("DecompressInputStream closed successfully.")
+}
+```
+
+运行结果：
+
+```text
+Hello, World!Hello, World!Hello, World!Hello, World!Hello, World!
+DecompressInputStream closed successfully.
+```
 
 ### func read(Array\<Byte>)
 
@@ -275,7 +442,6 @@ public func read(outBuf: Array<Byte>): Int64
 <!-- verify -->
 ```cangjie
 import stdx.compress.zlib.*
-import std.fs.*
 import std.io.*
 
 main(): Unit {
@@ -286,16 +452,17 @@ main(): Unit {
     var compressInputStream: CompressInputStream = CompressInputStream(byteBuffer)
     var arr2: Array<Byte> = Array<Byte>(1024, repeat: 0)
     /* 原始数据长度 */
-    println(arr1.size)
+    println("原始数据长度: ${arr1.size}")
     var len1 = compressInputStream.read(arr2)
     /* 压缩后的数据长度 */
-    println(len1)
+    println("压缩后的数据长度: ${len1}")
 
     /* 使用解压缩输入流进行数据解压 */
     var decompressInputStream: DecompressInputStream = DecompressInputStream(ByteBuffer(arr2[..len1]))
     var arr3: Array<Byte> = Array<Byte>(1024, repeat: 0)
     var len2 = decompressInputStream.read(arr3)
-    println(String.fromUtf8(arr3[..len2]))
+    println("解压后的数据长度: ${len2}")
+    println("解压后数据: ${String.fromUtf8(arr3[..len2])}")
 
     /* 关闭输入流 */
     compressInputStream.close()
@@ -306,9 +473,10 @@ main(): Unit {
 运行结果：
 
 ```text
-65
-18
-Hello, World!Hello, World!Hello, World!Hello, World!Hello, World!
+原始数据长度: 65
+压缩后的数据长度: 18
+解压后的数据长度: 65
+解压后数据: Hello, World!Hello, World!Hello, World!Hello, World!Hello, World!
 ```
 
 ## class DecompressOutputStream
@@ -347,6 +515,75 @@ public init(outputStream: OutputStream, wrap!: WrapType = DeflateFormat, bufLen!
 
 - [ZlibException](zlib_package_exceptions.md#class-zlibexception) - 如果 `bufLen` 小于等于 0，输出流分配内存失败，或解压资源初始化失败，抛出异常。
 
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.compress.zlib.*
+import std.fs.*
+
+main(): Unit {
+    let arr1 = "Hello, World!Hello, World!Hello, World!Hello, World!Hello, World!".toArray()
+
+    // 创建一个临时文件用于压缩
+    File.writeTo("./temp_input.txt", arr1)
+
+    // 压缩文件
+    compressFile("./temp_input.txt", "./temp_compressed.gz")
+
+    // 读取压缩后的数据
+    let compressedData = File.readFrom("./temp_compressed.gz")
+
+    /* 使用解压缩输出流进行数据解压后，将数据写入文件，文件的内容为原始数据 */
+    var file = File("./file.text", ReadWrite)
+    var decompressOutputStream: DecompressOutputStream = DecompressOutputStream(file, wrap: GzipFormat, bufLen: 1024)
+
+    decompressOutputStream.write(compressedData)
+    decompressOutputStream.flush()
+
+    /* 关闭输出流和文件 */
+    decompressOutputStream.close()
+
+    println("解压后文件数据字节数和压缩前数据字节数是否相等: ${file.length == arr1.size}")
+    file.close()
+
+    // 清理临时文件
+    removeIfExists("./temp_input.txt")
+    removeIfExists("./temp_compressed.gz")
+    removeIfExists("./file.text")
+}
+
+func compressFile(srcFileName: String, destFileName: String): Int64 {
+    var count: Int64 = 0
+    var srcFile: File = File(srcFileName, Read)
+    var destFile: File = File(destFileName, Write)
+
+    var tempBuf: Array<UInt8> = Array<UInt8>(1024, repeat: 0)
+    var compressOutputStream: CompressOutputStream = CompressOutputStream(destFile, wrap: GzipFormat, bufLen: 10000)
+    while (true) {
+        var readNum = srcFile.read(tempBuf)
+        if (readNum > 0) {
+            compressOutputStream.write(tempBuf.slice(0, readNum).toArray())
+            count += readNum
+        } else {
+            break
+        }
+    }
+    compressOutputStream.flush()
+    compressOutputStream.close()
+
+    srcFile.close()
+    destFile.close()
+    return count
+}
+```
+
+运行结果：
+
+```text
+解压后文件数据字节数和压缩前数据字节数是否相等: true
+```
+
 ### func close()
 
 ```cangjie
@@ -361,6 +598,75 @@ public func close(): Unit
 
 - [ZlibException](zlib_package_exceptions.md#class-zlibexception) - 如果当前压缩输出流已经被关闭，通过 [write](./zlib_package_classes.md#func-writearraybyte-1) 函数传入的待解压数据不完整，或释放压缩资源失败，抛出异常。
 
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.compress.zlib.*
+import std.fs.*
+
+main(): Unit {
+    let arr1 = "Hello, World!Hello, World!Hello, World!Hello, World!Hello, World!".toArray()
+
+    // 创建一个临时文件用于压缩
+    File.writeTo("./temp_input.txt", arr1)
+
+    // 压缩文件
+    compressFile("./temp_input.txt", "./temp_compressed.gz")
+
+    // 读取压缩后的数据
+    let compressedData = File.readFrom("./temp_compressed.gz")
+
+    /* 使用解压缩输出流进行数据解压后，将数据写入文件，文件的内容为原始数据 */
+    var file = File("./file.text", ReadWrite)
+    var decompressOutputStream: DecompressOutputStream = DecompressOutputStream(file, wrap: GzipFormat, bufLen: 1024)
+
+    decompressOutputStream.write(compressedData)
+    decompressOutputStream.flush()
+
+    /* 关闭输出流和文件 */
+    decompressOutputStream.close()
+
+    println("解压后文件数据字节数和压缩前数据字节数是否相等: ${file.length == arr1.size}")
+    file.close()
+
+    // 清理临时文件
+    removeIfExists("./temp_input.txt")
+    removeIfExists("./temp_compressed.gz")
+    removeIfExists("./file.text")
+}
+
+func compressFile(srcFileName: String, destFileName: String): Int64 {
+    var count: Int64 = 0
+    var srcFile: File = File(srcFileName, Read)
+    var destFile: File = File(destFileName, Write)
+
+    var tempBuf: Array<UInt8> = Array<UInt8>(1024, repeat: 0)
+    var compressOutputStream: CompressOutputStream = CompressOutputStream(destFile, wrap: GzipFormat, bufLen: 10000)
+    while (true) {
+        var readNum = srcFile.read(tempBuf)
+        if (readNum > 0) {
+            compressOutputStream.write(tempBuf.slice(0, readNum).toArray())
+            count += readNum
+        } else {
+            break
+        }
+    }
+    compressOutputStream.flush()
+    compressOutputStream.close()
+
+    srcFile.close()
+    destFile.close()
+    return count
+}
+```
+
+运行结果：
+
+```text
+解压后文件数据字节数和压缩前数据字节数是否相等: true
+```
+
 ### func flush()
 
 ```cangjie
@@ -372,6 +678,75 @@ public func flush(): Unit
 异常：
 
 - [ZlibException](zlib_package_exceptions.md#class-zlibexception) - 如果当前解压输出流已经被关闭，抛出异常。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.compress.zlib.*
+import std.fs.*
+
+main(): Unit {
+    let arr1 = "Hello, World!Hello, World!Hello, World!Hello, World!Hello, World!".toArray()
+
+    // 创建一个临时文件用于压缩
+    File.writeTo("./temp_input.txt", arr1)
+
+    // 压缩文件
+    compressFile("./temp_input.txt", "./temp_compressed.gz")
+
+    // 读取压缩后的数据
+    let compressedData = File.readFrom("./temp_compressed.gz")
+
+    /* 使用解压缩输出流进行数据解压后，将数据写入文件，文件的内容为原始数据 */
+    var file = File("./file.text", ReadWrite)
+    var decompressOutputStream: DecompressOutputStream = DecompressOutputStream(file, wrap: GzipFormat, bufLen: 1024)
+
+    decompressOutputStream.write(compressedData)
+    decompressOutputStream.flush()
+
+    /* 关闭输出流和文件 */
+    decompressOutputStream.close()
+
+    println("解压后文件数据字节数和压缩前数据字节数是否相等: ${file.length == arr1.size}")
+    file.close()
+
+    // 清理临时文件
+    removeIfExists("./temp_input.txt")
+    removeIfExists("./temp_compressed.gz")
+    removeIfExists("./file.text")
+}
+
+func compressFile(srcFileName: String, destFileName: String): Int64 {
+    var count: Int64 = 0
+    var srcFile: File = File(srcFileName, Read)
+    var destFile: File = File(destFileName, Write)
+
+    var tempBuf: Array<UInt8> = Array<UInt8>(1024, repeat: 0)
+    var compressOutputStream: CompressOutputStream = CompressOutputStream(destFile, wrap: GzipFormat, bufLen: 10000)
+    while (true) {
+        var readNum = srcFile.read(tempBuf)
+        if (readNum > 0) {
+            compressOutputStream.write(tempBuf.slice(0, readNum).toArray())
+            count += readNum
+        } else {
+            break
+        }
+    }
+    compressOutputStream.flush()
+    compressOutputStream.close()
+
+    srcFile.close()
+    destFile.close()
+    return count
+}
+```
+
+运行结果：
+
+```text
+解压后文件数据字节数和压缩前数据字节数是否相等: true
+```
 
 ### func write(Array\<Byte>)
 
@@ -394,8 +769,8 @@ public func write(inBuf: Array<Byte>): Unit
 <!-- verify -->
 ```cangjie
 import stdx.compress.zlib.*
-import std.fs.*
 import std.io.*
+import std.fs.*
 
 main(): Unit {
     let arr1 = "Hello, World!Hello, World!Hello, World!Hello, World!Hello, World!".toArray()
@@ -405,10 +780,10 @@ main(): Unit {
     var compressInputStream: CompressInputStream = CompressInputStream(byteBuffer)
     var arr2: Array<Byte> = Array<Byte>(1024, repeat: 0)
     /* 原始数据长度 */
-    println(arr1.size)
+    println("原始数据长度: ${arr1.size}")
     var len1 = compressInputStream.read(arr2)
     /* 压缩后的数据长度 */
-    println(len1)
+    println("压缩后的数据长度: ${len1}")
 
     /* 使用解压缩输出流进行数据解压后，将数据写入文件，文件的内容为原始数据 */
     var file = File("./file.text", ReadWrite)
@@ -419,13 +794,16 @@ main(): Unit {
     /* 关闭输入流和输出流 */
     compressInputStream.close()
     decompressOutputStream.close()
+    println("解压后文件数据字节数和压缩前数据字节数是否相等: ${file.length == arr1.size}")
     file.close()
+    removeIfExists("./file.text")
 }
 ```
 
 运行结果：
 
 ```text
-65
-18
+原始数据长度: 65
+压缩后的数据长度: 18
+解压后文件数据字节数和压缩前数据字节数是否相等: true
 ```

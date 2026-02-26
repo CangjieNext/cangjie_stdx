@@ -9,11 +9,11 @@
 import stdx.encoding.url.*
 
 main(): Int64 {
-    /* 调用 URL 静态函数 parse 解析网址获得名为 url 的对象 */
+    // 调用 URL 静态函数 parse 解析网址获得名为 url 的对象 
     var url = URL.parse(
         "http://www.example.com:80/path%E4%BB%93%E9%A2%89?key=value%E4%BB%93%E9%A2%89#%E4%BD%A0%E5%A5%BD")
 
-    /* 打印 url 的组件属性 */
+    // 打印 url 的组件属性 
     println("url.scheme = ${url.scheme}")
     println("url.opaque = ${url.opaque}")
     println("url.userInfo = ${url.userInfo}")

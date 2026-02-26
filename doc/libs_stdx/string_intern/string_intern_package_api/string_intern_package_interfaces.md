@@ -90,6 +90,18 @@ static func configInternPool(capacity!: Int64 = 8192, strMaxLength!: Int64 = 512
 
 - IllegalArgumentException - 当 `capacity` 或 `strMaxLength` 参数的值小于等于 0 时，抛出异常。
 
+示例：
+
+<!-- run -->
+```cangjie
+import stdx.string_intern.*
+
+main(): Unit {
+    // 配置字符串缓存池
+    String.configInternPool(capacity: 10000, strMaxLength: 1000)
+}
+```
+
 #### static func intern(Array\<Byte>)
 
 ```cangjie
@@ -106,6 +118,32 @@ static func intern(array: Array<Byte>): String
 
 - String - 在缓存池中的字符串对象，该字符串对象的 Byte 数组表示与入参一致。
 
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.string_intern.*
+
+main(): Unit {
+    // 配置字符串缓存池
+    String.configInternPool(capacity: 10000, strMaxLength: 1000)
+
+    // 创建一个字节数组
+    let byteArray: Array<Byte> = [104, 101, 108, 108, 111] // "hello"的ASCII码
+
+    // 使用intern方法获取缓存的字符串
+    let internedStr = String.intern(byteArray)
+
+    println("字节数组池化缓存成功: ${internedStr}")
+}
+```
+
+运行结果：
+
+```text
+字节数组池化缓存成功: hello
+```
+
 #### static func intern(String)
 
 ```cangjie
@@ -121,3 +159,25 @@ static func intern(str: String): String
 返回值：
 
 - String - 在缓存池中的字符串对象。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.string_intern.*
+
+main(): Unit {
+    String.configInternPool(capacity: 10000, strMaxLength: 1000)
+
+    // 使用intern方法获取缓存的字符串
+    let internedStr = String.intern("hello, 仓颉")
+
+    println("字符串池化缓存成功: ${internedStr}")
+}
+```
+
+运行结果：
+
+```text
+字符串池化缓存成功: hello, 仓颉
+```

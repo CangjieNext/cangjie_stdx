@@ -40,7 +40,7 @@ main() {
     let stream = ByteBuffer()
     let writer = JsonWriter(stream)
 
-    /* 将图片序列化 */
+    // 将图片序列化 
     writer.writeValue(image)
     writer.flush()
     println(String.fromUtf8(readToEnd(stream)))

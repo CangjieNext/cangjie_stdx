@@ -8,6 +8,8 @@ public abstract class DataModel
 
 功能：此类为中间数据层。
 
+<!-- associated_example -->
+
 ## class DataModelBool
 
 ```cangjie
@@ -34,6 +36,19 @@ public init(bv: Bool)
 
 - bv: Bool - 传入的 Bool 类型的数据。
 
+示例：
+
+<!-- run -->
+```cangjie
+import stdx.serialization.serialization.*
+
+main() {
+    // 创建DataModelBool实例
+    let dataModel = DataModelBool(true)
+    return 0
+}
+```
+
 ### func getValue()
 
 ```cangjie
@@ -45,6 +60,31 @@ public func getValue(): Bool
 返回值：
 
 - Bool - [DataModelBool](serialization_package_classes.md#class-datamodelbool) 中类型为 Bool 的 `value` 数值。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.serialization.serialization.*
+
+main() {
+    // 创建DataModelBool实例
+    let dataModel = DataModelBool(false)
+
+    // 获取布尔值
+    let value = dataModel.getValue()
+
+    println("获取到的布尔值: ${value}")
+
+    return 0
+}
+```
+
+运行结果：
+
+```text
+获取到的布尔值: false
+```
 
 ## class DataModelFloat
 
@@ -73,6 +113,19 @@ public init(fv: Float64)
 
 - fv: Float64 - 传入的 Float64 类型的数据。
 
+示例：
+
+<!-- run -->
+```cangjie
+import stdx.serialization.serialization.*
+
+main() {
+    // 创建DataModelFloat实例
+    let dataModel = DataModelFloat(3.14)
+    return 0
+}
+```
+
 ### init(Int64)
 
 ```cangjie
@@ -85,6 +138,19 @@ public init(v: Int64)
 
 - v: Int64 - 传入的 Int64 类型的数据。
 
+示例：
+
+<!-- run -->
+```cangjie
+import stdx.serialization.serialization.*
+
+main() {
+    // 使用Int64参数创建DataModelFloat实例
+    let dataModel = DataModelFloat(100)
+    return 0
+}
+```
+
 ### func getValue()
 
 ```cangjie
@@ -96,6 +162,36 @@ public func getValue(): Float64
 返回值：
 
 - Float64 - [DataModelFloat](serialization_package_classes.md#class-datamodelfloat) 中类型为 Float64 的 `value` 数值。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.serialization.serialization.*
+
+main() {
+    // 创建DataModelFloat实例，使用浮点数
+    var dataModel = DataModelFloat(3.14)
+
+    // 获取浮点数值
+    let value = dataModel.getValue()
+
+    println("获取到的浮点数值: ${value}")
+
+    // 创建DataModelFloat实例，使用整数
+    dataModel = DataModelFloat(3)
+
+    println("获取到的浮点数值: ${dataModel.getValue()}")
+    return 0
+}
+```
+
+运行结果：
+
+```text
+获取到的浮点数值: 3.140000
+获取到的浮点数值: 3.000000
+```
 
 ## class DataModelInt
 
@@ -123,6 +219,19 @@ public init(iv: Int64)
 
 - iv: Int64 - 传入的 Int64 类型的数据。
 
+示例：
+
+<!-- run -->
+```cangjie
+import stdx.serialization.serialization.*
+
+main() {
+    // 创建DataModelInt实例
+    let dataModel = DataModelInt(42)
+    return 0
+}
+```
+
 ### func getValue()
 
 ```cangjie
@@ -135,6 +244,31 @@ public func getValue(): Int64
 
 - Int64 - [DataModelInt](serialization_package_classes.md#class-datamodelint) 中类型为 Int64 的 `value` 数值。
 
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.serialization.serialization.*
+
+main() {
+    // 创建DataModelInt实例
+    let dataModel = DataModelInt(123)
+
+    // 获取整数值
+    let value = dataModel.getValue()
+
+    println("获取到的整数值: ${value}")
+
+    return 0
+}
+```
+
+运行结果：
+
+```text
+获取到的整数值: 123
+```
+
 ## class DataModelNull
 
 ```cangjie
@@ -146,6 +280,8 @@ public class DataModelNull <: DataModel
 父类型：
 
 - [DataModel](#class-datamodel)
+
+<!-- associated_example -->
 
 ## class DataModelSeq
 
@@ -170,6 +306,19 @@ public init()
 
 功能：构造一个参数为空的 [DataModelSeq](serialization_package_classes.md#class-datamodelseq) 实例。其中的数据默认为空的 ArrayList\<[DataModel](serialization_package_classes.md#class-datamodel)>。
 
+示例：
+
+<!-- run -->
+```cangjie
+import stdx.serialization.serialization.*
+
+main() {
+    // 创建空参数的DataModelSeq实例
+    let dataModel = DataModelSeq()
+    return 0
+}
+```
+
 ### init(ArrayList\<DataModel>)
 
 ```cangjie
@@ -181,6 +330,35 @@ public init(list: ArrayList<DataModel>)
 参数：
 
 - list: ArrayList\<[DataModel](serialization_package_classes.md#class-datamodel)> - 传入的 ArrayList\<[DataModel](serialization_package_classes.md#class-datamodel)> 类型的数据。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.serialization.serialization.*
+import std.collection.*
+
+main() {
+    // 创建一个ArrayList并添加一些DataModel
+    let list = ArrayList<DataModel>()
+    list.add(DataModelString("元素1"))
+    list.add(DataModelString("元素2"))
+
+    // 使用ArrayList创建DataModelSeq实例
+    let dataModel = DataModelSeq(list)
+
+    // 反序列化
+    let array = Array<String>.deserialize(dataModel)
+    println("查看数据: ${array}")
+    return 0
+}
+```
+
+运行结果：
+
+```text
+查看数据: [元素1, 元素2]
+```
 
 ### func add(DataModel)
 
@@ -194,6 +372,24 @@ public func add(dm: DataModel): Unit
 
 - dm: [DataModel](serialization_package_classes.md#class-datamodel) - 传入的 [DataModel](serialization_package_classes.md#class-datamodel) 类型的数据。
 
+示例：
+
+<!-- run -->
+```cangjie
+import stdx.serialization.serialization.*
+import std.collection.*
+
+main() {
+    // 创建DataModelSeq实例
+    let dataModel = DataModelSeq()
+
+    // 添加一些数据
+    dataModel.add(DataModelString("字符串数据"))
+    dataModel.add(DataModelInt(123))
+    return 0
+}
+```
+
 ### func getItems()
 
 ```cangjie
@@ -205,6 +401,34 @@ public func getItems(): ArrayList<DataModel>
 返回值：
 
 - ArrayList\<[DataModel](serialization_package_classes.md#class-datamodel)> - [DataModelSeq](serialization_package_classes.md#class-datamodelseq) 中的数据，类型为 ArrayList\<[DataModel](serialization_package_classes.md#class-datamodel)>。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.serialization.serialization.*
+import std.collection.*
+
+main() {
+    // 创建DataModelSeq实例并添加数据
+    let dataModel = DataModelSeq()
+    dataModel.add(DataModelString("字符串数据"))
+    dataModel.add(DataModelInt(123))
+
+    // 获取所有项目
+    let items = dataModel.getItems()
+
+    println("获取到的数据数量: ${items.size}")
+
+    return 0
+}
+```
+
+运行结果：
+
+```text
+获取到的数据数量: 2
+```
 
 ## class DataModelString
 
@@ -232,6 +456,19 @@ public init(sv: String)
 
 - sv: String - 传入的 String 类型。
 
+示例：
+
+<!-- run -->
+```cangjie
+import stdx.serialization.serialization.*
+
+main() {
+    // 创建DataModelString实例
+    let dataModel = DataModelString("这是一个字符串")
+    return 0
+}
+```
+
 ### func getValue()
 
 ```cangjie
@@ -243,6 +480,31 @@ public func getValue(): String
 返回值：
 
 - String - [DataModelString](serialization_package_classes.md#class-datamodelstring) 中类型为 String 的 `value` 数值。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.serialization.serialization.*
+
+main() {
+    // 创建DataModelString实例
+    let dataModel = DataModelString("测试字符串")
+
+    // 获取字符串值
+    let value = dataModel.getValue()
+
+    println("获取到的字符串值: ${value}")
+
+    return 0
+}
+```
+
+运行结果：
+
+```text
+获取到的字符串值: 测试字符串
+```
 
 ## class DataModelStruct
 
@@ -267,6 +529,19 @@ public init()
 
 功能：构造一个空参的 `DataModelStructfields` 默认为空的 ArrayList\<[Field](serialization_package_classes.md#class-field)>。
 
+示例：
+
+<!-- run -->
+```cangjie
+import stdx.serialization.serialization.*
+
+main() {
+    // 创建空参数的DataModelStruct实例
+    let dataModel = DataModelStruct()
+    return 0
+}
+```
+
 ### init(ArrayList\<Field>)
 
 ```cangjie
@@ -278,6 +553,25 @@ public init(list: ArrayList<Field>)
 参数：
 
 - list: ArrayList\<[Field](serialization_package_classes.md#class-field)> - 传入的 ArrayList\<[Field](serialization_package_classes.md#class-field)> 类型的数据。
+
+示例：
+
+<!-- run -->
+```cangjie
+import stdx.serialization.serialization.*
+import std.collection.*
+
+main() {
+    // 创建Field列表
+    let fieldList = ArrayList<Field>()
+    fieldList.add(Field("name", DataModelString("张三")))
+    fieldList.add(Field("age", DataModelInt(25)))
+
+    // 使用Field列表创建DataModelStruct实例
+    let dataModel = DataModelStruct(fieldList)
+    return 0
+}
+```
 
 ### func add(Field)
 
@@ -295,6 +589,23 @@ public func add(fie: Field): DataModelStruct
 
 - [DataModelStruct](serialization_package_classes.md#class-datamodelstruct) - 得到新的 [DataModelStruct](serialization_package_classes.md#class-datamodelstruct)。
 
+示例：
+
+<!-- run -->
+```cangjie
+import stdx.serialization.serialization.*
+
+main() {
+    // 创建DataModelStruct实例
+    let dataModel = DataModelStruct()
+
+    // 创建一个Field并添加到DataModelStruct
+    let field = Field("name", DataModelString("李四"))
+    let newDataModel = dataModel.add(field)
+    return 0
+}
+```
+
 ### func get(String)
 
 ```cangjie
@@ -311,6 +622,36 @@ public func get(key: String): DataModel
 
 - [DataModel](serialization_package_classes.md#class-datamodel) - 类型为 [DataModel](serialization_package_classes.md#class-datamodel)，如未查找到对应值，则返回 [DataModelNull](serialization_package_classes.md#class-datamodelnull)。
 
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.serialization.serialization.*
+
+main() {
+    // 创建DataModelStruct实例并添加数据
+    let dataModel = DataModelStruct()
+    let fieldName = Field("name", DataModelString("王五"))
+    let fieldAge = Field("age", DataModelInt(18))
+    dataModel.add(fieldName)
+    dataModel.add(fieldAge)
+
+    // 获取指定key的数据
+    let dataModelString = dataModel.get("name")
+
+    // 反序列化
+    let data = String.deserialize(dataModelString)
+    println("name: ${data}")
+    return 0
+}
+```
+
+运行结果：
+
+```text
+name: 王五
+```
+
 ### func getFields()
 
 ```cangjie
@@ -322,6 +663,34 @@ public func getFields(): ArrayList<Field>
 返回值：
 
 - ArrayList\<[Field](serialization_package_classes.md#class-field)> - 类型为 ArrayList\<[Field](serialization_package_classes.md#class-field)> 的数据集合。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.serialization.serialization.*
+
+main() {
+    // 创建DataModelStruct实例并添加数据
+    let dataModel = DataModelStruct()
+    let fieldName = Field("name", DataModelString("赵六"))
+    let fieldAge = Field("age", DataModelInt(18))
+    dataModel.add(fieldName)
+    dataModel.add(fieldAge)
+
+    // 获取所有字段
+    let fields = dataModel.getFields()
+
+    println("数据大小: ${fields.size}")
+    return 0
+}
+```
+
+运行结果：
+
+```text
+数据大小: 2
+```
 
 ## class Field
 
@@ -346,6 +715,19 @@ public init(name: String, data: DataModel)
 - name: String - `name` 字段值，`name` 字段为 `""` 时行为与为其它字符串时一致。
 - data: [DataModel](serialization_package_classes.md#class-datamodel) - `data` 字段值。
 
+示例：
+
+<!-- run -->
+```cangjie
+import stdx.serialization.serialization.*
+
+main() {
+    // 创建Field实例
+    let field = Field("age", DataModelInt(25))
+    return 0
+}
+```
+
 ### func getData()
 
 ```cangjie
@@ -358,6 +740,32 @@ public func getData(): DataModel
 
 - [DataModel](serialization_package_classes.md#class-datamodel) - 获取到的 `data` 字段，类型为 [DataModel](serialization_package_classes.md#class-datamodel)。
 
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.serialization.serialization.*
+
+main() {
+    // 创建Field实例
+    let field = Field("score", DataModelFloat(95.5))
+
+    // 获取data字段
+    let data = field.getData()
+
+    let score = Float64.deserialize(data)
+    println("score: ${score}")
+
+    return 0
+}
+```
+
+运行结果：
+
+```text
+score: 95.500000
+```
+
 ### func getName()
 
 ```cangjie
@@ -369,3 +777,28 @@ public func getName(): String
 返回值：
 
 - String - 获取到的 `name` 字段，类型为 String。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.serialization.serialization.*
+
+main() {
+    // 创建Field实例
+    let field = Field("username", DataModelString("admin"))
+
+    // 获取name字段
+    let name = field.getName()
+
+    println("获取到的name字段: ${name}")
+
+    return 0
+}
+```
+
+运行结果：
+
+```text
+获取到的name字段: username
+```
