@@ -93,7 +93,6 @@ class AnalyzeTestClassDecl001 {
         }
     }
     
-    @Skip
     @TestCase
     func testDecl03() {
         let decl = (decls[3] as ClassDecl).getOrThrow()

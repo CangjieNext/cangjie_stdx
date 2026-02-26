@@ -232,4 +232,6 @@ public:
     std::vector<Ptr<AST::Node>> collectChild(const Ptr<AST::Node> &node);
 
     void collect(const SyntaxNodePtr &syntaxNode, const Ptr<AST::Node> &node);
+    
+    void collectMainDeclDesugar(const SyntaxNodePtr &syntaxNode, const Ptr<AST::Node> &node);
 };

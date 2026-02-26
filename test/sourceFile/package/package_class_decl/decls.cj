@@ -23,11 +23,9 @@ class Class_02 {
     }
 }
 
-// class Class_03 {
-//     public Class_03(let a: Int64,let b: Int32) {}
-// }
-
-class Class_03 {}
+class Class_03 {
+    public Class_03(let a: Int64,let b: Int32) {}
+}
 
 class Class_04 {
     public var a: Int64 = 1
