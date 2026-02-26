@@ -22,6 +22,99 @@ using namespace Cangjie;
 using namespace std::chrono;
 using namespace std::filesystem;
 
+void FixConstructorTypes(CompilerInstance& ci, const Ptr<AST::Package>& package)
+{
+    if (!package) {
+        return;
+    }
+
+    auto visitor = [&ci](const Ptr<AST::Node>& node) -> Cangjie::AST::VisitAction {
+        if (node->astKind != ASTKind::FUNC_DECL && node->astKind != ASTKind::PRIMARY_CTOR_DECL) {
+            return Cangjie::AST::VisitAction::WALK_CHILDREN;
+        }
+
+        if (node->astKind == ASTKind::FUNC_DECL) {
+            auto fd = Cangjie::AST::StaticAs<ASTKind::FUNC_DECL>(node);
+            if (!fd->TestAttr(Cangjie::AST::Attribute::CONSTRUCTOR)) {
+                return Cangjie::AST::VisitAction::WALK_CHILDREN;
+            }
+
+            if (!Cangjie::AST::Ty::IsInitialTy(fd->ty)) {
+                return Cangjie::AST::VisitAction::SKIP_CHILDREN;
+            }
+
+            Ptr<Cangjie::AST::Ty> retTy = nullptr;
+            if (fd->TestAttr(Cangjie::AST::Attribute::STATIC)) {
+                retTy = TypeManager::GetPrimitiveTy(Cangjie::AST::TypeKind::TYPE_UNIT);
+            } else {
+                if (fd->funcBody && fd->funcBody->parentClassLike) {
+                    retTy = fd->funcBody->parentClassLike->ty;
+                } else if (fd->funcBody && fd->funcBody->parentStruct) {
+                    retTy = fd->funcBody->parentStruct->ty;
+                } else if (fd->outerDecl && fd->outerDecl->IsNominalDecl()) {
+                    retTy = fd->outerDecl->ty;
+                }
+            }
+
+            if (retTy && !Cangjie::AST::Ty::IsInitialTy(retTy) && fd->funcBody) {
+                std::vector<Ptr<Cangjie::AST::Ty>> paramTys;
+                if (!fd->funcBody->paramLists.empty()) {
+                    for (auto& param : fd->funcBody->paramLists[0]->params) {
+                        if (param->ty && !Cangjie::AST::Ty::IsInitialTy(param->ty)) {
+                            paramTys.push_back(param->ty);
+                        }
+                    }
+                }
+                fd->ty = ci.typeManager->GetFunctionTy(paramTys, retTy);
+            }
+        } else if (node->astKind == ASTKind::PRIMARY_CTOR_DECL) {
+            auto pcd = Cangjie::AST::StaticAs<ASTKind::PRIMARY_CTOR_DECL>(node);
+
+            if (!Cangjie::AST::Ty::IsInitialTy(pcd->ty)) {
+                return Cangjie::AST::VisitAction::SKIP_CHILDREN;
+            }
+
+            Ptr<Cangjie::AST::Ty> retTy = nullptr;
+            if (pcd->outerDecl && pcd->outerDecl->IsNominalDecl()) {
+                retTy = pcd->outerDecl->ty;
+            }
+
+            if (retTy && !Cangjie::AST::Ty::IsInitialTy(retTy)) {
+                std::vector<Ptr<Cangjie::AST::Ty>> paramTys;
+                
+                if (pcd->funcBody && !pcd->funcBody->paramLists.empty()) {
+                    for (auto& param : pcd->funcBody->paramLists[0]->params) {
+                        if (param->ty && !Cangjie::AST::Ty::IsInitialTy(param->ty)) {
+                            paramTys.push_back(param->ty);
+                        }
+                    }
+                }
+                
+                if (paramTys.empty() && pcd->outerDecl) {
+                    auto classDecl = DynamicCast<ClassDecl*>(pcd->outerDecl);
+                    if (classDecl && classDecl->body) {
+                        for (auto& member : classDecl->body->decls) {
+                            if (member->astKind == ASTKind::VAR_DECL || 
+                                member->astKind == ASTKind::VAR_WITH_PATTERN_DECL) {
+                                if (member->ty && !Cangjie::AST::Ty::IsInitialTy(member->ty)) {
+                                    paramTys.push_back(member->ty);
+                                }
+                            }
+                        }
+                    }
+                }
+                
+                pcd->ty = ci.typeManager->GetFunctionTy(paramTys, retTy);
+            }
+        }
+
+        return Cangjie::AST::VisitAction::SKIP_CHILDREN;
+    };
+
+    Cangjie::AST::Walker walker(package.get(), visitor);
+    walker.Walk();
+}
+
 void printSyntaxNode(const SyntaxNodePtr& node, int depth = 0)
 {
     if (!node) {
@@ -184,6 +277,11 @@ uint8_t* CJ_Analyze(const uint8_t* node, size_t length)
     ci.PerformSema();
     TimerRecord(semaStart, "Stage 2.5: Sema");
 
+    steady_clock::time_point reCollectStart = TimerStart();
+    tyCollector.collectMainDeclDesugar(root, ci.srcPkgs[0].get());
+    FixConstructorTypes(ci, ci.srcPkgs[0]);
+    TimerRecord(reCollectStart, "Stage 2.6: ReCollect Type");
+
     // std::cout << "----------after sema---------" << std::endl;
     // for (const auto &pair : tyCollector.declMap) {
     //     std::cout << "key: " << pair.second << ", value: " << pair.first.get()
@@ -198,7 +296,7 @@ uint8_t* CJ_Analyze(const uint8_t* node, size_t length)
     steady_clock::time_point serialStart = steady_clock::now();
     TypeWrite typeWriter(tyCollector.declMap, tyCollector.exprMap, tyCollector.refTarget);
     auto result = typeWriter.ExportType();
-    TimerRecord(serialStart, "Stage 2.6: Serial semantic result");
+    TimerRecord(serialStart, "Stage 2.7: Serial semantic result");
 
     TimerRecord(deserialStart, "Stage 2: Total native");
     return result;
@@ -253,6 +351,9 @@ uint8_t* CJ_Analyze_With_Path(const uint8_t* node, size_t length, const char* cj
 
     ci.PerformImportPackage();
     ci.PerformSema();
+
+    tyCollector.collectMainDeclDesugar(root, ci.srcPkgs[0].get());
+    FixConstructorTypes(ci, ci.srcPkgs[0]);
 
     // std::cout << "----------after sema---------" << std::endl;
     // for (const auto &pair : tyCollector.declMap) {

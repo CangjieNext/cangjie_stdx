@@ -205,7 +205,8 @@ def generate_pie_chart(df, output_file='timer_pie_chart.png', execution_id=None)
     stage2_3 = grouped.get('Stage 2.3: TypeCollector', 0)
     stage2_4 = grouped.get('Stage 2.4: Import', 0)
     stage2_5 = grouped.get('Stage 2.5: Sema', 0)
-    stage2_6 = grouped.get('Stage 2.6: Serial semantic result', 0)
+    stage2_6 = grouped.get('Stage 2.6: ReCollect Type', 0)
+    stage2_7 = grouped.get('Stage 2.7: Serial semantic result', 0)
     stage2_cffi = grouped.get('Stage 2: CFFI', 0)
     stage2_total_native = grouped.get('Stage 2: Total native', 0)
     stage3_1 = grouped.get('Stage 3.1: Deserial semantic result', 0)
@@ -216,7 +217,7 @@ def generate_pie_chart(df, output_file='timer_pie_chart.png', execution_id=None)
     stage2_total = stage2_cffi
     stage3_total = stage3_1 + stage3_2
     stage4_total = stage4
-    stage2_7 = stage2_cffi - stage2_total_native
+    stage2_8 = stage2_cffi - stage2_total_native
     
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(20, 10))
     
@@ -260,8 +261,9 @@ def generate_pie_chart(df, output_file='timer_pie_chart.png', execution_id=None)
         'Stage 2.3: TypeCollector': stage2_3,
         'Stage 2.4: Import': stage2_4,
         'Stage 2.5: Sema': stage2_5,
-        'Stage 2.6: Serial semantic result': stage2_6,
-        'Stage 2.7: ffi': stage2_7
+        'Stage 2.6: ReCollect Type': stage2_6,
+        'Stage 2.7: Serial semantic result': stage2_7,
+        'Stage 2.8: ffi': stage2_8
     }
     
     stage2_sub = {k: v for k, v in stage2_sub.items() if v > 0}

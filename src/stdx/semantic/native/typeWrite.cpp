@@ -13,6 +13,13 @@ flatbuffers::Offset<SemanticType::ASTType> TypeWrite::SerializeSemanticType(AstT
         return flatbuffers::Offset<SemanticType::ASTType>();
     }
 
+    if (ty->kind == TypeKind::TYPE) {
+        auto typeAliasTy = static_cast<const TypeAliasTy*>(ty.get());
+        if (typeAliasTy->declPtr && typeAliasTy->declPtr->type) {
+            return SerializeSemanticType(typeAliasTy->declPtr->type->ty);
+        }
+    }
+
     auto kind = static_cast<uint16_t>(ty->kind);
     std::vector<flatbuffers::Offset<SemanticType::ASTType>> lateTypeVector;
 

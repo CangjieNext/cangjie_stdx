@@ -865,7 +865,9 @@ void TypeCollector::collect(const SyntaxNodePtr &syntaxNode, const Ptr<AST::Node
         return;
     }
     if (syntaxNode->isDecl()) {
-        declMap[node.get()] = syntaxNode->id;
+        if (node->astKind != ASTKind::MAIN_DECL && node->astKind != ASTKind::EXTEND_DECL) {
+            declMap[node.get()] = syntaxNode->id;
+        }
     }
     if (syntaxNode->isSymbolRef() && node->astKind == ASTKind::REF_EXPR) {
         exprMap[node.get()] = syntaxNode->id;
@@ -908,6 +910,50 @@ void TypeCollector::collect(const SyntaxNodePtr &syntaxNode, const Ptr<AST::Node
         }
         
         this->collect(nonTerminal->children[i], collect[j]);
+        i++;
+        j++;
+    }
+}
+
+void TypeCollector::collectMainDeclDesugar(const SyntaxNodePtr &syntaxNode, const Ptr<AST::Node> &node)
+{
+    if (syntaxNode->getType() != NonTerminal::NodeType::NON_TERMINAL) {
+        return;
+    }
+    
+    if (node->astKind == ASTKind::MAIN_DECL) {
+        auto mainDecl = StaticAs<ASTKind::MAIN_DECL>(node);
+        if (mainDecl->desugarDecl) {
+            declMap[mainDecl->desugarDecl.get()] = syntaxNode->id;
+        }
+    }
+    
+    auto nonTerminal = std::static_pointer_cast<NonTerminal>(syntaxNode);
+    std::vector<Ptr<AST::Node>> collect = collectChild(node.get());
+    
+    size_t i = 0;
+    size_t j = 0;
+    
+    while (i < nonTerminal->children.size() && j < collect.size()) {
+        if (nonTerminal->children[i]->kind == "VarPattern" || nonTerminal->children[i]->kind == "ImportSpec"
+        || nonTerminal->children[i]->kind == "PackageSpec") {
+            i++;
+            continue;
+        }
+
+        if (nonTerminal->children[i]->kind == "ModifierList" || nonTerminal->children[i]->kind == "AnnotationList") {
+            i++;
+            continue;
+        }
+        
+        if (nonTerminal->children[i]->getType() != NonTerminal::NodeType::NON_TERMINAL) {
+            i++;
+            continue;
+        }
+        
+        if (collect[j].get() != nullptr) {
+            this->collectMainDeclDesugar(nonTerminal->children[i], collect[j]);
+        }
         i++;
         j++;
     }
