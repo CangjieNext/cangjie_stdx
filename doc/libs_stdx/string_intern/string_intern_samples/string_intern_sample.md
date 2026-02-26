@@ -1,9 +1,8 @@
 # 字符串池化缓存示例
 
-代码如下：
+示例：
 
 <!-- verify -->
-
 ```cangjie
 import stdx.string_intern.Internable
 
@@ -16,9 +15,9 @@ main(): Unit {
 }
 ```
 
-运行结果如下：
+运行结果：
 
 ```text
-"hello, 仓颉"
-"hello, 仓颉"
+hello, 仓颉
+hello, 仓颉
 ```

@@ -25,3 +25,24 @@ public init(message: String)
 参数：
 
 - message: String - 异常提示信息。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.compress.zlib.*
+
+main(): Unit {
+    try {
+        throw ZlibException("This is a test exception.")
+    } catch (e: ZlibException) {
+        println("捕获到 ZlibException: ${e.message}")
+    }
+}
+```
+
+运行结果：
+
+```text
+捕获到 ZlibException: This is a test exception.
+```

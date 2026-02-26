@@ -35,7 +35,7 @@ import stdx.encoding.url.*
 
 main(): Int64 {
     var s = Form("2=3&1=%6AD&1=2")
-    /* 对于 %6A 解码成 j，重复的 key 调用 get 获取第一个 value 值 jD */
+    // 对于 %6A 解码成 j，重复的 key 调用 get 获取第一个 value 值 jD 
     print(s.get("1").getOrThrow())
     return 0
 }
@@ -60,25 +60,25 @@ import stdx.encoding.url.*
 main(): Int64 {
     var f = Form()
 
-    /* 给键 k 增加值 v1 和 v2 */
+    // 给键 k 增加值 v1 和 v2 
     f.add("k", "v1")
     f.add("k", "v2")
 
-    /* 调用 get 方法时，获取的是第一个值 */
+    // 调用 get 方法时，获取的是第一个值 
     println(f.get("k").getOrThrow())
 
-    /* 设定键 k 的值为 v */
+    // 设定键 k 的值为 v 
     f.set("k", "v")
     println(f.get("k").getOrThrow())
     let clone_f = f.clone()
 
-    /* 给克隆出来的 clone_f 增加键值对 */
+    // 给克隆出来的 clone_f 增加键值对 
     clone_f.add("k1", "v1")
 
-    /* 通过 get 获得值 v1 */
+    // 通过 get 获得值 v1 
     println(clone_f.get("k1").getOrThrow())
 
-    /* 原来的 f 并没有键 k1，所以值是给的默认值 kkk */
+    // 原来的 f 并没有键 k1，所以值是给的默认值 kkk 
     println(f.get("k1") ?? "kkk")
     return 0
 }

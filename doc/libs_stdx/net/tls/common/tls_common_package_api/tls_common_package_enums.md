@@ -70,6 +70,14 @@ public enum TlsVersion {
 - Hashable
 - Equatable\<[TlsVersion](#enum-tlsversion)>
 
+### TLCP
+
+```cangjie
+TLCP
+```
+
+功能：表示 TLCP 版本。
+
 ### V1_2
 
 ```cangjie
@@ -86,14 +94,6 @@ V1_3
 
 功能：表示 TLS 1.3 版本。
 
-### TLCP
-
-```cangjie
-TLCP
-```
-
-功能：表示 TLCP 版本。
-
 ### func hashCode()
 
 ```cangjie
@@ -106,6 +106,27 @@ public func hashCode(): Int64
 
 - Int64 - 当前 [TlsVersion](#enum-tlsversion) 的哈希值。
 
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.net.tls.common.*
+
+main() {
+    let tlsVersion = TlsVersion.V1_3
+    let hashValue = tlsVersion.hashCode()
+    println("TLS版本 ${tlsVersion} 的哈希值: ${hashValue}")
+
+    return 0
+}
+```
+
+运行结果：
+
+```text
+TLS版本 TlsVersion.V1_3 的哈希值: -7046029254386353130
+```
+
 ### func toString()
 
 ```cangjie
@@ -117,6 +138,70 @@ public override func toString(): String
 返回值：
 
 - String - 当前 [TlsVersion](#enum-tlsversion) 的字符串表示。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.net.tls.common.*
+
+main() {
+    let tlsVersion = TlsVersion.V1_2
+    let strValue = tlsVersion.toString()
+    println("TLS版本的字符串表示: ${strValue}")
+
+    return 0
+}
+```
+
+运行结果：
+
+```text
+TLS版本的字符串表示: TlsVersion.V1_2
+```
+
+### operator func !=(TlsVersion)
+
+```cangjie
+public operator func !=(that: TlsVersion): Bool
+```
+
+功能：比较两个 [TlsVersion](#enum-tlsversion) 是否不等。
+
+参数：
+
+- that: [TlsVersion](#enum-tlsversion) - 待比较的 TLS 版本。
+
+返回值：
+
+- Bool - 若不等返回 `true`，否则返回 `false`。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.net.tls.common.*
+
+main() {
+    let tlsVersion1 = TlsVersion.V1_2
+    let tlsVersion2 = TlsVersion.V1_3
+
+    let isNotEqual = tlsVersion1 != tlsVersion2
+    println("${tlsVersion1} != ${tlsVersion2}: ${isNotEqual}")
+
+    let isEqual = tlsVersion1 != tlsVersion1
+    println("${tlsVersion1} != ${tlsVersion1}: ${isEqual}")
+
+    return 0
+}
+```
+
+运行结果：
+
+```text
+TlsVersion.V1_2 != TlsVersion.V1_3: true
+TlsVersion.V1_2 != TlsVersion.V1_2: false
+```
 
 ### operator func ==(TlsVersion)
 
@@ -133,3 +218,31 @@ public operator func ==(that: TlsVersion): Bool
 返回值：
 
 - Bool - 相同时返回 `true`，否则返回 `false`。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.net.tls.common.*
+
+main() {
+    let tlsVersion1 = TlsVersion.V1_2
+    let tlsVersion2 = TlsVersion.V1_2
+    let tlsVersion3 = TlsVersion.V1_3
+
+    let isEqual = tlsVersion1 == tlsVersion2
+    println("${tlsVersion1} == ${tlsVersion2}: ${isEqual}")
+
+    let isNotEqual = tlsVersion1 == tlsVersion3
+    println("${tlsVersion1} == ${tlsVersion3}: ${isNotEqual}")
+
+    return 0
+}
+```
+
+运行结果：
+
+```text
+TlsVersion.V1_2 == TlsVersion.V1_2: true
+TlsVersion.V1_2 == TlsVersion.V1_3: false
+```

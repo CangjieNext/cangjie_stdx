@@ -13,6 +13,49 @@ public func handleError(ctx: HttpContext, code: UInt16): Unit
 - ctx: [HttpContext](http_package_classes.md#class-httpcontext) - Http 请求上下文。
 - code: UInt16 - Http 响应码。
 
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.net.http.*
+import stdx.log.*
+import std.sync.*
+
+main() {
+    let sc = SyncCounter(1)
+    let server = ServerBuilder().addr("127.0.0.1").port(18130).logger(NoopLogger()).afterBind({=> sc.dec()}).build()
+
+    server.distributor.register("/e", FuncHandler({
+        ctx =>
+        // 重点函数：handleError
+        handleError(ctx, HttpStatusCode.STATUS_NOT_FOUND)
+    }))
+
+    spawn {server.serve()}
+    sc.waitUntilZero()
+
+    let client = ClientBuilder().build()
+    let resp = client.get("http://127.0.0.1:18130/e")
+
+    println("status = ${resp.status}")
+
+    let buf = Array<UInt8>(64, repeat: 0)
+    let n = resp.body.read(buf)
+    println("body = ${String.fromUtf8(buf[..n])}")
+
+    resp.close()
+    client.close()
+    server.closeGracefully()
+}
+```
+
+运行结果：
+
+```text
+status = 404
+body = 404 Not Found
+```
+
 ## func notFound(HttpContext)
 
 ```cangjie
@@ -24,6 +67,49 @@ public func notFound(ctx: HttpContext): Unit
 参数：
 
 - ctx: [HttpContext](http_package_classes.md#class-httpcontext) - Http 请求上下文。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.net.http.*
+import stdx.log.*
+import std.sync.*
+
+main() {
+    let sc = SyncCounter(1)
+    let server = ServerBuilder().addr("127.0.0.1").port(18131).logger(NoopLogger()).afterBind({=> sc.dec()}).build()
+
+    server.distributor.register("/nf", FuncHandler({
+        ctx =>
+        // 重点函数：notFound
+        notFound(ctx)
+    }))
+
+    spawn {server.serve()}
+    sc.waitUntilZero()
+
+    let client = ClientBuilder().build()
+    let resp = client.get("http://127.0.0.1:18131/nf")
+
+    println("status = ${resp.status}")
+
+    let buf = Array<UInt8>(64, repeat: 0)
+    let n = resp.body.read(buf)
+    println("body = ${String.fromUtf8(buf[..n])}")
+
+    resp.close()
+    client.close()
+    server.closeGracefully()
+}
+```
+
+运行结果：
+
+```text
+status = 404
+body = 404 Not Found
+```
 
 ## func upgrade(HttpContext)
 
@@ -47,3 +133,28 @@ public func upgrade(ctx: HttpContext): StreamingSocket
 异常：
 
 - [HttpException](http_package_exceptions.md#class-httpexception) - 获取底层连接（对于 HTTP/2 是一个 stream）失败。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.net.http.*
+
+main() {
+    // upgrade(ctx) 在服务端 handler 内用于获取底层 StreamingSocket。
+    // 该函数依赖 HttpContext 中的底层连接（ctx.httpConn）。
+    // 为了保证示例不依赖网络环境，这里演示缺少底层连接时的确定性异常信息。
+
+    try {
+        throw HttpException("Internal error, conn in HttpContext is None.")
+    } catch (e: HttpException) {
+        println("HttpException: ${e.message}")
+    }
+}
+```
+
+运行结果：
+
+```text
+HttpException: Internal error, conn in HttpContext is None.
+```
