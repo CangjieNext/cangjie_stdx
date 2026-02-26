@@ -23,6 +23,28 @@ public init()
 
 功能：无参构造函数，构造 [CryptoException](#class-cryptoexception) 异常。
 
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.crypto.common.*
+
+main(): Unit {
+    try {
+        // 抛出一个无参的CryptoException异常
+        throw CryptoException()
+    } catch (e: CryptoException) {
+        println("捕获到加解密异常")
+    }
+}
+```
+
+运行结果：
+
+```text
+捕获到加解密异常
+```
+
 ### init(String)
 
 ```cangjie
@@ -34,3 +56,25 @@ public init(message: String)
 参数：
 
 - message: String - 异常信息。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.crypto.common.*
+
+main(): Unit {
+    try {
+        // 抛出一个带消息的CryptoException异常
+        throw CryptoException("这是一个加密异常")
+    } catch (e: CryptoException) {
+        println("捕获到加密异常: ${e.message}")
+    }
+}
+```
+
+运行结果：
+
+```text
+捕获到加密异常: 这是一个加密异常
+```

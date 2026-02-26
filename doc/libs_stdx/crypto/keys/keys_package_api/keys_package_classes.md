@@ -30,6 +30,28 @@ public init(curve: Curve)
 
 - [CryptoException](../../common/crypto_common_package_api/crypto_common_package_exceptions.md#class-cryptoexception) - 初始化失败，抛出异常。
 
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.crypto.keys.*
+
+main() {
+    let key = ECDSAPrivateKey(Curve.P256)
+    println("ECDSA私钥创建成功")
+    println("密钥类型: ${key}")
+
+    return 0
+}
+```
+
+运行结果：
+
+```text
+ECDSA私钥创建成功
+密钥类型: ECDSA PRIVATE KEY
+```
+
 ### static func decodeDer(DerBlob)
 
 ```cangjie
@@ -49,6 +71,33 @@ public static func decodeDer(blob: DerBlob): ECDSAPrivateKey
 异常：
 
 - [CryptoException](../../common/crypto_common_package_api/crypto_common_package_exceptions.md#class-cryptoexception) - 解码失败，抛出异常。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.crypto.keys.*
+
+main() {
+    // 模拟场景：从外部（文件/网络）获取的 DerBlob（此处通过生成私钥并编码模拟）
+    let originalKey = ECDSAPrivateKey(Curve.P256)
+    let encodedBlob = originalKey.encodeToDer()
+
+    // 核心演示：从 DerBlob 解码还原 ECDSA 私钥
+    let decodedKey = ECDSAPrivateKey.decodeDer(encodedBlob)
+    println("解码成功")
+    println("解码后密钥类型: ${decodedKey}")
+
+    return 0
+}
+```
+
+运行结果：
+
+```text
+解码成功
+解码后密钥类型: ECDSA PRIVATE KEY
+```
 
 ### static func decodeDer(DerBlob, ?String)
 
@@ -71,6 +120,33 @@ public static func decodeDer(blob: DerBlob, password!: ?String): ECDSAPrivateKey
 
 - [CryptoException](../../common/crypto_common_package_api/crypto_common_package_exceptions.md#class-cryptoexception) - 解码失败、解密失败或者参数密码为空字符串，抛出异常。
 
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.crypto.keys.*
+
+main() {
+    // 模拟场景：从外部（文件/网络）获取的 DerBlob（此处通过生成私钥并编码模拟）
+    let originalKey = ECDSAPrivateKey(Curve.P256)
+    let encodedBlob = originalKey.encodeToDer(password: "mypassword")
+
+    // 核心演示：从 DerBlob 解码还原 ECDSA 私钥
+    let decodedKey = ECDSAPrivateKey.decodeDer(encodedBlob, password: "mypassword")
+    println("解码加密DER成功")
+    println("解码后密钥类型: ${decodedKey}")
+
+    return 0
+}
+```
+
+运行结果：
+
+```text
+解码加密DER成功
+解码后密钥类型: ECDSA PRIVATE KEY
+```
+
 ### static func decodeFromPem(String)
 
 ```cangjie
@@ -90,6 +166,34 @@ public static func decodeFromPem(text: String): ECDSAPrivateKey
 异常：
 
 - [CryptoException](../../common/crypto_common_package_api/crypto_common_package_exceptions.md#class-cryptoexception) - 解码失败、字符流不符合 PEM 格式或文件头不符合私钥头标准时，抛出异常。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.crypto.keys.*
+
+main() {
+    // 模拟场景：从外部（文件/网络）获取的 PEM 字符串
+    let originalKey = ECDSAPrivateKey(Curve.P256)
+    let pemEntry = originalKey.encodeToPem()
+    let pemString = pemEntry.encode()
+
+    // 核心演示：从 PEM 字符串解码还原 ECDSA 私钥
+    let decodedKey = ECDSAPrivateKey.decodeFromPem(pemString)
+    println("从PEM解码成功")
+    println("解码后密钥类型: ${decodedKey}")
+
+    return 0
+}
+```
+
+运行结果：
+
+```text
+从PEM解码成功
+解码后密钥类型: ECDSA PRIVATE KEY
+```
 
 ### static func decodeFromPem(String, ?String)
 
@@ -112,6 +216,34 @@ public static func decodeFromPem(text: String, password!: ?String): ECDSAPrivate
 
 - [CryptoException](../../common/crypto_common_package_api/crypto_common_package_exceptions.md#class-cryptoexception) - 解码失败、解密失败、参数密码为空字符串、字符流不符合 PEM 格式或文件头不符合私钥头标准时，抛出异常。
 
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.crypto.keys.*
+
+main() {
+    // 模拟场景：从外部（文件/网络）获取的 PEM 字符串
+    let originalKey = ECDSAPrivateKey(Curve.P256)
+    let pemEntry = originalKey.encodeToPem(password: "mypassword")
+    let pemString = pemEntry.encode()
+
+    // 核心演示：从加密的 PEM 字符串解码还原 ECDSA 私钥
+    let decodedKey = ECDSAPrivateKey.decodeFromPem(pemString, password: "mypassword")
+    println("从加密PEM解码成功")
+    println("解码后密钥类型: ${decodedKey}")
+
+    return 0
+}
+```
+
+运行结果：
+
+```text
+从加密PEM解码成功
+解码后密钥类型: ECDSA PRIVATE KEY
+```
+
 ### func encodeToDer()
 
 ```cangjie
@@ -127,6 +259,30 @@ public override func encodeToDer(): DerBlob
 异常：
 
 - [CryptoException](../../common/crypto_common_package_api/crypto_common_package_exceptions.md#class-cryptoexception) - 编码失败，抛出异常。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.crypto.keys.*
+
+main() {
+    let key = ECDSAPrivateKey(Curve.P256)
+    let derBlob = key.encodeToDer()
+
+    println("编码为DER格式成功")
+    println("DER数据大小: ${derBlob.size}")
+
+    return 0
+}
+```
+
+运行结果：
+
+```text
+编码为DER格式成功
+DER数据大小: 121
+```
 
 ### func encodeToDer(?String)
 
@@ -148,6 +304,30 @@ public func encodeToDer(password!: ?String): DerBlob
 
 - [CryptoException](../../common/crypto_common_package_api/crypto_common_package_exceptions.md#class-cryptoexception) - 编码失败、加密失败或者参数密码为空字符串，抛出异常。
 
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.crypto.keys.*
+
+main() {
+    let key = ECDSAPrivateKey(Curve.P256)
+    let derBlob = key.encodeToDer(password: "mypassword")
+
+    println("编码为加密DER格式成功")
+    println("DER数据大小: ${derBlob.size}")
+
+    return 0
+}
+```
+
+运行结果：
+
+```text
+编码为加密DER格式成功
+DER数据大小: 239
+```
+
 ### func encodeToPem()
 
 ```cangjie
@@ -163,6 +343,30 @@ public func encodeToPem(): PemEntry
 异常：
 
 - [CryptoException](../../common/crypto_common_package_api/crypto_common_package_exceptions.md#class-cryptoexception) - 编码失败，抛出异常。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.crypto.keys.*
+
+main() {
+    let key = ECDSAPrivateKey(Curve.P256)
+    let pemEntry = key.encodeToPem()
+
+    println("编码为PEM格式成功")
+    println("PEM标签: ${pemEntry.label}")
+
+    return 0
+}
+```
+
+运行结果：
+
+```text
+编码为PEM格式成功
+PEM标签: EC PRIVATE KEY
+```
 
 ### func encodeToPem(?String)
 
@@ -184,6 +388,30 @@ public func encodeToPem(password!: ?String): PemEntry
 
 - [CryptoException](../../common/crypto_common_package_api/crypto_common_package_exceptions.md#class-cryptoexception) - 编码失败、加密失败或者参数密码为空字符串，抛出异常。
 
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.crypto.keys.*
+
+main() {
+    let key = ECDSAPrivateKey(Curve.P256)
+    let pemEntry = key.encodeToPem(password: "mypassword")
+
+    println("编码为加密PEM格式成功")
+    println("PEM标签: ${pemEntry.label}")
+
+    return 0
+}
+```
+
+运行结果：
+
+```text
+编码为加密PEM格式成功
+PEM标签: ENCRYPTED PRIVATE KEY
+```
+
 ### func sign(Array\<Byte>)
 
 ```cangjie
@@ -204,6 +432,37 @@ public func sign(digest: Array<Byte>): Array<Byte>
 
 - [CryptoException](../../common/crypto_common_package_api/crypto_common_package_exceptions.md#class-cryptoexception) - 签名失败，抛出异常。
 
+示例：
+
+<!-- run -->
+```cangjie
+import stdx.crypto.keys.*
+import stdx.crypto.digest.*
+
+main() {
+    let priKey = ECDSAPrivateKey(Curve.P256)
+    let data = "Hello, World!".toArray()
+
+    // 先计算数据的摘要
+    let sha256 = SHA256()
+    sha256.write(data)
+    let digest = sha256.finish()
+
+    let signature = priKey.sign(digest)
+    println("签名成功")
+    println("签名长度: ${signature.size}")
+
+    return 0
+}
+```
+
+可能的运行结果：
+
+```text
+签名成功
+签名长度: 70
+```
+
 ### func toString()
 
 ```cangjie
@@ -215,6 +474,28 @@ public override func toString(): String
 返回值：
 
 - String - 密钥类别描述。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.crypto.keys.*
+
+main() {
+    let key = ECDSAPrivateKey(Curve.P256)
+
+    let keyType = key.toString()
+    println("密钥类型: ${keyType}")
+
+    return 0
+}
+```
+
+运行结果：
+
+```text
+密钥类型: ECDSA PRIVATE KEY
+```
 
 ## class ECDSAPublicKey
 
@@ -246,6 +527,31 @@ public init(pri: ECDSAPrivateKey)
 
 - [CryptoException](../../common/crypto_common_package_api/crypto_common_package_exceptions.md#class-cryptoexception) - 初始化失败，抛出异常。
 
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.crypto.keys.*
+
+main() {
+    let priKey = ECDSAPrivateKey(P256)
+    // 公钥需要从私钥派生
+    let pubKey = ECDSAPublicKey(priKey)
+
+    println("ECDSA公钥创建成功")
+    println("公钥类型: ${pubKey}")
+
+    return 0
+}
+```
+
+运行结果：
+
+```text
+ECDSA公钥创建成功
+公钥类型: ECDSA PUBLIC KEY
+```
+
 ### static func decodeDer(DerBlob)
 
 ```cangjie
@@ -265,6 +571,34 @@ public static func decodeDer(blob: DerBlob): ECDSAPublicKey
 异常：
 
 - [CryptoException](../../common/crypto_common_package_api/crypto_common_package_exceptions.md#class-cryptoexception) - 编码失败，抛出异常。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.crypto.keys.*
+
+main() {
+    // 模拟场景：从外部（文件/网络）获取的 DER 字节数组
+    let priKey = ECDSAPrivateKey(P256)
+    let pubKey = ECDSAPublicKey(priKey)
+    let derBlob = pubKey.encodeToDer()
+
+    // 从 DER 字节数组解码公钥
+    let decodedPubKey = ECDSAPublicKey.decodeDer(derBlob)
+    println("从DER解码公钥成功")
+    println("解码后公钥类型: ${decodedPubKey}")
+
+    return 0
+}
+```
+
+运行结果：
+
+```text
+从DER解码公钥成功
+解码后公钥类型: ECDSA PUBLIC KEY
+```
 
 ### static func decodeFromPem(String)
 
@@ -286,6 +620,35 @@ public static func decodeFromPem(text: String): ECDSAPublicKey
 
 - [CryptoException](../../common/crypto_common_package_api/crypto_common_package_exceptions.md#class-cryptoexception) - 解码失败、字符流不符合 PEM 格式或文件头不符合公钥头标准时，抛出异常。
 
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.crypto.keys.*
+
+main() {
+    // 模拟场景：从外部（文件/网络）获取的 PEM 字符串
+    let priKey = ECDSAPrivateKey(P256)
+    let pubKey = ECDSAPublicKey(priKey)
+    let pemEntry = pubKey.encodeToPem()
+    let pemString = pemEntry.encode()
+
+    // 从 PEM 字符串解码公钥
+    let decodedPubKey = ECDSAPublicKey.decodeFromPem(pemString)
+    println("从PEM解码公钥成功")
+    println("解码后公钥类型: ${decodedPubKey}")
+
+    return 0
+}
+```
+
+运行结果：
+
+```text
+从PEM解码公钥成功
+解码后公钥类型: ECDSA PUBLIC KEY
+```
+
 ### func encodeToDer()
 
 ```cangjie
@@ -301,6 +664,32 @@ public override func encodeToDer(): DerBlob
 异常：
 
 - [CryptoException](../../common/crypto_common_package_api/crypto_common_package_exceptions.md#class-cryptoexception) - 编码失败，抛出异常。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.crypto.keys.*
+
+main() {
+    let priKey = ECDSAPrivateKey(P256)
+    // 公钥需要从私钥派生
+    let pubKey = ECDSAPublicKey(priKey)
+    let derBlob = pubKey.encodeToDer()
+
+    println("编码为DER格式成功")
+    println("DER数据大小: ${derBlob.size}")
+
+    return 0
+}
+```
+
+运行结果：
+
+```text
+编码为DER格式成功
+DER数据大小: 91
+```
 
 ### func encodeToPem()
 
@@ -318,6 +707,32 @@ public func encodeToPem(): PemEntry
 
 - [CryptoException](../../common/crypto_common_package_api/crypto_common_package_exceptions.md#class-cryptoexception) - 编码失败，抛出异常。
 
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.crypto.keys.*
+
+main() {
+    let priKey = ECDSAPrivateKey(P256)
+    // 公钥需要从私钥派生
+    let pubKey = ECDSAPublicKey(priKey)
+    let pemEntry = pubKey.encodeToPem()
+
+    println("编码为PEM格式成功")
+    println("PEM标签: ${pemEntry.label}")
+
+    return 0
+}
+```
+
+运行结果：
+
+```text
+编码为PEM格式成功
+PEM标签: PUBLIC KEY
+```
+
 ### func toString()
 
 ```cangjie
@@ -329,6 +744,29 @@ public override func toString(): String
 返回值：
 
 - String - 密钥类别描述。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.crypto.keys.*
+
+main() {
+    let priKey = ECDSAPrivateKey(P256)
+    let pubKey = ECDSAPublicKey(priKey)
+
+    let keyType = pubKey.toString()
+    println("公钥类型: ${keyType}")
+
+    return 0
+}
+```
+
+运行结果：
+
+```text
+公钥类型: ECDSA PUBLIC KEY
+```
 
 ### func verify(Array\<Byte>, Array\<Byte>)
 
@@ -346,6 +784,49 @@ public func verify(digest: Array<Byte>, sig: Array<Byte>): Bool
 返回值：
 
 - Bool - 返回 true 表示验证成功，false 失败。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.crypto.keys.*
+import stdx.crypto.digest.*
+
+main() {
+    let priKey = ECDSAPrivateKey(P256)
+    let pubKey = ECDSAPublicKey(priKey)
+    let data = "Hello, World!".toArray()
+
+    // 计算数据摘要
+    let sha256 = SHA256()
+    sha256.write(data)
+    let digest = sha256.finish()
+
+    // 使用私钥签名
+    let signature = priKey.sign(digest)
+
+    // 使用公钥验证签名
+    let isValid = pubKey.verify(digest, signature)
+    println("签名验证结果: ${isValid}")
+
+    // 验证错误的签名
+    let wrongData = "Wrong data".toArray()
+    sha256.reset()
+    sha256.write(wrongData)
+    let wrongDigest = sha256.finish()
+    let isWrongValid = pubKey.verify(wrongDigest, signature)
+    println("错误数据验证结果: ${isWrongValid}")
+
+    return 0
+}
+```
+
+运行结果：
+
+```text
+签名验证结果: true
+错误数据验证结果: false
+```
 
 ## class GeneralPrivateKey
 
@@ -375,6 +856,47 @@ static func decodeDer(encoded: DerBlob): PrivateKey
 
 - [PrivateKey](../../common/crypto_common_package_api/crypto_common_package_interfaces.md#interface-privatekey) - 由 DER 格式解码出的私钥。
 
+示例：
+
+<!-- run -->
+```cangjie
+import std.fs.*
+import std.io.*
+import std.process.*
+import stdx.crypto.keys.*
+import stdx.crypto.common.*
+
+main() {
+    // 生成测试用文件
+    let privatePem = "./test_private.key"
+    let privateDer = "./test_private.der"
+
+    let cmdStr =
+        // OpenSSL 官方标准、无风险的测试用命令
+        "openssl genrsa -out ${privatePem} 2048; " +
+        "openssl rsa -in ${privatePem} -out ${privateDer} -outform der"
+
+    executeWithOutput("sh", ["-c", cmdStr])
+
+    // 核心演示：从 DerBlob 解码还原私钥
+    let decodedKey = GeneralPrivateKey.decodeDer(DerBlob(readToEnd(File(privateDer, Read))))
+    println("解码成功")
+    println("解码后密钥类型: ${decodedKey}")
+
+    // 删除测试用文件
+    removeIfExists(privatePem)
+    removeIfExists(privateDer)
+    return 0
+}
+```
+
+可能的运行结果：
+
+```text
+解码成功
+解码后密钥类型: PrivateKey(1217 bytes, RSA 2048 bits)
+```
+
 ### static func decodeDer(DerBlob, ?String)
 
 ```cangjie
@@ -392,6 +914,48 @@ static func decodeDer(encoded: DerBlob, password!: ?String): PrivateKey
 
 - [PrivateKey](../../common/crypto_common_package_api/crypto_common_package_interfaces.md#interface-privatekey) - 解密解码后的私钥对象。
 
+示例：
+
+<!-- run -->
+```cangjie
+import std.fs.*
+import std.io.*
+import std.process.*
+import stdx.crypto.keys.*
+import stdx.crypto.common.*
+
+main() {
+    // 生成测试用加密文件
+    let privatePem = "./test_private.key"
+    let privateDer = "./test_private.der"
+    let password = "mypassword"
+
+    let cmdStr =
+        // OpenSSL 官方标准、无风险的测试用命令
+        "openssl genrsa -out ${privatePem} 2048; " +
+        "openssl rsa -in ${privatePem} -aes256 -passout pass:${password} -out ${privateDer} -outform der"
+
+    executeWithOutput("sh", ["-c", cmdStr])
+
+    // 核心演示：从加密的 DerBlob 解码还原私钥
+    let decodedKey = GeneralPrivateKey.decodeDer(DerBlob(readToEnd(File(privateDer, Read))), password: password)
+    println("解码加密DER成功")
+    println("解码后密钥类型: ${decodedKey}")
+
+    // 删除测试用文件
+    removeIfExists(privatePem)
+    removeIfExists(privateDer)
+    return 0
+}
+```
+
+可能的运行结果：
+
+```text
+解码加密DER成功
+解码后密钥类型: PrivateKey(1217 bytes, RSA 2048 bits)
+```
+
 ### static func decodeFromPem(String)
 
 ```cangjie
@@ -407,6 +971,44 @@ static func decodeFromPem(text: String): PrivateKey
 返回值：
 
 - [PrivateKey](../../common/crypto_common_package_api/crypto_common_package_interfaces.md#interface-privatekey) - 由 PEM 格式解码出的私钥。
+
+示例：
+
+<!-- run -->
+```cangjie
+import std.fs.*
+import std.io.*
+import std.process.*
+import stdx.crypto.keys.*
+
+main() {
+    // 生成测试用文件
+    let privatePem = "./test_private.key"
+
+    let cmdStr =
+        // OpenSSL 官方标准、无风险的测试用命令
+        "openssl genrsa -out ${privatePem} 2048"
+
+    executeWithOutput("sh", ["-c", cmdStr])
+
+    // 核心演示：从 PEM 字符串解码还原私钥
+    let pemContent = String.fromUtf8(readToEnd(File(privatePem, Read)))
+    let decodedKey = GeneralPrivateKey.decodeFromPem(pemContent)
+    println("从PEM解码成功")
+    println("解码后密钥类型: ${decodedKey}")
+
+    // 删除测试用文件
+    removeIfExists(privatePem)
+    return 0
+}
+```
+
+可能的运行结果：
+
+```text
+从PEM解码成功
+解码后密钥类型: PrivateKey(1217 bytes, RSA 2048 bits)
+```
 
 ### static func decodeFromPem(String, ?String)
 
@@ -425,6 +1027,45 @@ static func decodeFromPem(text: String, password!: ?String): PrivateKey
 
 - [PrivateKey](../../common/crypto_common_package_api/crypto_common_package_interfaces.md#interface-privatekey) - 解密解码后的私钥对象。
 
+示例：
+
+<!-- run -->
+```cangjie
+import std.fs.*
+import std.io.*
+import std.process.*
+import stdx.crypto.keys.*
+
+main() {
+    // 生成测试用加密文件
+    let privatePem = "./test_private.key"
+    let password = "mypassword"
+
+    let cmdStr =
+        // OpenSSL 官方标准、无风险的测试用命令
+        "openssl genpkey -algorithm rsa -out ${privatePem} -aes256 -pass pass:${password}"
+
+    executeWithOutput("sh", ["-c", cmdStr])
+
+    // 核心演示：从加密的 PEM 字符串解码还原私钥
+    let pemContent = String.fromUtf8(readToEnd(File(privatePem, Read)))
+    let decodedKey = GeneralPrivateKey.decodeFromPem(pemContent, password: password)
+    println("从加密PEM解码成功")
+    println("解码后密钥类型: ${decodedKey}")
+
+    // 删除测试用文件
+    removeIfExists(privatePem)
+    return 0
+}
+```
+
+可能的运行结果：
+
+```text
+从加密PEM解码成功
+解码后密钥类型: PrivateKey(1217 bytes, RSA 2048 bits)
+```
+
 ### func encodeToDer()
 
 ```cangjie
@@ -436,6 +1077,50 @@ func encodeToDer(): DerBlob
 返回值：
 
 - [DerBlob](../../common/crypto_common_package_api/crypto_common_package_structs.md#struct-derblob) - DER 格式的私钥。
+
+示例：
+
+<!-- run -->
+```cangjie
+import std.fs.*
+import std.io.*
+import std.process.*
+import stdx.crypto.keys.*
+import stdx.crypto.common.*
+
+main() {
+    // 生成测试用文件
+    let privatePem = "./test_private.key"
+    let privateDer = "./test_private.der"
+
+    let cmdStr =
+        // OpenSSL 官方标准、无风险的测试用命令
+        "openssl genrsa -out ${privatePem} 2048; " +
+        "openssl rsa -in ${privatePem} -out ${privateDer} -outform der"
+
+    executeWithOutput("sh", ["-c", cmdStr])
+
+    // 从 DER 文件读取并解码为私钥
+    let originalKey = GeneralPrivateKey.decodeDer(DerBlob(readToEnd(File(privateDer, Read))))
+
+    // 核心演示：将私钥编码为 DER 格式
+    let encodedBlob = originalKey.encodeToDer()
+    println("编码为DER格式成功")
+    println("DER数据大小: ${encodedBlob.size}")
+
+    // 删除测试用文件
+    removeIfExists(privatePem)
+    removeIfExists(privateDer)
+    return 0
+}
+```
+
+可能的运行结果：
+
+```text
+编码为DER格式成功
+DER数据大小: 1217
+```
 
 ### func encodeToDer(?String)
 
@@ -453,6 +1138,50 @@ func encodeToDer(password!: ?String): DerBlob
 
 - [DerBlob](../../common/crypto_common_package_api/crypto_common_package_structs.md#struct-derblob) - 加密后的 DER 格式的私钥。
 
+示例：
+
+<!-- run -->
+```cangjie
+import std.fs.*
+import std.io.*
+import std.process.*
+import stdx.crypto.keys.*
+import stdx.crypto.common.*
+
+main() {
+    // 生成测试用文件
+    let privatePem = "./test_private.key"
+    let privateDer = "./test_private.der"
+
+    let cmdStr =
+        // OpenSSL 官方标准、无风险的测试用命令
+        "openssl genrsa -out ${privatePem} 2048; " +
+        "openssl rsa -in ${privatePem} -out ${privateDer} -outform der"
+
+    executeWithOutput("sh", ["-c", cmdStr])
+
+    // 从 DER 文件读取并解码为私钥
+    let originalKey = GeneralPrivateKey.decodeDer(DerBlob(readToEnd(File(privateDer, Read))))
+
+    // 核心演示：将私钥加密编码为 DER 格式
+    let encodedBlob = originalKey.encodeToDer(password: "mypassword")
+    println("编码为加密DER格式成功")
+    println("DER数据大小: ${encodedBlob.size}")
+
+    // 删除测试用文件
+    removeIfExists(privatePem)
+    removeIfExists(privateDer)
+    return 0
+}
+```
+
+可能的运行结果：
+
+```text
+编码为加密DER格式成功
+DER数据大小: 1354
+```
+
 ### func encodeToPem()
 
 ```cangjie
@@ -464,6 +1193,47 @@ func encodeToPem(): PemEntry
 返回值：
 
 - [PemEntry](../../common/crypto_common_package_api/crypto_common_package_structs.md#struct-pementry) - 编码后的 PEM 格式的私钥。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import std.fs.*
+import std.io.*
+import std.process.*
+import stdx.crypto.keys.*
+
+main() {
+    // 生成测试用文件
+    let privatePem = "./test_private.key"
+
+    let cmdStr =
+        // OpenSSL 官方标准、无风险的测试用命令
+        "openssl genrsa -out ${privatePem} 2048"
+
+    executeWithOutput("sh", ["-c", cmdStr])
+
+    // 从 PEM 文件读取并解码为私钥
+    let pemContent = String.fromUtf8(readToEnd(File(privatePem, Read)))
+    let originalKey = GeneralPrivateKey.decodeFromPem(pemContent)
+
+    // 核心演示：将私钥编码为 PEM 格式
+    let encodedPem = originalKey.encodeToPem()
+    println("编码为PEM格式成功")
+    println("PEM标签: ${encodedPem.label}")
+
+    // 删除测试用文件
+    removeIfExists(privatePem)
+    return 0
+}
+```
+
+运行结果：
+
+```text
+编码为PEM格式成功
+PEM标签: PRIVATE KEY
+```
 
 ### func encodeToPem(?String)
 
@@ -481,6 +1251,47 @@ func encodeToPem(password!: ?String): PemEntry
 
 - [PemEntry](../../common/crypto_common_package_api/crypto_common_package_structs.md#struct-pementry) - 加密后的 PEM 格式的私钥。
 
+示例：
+
+<!-- verify -->
+```cangjie
+import std.fs.*
+import std.io.*
+import std.process.*
+import stdx.crypto.keys.*
+
+main() {
+    // 生成测试用文件
+    let privatePem = "./test_private.key"
+
+    let cmdStr =
+        // OpenSSL 官方标准、无风险的测试用命令
+        "openssl genrsa -out ${privatePem} 2048"
+
+    executeWithOutput("sh", ["-c", cmdStr])
+
+    // 从 PEM 文件读取并解码为私钥
+    let pemContent = String.fromUtf8(readToEnd(File(privatePem, Read)))
+    let originalKey = GeneralPrivateKey.decodeFromPem(pemContent)
+
+    // 核心演示：将私钥加密编码为 PEM 格式
+    let encodedPem = originalKey.encodeToPem(password: "mypassword")
+    println("编码为加密PEM格式成功")
+    println("PEM标签: ${encodedPem.label}")
+
+    // 删除测试用文件
+    removeIfExists(privatePem)
+    return 0
+}
+```
+
+运行结果：
+
+```text
+编码为加密PEM格式成功
+PEM标签: ENCRYPTED PRIVATE KEY
+```
+
 ### func toString()
 
 ```cangjie
@@ -492,6 +1303,45 @@ public func toString(): String
 返回值：
 
 - String - 字符串。
+
+示例：
+
+<!-- run -->
+```cangjie
+import std.fs.*
+import std.io.*
+import std.process.*
+import stdx.crypto.keys.*
+
+main() {
+    // 生成测试用文件
+    let privatePem = "./test_private.key"
+
+    let cmdStr =
+        // OpenSSL 官方标准、无风险的测试用命令
+        "openssl genrsa -out ${privatePem} 2048"
+
+    executeWithOutput("sh", ["-c", cmdStr])
+
+    // 从 PEM 文件读取并解码为私钥
+    let pemContent = String.fromUtf8(readToEnd(File(privatePem, Read)))
+    let key = GeneralPrivateKey.decodeFromPem(pemContent)
+
+    // 核心演示：获取私钥类型描述
+    let keyType = key.toString()
+    println("私钥类型: ${keyType}")
+
+    // 删除测试用文件
+    removeIfExists(privatePem)
+    return 0
+}
+```
+
+可能的运行结果：
+
+```text
+私钥类型: PrivateKey(1216 bytes, RSA 2048 bits)
+```
 
 ## class GeneralPublicKey
 
@@ -521,6 +1371,49 @@ static func decodeDer(encoded: DerBlob): PublicKey
 
 - [PublicKey](../../common/crypto_common_package_api/crypto_common_package_interfaces.md#interface-publickey) - 由 DER 格式解码出的公钥。
 
+示例：
+
+<!-- verify -->
+```cangjie
+import std.fs.*
+import std.io.*
+import std.process.*
+import stdx.crypto.keys.*
+import stdx.crypto.common.*
+
+main() {
+    // 生成测试用文件
+    let privatePem = "./test_private.key"
+    let publicPem = "./test_public.key"
+    let publicDer = "./test_public.der"
+
+    let cmdStr =
+        // OpenSSL 官方标准、无风险的测试用命令
+        "openssl genrsa -out ${privatePem} 2048; " + "openssl rsa -in ${privatePem} -pubout -out ${publicPem}; " +
+        "openssl rsa -in ${publicPem} -pubin -out ${publicDer} -outform der"
+
+    executeWithOutput("sh", ["-c", cmdStr])
+
+    // 核心演示：从 DerBlob 解码还原公钥
+    let decodedKey = GeneralPublicKey.decodeDer(DerBlob(readToEnd(File(publicDer, Read))))
+    println("解码成功")
+    println("解码后公钥类型: ${decodedKey}")
+
+    // 删除测试用文件
+    removeIfExists(privatePem)
+    removeIfExists(publicPem)
+    removeIfExists(publicDer)
+    return 0
+}
+```
+
+运行结果：
+
+```text
+解码成功
+解码后公钥类型: PublicKey(294 bytes)
+```
+
 ### static func decodeFromPem(String)
 
 ```cangjie
@@ -537,6 +1430,46 @@ static func decodeFromPem(text: String): PublicKey
 
 - [PublicKey](../../common/crypto_common_package_api/crypto_common_package_interfaces.md#interface-publickey) - 由 PEM 格式解码出的公钥。
 
+示例：
+
+<!-- verify -->
+```cangjie
+import std.fs.*
+import std.io.*
+import std.process.*
+import stdx.crypto.keys.*
+
+main() {
+    // 生成测试用文件
+    let privatePem = "./test_private.key"
+    let publicPem = "./test_public.key"
+
+    let cmdStr =
+        // OpenSSL 官方标准、无风险的测试用命令
+        "openssl genrsa -out ${privatePem} 2048; " + "openssl rsa -in ${privatePem} -pubout -out ${publicPem}"
+
+    executeWithOutput("sh", ["-c", cmdStr])
+
+    // 核心演示：从 PEM 字符串解码还原公钥
+    let pemContent = String.fromUtf8(readToEnd(File(publicPem, Read)))
+    let decodedKey = GeneralPublicKey.decodeFromPem(pemContent)
+    println("从PEM解码成功")
+    println("解码后公钥类型: ${decodedKey}")
+
+    // 删除测试用文件
+    removeIfExists(privatePem)
+    removeIfExists(publicPem)
+    return 0
+}
+```
+
+运行结果：
+
+```text
+从PEM解码成功
+解码后公钥类型: PublicKey(294 bytes)
+```
+
 ### func encodeToDer()
 
 ```cangjie
@@ -548,6 +1481,50 @@ func encodeToDer(): DerBlob
 返回值：
 
 - [DerBlob](../../common/crypto_common_package_api/crypto_common_package_structs.md#struct-derblob) - DER 格式的公钥。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import std.fs.*
+import std.io.*
+import std.process.*
+import stdx.crypto.keys.*
+import stdx.crypto.common.*
+
+main() {
+    // 生成测试用文件
+    let privatePem = "./test_private.key"
+    let publicPem = "./test_public.key"
+
+    let cmdStr =
+        // OpenSSL 官方标准、无风险的测试用命令
+        "openssl genrsa -out ${privatePem} 2048; " + "openssl rsa -in ${privatePem} -pubout -out ${publicPem}"
+
+    executeWithOutput("sh", ["-c", cmdStr])
+
+    // 从 PEM 文件读取并解码为公钥
+    let pemContent = String.fromUtf8(readToEnd(File(publicPem, Read)))
+    let originalKey = GeneralPublicKey.decodeFromPem(pemContent)
+
+    // 核心演示：将公钥编码为 DER 格式
+    let encodedBlob = originalKey.encodeToDer()
+    println("编码为DER格式成功")
+    println("DER数据大小: ${encodedBlob.size}")
+
+    // 删除测试用文件
+    removeIfExists(privatePem)
+    removeIfExists(publicPem)
+    return 0
+}
+```
+
+运行结果：
+
+```text
+编码为DER格式成功
+DER数据大小: 294
+```
 
 ### func encodeToPem()
 
@@ -561,6 +1538,49 @@ func encodeToPem(): PemEntry
 
 - [PemEntry](../../common/crypto_common_package_api/crypto_common_package_structs.md#struct-pementry) - 公钥数据 PEM 格式编码生成的对象。
 
+示例：
+
+<!-- verify -->
+```cangjie
+import std.fs.*
+import std.io.*
+import std.process.*
+import stdx.crypto.keys.*
+
+main() {
+    // 生成测试用文件
+    let privatePem = "./test_private.key"
+    let publicPem = "./test_public.key"
+
+    let cmdStr =
+        // OpenSSL 官方标准、无风险的测试用命令
+        "openssl genrsa -out ${privatePem} 2048; " + "openssl rsa -in ${privatePem} -pubout -out ${publicPem}"
+
+    executeWithOutput("sh", ["-c", cmdStr])
+
+    // 从 PEM 文件读取并解码为公钥
+    let pemContent = String.fromUtf8(readToEnd(File(publicPem, Read)))
+    let originalKey = GeneralPublicKey.decodeFromPem(pemContent)
+
+    // 核心演示：将公钥编码为 PEM 格式
+    let encodedPem = originalKey.encodeToPem()
+    println("编码为PEM格式成功")
+    println("PEM标签: ${encodedPem.label}")
+
+    // 删除测试用文件
+    removeIfExists(privatePem)
+    removeIfExists(publicPem)
+    return 0
+}
+```
+
+运行结果：
+
+```text
+编码为PEM格式成功
+PEM标签: PUBLIC KEY
+```
+
 ### func toString()
 
 ```cangjie
@@ -572,6 +1592,47 @@ public func toString(): String
 返回值：
 
 - String - 字符串。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import std.fs.*
+import std.io.*
+import std.process.*
+import stdx.crypto.keys.*
+
+main() {
+    // 生成测试用文件
+    let privatePem = "./test_private.key"
+    let publicPem = "./test_public.key"
+
+    let cmdStr =
+        // OpenSSL 官方标准、无风险的测试用命令
+        "openssl genrsa -out ${privatePem} 2048; " + "openssl rsa -in ${privatePem} -pubout -out ${publicPem}"
+
+    executeWithOutput("sh", ["-c", cmdStr])
+
+    // 从 PEM 文件读取并解码为公钥
+    let pemContent = String.fromUtf8(readToEnd(File(publicPem, Read)))
+    let key = GeneralPublicKey.decodeFromPem(pemContent)
+
+    // 核心演示：获取公钥类型描述
+    let keyType = key.toString()
+    println("公钥类型: ${keyType}")
+
+    // 删除测试用文件
+    removeIfExists(privatePem)
+    removeIfExists(publicPem)
+    return 0
+}
+```
+
+运行结果：
+
+```text
+公钥类型: PublicKey(294 bytes)
+```
 
 ## class RSAPrivateKey
 
@@ -604,6 +1665,28 @@ public init(bits: Int32)
 
 - [CryptoException](../../common/crypto_common_package_api/crypto_common_package_exceptions.md#class-cryptoexception) - 密钥长度不符合要求或初始化失败，抛出异常。
 
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.crypto.keys.*
+
+main() {
+    let key = RSAPrivateKey(2048)
+    println("RSA私钥创建成功")
+    println("密钥类型: ${key}")
+
+    return 0
+}
+```
+
+运行结果：
+
+```text
+RSA私钥创建成功
+密钥类型: RSA PRIVATE KEY
+```
+
 ### init(Int32, BigInt)
 
 ```cangjie
@@ -620,6 +1703,30 @@ public init(bits: Int32, e: BigInt)
 异常：
 
 - [CryptoException](../../common/crypto_common_package_api/crypto_common_package_exceptions.md#class-cryptoexception) - 密钥长度不符合要求、公钥公共指数值不符合要求或初始化失败，抛出异常。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.crypto.keys.*
+import std.math.numeric.*
+
+main() {
+    let e = BigInt(65537)
+    let key = RSAPrivateKey(2048, e)
+    println("RSA私钥创建成功")
+    println("密钥类型: ${key}")
+
+    return 0
+}
+```
+
+运行结果：
+
+```text
+RSA私钥创建成功
+密钥类型: RSA PRIVATE KEY
+```
 
 ### static func decodeDer(DerBlob)
 
@@ -640,6 +1747,33 @@ public static func decodeDer(blob: DerBlob): RSAPrivateKey
 异常：
 
 - [CryptoException](../../common/crypto_common_package_api/crypto_common_package_exceptions.md#class-cryptoexception) - 解码失败，抛出异常。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.crypto.keys.*
+
+main() {
+    // 模拟场景：从外部（文件/网络）获取的 DerBlob（此处通过生成私钥并编码模拟）
+    let originalKey = RSAPrivateKey(2048)
+    let encodedBlob = originalKey.encodeToDer()
+
+    // 核心演示：从 DerBlob 解码还原 RSA 私钥
+    let decodedKey = RSAPrivateKey.decodeDer(encodedBlob)
+    println("解码成功")
+    println("解码后密钥类型: ${decodedKey}")
+
+    return 0
+}
+```
+
+运行结果：
+
+```text
+解码成功
+解码后密钥类型: RSA PRIVATE KEY
+```
 
 ### static func decodeDer(DerBlob, ?String)
 
@@ -662,6 +1796,33 @@ public static func decodeDer(blob: DerBlob, password!: ?String): RSAPrivateKey
 
 - [CryptoException](../../common/crypto_common_package_api/crypto_common_package_exceptions.md#class-cryptoexception) - 解码失败、解密失败或者参数密码为空字符串，抛出异常。
 
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.crypto.keys.*
+
+main() {
+    // 模拟场景：从外部（文件/网络）获取的 DerBlob（此处通过生成私钥并编码模拟）
+    let originalKey = RSAPrivateKey(2048)
+    let encodedBlob = originalKey.encodeToDer(password: "mypassword")
+
+    // 核心演示：从加密的 DerBlob 解码还原 RSA 私钥
+    let decodedKey = RSAPrivateKey.decodeDer(encodedBlob, password: "mypassword")
+    println("解码加密DER成功")
+    println("解码后密钥类型: ${decodedKey}")
+
+    return 0
+}
+```
+
+运行结果：
+
+```text
+解码加密DER成功
+解码后密钥类型: RSA PRIVATE KEY
+```
+
 ### static func decodeFromPem(String)
 
 ```cangjie
@@ -681,6 +1842,34 @@ public static func decodeFromPem(text: String): RSAPrivateKey
 异常：
 
 - [CryptoException](../../common/crypto_common_package_api/crypto_common_package_exceptions.md#class-cryptoexception) - 解码失败、解密失败、字符流不符合 PEM 格式或文件头不符合私钥头标准时，抛出异常。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.crypto.keys.*
+
+main() {
+    // 模拟场景：从外部（文件/网络）获取的 PEM 字符串
+    let originalKey = RSAPrivateKey(2048)
+    let pemEntry = originalKey.encodeToPem()
+    let pemString = pemEntry.encode()
+
+    // 核心演示：从 PEM 字符串解码还原 RSA 私钥
+    let decodedKey = RSAPrivateKey.decodeFromPem(pemString)
+    println("从PEM解码成功")
+    println("解码后密钥类型: ${decodedKey}")
+
+    return 0
+}
+```
+
+运行结果：
+
+```text
+从PEM解码成功
+解码后密钥类型: RSA PRIVATE KEY
+```
 
 ### static func decodeFromPem(String, ?String)
 
@@ -703,6 +1892,34 @@ public static func decodeFromPem(text: String, password!: ?String): RSAPrivateKe
 
 - [CryptoException](../../common/crypto_common_package_api/crypto_common_package_exceptions.md#class-cryptoexception) - 解码失败、解密失败、参数密码为空字符串、字符流不符合 PEM 格式或文件头不符合私钥头标准时，抛出异常。
 
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.crypto.keys.*
+
+main() {
+    // 模拟场景：从外部（文件/网络）获取的 PEM 字符串
+    let originalKey = RSAPrivateKey(2048)
+    let pemEntry = originalKey.encodeToPem(password: "mypassword")
+    let pemString = pemEntry.encode()
+
+    // 核心演示：从加密的 PEM 字符串解码还原 RSA 私钥
+    let decodedKey = RSAPrivateKey.decodeFromPem(pemString, password: "mypassword")
+    println("从加密PEM解码成功")
+    println("解码后密钥类型: ${decodedKey}")
+
+    return 0
+}
+```
+
+运行结果：
+
+```text
+从加密PEM解码成功
+解码后密钥类型: RSA PRIVATE KEY
+```
+
 ### func decrypt(InputStream, OutputStream, PadOption)
 
 ```cangjie
@@ -721,6 +1938,49 @@ public func decrypt(input: InputStream, output: OutputStream, padType!: PadOptio
 
 - [CryptoException](../../common/crypto_common_package_api/crypto_common_package_exceptions.md#class-cryptoexception) - 设置填充模式失败或解密失败，抛出异常。
 
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.crypto.keys.*
+import std.io.*
+
+main() {
+    let priKey = RSAPrivateKey(2048)
+    let pubKey = RSAPublicKey(priKey)
+
+    // 准备要加密的数据
+    let data = "Hello, World!".toArray()
+    let input = ByteBuffer()
+    let output = ByteBuffer()
+    let decrypted = ByteBuffer()
+    input.write(data)
+
+    // 使用公钥加密数据
+    pubKey.encrypt(input, output, padType: PKCS1)
+
+    // 使用私钥解密数据
+    priKey.decrypt(output, decrypted, padType: PKCS1)
+
+    let result = Array<Byte>(data.size, repeat: 0)
+    decrypted.read(result)
+
+    if (data == result) {
+        println("解密成功")
+    } else {
+        println("解密失败")
+    }
+
+    return 0
+}
+```
+
+运行结果：
+
+```text
+解密成功
+```
+
 ### func encodeToDer()
 
 ```cangjie
@@ -736,6 +1996,28 @@ public override func encodeToDer(): DerBlob
 异常：
 
 - [CryptoException](../../common/crypto_common_package_api/crypto_common_package_exceptions.md#class-cryptoexception) - 编码失败，抛出异常。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.crypto.keys.*
+
+main() {
+    let key = RSAPrivateKey(2048)
+    let derBlob = key.encodeToDer()
+
+    println("编码为DER格式成功")
+
+    return 0
+}
+```
+
+运行结果：
+
+```text
+编码为DER格式成功
+```
 
 ### func encodeToDer(?String)
 
@@ -757,6 +2039,28 @@ public func encodeToDer(password!: ?String): DerBlob
 
 - [CryptoException](../../common/crypto_common_package_api/crypto_common_package_exceptions.md#class-cryptoexception) - 编码失败、加密失败或者参数密码为空字符串，抛出异常。
 
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.crypto.keys.*
+
+main() {
+    let key = RSAPrivateKey(2048)
+    let derBlob = key.encodeToDer(password: "mypassword")
+
+    println("编码为加密DER格式成功")
+
+    return 0
+}
+```
+
+运行结果：
+
+```text
+编码为加密DER格式成功
+```
+
 ### func encodeToPem()
 
 ```cangjie
@@ -772,6 +2076,30 @@ public func encodeToPem(): PemEntry
 异常：
 
 - [CryptoException](../../common/crypto_common_package_api/crypto_common_package_exceptions.md#class-cryptoexception) - 编码失败，抛出异常。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.crypto.keys.*
+
+main() {
+    let key = RSAPrivateKey(2048)
+    let pemEntry = key.encodeToPem()
+
+    println("编码为PEM格式成功")
+    println("PEM标签: ${pemEntry.label}")
+
+    return 0
+}
+```
+
+运行结果：
+
+```text
+编码为PEM格式成功
+PEM标签: RSA PRIVATE KEY
+```
 
 ### func encodeToPem(?String)
 
@@ -792,6 +2120,30 @@ public func encodeToPem(password!: ?String): PemEntry
 异常：
 
 - [CryptoException](../../common/crypto_common_package_api/crypto_common_package_exceptions.md#class-cryptoexception) - 编码失败、加密失败或者参数密码为空字符串，抛出异常。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.crypto.keys.*
+
+main() {
+    let key = RSAPrivateKey(2048)
+    let pemEntry = key.encodeToPem(password: "mypassword")
+
+    println("编码为加密PEM格式成功")
+    println("PEM标签: ${pemEntry.label}")
+
+    return 0
+}
+```
+
+运行结果：
+
+```text
+编码为加密PEM格式成功
+PEM标签: ENCRYPTED PRIVATE KEY
+```
 
 ### func sign(Digest, Array\<Byte>, PadOption)
 
@@ -815,6 +2167,41 @@ public func sign(hash: Digest, digest: Array<Byte>, padType!: PadOption): Array<
 
 - [CryptoException](../../common/crypto_common_package_api/crypto_common_package_exceptions.md#class-cryptoexception) - 设置摘要方法失败、设置填充模式失败或签名失败，抛出异常。
 
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.crypto.keys.*
+import stdx.crypto.digest.*
+
+main() {
+    let priKey = RSAPrivateKey(2048)
+    let pubKey = RSAPublicKey(priKey)
+    let data = "Hello, World!".toArray()
+
+    // 先计算数据的摘要
+    let sha256 = SHA256()
+    sha256.write(data)
+    let digest = sha256.finish()
+
+    // 使用私钥签名
+    let signature = priKey.sign(sha256, digest, padType: PKCS1)
+
+    // 使用公钥验证签名
+    let isValid = pubKey.verify(sha256, digest, signature, padType: PKCS1)
+
+    println("签名验证结果: ${isValid}")
+
+    return 0
+}
+```
+
+运行结果：
+
+```text
+签名验证结果: true
+```
+
 ### func toString()
 
 ```cangjie
@@ -826,6 +2213,28 @@ public override func toString(): String
 返回值：
 
 - String - 密钥类别描述。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.crypto.keys.*
+
+main() {
+    let key = RSAPrivateKey(2048)
+
+    let keyType = key.toString()
+    println("密钥类型: ${keyType}")
+
+    return 0
+}
+```
+
+运行结果：
+
+```text
+密钥类型: RSA PRIVATE KEY
+```
 
 ## class RSAPublicKey
 
@@ -857,6 +2266,30 @@ public init(pri: RSAPrivateKey)
 
 - [CryptoException](../../common/crypto_common_package_api/crypto_common_package_exceptions.md#class-cryptoexception) - 初始化失败，抛出异常。
 
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.crypto.keys.*
+
+main() {
+    let priKey = RSAPrivateKey(2048)
+    let pubKey = RSAPublicKey(priKey)
+
+    println("RSA公钥创建成功")
+    println("公钥类型: ${pubKey}")
+
+    return 0
+}
+```
+
+运行结果：
+
+```text
+RSA公钥创建成功
+公钥类型: RSA PUBLIC KEY
+```
+
 ### static func decodeDer(DerBlob)
 
 ```cangjie
@@ -876,6 +2309,34 @@ public static func decodeDer(blob: DerBlob): RSAPublicKey
 异常：
 
 - [CryptoException](../../common/crypto_common_package_api/crypto_common_package_exceptions.md#class-cryptoexception) - 解码失败，抛出异常。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.crypto.keys.*
+
+main() {
+    // 模拟场景：从外部（文件/网络）获取的 DER 字节数组
+    let priKey = RSAPrivateKey(2048)
+    let pubKey = RSAPublicKey(priKey)
+    let derBlob = pubKey.encodeToDer()
+
+    // 从 DER 字节数组解码公钥
+    let decodedPubKey = RSAPublicKey.decodeDer(derBlob)
+    println("从DER解码公钥成功")
+    println("解码后公钥类型: ${decodedPubKey}")
+
+    return 0
+}
+```
+
+运行结果：
+
+```text
+从DER解码公钥成功
+解码后公钥类型: RSA PUBLIC KEY
+```
 
 ### static func decodeFromPem(String)
 
@@ -897,6 +2358,35 @@ public static func decodeFromPem(text: String): RSAPublicKey
 
 - [CryptoException](../../common/crypto_common_package_api/crypto_common_package_exceptions.md#class-cryptoexception) - 解码失败、字符流不符合 PEM 格式或文件头不符合公钥头标准时，抛出异常。
 
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.crypto.keys.*
+
+main() {
+    // 模拟场景：从外部（文件/网络）获取的 PEM 字符串
+    let priKey = RSAPrivateKey(2048)
+    let pubKey = RSAPublicKey(priKey)
+    let pemEntry = pubKey.encodeToPem()
+    let pemString = pemEntry.encode()
+
+    // 从 PEM 字符串解码公钥
+    let decodedPubKey = RSAPublicKey.decodeFromPem(pemString)
+    println("从PEM解码公钥成功")
+    println("解码后公钥类型: ${decodedPubKey}")
+
+    return 0
+}
+```
+
+运行结果：
+
+```text
+从PEM解码公钥成功
+解码后公钥类型: RSA PUBLIC KEY
+```
+
 ### func encodeToDer()
 
 ```cangjie
@@ -913,6 +2403,32 @@ public override func encodeToDer(): DerBlob
 
 - [CryptoException](../../common/crypto_common_package_api/crypto_common_package_exceptions.md#class-cryptoexception) - 编码失败，抛出异常。
 
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.crypto.keys.*
+
+main() {
+    let priKey = RSAPrivateKey(2048)
+    // 公钥需要从私钥派生
+    let pubKey = RSAPublicKey(priKey)
+    let derBlob = pubKey.encodeToDer()
+
+    println("编码为DER格式成功")
+    println("DER数据大小: ${derBlob.size}")
+
+    return 0
+}
+```
+
+运行结果：
+
+```text
+编码为DER格式成功
+DER数据大小: 294
+```
+
 ### func encodeToPem()
 
 ```cangjie
@@ -928,6 +2444,32 @@ public func encodeToPem(): PemEntry
 异常：
 
 - [CryptoException](../../common/crypto_common_package_api/crypto_common_package_exceptions.md#class-cryptoexception) - 编码失败，抛出异常。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.crypto.keys.*
+
+main() {
+    let priKey = RSAPrivateKey(2048)
+    // 公钥需要从私钥派生
+    let pubKey = RSAPublicKey(priKey)
+    let pemEntry = pubKey.encodeToPem()
+
+    println("编码为PEM格式成功")
+    println("PEM标签: ${pemEntry.label}")
+
+    return 0
+}
+```
+
+运行结果：
+
+```text
+编码为PEM格式成功
+PEM标签: PUBLIC KEY
+```
 
 ### func encrypt(InputStream, OutputStream, PadOption)
 
@@ -947,6 +2489,38 @@ public func encrypt(input: InputStream, output: OutputStream, padType!: PadOptio
 
 - [CryptoException](../../common/crypto_common_package_api/crypto_common_package_exceptions.md#class-cryptoexception) - 设置填充模式失败或加密失败，抛出异常。
 
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.crypto.keys.*
+import std.io.*
+
+main() {
+    let priKey = RSAPrivateKey(2048)
+    let pubKey = RSAPublicKey(priKey)
+
+    // 准备要加密的数据
+    let data = "Hello, World!".toArray()
+    let input = ByteBuffer()
+    let output = ByteBuffer()
+    input.write(data)
+
+    // 使用公钥加密数据
+    pubKey.encrypt(input, output, padType: PKCS1)
+
+    println("加密成功")
+
+    return 0
+}
+```
+
+运行结果：
+
+```text
+加密成功
+```
+
 ### func toString()
 
 ```cangjie
@@ -958,6 +2532,29 @@ public override func toString(): String
 返回值：
 
 - String - 密钥类别描述。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.crypto.keys.*
+
+main() {
+    let priKey = RSAPrivateKey(2048)
+    let pubKey = RSAPublicKey(priKey)
+
+    let keyType = pubKey.toString()
+    println("公钥类型: ${keyType}")
+
+    return 0
+}
+```
+
+运行结果：
+
+```text
+公钥类型: RSA PUBLIC KEY
+```
 
 ### func verify(Digest, Array\<Byte>, Array\<Byte>, PadOption)
 
@@ -981,6 +2578,49 @@ public func verify(hash: Digest, digest: Array<Byte>, sig: Array<Byte>, padType!
 异常：
 
 - [CryptoException](../../common/crypto_common_package_api/crypto_common_package_exceptions.md#class-cryptoexception) - 设置填充模式失败或验证失败，抛出异常。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.crypto.keys.*
+import stdx.crypto.digest.*
+
+main() {
+    let priKey = RSAPrivateKey(2048)
+    let pubKey = RSAPublicKey(priKey)
+    let data = "Hello, World!".toArray()
+
+    // 计算数据摘要
+    let sha256 = SHA256()
+    sha256.write(data)
+    let digest = sha256.finish()
+
+    // 使用私钥签名
+    let signature = priKey.sign(sha256, digest, padType: PKCS1)
+
+    // 使用公钥验证签名
+    let isValid = pubKey.verify(sha256, digest, signature, padType: PKCS1)
+    println("签名验证结果: ${isValid}")
+
+    // 验证错误的签名
+    let wrongData = "Wrong data".toArray()
+    sha256.reset()
+    sha256.write(wrongData)
+    let wrongDigest = sha256.finish()
+    let isWrongValid = pubKey.verify(sha256, wrongDigest, signature, padType: PKCS1)
+    println("错误数据验证结果: ${isWrongValid}")
+
+    return 0
+}
+```
+
+运行结果：
+
+```text
+签名验证结果: true
+错误数据验证结果: false
+```
 
 ## class SM2PrivateKey
 
@@ -1008,6 +2648,28 @@ public init()
 
 - [CryptoException](../../common/crypto_common_package_api/crypto_common_package_exceptions.md#class-cryptoexception) - 初始化失败，抛出异常。
 
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.crypto.keys.*
+
+main() {
+    let key = SM2PrivateKey()
+    println("SM2私钥创建成功")
+    println("密钥类型: ${key}")
+
+    return 0
+}
+```
+
+运行结果：
+
+```text
+SM2私钥创建成功
+密钥类型: SM2 PRIVATE KEY
+```
+
 ### static func decodeDer(DerBlob)
 
 ```cangjie
@@ -1027,6 +2689,33 @@ public static func decodeDer(blob: DerBlob): SM2PrivateKey
 异常：
 
 - [CryptoException](../../common/crypto_common_package_api/crypto_common_package_exceptions.md#class-cryptoexception) - 解码失败，抛出异常。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.crypto.keys.*
+
+main() {
+    // 模拟场景：从外部（文件/网络）获取的 DerBlob（此处通过生成私钥并编码模拟）
+    let originalKey = SM2PrivateKey()
+    let encodedBlob = originalKey.encodeToDer()
+
+    // 核心演示：从 DerBlob 解码还原 SM2 私钥
+    let decodedKey = SM2PrivateKey.decodeDer(encodedBlob)
+    println("解码成功")
+    println("解码后密钥类型: ${decodedKey}")
+
+    return 0
+}
+```
+
+运行结果：
+
+```text
+解码成功
+解码后密钥类型: SM2 PRIVATE KEY
+```
 
 ### static func decodeDer(DerBlob, ?String)
 
@@ -1049,6 +2738,33 @@ public static func decodeDer(blob: DerBlob, password!: ?String): SM2PrivateKey
 
 - [CryptoException](../../common/crypto_common_package_api/crypto_common_package_exceptions.md#class-cryptoexception) - 解码失败、解密失败或者参数密码为空字符串，抛出异常。
 
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.crypto.keys.*
+
+main() {
+    // 模拟场景：从外部（文件/网络）获取的 DerBlob（此处通过生成私钥并编码模拟）
+    let originalKey = SM2PrivateKey()
+    let encodedBlob = originalKey.encodeToDer(password: "mypassword")
+
+    // 核心演示：从加密的 DerBlob 解码还原 SM2 私钥
+    let decodedKey = SM2PrivateKey.decodeDer(encodedBlob, password: "mypassword")
+    println("解码加密DER成功")
+    println("解码后密钥类型: ${decodedKey}")
+
+    return 0
+}
+```
+
+运行结果：
+
+```text
+解码加密DER成功
+解码后密钥类型: SM2 PRIVATE KEY
+```
+
 ### static func decodeFromPem(String)
 
 ```cangjie
@@ -1068,6 +2784,34 @@ public static func decodeFromPem(text: String): SM2PrivateKey
 异常：
 
 - [CryptoException](../../common/crypto_common_package_api/crypto_common_package_exceptions.md#class-cryptoexception) - 解码失败、解密失败、字符流不符合 PEM 格式或文件头不符合私钥头标准时，抛出异常。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.crypto.keys.*
+
+main() {
+    // 模拟场景：从外部（文件/网络）获取的 PEM 字符串
+    let originalKey = SM2PrivateKey()
+    let pemEntry = originalKey.encodeToPem()
+    let pemString = pemEntry.encode()
+
+    // 核心演示：从 PEM 字符串解码还原 SM2 私钥
+    let decodedKey = SM2PrivateKey.decodeFromPem(pemString)
+    println("从PEM解码成功")
+    println("解码后密钥类型: ${decodedKey}")
+
+    return 0
+}
+```
+
+运行结果：
+
+```text
+从PEM解码成功
+解码后密钥类型: SM2 PRIVATE KEY
+```
 
 ### static func decodeFromPem(String, ?String)
 
@@ -1090,6 +2834,34 @@ public static func decodeFromPem(text: String, password!: ?String): SM2PrivateKe
 
 - [CryptoException](../../common/crypto_common_package_api/crypto_common_package_exceptions.md#class-cryptoexception) - 解码失败、解密失败、参数密码为空字符串、字符流不符合 PEM 格式或文件头不符合私钥头标准时，抛出异常。
 
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.crypto.keys.*
+
+main() {
+    // 模拟场景：从外部（文件/网络）获取的 PEM 字符串
+    let originalKey = SM2PrivateKey()
+    let pemEntry = originalKey.encodeToPem(password: "mypassword")
+    let pemString = pemEntry.encode()
+
+    // 核心演示：从加密的 PEM 字符串解码还原 SM2 私钥
+    let decodedKey = SM2PrivateKey.decodeFromPem(pemString, password: "mypassword")
+    println("从加密PEM解码成功")
+    println("解码后密钥类型: ${decodedKey}")
+
+    return 0
+}
+```
+
+运行结果：
+
+```text
+从加密PEM解码成功
+解码后密钥类型: SM2 PRIVATE KEY
+```
+
 ### func decrypt(Array\<Byte>)
 
 ```cangjie
@@ -1110,6 +2882,38 @@ public func decrypt(input: Array<Byte>): Array<Byte>
 
 - [CryptoException](../../common/crypto_common_package_api/crypto_common_package_exceptions.md#class-cryptoexception) - 解密失败，抛出异常。
 
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.crypto.keys.*
+
+main() {
+    let priKey = SM2PrivateKey()
+    let pubKey = SM2PublicKey(priKey)
+
+    // 准备要加密的数据
+    let data = "Hello, World!".toArray()
+
+    // 使用公钥加密数据
+    let encryptedData = pubKey.encrypt(data)
+
+    // 使用私钥解密数据
+    let decryptedData = priKey.decrypt(encryptedData)
+
+    let result = String.fromUtf8(decryptedData)
+    println("解密结果: ${result}")
+
+    return 0
+}
+```
+
+运行结果：
+
+```text
+解密结果: Hello, World!
+```
+
 ### func encodeToDer()
 
 ```cangjie
@@ -1125,6 +2929,30 @@ public func encodeToDer(): DerBlob
 异常：
 
 - [CryptoException](../../common/crypto_common_package_api/crypto_common_package_exceptions.md#class-cryptoexception) - 编码失败，抛出异常。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.crypto.keys.*
+
+main() {
+    let key = SM2PrivateKey()
+    let derBlob = key.encodeToDer()
+
+    println("编码为DER格式成功")
+    println("DER数据大小: ${derBlob.size}")
+
+    return 0
+}
+```
+
+运行结果：
+
+```text
+编码为DER格式成功
+DER数据大小: 121
+```
 
 ### func encodeToDer(?String)
 
@@ -1146,6 +2974,70 @@ public func encodeToDer(password!: ?String): DerBlob
 
 - [CryptoException](../../common/crypto_common_package_api/crypto_common_package_exceptions.md#class-cryptoexception) - 编码失败、加密失败或者参数密码为空字符串，抛出异常。
 
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.crypto.keys.*
+
+main() {
+    let key = SM2PrivateKey()
+    let derBlob = key.encodeToDer(password: "mypassword")
+
+    println("编码为加密DER格式成功")
+    println("DER数据大小: ${derBlob.size}")
+
+    return 0
+}
+```
+
+运行结果：
+
+```text
+编码为加密DER格式成功
+DER数据大小: 239
+```
+
+### func encodeToPem()
+
+```cangjie
+public func encodeToPem(): PemEntry
+```
+
+功能：将私钥编码为 PEM 格式。
+
+返回值：
+
+- [PemEntry](../../common/crypto_common_package_api/crypto_common_package_structs.md#struct-pementry) - 私钥 PEM 格式的对象。
+
+异常：
+
+- [CryptoException](../../common/crypto_common_package_api/crypto_common_package_exceptions.md#class-cryptoexception) - 编码失败，抛出异常。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.crypto.keys.*
+
+main() {
+    let key = SM2PrivateKey()
+    let pemEntry = key.encodeToPem()
+
+    println("编码为PEM格式成功")
+    println("PEM标签: ${pemEntry.label}")
+
+    return 0
+}
+```
+
+运行结果：
+
+```text
+编码为PEM格式成功
+PEM标签: EC PRIVATE KEY
+```
+
 ### func encodeToPem(?String)
 
 ```cangjie
@@ -1166,21 +3058,29 @@ public func encodeToPem(password!: ?String): PemEntry
 
 - [CryptoException](../../common/crypto_common_package_api/crypto_common_package_exceptions.md#class-cryptoexception) - 编码失败、加密失败或者参数密码为空字符串，抛出异常。
 
-### func encodeToPem()
+示例：
 
+<!-- verify -->
 ```cangjie
-public func encodeToPem(): PemEntry
+import stdx.crypto.keys.*
+
+main() {
+    let key = SM2PrivateKey()
+    let pemEntry = key.encodeToPem(password: "mypassword")
+
+    println("编码为加密PEM格式成功")
+    println("PEM标签: ${pemEntry.label}")
+
+    return 0
+}
 ```
 
-功能：将私钥编码为 PEM 格式。
+运行结果：
 
-返回值：
-
-- [PemEntry](../../common/crypto_common_package_api/crypto_common_package_structs.md#struct-pementry) - 私钥 PEM 格式的对象。
-
-异常：
-
-- [CryptoException](../../common/crypto_common_package_api/crypto_common_package_exceptions.md#class-cryptoexception) - 编码失败，抛出异常。
+```text
+编码为加密PEM格式成功
+PEM标签: EC PRIVATE KEY
+```
 
 ### func sign(Array\<Byte>)
 
@@ -1202,6 +3102,35 @@ public func sign(data: Array<Byte>): Array<Byte>
 
 - [CryptoException](../../common/crypto_common_package_api/crypto_common_package_exceptions.md#class-cryptoexception) - 签名失败，抛出异常。
 
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.crypto.keys.*
+
+main() {
+    let priKey = SM2PrivateKey()
+    let pubKey = SM2PublicKey(priKey)
+    let data = "Hello, World!".toArray()
+
+    // 使用私钥签名，直接传原始数据，内部自动算 SM3
+    let signature = priKey.sign(data)
+
+    // 使用公钥验证签名
+    let isValid = pubKey.verify(data, signature)
+
+    println("签名验证结果: ${isValid}")
+
+    return 0
+}
+```
+
+运行结果：
+
+```text
+签名验证结果: true
+```
+
 ### func toString()
 
 ```cangjie
@@ -1213,6 +3142,28 @@ public override func toString(): String
 返回值：
 
 - String - 密钥类别描述。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.crypto.keys.*
+
+main() {
+    let key = SM2PrivateKey()
+
+    let keyType = key.toString()
+    println("密钥类型: ${keyType}")
+
+    return 0
+}
+```
+
+运行结果：
+
+```text
+密钥类型: SM2 PRIVATE KEY
+```
 
 ## class SM2PublicKey
 
@@ -1244,6 +3195,30 @@ public init(pri: SM2PrivateKey)
 
 - [CryptoException](../../common/crypto_common_package_api/crypto_common_package_exceptions.md#class-cryptoexception) - 初始化失败，抛出异常。
 
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.crypto.keys.*
+
+main() {
+    let priKey = SM2PrivateKey()
+    let pubKey = SM2PublicKey(priKey)
+
+    println("SM2公钥创建成功")
+    println("公钥类型: ${pubKey}")
+
+    return 0
+}
+```
+
+运行结果：
+
+```text
+SM2公钥创建成功
+公钥类型: SM2 PUBLIC KEY
+```
+
 ### static func decodeDer(DerBlob)
 
 ```cangjie
@@ -1263,6 +3238,34 @@ public static func decodeDer(blob: DerBlob): SM2PublicKey
 异常：
 
 - [CryptoException](../../common/crypto_common_package_api/crypto_common_package_exceptions.md#class-cryptoexception) - 解码失败，抛出异常。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.crypto.keys.*
+
+main() {
+    // 模拟场景：从外部（文件/网络）获取的 DER 字节数组
+    let priKey = SM2PrivateKey()
+    let pubKey = SM2PublicKey(priKey)
+    let derBlob = pubKey.encodeToDer()
+
+    // 从 DER 字节数组解码公钥
+    let decodedPubKey = SM2PublicKey.decodeDer(derBlob)
+    println("从DER解码公钥成功")
+    println("解码后公钥类型: ${decodedPubKey}")
+
+    return 0
+}
+```
+
+运行结果：
+
+```text
+从DER解码公钥成功
+解码后公钥类型: SM2 PUBLIC KEY
+```
 
 ### static func decodeFromPem(String)
 
@@ -1284,6 +3287,35 @@ public static func decodeFromPem(text: String): SM2PublicKey
 
 - [CryptoException](../../common/crypto_common_package_api/crypto_common_package_exceptions.md#class-cryptoexception) - 解码失败、字符流不符合 PEM 格式或文件头不符合公钥头标准时，抛出异常。
 
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.crypto.keys.*
+
+main() {
+    // 模拟场景：从外部（文件/网络）获取的 PEM 字符串
+    let priKey = SM2PrivateKey()
+    let pubKey = SM2PublicKey(priKey)
+    let pemEntry = pubKey.encodeToPem()
+    let pemString = pemEntry.encode()
+
+    // 从 PEM 字符串解码公钥
+    let decodedPubKey = SM2PublicKey.decodeFromPem(pemString)
+    println("从PEM解码公钥成功")
+    println("解码后公钥类型: ${decodedPubKey}")
+
+    return 0
+}
+```
+
+运行结果：
+
+```text
+从PEM解码公钥成功
+解码后公钥类型: SM2 PUBLIC KEY
+```
+
 ### func encodeToDer()
 
 ```cangjie
@@ -1300,6 +3332,32 @@ public func encodeToDer(): DerBlob
 
 - [CryptoException](../../common/crypto_common_package_api/crypto_common_package_exceptions.md#class-cryptoexception) - 编码失败，抛出异常。
 
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.crypto.keys.*
+
+main() {
+    let priKey = SM2PrivateKey()
+    // 公钥需要从私钥派生
+    let pubKey = SM2PublicKey(priKey)
+    let derBlob = pubKey.encodeToDer()
+
+    println("编码为DER格式成功")
+    println("DER数据大小: ${derBlob.size}")
+
+    return 0
+}
+```
+
+运行结果：
+
+```text
+编码为DER格式成功
+DER数据大小: 92
+```
+
 ### func encodeToPem()
 
 ```cangjie
@@ -1315,6 +3373,32 @@ public func encodeToPem(): PemEntry
 异常：
 
 - [CryptoException](../../common/crypto_common_package_api/crypto_common_package_exceptions.md#class-cryptoexception) - 编码失败，抛出异常。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.crypto.keys.*
+
+main() {
+    let priKey = SM2PrivateKey()
+    // 公钥需要从私钥派生
+    let pubKey = SM2PublicKey(priKey)
+    let pemEntry = pubKey.encodeToPem()
+
+    println("编码为PEM格式成功")
+    println("PEM标签: ${pemEntry.label}")
+
+    return 0
+}
+```
+
+运行结果：
+
+```text
+编码为PEM格式成功
+PEM标签: PUBLIC KEY
+```
 
 ### func encrypt(Array\<Byte>)
 
@@ -1336,6 +3420,36 @@ public func encrypt(input: Array<Byte>): Array<Byte>
 
 - [CryptoException](../../common/crypto_common_package_api/crypto_common_package_exceptions.md#class-cryptoexception) - 加密失败，抛出异常。
 
+示例：
+
+<!-- run -->
+```cangjie
+import stdx.crypto.keys.*
+
+main() {
+    let priKey = SM2PrivateKey()
+    let pubKey = SM2PublicKey(priKey)
+
+    // 准备要加密的数据
+    let data = "Hello, World!".toArray()
+
+    // 使用公钥加密数据
+    let encryptedData = pubKey.encrypt(data)
+
+    println("加密成功")
+    println("加密后数据大小: ${encryptedData.size}")
+
+    return 0
+}
+```
+
+可能的运行结果：
+
+```text
+加密成功
+加密后数据大小: 121
+```
+
 ### func toString()
 
 ```cangjie
@@ -1347,6 +3461,29 @@ public override func toString(): String
 返回值：
 
 - String - 密钥类别描述。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.crypto.keys.*
+
+main() {
+    let priKey = SM2PrivateKey()
+    let pubKey = SM2PublicKey(priKey)
+
+    let keyType = pubKey.toString()
+    println("公钥类型: ${keyType}")
+
+    return 0
+}
+```
+
+运行结果：
+
+```text
+公钥类型: SM2 PUBLIC KEY
+```
 
 ### func verify(Array\<Byte>, Array\<Byte>)
 
@@ -1368,3 +3505,38 @@ public func verify(data: Array<Byte>, sig: Array<Byte>): Bool
 异常：
 
 - [CryptoException](../../common/crypto_common_package_api/crypto_common_package_exceptions.md#class-cryptoexception) - 设置填充模式失败或验证失败，抛出异常。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.crypto.keys.*
+
+main() {
+    let priKey = SM2PrivateKey()
+    let pubKey = SM2PublicKey(priKey)
+    let data = "Hello, World!".toArray()
+
+    // 使用私钥签名
+    let signature = priKey.sign(data)
+
+    // 使用公钥验证签名
+    let isValid = pubKey.verify(data, signature)
+
+    println("签名验证结果: ${isValid}")
+
+    // 验证错误的签名
+    let wrongData = "Wrong data".toArray()
+    let isWrongValid = pubKey.verify(wrongData, signature)
+    println("错误数据验证结果: ${isWrongValid}")
+
+    return 0
+}
+```
+
+运行结果：
+
+```text
+签名验证结果: true
+错误数据验证结果: false
+```

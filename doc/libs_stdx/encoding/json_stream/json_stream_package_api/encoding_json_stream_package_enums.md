@@ -3,7 +3,7 @@
 ## enum JsonToken
 
 ```cangjie
-public enum JsonToken <: Equatable<JsonToken> & Hashable{
+public enum JsonToken <: Equatable<JsonToken> & Hashable {
     | JsonNull
     | JsonBool
     | JsonNumber
@@ -109,6 +109,29 @@ public func hashCode(): Int64
 
 - Int64 - hashCode 值。
 
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.encoding.json.stream.*
+
+main() {
+    // 创建一个JsonToken枚举对象 
+    let token = JsonToken.BeginArray
+
+    // 调用hashCode方法 
+    let hashCodeValue = token.hashCode()
+
+    println("JsonToken的hashCode值: ${hashCodeValue}")
+}
+```
+
+运行结果：
+
+```text
+JsonToken的hashCode值: 4
+```
+
 ### operator func !=(JsonToken)
 
 ```cangjie
@@ -125,6 +148,40 @@ public operator func !=(that: JsonToken): Bool
 
 - Bool - 当前实例与 that 不相等返回 true，否则返回 false
 
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.encoding.json.stream.*
+
+main() {
+    // 创建两个不同的JsonToken对象 
+    let token1 = JsonToken.BeginArray
+    let token2 = JsonToken.EndArray
+
+    // 调用!=操作符 
+    let isNotEqual = token1 != token2
+
+    println("两个JsonToken不相等的结果: ${isNotEqual}")
+
+    // 创建两个相同的JsonToken对象 
+    let token3 = JsonToken.JsonString
+    let token4 = JsonToken.JsonString
+
+    // 调用!=操作符 
+    let isNotEqual2 = token3 != token4
+
+    println("两个相同JsonToken不相等的结果: ${isNotEqual2}")
+}
+```
+
+运行结果：
+
+```text
+两个JsonToken不相等的结果: true
+两个相同JsonToken不相等的结果: false
+```
+
 ### operator func ==(JsonToken)
 
 ```cangjie
@@ -140,3 +197,37 @@ public operator func ==(that: JsonToken): Bool
 返回值：
 
 - Bool - 当前实例与 that 相等返回 true，否则返回 false
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.encoding.json.stream.*
+
+main() {
+    // 创建两个相同的JsonToken对象 
+    let token1 = JsonToken.BeginObject
+    let token2 = JsonToken.BeginObject
+
+    // 调用==操作符 
+    let isEqual = token1 == token2
+
+    println("两个相同JsonToken相等的结果: ${isEqual}")
+
+    // 创建两个不同的JsonToken对象 
+    let token3 = JsonToken.JsonString
+    let token4 = JsonToken.JsonNumber
+
+    // 调用==操作符 
+    let isEqual2 = token3 == token4
+
+    println("两个不同JsonToken相等的结果: ${isEqual2}")
+}
+```
+
+运行结果：
+
+```text
+两个相同JsonToken相等的结果: true
+两个不同JsonToken相等的结果: false
+```

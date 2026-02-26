@@ -21,6 +21,18 @@ public init()
 
 功能：构造一个默认的 [Form](url_package_classes.md#class-form) 实例。
 
+示例：
+
+<!-- run -->
+```cangjie
+import stdx.encoding.url.*
+
+main() {
+    // 使用无参构造函数创建Form实例 
+    let form = Form()
+}
+```
+
 ### init(String)
 
 ```cangjie
@@ -40,6 +52,18 @@ public init(queryComponent: String)
 - IllegalArgumentException - 当[URL](url_package_classes.md#class-url) 字符串中包含不符合 utf8 编码规则的字节时，抛出异常。
 - [UrlSyntaxException](url_package_exceptions.md#class-urlsyntaxexception) - 当 [URL](url_package_classes.md#class-url) 字符串中包含非法转义字符时，抛出异常。
 
+示例：
+
+<!-- run -->
+```cangjie
+import stdx.encoding.url.*
+
+main() {
+    // 使用带参构造函数创建Form实例 
+    let form = Form("name=Zhangsan&age=30&city=Nanjing")
+}
+```
+
 ### func add(String, String)
 
 ```cangjie
@@ -53,6 +77,30 @@ public func add(key: String, value: String): Unit
 - key: String - 指定键，可以是新增的。
 - value: String - 将该值添加到指定键对应的值数组中。
 
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.encoding.url.*
+
+main() {
+    // 创建一个Form实例 
+    let form = Form()
+
+    // 添加键值对 
+    form.add("username", "admin")
+    form.add("password", "123456")
+
+    println("toEncodeString: ${form.toEncodeString()}")
+}
+```
+
+运行结果：
+
+```text
+toEncodeString: username=admin&password=123456
+```
+
 ### func clone()
 
 ```cangjie
@@ -65,6 +113,31 @@ public func clone(): Form
 
 - [Form](url_package_classes.md#class-form) - 克隆得到的新 [Form](url_package_classes.md#class-form) 实例。
 
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.encoding.url.*
+
+main() {
+    // 创建一个Form实例并添加一些键值对 
+    let originalForm = Form("item1=value1&item2=value2")
+
+    // 克隆Form实例 
+    let clonedForm = originalForm.clone()
+
+    println("克隆的是否是 Form: ${clonedForm is Form}")
+    println("toEncodeString: ${clonedForm.toEncodeString()}")
+}
+```
+
+运行结果：
+
+```text
+克隆的是否是 Form: true
+toEncodeString: item1=value1&item2=value2
+```
+
 ### func get(String)
 
 ```cangjie
@@ -73,7 +146,7 @@ public func get(key: String): Option<String>
 
 功能：根据 key 获取第一个对应的 value 值。
 
-举例：
+情况举例：
 
 - 当 query 组件部分是 `a=b` 时，`form.get("a")`获得 `Some(b)`。
 - 当 query 组件部分是 `a=` 时，`form.get("a")`获得 `Some()`。
@@ -87,6 +160,37 @@ public func get(key: String): Option<String>
 返回值：
 
 - Option\<String> - 根据指定键获取的第一个值，用 Option\<String> 类型表示。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.encoding.url.*
+
+main() {
+    // 创建一个Form实例并添加一些键值对 
+    let form = Form()
+    form.add("username", "admin")
+    form.add("email", "admin@example.com")
+
+    // 获取指定键的值 
+    let usernameResult = form.get("username")
+    let emailResult = form.get("email")
+    let nonexistentResult = form.get("nonexistent")
+
+    println("username: ${usernameResult}")
+    println("email: ${emailResult}")
+    println("nonexistent: ${nonexistentResult}")
+}
+```
+
+运行结果：
+
+```text
+username: Some(admin)
+email: Some(admin@example.com)
+nonexistent: None
+```
 
 ### func getAll(String)
 
@@ -104,6 +208,39 @@ public func getAll(key: String): ArrayList<String>
 
 - ArrayList\<String> - 根据指定键（key）获取的全部 value 值对应的数组。当指定键（key）不存在时，返回空数组。
 
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.encoding.url.*
+
+main() {
+    // 创建一个Form实例并添加一些键值对 
+    let form = Form()
+    form.add("tag", "red")
+    form.add("tag", "blue")
+    form.add("tag", "green")
+    form.add("name", "myForm")
+
+    // 获取指定键的所有值 
+    let tagValues = form.getAll("tag")
+    let nameValues = form.getAll("name")
+    let nonexistentValues = form.getAll("nonexistent")
+
+    println("tagValues: ${tagValues}")
+    println("nameValues: ${nameValues}")
+    println("nonexistentValues: ${nonexistentValues}")
+}
+```
+
+运行结果：
+
+```text
+tagValues: [red, blue, green]
+nameValues: [myForm]
+nonexistentValues: []
+```
+
 ### func isEmpty()
 
 ```cangjie
@@ -115,6 +252,35 @@ public func isEmpty(): Bool
 返回值：
 
 - Bool - 如果为空，则返回 true；否则，返回 false。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.encoding.url.*
+
+main() {
+    // 创建一个空Form实例 
+    let emptyForm = Form()
+
+    // 检查Form是否为空 
+    let isEmpty = emptyForm.isEmpty()
+
+    // 添加一些数据后再检查 
+    emptyForm.add("key", "value")
+    let isNotEmpty = emptyForm.isEmpty()
+
+    println("是否为空: ${isEmpty}")
+    println("添加数据后是否为空: ${isNotEmpty}")
+}
+```
+
+运行结果：
+
+```text
+是否为空: true
+添加数据后是否为空: false
+```
 
 ### func remove(String)
 
@@ -128,6 +294,33 @@ public func remove(key: String): Unit
 
 - key: String - 需要删除的键。
 
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.encoding.url.*
+
+main() {
+    // 创建一个Form实例并添加一些键值对 
+    let form = Form()
+    form.add("username", "admin")
+    form.add("password", "secret")
+
+    // 移除指定的键值对 
+    form.remove("password")
+    // 移除不存在的键值对，无异常
+    form.remove("nonexistent")
+
+    println("toEncodeString: ${form.toEncodeString()}")
+}
+```
+
+运行结果：
+
+```text
+toEncodeString: username=admin
+```
+
 ### func set(String, String)
 
 ```cangjie
@@ -140,6 +333,32 @@ public func set(key: String, value: String): Unit
 
 - key: String - 指定键。
 - value: String - 将指定键的值设置为 value。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.encoding.url.*
+
+main() {
+    // 创建一个Form实例并添加一些键值对 
+    let form = Form()
+    form.add("key1", "value1")
+
+    // 重置指定键的值 
+    form.set("key1", "newvalue1")
+    // 重置不存在的键的值，会创建新的键值对
+    form.set("key2", "value2")
+
+    println("toEncodeString: ${form.toEncodeString()}")
+}
+```
+
+运行结果：
+
+```text
+toEncodeString: key1=newvalue1&key2=value2
+```
 
 ### func toEncodeString()
 
@@ -158,6 +377,35 @@ public func toEncodeString(): String
 返回值：
 
 - String - 编码后的字符串。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.encoding.url.*
+
+main() {
+    // 创建一个Form实例并添加一些键值对 
+    let form = Form()
+    // 存在空格
+    form.add("name", "Zhang san")
+    // 存在保留字符‘-’，不会进行编码
+    form.add("生日", "2026-1-8")
+    // 存在特殊字符，会进行编码
+    form.add("email", "zhangsan@example.com")
+
+    // 将表单转换为编码字符串 
+    let encodedString = form.toEncodeString()
+
+    println("toEncodeString: ${encodedString}")
+}
+```
+
+运行结果：
+
+```text
+toEncodeString: name=Zhang+san&%E7%94%9F%E6%97%A5=2026-1-8&email=zhangsan%40example.com
+```
 
 ## class URL
 
@@ -189,6 +437,26 @@ public prop fragment: ?String
 
 类型：?String
 
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.encoding.url.*
+
+main() {
+    // 解析URL
+    let url = URL.parse("https://admin:password123@example.com/path?k=v#fragment%20with%20space")
+
+    println("URL fragment: ${url.fragment}")
+}
+```
+
+运行结果：
+
+```text
+URL fragment: Some(fragment with space)
+```
+
 ### prop host
 
 ```cangjie
@@ -199,6 +467,26 @@ public prop host: String
 
 类型：String
 
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.encoding.url.*
+
+main() {
+    // 解析URL
+    let url = URL.parse("https://admin:password123@example.com:8080/path?k=v#fragment")
+
+    println("URL host: ${url.host}")
+}
+```
+
+运行结果：
+
+```text
+URL host: example.com:8080
+```
+
 ### prop hostName
 
 ```cangjie
@@ -208,6 +496,26 @@ public prop hostName: String
 功能：获取解码后的主机名，用字符串表示。
 
 类型：String
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.encoding.url.*
+
+main() {
+    // 解析URL
+    let url = URL.parse("https://admin:password123@example.com:8080/path?k=v#fragment")
+
+    println("URL hostName: ${url.hostName}")
+}
+```
+
+运行结果：
+
+```text
+URL hostName: example.com
+```
 
 ### prop opaque
 
@@ -225,7 +533,7 @@ public prop opaque: String
 ```cangjie
 import stdx.encoding.url.*
 
-main () {
+main() {
     let url = URL.parse("https:\\\\/example.com/foo/bar") // '\' 不是协议规定的分割符，无法被解析。
     println("url.scheme=${url.scheme}")
     println("url.host=${url.host}")
@@ -251,6 +559,26 @@ public prop path: String
 
 类型：String
 
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.encoding.url.*
+
+main() {
+    // 解析URL
+    let url = URL.parse("https://example.com:8080/api/v1/users?k=v#fragment")
+
+    println("URL path: ${url.path}")
+}
+```
+
+运行结果：
+
+```text
+URL path: /api/v1/users
+```
+
 ### prop port
 
 ```cangjie
@@ -260,6 +588,26 @@ public prop port: String
 功能：获取端口号，用字符串表示，空字符串表示无端口号。
 
 类型：String
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.encoding.url.*
+
+main() {
+    // 解析URL
+    let url = URL.parse("https://example.com:8080/api/v1/users?k=v#fragment")
+
+    println("URL port: ${url.port}")
+}
+```
+
+运行结果：
+
+```text
+URL port: 8080
+```
 
 ### prop query
 
@@ -271,6 +619,26 @@ public prop query: ?String
 
 类型：?String
 
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.encoding.url.*
+
+main() {
+    // 解析URL
+    let url = URL.parse("https://example.com:8080/api/v1/users?name=%E5%BC%A0%E4%B8%89&age=30#fragment")
+
+    println("URL query: ${url.query}")
+}
+```
+
+运行结果：
+
+```text
+URL query: Some(name=张三&age=30)
+```
+
 ### prop queryForm
 
 ```cangjie
@@ -280,6 +648,30 @@ public prop queryForm: Form
 功能：获取解码后的查询组件，用 [Form](url_package_classes.md#class-form) 实例表示。
 
 类型：[Form](url_package_classes.md#class-form)
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.encoding.url.*
+
+main() {
+    // 解析URL
+    let url = URL.parse("https://example.com:8080/api/v1/users?name=%E5%BC%A0%E4%B8%89&age=30#fragment")
+
+    // 获取查询组件
+    let queryForm = url.queryForm
+    // 获取查询组件中的 name 值
+    let name = queryForm.get("name")
+    println("URL queryForm: ${name}")
+}
+```
+
+运行结果：
+
+```text
+URL queryForm: Some(张三)
+```
 
 ### prop rawFragment
 
@@ -291,6 +683,26 @@ public prop rawFragment: ?String
 
 类型：?String
 
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.encoding.url.*
+
+main() {
+    // 解析URL
+    let url = URL.parse("https://example.com:8080/path?k=v#fragment%20with%20space")
+
+    println("URL rawFragment: ${url.rawFragment}")
+}
+```
+
+运行结果：
+
+```text
+URL rawFragment: Some(fragment%20with%20space)
+```
+
 ### prop rawPath
 
 ```cangjie
@@ -300,6 +712,26 @@ public prop rawPath: String
 功能：获取解码前的路径，用字符串表示。
 
 类型：String
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.encoding.url.*
+
+main() {
+    // 解析URL
+    let url = URL.parse("https://example.com:8080/path%20with%20space?k=v#fragment")
+
+    println("URL rawPath: ${url.rawPath}")
+}
+```
+
+运行结果：
+
+```text
+URL rawPath: /path%20with%20space
+```
 
 ### prop rawQuery
 
@@ -311,6 +743,26 @@ public prop rawQuery: ?String
 
 类型：?String
 
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.encoding.url.*
+
+main() {
+    // 解析URL
+    let url = URL.parse("https://example.com:8080/path?name%3Djohn%26age%3D30#fragment")
+
+    println("URL rawQuery: ${url.rawQuery}")
+}
+```
+
+运行结果：
+
+```text
+URL rawQuery: Some(name%3Djohn%26age%3D30)
+```
+
 ### prop rawUserInfo
 
 ```cangjie
@@ -320,6 +772,26 @@ public prop rawUserInfo: UserInfo
 功能：获取解码前的用户名和密码信息，用 [UserInfo](url_package_classes.md#class-userinfo) 实例表示。
 
 类型：[UserInfo](url_package_classes.md#class-userinfo)
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.encoding.url.*
+
+main() {
+    // 解析URL
+    let url = URL.parse("https://admin%40company:password123@example.com:8080/path?k=v#fragment")
+
+    println("URL rawUserInfo: ${url.rawUserInfo}")
+}
+```
+
+运行结果：
+
+```text
+URL rawUserInfo: admin%40company:password123
+```
 
 ### prop scheme
 
@@ -331,6 +803,26 @@ public prop scheme: String
 
 类型：String
 
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.encoding.url.*
+
+main() {
+    // 解析URL
+    let url = URL.parse("https://example.com:8080/path?k=v#fragment")
+
+    println("URL scheme: ${url.scheme}")
+}
+```
+
+运行结果：
+
+```text
+URL scheme: https
+```
+
 ### prop userInfo
 
 ```cangjie
@@ -340,6 +832,26 @@ public prop userInfo: UserInfo
 功能：获取解码后的用户名和密码信息，用 [UserInfo](url_package_classes.md#class-userinfo) 实例表示。
 
 类型：[UserInfo](url_package_classes.md#class-userinfo)
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.encoding.url.*
+
+main() {
+    // 解析URL
+    let url = URL.parse("https://admin:password123@example.com:8080/path?k=v#fragment")
+
+    println("URL userInfo: ${url.userInfo}")
+}
+```
+
+运行结果：
+
+```text
+URL userInfo: admin:password123
+```
 
 ### init(String, String, String)
 
@@ -365,6 +877,26 @@ public init(scheme!: String, hostName!: String, path!: String)
 
 - [UrlSyntaxException](url_package_exceptions.md#class-urlsyntaxexception) - 当构造实例不满足要求时，抛出异常。
 
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.encoding.url.*
+
+main() {
+    // 创建URL实例
+    let url = URL(scheme: "https", hostName: "example.com", path: "/path")
+
+    println("URL created: ${url}")
+}
+```
+
+运行结果：
+
+```text
+URL created: https://example.com/path
+```
+
 ### static func decode(String)
 
 ```cangjie
@@ -387,6 +919,29 @@ static func decode(url: String): String
 
 - String - 解码后的字符串。
 
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.encoding.url.*
+
+main() {
+    // 解码URL编码的字符串‘Hello & World! %’
+    let encoded = "Hello%20%26%20World! %25"
+
+    // 解码URL编码的字符串，部分字符是保留字符，如 '&'
+    let decoded = URL.decode(encoded)
+
+    println("URL decode: ${decoded}")
+}
+```
+
+运行结果：
+
+```text
+URL decode: Hello %26 World! %
+```
+
 ### static func decodeComponent(String)
 
 ```cangjie
@@ -402,6 +957,28 @@ static func decodeComponent(component: String): String
 返回值：
 
 - String - 解码后的字符串。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.encoding.url.*
+
+main() {
+    let encoded = "Hello%20%26%20World! %25"
+
+    // 全部解码，无保留字符
+    let decoded = URL.decodeComponent(encoded)
+
+    println("URL decodeComponent: ${decoded}")
+}
+```
+
+运行结果：
+
+```text
+URL decodeComponent: Hello & World! %
+```
 
 ### static func encode(String)
 
@@ -429,6 +1006,29 @@ static func encode(url: String): String
 
 - String - 编码后的字符串。
 
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.encoding.url.*
+
+main() {
+    // 编码URL字符串
+    let original = "Hello & World!"
+
+    // 编码URL字符串，保留字符如 '&' 不会被编码
+    let encoded = URL.encode(original)
+
+    println("URL encode: ${encoded}")
+}
+```
+
+运行结果：
+
+```text
+URL encode: Hello%20&%20World!
+```
+
 ### static func encodeComponent(String)
 
 ```cangjie
@@ -452,6 +1052,29 @@ static func encodeComponent(component: String): String
 返回值：
 
 - String - 编码后的字符串。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.encoding.url.*
+
+main() {
+    // 编码URL字符串
+    let original = "key & value!"
+
+    // 编码URL字符串，保留字符如 '!' 不会被编码
+    let encodeComponent = URL.encodeComponent(original)
+
+    println("URL encodeComponent: ${encodeComponent}")
+}
+```
+
+运行结果：
+
+```text
+URL encodeComponent: key%20%26%20value!
+```
 
 ### static func mergePaths(String, String)
 
@@ -480,6 +1103,28 @@ public static func mergePaths(basePath: String, refPath: String): String
 返回值：
 
 - String - 合并且标准化后的路径。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.encoding.url.*
+
+main() {
+    // 合并路径
+    let basePath = "/a/b/c"
+    let refPath = "d"
+    let mergedPath = URL.mergePaths(basePath, refPath)
+
+    println("URL mergePaths: ${mergedPath}")
+}
+```
+
+运行结果：
+
+```text
+URL mergePaths: /a/b/d
+```
 
 ### static func parse(String)
 
@@ -510,6 +1155,26 @@ public static func parse(rawUrl: String): URL
 - [UrlSyntaxException](url_package_exceptions.md#class-urlsyntaxexception) - 当 [URL](url_package_classes.md#class-url) 字符串中包含非法字符时，抛出异常。
 - IllegalArgumentException - 当被编码的字符不符合 `UTF-8` 的字节序列规则时，抛出异常。
 
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.encoding.url.*
+
+main() {
+    // 解析URL字符串
+    let url = URL.parse("https://example.com:8080/path?query=value#fragment")
+
+    println("URL parsed: ${url}")
+}
+```
+
+运行结果：
+
+```text
+URL parsed: https://example.com:8080/path?query=value#fragment
+```
+
 ### func isAbsoluteURL()
 
 ```cangjie
@@ -521,6 +1186,31 @@ public func isAbsoluteURL(): Bool
 返回值：
 
 - Bool - scheme 存在时返回 true，不存在时返回 false。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.encoding.url.*
+
+main() {
+    // 解析URL字符串
+    let url = URL.parse("https://example.com:8080/path?query=value#fragment")
+    let isAbsolute = url.isAbsoluteURL()
+    println("isAbsolute isAbsoluteURL: ${isAbsolute}")
+
+    let url1 = URL.parse("/path?query=value#fragment")
+    let notAbsolute = url1.isAbsoluteURL()
+    println("notAbsolute isAbsoluteURL: ${notAbsolute}")
+}
+```
+
+运行结果：
+
+```text
+isAbsolute isAbsoluteURL: true
+notAbsolute isAbsoluteURL: false
+```
 
 ### func replace(Option\<String>, Option\<String>, Option\<String>, Option\<String>, Option\<String>, Option\<String>, Option\<String>)
 
@@ -558,6 +1248,29 @@ public func replace(scheme!: Option<String> = None, userInfo!: Option<String> = 
 
 - [UrlSyntaxException](url_package_exceptions.md#class-urlsyntaxexception) - 不满足替换要求时，抛出异常。
 
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.encoding.url.*
+
+main() {
+    // 解析URL字符串
+    let url = URL.parse("https://example.com:8080/path?query=value#fragment")
+
+    // 替换URL组件
+    let newUrl = url.replace(path: Some("/newpath"))
+
+    println("URL replace: ${newUrl}")
+}
+```
+
+运行结果：
+
+```text
+URL replace: https://example.com:8080/newpath?query=value#fragment
+```
+
 ### func resolveURL(URL)
 
 ```cangjie
@@ -584,6 +1297,31 @@ public func resolveURL(ref: URL): URL
 
 - [URL](url_package_classes.md#class-url) - 新的 [URL](url_package_classes.md#class-url) 实例。
 
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.encoding.url.*
+
+main() {
+    // 解析基础URL
+    let baseUrl = URL.parse("http://a/b/c/d;p?q")
+    // 解析参考URL
+    let refUrl = URL.parse("g")
+
+    // 解析URL
+    let resolvedUrl = baseUrl.resolveURL(refUrl)
+
+    println("URL resolveURL: ${resolvedUrl}")
+}
+```
+
+运行结果：
+
+```text
+URL resolveURL: http://a/b/c/g
+```
+
 ### func toString()
 
 ```cangjie
@@ -597,6 +1335,29 @@ public func toString(): String
 返回值：
 
 - String - 当前 [URL](url_package_classes.md#class-url) 实例的字符串值。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.encoding.url.*
+
+main() {
+    // 解析URL字符串
+    let url = URL.parse("https://example.com:8080/path?query=value#fragment")
+
+    // 获取URL字符串表示
+    let urlString = url.toString()
+
+    println("URL toString: ${urlString}")
+}
+```
+
+运行结果：
+
+```text
+URL toString: https://example.com:8080/path?query=value#fragment
+```
 
 ## class UserInfo
 
@@ -627,6 +1388,18 @@ public init()
 
 功能：创建 [UserInfo](url_package_classes.md#class-userinfo) 实例。
 
+示例：
+
+<!-- run -->
+```cangjie
+import stdx.encoding.url.*
+
+main() {
+    // 使用无参构造函数创建UserInfo实例 
+    let userInfo = UserInfo()
+}
+```
+
 ### init(String)
 
 ```cangjie
@@ -638,6 +1411,26 @@ public init(userName: String)
 参数：
 
 - userName: String - 用户名。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.encoding.url.*
+
+main() {
+    // 使用用户名参数创建UserInfo实例 
+    let userInfo = UserInfo("Zhangsan")
+
+    println("UserInfo: ${userInfo}")
+}
+```
+
+运行结果：
+
+```text
+UserInfo: Zhangsan
+```
 
 ### init(String, Option\<String>)
 
@@ -651,6 +1444,26 @@ public init(userName: String, passWord: Option<String>)
 - userName: String - 用户名。
 - passWord: Option\<String> - 密码，用 Option\<String> 类型表示。
 
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.encoding.url.*
+
+main() {
+    // 使用用户名和密码创建UserInfo实例 
+    let userInfo = UserInfo("admin", Some("password123"))
+
+    println("UserInfo带用户名和密码: ${userInfo}")
+}
+```
+
+运行结果：
+
+```text
+UserInfo带用户名和密码: admin:password123
+```
+
 ### init(String, String)
 
 ```cangjie
@@ -662,6 +1475,26 @@ public init(userName: String, passWord: String)
 
 - userName: String - 用户名。
 - passWord: String - 密码。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.encoding.url.*
+
+main() {
+    // 使用用户名和密码创建UserInfo实例 
+    let userInfo = UserInfo("admin", "password123")
+
+    println("UserInfo带用户名和密码: ${userInfo}")
+}
+```
+
+运行结果：
+
+```text
+UserInfo带用户名和密码: admin:password123
+```
 
 ### func password()
 
@@ -679,6 +1512,29 @@ public func password(): Option<String>
 
 - Option\<String> - 将密码以 Option\<String> 形式返回。
 
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.encoding.url.*
+
+main() {
+    // 创建UserInfo实例 
+    let userInfo = UserInfo("admin", "password123")
+
+    // 获取密码信息 
+    let passwordOption = userInfo.password()
+
+    println("UserInfo password: ${passwordOption}")
+}
+```
+
+运行结果：
+
+```text
+UserInfo password: Some(password123)
+```
+
 ### func toString()
 
 ```cangjie
@@ -691,6 +1547,29 @@ public func toString(): String
 
 - String - 当前 [UserInfo](url_package_classes.md#class-userinfo) 实例的字符串表示。
 
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.encoding.url.*
+
+main() {
+    // 创建UserInfo实例 
+    let userInfo = UserInfo("admin", "password123")
+
+    // 获取字符串表示 
+    let userInfoString = userInfo.toString()
+
+    println("UserInfo toString方法示例: ${userInfoString}")
+}
+```
+
+运行结果：
+
+```text
+UserInfo toString方法示例: admin:password123
+```
+
 ### func username()
 
 ```cangjie
@@ -702,3 +1581,26 @@ public func username(): String
 返回值：
 
 - String - 字符串类型的用户名。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.encoding.url.*
+
+main() {
+    // 创建UserInfo实例 
+    let userInfo = UserInfo("admin", "password123")
+
+    // 获取用户名信息 
+    let username = userInfo.username()
+
+    println("UserInfo username: ${username}")
+}
+```
+
+运行结果：
+
+```text
+UserInfo username: admin
+```

@@ -21,9 +21,26 @@ public static prop allSupported: Array<CipherSuite>
 
 功能：返回所有支持的密码套件。
 
-返回值：存放密码套件的数组。
-
 类型：Array\<[CipherSuite](tls_package_structs.md#struct-ciphersuite)>
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.net.tls.*
+
+main() {
+    let allSuites = CipherSuite.allSupported
+    println("支持的密码套件数量: ${allSuites.size}")
+    return 0
+}
+```
+
+运行结果：
+
+```text
+支持的密码套件数量: 60
+```
 
 ### func toString()
 
@@ -36,6 +53,26 @@ public func toString(): String
 返回值：
 
 - String - 密码套件名称。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.net.tls.*
+
+main() {
+    let suite = CipherSuite.allSupported[0]
+    let name = suite.toString()
+    println("密码套件名称: ${name}")
+    return 0
+}
+```
+
+运行结果：
+
+```text
+密码套件名称: TLS_AES_256_GCM_SHA384
+```
 
 ### operator func !=(CipherSuite)
 
@@ -53,6 +90,27 @@ public operator func !=(that: CipherSuite): Bool
 
 - Bool - 若不等，则返回 `true`；反之，返回 `false`。
 
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.net.tls.*
+
+main() {
+    let suite1 = CipherSuite.allSupported[0]
+    let suite2 = CipherSuite.allSupported[1]
+    let isNotEqual = suite1 != suite2
+    println("两个密码套件是否不等: ${isNotEqual}")
+    return 0
+}
+```
+
+运行结果：
+
+```text
+两个密码套件是否不等: true
+```
+
 ### operator func ==(CipherSuite)
 
 ```cangjie
@@ -68,6 +126,27 @@ public operator func ==(that: CipherSuite): Bool
 返回值：
 
 - Bool - 若相等，则返回 `true`；反之，返回 `false`。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.net.tls.*
+
+main() {
+    let suite1 = CipherSuite.allSupported[0]
+    let suite2 = CipherSuite.allSupported[0] // 相同索引
+    let isEqual = suite1 == suite2
+    println("两个密码套件是否相等: ${isEqual}")
+    return 0
+}
+```
+
+运行结果：
+
+```text
+两个密码套件是否相等: true
+```
 
 ## struct TlsClientConfig
 
@@ -199,6 +278,21 @@ public init()
 ```
 
 功能：构造 [TlsClientConfig](tls_package_structs.md#struct-tlsclientconfig)。
+
+示例：
+
+<!-- run -->
+```cangjie
+import stdx.net.tls.*
+import stdx.net.tls.common.*
+
+main() {
+    // 客户端配置
+    var config = TlsClientConfig()
+    config.verifyMode = TrustAll
+    return 0
+}
+```
 
 ## struct TlsServerConfig
 
@@ -335,3 +429,40 @@ public init(certChain: Array<X509Certificate>, certKey: PrivateKey)
 
 - certChain: Array\<[X509Certificate](../../../crypto/x509/x509_package_api/x509_package_classes.md#class-x509certificate)> - 证书对象。
 - certKey: [PrivateKey](../../../crypto/common/crypto_common_package_api/crypto_common_package_interfaces.md#interface-privatekey) - 私钥对象。
+
+示例：
+
+<!-- run -->
+```cangjie
+import std.fs.*
+import std.io.*
+import std.process.*
+import stdx.crypto.x509.*
+import stdx.crypto.keys.*
+import stdx.net.tls.*
+
+main() {
+    // 定义证书和私钥文件
+    let serverKey = "./server.key"
+    let serverCrt = "./server.crt"
+
+    // OpenSSL 官方标准、无风险的测试用命令
+    let cmdStr = "openssl req -x509 -newkey rsa:2048 -nodes -keyout ${serverKey} -out ${serverCrt} -days 365 -subj \"/CN=localhost\""
+    executeWithOutput("sh", ["-c", cmdStr])
+
+    // 获取证书和私钥内容
+    let serverCrtContent = String.fromUtf8(readToEnd(File(serverCrt, Read)))
+    let serverCertificate = X509Certificate.decodeFromPem(serverCrtContent)
+
+    let serverKeyContent = String.fromUtf8(readToEnd(File(serverKey, Read)))
+    let serverPrivateKey = GeneralPrivateKey.decodeFromPem(serverKeyContent)
+
+    // 创建 TLS 服务器配置
+    let _ = TlsServerConfig(serverCertificate, serverPrivateKey)
+
+    // 删除证书和私钥文件
+    removeIfExists(serverKey)
+    removeIfExists(serverCrt)
+    return 0
+}
+```

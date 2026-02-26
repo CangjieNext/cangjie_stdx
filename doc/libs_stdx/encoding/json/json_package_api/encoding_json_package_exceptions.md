@@ -23,6 +23,28 @@ public init()
 
 功能：构造一个不包含任何异常提示信息的 [JsonException](encoding_json_package_exceptions.md#class-jsonexception) 实例。
 
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.encoding.json.*
+
+main() {
+    // 创建不带消息的JsonException
+    try {
+        throw JsonException()
+    } catch (e: JsonException) {
+        println("捕获到 JsonException: ${e.message}")
+    }
+}
+```
+
+运行结果：
+
+```text
+捕获到 JsonException: 
+```
+
 ### init(String)
 
 ```cangjie
@@ -34,3 +56,25 @@ public init(message: String)
 参数：
 
 - message: String - 指定的异常提示信息。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.encoding.json.*
+
+main() {
+    // 创建带消息的JsonException
+    try {
+        throw JsonException("JSON解析异常")
+    } catch (e: JsonException) {
+        println("捕获到 JsonException: ${e.message}")
+    }
+}
+```
+
+运行结果：
+
+```text
+捕获到 JsonException: JSON解析异常
+```

@@ -95,8 +95,6 @@ verify successful
 ```cangjie
 import stdx.crypto.keys.*
 import stdx.crypto.digest.*
-import std.convert.*
-import std.crypto.digest.*
 
 main() {
     var ecPri = ECDSAPrivateKey(P224)
@@ -129,9 +127,6 @@ verify successful
 <!-- verify -->
 ```cangjie
 import stdx.crypto.keys.*
-import stdx.crypto.digest.*
-import std.convert.*
-import std.crypto.digest.*
 import std.fs.*
 import std.io.*
 
@@ -170,6 +165,8 @@ main(): Unit {
     let pemPub = String.fromUtf8(readToEnd(File("./sm2Pub.pem", Read)))
     let sm2PublicKeyNew = SM2PublicKey.decodeFromPem(pemPub)
     println(sm2PublicKeyNew)
+    removeIfExists("./sm2Pri.pem")
+    removeIfExists("./sm2Pub.pem")
 }
 ```
 

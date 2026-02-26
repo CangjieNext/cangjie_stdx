@@ -72,6 +72,46 @@ main(): Unit {
 Did the TarGzip archive with filter complete successfully? true
 ```
 
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.compress.*
+import std.fs.*
+
+main(): Unit {
+    // 测试路径
+    let testDir = Path("./test_dir")
+    let testFile = Path("./test_dir/test.txt")
+    let destFile = Path("./test.tar.gz")
+
+    // 创建目录和文件(创建前清理)
+    removeIfExists(testDir, recursive: true)
+    Directory.create(testDir)
+    File.writeTo(testFile, "Hello, TarGzip!".toArray())
+
+    // 使用TarGzip压缩目录，使用过滤函数
+    TarGzip.archive(
+        fromDir: testDir,
+        filter: {path: Path => return path.toString().endsWith(".txt")},
+        destFile: destFile,
+        includeBaseDirectory: true
+    )
+
+    println("Did the TarGzip archive with filter complete successfully? ${exists(destFile)}")
+
+    // 清理测试文件
+    removeIfExists(testDir, recursive: true)
+    removeIfExists(destFile)
+}
+```
+
+运行结果：
+
+```text
+Did the TarGzip archive with filter complete successfully? true
+```
+
 ### static func archive(Path, Path, Bool)
 
 ```cangjie
@@ -93,6 +133,45 @@ public static func archive(fromDir!: Path, destFile!: Path, includeBaseDirectory
 - [TarException](../tar/tar_package_api/tar_package_exceptions.md#class-tarexception) - 如果 tar 归档时发生错误，抛出异常。
 
 - [ZlibException](../zlib/zlib_package_api/zlib_package_exceptions.md#class-zlibexception) - 如果 zlib 压缩时发生错误，抛出异常。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.compress.*
+import std.fs.*
+
+main(): Unit {
+    // 测试路径
+    let testDir = Path("./test_dir_simple")
+    let testFile = Path("./test_dir_simple/test.txt")
+    let destFile = Path("./test_simple.tar.gz")
+
+    // 创建目录和文件(创建前清理)
+    removeIfExists(testDir, recursive: true)
+    Directory.create(testDir)
+    File.writeTo(testFile, "Hello, TarGzip Simple Archive!".toArray())
+
+    // 使用TarGzip压缩目录，不使用过滤函数
+    TarGzip.archive(
+        fromDir: testDir,
+        destFile: destFile,
+        includeBaseDirectory: true
+    )
+
+    println("Did the TarGzip simple archive complete successfully? ${exists(destFile)}")
+
+    // 清理测试文件
+    removeIfExists(testDir, recursive: true)
+    removeIfExists(destFile)
+}
+```
+
+运行结果：
+
+```text
+Did the TarGzip simple archive complete successfully? true
+```
 
 示例：
 
@@ -199,6 +278,48 @@ main(): Unit {
 Did the TarGzip archive with string filter complete successfully? true
 ```
 
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.compress.*
+import std.fs.*
+
+main(): Unit {
+    // 测试路径
+    let testDir = "./test_dir_str_filter"
+    let testFile = "./test_dir_str_filter/test.txt"
+    let testLogFile = "./test_dir_str_filter/test.log"
+    let destFile = "./test_str_filter.tar.gz"
+
+    // 创建目录和文件(创建前清理)
+    removeIfExists(testDir, recursive: true)
+    Directory.create(testDir)
+    File.writeTo(testFile, "Hello, TarGzip String Filter Archive!".toArray())
+    File.writeTo(testLogFile, "This is a log file that should be filtered out".toArray())
+
+    // 使用TarGzip压缩目录，使用字符串过滤函数
+    TarGzip.archive(
+        fromDir: testDir,
+        filter: {path: String => return path.endsWith(".txt")},
+        destFile: destFile,
+        includeBaseDirectory: true
+    )
+
+    println("Did the TarGzip archive with string filter complete successfully? ${exists(Path(destFile))}")
+
+    // 清理测试文件
+    removeIfExists(testDir, recursive: true)
+    removeIfExists(destFile)
+}
+```
+
+运行结果：
+
+```text
+Did the TarGzip archive with string filter complete successfully? true
+```
+
 ### static func archive(String, String, Bool)
 
 ```cangjie
@@ -220,6 +341,45 @@ public static func archive(fromDir!: String, destFile!: String, includeBaseDirec
 - [TarException](../tar/tar_package_api/tar_package_exceptions.md#class-tarexception) - 如果 tar 归档时发生错误，抛出异常。
 
 - [ZlibException](../zlib/zlib_package_api/zlib_package_exceptions.md#class-zlibexception) - 如果 zlib 压缩时发生错误，抛出异常。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.compress.*
+import std.fs.*
+
+main(): Unit {
+    // 测试路径
+    let testDir = "./test_dir_str_simple"
+    let testFile = "./test_dir_str_simple/test.txt"
+    let destFile = "./test_str_simple.tar.gz"
+
+    // 创建目录和文件(创建前清理)
+    removeIfExists(testDir, recursive: true)
+    Directory.create(testDir)
+    File.writeTo(testFile, "Hello, TarGzip String Simple Archive!".toArray())
+
+    // 使用TarGzip压缩目录，使用字符串参数
+    TarGzip.archive(
+        fromDir: testDir,
+        destFile: destFile,
+        includeBaseDirectory: true
+    )
+
+    println("Did the TarGzip string simple archive complete successfully? ${exists(destFile)}")
+
+    // 清理测试文件
+    removeIfExists(testDir, recursive: true)
+    removeIfExists(destFile)
+}
+```
+
+运行结果：
+
+```text
+Did the TarGzip string simple archive complete successfully? true
+```
 
 示例：
 
@@ -332,6 +492,52 @@ main(): Unit {
 Did the TarGzip archive to stream complete successfully? true
 ```
 
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.compress.*
+import std.fs.*
+import std.io.*
+
+main(): Unit {
+    // 测试路径
+    let testDir = Path("./test_dir_stream")
+    let testFile = Path("./test_dir_stream/test.txt")
+    let destFile = Path("./test_stream.tar.gz")
+
+    // 创建目录和文件(创建前清理)
+    removeIfExists(testDir, recursive: true)
+    Directory.create(testDir)
+    File.writeTo(testFile, "Hello, TarGzip Stream Archive!".toArray())
+
+    // 创建文件输出流
+    let fileStream = File(destFile, Write)
+
+    // 使用TarGzip压缩目录到输出流
+    TarGzip.archive(
+        fromDir: testDir,
+        destStream: fileStream,
+        includeBaseDirectory: true
+    )
+
+    // 关闭流
+    fileStream.close()
+
+    println("Did the TarGzip archive to stream complete successfully? ${exists(destFile)}")
+
+    // 清理测试文件
+    removeIfExists(testDir, recursive: true)
+    removeIfExists(destFile)
+}
+```
+
+运行结果：
+
+```text
+Did the TarGzip archive to stream complete successfully? true
+```
+
 ### static func archive\<T>(String, T, Bool) where T <: OutputStream
 
 ```cangjie
@@ -357,6 +563,52 @@ public static func archive<T>(fromDir!: String, destStream!: T, includeBaseDirec
 - [TarException](../tar/tar_package_api/tar_package_exceptions.md#class-tarexception) - 如果 tar 归档时发生错误，抛出异常。
 
 - [ZlibException](../zlib/zlib_package_api/zlib_package_exceptions.md#class-zlibexception) - 如果 zlib 压缩时发生错误，抛出异常。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.compress.*
+import std.fs.*
+import std.io.*
+
+main(): Unit {
+    // 测试路径
+    let testDir = "./test_dir_stream_str"
+    let testFile = "./test_dir_stream_str/test.txt"
+    let destFile = "./test_stream_str.tar.gz"
+
+    // 创建目录和文件(创建前清理)
+    removeIfExists(testDir, recursive: true)
+    Directory.create(testDir)
+    File.writeTo(testFile, "Hello, TarGzip Stream Archive with String Path!".toArray())
+
+    // 创建文件输出流
+    let fileStream = File(destFile, Write)
+
+    // 使用TarGzip压缩目录到输出流（使用字符串路径）
+    TarGzip.archive(
+        fromDir: testDir,
+        destStream: fileStream,
+        includeBaseDirectory: true
+    )
+
+    // 关闭流
+    fileStream.close()
+
+    println("Did the TarGzip archive to stream with string path complete successfully? ${exists(destFile)}")
+
+    // 清理测试文件
+    removeIfExists(testDir, recursive: true)
+    removeIfExists(destFile)
+}
+```
+
+运行结果：
+
+```text
+Did the TarGzip archive to stream with string path complete successfully? true
+```
 
 示例：
 
@@ -480,6 +732,60 @@ main(): Unit {
 Did the TarGzip extract complete successfully? true
 ```
 
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.compress.*
+import std.fs.*
+
+main(): Unit {
+    // 测试路径
+    let testDir = Path("./test_extract_dir")
+    let testFile = Path("./test_extract_dir/test.txt")
+    let archiveFile = Path("./test_extract.tar.gz")
+    let extractDir = Path("./extracted_dir")
+
+    // 创建目录和文件(创建前清理)
+    removeIfExists(testDir, recursive: true)
+    Directory.create(testDir)
+    File.writeTo(testFile, "Hello, TarGzip Extract!".toArray())
+
+    // 首先创建一个压缩文件
+    TarGzip.archive(
+        fromDir: testDir,
+        destFile: archiveFile,
+        includeBaseDirectory: true
+    )
+
+    // 清理测试目录，保留压缩文件
+    removeIfExists(testDir, recursive: true)
+
+    // 创建解压目标目录
+    removeIfExists(extractDir, recursive: true)
+    Directory.create(extractDir)
+
+    // 解压文件
+    TarGzip.extract(
+        fromTarGzip: archiveFile,
+        destDir: extractDir,
+        overwrite: true
+    )
+
+    println("Did the TarGzip extract complete successfully? ${exists(extractDir)}")
+
+    // 清理测试文件
+    removeIfExists(archiveFile)
+    removeIfExists(extractDir, recursive: true)
+}
+```
+
+运行结果：
+
+```text
+Did the TarGzip extract complete successfully? true
+```
+
 ### static func extract(String, String, Bool)
 
 ```cangjie
@@ -501,6 +807,60 @@ public static func extract(fromTarGzip!: String, destDir!: String, overwrite!: B
 - [TarException](../tar/tar_package_api/tar_package_exceptions.md#class-tarexception) - 如果 tar 提取时发生错误，抛出异常。
 
 - [ZlibException](../zlib/zlib_package_api/zlib_package_exceptions.md#class-zlibexception) - 如果 zlib 解压时发生错误，抛出异常。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.compress.*
+import std.fs.*
+
+main(): Unit {
+    // 测试路径
+    let testDir = "./test_extract_dir_str"
+    let testFile = "./test_extract_dir_str/test.txt"
+    let archiveFile = "./test_extract_str.tar.gz"
+    let extractDir = "./extracted_dir_str"
+
+    // 创建目录和文件(创建前清理)
+    removeIfExists(testDir, recursive: true)
+    Directory.create(testDir)
+    File.writeTo(testFile, "Hello, TarGzip Extract with String Paths!".toArray())
+
+    // 首先创建一个压缩文件
+    TarGzip.archive(
+        fromDir: testDir,
+        destFile: archiveFile,
+        includeBaseDirectory: true
+    )
+
+    // 清理测试目录，保留压缩文件
+    removeIfExists(testDir, recursive: true)
+
+    // 创建解压目标目录
+    removeIfExists(extractDir, recursive: true)
+    Directory.create(extractDir)
+
+    // 解压文件（使用字符串路径）
+    TarGzip.extract(
+        fromTarGzip: archiveFile,
+        destDir: extractDir,
+        overwrite: true
+    )
+
+    println("Did the TarGzip extract with string paths complete successfully? ${exists(extractDir)}")
+
+    // 清理测试文件
+    removeIfExists(archiveFile)
+    removeIfExists(extractDir, recursive: true)
+}
+```
+
+运行结果：
+
+```text
+Did the TarGzip extract with string paths complete successfully? true
+```
 
 示例：
 
