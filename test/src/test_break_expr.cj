@@ -42,9 +42,11 @@ class AnalyzeExprTest001 {
 
     @TestCase
     func testExpr00() {
-        let expr = (nodes[0] as BreakExpr).getOrThrow()
-        println(expr)
-        let exprTyInfo: Option<SemanticType> = semaRes.getTypeInfo(expr)
+        let expr = (nodes[0] as WhileExpr).getOrThrow()
+        let exprnodes = expr.body.nodes
+        let expr_1 = (exprnodes[0] as BreakExpr).getOrThrow()
+        println(expr_1)
+        let exprTyInfo: Option<SemanticType> = semaRes.getTypeInfo(expr_1)
         match (exprTyInfo) {
             case Some(ty: SemanticType) => @Expect(ty.toString(), "Nothing")
             case None => @FailExpect("no type info")

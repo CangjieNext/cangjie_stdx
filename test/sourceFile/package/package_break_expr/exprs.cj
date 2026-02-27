@@ -1,3 +1,5 @@
 func func01() {
-    break
+    while(true){
+        break
+    }
 }
