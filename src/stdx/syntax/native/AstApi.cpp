@@ -113,6 +113,8 @@ ParseRes* CJ_ParseFile(const char* path)
     if (path == nullptr) {
         return nullptr;
     }
+    printf("[DEBUG] CJ_ParseFile: Parsing path = %s\n", path);
+    
     Cangjie::ICE::TriggerPointSetter iceSetter(CompileStage::PARSE);
     DiagnosticEngine diag;
     SourceManager sm;
@@ -121,6 +123,12 @@ ParseRes* CJ_ParseFile(const char* path)
     std::string filePath(path, path + strlen(path));
     std::string failedReason;
     auto content = FileUtil::ReadFileContent(path, failedReason);
+
+    if (!content.has_value()) {
+        fprintf(stderr, "Failed to read file: %s\n", failedReason.c_str());
+        ParseRes* errorRes = createParseResult();
+        return errorRes;
+    }
     auto fileID = sm.AddSource(filePath, content.value());
     Parser parser(fileID, content.value(), diag, sm, true);
     auto file = parser.ParseTopLevel();
