@@ -121,6 +121,11 @@ ParseRes* CJ_ParseFile(const char* path)
     std::string filePath(path, path + strlen(path));
     std::string failedReason;
     auto content = FileUtil::ReadFileContent(path, failedReason);
+
+    if (!content.has_value()) {
+        ParseRes* errorRes = createParseResult();
+        return errorRes;
+    }
     auto fileID = sm.AddSource(filePath, content.value());
     Parser parser(fileID, content.value(), diag, sm, true);
     auto file = parser.ParseTopLevel();
