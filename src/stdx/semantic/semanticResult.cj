@@ -50,13 +50,13 @@ public class SemanticResult {
         exprTypeInfoMap.get(expr.getId())
     }
 
-    public func getSymbolRef(symbol: SymbolRef): Option<SyntaxTreeNode> {
+    public func getSymbolInfo(symbol: SymbolRef): Option<Decl> {
         let declId = refMap.get(symbol.getId())
         if (let Some(id) <- declId && let Some(pkg) <- (pkgAST as Package)) {
             let nf = NodeFinder(pkg, id)
             nf.walk(pkgAST)
             if (let Some(decl) <- nf.res) {
-                return decl
+                return decl as Decl
             }
         }
         None

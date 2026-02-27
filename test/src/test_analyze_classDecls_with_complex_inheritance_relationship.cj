@@ -88,7 +88,6 @@ class AnalyzeTestDeclWithComplexInheritanceRelationship {
         }
     }
 
-    @Skip
     @TestCase
     func testDecl05() {
         let decl = decls[5]
@@ -99,7 +98,6 @@ class AnalyzeTestDeclWithComplexInheritanceRelationship {
         }
     }
 
-    @Skip
     @TestCase
     func testDecl06() {
         let decl = decls[6]
@@ -107,6 +105,53 @@ class AnalyzeTestDeclWithComplexInheritanceRelationship {
         match (declTyInfo) {
             case Some(declTy: SemanticType) => @Expect(declTy.toString(), "HashMap<HashPairUInt32, (UInt32, UInt32)>")
             case None => @FailExpect("no type info")
+        }
+    }
+
+    @TestCase [
+        data in ["Tokenizer", "Tiktoken", "HashPairString", "HashPairUInt32"]
+    ] // "TokenizerType" Enum类型找不到Decl
+    func testGetDecl01(data: String) {
+        let ty = CompositeType(data, [], [])
+        @Expect(semaRes.getDecl(ty).isSome())
+        if (let Some(decl) <- semaRes.getDecl(ty)) {
+            println(decl)
+        }
+    }
+
+    @TestCase [
+        data in [("Tokenizer", 11), ("Tiktoken", 5), ("HashPairString", 6), ("HashPairUInt32", 7)]
+    ]
+    func testGetMembers(data: (ty: String, size: Int64)) {
+        let ty = CompositeType(data[0], [], [])
+        if (let Some(decl) <- semaRes.getDecl(ty)) {
+            let mems = semaRes.getMembers(decl)
+            println("members: ${mems.size}")
+            @Expect(mems.size, data[1])
+        }
+    }
+
+    @TestCase [
+        data in [("Tokenizer", 0), ("Tiktoken", 1), ("HashPairString", 0), ("HashPairUInt32", 0)] //("HashPairString", 2), ("HashPairUInt32", 3)]
+    ] // 当前只能统计本包内的继承关系，无法统计到外包的继承关系，待解决
+    func testGetSuperTys(data: (ty: String, size: Int64)) {
+        let ty = CompositeType(data[0], [], [])
+        if (let Some(decl) <- semaRes.getDecl(ty)) {
+            let supers = semaRes.getSuperTys(decl)
+            println("supers: ${supers.size}")
+            @Expect(supers.size, data[1])
+        }
+    }
+
+    @TestCase [
+        data in [("Tokenizer", 1), ("Tiktoken", 0), ("HashPairString", 0), ("HashPairUInt32", 0)]
+    ]
+    func testGetSubTys(data: (ty: String, size: Int64)) {
+        let ty = CompositeType(data[0], [], [])
+        if (let Some(decl) <- semaRes.getDecl(ty)) {
+            let subs = semaRes.getSubTys(decl)
+            println("subs: ${subs.size}")
+            @Expect(subs.size, data[1])
         }
     }
 }

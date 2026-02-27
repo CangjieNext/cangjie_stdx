@@ -66,9 +66,9 @@ class SymbolRefTest {
         let myVisitor = SymbolRefFinder(pkgAST, "a")
         myVisitor.walk(pkgAST)
         let ref = myVisitor.res.getOrThrow()
-        let decl: Option<SyntaxTreeNode> = semaRes.getSymbolRef(ref)
+        let decl: Option<Decl> = semaRes.getSymbolInfo(ref)
         match (decl) {
-            case Some(decl: SyntaxTreeNode) => @Expect(decl.toString(), "let a = 1")
+            case Some(decl: Decl) => @Expect(decl.toString(), "let a = 1")
             case None => @FailExpect("no decl")
         }
     }
@@ -78,9 +78,9 @@ class SymbolRefTest {
         let myVisitor = SymbolRefFinder(pkgAST, "c")
         myVisitor.walk(pkgAST)
         let ref = myVisitor.res.getOrThrow()
-        let decl: Option<SyntaxTreeNode> = semaRes.getSymbolRef(ref)
+        let decl: Option<Decl> = semaRes.getSymbolInfo(ref)
         match (decl) {
-            case Some(decl: SyntaxTreeNode) => @Expect(decl.toString(), "let c = [1, 2, 3, 4]")
+            case Some(decl: Decl) => @Expect(decl.toString(), "let c = [1, 2, 3, 4]")
             case None => @FailExpect("no decl")
         }
     }
@@ -90,9 +90,9 @@ class SymbolRefTest {
         let myVisitor = SymbolRefFinder(pkgAST, "rec")
         myVisitor.walk(pkgAST)
         let ref = myVisitor.res.getOrThrow()
-        let decl: Option<SyntaxTreeNode> = semaRes.getSymbolRef(ref)
+        let decl: Option<Decl> = semaRes.getSymbolInfo(ref)
         match (decl) {
-            case Some(decl: SyntaxTreeNode) => @Expect(decl.toString(), "let rec = Rectangle(20)")
+            case Some(decl: Decl) => @Expect(decl.toString(), "let rec = Rectangle(20)")
             case None => @FailExpect("no decl")
         }
     }
