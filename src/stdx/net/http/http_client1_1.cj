@@ -842,13 +842,13 @@ class ConnNode <: BodyProviderConn {
         // absolute-path ["?" query]
         } else {
             requestTarget.append(canonicalPath(request.url.path))
-            if (let Some(query) <- request.url.query) {
+            if (let Some(rawQuery) <- request.url.rawQuery) {
                 requestTarget.append("?")
-                requestTarget.append(query)
+                requestTarget.append(rawQuery)
             }
-            if (let Some(fragment) <- request.url.fragment) {
+            if (let Some(rawFragment) <- request.url.rawFragment) {
                 requestTarget.append("#")
-                requestTarget.append(fragment)
+                requestTarget.append(rawFragment)
             }
         }
         return requestTarget
