@@ -106,7 +106,8 @@ file(GLOB semantic_ffi_src
     analyze.cpp
     typeWrite.cpp
     typeCollector.cpp
-    syntaxNodeDeserializer.cpp)
+    syntaxNodeDeserializer.cpp
+    syntaxToAst.cpp)
 set(libname stdx.semanticFFI)
 add_library(${libname}-objs SHARED ${semantic_ffi_src})
 set_target_properties(${libname}-objs PROPERTIES COMPILE_FLAGS "-fPIC")

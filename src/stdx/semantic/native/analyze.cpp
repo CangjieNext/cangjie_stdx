@@ -14,6 +14,7 @@
 #include "cangjie/Macro/MacroCommon.h"
 #include "cangjie/Sema/Desugar.h"
 #include "cangjie/Sema/TypeChecker.h"
+#include "cangjie/AST/PrintNode.h"
 
 #include "flatbuffers/SyntaxNodeFormat_generated.h"
 #include "semantic.h"
@@ -207,15 +208,47 @@ void TimerRecord(steady_clock::time_point start, const std::string& info)
 }
 
 extern "C" {
-uint8_t* CJ_Analyze(const uint8_t* node, size_t length)
+struct ImportedPackage {
+    uint8_t* buffer;
+    size_t size;
+};
+
+struct DeclTypeMap {
+    uint8_t* buffer;
+    size_t size;
+};
+
+struct ImportedPackageArray {
+    struct ImportedPackage* importedPackageBuffer;
+    struct DeclTypeMap* declTypeMapBuffer;
+    size_t size;
+};
+
+uint8_t* CJ_Analyze(const uint8_t* node, size_t length, const ImportedPackageArray* importContexts)
 {
     steady_clock::time_point deserialStart = TimerStart();
     SyntaxNodePtr root = SyntaxNodeFlatBufferDeserializer::deserialize(node, length);
-    TimerRecord(deserialStart, "Stage 2.1: Deserial GreenTree");
-
+    
     DiagnosticEngine diag;
     CompilerInvocation compilerInvocation;
     CompilerInstance ci(compilerInvocation, diag);
+
+    auto importPackages = std::vector<OwnedPtr<Package>>();
+    if (importContexts == nullptr) {
+        std::cerr << "importContexts is nullptr" << std::endl;
+    } else {
+        for (size_t i = 0; i < importContexts->size; ++i) {
+            const ImportedPackage& pkg = importContexts->importedPackageBuffer[i];
+            SyntaxNodePtr context = SyntaxNodeFlatBufferDeserializer::deserialize(pkg.buffer, pkg.size);
+            const DeclTypeMap& map = importContexts->declTypeMapBuffer[i];
+            auto declIDToTyMap = DeclTypeMapFlatBufferDeserializer::deserialize(map.buffer, map.size);
+ 
+            SyntaxToAstBuilder pkgBuiiler(declIDToTyMap, *ci.typeManager);
+            importPackages.push_back(pkgBuiiler.BuildPackageFromSyntaxNode(context));
+            std::cout << context->toString() << std::endl;
+        }
+    }
+    TimerRecord(deserialStart, "Stage 2.1: Deserial GreenTree");
 
     const char* path = getenv("CANGJIE_HOME");
     std::string cangjieHome(path);
@@ -270,7 +303,11 @@ uint8_t* CJ_Analyze(const uint8_t* node, size_t length)
     TimerRecord(tyCollectStart, "Stage 2.3: TypeCollector");
 
     steady_clock::time_point importStart = TimerStart();
-    ci.PerformImportPackage();
+    // ci.PerformImportPackage();
+
+    for (size_t i = 0; i < importPackages.size(); ++i) {
+        ci.importManager.SetPackageInfo(importPackages[i]->fullPackageName, nullptr, std::move(importPackages[i]));
+    }
     TimerRecord(importStart, "Stage 2.4: Import");
 
     steady_clock::time_point semaStart = TimerStart();
@@ -283,10 +320,12 @@ uint8_t* CJ_Analyze(const uint8_t* node, size_t length)
     TimerRecord(reCollectStart, "Stage 2.6: ReCollect Type");
 
     // std::cout << "----------after sema---------" << std::endl;
-    // for (const auto &pair : tyCollector.declMap) {
-    //     std::cout << "key: " << pair.second << ", value: " << pair.first.get()
-    //         << ", ty: " << pair.first.get()->ty->String() << std::endl;
-    // }
+    PrintNode(ci.srcPkgs[0].get());
+    std::cout << "----------after sema---------" << std::endl;
+    for (const auto &pair : tyCollector.declMap) {
+        std::cout << "key: " << pair.second << ", value: " << pair.first.get()
+            << ", ty: " << pair.first.get()->ty->String() << std::endl;
+    }
     // for (const auto &pair : tyCollector.exprMap) {
     //     std::cout << "key: " << pair.second << ", value: " << pair.first.get()
     //         << ", ty: " << pair.first.get()->ty->String() << std::endl;

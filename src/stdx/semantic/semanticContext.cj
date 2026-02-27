@@ -7,7 +7,7 @@ import std.io.{readToEnd}
 
 public class SemanticContext {
     // cjo 
-    public let syntaxTree: SyntaxTreeNode
+    public let pkgAST: Package
     private let declTypeInfoMap: HashMap<UInt64, SemanticType>
     public static func createFromCJOFile(cjoFilePath: String): SemanticContext {
         let cjoPath: Path = Path(cjoFilePath)
@@ -25,9 +25,15 @@ public class SemanticContext {
         declTypeInfoMap.get(decl.getId())
     }
 
-    init(syntaxTree: SyntaxTreeNode, declTypeInfoMap: HashMap<UInt64, SemanticType>){
+    prop declMap: HashMap<UInt64, SemanticType> {
+        get() {
+            declTypeInfoMap
+        }
+    }
+
+    init(syntaxTree: Package, declTypeInfoMap: HashMap<UInt64, SemanticType>) {
         this.declTypeInfoMap = declTypeInfoMap
-        this.syntaxTree = syntaxTree
+        this.pkgAST = syntaxTree
     }
 }
 
