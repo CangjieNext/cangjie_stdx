@@ -16,6 +16,13 @@ import std.unittest.testmacro.*
 import stdx.syntax.*
 import stdx.semantic.*
 
+/*
+该用例主要测试 cjut 自动生成测试用例的场景，当public函数入参类型为自定义类型时，
+需要提供相应的语义信息给大模型来生成该类型的输入。
+public class {func xxx} 的情况怎么识别成public func?
+测试路径  找到public funcDecl （节点可见性要单独考虑下） -> 入参为自定义类型 CompositeType -> getDecl 得到对应Decl -> getSubTys 得到所有子类的Decl
+（入参类型为接口或抽象类的情况，或用于提升生成测试用例覆盖率） -> 对于得到的Decl，尝试获取其构造函数。
+*/
 @Test
 class AnalyzeTestDeclWithDifferentVisiblity {
     var decls: Array<Decl> = []
@@ -48,7 +55,6 @@ class AnalyzeTestDeclWithDifferentVisiblity {
         }
     }
 
-    @Skip
     @TestCase
     func testDecl01() {
         let decl = decls[1]
@@ -59,7 +65,6 @@ class AnalyzeTestDeclWithDifferentVisiblity {
         }
     }
 
-    @Skip
     @TestCase
     func testDecl02() {
         let decl = decls[2]
@@ -100,7 +105,6 @@ class AnalyzeTestDeclWithDifferentVisiblity {
         }
     }
 
-    @Skip
     @TestCase
     func testDecl06() {
         let decl = decls[6]
@@ -131,7 +135,6 @@ class AnalyzeTestDeclWithDifferentVisiblity {
         }
     }
 
-    @Skip
     @TestCase
     func testDecl09() {
         let decl = decls[9]
@@ -139,6 +142,47 @@ class AnalyzeTestDeclWithDifferentVisiblity {
         match (declTyInfo) {
             case Some(declTy: SemanticType) => @Expect(declTy.toString(), "Rotation")
             case None => @FailExpect("no type info")
+        }
+    }
+
+    @Skip
+    @TestCase [
+        data in ["Rotation", "Face", "Index", "Vector", "I"]
+    ] // Enum类型找不到Decl，全是EnumDecl或TypeAlias，当前找不到
+    func testGetDecl01(data: String) {
+        let ty = CompositeType(data, [], [])
+        @Expect(semaRes.getDecl(ty).isSome())
+        if (let Some(decl) <- semaRes.getDecl(ty)) {
+            println(decl)
+        }
+    }
+
+    @Skip
+    @TestCase [
+        data in [("Rotation", 0), ("Face", 0), ("Index", 0), ("Vector", 0), ("I", 2)]
+    ]
+    func testGetMembers(data: (ty: String, size: Int64)) {
+        let ty = CompositeType(data[0], [], [])
+        if (let Some(decl) <- semaRes.getDecl(ty)) {
+            let mems = semaRes.getMembers(decl)
+            println("members: ${mems.size}")
+            @Expect(mems.size, data[1])
+            for (mem in mems) {
+                // 找到构造函数则收集起来 FuncDecl (name == Init 或 data[0]), StaticInit 或 EnumConstructor 
+            }
+        }
+    }
+
+    @Skip
+    @TestCase [
+        data in [("Rotation", 0), ("Face", 0), ("Index", 0), ("Vector", 0), ("I", 2)]
+    ]
+    func testGetSubTys(data: (ty: String, size: Int64)) {
+        let ty = CompositeType(data[0], [], [])
+        if (let Some(decl) <- semaRes.getDecl(ty)) {
+            let subs = semaRes.getSubTys(decl)
+            println("subs: ${subs.size}")
+            @Expect(subs.size, data[1])
         }
     }
 }

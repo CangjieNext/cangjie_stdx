@@ -212,6 +212,10 @@ public enum Rotation <: ToString & Hashable & Equatable<Rotation> {
         text(false)
     }
 
+    public func fooWithI(arg: I) {
+        arg.foo() // 测试接口类型 I 的语义信息是否正确传递给大模型来生成输入
+    }
+
     // 下面实现 Hashable 和 Equatable 接口，以便 Rotation 作为 HashMap 的 Key
     public func hashCode(): Int64 {
         this.toString().hashCode()
@@ -227,3 +231,17 @@ public enum Rotation <: ToString & Hashable & Equatable<Rotation> {
 }
 
 public type Face = Rotation
+
+public interface I {
+	func foo(): Int64
+}
+
+public class A <: I {
+	public func foo(): Int64 { 0 }
+}
+
+public class B {}
+
+extend B <: I {
+	public func foo(): Int64 { 1 }
+}

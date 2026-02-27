@@ -20,7 +20,7 @@ class SemaTestVisitor <: ASTVisitor {
         */
         match (expr) {
             case ref: SymbolRef =>
-                if (let Some(decl) <- semaRes.getSymbolRef(ref)) {
+                if (let Some(decl) <- semaRes.getSymbolInfo(ref)) {
                     println("${ref} target -> ${decl}")
                 } else {
                     println("${ref} target not found")
