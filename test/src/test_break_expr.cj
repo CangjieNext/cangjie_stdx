@@ -17,7 +17,7 @@ import stdx.syntax.*
 import stdx.semantic.*
 
 @Test
-class AnalyzeExprTest001 {
+class AnalyzeBreakExprTest {
     var decls: Array<Decl> = []
     var semaRes: SemanticResult = SemanticResult.analyze(Package(false, "default", 
         [SourceFile([], "default", "/path/to/sourceFile.cj", None, 
@@ -30,7 +30,7 @@ class AnalyzeExprTest001 {
 
     @BeforeAll
     func readExprs(): Unit {
-        let parsingRes: ParsingResult<Package> = parsePackage("../sourceFile/package/package_break_expr")
+        let parsingRes: ParsingResult<Package> = parsePackage("sourceFile/package/package_break_expr")
         let pkgAST: Package = parsingRes.node.getOrThrow()
 
         semaRes = SemanticResult.analyze(pkgAST, importedPkgContexts: [])

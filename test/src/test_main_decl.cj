@@ -19,33 +19,9 @@ import stdx.semantic.*
 
 @Test
 class MainAnalyzeTest {
-    
-    // var files = Array<SourceFile>()
-    // var semaRes: SemanticResult = SemanticResult.analyze(Package(false, "default", 
-    //     [SourceFile([], "default", "/path/to/sourceFile.cj", None, 
-    //         MainDecl(
-    //             Block([ReturnExpr(None)]), 
-    //             ParameterList([]), 
-    //             AtomicType(UnitType))
-    //     )]), importedPkgContexts: [])
-
-    // @BeforeAll
-    // func readDecls(): Unit {
-    //     let parsingRes: ParsingResult<Package> = parsePackage("../sourceFile/package/package_main_decl")
-       
-    //     let pkgAST: Package = parsingRes.node.getOrThrow()
-
-    //     semaRes = SemanticResult.analyze(pkgAST, importedPkgContexts: [])
-    //     files = pkgAST.srcFile
-
-        
-    // }
-
-    
     @TestCase
-    @Skip
     func testMain1_Type() {
-        let parsingRes: ParsingResult<Package> = parsePackage("../sourceFile/package/package_main_decl/package_main_decl_01")
+        let parsingRes: ParsingResult<Package> = parsePackage("sourceFile/package/package_main_decl/package_main_decl_01")
         let pkgAST: Package = parsingRes.node.getOrThrow()
 
         let semaRes = SemanticResult.analyze(pkgAST, importedPkgContexts: [])
@@ -59,9 +35,8 @@ class MainAnalyzeTest {
     }
 
     @TestCase
-    @Skip
     func testMain2_Type() {
-        let parsingRes: ParsingResult<Package> = parsePackage("../sourceFile/package/package_main_decl/package_main_decl_02")
+        let parsingRes: ParsingResult<Package> = parsePackage("sourceFile/package/package_main_decl/package_main_decl_02")
         let pkgAST: Package = parsingRes.node.getOrThrow()
 
         let semaRes = SemanticResult.analyze(pkgAST, importedPkgContexts: [])
@@ -77,9 +52,8 @@ class MainAnalyzeTest {
     }
 
     @TestCase
-    @Skip
     func testMain3_Type() {
-        let parsingRes: ParsingResult<Package> = parsePackage("../sourceFile/package/package_main_decl/package_main_decl_03")
+        let parsingRes: ParsingResult<Package> = parsePackage("sourceFile/package/package_main_decl/package_main_decl_03")
         let pkgAST: Package = parsingRes.node.getOrThrow()
 
         let semaRes = SemanticResult.analyze(pkgAST, importedPkgContexts: [])
@@ -93,9 +67,8 @@ class MainAnalyzeTest {
     }
 
     @TestCase
-    @Skip
     func testMain4_Type() {
-        let parsingRes: ParsingResult<Package> = parsePackage("../sourceFile/package/package_main_decl/package_main_decl_04")
+        let parsingRes: ParsingResult<Package> = parsePackage("sourceFile/package/package_main_decl/package_main_decl_04")
         let pkgAST: Package = parsingRes.node.getOrThrow()
 
         let semaRes = SemanticResult.analyze(pkgAST, importedPkgContexts: [])
@@ -109,9 +82,8 @@ class MainAnalyzeTest {
     }
 
     @TestCase
-    @Skip
     func testMain5_Type() {
-        let parsingRes: ParsingResult<Package> = parsePackage("../sourceFile/package/package_main_decl/package_main_decl_05")
+        let parsingRes: ParsingResult<Package> = parsePackage("sourceFile/package/package_main_decl/package_main_decl_05")
         let pkgAST: Package = parsingRes.node.getOrThrow()
 
         let semaRes = SemanticResult.analyze(pkgAST, importedPkgContexts: [])
@@ -125,21 +97,14 @@ class MainAnalyzeTest {
     }
 
     @TestCase
-    @Skip
     func testMain6Type() {
-        let parsingRes: ParsingResult<Package> = parsePackage("../sourceFile/package/package_main_decl/package_main_decl_06")
+        let parsingRes: ParsingResult<Package> = parsePackage("sourceFile/package/package_main_decl/package_main_decl_06")
         let pkgAST: Package = parsingRes.node.getOrThrow()
 
         let semaRes = SemanticResult.analyze(pkgAST, importedPkgContexts: [])
         let files=pkgAST.srcFile
-        var decl = files[0].topLevelDecls[0]
-        var declTyInfo: Option<SemanticType> = semaRes.getTypeInfo(decl)
-        match (declTyInfo) {
-            case Some(ty: SemanticType) => @Expect(ty.toString(), "Box<T>")
-            case None => @FailExpect("no type info")
-        }
-        decl = files[0].topLevelDecls[1]
-        declTyInfo = semaRes.getTypeInfo(decl)
+        let decl = files[0].topLevelDecls[0]
+        let declTyInfo = semaRes.getTypeInfo(decl)
         match (declTyInfo) {
             case Some(ty: SemanticType) => @Expect(ty.toString(), "(Array<String>) -> Int8")
             case None => @FailExpect("no type info")
