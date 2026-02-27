@@ -221,11 +221,13 @@ class ClientStream {
             path = ASTERISK
         } else {
             path = canonicalPath(req.url.path)
-            if (let Some(query) <- req.url.query) {
-                path += "?${query}"
+            if (let Some(rawQuery) <- req.url.rawQuery) {
+                _ = req.url.query // decode query to check if the query is valid
+                path += "?${rawQuery}"
             }
-            if (let Some(fragment) <- req.url.fragment) {
-                path += "#${fragment}"
+            if (let Some(rawFragment) <- req.url.rawFragment) {
+                _ = req.url.fragment // decode fragment to check if the fragment is valid
+                path += "#${rawFragment}"
             }
         }
         if (req.url.port.isEmpty()) {

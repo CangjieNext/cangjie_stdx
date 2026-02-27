@@ -842,13 +842,15 @@ class ConnNode <: BodyProviderConn {
         // absolute-path ["?" query]
         } else {
             requestTarget.append(canonicalPath(request.url.path))
-            if (let Some(query) <- request.url.query) {
+            if (let Some(rawQuery) <- request.url.rawQuery) {
+                _ = request.url.query // decode query to check if the query is valid
                 requestTarget.append("?")
-                requestTarget.append(query)
+                requestTarget.append(rawQuery)
             }
-            if (let Some(fragment) <- request.url.fragment) {
+            if (let Some(rawFragment) <- request.url.rawFragment) {
+                _ = request.url.fragment // decode fragment to check if the fragment is valid
                 requestTarget.append("#")
-                requestTarget.append(fragment)
+                requestTarget.append(rawFragment)
             }
         }
         return requestTarget
