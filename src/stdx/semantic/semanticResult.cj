@@ -8,14 +8,21 @@ import std.io.*
 public class SemanticResult {
     public let diags: Array<Diagnostic> = []
     private let impl: AnalyzerImpl
-    let pkgAST: SyntaxTreeNode
+    let pkgAST: Package
 
     public static func analyze(pkgAST: Package, importedPkgContexts!: Array<SemanticContext> = []): SemanticResult {
         let serialStart = timerStart() 
         let buf: Array<UInt8> = serializePkg(pkgAST)
+        let importedPkgBuf = Array<Array<UInt8>>(importedPkgContexts.size, repeat: Array<UInt8>())
+        let typeInfoMapBuf = Array<Array<UInt8>>(importedPkgContexts.size, repeat: Array<UInt8>())
+        for (i in 0..importedPkgContexts.size) {
+            importedPkgBuf[i] = serializePkg(importedPkgContexts[i].pkgAST)
+            typeInfoMapBuf[i] = serializeNodeTypeInfoMap(importedPkgContexts[i].declMap)
+        }
+
         timerRecord(serialStart, "Stage 1.1: Serial GreenTree")
 
-        let maps = unsafe{ analyzeImpl(buf) }
+        let maps = unsafe{ analyzeImpl(buf, importedPkgBuf, typeInfoMapBuf) }
 
         let tyMapStart = timerStart()
         let declMap = getDeclTypeMap(pkgAST, maps)
@@ -138,7 +145,7 @@ public class SemanticResult {
     private let exprTypeInfoMap: HashMap<UInt64, SemanticType>
     private let target: HashMap<UInt64, SyntaxTreeNode>
     
-    init(pkgAST: SyntaxTreeNode, declTypeInfoMap: HashMap<UInt64, SemanticType>, exprTypeInfoMap: HashMap<UInt64, SemanticType>, target: HashMap<UInt64, SyntaxTreeNode>, impl: AnalyzerImpl){
+    init(pkgAST: Package, declTypeInfoMap: HashMap<UInt64, SemanticType>, exprTypeInfoMap: HashMap<UInt64, SemanticType>, target: HashMap<UInt64, SyntaxTreeNode>, impl: AnalyzerImpl){
         this.declTypeInfoMap = declTypeInfoMap
         this.exprTypeInfoMap = exprTypeInfoMap
         this.target = target

@@ -80,10 +80,39 @@ void TimerRecord(steady_clock::time_point start, const std::string& info)
 }
 
 extern "C" {
-uint8_t* CJ_Analyze(const uint8_t* node, size_t length)
+struct ImportedPackage {
+    uint8_t* buffer;
+    size_t size;
+};
+
+struct DeclTypeMap {
+    uint8_t* buffer;
+    size_t size;
+};
+
+struct ImportedPackageArray {
+    struct ImportedPackage* importedPackageBuffer;
+    struct DeclTypeMap* declTypeMapBuffer;
+    size_t size;
+};
+
+uint8_t* CJ_Analyze(const uint8_t* node, size_t length, const ImportedPackageArray* importContexts)
 {
     steady_clock::time_point deserialStart = TimerStart();
     SyntaxNodePtr root = SyntaxNodeFlatBufferDeserializer::deserialize(node, length);
+    if (importContexts == nullptr) {
+        std::cerr << "importContexts is nullptr" << std::endl;
+    } else {
+        for (size_t i = 0; i < importContexts->size; ++i) {
+            const ImportedPackage& pkg = importContexts->importedPackageBuffer[i];
+            SyntaxNodePtr context = SyntaxNodeFlatBufferDeserializer::deserialize(pkg.buffer, pkg.size);
+            const DeclTypeMap& map = importContexts->declTypeMapBuffer[i];
+            DeclTypeMapFlatBufferDeserializer::deserialize(map.buffer, map.size);
+            
+            printSyntaxNode(context);
+            std::cout << context->toString() << std::endl;
+        }
+    }
     TimerRecord(deserialStart, "Stage 2.1: Deserial GreenTree");
 
     DiagnosticEngine diag;
@@ -145,6 +174,8 @@ uint8_t* CJ_Analyze(const uint8_t* node, size_t length)
     steady_clock::time_point importStart = TimerStart();
     ci.PerformImportPackage();
     TimerRecord(importStart, "Stage 2.4: Import");
+
+    // buildIndex // 重排依赖信息
 
     steady_clock::time_point semaStart = TimerStart();
     ci.PerformSema();

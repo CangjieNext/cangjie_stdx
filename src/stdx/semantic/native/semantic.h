@@ -59,6 +59,31 @@ private:
     static std::string getNodeKindName(SyntaxNodeFormat::NodeImplKind kind);
 };
 
+class DeclTypeMapFlatBufferDeserializer {
+public:
+    static void deserialize(const uint8_t* buffer, size_t length) {
+        const auto* root = SemanticType::GetNodeTypeMap(buffer);
+
+        auto dumpList = [](const flatbuffers::Vector<flatbuffers::Offset<SemanticType::SemanticTypeMap>>* list) {
+            if (!list) return;
+            for (const auto* e : *list) {
+                uint64_t id = e->id();
+                const auto* t = e->type(); // SemanticType::ASTType*
+                uint16_t kind = t ? t->kind() : 0;
+                const char* name = (t && t->name()) ? t->name()->c_str() : "";
+                // 需要的话还可以读：t->typeArgs(), t->rawPointer(), t->declId()
+                (void)id; (void)kind; (void)name;
+            }
+        };
+
+        dumpList(root->declMapList());
+    }
+
+private:
+    // static std::shared_ptr<SyntaxNode> deserializeNonTerminal(const SyntaxNodeFormat::NonTerminal* nonTerm);
+};
+
+
 class SyntaxNode {
 public:
     std::string kind;
