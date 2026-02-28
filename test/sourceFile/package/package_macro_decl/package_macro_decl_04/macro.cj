@@ -11,15 +11,12 @@ public macro Outer(input: Tokens): Tokens {
     )
     for (m in messages) {
         let identName = m.getString("identifierName")
-        getTotalFunc.append(Token(TokenKind.IDENTIFIER, identName))
-        getTotalFunc.append(quote(+))
+        getTotalFunc.concat(quote(+))
     }
-    getTotalFunc.append(quote(0))
-    getTotalFunc.append(quote(}))
+    getTotalFunc.concat(quote(0))
+    getTotalFunc.concat(quote(}))
 
-    let funcDecl = parseDecl(getTotalFunc)
     let decl = (parseDecl(input) as ClassDecl).getOrThrow()
-    decl.body.decls.append(funcDecl)
     return decl.toTokens()
 }
 

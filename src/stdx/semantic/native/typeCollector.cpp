@@ -866,7 +866,14 @@ void TypeCollector::collect(const SyntaxNodePtr &syntaxNode, const Ptr<AST::Node
     }
     if (syntaxNode->isDecl()) {
         if (node->astKind != ASTKind::MAIN_DECL && node->astKind != ASTKind::EXTEND_DECL) {
-            declMap[node.get()] = syntaxNode->id;
+            if (node->astKind == ASTKind::MACRO_DECL) {
+                auto md = StaticAs<ASTKind::MACRO_DECL>(node);
+                if (md->desugarDecl) {
+                    declMap[md->desugarDecl.get()] = syntaxNode->id;
+                }
+            } else {
+                declMap[node.get()] = syntaxNode->id;
+            }
         }
     }
     if (syntaxNode->isSymbolRef() && node->astKind == ASTKind::REF_EXPR) {
@@ -925,6 +932,13 @@ void TypeCollector::collectMainDeclDesugar(const SyntaxNodePtr &syntaxNode, cons
         auto mainDecl = StaticAs<ASTKind::MAIN_DECL>(node);
         if (mainDecl->desugarDecl) {
             declMap[mainDecl->desugarDecl.get()] = syntaxNode->id;
+        }
+    }
+    
+    if (node->astKind == ASTKind::MACRO_DECL) {
+        auto macroDecl = StaticAs<ASTKind::MACRO_DECL>(node);
+        if (macroDecl->desugarDecl) {
+            declMap[macroDecl->desugarDecl.get()] = syntaxNode->id;
         }
     }
     

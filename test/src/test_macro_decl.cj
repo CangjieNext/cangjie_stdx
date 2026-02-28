@@ -20,7 +20,6 @@
  	 @Test
  	 class MacroAnalyzeTest {
  	     @TestCase
-		 @Skip
  	     func tesMacro1_Type() {
  	         let parsingRes: ParsingResult<Package> = parsePackage("sourceFile/package/package_macro_decl/package_macro_decl_01")
  	         let pkgAST: Package = parsingRes.node.getOrThrow()
@@ -30,13 +29,12 @@
  	         let decl = files[0].topLevelDecls[0]
  	         var declTyInfo: Option<SemanticType> = semaRes.getTypeInfo(decl)
  	         match (declTyInfo) {
- 	             case Some(ty: SemanticType) => @Expect(ty.toString(), "() -> Unit")
+ 	             case Some(ty: SemanticType) => @Expect(ty.toString(), "(Tokens) -> Tokens")
  	             case None => @FailExpect("no type info")
  	         }
  	     }
  	 
  	     @TestCase
-		 @Skip
  	     func testMacro2_Type() {
  	         let parsingRes: ParsingResult<Package> = parsePackage("sourceFile/package/package_macro_decl/package_macro_decl_02")
  	         let pkgAST: Package = parsingRes.node.getOrThrow()
@@ -47,14 +45,13 @@
  	 
  	         let declTyInfo: Option<SemanticType> = semaRes.getTypeInfo(decl)
  	         match (declTyInfo) {
- 	             case Some(ty: SemanticType) => @Expect(ty.toString(), "() -> Int64")
+ 	             case Some(ty: SemanticType) => @Expect(ty.toString(), "(Tokens, Tokens) -> Tokens")
  	             case None => @FailExpect("no type info")
  	         }
  	        
  	     }
  	 
  	     @TestCase
-		 @Skip
  	     func testMacro3_Type() {
  	         let parsingRes: ParsingResult<Package> = parsePackage("sourceFile/package/package_macro_decl/package_macro_decl_03")
  	         let pkgAST: Package = parsingRes.node.getOrThrow()
@@ -64,13 +61,12 @@
  	         let decl = files[0].topLevelDecls[0]
  	         let declTyInfo: Option<SemanticType> = semaRes.getTypeInfo(decl)
  	         match (declTyInfo) {
- 	             case Some(ty: SemanticType) => @Expect(ty.toString(), "() -> Int32")
+ 	             case Some(ty: SemanticType) => @Expect(ty.toString(), "(Tokens, Tokens) -> Tokens")
  	             case None => @FailExpect("no type info")
  	         }
  	     }
  	 
  	     @TestCase
-		 @Skip
  	     func testMacro4_Type() {
  	         let parsingRes: ParsingResult<Package> = parsePackage("sourceFile/package/package_macro_decl/package_macro_decl_04")
  	         let pkgAST: Package = parsingRes.node.getOrThrow()
@@ -80,7 +76,7 @@
  	         let decl = files[0].topLevelDecls[0]
  	         let declTyInfo: Option<SemanticType> = semaRes.getTypeInfo(decl)
  	         match (declTyInfo) {
- 	             case Some(ty: SemanticType) => @Expect(ty.toString(), "(Array<String>) -> Unit")
+ 	             case Some(ty: SemanticType) => @Expect(ty.toString(), "(Tokens) -> Tokens")
  	             case None => @FailExpect("no type info")
  	         }
  	     }
