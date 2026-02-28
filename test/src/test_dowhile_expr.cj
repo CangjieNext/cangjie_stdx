@@ -6,7 +6,7 @@
  * See https://cangjie-lang.cn/pages/LICENSE for license information.
  */
 // DEPENDENCE: sourceFile/package/package_dowhile_expr
-// (not Windows) EXEC: dos2unix ppackage_dowhile_expr/exprs.cj
+// (not Windows) EXEC: dos2unix package_dowhile_expr/exprs.cj
 // EXEC: %compiler %import-cangjie-stdx %cmp_opt -o %n.%suffix %f %cmp_utest_opt
 // RUN-EXEC: %set_stdx_path %run %run_opt %n.%suffix %run_utest_opt %run_args
 package semantictest
