@@ -17,7 +17,7 @@ import stdx.syntax.*
 import stdx.semantic.*
 
 @Test
-class AnalyzeExprTest001 {
+class ArrayLiteralTest001 {
     var decls: Array<Decl> = []
     var semaRes: SemanticResult = SemanticResult.analyze(Package(false, "default", 
         [SourceFile([], "default", "/path/to/sourceFile.cj", None, 
@@ -52,7 +52,7 @@ class AnalyzeExprTest001 {
     }
 
     @TestCase
-    func testExpr01() {
+    func testArrayLiteral01() {
         let expr = (nodes[1] as ArrayLiteral).getOrThrow()
         println(expr)
         let exprTyInfo: Option<SemanticType> = semaRes.getTypeInfo(expr)
@@ -63,7 +63,7 @@ class AnalyzeExprTest001 {
     }
 
     @TestCase
-    func testExpr02() {
+    func testArrayLiteral02() {
         let expr = (nodes[2] as ArrayLiteral).getOrThrow()
         println(expr)
         let exprTyInfo: Option<SemanticType> = semaRes.getTypeInfo(expr)
@@ -74,7 +74,7 @@ class AnalyzeExprTest001 {
     }
 
     @TestCase
-    func testExpr03() {
+    func testArrayLiteral03() {
         let expr = (nodes[3] as ArrayLiteral).getOrThrow()
         println(expr)
         let exprTyInfo: Option<SemanticType> = semaRes.getTypeInfo(expr)
@@ -85,7 +85,7 @@ class AnalyzeExprTest001 {
     }
 
     @TestCase
-    func testExpr04() {
+    func testArrayLiteral04() {
         let expr = (nodes[4] as ArrayLiteral).getOrThrow()
         println(expr)
         let exprTyInfo: Option<SemanticType> = semaRes.getTypeInfo(expr)
@@ -96,7 +96,7 @@ class AnalyzeExprTest001 {
     }
 
     @TestCase
-    func testExpr05() {
+    func testArrayLiteral05() {
         let expr = (nodes[5] as ArrayLiteral).getOrThrow()
         println(expr)
         let exprTyInfo: Option<SemanticType> = semaRes.getTypeInfo(expr)
@@ -107,7 +107,7 @@ class AnalyzeExprTest001 {
     }
 
     @TestCase
-    func testExpr06() {
+    func testArrayLiteral06() {
         let expr = (nodes[6] as ArrayLiteral).getOrThrow()
         println(expr)
         let exprTyInfo: Option<SemanticType> = semaRes.getTypeInfo(expr)
@@ -118,7 +118,7 @@ class AnalyzeExprTest001 {
     }
 
     @TestCase
-    func testExpr07() {
+    func testArrayLiteral07() {
         let expr = (nodes[7] as ArrayLiteral).getOrThrow()
         println(expr)
         let exprTyInfo: Option<SemanticType> = semaRes.getTypeInfo(expr)
