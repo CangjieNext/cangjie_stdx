@@ -120,6 +120,8 @@ public class BadgeView {
               title: 'Color'
             )
 
+            foo()
+
 //            SliderBar(
 //              value: badgeSize,
 //              sliderParams: SliderParams(30.0, 80.0, 1.0),
@@ -131,10 +133,14 @@ public class BadgeView {
               title: 'BadgeColor'
             )
 
-            BadgePositionBar(position: position)
+            BadgePositionBar(position: position) // 这里如果没使用绑定的变量构造，需要报错
           }.padding(bottom: 50)
         }.section()
       }.pageContainer()
     }
   }
+}
+
+public func foo() {
+  println("This is foo function")
 }

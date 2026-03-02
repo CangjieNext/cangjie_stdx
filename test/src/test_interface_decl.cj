@@ -221,7 +221,6 @@ class AnalyzeTestInterfaceDecl001 {
         }
     }
 
-    @Skip
     @TestCase
     func testDecl09() {
         let decl = (decls[9] as InterfaceDecl).getOrThrow()

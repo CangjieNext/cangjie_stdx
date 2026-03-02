@@ -216,13 +216,12 @@ class AnalyzeTestClassDecl001 {
         }
     }
 
-    @Skip
     @TestCase
     func testDecl08() {
         let decl = (decls[8] as ClassDecl).getOrThrow()
         let declTyInfo: Option<SemanticType> = semaRes.getTypeInfo(decl)
         match (declTyInfo) {
-            case Some(funcTy: SemanticType) => @Expect(funcTy.toString(), "Class_08")
+            case Some(funcTy: SemanticType) => @Expect(funcTy.toString(), "Class_08<K, V>")
             case None => @FailExpect("no type info")
         }
 
@@ -231,13 +230,17 @@ class AnalyzeTestClassDecl001 {
             let menberdecl = nodes[i]
             let declTyInfo: Option<SemanticType> = semaRes.getTypeInfo(menberdecl)
             match((i, declTyInfo)) {
+                case (0, Some(funcTy: SemanticType)) =>  @Expect(Some(funcTy.toString()), "(K, V) -> Class_08<K, V>")
+                case (1, Some(funcTy: SemanticType)) =>  @Expect(Some(funcTy.toString()), "String")
+                case (2, Some(funcTy: SemanticType)) =>  @Expect(Some(funcTy.toString()), "() -> Unit")
+                case (3, Some(funcTy: SemanticType)) =>  @Expect(Some(funcTy.toString()), "(Int64) -> Int64")
+                case (4, Some(funcTy: SemanticType)) =>  @Expect(Some(funcTy.toString()), "(Float64) -> Float64")
                 case (_, None) => @FailExpect("no type info")
                 case (_, _) => println("extra node")
             }
         }
     }
 
-    @Skip
     @TestCase
     func testDecl09() {
         let decl = (decls[9] as ClassDecl).getOrThrow()
@@ -325,5 +328,5 @@ class AnalyzeTestClassDecl001 {
             }
         }
     }
- 
+
 }
