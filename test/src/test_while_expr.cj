@@ -17,7 +17,7 @@ import stdx.syntax.*
 import stdx.semantic.*
 
 @Test
-class AnalyzeExprTest001 {
+class WhileExprTest001 {
     var decls: Array<Decl> = []
     var semaRes: SemanticResult = SemanticResult.analyze(Package(false, "default", 
         [SourceFile([], "default", "/path/to/sourceFile.cj", None, 
