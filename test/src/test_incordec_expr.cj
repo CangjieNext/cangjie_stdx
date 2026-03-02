@@ -30,7 +30,7 @@ class IncOrDecExprTest001 {
 
     @BeforeAll
     func readExprs(): Unit {
-        let parsingRes: ParsingResult<Package> = parsePackage("../sourceFile/package/package_incordec_expr")
+        let parsingRes: ParsingResult<Package> = parsePackage("sourceFile/package/package_incordec_expr")
         let pkgAST: Package = parsingRes.node.getOrThrow()
 
         semaRes = SemanticResult.analyze(pkgAST, importedPkgContexts: [])
