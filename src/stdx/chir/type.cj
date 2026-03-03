@@ -1692,3 +1692,55 @@ public class ClassType <: CustomType & Equatable<ClassType> {
         setHashCode()
     }
 }
+
+/**
+ * @brief Represents a struct type in the type system.
+ *
+ * This type represents a user-defined struct with optional generic type parameters.
+ * The class maintains a cache of all struct types to ensure uniqueness.
+ */
+public class StructType <: CustomType & Equatable<StructType> {
+    private static var ALL_STRUCT_TYPES = HashMap<StructType, StructType>()
+
+    /**
+     * @brief Gets or creates a StructType for the given struct definition and generic type parameters.
+     *
+     * This method ensures that only one StructType instance exists for each struct definition and generic type parameter combination.
+     * @param def The struct definition.
+     * @param genericTypeParams The generic type parameters.
+     * @return The StructType instance.
+     */
+    public static func get(def: StructDef, genericTypeParams: Array<Type>): StructType {
+        let temp = StructType(def, ArrayList<Type>.of(genericTypeParams))
+        let res = ALL_STRUCT_TYPES.get(temp)
+        if (res.isNone()) {
+            ALL_STRUCT_TYPES.add(temp, temp)
+            return temp
+        }
+        return res.getOrThrow()
+    }
+
+    /**
+     * @brief Gets the StructDef associated with this struct type.
+     * @return The StructDef instance.
+     */
+    public prop structDef: StructDef {
+        get() {
+            return (def as StructDef).getOrThrow()
+        }
+    }
+
+    /**
+     * @brief Checks if this StructType is equal to another StructType.
+     * @param other The StructType to compare with.
+     * @return true if the types are equal, false otherwise.
+     */
+    public operator func ==(other: StructType): Bool {
+        return hasSameTypeKindAndArgs(other) && this._def == other._def
+    }
+
+    private init(def: StructDef, genericTypeParams: ArrayList<Type>) {
+        super(TypeKind.Struct, def, genericTypeParams)
+        setHashCode()
+    }
+}
