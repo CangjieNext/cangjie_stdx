@@ -6,6 +6,5 @@
 # See https://cangjie-lang.cn/pages/LICENSE for license information.
 
 set(CRYPTO_SRCS
-    secure_random.cj
-    symmetricCipher.cj
+    "*.cj"
     CACHE INTERNAL "")
