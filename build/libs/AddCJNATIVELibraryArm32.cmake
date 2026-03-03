@@ -34,6 +34,7 @@ make_cangjie_lib(
     CANGJIE_STD_LIB_LINK
         std-core
         std-collection
+        std-fs
     OBJECTS ${output_cj_object_dir}/stdx/chir.o)
 add_library(stdx.chir STATIC ${output_cj_object_dir}/stdx/chir.o)
 set_target_properties(stdx.chir PROPERTIES LINKER_LANGUAGE C)
