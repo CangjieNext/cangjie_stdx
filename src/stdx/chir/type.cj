@@ -1796,3 +1796,116 @@ public class EnumType <: CustomType & Equatable<EnumType> {
         setHashCode()
     }
 }
+
+/**
+ * @brief Represents a function type in the type system.
+ *
+ * This type represents a function signature with parameter types and return type.
+ * The class maintains a cache of all function types to ensure uniqueness.
+ */
+public class FuncType <: Type & Equatable<FuncType> {
+    private static var ALL_FUNC_TYPES = HashMap<FuncType, FuncType>()
+    private let _hasVarArg: Bool
+    private let _isCFunc: Bool
+
+    /**
+     * @brief Gets or creates a FuncType for the given parameter types and return type.
+     *
+     * This method ensures that only one FuncType instance exists for each function signature.
+     * @param paramTypes The parameter types.
+     * @param retType The return type.
+     * @param varArg Whether the function has variable arguments (default: false).
+     * @param cFunc Whether this is a C function (default: false).
+     * @return The FuncType instance.
+     */
+    public static func get(paramTypes: Array<Type>, retType: Type, varArg!: Bool = false, cFunc!: Bool = false): FuncType {
+        let temp = FuncType(ArrayList<Type>.of(paramTypes), retType, varArg, cFunc)
+        let res = ALL_FUNC_TYPES.get(temp)
+        if (res.isNone()) {
+            ALL_FUNC_TYPES.add(temp, temp)
+            return temp
+        }
+        return res.getOrThrow()
+    }
+
+    /**
+     * @brief Checks if this function type has variable arguments.
+     * @return true if the function has variable arguments, false otherwise.
+     */
+    public prop hasVarArg: Bool {
+        get() {
+            return _hasVarArg
+        }
+    }
+
+    /**
+     * @brief Checks if this is a C function type.
+     * @return true if this is a C function, false otherwise.
+     */
+    public prop isCFunc: Bool {
+        get() {
+            return _isCFunc
+        }
+    }
+
+    /**
+     * @brief Gets the parameter types of this function.
+     * @return An array of parameter types.
+     */
+    public prop paramTypes: Array<Type> {
+        get() {
+            return _typeArgs[0..(_typeArgs.size - 1)].toArray()
+        }
+    }
+
+    /**
+     * @brief Gets the return type of this function.
+     * @return The return type.
+     */
+    public prop returnType: Type {
+        get() {
+            return _typeArgs.last.getOrThrow()
+        }
+    }
+
+    /**
+     * @brief Converts this FuncType to its string representation.
+     * @return A string representation of the function type.
+     */
+    public func toString(): String {
+        let suffix = if (_hasVarArg) {
+            "...)"
+        } else {
+            ")"
+        }
+        var paramTypesStr = typeVecToString("(", paramTypes, suffix)
+        if (paramTypesStr.isEmpty()) {
+            paramTypesStr = "()"
+        }
+        let str = paramTypesStr + " -> " + returnType.toString()
+        return if (_isCFunc) {
+            "CFunc<" + str + ">"
+        } else {
+            str
+        }
+    }
+
+    /**
+     * @brief Checks if this FuncType is equal to another FuncType.
+     * @param other The FuncType to compare with.
+     * @return true if the types are equal, false otherwise.
+     */
+    public operator func ==(other: FuncType): Bool {
+        return hasSameTypeKindAndArgs(other) &&
+            this._hasVarArg == other._hasVarArg &&
+            this._isCFunc == other._isCFunc
+    }
+
+    private init(paramTypes: ArrayList<Type>, retType: Type, varArg: Bool, cFunc: Bool) {
+        super(TypeKind.Func, paramTypes)
+        this._hasVarArg = varArg
+        this._isCFunc = cFunc
+        _typeArgs.add(retType)
+        setHashCode()
+    }
+}
