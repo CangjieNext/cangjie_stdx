@@ -1473,3 +1473,222 @@ public class VArrayType <: BuiltinType & Equatable<VArrayType> {
     }
 }
 
+/**
+ * @brief Abstract base class for custom types (class, enum, struct).
+ *
+ * This class represents user-defined types in the type system.
+ */
+sealed abstract class CustomType <: Type & Equatable<CustomType> {
+    internal var _def: CustomTypeDef
+
+    /**
+     * @brief Checks if this CustomType is equal to another CustomType.
+     * @param other The CustomType to compare with.
+     * @return true if the types are equal, false otherwise.
+     */
+    public operator func ==(other: CustomType): Bool {
+        return hasSameTypeKindAndArgs(other) && this._def == other._def
+    }
+
+    /**
+     * @brief Gets the definition of this custom type.
+     * @return The CustomTypeDef instance.
+     */
+    public prop def: CustomTypeDef {
+        get() {
+            return _def
+        }
+    }
+
+    /**
+     * @brief Gets the generic type arguments of this custom type.
+     * @return An array of generic type arguments.
+     */
+    public prop genericTypeArgs: Array<Type> {
+        get() {
+            return _typeArgs.toArray()
+        }
+    }
+
+    internal prop allMemberVarNames: Array<String> {
+        get() {
+            var result: ArrayList<String> = ArrayList<String>()
+            if (isClassType()) {
+                let classDef = (def as ClassDef).getOrThrow()
+                if (classDef.superClass.isSome()) {
+                    result = ArrayList<String>.of(classDef.superClass.getOrThrow().allMemberVarNames)
+                }
+            }
+            for (memberVar in def.instanceVars) {
+                result.add(memberVar.name)
+            }
+            return result.toArray()
+        }
+    }
+
+    internal func getExtendImplementedInterfaceTypes(visited !: ArrayList<(Type, Type)> = ArrayList<(Type, Type)>()): Array<ClassType> {
+        var result: ArrayList<ClassType> = ArrayList<ClassType>()
+        for (exDef in getExtendDefs(visited: visited)) {
+            let (success, instMap) = exDef.extendedType.calculateGeneric2InstTypeMap(this)
+            assert(success, "Failed to calculate generic 2 inst type map")
+            for (p in exDef.implementedInterfaceTypes) {
+                let instType = (getInstType(p, instMap) as ClassType).getOrThrow()
+                result.add(instType)
+            }
+        }
+        return result.toArray()
+    }
+
+    internal func getImplementedInterfaceTypes(visited !: ArrayList<(Type, Type)> = ArrayList<(Type, Type)>()): Array<ClassType> {
+        var result = ArrayList<ClassType>.of(this.getExtendImplementedInterfaceTypes(visited: visited))
+        for (p in _def.implementedInterfaceTypes) {
+            let instType = (getInstType(p, generic2InstTypeMap) as ClassType).getOrThrow()
+            result.add(instType)
+        }
+        return result.toArray()
+    }
+
+    internal func getInstantiatedMemberVarTypes(): Array<Type> {
+        var result: ArrayList<Type> = ArrayList<Type>()
+        if (isClassType()) {
+            let cType = (this as ClassType).getOrThrow()
+            if (cType.hasSuperClassType()) {
+                result = ArrayList<Type>.of(cType.getSuperClassType().getInstantiatedMemberVarTypes())
+            }
+        }
+        for (memberVar in def.instanceVars) {
+            result.add(getInstType(memberVar.ty, generic2InstTypeMap))
+        }
+        return result.toArray()
+    }
+
+    internal func getMemberVarInstantiatedType(name: String): Type {
+        let memberVarInstTypes = getInstantiatedMemberVarTypes()
+        let memberVarNames = allMemberVarNames
+        assert(memberVarInstTypes.size == memberVarNames.size, "Member variable size mismatch")
+        for (i in memberVarNames.size - 1..=0 : -1) {
+            if (memberVarNames[i] == name) {
+                return memberVarInstTypes[i]
+            }
+        }
+        throw Exception("Member variable " + name + " not found in " + toString())
+    }
+
+    /**
+     * @brief Converts this CustomType to its string representation.
+     * @return A string representation of the custom type.
+     */
+    public func toString(): String {
+        return this._kind.toString() + "-" +
+            _def.identifierWithoutPrefix + typeVecToString("<", genericTypeArgs, ">")
+    }
+
+    internal func getSuperTypesRecusively(visited !: ArrayList<(Type, Type)> = ArrayList<(Type, Type)>()): Array<ClassType> {
+        var result: ArrayList<ClassType> = ArrayList<ClassType>()
+        for (p in this.getImplementedInterfaceTypes(visited: visited)) {
+            getAllInstantiatedParentTypes(p, result, visited: visited)
+        }
+        if (let c <- (this as ClassType) && c.isSome() && c.getOrThrow().hasSuperClassType()) {
+            getAllInstantiatedParentTypes(c.getOrThrow().getSuperClassType(), result, visited: visited)
+        }
+        return result.toArray()
+    }
+
+    internal func getExtendDefs(visited !: ArrayList<(Type, Type)> = ArrayList<(Type, Type)>()): Array<ExtendDef> {
+        var result: ArrayList<ExtendDef> = ArrayList<ExtendDef>()
+        for (exDef in def.extends) {
+            if (this.isEqualOrInstantiatedTypeOf(exDef.extendedType, visited: visited)) {
+                result.add(exDef)
+            }
+        }
+        return result.toArray()
+    }
+
+    internal prop generic2InstTypeMap: HashMap<GenericType, Type> {
+        get() {
+            let genericTypeParams = def.genericTypeParams
+            assert(genericTypeParams.size == genericTypeArgs.size, "Generic type params size mismatch")
+            var replaceTable: HashMap<GenericType, Type> = HashMap<GenericType, Type>()
+            for (i in 0..genericTypeParams.size) {
+                let genericTypeParam = genericTypeParams[i]
+                let genericTypeArg = genericTypeArgs[i]
+                replaceTable.add(genericTypeParam, genericTypeArg)
+            }
+            return replaceTable
+        }
+    }
+
+    internal init(kind: TypeKind, def: CustomTypeDef, genericTypeParams: ArrayList<Type>) {
+        super(kind, genericTypeParams)
+        this._def = def
+    }
+}
+
+/**
+ * @brief Represents a class type in the type system.
+ *
+ * This type represents a user-defined class with optional generic type parameters.
+ * The class maintains a cache of all class types to ensure uniqueness.
+ */
+public class ClassType <: CustomType & Equatable<ClassType> {
+    private static var ALL_CLASS_TYPES = HashMap<ClassType, ClassType>()
+
+    /**
+     * @brief Gets the ClassDef associated with this class type.
+     * @return The ClassDef instance.
+     */
+    public prop classDef: ClassDef {
+        get() {
+            return (def as ClassDef).getOrThrow()
+        }
+    }
+
+    /**
+     * @brief Checks if this class type has a super class.
+     * @return true if the class has a super class, false otherwise.
+     */
+    internal func hasSuperClassType(): Bool {
+        return classDef.superClass.isSome()
+    }
+
+    /**
+     * @brief Gets the super class type of this class.
+     * @return The super class type.
+     */
+    internal func getSuperClassType(): ClassType {
+        let res = getInstType(classDef.superClass.getOrThrow(), generic2InstTypeMap)
+        return (res as ClassType).getOrThrow()
+    }
+
+    /**
+     * @brief Checks if this ClassType is equal to another ClassType.
+     * @param other The ClassType to compare with.
+     * @return true if the types are equal, false otherwise.
+     */
+    public operator func ==(other: ClassType): Bool {
+        return hasSameTypeKindAndArgs(other) && this._def == other._def
+    }
+
+    /**
+     * @brief Gets or creates a ClassType for the given class definition and generic type parameters.
+     *
+     * This method ensures that only one ClassType instance exists for each class definition and generic type parameter combination.
+     * @param def The class definition.
+     * @param genericTypeParams The generic type parameters.
+     * @return The ClassType instance.
+     */
+    public static func get(def: ClassDef, genericTypeParams: Array<Type>): ClassType {
+        let temp = ClassType(def, ArrayList<Type>.of(genericTypeParams))
+        let res = ALL_CLASS_TYPES.get(temp)
+        if (res.isNone()) {
+            ALL_CLASS_TYPES.add(temp, temp)
+            return temp
+        }
+        return res.getOrThrow()
+    }
+
+    private init(def: ClassDef, genericTypeParams: ArrayList<Type>) {
+        super(TypeKind.Class, def, genericTypeParams)
+        setHashCode()
+    }
+}
