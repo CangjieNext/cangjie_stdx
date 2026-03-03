@@ -328,7 +328,6 @@ class AnalyzeTestVarDecl001 {
         }
     }
 
-    @Skip
     @TestCase
     func testDecl29() {
         let decl = decls[29] // var varray_b: VArray<Int64, $3> = [1, 2, 3]

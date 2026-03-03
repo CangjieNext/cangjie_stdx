@@ -26,6 +26,12 @@ flatbuffers::Offset<SemanticType::ASTType> TypeWrite::SerializeSemanticType(AstT
     for (const auto item : ty->typeArgs) {
         lateTypeVector.push_back(SerializeSemanticType(item));
     }
+    if (ty->kind == TypeKind::TYPE_VARRAY) {
+        auto vaTy = static_cast<const VArrayTy*>(ty.get());
+        auto sizeTy = MakeOwned<PrimitiveTy>(TypeKind::TYPE_INT64);
+        sizeTy->name = "$" + std::to_string(vaTy->size);
+        lateTypeVector.push_back(SerializeSemanticType(sizeTy));
+    }
     if (ty->kind == TypeKind::TYPE_GENERICS) {
         for (const auto item : (static_cast<const GenericsTy*>(ty.get()))->upperBounds) {
             lateTypeVector.push_back(SerializeSemanticType(item));

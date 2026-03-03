@@ -49,30 +49,30 @@ class EnumAnalyzeTest {
             case Some(ty: SemanticType) => @Expect(ty.toString(), "A")
             case None => @FailExpect("no type info")
         }
-        // let decl_1 = (decl as EnumDecl).getOrThrow()
+        let decl_1 = (decl as EnumDecl).getOrThrow()
 
-        // let nodes = decl_1.body.memberDecls
+        let nodes = decl_1.body.memberDecls
 
-        // var constructor = (nodes[0] as EnumConstructor).getOrThrow()
-        // declTyInfo = semaRes.getTypeInfo(constructor)
-        // match (declTyInfo) {
-        //     case Some(funcTy: SemanticType) => @Expect(funcTy.toString(), "() -> A")
-        //     case None => @FailExpect("no type info")
-        // }
+        var constructor = (nodes[0] as EnumConstructor).getOrThrow()
+        declTyInfo = semaRes.getTypeInfo(constructor)
+        match (declTyInfo) {
+            case Some(funcTy: SemanticType) => @Expect(funcTy.toString(), "A")
+            case None => @FailExpect("no type info")
+        }
 
-        // constructor = (nodes[1] as EnumConstructor).getOrThrow()
-        // declTyInfo = semaRes.getTypeInfo(constructor)
-        // match (declTyInfo) {
-        //     case Some(funcTy: SemanticType) => @Expect(funcTy.toString(), "() -> A")
-        //     case None => @FailExpect("no type info")
-        // }
+        constructor = (nodes[1] as EnumConstructor).getOrThrow()
+        declTyInfo = semaRes.getTypeInfo(constructor)
+        match (declTyInfo) {
+            case Some(funcTy: SemanticType) => @Expect(funcTy.toString(), "A")
+            case None => @FailExpect("no type info")
+        }
 
-        // constructor = (nodes[2] as EnumConstructor).getOrThrow()
-        // declTyInfo = semaRes.getTypeInfo(constructor)
-        // match (declTyInfo) {
-        //     case Some(funcTy: SemanticType) => @Expect(funcTy.toString(), "() -> A")
-        //     case None => @FailExpect("no type info")
-        // }
+        constructor = (nodes[2] as EnumConstructor).getOrThrow()
+        declTyInfo = semaRes.getTypeInfo(constructor)
+        match (declTyInfo) {
+            case Some(funcTy: SemanticType) => @Expect(funcTy.toString(), "A")
+            case None => @FailExpect("no type info")
+        }
         
     }
 
@@ -85,30 +85,30 @@ class EnumAnalyzeTest {
             case Some(ty: SemanticType) => @Expect(ty.toString(), "B")
             case None => @FailExpect("no type info")
         }
-        // let decl_1 = (decl as EnumDecl).getOrThrow()
+        let decl_1 = (decl as EnumDecl).getOrThrow()
 
-        // let nodes = decl_1.body.memberDecls
+        let nodes = decl_1.body.memberDecls
 
-        // var constructor = (nodes[0] as EnumConstructor).getOrThrow()
-        // declTyInfo = semaRes.getTypeInfo(constructor)
-        // match (declTyInfo) {
-        //     case Some(funcTy: SemanticType) => @Expect(funcTy.toString(), "(UInt8) -> B")
-        //     case None => @FailExpect("no type info")
-        // }
+        var constructor = (nodes[0] as EnumConstructor).getOrThrow()
+        declTyInfo = semaRes.getTypeInfo(constructor)
+        match (declTyInfo) {
+            case Some(funcTy: SemanticType) => @Expect(funcTy.toString(), "(UInt8) -> B")
+            case None => @FailExpect("no type info")
+        }
 
-        // constructor = (nodes[1] as EnumConstructor).getOrThrow()
-        // declTyInfo = semaRes.getTypeInfo(constructor)
-        // match (declTyInfo) {
-        //     case Some(funcTy: SemanticType) => @Expect(funcTy.toString(), "(UInt8) -> B")
-        //     case None => @FailExpect("no type info")
-        // }
+        constructor = (nodes[1] as EnumConstructor).getOrThrow()
+        declTyInfo = semaRes.getTypeInfo(constructor)
+        match (declTyInfo) {
+            case Some(funcTy: SemanticType) => @Expect(funcTy.toString(), "(UInt8) -> B")
+            case None => @FailExpect("no type info")
+        }
 
-        // constructor = (nodes[2] as EnumConstructor).getOrThrow()
-        // declTyInfo = semaRes.getTypeInfo(constructor)
-        // match (declTyInfo) {
-        //     case Some(funcTy: SemanticType) => @Expect(funcTy.toString(), "(UInt8) -> B")
-        //     case None => @FailExpect("no type info")
-        // }
+        constructor = (nodes[2] as EnumConstructor).getOrThrow()
+        declTyInfo = semaRes.getTypeInfo(constructor)
+        match (declTyInfo) {
+            case Some(funcTy: SemanticType) => @Expect(funcTy.toString(), "(UInt8) -> B")
+            case None => @FailExpect("no type info")
+        }
        
     }
 
@@ -120,37 +120,37 @@ class EnumAnalyzeTest {
             case Some(ty: SemanticType) => @Expect(ty.toString(), "C")
             case None => @FailExpect("no type info")
         }
-        // let decl_1 = (decl as EnumDecl).getOrThrow()
+        let decl_1 = (decl as EnumDecl).getOrThrow()
 
-        // let nodes = decl_1.body.memberDecls
+        let nodes = decl_1.body.memberDecls
 
-        // var constructor = (nodes[0] as EnumConstructor).getOrThrow()
-        // declTyInfo = semaRes.getTypeInfo(constructor)
-        // match (declTyInfo) {
-        //     case Some(funcTy: SemanticType) => @Expect(funcTy.toString(), "C")
-        //     case None => @FailExpect("no type info")
-        // }
+        var constructor = (nodes[0] as EnumConstructor).getOrThrow()
+        declTyInfo = semaRes.getTypeInfo(constructor)
+        match (declTyInfo) {
+            case Some(funcTy: SemanticType) => @Expect(funcTy.toString(), "C")
+            case None => @FailExpect("no type info")
+        }
 
-        // constructor = (nodes[1] as EnumConstructor).getOrThrow()
-        // declTyInfo = semaRes.getTypeInfo(constructor)
-        // match (declTyInfo) {
-        //     case Some(funcTy: SemanticType) => @Expect(funcTy.toString(), "(UInt8) -> C")
-        //     case None => @FailExpect("no type info")
-        // }
+        constructor = (nodes[1] as EnumConstructor).getOrThrow()
+        declTyInfo = semaRes.getTypeInfo(constructor)
+        match (declTyInfo) {
+            case Some(funcTy: SemanticType) => @Expect(funcTy.toString(), "(UInt8) -> C")
+            case None => @FailExpect("no type info")
+        }
 
-        // constructor = (nodes[2] as EnumConstructor).getOrThrow()
-        // declTyInfo = semaRes.getTypeInfo(constructor)
-        // match (declTyInfo) {
-        //     case Some(funcTy: SemanticType) => @Expect(funcTy.toString(), "C")
-        //     case None => @FailExpect("no type info")
-        // }
+        constructor = (nodes[2] as EnumConstructor).getOrThrow()
+        declTyInfo = semaRes.getTypeInfo(constructor)
+        match (declTyInfo) {
+            case Some(funcTy: SemanticType) => @Expect(funcTy.toString(), "C")
+            case None => @FailExpect("no type info")
+        }
 
-        // constructor = (nodes[3] as EnumConstructor).getOrThrow()
-        // declTyInfo = semaRes.getTypeInfo(constructor)
-        // match (declTyInfo) {
-        //     case Some(funcTy: SemanticType) => @Expect(funcTy.toString(), "(UInt8) -> C")
-        //     case None => @FailExpect("no type info")
-        // }
+        constructor = (nodes[3] as EnumConstructor).getOrThrow()
+        declTyInfo = semaRes.getTypeInfo(constructor)
+        match (declTyInfo) {
+            case Some(funcTy: SemanticType) => @Expect(funcTy.toString(), "(UInt8) -> C")
+            case None => @FailExpect("no type info")
+        }
     }
 
     @TestCase
@@ -161,37 +161,37 @@ class EnumAnalyzeTest {
             case Some(ty: SemanticType) => @Expect(ty.toString(), "D")
             case None => @FailExpect("no type info")
         }
-        // let decl_1 = (decl as EnumDecl).getOrThrow()
+        let decl_1 = (decl as EnumDecl).getOrThrow()
 
-        // let nodes = decl_1.body.memberDecls
+        let nodes = decl_1.body.memberDecls
 
-        // var constructor = (nodes[0] as EnumConstructor).getOrThrow()
-        // declTyInfo = semaRes.getTypeInfo(constructor)
-        // match (declTyInfo) {
-        //     case Some(funcTy: SemanticType) => @Expect(funcTy.toString(), "(Int64) -> D")
-        //     case None => @FailExpect("no type info")
-        // }
+        var constructor = (nodes[0] as EnumConstructor).getOrThrow()
+        declTyInfo = semaRes.getTypeInfo(constructor)
+        match (declTyInfo) {
+            case Some(funcTy: SemanticType) => @Expect(funcTy.toString(), "(Int64) -> D")
+            case None => @FailExpect("no type info")
+        }
 
-        // constructor = (nodes[1] as EnumConstructor).getOrThrow()
-        // declTyInfo = semaRes.getTypeInfo(constructor)
-        // match (declTyInfo) {
-        //     case Some(funcTy: SemanticType) => @Expect(funcTy.toString(), "(D,D) -> D")
-        //     case None => @FailExpect("no type info")
-        // }
+        constructor = (nodes[1] as EnumConstructor).getOrThrow()
+        declTyInfo = semaRes.getTypeInfo(constructor)
+        match (declTyInfo) {
+            case Some(funcTy: SemanticType) => @Expect(funcTy.toString(), "(D, D) -> D")
+            case None => @FailExpect("no type info")
+        }
 
-        // constructor = (nodes[2] as EnumConstructor).getOrThrow()
-        // declTyInfo = semaRes.getTypeInfo(constructor)
-        // match (declTyInfo) {
-        //     case Some(funcTy: SemanticType) => @Expect(funcTy.toString(), "(D,D) -> D")
-        //     case None => @FailExpect("no type info")
-        // }
+        constructor = (nodes[2] as EnumConstructor).getOrThrow()
+        declTyInfo = semaRes.getTypeInfo(constructor)
+        match (declTyInfo) {
+            case Some(funcTy: SemanticType) => @Expect(funcTy.toString(), "(D, D) -> D")
+            case None => @FailExpect("no type info")
+        }
 
-        // constructor = (nodes[3] as EnumConstructor).getOrThrow()
-        // declTyInfo = semaRes.getTypeInfo(constructor)
-        // match (declTyInfo) {
-        //     case Some(funcTy: SemanticType) => @Expect(funcTy.toString(), "(D,D) -> D")
-        //     case None => @FailExpect("no type info")
-        // }
+        constructor = (nodes[3] as EnumConstructor).getOrThrow()
+        declTyInfo = semaRes.getTypeInfo(constructor)
+        match (declTyInfo) {
+            case Some(funcTy: SemanticType) => @Expect(funcTy.toString(), "(D, D) -> D")
+            case None => @FailExpect("no type info")
+        }
     }
 
     @TestCase
@@ -202,23 +202,23 @@ class EnumAnalyzeTest {
             case Some(ty: SemanticType) => @Expect(ty.toString(), "E<T>")
             case None => @FailExpect("no type info")
         }
-        // let decl_1 = (decl as EnumDecl).getOrThrow()
+        let decl_1 = (decl as EnumDecl).getOrThrow()
 
-        // let nodes = decl_1.body.memberDecls
+        let nodes = decl_1.body.memberDecls
 
-        // var constructor = (nodes[0] as EnumConstructor).getOrThrow()
-        // declTyInfo = semaRes.getTypeInfo(constructor)
-        // match (declTyInfo) {
-        //     case Some(funcTy: SemanticType) => @Expect(funcTy.toString(), "(T) -> E<T>")
-        //     case None => @FailExpect("no type info")
-        // }
+        var constructor = (nodes[0] as EnumConstructor).getOrThrow()
+        declTyInfo = semaRes.getTypeInfo(constructor)
+        match (declTyInfo) {
+            case Some(funcTy: SemanticType) => @Expect(funcTy.toString(), "(T) -> E<T>")
+            case None => @FailExpect("no type info")
+        }
 
-        // constructor = (nodes[1] as EnumConstructor).getOrThrow()
-        // declTyInfo = semaRes.getTypeInfo(constructor)
-        // match (declTyInfo) {
-        //     case Some(funcTy: SemanticType) => @Expect(funcTy.toString(), "E<T>")
-        //     case None => @FailExpect("no type info")
-        // }
+        constructor = (nodes[1] as EnumConstructor).getOrThrow()
+        declTyInfo = semaRes.getTypeInfo(constructor)
+        match (declTyInfo) {
+            case Some(funcTy: SemanticType) => @Expect(funcTy.toString(), "E<T>")
+            case None => @FailExpect("no type info")
+        }
     }
 
     @TestCase
@@ -229,30 +229,30 @@ class EnumAnalyzeTest {
             case Some(ty: SemanticType) => @Expect(ty.toString(), "F")
             case None => @FailExpect("no type info")
         }
-        // let decl_1 = (decl as EnumDecl).getOrThrow()
+        let decl_1 = (decl as EnumDecl).getOrThrow()
 
-        // let nodes = decl_1.body.memberDecls
+        let nodes = decl_1.body.memberDecls
 
-        // var constructor = (nodes[0] as EnumConstructor).getOrThrow()
-        // declTyInfo = semaRes.getTypeInfo(constructor)
-        // match (declTyInfo) {
-        //     case Some(funcTy: SemanticType) => @Expect(funcTy.toString(), "(?Int64) -> F")
-        //     case None => @FailExpect("no type info")
-        // }
+        var constructor = (nodes[0] as EnumConstructor).getOrThrow()
+        declTyInfo = semaRes.getTypeInfo(constructor)
+        match (declTyInfo) {
+            case Some(funcTy: SemanticType) => @Expect(funcTy.toString(), "(Option<Int64>) -> F")
+            case None => @FailExpect("no type info")
+        }
 
-        // constructor = (nodes[1] as EnumConstructor).getOrThrow()
-        // declTyInfo = semaRes.getTypeInfo(constructor)
-        // match (declTyInfo) {
-        //     case Some(funcTy: SemanticType) => @Expect(funcTy.toString(), "((Int64) -> Int64) -> F")
-        //     case None => @FailExpect("no type info")
-        // }
+        constructor = (nodes[1] as EnumConstructor).getOrThrow()
+        declTyInfo = semaRes.getTypeInfo(constructor)
+        match (declTyInfo) {
+            case Some(funcTy: SemanticType) => @Expect(funcTy.toString(), "((Int64) -> Int64) -> F")
+            case None => @FailExpect("no type info")
+        }
 
-        // constructor = (nodes[2] as EnumConstructor).getOrThrow()
-        // declTyInfo = semaRes.getTypeInfo(constructor)
-        // match (declTyInfo) {
-        //     case Some(funcTy: SemanticType) => @Expect(funcTy.toString(), "(B) -> F")
-        //     case None => @FailExpect("no type info")
-        // }
+        constructor = (nodes[2] as EnumConstructor).getOrThrow()
+        declTyInfo = semaRes.getTypeInfo(constructor)
+        match (declTyInfo) {
+            case Some(funcTy: SemanticType) => @Expect(funcTy.toString(), "(B) -> F")
+            case None => @FailExpect("no type info")
+        }
 
     }
 
@@ -264,23 +264,23 @@ class EnumAnalyzeTest {
             case Some(ty: SemanticType) => @Expect(ty.toString(), "G")
             case None => @FailExpect("no type info")
         }
-        // let decl_1 = (decl as EnumDecl).getOrThrow()
+        let decl_1 = (decl as EnumDecl).getOrThrow()
 
-        // let nodes = decl_1.body.memberDecls
+        let nodes = decl_1.body.memberDecls
 
-        // var constructor = (nodes[0] as EnumConstructor).getOrThrow()
-        // declTyInfo = semaRes.getTypeInfo(constructor)
-        // match (declTyInfo) {
-        //     case Some(funcTy: SemanticType) => @Expect(funcTy.toString(), "() -> G")
-        //     case None => @FailExpect("no type info")
-        // }
+        var constructor = (nodes[0] as EnumConstructor).getOrThrow()
+        declTyInfo = semaRes.getTypeInfo(constructor)
+        match (declTyInfo) {
+            case Some(funcTy: SemanticType) => @Expect(funcTy.toString(), "G")
+            case None => @FailExpect("no type info")
+        }
 
-        // constructor = (nodes[1] as EnumConstructor).getOrThrow()
-        // declTyInfo = semaRes.getTypeInfo(constructor)
-        // match (declTyInfo) {
-        //     case Some(funcTy: SemanticType) => @Expect(funcTy.toString(), "() -> G")
-        //     case None => @FailExpect("no type info")
-        // }
+        constructor = (nodes[1] as EnumConstructor).getOrThrow()
+        declTyInfo = semaRes.getTypeInfo(constructor)
+        match (declTyInfo) {
+            case Some(funcTy: SemanticType) => @Expect(funcTy.toString(), "G")
+            case None => @FailExpect("no type info")
+        }
     }
 
     @TestCase
@@ -321,23 +321,23 @@ class EnumAnalyzeTest {
             case Some(ty: SemanticType) => @Expect(ty.toString(), "k<T, E>")
             case None => @FailExpect("no type info")
         }
-        // let decl_1 = (decl as EnumDecl).getOrThrow()
+        let decl_1 = (decl as EnumDecl).getOrThrow()
 
-        // let nodes = decl_1.body.memberDecls
+        let nodes = decl_1.body.memberDecls
 
-        // var constructor = (nodes[0] as EnumConstructor).getOrThrow()
-        // declTyInfo = semaRes.getTypeInfo(constructor)
-        // match (declTyInfo) {
-        //     case Some(funcTy: SemanticType) => @Expect(funcTy.toString(), "(T) -> k<T, E>")
-        //     case None => @FailExpect("no type info")
-        // }
+        var constructor = (nodes[0] as EnumConstructor).getOrThrow()
+        declTyInfo = semaRes.getTypeInfo(constructor)
+        match (declTyInfo) {
+            case Some(funcTy: SemanticType) => @Expect(funcTy.toString(), "(T) -> k<T, E>")
+            case None => @FailExpect("no type info")
+        }
 
-        // constructor = (nodes[1] as EnumConstructor).getOrThrow()
-        // declTyInfo = semaRes.getTypeInfo(constructor)
-        // match (declTyInfo) {
-        //     case Some(funcTy: SemanticType) => @Expect(funcTy.toString(), "(E) -> k<T, E>")
-        //     case None => @FailExpect("no type info")
-        // }
+        constructor = (nodes[1] as EnumConstructor).getOrThrow()
+        declTyInfo = semaRes.getTypeInfo(constructor)
+        match (declTyInfo) {
+            case Some(funcTy: SemanticType) => @Expect(funcTy.toString(), "(E) -> k<T, E>")
+            case None => @FailExpect("no type info")
+        }
     }
 
     

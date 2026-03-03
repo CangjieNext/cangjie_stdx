@@ -19,6 +19,14 @@ func parseVArrayLength(name: String): Int64 {
         let length = Int64.parse(lengthStr)
         return length
     }
+    
+    // If name is just "$3" format, parse directly
+    if (let Some(pos) <- dollarPos) {
+        let lengthStr = name[pos + 1..]
+        let length = Int64.parse(lengthStr)
+        return length
+    }
+    
     return 0
 }
 
@@ -73,8 +81,14 @@ func generateSemanticType(t: Option<SemanticType_ASTType>, pkgAST: Package): Sem
             StructSType(name, typeArgs.toArray(), nf, rawPointer)
         case TYPE_ARRAY => ArraySType(typeArgs[0], rawPointer)
         case TYPE_VARRAY => 
-            // Parse length from name field, which format is "VArray<elementType, $length>"
-            let length = parseVArrayLength(name)
+            let length = if (typeArgsNode.size > 1) {
+                match (typeArgsNode[1]) {
+                    case Some(arg) => parseVArrayLength(arg.GetName())
+                    case None => 0
+                }
+            } else {
+                0
+            }
             VArraySType(typeArgs[0], length, rawPointer)
         case TYPE_POINTER => CPointerSType(typeArgs[0], rawPointer)
         case TYPE_CSTRING => CStringSType(rawPointer)

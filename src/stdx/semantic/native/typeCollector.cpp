@@ -116,7 +116,9 @@ std::vector<Ptr<AST::Node>> TypeCollector::collectChild(const Ptr<AST::Node> &no
                     collect.emplace_back(inheritedType);
                 }
                 if (classDecl->body.get()) {
-                    collect.emplace_back(classDecl->body);
+                    for (auto& decl : classDecl->body->decls) {
+                        collect.emplace_back(decl);
+                    }
                 }
                 return VisitAction::SKIP_CHILDREN;
             }
@@ -340,7 +342,9 @@ std::vector<Ptr<AST::Node>> TypeCollector::collectChild(const Ptr<AST::Node> &no
                     collect.emplace_back(inheritedType);
                 }
                 if (interfaceDecl->body.get()) {
-                    collect.emplace_back(interfaceDecl->body);
+                    for (auto& decl : interfaceDecl->body->decls) {
+                        collect.emplace_back(decl);
+                    }
                 }
                 return VisitAction::SKIP_CHILDREN;
             }
@@ -359,7 +363,9 @@ std::vector<Ptr<AST::Node>> TypeCollector::collectChild(const Ptr<AST::Node> &no
                     collect.emplace_back(inheritedType);
                 }
                 if (structDecl->body.get()) {
-                    collect.emplace_back(structDecl->body);
+                    for (auto& decl : structDecl->body->decls) {
+                        collect.emplace_back(decl);
+                    }
                 }
                 return VisitAction::SKIP_CHILDREN;
             }
@@ -382,28 +388,6 @@ std::vector<Ptr<AST::Node>> TypeCollector::collectChild(const Ptr<AST::Node> &no
                 }
                 for (auto& member : extendDecl->members) {
                     collect.emplace_back(member);
-                }
-                return VisitAction::SKIP_CHILDREN;
-            }
-            case ASTKind::STRUCT_BODY: {
-                auto structBody = StaticAs<ASTKind::STRUCT_BODY>(node);
-                for (auto& decl : structBody->decls) {
-                    collect.emplace_back(decl);
-                }
-                return VisitAction::SKIP_CHILDREN;
-            }
-            case ASTKind::CLASS_BODY: {
-                auto classBody = StaticAs<ASTKind::CLASS_BODY>(node);
-                for (auto& decl : classBody->decls) {
-                    collect.emplace_back(decl);
-                }
-                // std::cout<<"collect class body decls: "<<classBody->decls.size()<<std::endl;
-                return VisitAction::SKIP_CHILDREN;
-            }
-            case ASTKind::INTERFACE_BODY: {
-                auto interfaceBody = StaticAs<ASTKind::INTERFACE_BODY>(node);
-                for (auto& decl : interfaceBody->decls) {
-                    collect.emplace_back(decl);
                 }
                 return VisitAction::SKIP_CHILDREN;
             }
@@ -969,6 +953,21 @@ void TypeCollector::collect(const SyntaxNodePtr &syntaxNode, const Ptr<AST::Node
         }
 
         if (nonTerminal->children[i]->kind == "TypeArguments") {
+            auto nt = std::static_pointer_cast<NonTerminal>(nonTerminal->children[i]);
+            for (size_t k = 0; k < nt->children.size(); k++) {
+                if (nt->children[k]->getType() != NonTerminal::NodeType::NON_TERMINAL) {
+                    continue;
+                }
+                if (j < collect.size()) {
+                    this->collect(nt->children[k], collect[j]);
+                    j++;
+                }
+            }
+            i++;
+            continue;
+        }
+
+        if (nonTerminal->children[i]->kind == "Body") {
             auto nt = std::static_pointer_cast<NonTerminal>(nonTerminal->children[i]);
             for (size_t k = 0; k < nt->children.size(); k++) {
                 if (nt->children[k]->getType() != NonTerminal::NodeType::NON_TERMINAL) {
