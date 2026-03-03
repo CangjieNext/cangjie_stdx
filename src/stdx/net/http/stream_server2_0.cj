@@ -1322,13 +1322,13 @@ func parsePriority(value: String): Int64 {
     return urgency
 }
 
-func checkAndSetCl(responseBuilder: HttpResponseBuilder, setCl: Bool): Unit {
-    match ((checkCl(responseBuilder.headers), sizeOf(responseBuilder._body), setCl)) {
-        case (Some(cl), Some(bs), false) =>
-            if (cl != bs) {
+func checkAndSetCl(responseBuilder: HttpResponseBuilder, skipCheck!: Bool = false): Unit {
+    match ((checkCl(responseBuilder.headers), sizeOf(responseBuilder._body))) {
+        case (Some(cl), Some(bs)) =>
+            if (!skipCheck && cl != bs) {
                 throw HttpException("The content-length and body length not match.")
             }
-        case (None, Some(bs), true) => responseBuilder.headers.add("content-length", "${bs}")
+        case (None, Some(bs)) => responseBuilder.headers.add("content-length", "${bs}")
         case _ => ()
     }
 }
