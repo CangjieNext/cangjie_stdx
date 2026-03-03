@@ -153,7 +153,6 @@ class AnalyzeTestStructDecl001 {
         }
     }
 
-    @Skip
     @TestCase
     func testDecl06() {
         let decl = (decls[6] as StructDecl).getOrThrow()
@@ -170,7 +169,7 @@ class AnalyzeTestStructDecl001 {
             match((i, declTyInfo)) {
                 case (0, Some(funcTy: SemanticType)) =>  @Expect(Some(funcTy.toString()), "K")
                 case (1, Some(funcTy: SemanticType)) =>  @Expect(Some(funcTy.toString()), "V")
-                case (2, Some(funcTy: SemanticType)) =>  @Expect(Some(funcTy.toString()), "(K,V) -> Struct_06<K,V>")
+                case (2, Some(funcTy: SemanticType)) =>  @Expect(Some(funcTy.toString()), "(K, V) -> Struct_06<K, V>")
                 case (_, None) => @FailExpect("no type info")
                 case (_, _) => println("extra node")
             }

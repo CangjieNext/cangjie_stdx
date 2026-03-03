@@ -104,7 +104,13 @@ std::vector<Ptr<AST::Node>> TypeCollector::collectChild(const Ptr<AST::Node> &no
             case ASTKind::CLASS_DECL: {
                 auto classDecl = StaticAs<ASTKind::CLASS_DECL>(node);
                 if (classDecl->generic.get()) {
-                    collect.emplace_back(classDecl->generic);
+                    auto generic = StaticAs<ASTKind::GENERIC>(classDecl->generic.get());
+                    for (auto& typeParam : generic->typeParameters) {
+                        collect.emplace_back(typeParam);
+                    }
+                    if (generic->genericConstraints.size() > 0) {
+                        collect.emplace_back(classDecl->generic);
+                    }
                 }
                 for (auto& inheritedType : classDecl->inheritedTypes) {
                     collect.emplace_back(inheritedType);
@@ -119,7 +125,13 @@ std::vector<Ptr<AST::Node>> TypeCollector::collectChild(const Ptr<AST::Node> &no
                 if (funcDecl->funcBody.get()) {
                     auto funcBody = StaticAs<ASTKind::FUNC_BODY>(funcDecl->funcBody.get());
                     if (funcBody->generic.get()) {
-                        collect.emplace_back(funcBody->generic);
+                        auto generic = StaticAs<ASTKind::GENERIC>(funcBody->generic.get());
+                        for (auto& typeParam : generic->typeParameters) {
+                            collect.emplace_back(typeParam);
+                        }
+                        if (generic->genericConstraints.size() > 0) {
+                            collect.emplace_back(funcBody->generic);
+                        }
                     }
                     for (auto& paramList : funcBody->paramLists) {
                         collect.emplace_back(paramList);
@@ -136,7 +148,13 @@ std::vector<Ptr<AST::Node>> TypeCollector::collectChild(const Ptr<AST::Node> &no
             case ASTKind::FUNC_BODY: {
                 auto funcBody = StaticAs<ASTKind::FUNC_BODY>(node);
                 if (funcBody->generic.get()) {
-                    collect.emplace_back(funcBody->generic);
+                    auto generic = StaticAs<ASTKind::GENERIC>(funcBody->generic.get());
+                    for (auto& typeParam : generic->typeParameters) {
+                        collect.emplace_back(typeParam);
+                    }
+                    if (generic->genericConstraints.size() > 0) {
+                        collect.emplace_back(funcBody->generic);
+                    }
                 }
                 for (auto& paramList : funcBody->paramLists) {
                     collect.emplace_back(paramList);
@@ -288,7 +306,13 @@ std::vector<Ptr<AST::Node>> TypeCollector::collectChild(const Ptr<AST::Node> &no
             case ASTKind::ENUM_DECL: {
                 auto enumDecl = StaticAs<ASTKind::ENUM_DECL>(node);
                 if (enumDecl->generic.get()) {
-                    collect.emplace_back(enumDecl->generic);
+                    auto generic = StaticAs<ASTKind::GENERIC>(enumDecl->generic.get());
+                    for (auto& typeParam : generic->typeParameters) {
+                        collect.emplace_back(typeParam);
+                    }
+                    if (generic->genericConstraints.size() > 0) {
+                        collect.emplace_back(enumDecl->generic);
+                    }
                 }
                 for (auto& inheritedType : enumDecl->inheritedTypes) {
                     collect.emplace_back(inheritedType);
@@ -304,7 +328,13 @@ std::vector<Ptr<AST::Node>> TypeCollector::collectChild(const Ptr<AST::Node> &no
             case ASTKind::INTERFACE_DECL: {
                 auto interfaceDecl = StaticAs<ASTKind::INTERFACE_DECL>(node);
                 if (interfaceDecl->generic.get()) {
-                    collect.emplace_back(interfaceDecl->generic);
+                    auto generic = StaticAs<ASTKind::GENERIC>(interfaceDecl->generic.get());
+                    for (auto& typeParam : generic->typeParameters) {
+                        collect.emplace_back(typeParam);
+                    }
+                    if (generic->genericConstraints.size() > 0) {
+                        collect.emplace_back(interfaceDecl->generic);
+                    }
                 }
                 for (auto& inheritedType : interfaceDecl->inheritedTypes) {
                     collect.emplace_back(inheritedType);
@@ -317,7 +347,13 @@ std::vector<Ptr<AST::Node>> TypeCollector::collectChild(const Ptr<AST::Node> &no
             case ASTKind::STRUCT_DECL: {
                 auto structDecl = StaticAs<ASTKind::STRUCT_DECL>(node);
                 if (structDecl->generic.get()) {
-                    collect.emplace_back(structDecl->generic);
+                    auto generic = StaticAs<ASTKind::GENERIC>(structDecl->generic.get());
+                    for (auto& typeParam : generic->typeParameters) {
+                        collect.emplace_back(typeParam);
+                    }
+                    if (generic->genericConstraints.size() > 0) {
+                        collect.emplace_back(structDecl->generic);
+                    }
                 }
                 for (auto& inheritedType : structDecl->inheritedTypes) {
                     collect.emplace_back(inheritedType);
@@ -336,7 +372,13 @@ std::vector<Ptr<AST::Node>> TypeCollector::collectChild(const Ptr<AST::Node> &no
                     collect.emplace_back(inheritedType);
                 }
                 if (extendDecl->generic.get()) {
-                    collect.emplace_back(extendDecl->generic);
+                    auto generic = StaticAs<ASTKind::GENERIC>(extendDecl->generic.get());
+                    for (auto& typeParam : generic->typeParameters) {
+                        collect.emplace_back(typeParam);
+                    }
+                    if (generic->genericConstraints.size() > 0) {
+                        collect.emplace_back(extendDecl->generic);
+                    }
                 }
                 for (auto& member : extendDecl->members) {
                     collect.emplace_back(member);
@@ -537,7 +579,13 @@ std::vector<Ptr<AST::Node>> TypeCollector::collectChild(const Ptr<AST::Node> &no
             case ASTKind::TYPE_ALIAS_DECL: {
                 auto typeAliasDecl = StaticAs<ASTKind::TYPE_ALIAS_DECL>(node);
                 if (typeAliasDecl->generic.get()) {
-                    collect.emplace_back(typeAliasDecl->generic);
+                    auto generic = StaticAs<ASTKind::GENERIC>(typeAliasDecl->generic.get());
+                    for (auto& typeParam : generic->typeParameters) {
+                        collect.emplace_back(typeParam);
+                    }
+                    if (generic->genericConstraints.size() > 0) {
+                        collect.emplace_back(typeAliasDecl->generic);
+                    }
                 }
                 if (typeAliasDecl->type.get()) {
                     collect.emplace_back(typeAliasDecl->type);
@@ -823,15 +871,18 @@ std::vector<Ptr<AST::Node>> TypeCollector::collectChild(const Ptr<AST::Node> &no
             case ASTKind::BUILTIN_DECL: {
                 auto builtinDecl = StaticAs<ASTKind::BUILTIN_DECL>(node);
                 if (builtinDecl->generic.get()) {
-                    collect.emplace_back(builtinDecl->generic);
+                    auto generic = StaticAs<ASTKind::GENERIC>(builtinDecl->generic.get());
+                    for (auto& typeParam : generic->typeParameters) {
+                        collect.emplace_back(typeParam);
+                    }
+                    if (generic->genericConstraints.size() > 0) {
+                        collect.emplace_back(builtinDecl->generic);
+                    }
                 }
                 return VisitAction::SKIP_CHILDREN;
             }
             case ASTKind::GENERIC: {
                 auto generic = StaticAs<ASTKind::GENERIC>(node);
-                for (auto& typeParam : generic->typeParameters) {
-                    collect.emplace_back(typeParam);
-                }
                 for (auto& constraint : generic->genericConstraints) {
                     collect.emplace_back(constraint);
                 }
@@ -895,10 +946,10 @@ void TypeCollector::collect(const SyntaxNodePtr &syntaxNode, const Ptr<AST::Node
 
     auto nonTerminal = std::static_pointer_cast<NonTerminal>(syntaxNode);
     std::vector<Ptr<AST::Node>> collect = collectChild(node.get());
-    
+
     size_t i = 0;
     size_t j = 0;
-    
+
     while (i < nonTerminal->children.size() && j < collect.size()) {
         if (nonTerminal->children[i]->kind == "VarPattern" || nonTerminal->children[i]->kind == "ImportSpec"
         || nonTerminal->children[i]->kind == "PackageSpec") {
@@ -906,7 +957,8 @@ void TypeCollector::collect(const SyntaxNodePtr &syntaxNode, const Ptr<AST::Node
             continue;
         }
 
-        if (nonTerminal->children[i]->kind == "ModifierList" || nonTerminal->children[i]->kind == "AnnotationList") {
+        if (nonTerminal->children[i]->kind == "ModifierList" || nonTerminal->children[i]->kind == "AnnotationList"
+        || nonTerminal->children[i]->kind == "CommentGroupList") {
             i++;
             continue;
         }
@@ -915,7 +967,22 @@ void TypeCollector::collect(const SyntaxNodePtr &syntaxNode, const Ptr<AST::Node
             i++;
             continue;
         }
-        
+
+        if (nonTerminal->children[i]->kind == "TypeArguments") {
+            auto nt = std::static_pointer_cast<NonTerminal>(nonTerminal->children[i]);
+            for (size_t k = 0; k < nt->children.size(); k++) {
+                if (nt->children[k]->getType() != NonTerminal::NodeType::NON_TERMINAL) {
+                    continue;
+                }
+                if (j < collect.size()) {
+                    this->collect(nt->children[k], collect[j]);
+                    j++;
+                }
+            }
+            i++;
+            continue;
+        }
+
         this->collect(nonTerminal->children[i], collect[j]);
         i++;
         j++;
@@ -955,7 +1022,8 @@ void TypeCollector::collectMainDeclDesugar(const SyntaxNodePtr &syntaxNode, cons
             continue;
         }
 
-        if (nonTerminal->children[i]->kind == "ModifierList" || nonTerminal->children[i]->kind == "AnnotationList") {
+        if (nonTerminal->children[i]->kind == "ModifierList" || nonTerminal->children[i]->kind == "AnnotationList"
+        || nonTerminal->children[i]->kind == "CommentGroupList") {
             i++;
             continue;
         }
@@ -964,7 +1032,7 @@ void TypeCollector::collectMainDeclDesugar(const SyntaxNodePtr &syntaxNode, cons
             i++;
             continue;
         }
-        
+
         if (collect[j].get() != nullptr) {
             this->collectMainDeclDesugar(nonTerminal->children[i], collect[j]);
         }

@@ -67,7 +67,7 @@ class Class_06<T> {
     }
 }
 
-class Class_07<K, V> {
+open class Class_07<K, V> where K <: ToString {
     let key: K
     var val: V
 
@@ -104,59 +104,21 @@ class Class_07<K, V> {
     }
 }
 
-// open class Class_07<K, V> where K <: Class_00{
-//     let key: K
-//     var val: V
+// class Class_08<K, V> {}
 
-//     private let a_: Int32 = 1
-//     protected var b_: Float64 = 2.0
-
-//     init(k: K, v: V) {
-//         this.key = k
-//         this.val = v
-//     }
-
-//     public prop a: Int32{
-//         get() {
-//             this.a_
-//         }
-//     }
-//     public mut prop b: Float64{
-//         get() {
-//             this.b_
-//         }
-//         set(value) {
-//             this.b_ = value
-//         }
-//     }
-
-//     public open func openfunc(input: Int64): Int64 {
-//         input
-//     }
-//     public static func staticfunc(input: Float64): Float64 {
-//         input
-//     }
-//     public func unopenfunc(input: Bool): Bool {
-//         input
-//     }
-// }
-
-class Class_08 {}
-
-// class Class_08<K, V> <: Class_07<K, V> {
-//     init(k: K, v: V) {
-//         super(k, v)
-//     }
-//     public var c: String = "hello"
-    
-//     public func myfoo() {}
-//     public override func openfunc(input: Int64): Int64 {
-//         input
-//     }
-//     public redef static func staticfunc(input: Float64): Float64 {
-//         input
-//     }
-// }
+class Class_08<K, V> <: Class_07<K, V> where K <: ToString {
+    init(k: K, v: V) {
+        super(k, v)
+    }
+    public var c: String = "hello"
+    public func myfoo() {}
+    public override func openfunc(input: Int64): Int64 {
+        input
+    }
+    public redef static func staticfunc(input: Float64): Float64 {
+        input
+    }
+}
 
 abstract class Class_09 {
     public func foo(a: Int32): Bool
