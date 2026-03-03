@@ -1909,3 +1909,105 @@ public class FuncType <: Type & Equatable<FuncType> {
         setHashCode()
     }
 }
+
+/**
+ * @brief Represents a generic type parameter in the type system.
+ *
+ * This type represents a generic type parameter with optional upper bounds.
+ * The class maintains a cache of all generic types to ensure uniqueness.
+ */
+public class GenericType <: Type & Equatable<GenericType> {
+    private static var ALL_GENERIC_TYPES = HashMap<GenericType, GenericType>()
+    protected let _identifier: String
+    private let _srcCodeIdentifier: String
+    internal var _upperBounds: ArrayList<Type> = ArrayList<Type>()
+
+    /**
+     * @brief Gets or creates a GenericType for the given identifier.
+     *
+     * This method ensures that only one GenericType instance exists for each identifier.
+     * @param identifier The internal identifier of the generic type.
+     * @param srcCodeIdentifier The source code identifier of the generic type.
+     * @return The GenericType instance.
+     */
+    public static func get(identifier: String, srcCodeIdentifier: String): GenericType {
+        let temp = GenericType(identifier, srcCodeIdentifier)
+        let res = ALL_GENERIC_TYPES.get(temp)
+        if (res.isNone()) {
+            ALL_GENERIC_TYPES.add(temp, temp)
+            return temp
+        }
+        return res.getOrThrow()
+    }
+
+    /**
+     * @brief Gets the source code identifier of this generic type.
+     * @return The source code identifier.
+     */
+    public prop srcCodeIdentifier: String {
+        get() {
+            return _srcCodeIdentifier
+        }
+    }
+
+    /**
+     * @brief Gets or sets the upper bounds of this generic type.
+     *
+     * Upper bounds specify the types that this generic type parameter must be a subtype of.
+     * @return An array of upper bound types.
+     */
+    public mut prop upperBounds: Array<Type> {
+        get() {
+            return _upperBounds.toArray()
+        }
+        set(v) {
+            for (bound in v) {
+                if (bound.stripAllRefs().isValueType()) {
+                    throw IllegalArgumentException("Generic type upper bound should NOT be value type!")
+                }
+            }
+            _upperBounds = ArrayList<Type>.of(v)
+            sort(_upperBounds,
+                by: { l, r =>
+                    let lstring = l.toString()
+                    let rstring = r.toString()
+                    if (lstring == rstring) {
+                        return Ordering.EQ
+                    } else if (lstring < rstring) {
+                        return Ordering.LT
+                    } else {
+                        return Ordering.GT
+                    }
+                },
+                stable: true,
+                descending: false
+            )
+        }
+    }
+
+    /**
+     * @brief Converts this GenericType to its string representation.
+     * @return A string representation of the generic type.
+     */
+    public func toString(): String {
+        this._kind.toString() + "-" + this._identifier
+    }
+
+    /**
+     * @brief Checks if this GenericType is equal to another GenericType.
+     * @param other The GenericType to compare with.
+     * @return true if the types are equal, false otherwise.
+     */
+    public operator func ==(other: GenericType): Bool {
+        return this._identifier == other._identifier &&
+            this._srcCodeIdentifier == other.srcCodeIdentifier &&
+            this._upperBounds == other._upperBounds
+    }
+
+    private init(identifier: String, srcCodeIdentifier: String) {
+        super(TypeKind.Generic)
+        this._identifier = identifier
+        this._srcCodeIdentifier = srcCodeIdentifier
+        setHashCode()
+    }
+}
