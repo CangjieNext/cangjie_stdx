@@ -638,7 +638,11 @@ class HttpEngineConn1 <: HttpEngineConn & BodyProviderConn {
         let (contentLengthInHeader, chunked) = checkResponseHeader(response, response.bodySize)
         let contentLength: Int64
         if (!chunked) {
-            contentLength = checkClWithBodySize(response, contentLengthInHeader)
+            let isHeadRequest = match (response.request) {
+                case Some(request) => request.method == "HEAD"
+                case None => false
+            }
+            contentLength = checkClWithBodySize(response, contentLengthInHeader, isHeadRequest: isHeadRequest)
         } else {
             contentLength = -1
         }
@@ -897,10 +901,10 @@ class HttpEngineConn1 <: HttpEngineConn & BodyProviderConn {
 
     // @throws If the size of the body is known and the size of the body is smaller than the value of content-length in the header, throw this Exception.
     // If the body size is known and content-length is not set, content-length is automatically set in the header.
-    func checkClWithBodySize(response: HttpResponse, contentLengthInHeader: ?Int64): Int64 {
+    func checkClWithBodySize(response: HttpResponse, contentLengthInHeader: ?Int64, isHeadRequest!: Bool = false): Int64 {
         match ((response.bodySize, contentLengthInHeader)) {
             case (Some(bodySize), Some(cl)) =>
-                if (cl > bodySize) {
+                if (!isHeadRequest && cl > bodySize) {
                     throw HttpException("Wrote body size less than declared content-length.")
                 }
                 return cl
