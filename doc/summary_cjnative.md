@@ -10,6 +10,8 @@
         - [AOP 开发示例](libs_stdx/aspectCJ/aspectCJ_samples/aspectCJ_sample.md)
 - [stdx.chir](libs_stdx/chir/chir_package_overview.md)
     - [类](libs_stdx/chir/chir_package_api/chir_package_classes.md)
+    - [枚举](libs_stdx/chir/chir_package_api/chir_package_enums.md)
+    - [结构体](libs_stdx/chir/chir_package_api/chir_package_structs.md)
 - [stdx.compress](libs_stdx/compress/compress_package_overview.md)
     - [类](libs_stdx/compress/compress_package_api/compress_package_classes.md)
 - [stdx.compress.tar](libs_stdx/compress/tar/tar_package_overview.md)

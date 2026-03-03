@@ -65,8 +65,21 @@ function(add_cangjie_library target_name
         "${multi_value_args}"
         ${ARGN})
 
-    # pre-process source files
-    file(GLOB source_files CONFIGURE_DEPENDS ${CANGJIELIB_SOURCE_DIR}/*.cj)
+    # pre-process source files: optional explicit SOURCES (globs or paths relative to
+    # SOURCE_DIR); otherwise only top-level *.cj (subdirectories are not included).
+    if(CANGJIELIB_SOURCES)
+        set(source_files)
+        foreach(pattern IN LISTS CANGJIELIB_SOURCES)
+            if(pattern MATCHES "[*?]")
+                file(GLOB _cj CONFIGURE_DEPENDS ${CANGJIELIB_SOURCE_DIR}/${pattern})
+                list(APPEND source_files ${_cj})
+            else()
+                list(APPEND source_files ${CANGJIELIB_SOURCE_DIR}/${pattern})
+            endif()
+        endforeach()
+    else()
+        file(GLOB source_files CONFIGURE_DEPENDS ${CANGJIELIB_SOURCE_DIR}/*.cj)
+    endif()
 
     set(BACKEND)
     if(CANGJIELIB_IS_CJNATIVE_BACKEND)
