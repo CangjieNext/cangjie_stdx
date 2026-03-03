@@ -1358,7 +1358,7 @@ public class RawArrayType <: BuiltinType & Equatable<RawArrayType> {
     public func toString(): String {
         var prefix = ""
         var suffix = ""
-        for (i in 0..dims) {
+        for (_ in 0..dims) {
             prefix += "RawArray<"
             suffix += ">"
         }
@@ -1918,7 +1918,7 @@ public class FuncType <: Type & Equatable<FuncType> {
  */
 public class GenericType <: Type & Equatable<GenericType> {
     private static var ALL_GENERIC_TYPES = HashMap<GenericType, GenericType>()
-    protected let _identifier: String
+    internal let _identifier: String
     private let _srcCodeIdentifier: String
     internal var _upperBounds: ArrayList<Type> = ArrayList<Type>()
 
