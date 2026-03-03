@@ -2102,3 +2102,57 @@ public class TupleType <: Type & Equatable<TupleType> {
         setHashCode()
     }
 }
+
+private func tupleTypeIsEqualOrSubTypeOf(subType: TupleType, parentType: TupleType, visited: ArrayList<(Type, Type)>): Bool {
+    let subElementTypes = subType.elementTypes
+    let parentElementTypes = parentType.elementTypes
+    if (subElementTypes.size != parentElementTypes.size) {
+        return false
+    }
+    for (i in 0..subElementTypes.size) {
+        if (!subElementTypes[i].isEqualOrSubTypeOf(parentElementTypes[i], visited: visited)) {
+            return false
+        }
+    }
+    return true
+}
+
+private func funcTypeIsEqualOrSubTypeOf(subType: FuncType, parentType: FuncType, visited: ArrayList<(Type, Type)>): Bool {
+    if (subType.hasVarArg != parentType.hasVarArg) {
+        return false
+    }
+    if (subType.isCFunc != parentType.isCFunc) {
+        return false
+    }
+    let subParamTypes = subType.paramTypes
+    let parentParamTypes = parentType.paramTypes
+    if (subParamTypes.size != parentParamTypes.size) {
+        return false
+    }
+    for (i in 0..subParamTypes.size) {
+        if (!parentParamTypes[i].isEqualOrSubTypeOf(subParamTypes[i], visited: visited)) {
+            return false
+        }
+    }
+    return subType.returnType.isEqualOrSubTypeOf(parentType.returnType, visited: visited)
+}
+
+private func getClosureGenericBaseType(closureType: ClassType): ClassType {
+    if (closureType.isClosureGenericBaseType()) {
+        return closureType
+    }
+    return getClosureGenericBaseType(closureType.getSuperClassType())
+}
+
+private func convertClosureType2FuncType(closureType: ClassType): FuncType {
+    let baseType = getClosureGenericBaseType(closureType)
+    let typeArgs = baseType.genericTypeArgs
+    let (paramTypes, returnType) = typeArgs.splitAt(typeArgs.size - 1)
+    return FuncType.get(paramTypes, returnType[0])
+}
+
+private func closureTypeIsEqualOrSubTypeOf(subType: ClassType, parentType: ClassType, visited: ArrayList<(Type, Type)>): Bool {
+    let subFuncType = convertClosureType2FuncType(subType)
+    let parentFuncType = convertClosureType2FuncType(parentType)
+    return funcTypeIsEqualOrSubTypeOf(subFuncType, parentFuncType, visited)
+}
