@@ -1,5 +1,39 @@
 # 类
 
+> **排序**：下列各类按**类型名字母序**（A–Z）排列。
+
+## class AnnoInfo
+
+```cangjie
+public class AnnoInfo <: ToString
+```
+
+功能：CHIR 节点上挂载的**一组**注解（`Annotation` 列表）。
+
+父类型：
+
+- ToString
+
+### prop annoClasses / func toString()
+
+---
+
+## class Annotation
+
+```cangjie
+public class Annotation <: ToString
+```
+
+功能：单个**注解类**实例的文本化信息（类源码名、字段键值）。
+
+父类型：
+
+- ToString
+
+### prop classSrcCodeName / func getFieldValue(fieldName: String) / func toString()
+
+---
+
 ## class BoolType
 
 ```cangjie
@@ -77,6 +111,76 @@ main() {
 ```text
 两个 BoolType 相等: true
 ```
+
+## class BoxType
+
+```cangjie
+public class BoxType <: Type & Equatable<BoxType>
+```
+
+功能：表示**装箱类型** `Box<T>`，对值进行装箱包装。通过缓存保证同一 `baseType` 对应唯一实例。
+
+父类型：
+
+- Type
+- Equatable\<BoxType>
+
+### static func get(baseType: Type)
+
+```cangjie
+public static func get(baseType: Type): BoxType
+```
+
+功能：获取或创建指定基类型的 `BoxType`。
+
+### prop baseType
+
+```cangjie
+public prop baseType: Type
+```
+
+功能：被装箱的基类型。
+
+### func toString()
+
+```cangjie
+public func toString(): String
+```
+
+功能：字符串形式，一般为 `Box<...>` 风格。
+
+### operator func==(BoxType)
+
+```cangjie
+public operator func ==(other: BoxType): Bool
+```
+
+功能：比较两个 `BoxType` 是否相同。
+
+---
+
+## class BuiltinType
+
+```cangjie
+sealed abstract class BuiltinType <: Type & Equatable<BuiltinType>
+```
+
+功能：内置类型（数值、Bool、Unit、指针、数组等）的公共基类；可附加 `ExtendDef`（`addExtend`），并通过 `getSuperTypesRecusively` 收集由 extend 实现的接口父类型。
+
+父类型：
+
+- Type
+- Equatable\<BuiltinType>
+
+### public 成员概要
+
+| 成员 | 说明 |
+|------|------|
+| `operator func ==(other: BuiltinType)` | 同种类且类型参数相同则相等。 |
+| `getSuperTypesRecusively(visited!)` | 从 extend 块实现的接口递归收集 `ClassLikeType` 父类型。 |
+| `addExtend(extendDef: ExtendDef)` | 为本内置类型注册 extend 定义。 |
+
+---
 
 ## class CPointerType
 
@@ -340,6 +444,205 @@ main() {
 两个 CStringType 相等: true
 ```
 
+## class ClassLikeDef
+
+```cangjie
+public class ClassLikeDef <: CustomTypeDef & Equatable<ClassLikeDef>
+```
+
+功能：**类或接口**的定义。
+
+父类型：
+
+- CustomTypeDef
+- Equatable\<ClassLikeDef>
+
+### 主要 public 成员
+
+- `classType`、`superClass`、`isAnnotation`
+- `setAbstract`、`setOpen`、`setSealed`
+- `==`
+
+---
+
+## class ClassLikeType
+
+```cangjie
+public class ClassLikeType <: CustomType & Equatable<ClassLikeType>
+```
+
+功能：类或接口的**实例化类型**。`get(def, genericTypeParams)` 缓存唯一实例。
+
+父类型：
+
+- CustomType
+- Equatable\<ClassLikeType>
+
+### static func get(def: ClassLikeDef, genericTypeParams: Array\<Type>)
+
+功能：按定义与泛型实参获取唯一 `ClassLikeType`。
+
+### prop classLikeDef
+
+功能：对应的 `ClassLikeDef`。
+
+### operator func==(ClassLikeType)
+
+功能：相等比较。
+
+---
+
+## class CustomType
+
+```cangjie
+sealed abstract class CustomType <: Type & Equatable<CustomType>
+```
+
+功能：用户自定义类型（类/接口/结构体/枚举）实例化类型的公共基类，持有 `CustomTypeDef` 与泛型实参。
+
+父类型：
+
+- Type
+- Equatable\<CustomType>
+
+### public 成员概要
+
+| 成员 | 说明 |
+|------|------|
+| `def` | 对应的 `CustomTypeDef`。 |
+| `genericTypeArgs` | 泛型实参数组。 |
+| `allMemberVarNames` | 线性化后的成员名列表。 |
+| `getExtendImplementedInterfaceTypes(visited!)` | 由 extend 实现的接口（实例化后）。 |
+| `getImplementedInterfaceTypes(visited!)` | 直接实现 + extend 实现的接口。 |
+| `getInstantiatedMemberVarTypes()` | 成员类型（已代入泛型）。 |
+| `getMemberVarInstantiatedType(name)` | 按名称查找成员实例化类型。 |
+| `getSuperTypesRecusively(visited!)` | 递归父类与接口。 |
+| `getExtendDefs(visited!)` | 适用于当前实例的 extend 定义。 |
+| `toString()` / `==` | 字符串与相等。 |
+
+---
+
+## class CustomTypeDef
+
+```cangjie
+sealed abstract class CustomTypeDef <: Base & Equatable<CustomTypeDef> & Hashable
+```
+
+功能：类/接口/结构体/枚举/扩展的**定义**公共基类（与 `Base` 组合，含属性、CHIR 注解、调试位置等）。
+
+父类型：
+
+- Base
+- Equatable\<CustomTypeDef>
+- Hashable
+
+### 主要 public 能力
+
+- **标识**：`identifier`、`srcCodeName`、`packageName`、`ty`、`hashCode`、`==`
+- **泛型**：`genericTypeParams`、`genericDecl`
+- **成员与继承**：`instanceVars`、`extends`、`implementedInterfaceTypes`
+- **可见性与标记**：`setPublic` 等、`isImported`、`isAbstract`、`isOpen`、`isSealed`、`isGeneric` 等
+- **分类**：`isClassLike`、`isClass`、`isInterface`、`isStruct`、`isEnum`、`isExtend`
+- **其它**：`toString()`、`dump()`、`getSuperTypesRecusively`
+
+受保护的打印辅助（`printTitle` 等）供子类重写，一般使用者通过 `toString()` 查看。
+
+---
+
+## class DebugLocation
+
+```cangjie
+public class DebugLocation <: ToString
+```
+
+功能：源码中的**区间位置**（起止 `Position` 与文件路径），用于调试与打印。
+
+父类型：
+
+- ToString
+
+### prop start / prop end / prop filePath
+
+### func isValid() / func toString()
+
+## class EnumCtorInfo
+
+```cangjie
+public class EnumCtorInfo <: ToString
+```
+
+功能：枚举的一个**构造器/变体**（名称、内部名、函数类型、注解）。
+
+父类型：
+
+- ToString
+
+### prop srcCodeName / prop identifier / prop funcType / mut prop annotations
+
+### func toString()
+
+---
+
+## class EnumDef
+
+```cangjie
+public class EnumDef <: CustomTypeDef & Equatable<EnumDef>
+```
+
+功能：**枚举**定义；含是否穷尽、构造器列表等。
+
+父类型：
+
+- CustomTypeDef
+- Equatable\<EnumDef>
+
+### prop isExhaustive / prop constructors / prop enumType
+
+### func appendEnumCtorInfo(mangledName, name, argTypes!)
+
+### operator func==(EnumDef)
+
+---
+
+## class EnumType
+
+```cangjie
+public class EnumType <: CustomType & Equatable<EnumType>
+```
+
+功能：枚举的实例化类型；`get(def, genericTypeParams)` 缓存。
+
+父类型：
+
+- CustomType
+- Equatable\<EnumType>
+
+### static func get(def: EnumDef, genericTypeParams: Array\<Type>)
+
+### prop enumDef
+
+### operator func==(EnumType)
+
+---
+
+## class ExtendDef
+
+```cangjie
+public class ExtendDef <: CustomTypeDef
+```
+
+功能：**扩展（extend）**定义：对某类型增加实现等，带 `extendedType` 与泛型参数。
+
+父类型：
+
+- CustomTypeDef
+
+### prop extendedType
+
+（其余行为继承 `CustomTypeDef`，`srcCodeName` 在 extend 上可为空语义，见源码。）
+
+---
+
 ## class FloatType
 
 ```cangjie
@@ -480,6 +783,48 @@ main() {
 两个 Float32 相等: true
 Float32 和 Float64 相等: false
 ```
+
+## class FuncType
+
+```cangjie
+public class FuncType <: Type & Equatable<FuncType>
+```
+
+功能：函数类型（参数类型列表 + 返回类型），可选可变参数与 C 函数标记；按签名缓存。
+
+父类型：
+
+- Type
+- Equatable\<FuncType>
+
+### static func get(paramTypes: Array\<Type>, retType: Type, varArg!: Bool, cFunc!: Bool)
+
+### prop hasVarArg / prop isCFunc / prop paramTypes / prop returnType
+
+### func toString() / operator func==(FuncType)
+
+---
+
+## class GenericType
+
+```cangjie
+public class GenericType <: Type & Equatable<GenericType>
+```
+
+功能：泛型**形参**（如 `T`），可设置上界 `upperBounds`。按内部 `identifier` 缓存。
+
+父类型：
+
+- Type
+- Equatable\<GenericType>
+
+### static func get(identifier: String, srcCodeName: String)
+
+### prop srcCodeName / mut prop upperBounds
+
+### func toString() / operator func==(GenericType)
+
+---
 
 ## class IntType
 
@@ -865,6 +1210,29 @@ Int32 是有符号的: true
 UInt32 是有符号的: false
 ```
 
+## class MemberVar
+
+```cangjie
+public class MemberVar <: ToString
+```
+
+功能：描述自定义类型上的**成员变量**（名称、类型、位置、注解、访问修饰等）。
+
+父类型：
+
+- ToString
+
+### 主要 public 成员
+
+| 类别 | 成员 |
+|------|------|
+| 属性 | `name`、`ty`、`location`、`annoInfo`、`outerDef` |
+| 修饰 | `setReadOnly`、`setPublic`、`setPrivate`、`setProtected`、`setInternal` |
+| 查询 | `isReadOnly`、`isPublic`、`isPrivate`、`isProtected`、`isInternal` |
+| 其它 | `toString()`、`dump()` |
+
+---
+
 ## class NothingType
 
 ```cangjie
@@ -993,6 +1361,70 @@ main() {
 两个 Int32 相等: true
 Int32 和 Float32 相等: false
 ```
+
+## class Package
+
+```cangjie
+public class Package <: ToString
+```
+
+功能：表示一个 **CHIR 包**：名称、访问级别、导入与本包内的类型定义集合。
+
+父类型：
+
+- ToString
+
+### init(name: String, accessLevel: AccessLevel)
+
+### prop name / prop accessLevel
+
+### prop importedClassDefs / importedEnumDefs / importedStructDefs / importedExtendDefs
+
+### prop classDefs / enumDefs / structDefs / extendDefs
+
+### func addClass / addImportedClass / addStruct / addImportedStruct / addEnum / addImportedEnum / addExtend / addImportedExtend
+
+### func getSpecifiedClassDef / getSpecifiedStructDef / getSpecifiedEnumDef
+
+### func toString() / dump()
+
+---
+
+## class RawArrayType
+
+```cangjie
+public class RawArrayType <: BuiltinType & Equatable<RawArrayType>
+```
+
+功能：**原始数组**类型，带元素类型与维度数 `dims`。使用缓存按 `(elementType, dims)` 唯一化。
+
+父类型：
+
+- BuiltinType
+- Equatable\<RawArrayType>
+
+### static func get(elementType: Type, dims: UInt32)
+
+```cangjie
+public static func get(elementType: Type, dims: UInt32): RawArrayType
+```
+
+功能：获取或创建原始数组类型。
+
+### prop elementType / prop dims
+
+```cangjie
+public prop elementType: Type
+public prop dims: UInt32
+```
+
+功能：元素类型与维数。
+
+### func toString() / operator func==(RawArrayType)
+
+功能：字符串化与相等比较。
+
+---
 
 ## class RefType
 
@@ -1222,6 +1654,84 @@ main() {
 ```text
 两个 RuneType 相等: true
 ```
+
+## class StructDef
+
+```cangjie
+public class StructDef <: CustomTypeDef & Equatable<StructDef>
+```
+
+功能：**结构体**定义；`isCStruct` 表示 C 互操作结构体。
+
+父类型：
+
+- CustomTypeDef
+- Equatable\<StructDef>
+
+### prop structType / mut prop isCStruct / operator func==(StructDef)
+
+---
+
+## class StructType
+
+```cangjie
+public class StructType <: CustomType & Equatable<StructType>
+```
+
+功能：结构体的实例化类型；`get(def, genericTypeParams)` 缓存。
+
+父类型：
+
+- CustomType
+- Equatable\<StructType>
+
+### static func get(def: StructDef, genericTypeParams: Array\<Type>)
+
+### prop structDef
+
+### operator func==(StructType)
+
+---
+
+## class ThisType
+
+```cangjie
+public class ThisType <: Type & Equatable<ThisType>
+```
+
+功能：类/结构体体内的 **`This`** 类型，单例。
+
+父类型：
+
+- Type
+- Equatable\<ThisType>
+
+### static func get()
+
+### operator func==(_: ThisType)
+
+---
+
+## class TupleType
+
+```cangjie
+public class TupleType <: Type & Equatable<TupleType>
+```
+
+功能：元组类型；按元素类型序列签名缓存。
+
+父类型：
+
+- Type
+- Equatable\<TupleType>
+
+### static func get(elementTypes: Array\<Type>)
+
+### prop elementTypes
+
+### func toString() / operator func==(TupleType)
+
+---
 
 ## class Type
 
@@ -1870,3 +2380,39 @@ main() {
 ```text
 两个 UnitType 相等: true
 ```
+
+## class VArrayType
+
+```cangjie
+public class VArrayType <: BuiltinType & Equatable<VArrayType>
+```
+
+功能：**定长 VArray** 类型 `VArray<T, $n>`，编译期固定长度。按 `(elementType, size)` 缓存唯一实例。
+
+父类型：
+
+- BuiltinType
+- Equatable\<VArrayType>
+
+### static func get(elementType: Type, size: Int64)
+
+```cangjie
+public static func get(elementType: Type, size: Int64): VArrayType
+```
+
+功能：获取或创建 VArray 类型。
+
+### prop elementType / prop size
+
+```cangjie
+public prop elementType: Type
+public prop size: Int64
+```
+
+功能：元素类型与长度。
+
+### func toString() / operator func==(VArrayType)
+
+功能：字符串化与相等比较。
+
+---
