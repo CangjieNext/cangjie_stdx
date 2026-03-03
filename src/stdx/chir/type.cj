@@ -2011,3 +2011,94 @@ public class GenericType <: Type & Equatable<GenericType> {
         setHashCode()
     }
 }
+
+/**
+ * @brief Represents the This type in the type system.
+ *
+ * This type represents the current instance type within a class or struct.
+ * This is a singleton type.
+ */
+public class ThisType <: Type & Equatable<ThisType> {
+    private static let THIS_TYPE = ThisType()
+
+    /**
+     * @brief Gets the singleton instance of ThisType.
+     * @return The ThisType instance.
+     */
+    public static func get(): ThisType {
+        return THIS_TYPE
+    }
+
+    /**
+     * @brief Checks if this ThisType is equal to another ThisType.
+     * @param _ The other ThisType to compare with (unused, always returns true).
+     * @return Always returns true since all ThisType instances are equal.
+     */
+    public operator func ==(_: ThisType): Bool {
+        return true
+    }
+
+    private init() {
+        super(TypeKind.`This`)
+        setHashCode()
+    }
+}
+
+/**
+ * @brief Represents a tuple type in the type system.
+ *
+ * This type represents a tuple with multiple element types.
+ * The class maintains a cache of all tuple types to ensure uniqueness.
+ */
+public class TupleType <: Type & Equatable<TupleType> {
+    private static var ALL_TUPLE_TYPES = HashMap<TupleType, TupleType>()
+
+    /**
+     * @brief Gets or creates a TupleType for the given element types.
+     *
+     * This method ensures that only one TupleType instance exists for each element type combination.
+     * @param elementTypes The element types of the tuple.
+     * @return The TupleType instance.
+     */
+    public static func get(elementTypes: Array<Type>): TupleType {
+        let temp = TupleType(ArrayList<Type>.of(elementTypes))
+        let res = ALL_TUPLE_TYPES.get(temp)
+        if (res.isNone()) {
+            ALL_TUPLE_TYPES.add(temp, temp)
+            return temp
+        }
+        return res.getOrThrow()
+    }
+
+    /**
+     * @brief Converts this TupleType to its string representation.
+     * @return A string representation of the tuple type.
+     */
+    public func toString(): String {
+        return this._kind.toString() + typeVecToString("(", elementTypes, ")")
+    }
+
+    /**
+     * @brief Gets the element types of this tuple.
+     * @return An array of element types.
+     */
+    public prop elementTypes: Array<Type> {
+        get() {
+            return _typeArgs.toArray()
+        }
+    }
+
+    /**
+     * @brief Checks if this TupleType is equal to another TupleType.
+     * @param other The TupleType to compare with.
+     * @return true if the types are equal, false otherwise.
+     */
+    public operator func ==(other: TupleType): Bool {
+        return hasSameTypeKindAndArgs(other)
+    }
+
+    private init(elementType: ArrayList<Type>) {
+        super(TypeKind.Tuple, elementType)
+        setHashCode()
+    }
+}
