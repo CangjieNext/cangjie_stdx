@@ -1744,3 +1744,55 @@ public class StructType <: CustomType & Equatable<StructType> {
         setHashCode()
     }
 }
+
+/**
+ * @brief Represents an enum type in the type system.
+ *
+ * This type represents a user-defined enum with optional generic type parameters.
+ * The class maintains a cache of all enum types to ensure uniqueness.
+ */
+public class EnumType <: CustomType & Equatable<EnumType> {
+    private static var ALL_ENUM_TYPES = HashMap<EnumType, EnumType>()
+
+    /**
+     * @brief Gets or creates an EnumType for the given enum definition and generic type parameters.
+     *
+     * This method ensures that only one EnumType instance exists for each enum definition and generic type parameter combination.
+     * @param def The enum definition.
+     * @param genericTypeParams The generic type parameters.
+     * @return The EnumType instance.
+     */
+    public static func get(def: EnumDef, genericTypeParams: Array<Type>): EnumType {
+        let temp = EnumType(def, ArrayList<Type>.of(genericTypeParams))
+        let res = ALL_ENUM_TYPES.get(temp)
+        if (res.isNone()) {
+            ALL_ENUM_TYPES.add(temp, temp)
+            return temp
+        }
+        return res.getOrThrow()
+    }
+
+    /**
+     * @brief Gets the EnumDef associated with this enum type.
+     * @return The EnumDef instance.
+     */
+    public prop enumDef: EnumDef {
+        get() {
+            return (def as EnumDef).getOrThrow()
+        }
+    }
+
+    /**
+     * @brief Checks if this EnumType is equal to another EnumType.
+     * @param other The EnumType to compare with.
+     * @return true if the types are equal, false otherwise.
+     */
+    public operator func ==(other: EnumType): Bool {
+        return hasSameTypeKindAndArgs(other) && this._def == other._def
+    }
+
+    private init(def: EnumDef, genericTypeParams: ArrayList<Type>) {
+        super(TypeKind.Enum, def, genericTypeParams)
+        setHashCode()
+    }
+}
