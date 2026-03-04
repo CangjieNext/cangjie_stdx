@@ -38,10 +38,129 @@ set(CMAKE_SKIP_INSTALL_ALL_DEPENDENCY TRUE)
 
 option(CANGJIE_CODEGEN_CJNATIVE_BACKEND "Build a version for CJNATIVE backend" ON)
 option(CANGJIE_SKIP_FIND_OPENSSL "Do not look for OpenSSL package, OpenSSL library will be searched by linker" OFF)
+option(CANGJIE_ENABLE_OPENSSL_SYMBOL_TOOLS
+    "Enable OpenSSL symbol manifest generation/check helpers for static-link validation" OFF)
+set(
+    CANGJIE_OPENSSL_FORCE_LINK_STYLE
+    ""
+    CACHE STRING
+    "Force-link output style: gnu-ld-script | gnu-driver-args | apple-driver-args (empty = auto by platform)"
+)
+if("${CANGJIE_OPENSSL_FORCE_LINK_STYLE}" STREQUAL "")
+    if(APPLE)
+        set(CANGJIE_OPENSSL_FORCE_LINK_STYLE "apple-driver-args")
+    else()
+        set(CANGJIE_OPENSSL_FORCE_LINK_STYLE "gnu-ld-script")
+    endif()
+endif()
+set_property(
+    CACHE CANGJIE_OPENSSL_FORCE_LINK_STYLE
+    PROPERTY STRINGS gnu-ld-script gnu-driver-args apple-driver-args
+)
+if(CANGJIE_OPENSSL_FORCE_LINK_STYLE STREQUAL "gnu-ld-script")
+    set(_CANGJIE_OPENSSL_FORCE_LINK_DEFAULT_FILE "${CMAKE_BINARY_DIR}/generated/openssl_force_link.gnu.ld")
+elseif(CANGJIE_OPENSSL_FORCE_LINK_STYLE STREQUAL "gnu-driver-args")
+    set(_CANGJIE_OPENSSL_FORCE_LINK_DEFAULT_FILE "${CMAKE_BINARY_DIR}/generated/openssl_force_link.gnu.args")
+elseif(CANGJIE_OPENSSL_FORCE_LINK_STYLE STREQUAL "apple-driver-args")
+    set(_CANGJIE_OPENSSL_FORCE_LINK_DEFAULT_FILE "${CMAKE_BINARY_DIR}/generated/openssl_force_link.apple.args")
+else()
+    message(FATAL_ERROR "Invalid CANGJIE_OPENSSL_FORCE_LINK_STYLE: ${CANGJIE_OPENSSL_FORCE_LINK_STYLE}")
+endif()
+set(
+    CANGJIE_OPENSSL_FORCE_LINK_FILE
+    "${_CANGJIE_OPENSSL_FORCE_LINK_DEFAULT_FILE}"
+    CACHE FILEPATH
+    "Generated OpenSSL force-link script/args path"
+)
+set(
+    CANGJIE_OPENSSL_SYMBOL_NM
+    ""
+    CACHE STRING
+    "Path to nm/llvm-nm for OpenSSL symbol check (empty means auto detect)"
+)
+set(
+    CANGJIE_OPENSSL_CHECK_REQUIRED_SYMBOLS_FILE
+    "${CMAKE_BINARY_DIR}/generated/.openssl_symbols.check.required.txt"
+    CACHE FILEPATH
+    "Temporary required symbol manifest path used only by symbol-check targets"
+)
 
 # Static stdx artifacts use the "auto" OpenSSL resolver (prefer direct link when symbols exist,
 # otherwise fallback to dlopen/dlsym at runtime).
 set(CANGJIE_OPENSSL_FFI_OBJECTS_TARGET "cangjie-dynamicLoader-opensslFFI-auto-objs")
+
+if(CANGJIE_ENABLE_OPENSSL_SYMBOL_TOOLS)
+    find_package(Python3 COMPONENTS Interpreter REQUIRED)
+    set(CANGJIE_OPENSSL_TOOLS_DIR "${CMAKE_SOURCE_DIR}/tools/openssl")
+    set(CANGJIE_OPENSSL_TOOL_SCRIPT "${CANGJIE_OPENSSL_TOOLS_DIR}/openssl_symbols_tool.py")
+    get_filename_component(CANGJIE_OPENSSL_FORCE_LINK_DIR "${CANGJIE_OPENSSL_FORCE_LINK_FILE}" DIRECTORY)
+
+    add_custom_command(
+        OUTPUT "${CANGJIE_OPENSSL_FORCE_LINK_FILE}"
+        COMMAND ${CMAKE_COMMAND} -E make_directory "${CANGJIE_OPENSSL_FORCE_LINK_DIR}"
+        COMMAND ${Python3_EXECUTABLE} "${CANGJIE_OPENSSL_TOOL_SCRIPT}" force-link
+            --style "${CANGJIE_OPENSSL_FORCE_LINK_STYLE}"
+            --define-function-inc "${CMAKE_SOURCE_DIR}/src/stdx/dynamicLoader/defineFunction.inc"
+            --openssl-symbols-c "${CMAKE_SOURCE_DIR}/src/stdx/dynamicLoader/opensslSymbols.c"
+            --output "${CANGJIE_OPENSSL_FORCE_LINK_FILE}"
+        DEPENDS
+            "${CMAKE_SOURCE_DIR}/src/stdx/dynamicLoader/defineFunction.inc"
+            "${CMAKE_SOURCE_DIR}/src/stdx/dynamicLoader/opensslSymbols.c"
+            "${CANGJIE_OPENSSL_TOOL_SCRIPT}"
+        VERBATIM
+    )
+    add_custom_target(openssl-force-link-input ALL DEPENDS "${CANGJIE_OPENSSL_FORCE_LINK_FILE}")
+
+    function(cangjie_add_openssl_symbol_check)
+        set(options)
+        set(oneValueArgs TARGET NAME REQUIRED_SYMBOLS_FILE)
+        cmake_parse_arguments(OPENSSL_CHECK "${options}" "${oneValueArgs}" "" ${ARGN})
+
+        if(NOT OPENSSL_CHECK_TARGET)
+            message(FATAL_ERROR "cangjie_add_openssl_symbol_check requires TARGET <cmake-target-name>")
+        endif()
+        if(NOT TARGET ${OPENSSL_CHECK_TARGET})
+            message(FATAL_ERROR "TARGET '${OPENSSL_CHECK_TARGET}' does not exist")
+        endif()
+
+        if(NOT OPENSSL_CHECK_NAME)
+            set(OPENSSL_CHECK_NAME "${OPENSSL_CHECK_TARGET}-openssl-symbol-check")
+        endif()
+        if(NOT OPENSSL_CHECK_REQUIRED_SYMBOLS_FILE)
+            set(OPENSSL_CHECK_REQUIRED_SYMBOLS_FILE "${CANGJIE_OPENSSL_CHECK_REQUIRED_SYMBOLS_FILE}")
+        endif()
+
+        set(_nm_opt)
+        if(CANGJIE_OPENSSL_SYMBOL_NM)
+            set(_nm_opt --nm "${CANGJIE_OPENSSL_SYMBOL_NM}")
+        endif()
+
+        add_custom_target(
+            "${OPENSSL_CHECK_NAME}"
+            COMMAND ${Python3_EXECUTABLE} "${CANGJIE_OPENSSL_TOOL_SCRIPT}" manifest
+                --define-function-inc "${CMAKE_SOURCE_DIR}/src/stdx/dynamicLoader/defineFunction.inc"
+                --openssl-symbols-c "${CMAKE_SOURCE_DIR}/src/stdx/dynamicLoader/opensslSymbols.c"
+                --output "${OPENSSL_CHECK_REQUIRED_SYMBOLS_FILE}"
+            COMMAND ${Python3_EXECUTABLE} "${CANGJIE_OPENSSL_TOOL_SCRIPT}" check
+                --artifact "$<TARGET_FILE:${OPENSSL_CHECK_TARGET}>"
+                --required-symbols "${OPENSSL_CHECK_REQUIRED_SYMBOLS_FILE}"
+                ${_nm_opt}
+            DEPENDS
+                ${OPENSSL_CHECK_TARGET}
+                "${CMAKE_SOURCE_DIR}/src/stdx/dynamicLoader/defineFunction.inc"
+                "${CMAKE_SOURCE_DIR}/src/stdx/dynamicLoader/opensslSymbols.c"
+                "${CANGJIE_OPENSSL_TOOL_SCRIPT}"
+            VERBATIM
+        )
+    endfunction()
+else()
+    function(cangjie_add_openssl_symbol_check)
+        message(
+            FATAL_ERROR
+            "cangjie_add_openssl_symbol_check requires -DCANGJIE_ENABLE_OPENSSL_SYMBOL_TOOLS=ON"
+        )
+    endfunction()
+endif()
 
 message(STATUS "Build type for the current project: ${CMAKE_BUILD_TYPE}")
 
@@ -212,6 +331,10 @@ if(CANGJIE_CODEGEN_CJNATIVE_BACKEND)
             ${BOUNDSCHECK_DESTINATION_DYNAMIC} # LIBRARY includes shared libraries except DLLs.
     )
     install(TARGETS boundscheck-static DESTINATION ${BOUNDSCHECK_DESTINATION_STATIC})
+    if(CANGJIE_ENABLE_OPENSSL_SYMBOL_TOOLS)
+        # Force-link input is used for static-linking stdx with OpenSSL archives.
+        install(FILES "${CANGJIE_OPENSSL_FORCE_LINK_FILE}" DESTINATION ${BOUNDSCHECK_DESTINATION_STATIC})
+    endif()
 endif()
 
 add_subdirectory(src)
