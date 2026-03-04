@@ -118,6 +118,7 @@ def generate_cmake_defs(args):
         "-DCMAKE_BUILD_TYPE=" + args.build_type.value,
         "-DCMAKE_TOOLCHAIN_FILE=../../build/common/" + toolchain_file,
         "-DCMAKE_INSTALL_PREFIX=" + install_prefix,
+        "-DCANGJIE_ENABLE_OPENSSL_SYMBOL_TOOLS=ON",
         "-DCANGJIE_TARGET_LIB=" + (";".join(args.target_lib) if args.target_lib else ""),
         "-DCANGJIE_TARGET_TOOLCHAIN=" + (args.target_toolchain if args.target_toolchain else ""),
         "-DCANGJIE_INCLUDE=" + (";".join(args.include) if args.include else ""),
