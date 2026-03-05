@@ -27,8 +27,6 @@ func calculateDataBlockPadding(size: Int64): Int64 {
 
 public class TarReader<T> <: Iterable<TarEntry> where T <: InputStream {
     let stream: T
-    private let archiveSize: ?Int64
-    private var activeDataStream: ?TarDataInputStream = None
 
     // IEEE 1003.1-2008, pax Format
     // Section: Extended Header Records
@@ -41,6 +39,11 @@ public class TarReader<T> <: Iterable<TarEntry> where T <: InputStream {
     private var gnuLongName: ?String = None
     private var gnuLongLink: ?String = None
 
+    // Total archive size if the input stream is seekable; used for basic sanity checks.
+    private let archiveSize: ?Int64
+    // Tracks the current entry stream so we can drain unread bytes before parsing the next header.
+    private var activeDataStream: ?TarDataInputStream = None
+
     public init(stream: T) {
         this.stream = stream
         this.archiveSize = getArchiveSize(stream)
@@ -51,6 +54,7 @@ public class TarReader<T> <: Iterable<TarEntry> where T <: InputStream {
     }
 
     func tryGetNextEntry(): ?TarEntry {
+        // Keep reader state aligned even when caller does not fully consume entry.stream.
         drainPreviousEntryData()
         var header: TarHeader
         do {
@@ -196,6 +200,7 @@ public class TarReader<T> <: Iterable<TarEntry> where T <: InputStream {
         if (size < 0) {
             throw TarException("Invalid tar entry size: ${size}.")
         }
+        // Reject clearly malicious/corrupted headers that declare a single entry larger than the archive itself.
         if (let Some(totalSize) <- archiveSize && size > totalSize) {
             throw TarException("Invalid tar entry size ${size}: exceeds tar archive size ${totalSize}.")
         }
@@ -215,6 +220,7 @@ public class TarReader<T> <: Iterable<TarEntry> where T <: InputStream {
 
     private func readDataStream(size: Int64): ?InputStream {
         validateDataBlockSize(size)
+        // Lazily read entry payload to avoid allocating a huge byte array up front.
         let dataStream = TarDataInputStream(stream, size)
         activeDataStream = dataStream
         return dataStream
@@ -222,6 +228,7 @@ public class TarReader<T> <: Iterable<TarEntry> where T <: InputStream {
 
     private func drainPreviousEntryData() {
         if (let Some(dataStream) <- activeDataStream) {
+            // Consume any unread payload + padding so next header starts at a block boundary.
             dataStream.discardRemaining()
             activeDataStream = None
         }
@@ -308,6 +315,7 @@ private class TarDataInputStream <: InputStream {
             return
         }
 
+        // Fast-forward remaining payload with a fixed-size scratch buffer.
         while (remainingDataSize > 0) {
             let chunkSize = if (remainingDataSize > skipBuffer.size) {
                 skipBuffer.size
