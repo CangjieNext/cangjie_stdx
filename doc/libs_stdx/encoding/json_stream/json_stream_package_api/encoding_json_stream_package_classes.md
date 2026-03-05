@@ -29,7 +29,7 @@ public init(inputStream: InputStream)
 <!-- verify -->
 ```cangjie
 import std.io.*
-import stdx.encoding.json.stream.*
+import cangjie_stdx::encoding.json.stream.*
 
 main() {
     // 创建一个包含JSON数据的输入流 
@@ -75,7 +75,7 @@ public func endArray(): Unit
 <!-- verify -->
 ```cangjie
 import std.io.*
-import stdx.encoding.json.stream.*
+import cangjie_stdx::encoding.json.stream.*
 
 main() {
     // 创建一个包含JSON数组的输入流 
@@ -125,7 +125,7 @@ public func endObject(): Unit
 <!-- verify -->
 ```cangjie
 import std.io.*
-import stdx.encoding.json.stream.*
+import cangjie_stdx::encoding.json.stream.*
 
 main() {
     // 创建一个包含JSON对象的输入流 
@@ -183,7 +183,7 @@ public func peek(): Option<JsonToken>
 <!-- verify -->
 ```cangjie
 import std.io.*
-import stdx.encoding.json.stream.*
+import cangjie_stdx::encoding.json.stream.*
 
 main() {
     // 创建一个包含JSON数据的输入流 
@@ -236,7 +236,7 @@ public func readName(): String
 <!-- verify -->
 ```cangjie
 import std.io.*
-import stdx.encoding.json.stream.*
+import cangjie_stdx::encoding.json.stream.*
 
 main() {
     // 创建一个包含JSON对象的输入流 
@@ -300,7 +300,7 @@ public func readValue<T>(): T where T <: JsonDeserializable<T>
 <!-- verify -->
 ```cangjie
 import std.io.*
-import stdx.encoding.json.stream.*
+import cangjie_stdx::encoding.json.stream.*
 
 main() {
     // 创建一个包含多种类型JSON值的输入流 
@@ -376,7 +376,7 @@ public func readValueBytes(): Array<Byte>
 <!-- verify -->
 ```cangjie
 import std.io.*
-import stdx.encoding.json.stream.*
+import cangjie_stdx::encoding.json.stream.*
 
 main() {
     // 创建一个包含JSON数据的输入流 
@@ -444,7 +444,7 @@ public func skip(): Unit
 <!-- verify -->
 ```cangjie
 import std.io.*
-import stdx.encoding.json.stream.*
+import cangjie_stdx::encoding.json.stream.*
 
 main() {
     // 创建一个包含JSON对象的输入流 
@@ -508,7 +508,7 @@ public func startArray(): Unit
 <!-- verify -->
 ```cangjie
 import std.io.*
-import stdx.encoding.json.stream.*
+import cangjie_stdx::encoding.json.stream.*
 
 main() {
     // 创建一个包含JSON数组的输入流 
@@ -558,7 +558,7 @@ public func startObject(): Unit
 <!-- verify -->
 ```cangjie
 import std.io.*
-import stdx.encoding.json.stream.*
+import cangjie_stdx::encoding.json.stream.*
 
 main() {
     // 创建一个包含JSON对象的输入流 
@@ -629,7 +629,7 @@ public var writeConfig: WriteConfig = WriteConfig.compact
 <!-- verify -->
 ```cangjie
 import std.io.*
-import stdx.encoding.json.stream.*
+import cangjie_stdx::encoding.json.stream.*
 
 main() {
     // 创建使用pretty配置的JsonWriter 
@@ -679,7 +679,7 @@ public init(out: OutputStream)
 <!-- verify -->
 ```cangjie
 import std.io.*
-import stdx.encoding.json.stream.*
+import cangjie_stdx::encoding.json.stream.*
 
 main() {
     // 创建一个输出流 
@@ -719,7 +719,7 @@ public func endArray(): Unit
 <!-- verify -->
 ```cangjie
 import std.io.*
-import stdx.encoding.json.stream.*
+import cangjie_stdx::encoding.json.stream.*
 
 main() {
     // 创建一个输出流 
@@ -767,7 +767,7 @@ public func endObject(): Unit
 <!-- verify -->
 ```cangjie
 import std.io.*
-import stdx.encoding.json.stream.*
+import cangjie_stdx::encoding.json.stream.*
 
 main() {
     // 创建一个输出流 
@@ -810,7 +810,7 @@ public func flush(): Unit
 <!-- run -->
 ```cangjie
 import std.io.*
-import stdx.encoding.json.stream.*
+import cangjie_stdx::encoding.json.stream.*
 
 main() {
     // 创建一个输出流 
@@ -856,7 +856,7 @@ public func jsonValue(value: String): JsonWriter
 <!-- verify -->
 ```cangjie
 import std.io.*
-import stdx.encoding.json.stream.*
+import cangjie_stdx::encoding.json.stream.*
 
 main() {
     // 创建一个输出流 
@@ -897,7 +897,7 @@ public func startArray(): Unit
 <!-- verify -->
 ```cangjie
 import std.io.*
-import stdx.encoding.json.stream.*
+import cangjie_stdx::encoding.json.stream.*
 
 main() {
     // 创建一个输出流 
@@ -945,7 +945,7 @@ public func startObject(): Unit
 <!-- verify -->
 ```cangjie
 import std.io.*
-import stdx.encoding.json.stream.*
+import cangjie_stdx::encoding.json.stream.*
 
 main() {
     // 创建一个输出流 
@@ -1000,7 +1000,7 @@ public func writeName(name: String): JsonWriter
 <!-- verify -->
 ```cangjie
 import std.io.*
-import stdx.encoding.json.stream.*
+import cangjie_stdx::encoding.json.stream.*
 
 main() {
     // 创建一个输出流 
@@ -1051,7 +1051,7 @@ public func writeNullValue(): JsonWriter
 <!-- verify -->
 ```cangjie
 import std.io.*
-import stdx.encoding.json.stream.*
+import cangjie_stdx::encoding.json.stream.*
 
 main() {
     // 创建一个输出流 
@@ -1108,7 +1108,7 @@ json.stream 包已经为基础类型 Int64、UInt64、Float64、Bool、String �
 <!-- verify -->
 ```cangjie
 import std.io.*
-import stdx.encoding.json.stream.*
+import cangjie_stdx::encoding.json.stream.*
 
 main() {
     // 创建一个输出流 

@@ -74,7 +74,7 @@ public static func fromJson(r: JsonReader): BigInt
 ```cangjie
 import std.io.*
 import std.math.numeric.*
-import stdx.encoding.json.stream.*
+import cangjie_stdx::encoding.json.stream.*
 
 main() {
     let buffer = ByteBuffer()
@@ -134,7 +134,7 @@ public static func fromJson(r: JsonReader): Bool
 <!-- verify -->
 ```cangjie
 import std.io.*
-import stdx.encoding.json.stream.*
+import cangjie_stdx::encoding.json.stream.*
 
 main() {
     let buffer = ByteBuffer()
@@ -201,7 +201,7 @@ public static func fromJson(r: JsonReader): DateTime
 ```cangjie
 import std.io.*
 import std.time.*
-import stdx.encoding.json.stream.*
+import cangjie_stdx::encoding.json.stream.*
 
 main() {
     let buffer = ByteBuffer()
@@ -262,7 +262,7 @@ public static func fromJson(r: JsonReader): Decimal
 ```cangjie
 import std.io.*
 import std.math.numeric.*
-import stdx.encoding.json.stream.*
+import cangjie_stdx::encoding.json.stream.*
 
 main() {
     let buffer = ByteBuffer()
@@ -326,7 +326,7 @@ public static func fromJson(r: JsonReader): Float16
 <!-- verify -->
 ```cangjie
 import std.io.*
-import stdx.encoding.json.stream.*
+import cangjie_stdx::encoding.json.stream.*
 
 main() {
     let buffer = ByteBuffer()
@@ -390,7 +390,7 @@ public static func fromJson(r: JsonReader): Float32
 <!-- verify -->
 ```cangjie
 import std.io.*
-import stdx.encoding.json.stream.*
+import cangjie_stdx::encoding.json.stream.*
 
 main() {
     let buffer = ByteBuffer()
@@ -454,7 +454,7 @@ public static func fromJson(r: JsonReader): Float64
 <!-- verify -->
 ```cangjie
 import std.io.*
-import stdx.encoding.json.stream.*
+import cangjie_stdx::encoding.json.stream.*
 
 main() {
     let buffer = ByteBuffer()
@@ -518,7 +518,7 @@ public static func fromJson(r: JsonReader): Int16
 <!-- verify -->
 ```cangjie
 import std.io.*
-import stdx.encoding.json.stream.*
+import cangjie_stdx::encoding.json.stream.*
 
 main() {
     let buffer = ByteBuffer()
@@ -582,7 +582,7 @@ public static func fromJson(r: JsonReader): Int32
 <!-- verify -->
 ```cangjie
 import std.io.*
-import stdx.encoding.json.stream.*
+import cangjie_stdx::encoding.json.stream.*
 
 main() {
     let buffer = ByteBuffer()
@@ -646,7 +646,7 @@ public static func fromJson(r: JsonReader): Int64
 <!-- verify -->
 ```cangjie
 import std.io.*
-import stdx.encoding.json.stream.*
+import cangjie_stdx::encoding.json.stream.*
 
 main() {
     let buffer = ByteBuffer()
@@ -710,7 +710,7 @@ public static func fromJson(r: JsonReader): Int8
 <!-- verify -->
 ```cangjie
 import std.io.*
-import stdx.encoding.json.stream.*
+import cangjie_stdx::encoding.json.stream.*
 
 main() {
     let buffer = ByteBuffer()
@@ -774,7 +774,7 @@ public static func fromJson(r: JsonReader): IntNative
 <!-- verify -->
 ```cangjie
 import std.io.*
-import stdx.encoding.json.stream.*
+import cangjie_stdx::encoding.json.stream.*
 
 main() {
     let buffer = ByteBuffer()
@@ -840,7 +840,7 @@ public static func fromJson(r: JsonReader): String
 <!-- verify -->
 ```cangjie
 import std.io.*
-import stdx.encoding.json.stream.*
+import cangjie_stdx::encoding.json.stream.*
 
 main() {
     let buffer = ByteBuffer()
@@ -904,7 +904,7 @@ public static func fromJson(r: JsonReader): UInt16
 <!-- verify -->
 ```cangjie
 import std.io.*
-import stdx.encoding.json.stream.*
+import cangjie_stdx::encoding.json.stream.*
 
 main() {
     let buffer = ByteBuffer()
@@ -968,7 +968,7 @@ public static func fromJson(r: JsonReader): UInt32
 <!-- verify -->
 ```cangjie
 import std.io.*
-import stdx.encoding.json.stream.*
+import cangjie_stdx::encoding.json.stream.*
 
 main() {
     let buffer = ByteBuffer()
@@ -1032,7 +1032,7 @@ public static func fromJson(r: JsonReader): UInt64
 <!-- verify -->
 ```cangjie
 import std.io.*
-import stdx.encoding.json.stream.*
+import cangjie_stdx::encoding.json.stream.*
 
 main() {
     let buffer = ByteBuffer()
@@ -1096,7 +1096,7 @@ public static func fromJson(r: JsonReader): UInt8
 <!-- verify -->
 ```cangjie
 import std.io.*
-import stdx.encoding.json.stream.*
+import cangjie_stdx::encoding.json.stream.*
 
 main() {
     let buffer = ByteBuffer()
@@ -1160,7 +1160,7 @@ public static func fromJson(r: JsonReader): UIntNative
 <!-- verify -->
 ```cangjie
 import std.io.*
-import stdx.encoding.json.stream.*
+import cangjie_stdx::encoding.json.stream.*
 
 main() {
     let buffer = ByteBuffer()
@@ -1220,7 +1220,7 @@ public static func fromJson(r: JsonReader): Array<T>
 <!-- verify -->
 ```cangjie
 import std.io.*
-import stdx.encoding.json.stream.*
+import cangjie_stdx::encoding.json.stream.*
 
 main() {
     // 创建JsonReader 
@@ -1282,7 +1282,7 @@ public static func fromJson(r: JsonReader): ArrayDeque<T>
 ```cangjie
 import std.io.*
 import std.collection.*
-import stdx.encoding.json.stream.*
+import cangjie_stdx::encoding.json.stream.*
 
 main() {
     // 创建JsonReader 
@@ -1347,7 +1347,7 @@ public static func fromJson(r: JsonReader): ArrayList<T>
 ```cangjie
 import std.io.*
 import std.collection.*
-import stdx.encoding.json.stream.*
+import cangjie_stdx::encoding.json.stream.*
 
 main() {
     // 创建JsonReader 
@@ -1409,7 +1409,7 @@ public static func fromJson(r: JsonReader): ArrayQueue<T>
 ```cangjie
 import std.io.*
 import std.collection.*
-import stdx.encoding.json.stream.*
+import cangjie_stdx::encoding.json.stream.*
 
 main() {
     // 创建JsonReader 
@@ -1474,7 +1474,7 @@ public static func fromJson(r: JsonReader): ArrayStack<T>
 ```cangjie
 import std.io.*
 import std.collection.*
-import stdx.encoding.json.stream.*
+import cangjie_stdx::encoding.json.stream.*
 
 main() {
     // 创建JsonReader 
@@ -1539,7 +1539,7 @@ public static func fromJson(r: JsonReader): ConcurrentHashMap<String, T>
 ```cangjie
 import std.io.*
 import std.collection.concurrent.*
-import stdx.encoding.json.stream.*
+import cangjie_stdx::encoding.json.stream.*
 
 main() {
     // 创建JsonReader 
@@ -1604,7 +1604,7 @@ public static func fromJson(r: JsonReader): HashMap<String, T>
 ```cangjie
 import std.io.*
 import std.collection.*
-import stdx.encoding.json.stream.*
+import cangjie_stdx::encoding.json.stream.*
 
 main() {
     // 创建JsonReader 
@@ -1669,7 +1669,7 @@ public static func fromJson(r: JsonReader): HashSet<T>
 ```cangjie
 import std.io.*
 import std.collection.*
-import stdx.encoding.json.stream.*
+import cangjie_stdx::encoding.json.stream.*
 
 main() {
     // 创建JsonReader 
@@ -1731,7 +1731,7 @@ public static func fromJson(r: JsonReader): LinkedList<T>
 ```cangjie
 import std.io.*
 import std.collection.*
-import stdx.encoding.json.stream.*
+import cangjie_stdx::encoding.json.stream.*
 
 main() {
     // 创建JsonReader 
@@ -1792,7 +1792,7 @@ public static func fromJson(r: JsonReader): Option<T>
 <!-- verify -->
 ```cangjie
 import std.io.*
-import stdx.encoding.json.stream.*
+import cangjie_stdx::encoding.json.stream.*
 
 main() {
     // 创建JsonReader 
@@ -1854,7 +1854,7 @@ public static func fromJson(r: JsonReader): TreeMap<String, T>
 ```cangjie
 import std.io.*
 import std.collection.*
-import stdx.encoding.json.stream.*
+import cangjie_stdx::encoding.json.stream.*
 
 main() {
     // 创建JsonReader 
@@ -1919,7 +1919,7 @@ public static func fromJson(r: JsonReader): TreeSet<T>
 ```cangjie
 import std.io.*
 import std.collection.*
-import stdx.encoding.json.stream.*
+import cangjie_stdx::encoding.json.stream.*
 
 main() {
     // 创建JsonReader 
@@ -2001,7 +2001,7 @@ public func toJson(w: JsonWriter): Unit
 ```cangjie
 import std.io.*
 import std.math.numeric.*
-import stdx.encoding.json.stream.*
+import cangjie_stdx::encoding.json.stream.*
 
 main() {
     // 创建JsonWriter 
@@ -2052,7 +2052,7 @@ public func toJson(w: JsonWriter): Unit
 <!-- verify -->
 ```cangjie
 import std.io.*
-import stdx.encoding.json.stream.*
+import cangjie_stdx::encoding.json.stream.*
 
 main() {
     // 创建JsonWriter 
@@ -2106,7 +2106,7 @@ public func toJson(w: JsonWriter): Unit
 ```cangjie
 import std.io.*
 import std.time.*
-import stdx.encoding.json.stream.*
+import cangjie_stdx::encoding.json.stream.*
 
 main() {
     // 创建JsonWriter 
@@ -2158,7 +2158,7 @@ public func toJson(w: JsonWriter): Unit
 ```cangjie
 import std.io.*
 import std.math.numeric.*
-import stdx.encoding.json.stream.*
+import cangjie_stdx::encoding.json.stream.*
 
 main() {
     // 创建JsonWriter 
@@ -2209,7 +2209,7 @@ public func toJson(w: JsonWriter): Unit
 <!-- verify -->
 ```cangjie
 import std.io.*
-import stdx.encoding.json.stream.*
+import cangjie_stdx::encoding.json.stream.*
 
 main() {
     // 创建JsonWriter 
@@ -2260,7 +2260,7 @@ public func toJson(w: JsonWriter): Unit
 <!-- verify -->
 ```cangjie
 import std.io.*
-import stdx.encoding.json.stream.*
+import cangjie_stdx::encoding.json.stream.*
 
 main() {
     // 创建JsonWriter 
@@ -2311,7 +2311,7 @@ public func toJson(w: JsonWriter): Unit
 <!-- verify -->
 ```cangjie
 import std.io.*
-import stdx.encoding.json.stream.*
+import cangjie_stdx::encoding.json.stream.*
 
 main() {
     // 创建JsonWriter 
@@ -2362,7 +2362,7 @@ public func toJson(w: JsonWriter): Unit
 <!-- verify -->
 ```cangjie
 import std.io.*
-import stdx.encoding.json.stream.*
+import cangjie_stdx::encoding.json.stream.*
 
 main() {
     // 创建JsonWriter 
@@ -2413,7 +2413,7 @@ public func toJson(w: JsonWriter): Unit
 <!-- verify -->
 ```cangjie
 import std.io.*
-import stdx.encoding.json.stream.*
+import cangjie_stdx::encoding.json.stream.*
 
 main() {
     // 创建JsonWriter 
@@ -2464,7 +2464,7 @@ public func toJson(w: JsonWriter): Unit
 <!-- verify -->
 ```cangjie
 import std.io.*
-import stdx.encoding.json.stream.*
+import cangjie_stdx::encoding.json.stream.*
 
 main() {
     // 创建JsonWriter 
@@ -2515,7 +2515,7 @@ public func toJson(w: JsonWriter): Unit
 <!-- verify -->
 ```cangjie
 import std.io.*
-import stdx.encoding.json.stream.*
+import cangjie_stdx::encoding.json.stream.*
 
 main() {
     // 创建JsonWriter 
@@ -2566,7 +2566,7 @@ public func toJson(w: JsonWriter): Unit
 <!-- verify -->
 ```cangjie
 import std.io.*
-import stdx.encoding.json.stream.*
+import cangjie_stdx::encoding.json.stream.*
 
 main() {
     // 创建JsonWriter 
@@ -2617,7 +2617,7 @@ public func toJson(w: JsonWriter): Unit
 <!-- verify -->
 ```cangjie
 import std.io.*
-import stdx.encoding.json.stream.*
+import cangjie_stdx::encoding.json.stream.*
 
 main() {
     // 创建JsonWriter 
@@ -2668,7 +2668,7 @@ public func toJson(w: JsonWriter): Unit
 <!-- verify -->
 ```cangjie
 import std.io.*
-import stdx.encoding.json.stream.*
+import cangjie_stdx::encoding.json.stream.*
 
 main() {
     // 创建JsonWriter 
@@ -2719,7 +2719,7 @@ public func toJson(w: JsonWriter): Unit
 <!-- verify -->
 ```cangjie
 import std.io.*
-import stdx.encoding.json.stream.*
+import cangjie_stdx::encoding.json.stream.*
 
 main() {
     // 创建JsonWriter 
@@ -2770,7 +2770,7 @@ public func toJson(w: JsonWriter): Unit
 <!-- verify -->
 ```cangjie
 import std.io.*
-import stdx.encoding.json.stream.*
+import cangjie_stdx::encoding.json.stream.*
 
 main() {
     // 创建JsonWriter 
@@ -2821,7 +2821,7 @@ public func toJson(w: JsonWriter): Unit
 <!-- verify -->
 ```cangjie
 import std.io.*
-import stdx.encoding.json.stream.*
+import cangjie_stdx::encoding.json.stream.*
 
 main() {
     // 创建JsonWriter 
@@ -2872,7 +2872,7 @@ public func toJson(w: JsonWriter): Unit
 <!-- verify -->
 ```cangjie
 import std.io.*
-import stdx.encoding.json.stream.*
+import cangjie_stdx::encoding.json.stream.*
 
 main() {
     // 创建JsonWriter 
@@ -2923,7 +2923,7 @@ public func toJson(w: JsonWriter): Unit
 <!-- verify -->
 ```cangjie
 import std.io.*
-import stdx.encoding.json.stream.*
+import cangjie_stdx::encoding.json.stream.*
 
 main() {
     // 创建JsonWriter 
@@ -2975,7 +2975,7 @@ public func toJson(w: JsonWriter): Unit
 ```cangjie
 import std.io.*
 import std.collection.*
-import stdx.encoding.json.stream.*
+import cangjie_stdx::encoding.json.stream.*
 
 main() {
     // 创建JsonWriter 
@@ -3030,7 +3030,7 @@ public func toJson(w: JsonWriter): Unit
 ```cangjie
 import std.io.*
 import std.collection.*
-import stdx.encoding.json.stream.*
+import cangjie_stdx::encoding.json.stream.*
 
 main() {
     // 创建JsonWriter 
@@ -3082,7 +3082,7 @@ public func toJson(w: JsonWriter): Unit
 ```cangjie
 import std.io.*
 import std.collection.*
-import stdx.encoding.json.stream.*
+import cangjie_stdx::encoding.json.stream.*
 
 main() {
     // 创建JsonWriter 
@@ -3137,7 +3137,7 @@ public func toJson(w: JsonWriter): Unit
 ```cangjie
 import std.io.*
 import std.collection.*
-import stdx.encoding.json.stream.*
+import cangjie_stdx::encoding.json.stream.*
 
 main() {
     // 创建JsonWriter 
@@ -3192,7 +3192,7 @@ public func toJson(w: JsonWriter): Unit
 ```cangjie
 import std.io.*
 import std.collection.*
-import stdx.encoding.json.stream.*
+import cangjie_stdx::encoding.json.stream.*
 
 main() {
     // 创建JsonWriter 
@@ -3244,7 +3244,7 @@ public func toJson(w: JsonWriter): Unit
 ```cangjie
 import std.io.*
 import std.collection.*
-import stdx.encoding.json.stream.*
+import cangjie_stdx::encoding.json.stream.*
 
 main() {
     // 创建JsonWriter 
@@ -3298,7 +3298,7 @@ public func toJson(w: JsonWriter): Unit
 <!-- verify -->
 ```cangjie
 import std.io.*
-import stdx.encoding.json.stream.*
+import cangjie_stdx::encoding.json.stream.*
 
 main() {
     // 创建JsonWriter 
@@ -3350,7 +3350,7 @@ public func toJson(w: JsonWriter): Unit
 ```cangjie
 import std.io.*
 import std.collection.*
-import stdx.encoding.json.stream.*
+import cangjie_stdx::encoding.json.stream.*
 
 main() {
     // 创建JsonWriter 
@@ -3402,7 +3402,7 @@ public func toJson(w: JsonWriter): Unit
 ```cangjie
 import std.io.*
 import std.collection.*
-import stdx.encoding.json.stream.*
+import cangjie_stdx::encoding.json.stream.*
 
 main() {
     // 创建JsonWriter 
@@ -3454,7 +3454,7 @@ public func toJson(w: JsonWriter): Unit
 ```cangjie
 import std.io.*
 import std.collection.*
-import stdx.encoding.json.stream.*
+import cangjie_stdx::encoding.json.stream.*
 
 main() {
     // 创建JsonWriter 
@@ -3506,7 +3506,7 @@ public func toJson(w: JsonWriter): Unit
 ```cangjie
 import std.io.*
 import std.collection.*
-import stdx.encoding.json.stream.*
+import cangjie_stdx::encoding.json.stream.*
 
 main() {
     // 创建JsonWriter 

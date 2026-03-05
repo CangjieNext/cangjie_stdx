@@ -6,7 +6,7 @@ SM4 加解密数据。
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.crypto.*
+import cangjie_stdx::crypto.crypto.*
 
 main() {
     var plains = "hello cangjie!"

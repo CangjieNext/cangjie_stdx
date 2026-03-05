@@ -4,7 +4,7 @@
 
 <!-- verify -->
 ```cangjie
-import stdx.encoding.json.stream.*
+import cangjie_stdx::encoding.json.stream.*
 import std.io.*
 import std.collection.*
 

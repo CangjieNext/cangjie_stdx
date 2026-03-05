@@ -1,12 +1,12 @@
-# stdx.net.tls.common
+# cangjie_stdx::net.tls.common
 
 ## Feature Overview
 
 The tls.common package provides abstract interfaces related to TLS for adapting various TLS implementations.
 
-By implementing the [TlsKit](./tls_common_package_api/tls_common_package_interfaces.md#interface-tlskit) interface and related interfaces, you can customize the TLS implementation used in the [stdx.net.http](../../http/http_package_overview.md) package.
+By implementing the [TlsKit](./tls_common_package_api/tls_common_package_interfaces.md#interface-tlskit) interface and related interfaces, you can customize the TLS implementation used in the [cangjie_stdx::net.http](../../http/http_package_overview.md) package.
 
-The [stdx.net.tls](../tls_package_overview.md) package provides a default OpenSSL-based implementation. For details, refer to the [stdx.net.tls](../tls_package_overview.md) package. To use the default implementation, you need to explicitly import the [stdx.net.tls](../tls_package_overview.md) package.
+The [cangjie_stdx::net.tls](../tls_package_overview.md) package provides a default OpenSSL-based implementation. For details, refer to the [cangjie_stdx::net.tls](../tls_package_overview.md) package. To use the default implementation, you need to explicitly import the [cangjie_stdx::net.tls](../tls_package_overview.md) package.
 
 ## API List
 

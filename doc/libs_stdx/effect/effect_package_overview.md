@@ -1,4 +1,4 @@
-# stdx.effect
+# cangjie_stdx::effect
 
 ## 功能介绍
 
@@ -75,7 +75,7 @@ try {
 #### 示例 1：基础用法
 
 ```cangjie
-import stdx.effect.Command
+import cangjie_stdx::effect.Command
 
 class Eff <: Command<Int64> {}
 
@@ -98,7 +98,7 @@ main() {
 #### 示例 2：抛出异常
 
 ```cangjie
-import stdx.effect.Command
+import cangjie_stdx::effect.Command
 
 class Eff <: Command<Unit> {}
 
@@ -122,7 +122,7 @@ Error from effect
 #### 示例 3：默认实现
 
 ```cangjie
-import stdx.effect.Command
+import cangjie_stdx::effect.Command
 
 class Print <: Command<Unit> {
     Print (let msg: String) {}

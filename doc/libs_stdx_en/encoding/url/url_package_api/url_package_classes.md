@@ -222,7 +222,7 @@ Type: String
 Example:
 
 ```cangjie
-import stdx.encoding.url.*
+import cangjie_stdx::encoding.url.*
 
 main () {
     let url = URL.parse("https:\\\\/example.com/foo/bar") // '\' is not a protocol-defined separator and cannot be parsed.

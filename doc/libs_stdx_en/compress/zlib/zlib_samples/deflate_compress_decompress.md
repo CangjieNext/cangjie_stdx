@@ -4,7 +4,7 @@ Example:
 
 <!-- verify -->
 ```cangjie
-import stdx.compress.zlib.*
+import cangjie_stdx::compress.zlib.*
 import std.fs.*
 
 main() {

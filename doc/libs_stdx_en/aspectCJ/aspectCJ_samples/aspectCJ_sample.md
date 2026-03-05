@@ -9,7 +9,7 @@ The following is an example code demonstrating function entry point instrumentat
 ```cangjie
 package AOP_demo1
 
-import stdx.aspectCJ.*
+import cangjie_stdx::aspectCJ.*
 import std.time.DateTime
 
 @InsertAtEntry[packageName: "AOP_demo1", className: "", methodName: "printCurrentTime", isStatic: false, funcTypeStr: "()->Unit", recursive: false]
@@ -52,7 +52,7 @@ The following is an example code demonstrating function exit point instrumentati
 ```cangjie
 package AOP_demo2
 
-import stdx.aspectCJ.*
+import cangjie_stdx::aspectCJ.*
 import std.time.DateTime
 
 @InsertAtExit[packageName: "AOP_demo1", className: "", methodName: "printCurrentTime", isStatic: false, funcTypeStr: "()->std.core:String", recursive: false]
@@ -97,7 +97,7 @@ The following is an example code demonstrating function body replacement using `
 ```cangjie
 package AOP_demo2
 
-import stdx.aspectCJ.*
+import cangjie_stdx::aspectCJ.*
 import std.time.DateTime
 
 @ReplaceFuncBody[packageName: "AOP_demo1", className: "", methodName: "printCurrentTime", isStatic: false, recursive: false]

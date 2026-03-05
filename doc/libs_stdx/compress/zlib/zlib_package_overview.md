@@ -1,4 +1,4 @@
-# stdx.compress.zlib
+# cangjie_stdx::compress.zlib
 
 ## 功能介绍
 
@@ -20,7 +20,7 @@ compress.zlib 提供压缩解压功能。
 
 > **说明：**
 >
-> 要进行文件打包请使用 stdx.compress.tar 进行归档或使用 stdx.compress 的组合工具 TarGzip 进行归档压缩操作。
+> 要进行文件打包请使用 cangjie_stdx::compress.tar 进行归档或使用 cangjie_stdx::compress 的组合工具 TarGzip 进行归档压缩操作。
 
 ## API 列表
 

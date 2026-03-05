@@ -30,7 +30,7 @@ public init(message: String)
 
 <!-- verify -->
 ```cangjie
-import stdx.net.http.*
+import cangjie_stdx::net.http.*
 
 main() {
     try {
@@ -77,7 +77,7 @@ public init(message: String)
 
 <!-- verify -->
 ```cangjie
-import stdx.net.http.*
+import cangjie_stdx::net.http.*
 
 main() {
     try {
@@ -124,7 +124,7 @@ public init(message: String)
 
 <!-- verify -->
 ```cangjie
-import stdx.net.http.*
+import cangjie_stdx::net.http.*
 
 main() {
     try {
@@ -172,7 +172,7 @@ public init(statusCode: UInt16, message: String)
 
 <!-- verify -->
 ```cangjie
-import stdx.net.http.*
+import cangjie_stdx::net.http.*
 
 main() {
     try {
@@ -220,7 +220,7 @@ public init(message: String)
 
 <!-- verify -->
 ```cangjie
-import stdx.net.http.*
+import cangjie_stdx::net.http.*
 
 main() {
     try {
@@ -267,7 +267,7 @@ public init(message: String)
 
 <!-- verify -->
 ```cangjie
-import stdx.net.http.*
+import cangjie_stdx::net.http.*
 
 main() {
     try {

@@ -52,7 +52,7 @@ public func writeTo(w: LogWriter): Unit
 
 <!-- verify -->
 ```cangjie
-import stdx.log.*
+import cangjie_stdx::log.*
 import std.time.*
 
 // 定义一个简单自定义的LogWriter实现用于演示，实际开发中请参考 samples 中示例
@@ -336,7 +336,7 @@ public func writeTo(w: LogWriter): Unit
 
 <!-- verify -->
 ```cangjie
-import stdx.log.*
+import cangjie_stdx::log.*
 import std.time.*
 
 // 定义一个简单自定义的LogWriter实现用于演示，实际开发中请参考 samples 中示例
@@ -483,7 +483,7 @@ public func writeTo(w: LogWriter): Unit
 
 <!-- verify -->
 ```cangjie
-import stdx.log.*
+import cangjie_stdx::log.*
 import std.collection.*
 import std.time.*
 

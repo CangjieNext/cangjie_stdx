@@ -1,8 +1,8 @@
-# stdx.aspectCJ
+# cangjie_stdx::aspectCJ
 
 ## 功能介绍
 
-`stdx.aspectCJ` 包提供了仓颉中面向切面编程（Aspect Oriented Programming, AOP）的相关注解，配合 libcollect-aspects 和 libwave-aspects 两个编译插件使用，可以对函数进行前后插桩以及替换实现。
+`cangjie_stdx::aspectCJ` 包提供了仓颉中面向切面编程（Aspect Oriented Programming, AOP）的相关注解，配合 libcollect-aspects 和 libwave-aspects 两个编译插件使用，可以对函数进行前后插桩以及替换实现。
 
 ## API 列表
 
@@ -53,6 +53,6 @@
 - libcollect-aspects.so(.dll/.dylib)
 - libwave-aspects.so(.dll/.dylib)
 
-这两个编译插件以动态库的形式在 stdx.aspectCJ 中提供，不同平台提供不同版本。
+这两个编译插件以动态库的形式在 cangjie_stdx::aspectCJ 中提供，不同平台提供不同版本。
 
 应先使用 libcollect-aspects，在编译时收集所有切面、连接点信息；再使用 libwave-aspects 进行二次编译，把之前收集的切面织入到连接点。

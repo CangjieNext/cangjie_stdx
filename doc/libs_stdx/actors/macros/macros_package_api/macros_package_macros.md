@@ -33,8 +33,8 @@ public macro Actor(options: Tokens, input: Tokens): Tokens
 
 <!-- verify -->
 ```cangjie
-import stdx.actors.*
-import stdx.actors.macros.*
+import cangjie_stdx::actors.*
+import cangjie_stdx::actors.macros.*
 
 @Actor
 public class Counter <: ToString {
@@ -95,8 +95,8 @@ public macro Receiver(options: Tokens, input: Tokens): Tokens
 
 <!-- verify -->
 ```cangjie
-import stdx.actors.*
-import stdx.actors.macros.*
+import cangjie_stdx::actors.*
+import cangjie_stdx::actors.macros.*
 
 @Actor
 public class Counter <: ToString {

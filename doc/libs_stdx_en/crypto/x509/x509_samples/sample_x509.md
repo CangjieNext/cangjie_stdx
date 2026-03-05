@@ -11,7 +11,7 @@ Example:
 <!-- compile -->
 ```cangjie
 import std.fs.File
-import stdx.crypto.x509.*
+import cangjie_stdx::crypto.x509.*
 
 let readPath = "./files/root_rsa.cer"
 
@@ -59,7 +59,7 @@ Example:
 <!-- compile -->
 ```cangjie
 import std.fs.File
-import stdx.crypto.x509.*
+import cangjie_stdx::crypto.x509.*
 import std.time.DateTime
 
 let prefixPath = "./files/"
@@ -146,8 +146,8 @@ Example:
 <!-- compile -->
 ```cangjie
 import std.fs.*
-import stdx.crypto.x509.*
-import stdx.crypto.keys.*
+import cangjie_stdx::crypto.x509.*
+import cangjie_stdx::crypto.keys.*
 import std.time.*
 import std.io.*
 
@@ -203,8 +203,8 @@ Example:
 ```cangjie
 import std.fs.*
 import std.io.*
-import stdx.crypto.x509.*
-import stdx.crypto.keys.GeneralPrivateKey
+import cangjie_stdx::crypto.x509.*
+import cangjie_stdx::crypto.keys.GeneralPrivateKey
 
 main() {
     let x509Name = X509Name(

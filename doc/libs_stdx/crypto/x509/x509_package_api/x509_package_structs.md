@@ -35,7 +35,7 @@ public static let AnyKey: UInt16 = 0
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.x509.*
+import cangjie_stdx::crypto.x509.*
 
 main() {
     // 获取AnyKey常量值
@@ -64,7 +64,7 @@ public static let ClientAuth: UInt16 = 2
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.x509.*
+import cangjie_stdx::crypto.x509.*
 
 main() {
     // 获取ClientAuth常量值
@@ -93,7 +93,7 @@ public static let CodeSigning: UInt16 = 4
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.x509.*
+import cangjie_stdx::crypto.x509.*
 
 main() {
     // 获取CodeSigning常量值
@@ -122,7 +122,7 @@ public static let EmailProtection: UInt16 = 3
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.x509.*
+import cangjie_stdx::crypto.x509.*
 
 main() {
     // 获取EmailProtection常量值
@@ -151,7 +151,7 @@ public static let OCSPSigning: UInt16 = 5
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.x509.*
+import cangjie_stdx::crypto.x509.*
 
 main() {
     // 获取OCSPSigning常量值
@@ -180,7 +180,7 @@ public static let ServerAuth: UInt16 = 1
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.x509.*
+import cangjie_stdx::crypto.x509.*
 
 main() {
     // 获取ServerAuth常量值
@@ -209,7 +209,7 @@ public static let TimeStamping: UInt16 = 6
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.x509.*
+import cangjie_stdx::crypto.x509.*
 
 main() {
     // 获取TimeStamping常量值
@@ -240,7 +240,7 @@ public init(keys: Array<UInt16>)
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.x509.*
+import cangjie_stdx::crypto.x509.*
 
 main() {
     // 创建包含多个扩展密钥用途的数组
@@ -276,7 +276,7 @@ public override func toString(): String
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.x509.*
+import cangjie_stdx::crypto.x509.*
 
 main() {
     // 创建包含多个扩展密钥用途的数组
@@ -334,7 +334,7 @@ public static let CertSign: UInt16 = 0x0004
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.x509.*
+import cangjie_stdx::crypto.x509.*
 
 main() {
     // 获取CertSign常量值
@@ -363,7 +363,7 @@ public static let CRLSign: UInt16 = 0x0002
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.x509.*
+import cangjie_stdx::crypto.x509.*
 
 main() {
     // 获取CRLSign常量值
@@ -392,7 +392,7 @@ public static let DataEncipherment: UInt16 = 0x0010
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.x509.*
+import cangjie_stdx::crypto.x509.*
 
 main() {
     // 获取DataEncipherment常量值
@@ -421,7 +421,7 @@ public static let DecipherOnly: UInt16 = 0x0100
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.x509.*
+import cangjie_stdx::crypto.x509.*
 
 main() {
     // 获取DecipherOnly常量值
@@ -450,7 +450,7 @@ public static let DigitalSignature: UInt16 = 0x0080
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.x509.*
+import cangjie_stdx::crypto.x509.*
 
 main() {
     // 获取DigitalSignature常量值
@@ -479,7 +479,7 @@ public static let EncipherOnly: UInt16 = 0x0001
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.x509.*
+import cangjie_stdx::crypto.x509.*
 
 main() {
     // 获取EncipherOnly常量值
@@ -508,7 +508,7 @@ public static let KeyAgreement: UInt16 = 0x0008
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.x509.*
+import cangjie_stdx::crypto.x509.*
 
 main() {
     // 获取KeyAgreement常量值
@@ -537,7 +537,7 @@ public static let KeyEncipherment: UInt16 = 0x0020
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.x509.*
+import cangjie_stdx::crypto.x509.*
 
 main() {
     // 获取KeyEncipherment常量值
@@ -566,7 +566,7 @@ public static let NonRepudiation: UInt16 = 0x0040
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.x509.*
+import cangjie_stdx::crypto.x509.*
 
 main() {
     // 获取NonRepudiation常量值
@@ -597,7 +597,7 @@ public init(keys: UInt16)
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.x509.*
+import cangjie_stdx::crypto.x509.*
 
 main() {
     // 使用按位或运算组合多个密钥用途
@@ -633,7 +633,7 @@ public override func toString(): String
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.x509.*
+import cangjie_stdx::crypto.x509.*
 
 main() {
     // 创建包含多个密钥用途的组合
@@ -690,7 +690,7 @@ public init(length!: UInt8 = 16)
 
 <!-- run -->
 ```cangjie
-import stdx.crypto.x509.*
+import cangjie_stdx::crypto.x509.*
 
 main() {
     // 创建一个默认长度为16字节的序列号
@@ -721,7 +721,7 @@ public override func hashCode(): Int64
 
 <!-- run -->
 ```cangjie
-import stdx.crypto.x509.*
+import cangjie_stdx::crypto.x509.*
 
 main() {
     // 创建一个序列号对象
@@ -755,7 +755,7 @@ public override func toString(): String
 
 <!-- run -->
 ```cangjie
-import stdx.crypto.x509.*
+import cangjie_stdx::crypto.x509.*
 
 main() {
     // 创建一个序列号对象
@@ -793,7 +793,7 @@ public override operator func !=(other: SerialNumber): Bool
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.x509.*
+import cangjie_stdx::crypto.x509.*
 
 main() {
     // 创建两个不同的序列号对象
@@ -832,7 +832,7 @@ public override operator func ==(other: SerialNumber): Bool
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.x509.*
+import cangjie_stdx::crypto.x509.*
 
 main() {
     // 创建两个相同的序列号对象（使用相同长度）
@@ -879,7 +879,7 @@ public prop signatureValue: DerBlob
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.x509.*
+import cangjie_stdx::crypto.x509.*
 
 main() {
     // 找到系统根证书中的ISRG Root X1证书用作演示
@@ -923,7 +923,7 @@ public override func hashCode(): Int64
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.x509.*
+import cangjie_stdx::crypto.x509.*
 
 main() {
     // 找到系统根证书中的ISRG Root X1证书用作演示
@@ -971,7 +971,7 @@ public override operator func !=(other: Signature): Bool
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.x509.*
+import cangjie_stdx::crypto.x509.*
 
 main() {
     // 获取两个不同的系统根证书
@@ -1021,7 +1021,7 @@ public override operator func ==(other: Signature): Bool
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.x509.*
+import cangjie_stdx::crypto.x509.*
 
 main() {
     // 获取同一个证书的两个引用进行相等性比较
@@ -1083,7 +1083,7 @@ public var dnsName: String = ""
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.x509.*
+import cangjie_stdx::crypto.x509.*
 
 main() {
     // 模拟场景：已有的X509证书对象（此处通过系统根证书ISRG Root X1模拟）
@@ -1136,7 +1136,7 @@ public var intermediates: Array<X509Certificate> = Array<X509Certificate>()
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.x509.*
+import cangjie_stdx::crypto.x509.*
 
 main() {
     // 模拟场景：已有的X509证书对象（此处通过系统根证书ISRG Root X1模拟）
@@ -1179,7 +1179,7 @@ public var roots: Array<X509Certificate> = X509Certificate.systemRootCerts()
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.x509.*
+import cangjie_stdx::crypto.x509.*
 
 main() {
     // 获取两个不同的系统根证书
@@ -1239,7 +1239,7 @@ public var time: DateTime = DateTime.now()
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.x509.*
+import cangjie_stdx::crypto.x509.*
 import std.time.*
 
 main() {
@@ -1322,7 +1322,7 @@ public var dnsNames: Array<String>
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.x509.*
+import cangjie_stdx::crypto.x509.*
 
 main() {
     // 创建一个X509CertificateInfo对象
@@ -1353,7 +1353,7 @@ public var emailAddresses: Array<String>
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.x509.*
+import cangjie_stdx::crypto.x509.*
 
 main() {
     // 创建一个X509CertificateInfo对象
@@ -1384,7 +1384,7 @@ public var extKeyUsage: ?ExtKeyUsage
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.x509.*
+import cangjie_stdx::crypto.x509.*
 
 main() {
     // 创建扩展密钥用法对象
@@ -1419,7 +1419,7 @@ public var IPAddresses: Array<IP>
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.x509.*
+import cangjie_stdx::crypto.x509.*
 
 main() {
     // 创建IP地址列表
@@ -1453,7 +1453,7 @@ public var keyUsage: ?KeyUsage
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.x509.*
+import cangjie_stdx::crypto.x509.*
 
 main() {
     // 创建密钥用法对象
@@ -1488,7 +1488,7 @@ public var notAfter: DateTime
 <!-- run -->
 ```cangjie
 import std.time.*
-import stdx.crypto.x509.*
+import cangjie_stdx::crypto.x509.*
 
 main() {
     // 创建一个DateTime对象表示结束日期
@@ -1522,7 +1522,7 @@ public var notBefore: DateTime
 
 <!-- run -->
 ```cangjie
-import stdx.crypto.x509.*
+import cangjie_stdx::crypto.x509.*
 import std.time.DateTime
 
 main() {
@@ -1557,7 +1557,7 @@ public var serialNumber: SerialNumber
 
 <!-- run -->
 ```cangjie
-import stdx.crypto.x509.*
+import cangjie_stdx::crypto.x509.*
 
 main() {
     // 创建一个序列号对象
@@ -1591,7 +1591,7 @@ public var subject: ?X509Name
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.x509.*
+import cangjie_stdx::crypto.x509.*
 
 main() {
     // 创建一个X509Name对象
@@ -1656,7 +1656,7 @@ public init(
 
 <!-- run -->
 ```cangjie
-import stdx.crypto.x509.*
+import cangjie_stdx::crypto.x509.*
 import std.time.DateTime
 
 main() {
@@ -1729,7 +1729,7 @@ public var dnsNames: Array<String>
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.x509.*
+import cangjie_stdx::crypto.x509.*
 
 main() {
     // 创建一个X509CertificateRequestInfo对象
@@ -1760,7 +1760,7 @@ public var emailAddresses: Array<String>
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.x509.*
+import cangjie_stdx::crypto.x509.*
 
 main() {
     // 创建一个X509CertificateRequestInfo对象
@@ -1791,7 +1791,7 @@ public var IPAddresses: Array<IP>
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.x509.*
+import cangjie_stdx::crypto.x509.*
 
 main() {
     // 创建IP地址列表
@@ -1825,7 +1825,7 @@ public var subject: ?X509Name
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.x509.*
+import cangjie_stdx::crypto.x509.*
 
 main() {
     // 创建一个X509Name对象
@@ -1880,7 +1880,7 @@ public init(
 
 <!-- run -->
 ```cangjie
-import stdx.crypto.x509.*
+import cangjie_stdx::crypto.x509.*
 
 main() {
     // 创建一个X509Name对象

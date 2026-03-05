@@ -1,4 +1,4 @@
-# stdx.crypto.digest
+# cangjie_stdx::crypto.digest
 
 ## 功能介绍
 

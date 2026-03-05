@@ -109,7 +109,7 @@ public func hashCode(): Int64
 
 <!-- verify -->
 ```cangjie
-import stdx.net.tls.common.*
+import cangjie_stdx::net.tls.common.*
 
 main() {
     let tlsVersion = TlsVersion.V1_3
@@ -142,7 +142,7 @@ public override func toString(): String
 
 <!-- verify -->
 ```cangjie
-import stdx.net.tls.common.*
+import cangjie_stdx::net.tls.common.*
 
 main() {
     let tlsVersion = TlsVersion.V1_2
@@ -179,7 +179,7 @@ public operator func !=(that: TlsVersion): Bool
 
 <!-- verify -->
 ```cangjie
-import stdx.net.tls.common.*
+import cangjie_stdx::net.tls.common.*
 
 main() {
     let tlsVersion1 = TlsVersion.V1_2
@@ -222,7 +222,7 @@ public operator func ==(that: TlsVersion): Bool
 
 <!-- verify -->
 ```cangjie
-import stdx.net.tls.common.*
+import cangjie_stdx::net.tls.common.*
 
 main() {
     let tlsVersion1 = TlsVersion.V1_2

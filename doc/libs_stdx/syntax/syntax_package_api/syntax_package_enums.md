@@ -1078,7 +1078,7 @@ public operator func !=(rhs: ModifierKind): Bool
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main() {
     // 创建 ModifierKind
@@ -1117,7 +1117,7 @@ public operator func ==(rhs: ModifierKind): Bool
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main() {
     // 创建 ModifierKind

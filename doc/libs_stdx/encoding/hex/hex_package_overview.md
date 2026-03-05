@@ -1,4 +1,4 @@
-# stdx.encoding.hex
+# cangjie_stdx::encoding.hex
 
 ## 功能介绍
 

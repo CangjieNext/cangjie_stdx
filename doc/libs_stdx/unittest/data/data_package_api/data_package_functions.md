@@ -84,7 +84,7 @@ json 文件示例：
 
 <!--compile-->
 ```cangjie
-import stdx.serialization.serialization.*
+import cangjie_stdx::serialization.serialization.*
 import std.convert.*
 
 class User <: Serializable<User> {

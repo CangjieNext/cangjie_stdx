@@ -75,8 +75,8 @@ public static func fromJson(jv: JsonValue): DataModel
 
 <!-- verify -->
 ```cangjie
-import stdx.serialization.serialization.*
-import stdx.encoding.json.*
+import cangjie_stdx::serialization.serialization.*
+import cangjie_stdx::encoding.json.*
 import std.collection.*
 
 main() {
@@ -121,9 +121,9 @@ public func toJson(): JsonValue
 
 <!-- verify -->
 ```cangjie
-import stdx.serialization.serialization.*
+import cangjie_stdx::serialization.serialization.*
 import std.collection.*
-import stdx.encoding.json.*
+import cangjie_stdx::encoding.json.*
 
 main() {
     // 创建一个ArrayList并添加一些DataModel

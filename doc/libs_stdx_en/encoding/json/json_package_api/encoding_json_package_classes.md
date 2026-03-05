@@ -980,7 +980,7 @@ Exceptions:
 Example:
 
 ```cangjie
-import stdx.encoding.json.*
+import cangjie_stdx::encoding.json.*
 
 main() {
     println(JsonString("\b | \f | \n | \r | \t | A | \\ | \" | /").toString())

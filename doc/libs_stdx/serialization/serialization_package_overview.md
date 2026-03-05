@@ -1,4 +1,4 @@
-# stdx.serialization.serialization
+# cangjie_stdx::serialization.serialization
 
 ## 功能介绍
 

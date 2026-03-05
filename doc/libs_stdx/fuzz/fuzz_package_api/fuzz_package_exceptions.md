@@ -35,7 +35,7 @@ public init()
 
 <!-- verify -->
 ```cangjie
-import stdx.fuzz.fuzz.*
+import cangjie_stdx::fuzz.fuzz.*
 
 main(): Unit {
     try {
@@ -72,7 +72,7 @@ public init(message: String)
 
 <!-- verify -->
 ```cangjie
-import stdx.fuzz.fuzz.*
+import cangjie_stdx::fuzz.fuzz.*
 
 main(): Unit {
     try {

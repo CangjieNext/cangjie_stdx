@@ -33,7 +33,7 @@ public open func defaultImpl(): Res
 
 <!-- verify -->
 ```cangjie
-import stdx.effect.*
+import cangjie_stdx::effect.*
 
 public class GetDepth <: Command<Int64> {
     public func defaultImpl(): Int64 {

@@ -43,7 +43,7 @@ public static const ALL: LogLevel = LogLevel("ALL", -0x8000_0000)
 
 <!-- verify -->
 ```cangjie
-import stdx.log.*
+import cangjie_stdx::log.*
 
 main() {
     // 获取ALL日志级别常量
@@ -77,7 +77,7 @@ public static const DEBUG: LogLevel = LogLevel("DEBUG", 2000)
 
 <!-- verify -->
 ```cangjie
-import stdx.log.*
+import cangjie_stdx::log.*
 
 main() {
     // 获取DEBUG日志级别常量
@@ -111,7 +111,7 @@ public static const ERROR: LogLevel = LogLevel("ERROR", 5000)
 
 <!-- verify -->
 ```cangjie
-import stdx.log.*
+import cangjie_stdx::log.*
 
 main() {
     // 获取ERROR日志级别常量
@@ -145,7 +145,7 @@ public static const FATAL: LogLevel = LogLevel("FATAL", 6000)
 
 <!-- verify -->
 ```cangjie
-import stdx.log.*
+import cangjie_stdx::log.*
 
 main() {
     // 获取FATAL日志级别常量
@@ -179,7 +179,7 @@ public static const INFO: LogLevel = LogLevel("INFO", 3000)
 
 <!-- verify -->
 ```cangjie
-import stdx.log.*
+import cangjie_stdx::log.*
 
 main() {
     // 获取INFO日志级别常量
@@ -213,7 +213,7 @@ public static const OFF: LogLevel = LogLevel("OFF", 0x7FFF_FFFF)
 
 <!-- verify -->
 ```cangjie
-import stdx.log.*
+import cangjie_stdx::log.*
 
 main() {
     // 获取OFF日志级别常量
@@ -247,7 +247,7 @@ public static const TRACE: LogLevel = LogLevel("TRACE", 1000)
 
 <!-- verify -->
 ```cangjie
-import stdx.log.*
+import cangjie_stdx::log.*
 
 main() {
     // 获取TRACE日志级别常量
@@ -281,7 +281,7 @@ public static const WARN: LogLevel = LogLevel("WARN", 4000)
 
 <!-- verify -->
 ```cangjie
-import stdx.log.*
+import cangjie_stdx::log.*
 
 main() {
     // 获取WARN日志级别常量
@@ -315,7 +315,7 @@ public let name: String
 
 <!-- verify -->
 ```cangjie
-import stdx.log.*
+import cangjie_stdx::log.*
 
 main() {
     // 获取一个日志级别常量
@@ -350,7 +350,7 @@ public let value: Int32
 
 <!-- verify -->
 ```cangjie
-import stdx.log.*
+import cangjie_stdx::log.*
 
 main() {
     // 获取一个日志级别常量
@@ -388,7 +388,7 @@ public const init(name: String, value: Int32)
 
 <!-- verify -->
 ```cangjie
-import stdx.log.*
+import cangjie_stdx::log.*
 
 main() {
     // 使用构造函数创建自定义LogLevel
@@ -428,7 +428,7 @@ public func compare(rhs: LogLevel): Ordering
 
 <!-- verify -->
 ```cangjie
-import stdx.log.*
+import cangjie_stdx::log.*
 
 main() {
     // 创建两个日志级别实例
@@ -466,7 +466,7 @@ public func toString(): String
 
 <!-- verify -->
 ```cangjie
-import stdx.log.*
+import cangjie_stdx::log.*
 
 main() {
     // 获取一个日志级别常量
@@ -507,7 +507,7 @@ public operator func !=(rhs: LogLevel): Bool
 
 <!-- verify -->
 ```cangjie
-import stdx.log.*
+import cangjie_stdx::log.*
 
 main() {
     // 创建两个不同的日志级别
@@ -559,7 +559,7 @@ public operator func <(rhs: LogLevel): Bool
 
 <!-- verify -->
 ```cangjie
-import stdx.log.*
+import cangjie_stdx::log.*
 
 main() {
     // 创建两个日志级别
@@ -607,7 +607,7 @@ public operator func <=(rhs: LogLevel): Bool
 
 <!-- verify -->
 ```cangjie
-import stdx.log.*
+import cangjie_stdx::log.*
 
 main() {
     // 创建两个日志级别
@@ -659,7 +659,7 @@ public operator func ==(rhs: LogLevel): Bool
 
 <!-- verify -->
 ```cangjie
-import stdx.log.*
+import cangjie_stdx::log.*
 
 main() {
     // 创建两个相同的日志级别
@@ -711,7 +711,7 @@ public operator func >(rhs: LogLevel): Bool
 
 <!-- verify -->
 ```cangjie
-import stdx.log.*
+import cangjie_stdx::log.*
 
 main() {
     // 创建两个日志级别
@@ -759,7 +759,7 @@ public operator func >=(rhs: LogLevel): Bool
 
 <!-- verify -->
 ```cangjie
-import stdx.log.*
+import cangjie_stdx::log.*
 
 main() {
     // 创建两个日志级别

@@ -24,8 +24,8 @@ public func get(): T
 
 <!-- verify -->
 ```cangjie
-import stdx.actors.*
-import stdx.actors.macros.*
+import cangjie_stdx::actors.*
+import cangjie_stdx::actors.macros.*
 
 @Actor
 public class Counter {
@@ -71,8 +71,8 @@ public func get(timeout: Duration): Option<T>
 
 <!-- verify -->
 ```cangjie
-import stdx.actors.*
-import stdx.actors.macros.*
+import cangjie_stdx::actors.*
+import cangjie_stdx::actors.macros.*
 
 @Actor
 public class Counter {
@@ -114,8 +114,8 @@ public func tryGet(): Option<T>
 
 <!-- verify -->
 ```cangjie
-import stdx.actors.*
-import stdx.actors.macros.*
+import cangjie_stdx::actors.*
+import cangjie_stdx::actors.macros.*
 
 @Actor
 public class Counter {
@@ -191,7 +191,7 @@ public func post<T>(task: () -> T, priority!: Int64 = 5): ActorFuture<T>
 
 <!-- verify -->
 ```cangjie
-import stdx.actors.*
+import cangjie_stdx::actors.*
 
 main() {
   let seqDispatcher = SequentialDispatcher()
@@ -211,7 +211,7 @@ main() {
 
 <!-- verify -->
 ```cangjie
-import stdx.actors.*
+import cangjie_stdx::actors.*
 
 main() {
   let seqDispatcher = SequentialDispatcher(enableReceiverPriority: true)

@@ -32,7 +32,7 @@ public init(reason: String)
 
 <!-- verify -->
 ```cangjie
-import stdx.encoding.url.*
+import cangjie_stdx::encoding.url.*
 
 main() {
     try {
@@ -66,7 +66,7 @@ public init(input: String, reason: String)
 
 <!-- verify -->
 ```cangjie
-import stdx.encoding.url.*
+import cangjie_stdx::encoding.url.*
 
 main() {
     try {
@@ -101,7 +101,7 @@ public init(input: String, reason: String, pos: String)
 
 <!-- verify -->
 ```cangjie
-import stdx.encoding.url.*
+import cangjie_stdx::encoding.url.*
 
 main() {
     try {

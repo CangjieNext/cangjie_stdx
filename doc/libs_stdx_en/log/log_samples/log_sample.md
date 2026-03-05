@@ -9,8 +9,8 @@ Code example:
 <!-- run -->
 
 ```cangjie
-import stdx.log.*
-import stdx.logger.*
+import cangjie_stdx::log.*
+import cangjie_stdx::logger.*
 import std.env.*
 
 public class PGConnection {
@@ -54,7 +54,7 @@ import std.collection.{ArrayList, Map, HashMap}
 import std.collection.concurrent.*
 import std.sync.AtomicBool
 import std.time.DateTime
-import stdx.log.*
+import cangjie_stdx::log.*
 
 public class PasswordFilter <: Logger {
     var _level = LogLevel.INFO

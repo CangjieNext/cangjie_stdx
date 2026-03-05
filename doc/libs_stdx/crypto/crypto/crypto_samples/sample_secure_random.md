@@ -6,7 +6,7 @@ Random 创建随机数对象。
 
 <!-- run -->
 ```cangjie
-import stdx.crypto.crypto.*
+import cangjie_stdx::crypto.crypto.*
 
 main() {
     let r = SecureRandom()

@@ -37,7 +37,7 @@ Each handler installed by `deeper` reperforms the `GetDepth` effect and resumes 
 
 <!-- verify -->
 ```cangjie
-import stdx.effect.*
+import cangjie_stdx::effect.*
 
 public class GetDepth <: Command<Int64> {
     public func defaultImpl(): Int64 {

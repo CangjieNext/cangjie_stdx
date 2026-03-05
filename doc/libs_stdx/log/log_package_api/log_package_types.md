@@ -12,7 +12,7 @@ public type Attr = (String, LogValue)
 
 <!-- verify -->
 ```cangjie
-import stdx.log.*
+import cangjie_stdx::log.*
 import std.time.*
 
 main() {

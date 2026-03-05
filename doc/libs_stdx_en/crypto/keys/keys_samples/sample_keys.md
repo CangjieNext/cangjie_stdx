@@ -8,8 +8,8 @@ Example:
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.keys.*
-import stdx.crypto.digest.*
+import cangjie_stdx::crypto.keys.*
+import cangjie_stdx::crypto.digest.*
 import std.io.*
 import std.crypto.digest.*
 
@@ -54,8 +54,8 @@ Example:
 
 <!-- compile -->
 ```cangjie
-import stdx.crypto.keys.*
-import stdx.crypto.digest.*
+import cangjie_stdx::crypto.keys.*
+import cangjie_stdx::crypto.digest.*
 import std.crypto.digest.*
 import std.fs.*
 import std.io.*
@@ -93,8 +93,8 @@ Example:
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.keys.*
-import stdx.crypto.digest.*
+import cangjie_stdx::crypto.keys.*
+import cangjie_stdx::crypto.digest.*
 import std.convert.*
 import std.crypto.digest.*
 
@@ -128,8 +128,8 @@ Example:
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.keys.*
-import stdx.crypto.digest.*
+import cangjie_stdx::crypto.keys.*
+import cangjie_stdx::crypto.digest.*
 import std.convert.*
 import std.crypto.digest.*
 import std.fs.*

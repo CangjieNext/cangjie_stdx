@@ -1,4 +1,4 @@
-# stdx.crypto.kit
+# cangjie_stdx::crypto.kit
 
 ## Feature Description
 
