@@ -30,7 +30,7 @@ class SpawnExprTest001 {
 
     @BeforeAll
     func readExprs(): Unit {
-        let parsingRes: ParsingResult<Package> = parsePackage("../sourceFile/package/package_spawn_expr")
+        let parsingRes: ParsingResult<Package> = parsePackage("sourceFile/package/package_spawn_expr")
         let pkgAST: Package = parsingRes.node.getOrThrow()
 
         semaRes = SemanticResult.analyze(pkgAST, importedPkgContexts: [])
