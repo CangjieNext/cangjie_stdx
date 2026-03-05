@@ -1,4 +1,4 @@
-# stdx.effect
+# cangjie_stdx::effect
 
 ## Overview
 
@@ -75,7 +75,7 @@ Execution flow:
 #### Example 1: Basic Usage
 
 ```cangjie
-import stdx.effect.Command
+import cangjie_stdx::effect.Command
 
 class Eff <: Command<Int64> {}
 
@@ -98,7 +98,7 @@ Output:
 #### Example 2: Throwing an Exception
 
 ```cangjie
-import stdx.effect.Command
+import cangjie_stdx::effect.Command
 
 class Eff <: Command<Unit> {}
 
@@ -122,7 +122,7 @@ Error from effect
 #### Example 3: Default Implementation
 
 ```cangjie
-import stdx.effect.Command
+import cangjie_stdx::effect.Command
 
 class Print <: Command<Unit> {
     Print (let msg: String) {}

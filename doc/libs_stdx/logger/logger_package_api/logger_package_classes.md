@@ -28,8 +28,8 @@ public mut prop level: LogLevel
 
 <!-- verify -->
 ```cangjie
-import stdx.log.*
-import stdx.logger.*
+import cangjie_stdx::log.*
+import cangjie_stdx::logger.*
 import std.env.*
 
 main() {
@@ -74,7 +74,7 @@ public init(output: OutputStream)
 
 <!-- run -->
 ```cangjie
-import stdx.logger.*
+import cangjie_stdx::logger.*
 import std.env.*
 
 main() {
@@ -96,7 +96,7 @@ public func close(): Unit
 
 <!-- verify -->
 ```cangjie
-import stdx.logger.*
+import cangjie_stdx::logger.*
 import std.env.*
 
 main() {
@@ -157,8 +157,8 @@ public func log(record: LogRecord): Unit
 
 <!-- verify -->
 ```cangjie
-import stdx.log.*
-import stdx.logger.*
+import cangjie_stdx::log.*
+import cangjie_stdx::logger.*
 import std.env.*
 import std.time.*
 
@@ -202,8 +202,8 @@ public func withAttrs(attrs: Array<Attr>): Logger
 
 <!-- verify -->
 ```cangjie
-import stdx.log.*
-import stdx.logger.*
+import cangjie_stdx::log.*
+import cangjie_stdx::logger.*
 import std.env.*
 import std.time.*
 
@@ -267,8 +267,8 @@ public mut prop level: LogLevel
 
 <!-- verify -->
 ```cangjie
-import stdx.log.*
-import stdx.logger.*
+import cangjie_stdx::log.*
+import cangjie_stdx::logger.*
 import std.env.*
 
 main() {
@@ -313,7 +313,7 @@ public init(output: OutputStream)
 
 <!-- run -->
 ```cangjie
-import stdx.logger.*
+import cangjie_stdx::logger.*
 import std.env.*
 
 main() {
@@ -335,7 +335,7 @@ public func close(): Unit
 
 <!-- verify -->
 ```cangjie
-import stdx.logger.*
+import cangjie_stdx::logger.*
 import std.env.*
 
 main() {
@@ -396,8 +396,8 @@ public func log(record: LogRecord): Unit
 
 <!-- verify -->
 ```cangjie
-import stdx.log.*
-import stdx.logger.*
+import cangjie_stdx::log.*
+import cangjie_stdx::logger.*
 import std.env.*
 import std.time.*
 
@@ -441,8 +441,8 @@ public func withAttrs(attrs: Array<Attr>): Logger
 
 <!-- verify -->
 ```cangjie
-import stdx.log.*
-import stdx.logger.*
+import cangjie_stdx::log.*
+import cangjie_stdx::logger.*
 import std.env.*
 import std.time.*
 
@@ -506,8 +506,8 @@ public mut prop level: LogLevel
 
 <!-- verify -->
 ```cangjie
-import stdx.log.*
-import stdx.logger.*
+import cangjie_stdx::log.*
+import cangjie_stdx::logger.*
 import std.env.*
 
 main() {
@@ -552,7 +552,7 @@ public init(output: OutputStream)
 
 <!-- run -->
 ```cangjie
-import stdx.logger.*
+import cangjie_stdx::logger.*
 import std.env.*
 
 main() {
@@ -574,7 +574,7 @@ public func close(): Unit
 
 <!-- verify -->
 ```cangjie
-import stdx.logger.*
+import cangjie_stdx::logger.*
 import std.env.*
 
 main() {
@@ -635,8 +635,8 @@ public func log(record: LogRecord): Unit
 
 <!-- verify -->
 ```cangjie
-import stdx.log.*
-import stdx.logger.*
+import cangjie_stdx::log.*
+import cangjie_stdx::logger.*
 import std.env.*
 import std.time.*
 
@@ -680,8 +680,8 @@ public func withAttrs(attrs: Array<Attr>): Logger
 
 <!-- verify -->
 ```cangjie
-import stdx.log.*
-import stdx.logger.*
+import cangjie_stdx::log.*
+import cangjie_stdx::logger.*
 import std.env.*
 import std.time.*
 

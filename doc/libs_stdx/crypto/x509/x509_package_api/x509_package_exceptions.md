@@ -27,7 +27,7 @@ public init()
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.x509.*
+import cangjie_stdx::crypto.x509.*
 
 main() {
     try {
@@ -61,7 +61,7 @@ public init(message: String)
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.x509.*
+import cangjie_stdx::crypto.x509.*
 
 main() {
     try {

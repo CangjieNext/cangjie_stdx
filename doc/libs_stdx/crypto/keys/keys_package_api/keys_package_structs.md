@@ -28,8 +28,8 @@ public init(hash: Digest, mgfHash: Digest, label!: String = "")
 
 <!-- run -->
 ```cangjie
-import stdx.crypto.keys.*
-import stdx.crypto.digest.*
+import cangjie_stdx::crypto.keys.*
+import cangjie_stdx::crypto.digest.*
 
 main() {
     let sha256 = SHA256()
@@ -69,7 +69,7 @@ public init(saltLen: Int32)
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.keys.*
+import cangjie_stdx::crypto.keys.*
 
 main() {
     // 正常情况

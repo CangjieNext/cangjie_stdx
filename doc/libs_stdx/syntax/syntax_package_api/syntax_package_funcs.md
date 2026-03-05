@@ -24,7 +24,7 @@ public func parseFile(filePath: String): ParsingResult<SourceFile>
 
 <!-- compile -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main() {
     // 解析指定路径的文件，获取一个 SourceFile 类型的语法树
@@ -60,7 +60,7 @@ public func parsePackage(dirPath: String): ParsingResult<Package>
 
 <!-- compile -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main() {
     // 解析指定路径的目录，获取一个 Package 类型的语法树
@@ -102,7 +102,7 @@ public func parseText(programText: String): ParsingResult<SyntaxTreeNode>
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main() {
     // 解析字符串，获得一个语法树节点，示例中为 ClassDecl 类型节点
@@ -153,7 +153,7 @@ public func parseTokens(tokens: Tokens, refreshPos!: Bool = true): ParsingResult
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main() {
     let tokens = quote(

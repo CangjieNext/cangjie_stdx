@@ -33,8 +33,8 @@ Example:
 
 <!-- verify -->
 ```cangjie
-import stdx.actors.*
-import stdx.actors.macros.*
+import cangjie_stdx::actors.*
+import cangjie_stdx::actors.macros.*
 
 @Actor
 public class Counter <: ToString {
@@ -95,8 +95,8 @@ Example:
 
 <!-- verify -->
 ```cangjie
-import stdx.actors.*
-import stdx.actors.macros.*
+import cangjie_stdx::actors.*
+import cangjie_stdx::actors.macros.*
 
 @Actor
 public class Counter <: ToString {

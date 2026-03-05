@@ -35,30 +35,30 @@ cjc -L $STATIC_OPENSSL_DIR --link-option "-force_load" --link-option "$STATIC_OP
 
 | Import Library Name                                                            |  Dependent Packages |
 | ------------------------------------------------------------------ | ------------------    |
-| import stdx.actors.* | stdx.actors |
-| import stdx.actors.macros.* | stdx.actors.macros |
-| import stdx.aspectCJ.* | stdx.aspectCJ |
-| import stdx.compress.zlib.* | stdx.compress.zlib |
-| import stdx.crypto.common.* | stdx.crypto.common、stdx.encoding.base64 |
-| import stdx.crypto.crypto.* | stdx.crypto.crypto、stdx.crypto.digest |
-| import stdx.crypto.digest.* | stdx.crypto.digest |
-| import stdx.crypto.keys.* | stdx.crypto.keys、stdx.crypto.x509、stdx.encoding.hex、stdx.encoding.base64、stdx.crypto.crypto、stdx.crypto.digest |
-| import stdx.crypto.kit.*  | stdx.crypto.keys、stdx.crypto.x509、stdx.encoding.hex、stdx.crypto.crypto、stdx.crypto.digest、stdx.crypto.common、stdx.encoding.base64 |
-| import stdx.crypto.x509.* | stdx.crypto.x509、stdx.encoding.hex、stdx.encoding.base64、stdx.crypto.crypto、stdx.crypto.digest |
-| import stdx.effect.*   | stdx.effect |
-| import stdx.encoding.hex.* | stdx.encoding.hex |
-| import stdx.encoding.base64.* | stdx.encoding.base64 |
-| import stdx.encoding.json.* | stdx.encoding.json、stdx.serialization.serialization |
-| import stdx.encoding.json.stream.* | stdx.encoding.json.stream|
-| import stdx.encoding.url.* | stdx.encoding.url |
-| import stdx.log.* | stdx.log |
-| import stdx.logger.* | stdx.logger |
-| import stdx.serialization.serialization.* | stdx.serialization.serialization |
-| import stdx.fuzz.fuzz.* | stdx.fuzz.fuzz |
-| import stdx.net.http .* | stdx.net.http、stdx.net.tls、stdx.logger、stdx.log、stdx.encoding.url、stdx.encoding.json.stream、stdx.crypto.x509 、stdx.encoding.hex、stdx.encoding.base64、stdx.crypto.crypto、stdx.crypto.digest |
-| import stdx.net.tls.* | stdx.net.tls、stdx.crypto.x509、stdx.encoding.hex、stdx.encoding.base64、stdx.crypto.crypto、stdx.crypto.digest |
-| import stdx.net.tls.common.* | stdx.net.tls.common、stdx.crypto.x509、stdx.encoding.hex、stdx.crypto.crypto、stdx.crypto.digest、stdx.crypto.common、stdx.encoding.base64 |
-| import stdx.unittest.data.* | stdx.encoding.json、stdx.serialization.serialization |
+| import cangjie_stdx::actors.* | cangjie_stdx::actors |
+| import cangjie_stdx::actors.macros.* | cangjie_stdx::actors.macros |
+| import cangjie_stdx::aspectCJ.* | cangjie_stdx::aspectCJ |
+| import cangjie_stdx::compress.zlib.* | cangjie_stdx::compress.zlib |
+| import cangjie_stdx::crypto.common.* | cangjie_stdx::crypto.common、cangjie_stdx::encoding.base64 |
+| import cangjie_stdx::crypto.crypto.* | cangjie_stdx::crypto.crypto、cangjie_stdx::crypto.digest |
+| import cangjie_stdx::crypto.digest.* | cangjie_stdx::crypto.digest |
+| import cangjie_stdx::crypto.keys.* | cangjie_stdx::crypto.keys、cangjie_stdx::crypto.x509、cangjie_stdx::encoding.hex、cangjie_stdx::encoding.base64、cangjie_stdx::crypto.crypto、cangjie_stdx::crypto.digest |
+| import cangjie_stdx::crypto.kit.*  | cangjie_stdx::crypto.keys、cangjie_stdx::crypto.x509、cangjie_stdx::encoding.hex、cangjie_stdx::crypto.crypto、cangjie_stdx::crypto.digest、cangjie_stdx::crypto.common、cangjie_stdx::encoding.base64 |
+| import cangjie_stdx::crypto.x509.* | cangjie_stdx::crypto.x509、cangjie_stdx::encoding.hex、cangjie_stdx::encoding.base64、cangjie_stdx::crypto.crypto、cangjie_stdx::crypto.digest |
+| import cangjie_stdx::effect.*   | cangjie_stdx::effect |
+| import cangjie_stdx::encoding.hex.* | cangjie_stdx::encoding.hex |
+| import cangjie_stdx::encoding.base64.* | cangjie_stdx::encoding.base64 |
+| import cangjie_stdx::encoding.json.* | cangjie_stdx::encoding.json、cangjie_stdx::serialization.serialization |
+| import cangjie_stdx::encoding.json.stream.* | cangjie_stdx::encoding.json.stream|
+| import cangjie_stdx::encoding.url.* | cangjie_stdx::encoding.url |
+| import cangjie_stdx::log.* | cangjie_stdx::log |
+| import cangjie_stdx::logger.* | cangjie_stdx::logger |
+| import cangjie_stdx::serialization.serialization.* | cangjie_stdx::serialization.serialization |
+| import cangjie_stdx::fuzz.fuzz.* | cangjie_stdx::fuzz.fuzz |
+| import cangjie_stdx::net.http .* | cangjie_stdx::net.http、cangjie_stdx::net.tls、cangjie_stdx::logger、cangjie_stdx::log、cangjie_stdx::encoding.url、cangjie_stdx::encoding.json.stream、cangjie_stdx::crypto.x509 、cangjie_stdx::encoding.hex、cangjie_stdx::encoding.base64、cangjie_stdx::crypto.crypto、cangjie_stdx::crypto.digest |
+| import cangjie_stdx::net.tls.* | cangjie_stdx::net.tls、cangjie_stdx::crypto.x509、cangjie_stdx::encoding.hex、cangjie_stdx::encoding.base64、cangjie_stdx::crypto.crypto、cangjie_stdx::crypto.digest |
+| import cangjie_stdx::net.tls.common.* | cangjie_stdx::net.tls.common、cangjie_stdx::crypto.x509、cangjie_stdx::encoding.hex、cangjie_stdx::crypto.crypto、cangjie_stdx::crypto.digest、cangjie_stdx::crypto.common、cangjie_stdx::encoding.base64 |
+| import cangjie_stdx::unittest.data.* | cangjie_stdx::encoding.json、cangjie_stdx::serialization.serialization |
 
 When importing the above packages in code and compiling with the `cjc` command, the linking order must strictly follow the package dependencies listed above. If using `cjpm`, this is not necessary.
 
@@ -69,24 +69,24 @@ When using static libraries, importing `crypto` and `net` libraries requires add
 For an introduction to `cjc` and compilation, refer to the Cangjie User Manual.
 
 ```cangjie
-import stdx.actors.*
-import stdx.actors.macros.*
-import stdx.aspectCJ.*
-import stdx.compress.zlib.*
-import stdx.crypto.crypto.*
-import stdx.crypto.digest.*
-import stdx.crypto.keys.*
-import stdx.crypto.x509.*
-import stdx.encoding.hex.*
-import stdx.encoding.base64.*
-import stdx.encoding.json.*
-import stdx.encoding.url.*
-import stdx.encoding.json.stream.*
-import stdx.net.tls.*
-import stdx.net.http.*
-import stdx.log.*
-import stdx.logger.*
-import stdx.serialization.serialization.*
+import cangjie_stdx::actors.*
+import cangjie_stdx::actors.macros.*
+import cangjie_stdx::aspectCJ.*
+import cangjie_stdx::compress.zlib.*
+import cangjie_stdx::crypto.crypto.*
+import cangjie_stdx::crypto.digest.*
+import cangjie_stdx::crypto.keys.*
+import cangjie_stdx::crypto.x509.*
+import cangjie_stdx::encoding.hex.*
+import cangjie_stdx::encoding.base64.*
+import cangjie_stdx::encoding.json.*
+import cangjie_stdx::encoding.url.*
+import cangjie_stdx::encoding.json.stream.*
+import cangjie_stdx::net.tls.*
+import cangjie_stdx::net.http.*
+import cangjie_stdx::log.*
+import cangjie_stdx::logger.*
+import cangjie_stdx::serialization.serialization.*
 main() {
     0
 }
@@ -95,13 +95,13 @@ main() {
 Compilation commands for Linux and macOS:
 
 ```shell
-cjc main.cj -L $CANGJIE_STDX_PATH -lstdx.actors -lstdx.aspectCJ -lstdx.encoding.json -lstdx.serialization.serialization -lstdx.net.http -lstdx.net.tls -lstdx.logger -lstdx.log -lstdx.encoding.url -lstdx.encoding.json.stream -lstdx.crypto.keys -lstdx.crypto.x509 -lstdx.encoding.hex -lstdx.encoding.base64 -lstdx.crypto.crypto -lstdx.crypto.digest -lstdx.compress.zlib -lstdx.compress -ldl --import-path $CANGJIE_STDX_PATH -o main.out
+cjc main.cj -L $CANGJIE_STDX_PATH -lactors@cangjie_stdx -laspectCJ@cangjie_stdx -lencoding.json@cangjie_stdx -lserialization.serialization@cangjie_stdx -lnet.http@cangjie_stdx -lnet.tls@cangjie_stdx -llogger@cangjie_stdx -llog@cangjie_stdx -lencoding.url@cangjie_stdx -lencoding.json.stream@cangjie_stdx -lcrypto.keys@cangjie_stdx -lcrypto.x509@cangjie_stdx -lencoding.hex@cangjie_stdx -lencoding.base64@cangjie_stdx -lcrypto.crypto@cangjie_stdx -lcrypto.digest@cangjie_stdx -lcompress.zlib@cangjie_stdx -lcompress@cangjie_stdx -ldl --import-path $CANGJIE_STDX_PATH -o main.out
 ```
 
 Windows compilation command:
 
 ```shell
-cjc main.cj -L $CANGJIE_STDX_PATH -lstdx.actors -lstdx.aspectCJ -lstdx.encoding.json -lstdx.serialization.serialization -lstdx.net.http -lstdx.net.tls -lstdx.logger -lstdx.log -lstdx.encoding.url -lstdx.encoding.json.stream -lstdx.crypto.keys -lstdx.crypto.x509 -lstdx.encoding.hex -lstdx.encoding.base64 -lstdx.crypto.crypto -lstdx.crypto.digest -lstdx.compress.zlib -lstdx.compress -lcrypt32 --import-path $CANGJIE_STDX_PATH -o main.out
+cjc main.cj -L $CANGJIE_STDX_PATH -lactors@cangjie_stdx -laspectCJ@cangjie_stdx -lencoding.json@cangjie_stdx -lserialization.serialization@cangjie_stdx -lnet.http@cangjie_stdx -lnet.tls@cangjie_stdx -llogger@cangjie_stdx -llog@cangjie_stdx -lencoding.url@cangjie_stdx -lencoding.json.stream@cangjie_stdx -lcrypto.keys@cangjie_stdx -lcrypto.x509@cangjie_stdx -lencoding.hex@cangjie_stdx -lencoding.base64@cangjie_stdx -lcrypto.crypto@cangjie_stdx -lcrypto.digest@cangjie_stdx -lcompress.zlib@cangjie_stdx -lcompress@cangjie_stdx -lcrypt32 --import-path $CANGJIE_STDX_PATH -o main.out
 ```
 
 `CANGJIE_STDX_PATH` is the path to the stdx library.

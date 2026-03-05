@@ -18,7 +18,7 @@ main(){
 
 <!-- compile -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main() {
     let file = parseFile("a.cj").node.getOrThrow() // 获取一个 SourceFile 类型的语法树
@@ -53,7 +53,7 @@ func foo() {
 
 <!-- compile -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main() {
     let pkg = parsePackage("/user/").node.getOrThrow() // 获取一个 Package 类型的语法树
@@ -82,7 +82,7 @@ func foo() {
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main() {
     let result = parseText("    1  + 1").node.getOrThrow() // 解析获得一个语法树节点，示例中为二元表达式
@@ -104,7 +104,7 @@ main() {
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main() {
     let tokens = quote(

@@ -3,7 +3,7 @@
 This example demonstrates how to use a simple effect handler: define an effect (`Command`) and handle it, while also catching the case where an effect is not handled.
 
 ```cangjie
-import stdx.effect.{Command, UnhandledCommandException}
+import cangjie_stdx::effect.{Command, UnhandledCommandException}
 
 // Define two effect types: generating a random number and sending a message
 class Random <: Command<Int64> {}

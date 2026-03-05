@@ -20,7 +20,7 @@ public func fromBase64String(data: String): Option<Array<Byte>>
 
 <!-- verify -->
 ```cangjie
-import stdx.encoding.base64.*
+import cangjie_stdx::encoding.base64.*
 
 main() {
     // 对Base64编码的字符串进行解码
@@ -63,7 +63,7 @@ public func toBase64String(data: Array<Byte>): String
 
 <!-- verify -->
 ```cangjie
-import stdx.encoding.base64.*
+import cangjie_stdx::encoding.base64.*
 
 main() {
     // 将字符串转换成Byte数组

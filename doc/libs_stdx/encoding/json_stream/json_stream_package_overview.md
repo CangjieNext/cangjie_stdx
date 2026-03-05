@@ -1,4 +1,4 @@
-# stdx.encoding.json.stream
+# cangjie_stdx::encoding.json.stream
 
 ## 功能介绍
 

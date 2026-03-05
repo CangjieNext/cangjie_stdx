@@ -1,4 +1,4 @@
-# stdx.encoding.json
+# cangjie_stdx::encoding.json
 
 ## Function Description
 

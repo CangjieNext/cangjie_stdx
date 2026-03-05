@@ -1,12 +1,12 @@
-# stdx.net.tls.common
+# cangjie_stdx::net.tls.common
 
 ## 功能介绍
 
 tls.common 包提供了 TLS 相关的抽象接口，用于适配多种 TLS 实现。
 
-通过实现 [TlsKit](./tls_common_package_api/tls_common_package_interfaces.md#interface-tlskit) 及相关接口，可以自定义 [stdx.net.http](../../http/http_package_overview.md) 包中所使用的 TLS 实现。
+通过实现 [TlsKit](./tls_common_package_api/tls_common_package_interfaces.md#interface-tlskit) 及相关接口，可以自定义 [cangjie_stdx::net.http](../../http/http_package_overview.md) 包中所使用的 TLS 实现。
 
-[stdx.net.tls](../tls_package_overview.md) 包提供了一种基于 OpenSSL 的默认实现，详见 [stdx.net.tls](../tls_package_overview.md) 包。若要使用默认实现，需要显式导入 [stdx.net.tls](../tls_package_overview.md) 包。
+[cangjie_stdx::net.tls](../tls_package_overview.md) 包提供了一种基于 OpenSSL 的默认实现，详见 [cangjie_stdx::net.tls](../tls_package_overview.md) 包。若要使用默认实现，需要显式导入 [cangjie_stdx::net.tls](../tls_package_overview.md) 包。
 
 ## API 列表
 

@@ -1,4 +1,4 @@
-# stdx.actors.macros
+# cangjie_stdx::actors.macros
 
 ## Function Description
 

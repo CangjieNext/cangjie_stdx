@@ -1,4 +1,4 @@
-# stdx.crypto.common
+# cangjie_stdx::crypto.common
 
 ## 功能介绍
 

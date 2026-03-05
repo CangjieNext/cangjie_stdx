@@ -8,8 +8,8 @@
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.keys.*
-import stdx.crypto.digest.*
+import cangjie_stdx::crypto.keys.*
+import cangjie_stdx::crypto.digest.*
 import std.io.*
 import std.crypto.digest.*
 
@@ -54,8 +54,8 @@ success
 
 <!-- compile -->
 ```cangjie
-import stdx.crypto.keys.*
-import stdx.crypto.digest.*
+import cangjie_stdx::crypto.keys.*
+import cangjie_stdx::crypto.digest.*
 import std.crypto.digest.*
 import std.fs.*
 import std.io.*
@@ -93,8 +93,8 @@ verify successful
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.keys.*
-import stdx.crypto.digest.*
+import cangjie_stdx::crypto.keys.*
+import cangjie_stdx::crypto.digest.*
 
 main() {
     var ecPri = ECDSAPrivateKey(P224)
@@ -126,7 +126,7 @@ verify successful
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.keys.*
+import cangjie_stdx::crypto.keys.*
 import std.fs.*
 import std.io.*
 

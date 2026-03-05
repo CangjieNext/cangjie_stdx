@@ -1,4 +1,4 @@
-# stdx.syntax
+# cangjie_stdx::syntax
 
 ## 功能介绍
 

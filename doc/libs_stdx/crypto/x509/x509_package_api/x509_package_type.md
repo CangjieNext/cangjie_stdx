@@ -12,7 +12,7 @@ public type IP = Array<Byte>
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.x509.*
+import cangjie_stdx::crypto.x509.*
 
 main() {
     // 创建 IP 地址列表

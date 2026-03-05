@@ -11,9 +11,9 @@ Example:
 import std.io.*
 import std.fs.{File, OpenMode}
 import std.net.{TcpServerSocket, TcpSocket}
-import stdx.crypto.x509.X509Certificate
-import stdx.crypto.keys.GeneralPrivateKey
-import stdx.net.tls.*
+import cangjie_stdx::crypto.x509.X509Certificate
+import cangjie_stdx::crypto.keys.GeneralPrivateKey
+import cangjie_stdx::net.tls.*
 
 // Paths to certificate and private key (user must provide these)
 let certificatePath = "./files/apiserver.crt"

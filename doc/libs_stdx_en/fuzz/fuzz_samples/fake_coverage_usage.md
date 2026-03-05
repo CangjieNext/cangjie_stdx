@@ -18,7 +18,7 @@ Triggering code:
 
 ```cangjie
 // main.cj
-import stdx.fuzz.fuzz.*
+import cangjie_stdx::fuzz.fuzz.*
 
 main() {
     let f = Fuzzer(api)
@@ -52,7 +52,7 @@ Alternatively, besides using Fake Coverage mode, you can actively call certain n
 
 ```cangjie
 // main.cj
-import stdx.fuzz.fuzz.*
+import cangjie_stdx::fuzz.fuzz.*
 
 main() {
     let f = Fuzzer(api)

@@ -21,7 +21,7 @@ public func field<T>(name: String, data: T): Field where T <: Serializable<T>
 
 <!-- verify -->
 ```cangjie
-import stdx.serialization.serialization.*
+import cangjie_stdx::serialization.serialization.*
 
 main() {
     // 使用field函数创建Field对象

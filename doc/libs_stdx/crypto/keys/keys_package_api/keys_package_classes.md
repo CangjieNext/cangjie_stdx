@@ -34,7 +34,7 @@ public init(curve: Curve)
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.keys.*
+import cangjie_stdx::crypto.keys.*
 
 main() {
     let key = ECDSAPrivateKey(Curve.P256)
@@ -76,7 +76,7 @@ public static func decodeDer(blob: DerBlob): ECDSAPrivateKey
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.keys.*
+import cangjie_stdx::crypto.keys.*
 
 main() {
     // 模拟场景：从外部（文件/网络）获取的 DerBlob（此处通过生成私钥并编码模拟）
@@ -124,7 +124,7 @@ public static func decodeDer(blob: DerBlob, password!: ?String): ECDSAPrivateKey
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.keys.*
+import cangjie_stdx::crypto.keys.*
 
 main() {
     // 模拟场景：从外部（文件/网络）获取的 DerBlob（此处通过生成私钥并编码模拟）
@@ -171,7 +171,7 @@ public static func decodeFromPem(text: String): ECDSAPrivateKey
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.keys.*
+import cangjie_stdx::crypto.keys.*
 
 main() {
     // 模拟场景：从外部（文件/网络）获取的 PEM 字符串
@@ -220,7 +220,7 @@ public static func decodeFromPem(text: String, password!: ?String): ECDSAPrivate
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.keys.*
+import cangjie_stdx::crypto.keys.*
 
 main() {
     // 模拟场景：从外部（文件/网络）获取的 PEM 字符串
@@ -264,7 +264,7 @@ public override func encodeToDer(): DerBlob
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.keys.*
+import cangjie_stdx::crypto.keys.*
 
 main() {
     let key = ECDSAPrivateKey(Curve.P256)
@@ -308,7 +308,7 @@ public func encodeToDer(password!: ?String): DerBlob
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.keys.*
+import cangjie_stdx::crypto.keys.*
 
 main() {
     let key = ECDSAPrivateKey(Curve.P256)
@@ -348,7 +348,7 @@ public func encodeToPem(): PemEntry
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.keys.*
+import cangjie_stdx::crypto.keys.*
 
 main() {
     let key = ECDSAPrivateKey(Curve.P256)
@@ -392,7 +392,7 @@ public func encodeToPem(password!: ?String): PemEntry
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.keys.*
+import cangjie_stdx::crypto.keys.*
 
 main() {
     let key = ECDSAPrivateKey(Curve.P256)
@@ -436,8 +436,8 @@ public func sign(digest: Array<Byte>): Array<Byte>
 
 <!-- run -->
 ```cangjie
-import stdx.crypto.keys.*
-import stdx.crypto.digest.*
+import cangjie_stdx::crypto.keys.*
+import cangjie_stdx::crypto.digest.*
 
 main() {
     let priKey = ECDSAPrivateKey(Curve.P256)
@@ -479,7 +479,7 @@ public override func toString(): String
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.keys.*
+import cangjie_stdx::crypto.keys.*
 
 main() {
     let key = ECDSAPrivateKey(Curve.P256)
@@ -531,7 +531,7 @@ public init(pri: ECDSAPrivateKey)
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.keys.*
+import cangjie_stdx::crypto.keys.*
 
 main() {
     let priKey = ECDSAPrivateKey(P256)
@@ -576,7 +576,7 @@ public static func decodeDer(blob: DerBlob): ECDSAPublicKey
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.keys.*
+import cangjie_stdx::crypto.keys.*
 
 main() {
     // 模拟场景：从外部（文件/网络）获取的 DER 字节数组
@@ -624,7 +624,7 @@ public static func decodeFromPem(text: String): ECDSAPublicKey
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.keys.*
+import cangjie_stdx::crypto.keys.*
 
 main() {
     // 模拟场景：从外部（文件/网络）获取的 PEM 字符串
@@ -669,7 +669,7 @@ public override func encodeToDer(): DerBlob
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.keys.*
+import cangjie_stdx::crypto.keys.*
 
 main() {
     let priKey = ECDSAPrivateKey(P256)
@@ -711,7 +711,7 @@ public func encodeToPem(): PemEntry
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.keys.*
+import cangjie_stdx::crypto.keys.*
 
 main() {
     let priKey = ECDSAPrivateKey(P256)
@@ -749,7 +749,7 @@ public override func toString(): String
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.keys.*
+import cangjie_stdx::crypto.keys.*
 
 main() {
     let priKey = ECDSAPrivateKey(P256)
@@ -789,8 +789,8 @@ public func verify(digest: Array<Byte>, sig: Array<Byte>): Bool
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.keys.*
-import stdx.crypto.digest.*
+import cangjie_stdx::crypto.keys.*
+import cangjie_stdx::crypto.digest.*
 
 main() {
     let priKey = ECDSAPrivateKey(P256)
@@ -863,8 +863,8 @@ static func decodeDer(encoded: DerBlob): PrivateKey
 import std.fs.*
 import std.io.*
 import std.process.*
-import stdx.crypto.keys.*
-import stdx.crypto.common.*
+import cangjie_stdx::crypto.keys.*
+import cangjie_stdx::crypto.common.*
 
 main() {
     // 生成测试用文件
@@ -921,8 +921,8 @@ static func decodeDer(encoded: DerBlob, password!: ?String): PrivateKey
 import std.fs.*
 import std.io.*
 import std.process.*
-import stdx.crypto.keys.*
-import stdx.crypto.common.*
+import cangjie_stdx::crypto.keys.*
+import cangjie_stdx::crypto.common.*
 
 main() {
     // 生成测试用加密文件
@@ -979,7 +979,7 @@ static func decodeFromPem(text: String): PrivateKey
 import std.fs.*
 import std.io.*
 import std.process.*
-import stdx.crypto.keys.*
+import cangjie_stdx::crypto.keys.*
 
 main() {
     // 生成测试用文件
@@ -1034,7 +1034,7 @@ static func decodeFromPem(text: String, password!: ?String): PrivateKey
 import std.fs.*
 import std.io.*
 import std.process.*
-import stdx.crypto.keys.*
+import cangjie_stdx::crypto.keys.*
 
 main() {
     // 生成测试用加密文件
@@ -1085,8 +1085,8 @@ func encodeToDer(): DerBlob
 import std.fs.*
 import std.io.*
 import std.process.*
-import stdx.crypto.keys.*
-import stdx.crypto.common.*
+import cangjie_stdx::crypto.keys.*
+import cangjie_stdx::crypto.common.*
 
 main() {
     // 生成测试用文件
@@ -1145,8 +1145,8 @@ func encodeToDer(password!: ?String): DerBlob
 import std.fs.*
 import std.io.*
 import std.process.*
-import stdx.crypto.keys.*
-import stdx.crypto.common.*
+import cangjie_stdx::crypto.keys.*
+import cangjie_stdx::crypto.common.*
 
 main() {
     // 生成测试用文件
@@ -1201,7 +1201,7 @@ func encodeToPem(): PemEntry
 import std.fs.*
 import std.io.*
 import std.process.*
-import stdx.crypto.keys.*
+import cangjie_stdx::crypto.keys.*
 
 main() {
     // 生成测试用文件
@@ -1258,7 +1258,7 @@ func encodeToPem(password!: ?String): PemEntry
 import std.fs.*
 import std.io.*
 import std.process.*
-import stdx.crypto.keys.*
+import cangjie_stdx::crypto.keys.*
 
 main() {
     // 生成测试用文件
@@ -1311,7 +1311,7 @@ public func toString(): String
 import std.fs.*
 import std.io.*
 import std.process.*
-import stdx.crypto.keys.*
+import cangjie_stdx::crypto.keys.*
 
 main() {
     // 生成测试用文件
@@ -1378,8 +1378,8 @@ static func decodeDer(encoded: DerBlob): PublicKey
 import std.fs.*
 import std.io.*
 import std.process.*
-import stdx.crypto.keys.*
-import stdx.crypto.common.*
+import cangjie_stdx::crypto.keys.*
+import cangjie_stdx::crypto.common.*
 
 main() {
     // 生成测试用文件
@@ -1437,7 +1437,7 @@ static func decodeFromPem(text: String): PublicKey
 import std.fs.*
 import std.io.*
 import std.process.*
-import stdx.crypto.keys.*
+import cangjie_stdx::crypto.keys.*
 
 main() {
     // 生成测试用文件
@@ -1489,8 +1489,8 @@ func encodeToDer(): DerBlob
 import std.fs.*
 import std.io.*
 import std.process.*
-import stdx.crypto.keys.*
-import stdx.crypto.common.*
+import cangjie_stdx::crypto.keys.*
+import cangjie_stdx::crypto.common.*
 
 main() {
     // 生成测试用文件
@@ -1545,7 +1545,7 @@ func encodeToPem(): PemEntry
 import std.fs.*
 import std.io.*
 import std.process.*
-import stdx.crypto.keys.*
+import cangjie_stdx::crypto.keys.*
 
 main() {
     // 生成测试用文件
@@ -1600,7 +1600,7 @@ public func toString(): String
 import std.fs.*
 import std.io.*
 import std.process.*
-import stdx.crypto.keys.*
+import cangjie_stdx::crypto.keys.*
 
 main() {
     // 生成测试用文件
@@ -1669,7 +1669,7 @@ public init(bits: Int32)
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.keys.*
+import cangjie_stdx::crypto.keys.*
 
 main() {
     let key = RSAPrivateKey(2048)
@@ -1708,7 +1708,7 @@ public init(bits: Int32, e: BigInt)
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.keys.*
+import cangjie_stdx::crypto.keys.*
 import std.math.numeric.*
 
 main() {
@@ -1752,7 +1752,7 @@ public static func decodeDer(blob: DerBlob): RSAPrivateKey
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.keys.*
+import cangjie_stdx::crypto.keys.*
 
 main() {
     // 模拟场景：从外部（文件/网络）获取的 DerBlob（此处通过生成私钥并编码模拟）
@@ -1800,7 +1800,7 @@ public static func decodeDer(blob: DerBlob, password!: ?String): RSAPrivateKey
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.keys.*
+import cangjie_stdx::crypto.keys.*
 
 main() {
     // 模拟场景：从外部（文件/网络）获取的 DerBlob（此处通过生成私钥并编码模拟）
@@ -1847,7 +1847,7 @@ public static func decodeFromPem(text: String): RSAPrivateKey
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.keys.*
+import cangjie_stdx::crypto.keys.*
 
 main() {
     // 模拟场景：从外部（文件/网络）获取的 PEM 字符串
@@ -1896,7 +1896,7 @@ public static func decodeFromPem(text: String, password!: ?String): RSAPrivateKe
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.keys.*
+import cangjie_stdx::crypto.keys.*
 
 main() {
     // 模拟场景：从外部（文件/网络）获取的 PEM 字符串
@@ -1942,7 +1942,7 @@ public func decrypt(input: InputStream, output: OutputStream, padType!: PadOptio
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.keys.*
+import cangjie_stdx::crypto.keys.*
 import std.io.*
 
 main() {
@@ -2001,7 +2001,7 @@ public override func encodeToDer(): DerBlob
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.keys.*
+import cangjie_stdx::crypto.keys.*
 
 main() {
     let key = RSAPrivateKey(2048)
@@ -2043,7 +2043,7 @@ public func encodeToDer(password!: ?String): DerBlob
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.keys.*
+import cangjie_stdx::crypto.keys.*
 
 main() {
     let key = RSAPrivateKey(2048)
@@ -2081,7 +2081,7 @@ public func encodeToPem(): PemEntry
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.keys.*
+import cangjie_stdx::crypto.keys.*
 
 main() {
     let key = RSAPrivateKey(2048)
@@ -2125,7 +2125,7 @@ public func encodeToPem(password!: ?String): PemEntry
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.keys.*
+import cangjie_stdx::crypto.keys.*
 
 main() {
     let key = RSAPrivateKey(2048)
@@ -2171,8 +2171,8 @@ public func sign(hash: Digest, digest: Array<Byte>, padType!: PadOption): Array<
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.keys.*
-import stdx.crypto.digest.*
+import cangjie_stdx::crypto.keys.*
+import cangjie_stdx::crypto.digest.*
 
 main() {
     let priKey = RSAPrivateKey(2048)
@@ -2218,7 +2218,7 @@ public override func toString(): String
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.keys.*
+import cangjie_stdx::crypto.keys.*
 
 main() {
     let key = RSAPrivateKey(2048)
@@ -2270,7 +2270,7 @@ public init(pri: RSAPrivateKey)
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.keys.*
+import cangjie_stdx::crypto.keys.*
 
 main() {
     let priKey = RSAPrivateKey(2048)
@@ -2314,7 +2314,7 @@ public static func decodeDer(blob: DerBlob): RSAPublicKey
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.keys.*
+import cangjie_stdx::crypto.keys.*
 
 main() {
     // 模拟场景：从外部（文件/网络）获取的 DER 字节数组
@@ -2362,7 +2362,7 @@ public static func decodeFromPem(text: String): RSAPublicKey
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.keys.*
+import cangjie_stdx::crypto.keys.*
 
 main() {
     // 模拟场景：从外部（文件/网络）获取的 PEM 字符串
@@ -2407,7 +2407,7 @@ public override func encodeToDer(): DerBlob
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.keys.*
+import cangjie_stdx::crypto.keys.*
 
 main() {
     let priKey = RSAPrivateKey(2048)
@@ -2449,7 +2449,7 @@ public func encodeToPem(): PemEntry
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.keys.*
+import cangjie_stdx::crypto.keys.*
 
 main() {
     let priKey = RSAPrivateKey(2048)
@@ -2493,7 +2493,7 @@ public func encrypt(input: InputStream, output: OutputStream, padType!: PadOptio
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.keys.*
+import cangjie_stdx::crypto.keys.*
 import std.io.*
 
 main() {
@@ -2537,7 +2537,7 @@ public override func toString(): String
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.keys.*
+import cangjie_stdx::crypto.keys.*
 
 main() {
     let priKey = RSAPrivateKey(2048)
@@ -2583,8 +2583,8 @@ public func verify(hash: Digest, digest: Array<Byte>, sig: Array<Byte>, padType!
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.keys.*
-import stdx.crypto.digest.*
+import cangjie_stdx::crypto.keys.*
+import cangjie_stdx::crypto.digest.*
 
 main() {
     let priKey = RSAPrivateKey(2048)
@@ -2652,7 +2652,7 @@ public init()
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.keys.*
+import cangjie_stdx::crypto.keys.*
 
 main() {
     let key = SM2PrivateKey()
@@ -2694,7 +2694,7 @@ public static func decodeDer(blob: DerBlob): SM2PrivateKey
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.keys.*
+import cangjie_stdx::crypto.keys.*
 
 main() {
     // 模拟场景：从外部（文件/网络）获取的 DerBlob（此处通过生成私钥并编码模拟）
@@ -2742,7 +2742,7 @@ public static func decodeDer(blob: DerBlob, password!: ?String): SM2PrivateKey
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.keys.*
+import cangjie_stdx::crypto.keys.*
 
 main() {
     // 模拟场景：从外部（文件/网络）获取的 DerBlob（此处通过生成私钥并编码模拟）
@@ -2789,7 +2789,7 @@ public static func decodeFromPem(text: String): SM2PrivateKey
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.keys.*
+import cangjie_stdx::crypto.keys.*
 
 main() {
     // 模拟场景：从外部（文件/网络）获取的 PEM 字符串
@@ -2838,7 +2838,7 @@ public static func decodeFromPem(text: String, password!: ?String): SM2PrivateKe
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.keys.*
+import cangjie_stdx::crypto.keys.*
 
 main() {
     // 模拟场景：从外部（文件/网络）获取的 PEM 字符串
@@ -2886,7 +2886,7 @@ public func decrypt(input: Array<Byte>): Array<Byte>
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.keys.*
+import cangjie_stdx::crypto.keys.*
 
 main() {
     let priKey = SM2PrivateKey()
@@ -2934,7 +2934,7 @@ public func encodeToDer(): DerBlob
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.keys.*
+import cangjie_stdx::crypto.keys.*
 
 main() {
     let key = SM2PrivateKey()
@@ -2978,7 +2978,7 @@ public func encodeToDer(password!: ?String): DerBlob
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.keys.*
+import cangjie_stdx::crypto.keys.*
 
 main() {
     let key = SM2PrivateKey()
@@ -3018,7 +3018,7 @@ public func encodeToPem(): PemEntry
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.keys.*
+import cangjie_stdx::crypto.keys.*
 
 main() {
     let key = SM2PrivateKey()
@@ -3062,7 +3062,7 @@ public func encodeToPem(password!: ?String): PemEntry
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.keys.*
+import cangjie_stdx::crypto.keys.*
 
 main() {
     let key = SM2PrivateKey()
@@ -3106,7 +3106,7 @@ public func sign(data: Array<Byte>): Array<Byte>
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.keys.*
+import cangjie_stdx::crypto.keys.*
 
 main() {
     let priKey = SM2PrivateKey()
@@ -3147,7 +3147,7 @@ public override func toString(): String
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.keys.*
+import cangjie_stdx::crypto.keys.*
 
 main() {
     let key = SM2PrivateKey()
@@ -3199,7 +3199,7 @@ public init(pri: SM2PrivateKey)
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.keys.*
+import cangjie_stdx::crypto.keys.*
 
 main() {
     let priKey = SM2PrivateKey()
@@ -3243,7 +3243,7 @@ public static func decodeDer(blob: DerBlob): SM2PublicKey
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.keys.*
+import cangjie_stdx::crypto.keys.*
 
 main() {
     // 模拟场景：从外部（文件/网络）获取的 DER 字节数组
@@ -3291,7 +3291,7 @@ public static func decodeFromPem(text: String): SM2PublicKey
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.keys.*
+import cangjie_stdx::crypto.keys.*
 
 main() {
     // 模拟场景：从外部（文件/网络）获取的 PEM 字符串
@@ -3336,7 +3336,7 @@ public func encodeToDer(): DerBlob
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.keys.*
+import cangjie_stdx::crypto.keys.*
 
 main() {
     let priKey = SM2PrivateKey()
@@ -3378,7 +3378,7 @@ public func encodeToPem(): PemEntry
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.keys.*
+import cangjie_stdx::crypto.keys.*
 
 main() {
     let priKey = SM2PrivateKey()
@@ -3424,7 +3424,7 @@ public func encrypt(input: Array<Byte>): Array<Byte>
 
 <!-- run -->
 ```cangjie
-import stdx.crypto.keys.*
+import cangjie_stdx::crypto.keys.*
 
 main() {
     let priKey = SM2PrivateKey()
@@ -3466,7 +3466,7 @@ public override func toString(): String
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.keys.*
+import cangjie_stdx::crypto.keys.*
 
 main() {
     let priKey = SM2PrivateKey()
@@ -3510,7 +3510,7 @@ public func verify(data: Array<Byte>, sig: Array<Byte>): Bool
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.keys.*
+import cangjie_stdx::crypto.keys.*
 
 main() {
     let priKey = SM2PrivateKey()

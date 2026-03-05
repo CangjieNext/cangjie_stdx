@@ -6,7 +6,7 @@ Example:
 
 <!-- run -->
 ```cangjie
-import stdx.crypto.crypto.*
+import cangjie_stdx::crypto.crypto.*
 
 main() {
     let r = SecureRandom()

@@ -8,7 +8,7 @@ Example:
 
 <!-- verify -->
 ```cangjie
-import stdx.encoding.url.*
+import cangjie_stdx::encoding.url.*
 
 main(): Int64 {
     var s = Form("1=2&2=3&1=2&&")
@@ -31,7 +31,7 @@ Example:
 
 <!-- verify -->
 ```cangjie
-import stdx.encoding.url.*
+import cangjie_stdx::encoding.url.*
 
 main(): Int64 {
     var s = Form("2=3&1=%6AD&1=2")
@@ -55,7 +55,7 @@ Example:
 
 <!-- verify -->
 ```cangjie
-import stdx.encoding.url.*
+import cangjie_stdx::encoding.url.*
 
 main(): Int64 {
     var f = Form()

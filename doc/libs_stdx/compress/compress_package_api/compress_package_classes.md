@@ -36,7 +36,7 @@ public static func archive(fromDir!: Path, filter!: (Path) -> Bool, destFile!: P
 
 <!-- verify -->
 ```cangjie
-import stdx.compress.*
+import cangjie_stdx::compress.*
 import std.fs.*
 
 main(): Unit {
@@ -98,7 +98,7 @@ public static func archive(fromDir!: Path, destFile!: Path, includeBaseDirectory
 
 <!-- verify -->
 ```cangjie
-import stdx.compress.*
+import cangjie_stdx::compress.*
 import std.fs.*
 
 main(): Unit {
@@ -161,7 +161,7 @@ public static func archive(fromDir!: String, filter!: (String) -> Bool, destFile
 
 <!-- verify -->
 ```cangjie
-import stdx.compress.*
+import cangjie_stdx::compress.*
 import std.fs.*
 
 main(): Unit {
@@ -225,7 +225,7 @@ public static func archive(fromDir!: String, destFile!: String, includeBaseDirec
 
 <!-- verify -->
 ```cangjie
-import stdx.compress.*
+import cangjie_stdx::compress.*
 import std.fs.*
 
 main(): Unit {
@@ -290,7 +290,7 @@ public static func archive<T>(fromDir!: Path, destStream!: T, includeBaseDirecto
 
 <!-- verify -->
 ```cangjie
-import stdx.compress.*
+import cangjie_stdx::compress.*
 import std.fs.*
 import std.io.*
 
@@ -362,7 +362,7 @@ public static func archive<T>(fromDir!: String, destStream!: T, includeBaseDirec
 
 <!-- verify -->
 ```cangjie
-import stdx.compress.*
+import cangjie_stdx::compress.*
 import std.fs.*
 import std.io.*
 
@@ -430,7 +430,7 @@ public static func extract(fromTarGzip!: Path, destDir!: Path, overwrite!: Bool)
 
 <!-- verify -->
 ```cangjie
-import stdx.compress.*
+import cangjie_stdx::compress.*
 import std.fs.*
 
 main(): Unit {
@@ -506,7 +506,7 @@ public static func extract(fromTarGzip!: String, destDir!: String, overwrite!: B
 
 <!-- verify -->
 ```cangjie
-import stdx.compress.*
+import cangjie_stdx::compress.*
 import std.fs.*
 
 main(): Unit {
@@ -582,7 +582,7 @@ public static func extract<T>(fromStream!: T, destDir!: Path, overwrite!: Bool):
 
 <!-- verify -->
 ```cangjie
-import stdx.compress.*
+import cangjie_stdx::compress.*
 import std.fs.*
 import std.io.*
 
@@ -665,7 +665,7 @@ public static func extract<T>(fromStream!: T, destDir!: String, overwrite!: Bool
 
 <!-- verify -->
 ```cangjie
-import stdx.compress.*
+import cangjie_stdx::compress.*
 import std.fs.*
 import std.io.*
 

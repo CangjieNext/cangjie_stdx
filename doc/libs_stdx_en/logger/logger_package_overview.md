@@ -1,4 +1,4 @@
-# stdx.logger
+# cangjie_stdx::logger
 
 ## Feature Description
 

@@ -41,7 +41,7 @@ public init(inputStream: InputStream, wrap!: WrapType = DeflateFormat, compressL
 
 <!-- run -->
 ```cangjie
-import stdx.compress.zlib.*
+import cangjie_stdx::compress.zlib.*
 import std.io.*
 
 main(): Unit {
@@ -71,7 +71,7 @@ public func close(): Unit
 
 <!-- verify -->
 ```cangjie
-import stdx.compress.zlib.*
+import cangjie_stdx::compress.zlib.*
 import std.io.*
 
 main(): Unit {
@@ -118,7 +118,7 @@ public func read(outBuf: Array<Byte>): Int64
 
 <!-- verify -->
 ```cangjie
-import stdx.compress.zlib.*
+import cangjie_stdx::compress.zlib.*
 import std.io.*
 
 main(): Unit {
@@ -180,7 +180,7 @@ public init(outputStream: OutputStream, wrap!: WrapType = DeflateFormat, compres
 
 <!-- run -->
 ```cangjie
-import stdx.compress.zlib.*
+import cangjie_stdx::compress.zlib.*
 import std.io.*
 
 main(): Unit {
@@ -209,7 +209,7 @@ public func close(): Unit
 
 <!-- run -->
 ```cangjie
-import stdx.compress.zlib.*
+import cangjie_stdx::compress.zlib.*
 import std.io.*
 
 main(): Unit {
@@ -245,7 +245,7 @@ public func flush(): Unit
 
 <!-- run -->
 ```cangjie
-import stdx.compress.zlib.*
+import cangjie_stdx::compress.zlib.*
 import std.io.*
 
 main(): Unit {
@@ -285,7 +285,7 @@ public func write(inBuf: Array<Byte>): Unit
 
 <!-- run -->
 ```cangjie
-import stdx.compress.zlib.*
+import cangjie_stdx::compress.zlib.*
 import std.io.*
 
 main(): Unit {
@@ -345,7 +345,7 @@ public init(inputStream: InputStream, wrap!: WrapType = DeflateFormat, bufLen!: 
 
 <!-- run -->
 ```cangjie
-import stdx.compress.zlib.*
+import cangjie_stdx::compress.zlib.*
 import std.io.*
 
 main(): Unit {
@@ -385,7 +385,7 @@ public func close(): Unit
 
 <!-- verify -->
 ```cangjie
-import stdx.compress.zlib.*
+import cangjie_stdx::compress.zlib.*
 import std.io.*
 
 main(): Unit {
@@ -441,7 +441,7 @@ public func read(outBuf: Array<Byte>): Int64
 
 <!-- verify -->
 ```cangjie
-import stdx.compress.zlib.*
+import cangjie_stdx::compress.zlib.*
 import std.io.*
 
 main(): Unit {
@@ -519,7 +519,7 @@ public init(outputStream: OutputStream, wrap!: WrapType = DeflateFormat, bufLen!
 
 <!-- verify -->
 ```cangjie
-import stdx.compress.zlib.*
+import cangjie_stdx::compress.zlib.*
 import std.fs.*
 
 main(): Unit {
@@ -602,7 +602,7 @@ public func close(): Unit
 
 <!-- verify -->
 ```cangjie
-import stdx.compress.zlib.*
+import cangjie_stdx::compress.zlib.*
 import std.fs.*
 
 main(): Unit {
@@ -683,7 +683,7 @@ public func flush(): Unit
 
 <!-- verify -->
 ```cangjie
-import stdx.compress.zlib.*
+import cangjie_stdx::compress.zlib.*
 import std.fs.*
 
 main(): Unit {
@@ -768,7 +768,7 @@ public func write(inBuf: Array<Byte>): Unit
 
 <!-- verify -->
 ```cangjie
-import stdx.compress.zlib.*
+import cangjie_stdx::compress.zlib.*
 import std.io.*
 import std.fs.*
 

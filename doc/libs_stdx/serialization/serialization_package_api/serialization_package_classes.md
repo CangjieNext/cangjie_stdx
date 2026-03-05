@@ -40,7 +40,7 @@ public init(bv: Bool)
 
 <!-- run -->
 ```cangjie
-import stdx.serialization.serialization.*
+import cangjie_stdx::serialization.serialization.*
 
 main() {
     // 创建DataModelBool实例
@@ -65,7 +65,7 @@ public func getValue(): Bool
 
 <!-- verify -->
 ```cangjie
-import stdx.serialization.serialization.*
+import cangjie_stdx::serialization.serialization.*
 
 main() {
     // 创建DataModelBool实例
@@ -117,7 +117,7 @@ public init(fv: Float64)
 
 <!-- run -->
 ```cangjie
-import stdx.serialization.serialization.*
+import cangjie_stdx::serialization.serialization.*
 
 main() {
     // 创建DataModelFloat实例
@@ -142,7 +142,7 @@ public init(v: Int64)
 
 <!-- run -->
 ```cangjie
-import stdx.serialization.serialization.*
+import cangjie_stdx::serialization.serialization.*
 
 main() {
     // 使用Int64参数创建DataModelFloat实例
@@ -167,7 +167,7 @@ public func getValue(): Float64
 
 <!-- verify -->
 ```cangjie
-import stdx.serialization.serialization.*
+import cangjie_stdx::serialization.serialization.*
 
 main() {
     // 创建DataModelFloat实例，使用浮点数
@@ -223,7 +223,7 @@ public init(iv: Int64)
 
 <!-- run -->
 ```cangjie
-import stdx.serialization.serialization.*
+import cangjie_stdx::serialization.serialization.*
 
 main() {
     // 创建DataModelInt实例
@@ -248,7 +248,7 @@ public func getValue(): Int64
 
 <!-- verify -->
 ```cangjie
-import stdx.serialization.serialization.*
+import cangjie_stdx::serialization.serialization.*
 
 main() {
     // 创建DataModelInt实例
@@ -310,7 +310,7 @@ public init()
 
 <!-- run -->
 ```cangjie
-import stdx.serialization.serialization.*
+import cangjie_stdx::serialization.serialization.*
 
 main() {
     // 创建空参数的DataModelSeq实例
@@ -335,7 +335,7 @@ public init(list: ArrayList<DataModel>)
 
 <!-- verify -->
 ```cangjie
-import stdx.serialization.serialization.*
+import cangjie_stdx::serialization.serialization.*
 import std.collection.*
 
 main() {
@@ -376,7 +376,7 @@ public func add(dm: DataModel): Unit
 
 <!-- run -->
 ```cangjie
-import stdx.serialization.serialization.*
+import cangjie_stdx::serialization.serialization.*
 import std.collection.*
 
 main() {
@@ -406,7 +406,7 @@ public func getItems(): ArrayList<DataModel>
 
 <!-- verify -->
 ```cangjie
-import stdx.serialization.serialization.*
+import cangjie_stdx::serialization.serialization.*
 import std.collection.*
 
 main() {
@@ -460,7 +460,7 @@ public init(sv: String)
 
 <!-- run -->
 ```cangjie
-import stdx.serialization.serialization.*
+import cangjie_stdx::serialization.serialization.*
 
 main() {
     // 创建DataModelString实例
@@ -485,7 +485,7 @@ public func getValue(): String
 
 <!-- verify -->
 ```cangjie
-import stdx.serialization.serialization.*
+import cangjie_stdx::serialization.serialization.*
 
 main() {
     // 创建DataModelString实例
@@ -533,7 +533,7 @@ public init()
 
 <!-- run -->
 ```cangjie
-import stdx.serialization.serialization.*
+import cangjie_stdx::serialization.serialization.*
 
 main() {
     // 创建空参数的DataModelStruct实例
@@ -558,7 +558,7 @@ public init(list: ArrayList<Field>)
 
 <!-- run -->
 ```cangjie
-import stdx.serialization.serialization.*
+import cangjie_stdx::serialization.serialization.*
 import std.collection.*
 
 main() {
@@ -593,7 +593,7 @@ public func add(fie: Field): DataModelStruct
 
 <!-- run -->
 ```cangjie
-import stdx.serialization.serialization.*
+import cangjie_stdx::serialization.serialization.*
 
 main() {
     // 创建DataModelStruct实例
@@ -626,7 +626,7 @@ public func get(key: String): DataModel
 
 <!-- verify -->
 ```cangjie
-import stdx.serialization.serialization.*
+import cangjie_stdx::serialization.serialization.*
 
 main() {
     // 创建DataModelStruct实例并添加数据
@@ -668,7 +668,7 @@ public func getFields(): ArrayList<Field>
 
 <!-- verify -->
 ```cangjie
-import stdx.serialization.serialization.*
+import cangjie_stdx::serialization.serialization.*
 
 main() {
     // 创建DataModelStruct实例并添加数据
@@ -719,7 +719,7 @@ public init(name: String, data: DataModel)
 
 <!-- run -->
 ```cangjie
-import stdx.serialization.serialization.*
+import cangjie_stdx::serialization.serialization.*
 
 main() {
     // 创建Field实例
@@ -744,7 +744,7 @@ public func getData(): DataModel
 
 <!-- verify -->
 ```cangjie
-import stdx.serialization.serialization.*
+import cangjie_stdx::serialization.serialization.*
 
 main() {
     // 创建Field实例
@@ -782,7 +782,7 @@ public func getName(): String
 
 <!-- verify -->
 ```cangjie
-import stdx.serialization.serialization.*
+import cangjie_stdx::serialization.serialization.*
 
 main() {
     // 创建Field实例

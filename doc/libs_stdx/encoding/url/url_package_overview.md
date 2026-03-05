@@ -1,4 +1,4 @@
-# stdx.encoding.url
+# cangjie_stdx::encoding.url
 
 ## 功能介绍
 

@@ -29,7 +29,7 @@ public static func get(): BoolType
 
 <!-- verify -->
 ```cangjie
-import stdx.chir.*
+import cangjie_stdx::chir.*
 
 main() {
     let boolType = BoolType.get()
@@ -63,7 +63,7 @@ public operator func==(_: BoolType): Bool
 
 <!-- verify -->
 ```cangjie
-import stdx.chir.*
+import cangjie_stdx::chir.*
 
 main() {
     let boolType1 = BoolType.get()
@@ -107,7 +107,7 @@ public prop elementType: Type
 
 <!-- verify -->
 ```cangjie
-import stdx.chir.*
+import cangjie_stdx::chir.*
 
 main() {
     let intType = IntType.getInt32()
@@ -145,7 +145,7 @@ public operator func==(other: CPointerType): Bool
 
 <!-- verify -->
 ```cangjie
-import stdx.chir.*
+import cangjie_stdx::chir.*
 
 main() {
     let intType = IntType.getInt32()
@@ -183,7 +183,7 @@ public static func get(elementType: Type): CPointerType
 
 <!-- verify -->
 ```cangjie
-import stdx.chir.*
+import cangjie_stdx::chir.*
 
 main() {
     let intType = IntType.getInt32()
@@ -214,7 +214,7 @@ public func toString(): String
 
 <!-- verify -->
 ```cangjie
-import stdx.chir.*
+import cangjie_stdx::chir.*
 
 main() {
     let intType = IntType.getInt32()
@@ -262,7 +262,7 @@ public operator func==(_: CStringType): Bool
 
 <!-- verify -->
 ```cangjie
-import stdx.chir.*
+import cangjie_stdx::chir.*
 
 main() {
     let cStringType1 = CStringType.get()
@@ -293,7 +293,7 @@ public static func get(): CStringType
 
 <!-- verify -->
 ```cangjie
-import stdx.chir.*
+import cangjie_stdx::chir.*
 
 main() {
     let cStringType = CStringType.get()
@@ -325,7 +325,7 @@ public operator func==(_: CStringType): Bool
 
 <!-- verify -->
 ```cangjie
-import stdx.chir.*
+import cangjie_stdx::chir.*
 
 main() {
     let cStringType1 = CStringType.get()
@@ -369,7 +369,7 @@ public static func getFloat16(): FloatType
 
 <!-- verify -->
 ```cangjie
-import stdx.chir.*
+import cangjie_stdx::chir.*
 
 main() {
     let float16Type = FloatType.getFloat16()
@@ -399,7 +399,7 @@ public static func getFloat32(): FloatType
 
 <!-- verify -->
 ```cangjie
-import stdx.chir.*
+import cangjie_stdx::chir.*
 
 main() {
     let float32Type = FloatType.getFloat32()
@@ -429,7 +429,7 @@ public static func getFloat64(): FloatType
 
 <!-- verify -->
 ```cangjie
-import stdx.chir.*
+import cangjie_stdx::chir.*
 
 main() {
     let float64Type = FloatType.getFloat64()
@@ -463,7 +463,7 @@ public operator func==(other: FloatType): Bool
 
 <!-- verify -->
 ```cangjie
-import stdx.chir.*
+import cangjie_stdx::chir.*
 
 main() {
     let float32Type1 = FloatType.getFloat32()
@@ -510,7 +510,7 @@ public static func getInt16(): IntType
 
 <!-- verify -->
 ```cangjie
-import stdx.chir.*
+import cangjie_stdx::chir.*
 
 main() {
     let int16Type = IntType.getInt16()
@@ -540,7 +540,7 @@ public static func getInt32(): IntType
 
 <!-- verify -->
 ```cangjie
-import stdx.chir.*
+import cangjie_stdx::chir.*
 
 main() {
     let int32Type = IntType.getInt32()
@@ -570,7 +570,7 @@ public static func getInt64(): IntType
 
 <!-- verify -->
 ```cangjie
-import stdx.chir.*
+import cangjie_stdx::chir.*
 
 main() {
     let int64Type = IntType.getInt64()
@@ -600,7 +600,7 @@ public static func getInt8(): IntType
 
 <!-- verify -->
 ```cangjie
-import stdx.chir.*
+import cangjie_stdx::chir.*
 
 main() {
     let int8Type = IntType.getInt8()
@@ -630,7 +630,7 @@ public static func getIntNative(): IntType
 
 <!-- verify -->
 ```cangjie
-import stdx.chir.*
+import cangjie_stdx::chir.*
 
 main() {
     let intNativeType = IntType.getIntNative()
@@ -660,7 +660,7 @@ public static func getUInt16(): IntType
 
 <!-- verify -->
 ```cangjie
-import stdx.chir.*
+import cangjie_stdx::chir.*
 
 main() {
     let uint16Type = IntType.getUInt16()
@@ -690,7 +690,7 @@ public static func getUInt32(): IntType
 
 <!-- verify -->
 ```cangjie
-import stdx.chir.*
+import cangjie_stdx::chir.*
 
 main() {
     let uint32Type = IntType.getUInt32()
@@ -720,7 +720,7 @@ public static func getUInt64(): IntType
 
 <!-- verify -->
 ```cangjie
-import stdx.chir.*
+import cangjie_stdx::chir.*
 
 main() {
     let uint64Type = IntType.getUInt64()
@@ -750,7 +750,7 @@ public static func getUInt8(): IntType
 
 <!-- verify -->
 ```cangjie
-import stdx.chir.*
+import cangjie_stdx::chir.*
 
 main() {
     let uint8Type = IntType.getUInt8()
@@ -780,7 +780,7 @@ public static func getUIntNative(): IntType
 
 <!-- verify -->
 ```cangjie
-import stdx.chir.*
+import cangjie_stdx::chir.*
 
 main() {
     let uintNativeType = IntType.getUIntNative()
@@ -814,7 +814,7 @@ public operator func==(other: IntType): Bool
 
 <!-- verify -->
 ```cangjie
-import stdx.chir.*
+import cangjie_stdx::chir.*
 
 main() {
     let int32Type1 = IntType.getInt32()
@@ -848,7 +848,7 @@ public func isSigned(): Bool
 
 <!-- verify -->
 ```cangjie
-import stdx.chir.*
+import cangjie_stdx::chir.*
 
 main() {
     let int32Type = IntType.getInt32()
@@ -894,7 +894,7 @@ public static func get(): NothingType
 
 <!-- verify -->
 ```cangjie
-import stdx.chir.*
+import cangjie_stdx::chir.*
 
 main() {
     let nothingType = NothingType.get()
@@ -928,7 +928,7 @@ public operator func==(_: NothingType): Bool
 
 <!-- verify -->
 ```cangjie
-import stdx.chir.*
+import cangjie_stdx::chir.*
 
 main() {
     let nothingType1 = NothingType.get()
@@ -976,7 +976,7 @@ public operator func==(other: NumericType): Bool
 
 <!-- verify -->
 ```cangjie
-import stdx.chir.*
+import cangjie_stdx::chir.*
 
 main() {
     let intType1 = IntType.getInt32()
@@ -1023,7 +1023,7 @@ public prop baseType: Type
 
 <!-- verify -->
 ```cangjie
-import stdx.chir.*
+import cangjie_stdx::chir.*
 
 main() {
     let intType = IntType.getInt32()
@@ -1061,7 +1061,7 @@ public operator func==(other: RefType): Bool
 
 <!-- verify -->
 ```cangjie
-import stdx.chir.*
+import cangjie_stdx::chir.*
 
 main() {
     let intType = IntType.getInt32()
@@ -1099,7 +1099,7 @@ public static func get(baseType: Type): RefType
 
 <!-- verify -->
 ```cangjie
-import stdx.chir.*
+import cangjie_stdx::chir.*
 
 main() {
     let intType = IntType.getInt32()
@@ -1130,7 +1130,7 @@ public func toString(): String
 
 <!-- verify -->
 ```cangjie
-import stdx.chir.*
+import cangjie_stdx::chir.*
 
 main() {
     let intType = IntType.getInt32()
@@ -1174,7 +1174,7 @@ public static func get(): RuneType
 
 <!-- verify -->
 ```cangjie
-import stdx.chir.*
+import cangjie_stdx::chir.*
 
 main() {
     let runeType = RuneType.get()
@@ -1208,7 +1208,7 @@ public operator func==(_: RuneType): Bool
 
 <!-- verify -->
 ```cangjie
-import stdx.chir.*
+import cangjie_stdx::chir.*
 
 main() {
     let runeType1 = RuneType.get()
@@ -1253,7 +1253,7 @@ public prop typeArgs: Array<Type>
 
 <!-- verify -->
 ```cangjie
-import stdx.chir.*
+import cangjie_stdx::chir.*
 
 main() {
     let intType = IntType.getInt32()
@@ -1279,7 +1279,7 @@ public func dump(): Unit
 
 <!-- verify -->
 ```cangjie
-import stdx.chir.*
+import cangjie_stdx::chir.*
 
 main() {
     let intType = IntType.getInt32()
@@ -1309,7 +1309,7 @@ public func hashCode(): Int64
 
 <!-- verify -->
 ```cangjie
-import stdx.chir.*
+import cangjie_stdx::chir.*
 
 main() {
     let intType = IntType.getInt32()
@@ -1339,7 +1339,7 @@ public func isBoolType(): Bool
 
 <!-- verify -->
 ```cangjie
-import stdx.chir.*
+import cangjie_stdx::chir.*
 
 main() {
     let boolType = BoolType.get()
@@ -1372,7 +1372,7 @@ public func isFloatType(): Bool
 
 <!-- verify -->
 ```cangjie
-import stdx.chir.*
+import cangjie_stdx::chir.*
 
 main() {
     let floatType = FloatType.getFloat32()
@@ -1405,7 +1405,7 @@ public func isIntType(): Bool
 
 <!-- verify -->
 ```cangjie
-import stdx.chir.*
+import cangjie_stdx::chir.*
 
 main() {
     let intType = IntType.getInt32()
@@ -1438,7 +1438,7 @@ public func isNothingType(): Bool
 
 <!-- verify -->
 ```cangjie
-import stdx.chir.*
+import cangjie_stdx::chir.*
 
 main() {
     let nothingType = NothingType.get()
@@ -1471,7 +1471,7 @@ public func isNumericType(): Bool
 
 <!-- verify -->
 ```cangjie
-import stdx.chir.*
+import cangjie_stdx::chir.*
 
 main() {
     let intType = IntType.getInt32()
@@ -1507,7 +1507,7 @@ public func isPrimitiveType(): Bool
 
 <!-- verify -->
 ```cangjie
-import stdx.chir.*
+import cangjie_stdx::chir.*
 
 main() {
     let intType = IntType.getInt32()
@@ -1540,7 +1540,7 @@ public func isRefType(): Bool
 
 <!-- verify -->
 ```cangjie
-import stdx.chir.*
+import cangjie_stdx::chir.*
 
 main() {
     let intType = IntType.getInt32()
@@ -1573,7 +1573,7 @@ public func isRuneType(): Bool
 
 <!-- verify -->
 ```cangjie
-import stdx.chir.*
+import cangjie_stdx::chir.*
 
 main() {
     let runeType = RuneType.get()
@@ -1606,7 +1606,7 @@ public func isSignedIntType(): Bool
 
 <!-- verify -->
 ```cangjie
-import stdx.chir.*
+import cangjie_stdx::chir.*
 
 main() {
     let intType = IntType.getInt32()
@@ -1639,7 +1639,7 @@ public func isUnitType(): Bool
 
 <!-- verify -->
 ```cangjie
-import stdx.chir.*
+import cangjie_stdx::chir.*
 
 main() {
     let unitType = UnitType.get()
@@ -1672,7 +1672,7 @@ public func isUnsignedIntType(): Bool
 
 <!-- verify -->
 ```cangjie
-import stdx.chir.*
+import cangjie_stdx::chir.*
 
 main() {
     let intType = IntType.getInt32()
@@ -1709,7 +1709,7 @@ public open operator func==(other: Type): Bool
 
 <!-- verify -->
 ```cangjie
-import stdx.chir.*
+import cangjie_stdx::chir.*
 
 main() {
     let type1 = IntType.getInt32()
@@ -1745,7 +1745,7 @@ public func stripAllRefs(): Type
 
 <!-- verify -->
 ```cangjie
-import stdx.chir.*
+import cangjie_stdx::chir.*
 
 main() {
     let intType = IntType.getInt32()
@@ -1779,7 +1779,7 @@ public open func toString(): String
 
 <!-- verify -->
 ```cangjie
-import stdx.chir.*
+import cangjie_stdx::chir.*
 
 main() {
     let intType = IntType.getInt32()
@@ -1822,7 +1822,7 @@ public static func get(): UnitType
 
 <!-- verify -->
 ```cangjie
-import stdx.chir.*
+import cangjie_stdx::chir.*
 
 main() {
     let unitType = UnitType.get()
@@ -1856,7 +1856,7 @@ public operator func==(_: UnitType): Bool
 
 <!-- verify -->
 ```cangjie
-import stdx.chir.*
+import cangjie_stdx::chir.*
 
 main() {
     let unitType1 = UnitType.get()

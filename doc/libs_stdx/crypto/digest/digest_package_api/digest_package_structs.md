@@ -27,7 +27,7 @@ public static prop MD5: HashType
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.digest.*
+import cangjie_stdx::crypto.digest.*
 
 main() {
     let md5Type = HashType.MD5
@@ -57,7 +57,7 @@ public static prop SHA1: HashType
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.digest.*
+import cangjie_stdx::crypto.digest.*
 
 main() {
     let sha1Type = HashType.SHA1
@@ -87,7 +87,7 @@ public static prop SHA224: HashType
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.digest.*
+import cangjie_stdx::crypto.digest.*
 
 main() {
     let sha224Type = HashType.SHA224
@@ -117,7 +117,7 @@ public static prop SHA256: HashType
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.digest.*
+import cangjie_stdx::crypto.digest.*
 
 main() {
     let sha256Type = HashType.SHA256
@@ -147,7 +147,7 @@ public static prop SHA384: HashType
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.digest.*
+import cangjie_stdx::crypto.digest.*
 
 main() {
     let sha384Type = HashType.SHA384
@@ -177,7 +177,7 @@ public static prop SHA512: HashType
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.digest.*
+import cangjie_stdx::crypto.digest.*
 
 main() {
     let sha512Type = HashType.SHA512
@@ -207,7 +207,7 @@ public static prop SM3: HashType
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.digest.*
+import cangjie_stdx::crypto.digest.*
 
 main() {
     let sm3Type = HashType.SM3
@@ -239,7 +239,7 @@ public func toString(): String
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.digest.*
+import cangjie_stdx::crypto.digest.*
 
 main() {
     let md5Type = HashType.MD5
@@ -282,7 +282,7 @@ public override operator func !=(other: HashType): Bool
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.digest.*
+import cangjie_stdx::crypto.digest.*
 
 main() {
     let md5Type = HashType.MD5
@@ -326,7 +326,7 @@ public override operator func ==(other: HashType): Bool
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.digest.*
+import cangjie_stdx::crypto.digest.*
 
 main() {
     let md5Type = HashType.MD5

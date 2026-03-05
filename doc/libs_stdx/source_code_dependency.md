@@ -10,7 +10,7 @@ stdx 有两种源码集成方式：git 源码依赖和本地源码依赖。
 
 ```toml
 [dependencies]
-  stdx = { git = "https://gitcode.com/Cangjie/cangjie_stdx.git", branch = "dev", output-type = "dynamic" }
+  stdx = { git = "https://gitcode.com/Cangjie/cangjie_cangjie_stdx::git", branch = "dev", output-type = "dynamic" }
 ```
 
 在工程的 cjpm.toml 文件所在目录，执行 `cjpm update` 命令即可同步更新本仓源码。

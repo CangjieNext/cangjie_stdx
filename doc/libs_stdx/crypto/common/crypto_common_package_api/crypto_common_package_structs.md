@@ -29,7 +29,7 @@ public prop body: Array<Byte>
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.common.*
+import cangjie_stdx::crypto.common.*
 
 main(): Unit {
     // 创建一个 DerBlob 对象（仅演示二进制容器能力，数据无 ASN.1/DER 加密规范格式）
@@ -64,7 +64,7 @@ public prop size: Int64
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.common.*
+import cangjie_stdx::crypto.common.*
 
 main(): Unit {
     // 创建一个 DerBlob 对象（仅演示二进制容器能力，数据无 ASN.1/DER 加密规范格式）
@@ -99,7 +99,7 @@ public init(content: Array<Byte>)
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.common.*
+import cangjie_stdx::crypto.common.*
 
 main(): Unit {
     // 创建一个 DerBlob 对象（仅演示二进制容器能力，数据无 ASN.1/DER 加密规范格式）
@@ -132,7 +132,7 @@ public override func hashCode(): Int64
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.common.*
+import cangjie_stdx::crypto.common.*
 
 main(): Unit {
     // 创建一个 DerBlob 对象（仅演示二进制容器能力，数据无 ASN.1/DER 加密规范格式）
@@ -171,7 +171,7 @@ public override operator func !=(other: DerBlob): Bool
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.common.*
+import cangjie_stdx::crypto.common.*
 
 main(): Unit {
     // 创建两个不同的 DerBlob 对象（仅演示二进制容器能力，数据无 ASN.1/DER 加密规范格式）
@@ -218,7 +218,7 @@ public override operator func ==(other: DerBlob): Bool
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.common.*
+import cangjie_stdx::crypto.common.*
 
 main(): Unit {
     // 创建两个相同的 DerBlob 对象（仅演示二进制容器能力，数据无 ASN.1/DER 加密规范格式）
@@ -276,7 +276,7 @@ public Pem(private let items: Array<PemEntry>)
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.common.*
+import cangjie_stdx::crypto.common.*
 
 main(): Unit {
     // 创建一个 PemEntry 对象（DerBlob 仅演示二进制容器能力，数据无 ASN.1/DER 加密规范格式）
@@ -310,7 +310,7 @@ public override prop size: Int64
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.common.*
+import cangjie_stdx::crypto.common.*
 
 main(): Unit {
     // 创建一个 PemEntry 对象（DerBlob 仅演示二进制容器能力，数据无 ASN.1/DER 加密规范格式）
@@ -355,7 +355,7 @@ public static func decode(text: String): Pem
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.common.*
+import cangjie_stdx::crypto.common.*
 
 main(): Unit {
     // 创建一个 PemEntry 对象（DerBlob 仅演示二进制容器能力，数据无 ASN.1/DER 加密规范格式）
@@ -405,7 +405,7 @@ public func encode(): String
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.common.*
+import cangjie_stdx::crypto.common.*
 
 main(): Unit {
     // 创建一个 PemEntry 对象（DerBlob 仅演示二进制容器能力，数据无 ASN.1/DER 加密规范格式）
@@ -449,7 +449,7 @@ public override func isEmpty(): Bool
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.common.*
+import cangjie_stdx::crypto.common.*
 
 main(): Unit {
     // 创建一个 PemEntry 对象（DerBlob 仅演示二进制容器能力，数据无 ASN.1/DER 加密规范格式）
@@ -492,7 +492,7 @@ public override func iterator(): Iterator<PemEntry>
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.common.*
+import cangjie_stdx::crypto.common.*
 
 main(): Unit {
     // 创建一个 PemEntry 对象（DerBlob 仅演示二进制容器能力，数据无 ASN.1/DER 加密规范格式）
@@ -554,7 +554,7 @@ public override func toString(): String
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.common.*
+import cangjie_stdx::crypto.common.*
 
 main(): Unit {
     // 创建一个 PemEntry 对象（DerBlob 仅演示二进制容器能力，数据无 ASN.1/DER 加密规范格式）
@@ -635,7 +635,7 @@ public PemEntry(
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.common.*
+import cangjie_stdx::crypto.common.*
 
 main(): Unit {
     // 创建一个 DerBlob 对象（DerBlob 仅演示二进制容器能力，数据无 ASN.1/DER 加密规范格式）
@@ -668,7 +668,7 @@ public static let LABEL_CERTIFICATE: String = "CERTIFICATE"
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.common.*
+import cangjie_stdx::crypto.common.*
 
 main(): Unit {
     // 使用预定义的标签常量
@@ -697,7 +697,7 @@ public static let LABEL_CERTIFICATE_REQUEST: String = "CERTIFICATE REQUEST"
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.common.*
+import cangjie_stdx::crypto.common.*
 
 main(): Unit {
     // 使用预定义的标签常量
@@ -726,7 +726,7 @@ public static let LABEL_DH_PARAMETERS: String = "DH PARAMETERS"
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.common.*
+import cangjie_stdx::crypto.common.*
 
 main(): Unit {
     // 使用预定义的标签常量
@@ -755,7 +755,7 @@ public static let LABEL_EC_PARAMETERS: String = "EC PARAMETERS"
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.common.*
+import cangjie_stdx::crypto.common.*
 
 main(): Unit {
     // 使用预定义的标签常量
@@ -784,7 +784,7 @@ public static let LABEL_EC_PRIVATE_KEY: String = "EC PRIVATE KEY"
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.common.*
+import cangjie_stdx::crypto.common.*
 
 main(): Unit {
     // 使用预定义的标签常量
@@ -813,7 +813,7 @@ public static let LABEL_ENCRYPTED_PRIVATE_KEY: String = "ENCRYPTED PRIVATE KEY"
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.common.*
+import cangjie_stdx::crypto.common.*
 
 main(): Unit {
     // 使用预定义的标签常量
@@ -842,7 +842,7 @@ public static let LABEL_PRIVATE_KEY: String = "PRIVATE KEY"
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.common.*
+import cangjie_stdx::crypto.common.*
 
 main(): Unit {
     // 使用预定义的标签常量
@@ -871,7 +871,7 @@ public static let LABEL_PUBLIC_KEY: String = "PUBLIC KEY"
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.common.*
+import cangjie_stdx::crypto.common.*
 
 main(): Unit {
     // 使用预定义的标签常量
@@ -900,7 +900,7 @@ public static let LABEL_RSA_PRIVATE_KEY: String = "RSA PRIVATE KEY"
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.common.*
+import cangjie_stdx::crypto.common.*
 
 main(): Unit {
     // 使用预定义的标签常量
@@ -929,7 +929,7 @@ public static let LABEL_SM2_PRIVATE_KEY: String = "SM2 PRIVATE KEY"
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.common.*
+import cangjie_stdx::crypto.common.*
 
 main(): Unit {
     // 使用预定义的标签常量
@@ -958,7 +958,7 @@ public static let LABEL_X509_CRL: String = "X509 CRL"
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.common.*
+import cangjie_stdx::crypto.common.*
 
 main(): Unit {
     // 使用预定义的标签常量
@@ -987,7 +987,7 @@ public let body: ?DerBlob
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.common.*
+import cangjie_stdx::crypto.common.*
 
 main(): Unit {
     // 创建一个 DerBlob 对象（DerBlob 仅演示二进制容器能力，数据无 ASN.1/DER 加密规范格式）
@@ -1024,7 +1024,7 @@ public let headers: Array<(String, String)>
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.common.*
+import cangjie_stdx::crypto.common.*
 
 main(): Unit {
     // 创建一个 DerBlob 对象（DerBlob 仅演示二进制容器能力，数据无 ASN.1/DER 加密规范格式）
@@ -1066,7 +1066,7 @@ public let label: String
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.common.*
+import cangjie_stdx::crypto.common.*
 
 main(): Unit {
     // 创建一个 DerBlob 对象（DerBlob 仅演示二进制容器能力，数据无 ASN.1/DER 加密规范格式）
@@ -1103,7 +1103,7 @@ public init(label: String, body: DerBlob)
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.common.*
+import cangjie_stdx::crypto.common.*
 
 main(): Unit {
     // 创建一个 DerBlob 对象（DerBlob 仅演示二进制容器能力，数据无 ASN.1/DER 加密规范格式）
@@ -1138,7 +1138,7 @@ public func encode(): String
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.common.*
+import cangjie_stdx::crypto.common.*
 
 main(): Unit {
     // 创建一个 DerBlob 对象（DerBlob 仅演示二进制容器能力，数据无 ASN.1/DER 加密规范格式）
@@ -1184,7 +1184,7 @@ public func header(name: String): Iterator<String>
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.common.*
+import cangjie_stdx::crypto.common.*
 
 main(): Unit {
     // 创建一个 DerBlob 对象（DerBlob 仅演示二进制容器能力，数据无 ASN.1/DER 加密规范格式）
@@ -1227,7 +1227,7 @@ public override func toString(): String
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.common.*
+import cangjie_stdx::crypto.common.*
 
 main(): Unit {
     // 创建一个 DerBlob 对象（DerBlob 仅演示二进制容器能力，数据无 ASN.1/DER 加密规范格式）

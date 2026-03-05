@@ -11,9 +11,9 @@
 import std.io.*
 import std.fs.{File, OpenMode}
 import std.net.{TcpServerSocket, TcpSocket}
-import stdx.crypto.x509.X509Certificate
-import stdx.crypto.keys.GeneralPrivateKey
-import stdx.net.tls.*
+import cangjie_stdx::crypto.x509.X509Certificate
+import cangjie_stdx::crypto.keys.GeneralPrivateKey
+import cangjie_stdx::net.tls.*
 
 // 证书及私钥路径，用户需自备
 let certificatePath = "./files/apiserver.crt"

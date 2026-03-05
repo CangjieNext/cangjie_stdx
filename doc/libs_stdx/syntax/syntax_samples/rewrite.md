@@ -38,7 +38,7 @@ struct Rectangle {
 <!-- compile -->
 
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 import std.collection.ArrayList
 
 // 1. 继承 ASTRewriter

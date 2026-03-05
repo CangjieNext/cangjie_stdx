@@ -1,4 +1,4 @@
-# stdx.chir
+# cangjie_stdx::chir
 
 > **说明：**
 >

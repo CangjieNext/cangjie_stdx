@@ -35,7 +35,7 @@ public static let CBC: OperationMode
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.crypto.*
+import cangjie_stdx::crypto.crypto.*
 
 main() {
     let mode = OperationMode.CBC
@@ -64,7 +64,7 @@ public static let CFB: OperationMode
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.crypto.*
+import cangjie_stdx::crypto.crypto.*
 
 main() {
     let mode = OperationMode.CFB
@@ -93,7 +93,7 @@ public static let CTR: OperationMode
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.crypto.*
+import cangjie_stdx::crypto.crypto.*
 
 main() {
     let mode = OperationMode.CTR
@@ -122,7 +122,7 @@ public static let ECB: OperationMode
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.crypto.*
+import cangjie_stdx::crypto.crypto.*
 
 main() {
     let mode = OperationMode.ECB
@@ -151,7 +151,7 @@ public static let GCM: OperationMode
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.crypto.*
+import cangjie_stdx::crypto.crypto.*
 
 main() {
     let mode = OperationMode.GCM
@@ -180,7 +180,7 @@ public static let OFB: OperationMode
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.crypto.*
+import cangjie_stdx::crypto.crypto.*
 
 main() {
     let mode = OperationMode.OFB
@@ -209,7 +209,7 @@ public let mode: String
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.crypto.*
+import cangjie_stdx::crypto.crypto.*
 
 main() {
     let mode = OperationMode.CBC
@@ -240,7 +240,7 @@ public override func toString(): String
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.crypto.*
+import cangjie_stdx::crypto.crypto.*
 
 main() {
     let modeStr = OperationMode.OFB.toString()
@@ -275,7 +275,7 @@ public override operator func !=(other: OperationMode): Bool
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.crypto.*
+import cangjie_stdx::crypto.crypto.*
 
 main() {
     let mode1 = OperationMode.CBC
@@ -318,7 +318,7 @@ public override operator func ==(other: OperationMode): Bool
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.crypto.*
+import cangjie_stdx::crypto.crypto.*
 
 main() {
     let mode1 = OperationMode.CBC
@@ -371,7 +371,7 @@ public static let NoPadding: PaddingMode
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.crypto.*
+import cangjie_stdx::crypto.crypto.*
 
 main() {
     let padding = PaddingMode.NoPadding
@@ -400,7 +400,7 @@ public static let PKCS7Padding: PaddingMode
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.crypto.*
+import cangjie_stdx::crypto.crypto.*
 
 main() {
     let padding = PaddingMode.PKCS7Padding
@@ -429,7 +429,7 @@ public let paddingType: Int64
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.crypto.*
+import cangjie_stdx::crypto.crypto.*
 
 main() {
     let padding = PaddingMode.PKCS7Padding
@@ -464,7 +464,7 @@ public override operator func !=(other: PaddingMode): Bool
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.crypto.*
+import cangjie_stdx::crypto.crypto.*
 
 main() {
     let padding1 = PaddingMode.NoPadding
@@ -507,7 +507,7 @@ public override operator func ==(other: PaddingMode): Bool
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.crypto.*
+import cangjie_stdx::crypto.crypto.*
 
 main() {
     let padding1 = PaddingMode.NoPadding

@@ -6,7 +6,7 @@ Example:
 
 <!-- verify -->
 ```cangjie
-import stdx.encoding.url.*
+import cangjie_stdx::encoding.url.*
 
 main(): Int64 {
     /* Call the static function URL.parse to parse the web address and obtain an object named url */

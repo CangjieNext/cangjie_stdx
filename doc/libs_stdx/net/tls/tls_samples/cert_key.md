@@ -10,10 +10,10 @@
 ```cangjie
 import std.io.*
 import std.{fs.*, collection.*}
-import stdx.net.tls.*
-import stdx.crypto.x509.X509Certificate
-import stdx.crypto.common.{PrivateKey, Pem, PemEntry, DerBlob}
-import stdx.crypto.keys.GeneralPrivateKey
+import cangjie_stdx::net.tls.*
+import cangjie_stdx::crypto.x509.X509Certificate
+import cangjie_stdx::crypto.common.{PrivateKey, Pem, PemEntry, DerBlob}
+import cangjie_stdx::crypto.keys.GeneralPrivateKey
 
 let certificatePath = "/etc/myserver/cert-and-key.pem"
 

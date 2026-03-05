@@ -87,7 +87,7 @@ public static func deserialize(dm: DataModel): Bool
 
 <!-- verify -->
 ```cangjie
-import stdx.serialization.serialization.*
+import cangjie_stdx::serialization.serialization.*
 
 main() {
     // 先获得一个序列化后的DataModel
@@ -123,7 +123,7 @@ public func serialize(): DataModel
 
 <!-- run -->
 ```cangjie
-import stdx.serialization.serialization.*
+import cangjie_stdx::serialization.serialization.*
 
 main() {
     let boolValue: Bool = true
@@ -168,7 +168,7 @@ public static func deserialize(dm: DataModel): Float16
 
 <!-- verify -->
 ```cangjie
-import stdx.serialization.serialization.*
+import cangjie_stdx::serialization.serialization.*
 
 main() {
     // 先获得一个序列化后的DataModel
@@ -204,7 +204,7 @@ public func serialize(): DataModel
 
 <!-- run -->
 ```cangjie
-import stdx.serialization.serialization.*
+import cangjie_stdx::serialization.serialization.*
 
 main() {
     let floatValue: Float16 = 3.14f16
@@ -249,7 +249,7 @@ public static func deserialize(dm: DataModel): Float32
 
 <!-- verify -->
 ```cangjie
-import stdx.serialization.serialization.*
+import cangjie_stdx::serialization.serialization.*
 
 main() {
     // 先获得一个序列化后的DataModel
@@ -285,7 +285,7 @@ public func serialize(): DataModel
 
 <!-- run -->
 ```cangjie
-import stdx.serialization.serialization.*
+import cangjie_stdx::serialization.serialization.*
 
 main() {
     let floatValue: Float32 = 3.14f32
@@ -330,7 +330,7 @@ public static func deserialize(dm: DataModel): Float64
 
 <!-- verify -->
 ```cangjie
-import stdx.serialization.serialization.*
+import cangjie_stdx::serialization.serialization.*
 
 main() {
     // 先获得一个序列化后的DataModel
@@ -366,7 +366,7 @@ public func serialize(): DataModel
 
 <!-- run -->
 ```cangjie
-import stdx.serialization.serialization.*
+import cangjie_stdx::serialization.serialization.*
 
 main() {
     let floatValue: Float64 = 3.14159f64
@@ -411,7 +411,7 @@ public static func deserialize(dm: DataModel): Int16
 
 <!-- verify -->
 ```cangjie
-import stdx.serialization.serialization.*
+import cangjie_stdx::serialization.serialization.*
 
 main() {
     // 先获得一个序列化后的DataModel
@@ -447,7 +447,7 @@ public func serialize(): DataModel
 
 <!-- run -->
 ```cangjie
-import stdx.serialization.serialization.*
+import cangjie_stdx::serialization.serialization.*
 
 main() {
     let intValue: Int16 = 123
@@ -492,7 +492,7 @@ public static func deserialize(dm: DataModel): Int32
 
 <!-- verify -->
 ```cangjie
-import stdx.serialization.serialization.*
+import cangjie_stdx::serialization.serialization.*
 
 main() {
     // 先获得一个序列化后的DataModel
@@ -528,7 +528,7 @@ public func serialize(): DataModel
 
 <!-- run -->
 ```cangjie
-import stdx.serialization.serialization.*
+import cangjie_stdx::serialization.serialization.*
 
 main() {
     let intValue: Int32 = 123
@@ -573,7 +573,7 @@ public static func deserialize(dm: DataModel): Int64
 
 <!-- verify -->
 ```cangjie
-import stdx.serialization.serialization.*
+import cangjie_stdx::serialization.serialization.*
 
 main() {
     // 先获得一个序列化后的DataModel
@@ -609,7 +609,7 @@ public func serialize(): DataModel
 
 <!-- run -->
 ```cangjie
-import stdx.serialization.serialization.*
+import cangjie_stdx::serialization.serialization.*
 
 main() {
     let intValue: Int64 = 123
@@ -654,7 +654,7 @@ public static func deserialize(dm: DataModel): Int8
 
 <!-- verify -->
 ```cangjie
-import stdx.serialization.serialization.*
+import cangjie_stdx::serialization.serialization.*
 
 main() {
     // 先获得一个序列化后的DataModel
@@ -690,7 +690,7 @@ public func serialize(): DataModel
 
 <!-- run -->
 ```cangjie
-import stdx.serialization.serialization.*
+import cangjie_stdx::serialization.serialization.*
 
 main() {
     let intValue: Int8 = 123
@@ -736,7 +736,7 @@ public static func deserialize(dm: DataModel): Rune
 
 <!-- verify -->
 ```cangjie
-import stdx.serialization.serialization.*
+import cangjie_stdx::serialization.serialization.*
 
 main() {
     // 先获得一个序列化后的DataModel
@@ -772,7 +772,7 @@ public func serialize(): DataModel
 
 <!-- run -->
 ```cangjie
-import stdx.serialization.serialization.*
+import cangjie_stdx::serialization.serialization.*
 
 main() {
     let runeValue: Rune = 'A'
@@ -817,7 +817,7 @@ public static func deserialize(dm: DataModel): String
 
 <!-- verify -->
 ```cangjie
-import stdx.serialization.serialization.*
+import cangjie_stdx::serialization.serialization.*
 
 main() {
     // 先获得一个序列化后的DataModel
@@ -853,7 +853,7 @@ public func serialize(): DataModel
 
 <!-- run -->
 ```cangjie
-import stdx.serialization.serialization.*
+import cangjie_stdx::serialization.serialization.*
 
 main() {
     let strValue: String = "测试字符串"
@@ -898,7 +898,7 @@ public static func deserialize(dm: DataModel): UInt16
 
 <!-- verify -->
 ```cangjie
-import stdx.serialization.serialization.*
+import cangjie_stdx::serialization.serialization.*
 
 main() {
     // 先获得一个序列化后的DataModel
@@ -934,7 +934,7 @@ public func serialize(): DataModel
 
 <!-- run -->
 ```cangjie
-import stdx.serialization.serialization.*
+import cangjie_stdx::serialization.serialization.*
 
 main() {
     let uintValue: UInt16 = 123
@@ -979,7 +979,7 @@ public static func deserialize(dm: DataModel): UInt32
 
 <!-- verify -->
 ```cangjie
-import stdx.serialization.serialization.*
+import cangjie_stdx::serialization.serialization.*
 
 main() {
     // 先获得一个序列化后的DataModel
@@ -1015,7 +1015,7 @@ public func serialize(): DataModel
 
 <!-- run -->
 ```cangjie
-import stdx.serialization.serialization.*
+import cangjie_stdx::serialization.serialization.*
 
 main() {
     let uintValue: UInt32 = 123
@@ -1060,7 +1060,7 @@ public static func deserialize(dm: DataModel): UInt64
 
 <!-- verify -->
 ```cangjie
-import stdx.serialization.serialization.*
+import cangjie_stdx::serialization.serialization.*
 
 main() {
     // 先获得一个序列化后的DataModel
@@ -1096,7 +1096,7 @@ public func serialize(): DataModel
 
 <!-- run -->
 ```cangjie
-import stdx.serialization.serialization.*
+import cangjie_stdx::serialization.serialization.*
 
 main() {
     let uintValue: UInt64 = 123
@@ -1141,7 +1141,7 @@ public static func deserialize(dm: DataModel): UInt8
 
 <!-- verify -->
 ```cangjie
-import stdx.serialization.serialization.*
+import cangjie_stdx::serialization.serialization.*
 
 main() {
     // 先获得一个序列化后的DataModel
@@ -1177,7 +1177,7 @@ public func serialize(): DataModel
 
 <!-- run -->
 ```cangjie
-import stdx.serialization.serialization.*
+import cangjie_stdx::serialization.serialization.*
 
 main() {
     let uintValue: UInt8 = 123
@@ -1222,7 +1222,7 @@ public static func deserialize(dm: DataModel): HashMap<K, V>
 
 <!-- verify -->
 ```cangjie
-import stdx.serialization.serialization.*
+import cangjie_stdx::serialization.serialization.*
 import std.collection.*
 
 main() {
@@ -1266,7 +1266,7 @@ public func serialize(): DataModel
 
 <!-- run -->
 ```cangjie
-import stdx.serialization.serialization.*
+import cangjie_stdx::serialization.serialization.*
 import std.collection.*
 
 main() {
@@ -1314,7 +1314,7 @@ public static func deserialize(dm: DataModel): Array<T>
 
 <!-- verify -->
 ```cangjie
-import stdx.serialization.serialization.*
+import cangjie_stdx::serialization.serialization.*
 
 main() {
     // 先获得一个序列化后的DataModel
@@ -1351,7 +1351,7 @@ public func serialize(): DataModel
 
 <!-- run -->
 ```cangjie
-import stdx.serialization.serialization.*
+import cangjie_stdx::serialization.serialization.*
 
 main() {
     let arr = [1, 2, 3]
@@ -1396,7 +1396,7 @@ public static func deserialize(dm: DataModel): ArrayList<T>
 
 <!-- verify -->
 ```cangjie
-import stdx.serialization.serialization.*
+import cangjie_stdx::serialization.serialization.*
 import std.collection.*
 
 main() {
@@ -1434,7 +1434,7 @@ public func serialize(): DataModel
 
 <!-- run -->
 ```cangjie
-import stdx.serialization.serialization.*
+import cangjie_stdx::serialization.serialization.*
 import std.collection.*
 
 main() {
@@ -1480,7 +1480,7 @@ public static func deserialize(dm: DataModel): HashSet<T>
 
 <!-- verify -->
 ```cangjie
-import stdx.serialization.serialization.*
+import cangjie_stdx::serialization.serialization.*
 import std.collection.*
 
 main() {
@@ -1518,7 +1518,7 @@ public func serialize(): DataModel
 
 <!-- run -->
 ```cangjie
-import stdx.serialization.serialization.*
+import cangjie_stdx::serialization.serialization.*
 import std.collection.*
 
 main() {
@@ -1564,7 +1564,7 @@ public static func deserialize(dm: DataModel): Option<T>
 
 <!-- verify -->
 ```cangjie
-import stdx.serialization.serialization.*
+import cangjie_stdx::serialization.serialization.*
 
 main() {
     // 先获得一个序列化后的DataModel
@@ -1601,7 +1601,7 @@ public func serialize(): DataModel
 
 <!-- run -->
 ```cangjie
-import stdx.serialization.serialization.*
+import cangjie_stdx::serialization.serialization.*
 
 main() {
     let option = Some(123)

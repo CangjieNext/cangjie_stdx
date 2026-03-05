@@ -31,27 +31,26 @@
 ## 目录结构
 
 ```text
-/stdx
+/cangjie_stdx
 ├─ build                        # 工程构建目录，编译构建工具、脚本等
 ├─ doc                          # STDX 库资料目录
 ├─ figures                      # 存放readme中的架构图
 ├─ src                          # STDX 各个包代码目录                        
-│   └─ stdx
-│       ├── actors              # 提供 Actors 功能                     
-│       ├── aspectCJ            # 提供 AOP 功能
-│       ├── compress            # 提供压缩和解压缩功能
-│       ├── crypto              # 提供安全相关能力
-│       ├── effect              # 提供用于处理 Effect Handler 特性的用户级 API。这是一个实验性功能，需要使用支持该机制的 Cangjie 编译器。
-│       ├── dynamicLoader       # Openssl 动态加载模块
-│       ├── encoding            # 提供 JSON 和字符串编码相关能力。
-│       ├── fuzz                # 提供基于覆盖率反馈的仓颉 fuzz 引擎及对应的接口
-│       ├── log                 # 提供了日志记录相关的能力
-│       ├── logger              # 提供文本格式和 JSON 格式日志打印功能
-│       ├── net                 # 提供网络通信等能力
-│       ├── serialization       # 提供序列化和反序列化能力
-│       ├── string_intern       # 提供string对象的池化缓存能力
-│       ├── syntax              # 提供语法解析能力
-│       └── unittest            # 提供单元测试扩展能力
+│   ├── actors              # 提供 Actors 功能                     
+│   ├── aspectCJ            # 提供 AOP 功能
+│   ├── compress            # 提供压缩和解压缩功能
+│   ├── crypto              # 提供安全相关能力
+│   ├── effect              # 提供用于处理 Effect Handler 特性的用户级 API。这是一个实验性功能，需要使用支持该机制的 Cangjie 编译器。
+│   ├── dynamicLoader       # Openssl 动态加载模块
+│   ├── encoding            # 提供 JSON 和字符串编码相关能力。
+│   ├── fuzz                # 提供基于覆盖率反馈的仓颉 fuzz 引擎及对应的接口
+│   ├── log                 # 提供了日志记录相关的能力
+│   ├── logger              # 提供文本格式和 JSON 格式日志打印功能
+│   ├── net                 # 提供网络通信等能力
+│   ├── serialization       # 提供序列化和反序列化能力
+│   ├── string_intern       # 提供string对象的池化缓存能力
+│   ├── syntax              # 提供语法解析能力
+│   └── unittest            # 提供单元测试扩展能力
 │
 ├─ third_party                  # 第三方组件目录
 └─ target                       # 编译构建产物目录
@@ -80,12 +79,12 @@ stdx编译出二进制，在代码工程的 `cjpm.toml` 进行配置导入。
   [target.aarch64-linux-ohos]
     compile-option = ""
     [target.aarch64-linux-ohos.bin-dependencies]
-      path-option = [ "D:\\cangjiestdx\\linux_ohos_aarch64_llvm\\dynamic\\stdx" ]  # 手机调测在此处配置，stdx 路径根据实际情况配置
+      path-option = [ "D:\\cangjie_stdx\\linux_ohos_aarch64_llvm\\dynamic\\stdx" ]  # 手机调测在此处配置，stdx 路径根据实际情况配置
       [target.aarch64-linux-ohos.bin-dependencies.package-option]
   [target.x86_64-linux-ohos]
     compile-option = ""
     [target.x86_64-linux-ohos.bin-dependencies]
-      path-option = ["D:\\cangjiestdx\\linux_ohos_x86_64_llvm\\dynamic\\stdx" ]    # 模拟器调测在此处配置，stdx 路径根据实际情况配置
+      path-option = ["D:\\cangjie_stdx\\linux_ohos_x86_64_llvm\\dynamic\\stdx" ]    # 模拟器调测在此处配置，stdx 路径根据实际情况配置
 ```
 
 **配置示例**：此处给出 Windows 环境（架构为 x86_64）下，使用 DevEco Studio 开发，且程序在真机环境编译调测的 `cjpm.toml` 配置示例。
@@ -95,7 +94,7 @@ stdx编译出二进制，在代码工程的 `cjpm.toml` 进行配置导入。
   [target.aarch64-linux-ohos]
     compile-option = ""
     [target.aarch64-linux-ohos.bin-dependencies]
-      path-option = [  "D:\\cangjiestdx\\linux_ohos_aarch64_llvm\\dynamic\\stdx" ] # stdx 路径根据实际情况配置
+      path-option = [  "D:\\cangjie_stdx\\linux_ohos_aarch64_llvm\\dynamic\\stdx" ] # stdx 路径根据实际情况配置
       [target.aarch64-linux-ohos.bin-dependencies.package-option]
   [target.x86_64-linux-ohos]
     compile-option = ""

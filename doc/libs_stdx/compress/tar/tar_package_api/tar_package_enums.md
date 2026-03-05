@@ -63,7 +63,7 @@ public func toString(): String
 
 <!-- verify -->
 ```cangjie
-import stdx.compress.tar.*
+import cangjie_stdx::compress.tar.*
 
 main(): Unit {
     let format = TarEntryFormat.Pax
@@ -97,7 +97,7 @@ operator func !=(rhs: TarEntryFormat): Bool
 
 <!-- verify -->
 ```cangjie
-import stdx.compress.tar.*
+import cangjie_stdx::compress.tar.*
 
 main(): Unit {
     let format1 = TarEntryFormat.Pax
@@ -137,7 +137,7 @@ operator func ==(rhs: TarEntryFormat): Bool
 
 <!-- verify -->
 ```cangjie
-import stdx.compress.tar.*
+import cangjie_stdx::compress.tar.*
 
 main(): Unit {
     let format1 = TarEntryFormat.Pax
@@ -361,7 +361,7 @@ public prop flag: UInt8
 
 <!-- verify -->
 ```cangjie
-import stdx.compress.tar.*
+import cangjie_stdx::compress.tar.*
 
 main(): Unit {
     let fileType = TarEntryType.RegularFile
@@ -395,7 +395,7 @@ public static func fromFlag(flag: UInt8): TarEntryType
 
 <!-- verify -->
 ```cangjie
-import stdx.compress.tar.*
+import cangjie_stdx::compress.tar.*
 
 main(): Unit {
     let fileType = TarEntryType.fromFlag(48) // 48 is the flag for RegularFile
@@ -429,7 +429,7 @@ public func toString(): String
 
 <!-- verify -->
 ```cangjie
-import stdx.compress.tar.*
+import cangjie_stdx::compress.tar.*
 
 main(): Unit {
     let fileType = TarEntryType.RegularFile
@@ -467,7 +467,7 @@ operator func !=(rhs: TarEntryType): Bool
 
 <!-- verify -->
 ```cangjie
-import stdx.compress.tar.*
+import cangjie_stdx::compress.tar.*
 
 main(): Unit {
     let fileType = TarEntryType.RegularFile
@@ -507,7 +507,7 @@ operator func ==(rhs: TarEntryType): Bool
 
 <!-- verify -->
 ```cangjie
-import stdx.compress.tar.*
+import cangjie_stdx::compress.tar.*
 
 main(): Unit {
     let fileType1 = TarEntryType.RegularFile

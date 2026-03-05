@@ -27,7 +27,7 @@ public init()
 
 <!-- verify -->
 ```cangjie
-import stdx.log.*
+import cangjie_stdx::log.*
 
 main(): Unit {
     try {
@@ -61,7 +61,7 @@ public init(message: String)
 
 <!-- verify -->
 ```cangjie
-import stdx.log.*
+import cangjie_stdx::log.*
 
 main(): Unit {
     try {
@@ -95,7 +95,7 @@ protected override func getClassName(): String
 
 <!-- verify -->
 ```cangjie
-import stdx.log.*
+import cangjie_stdx::log.*
 
 main() {
     // 创建一个MyException实例
