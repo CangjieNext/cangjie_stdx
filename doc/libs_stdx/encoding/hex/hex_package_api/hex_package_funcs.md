@@ -20,7 +20,7 @@ public func fromHexString(data: String): Option<Array<Byte>>
 
 <!-- verify -->
 ```cangjie
-import stdx.encoding.hex.*
+import cangjie_stdx::encoding.hex.*
 
 main() {
     // 将Hex编码的字符串解码为字节数组
@@ -63,7 +63,7 @@ public func toHexString(data: Array<Byte>): String
 
 <!-- verify -->
 ```cangjie
-import stdx.encoding.hex.*
+import cangjie_stdx::encoding.hex.*
 
 main() {
     // 将字符串转换成Byte数组

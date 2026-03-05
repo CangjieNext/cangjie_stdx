@@ -1,4 +1,4 @@
-# stdx.fuzz.fuzz
+# cangjie_stdx::fuzz.fuzz
 
 ## Function Description
 

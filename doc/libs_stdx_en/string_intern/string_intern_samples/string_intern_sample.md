@@ -3,7 +3,7 @@
 <!-- verify -->
 
 ```cangjie
-import stdx.string_intern.Internable
+import cangjie_stdx::string_intern.Internable
 
 main(): Unit {
     String.configInternPool(capacity: 10000, strMaxLength: 1000)

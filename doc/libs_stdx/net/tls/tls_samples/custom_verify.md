@@ -11,9 +11,9 @@ TLS 配置的 `verifyMode` 使用 `CustomVerify` 模式。通过配置证书校�
 <!-- compile -->
 ```cangjie
 import std.net.TcpSocket
-import stdx.crypto.x509.X509Certificate
-import stdx.net.tls.*
-import stdx.net.tls.common.*
+import cangjie_stdx::crypto.x509.X509Certificate
+import cangjie_stdx::net.tls.*
+import cangjie_stdx::net.tls.common.*
 
 main() {
     var config = TlsClientConfig()

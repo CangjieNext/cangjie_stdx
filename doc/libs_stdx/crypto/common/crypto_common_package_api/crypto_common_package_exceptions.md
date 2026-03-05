@@ -27,7 +27,7 @@ public init()
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.common.*
+import cangjie_stdx::crypto.common.*
 
 main(): Unit {
     try {
@@ -61,7 +61,7 @@ public init(message: String)
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.common.*
+import cangjie_stdx::crypto.common.*
 
 main(): Unit {
     try {

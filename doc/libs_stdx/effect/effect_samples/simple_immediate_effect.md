@@ -3,7 +3,7 @@
 本示例展示了如何使用简单的 effect handler：定义一个效应（Command），并在其未被处理时进行捕获。
 
 ```cangjie
-import stdx.effect.{Command, UnhandledCommandException}
+import cangjie_stdx::effect.{Command, UnhandledCommandException}
 
 // 定义两个效应类型：生成随机数和发送消息
 class Random <: Command<Int64> {}

@@ -27,7 +27,7 @@ public static prop allSupported: Array<CipherSuite>
 
 <!-- verify -->
 ```cangjie
-import stdx.net.tls.*
+import cangjie_stdx::net.tls.*
 
 main() {
     let allSuites = CipherSuite.allSupported
@@ -58,7 +58,7 @@ public func toString(): String
 
 <!-- verify -->
 ```cangjie
-import stdx.net.tls.*
+import cangjie_stdx::net.tls.*
 
 main() {
     let suite = CipherSuite.allSupported[0]
@@ -94,7 +94,7 @@ public operator func !=(that: CipherSuite): Bool
 
 <!-- verify -->
 ```cangjie
-import stdx.net.tls.*
+import cangjie_stdx::net.tls.*
 
 main() {
     let suite1 = CipherSuite.allSupported[0]
@@ -131,7 +131,7 @@ public operator func ==(that: CipherSuite): Bool
 
 <!-- verify -->
 ```cangjie
-import stdx.net.tls.*
+import cangjie_stdx::net.tls.*
 
 main() {
     let suite1 = CipherSuite.allSupported[0]
@@ -283,8 +283,8 @@ public init()
 
 <!-- run -->
 ```cangjie
-import stdx.net.tls.*
-import stdx.net.tls.common.*
+import cangjie_stdx::net.tls.*
+import cangjie_stdx::net.tls.common.*
 
 main() {
     // 客户端配置
@@ -437,9 +437,9 @@ public init(certChain: Array<X509Certificate>, certKey: PrivateKey)
 import std.fs.*
 import std.io.*
 import std.process.*
-import stdx.crypto.x509.*
-import stdx.crypto.keys.*
-import stdx.net.tls.*
+import cangjie_stdx::crypto.x509.*
+import cangjie_stdx::crypto.keys.*
+import cangjie_stdx::net.tls.*
 
 main() {
     // 定义证书和私钥文件

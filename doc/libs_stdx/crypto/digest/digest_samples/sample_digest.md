@@ -8,10 +8,10 @@
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.digest.*
+import cangjie_stdx::crypto.digest.*
 import std.convert.*
 import std.crypto.digest.*
-import stdx.encoding.hex.*
+import cangjie_stdx::encoding.hex.*
 
 main() {
     var str: String = "helloworld"
@@ -38,10 +38,10 @@ fc5e038d38a57032085441e7fe7010b0
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.digest.*
+import cangjie_stdx::crypto.digest.*
 import std.convert.*
 import std.crypto.digest.*
-import stdx.encoding.hex.*
+import cangjie_stdx::encoding.hex.*
 
 main() {
     var str: String = "helloworld"
@@ -68,10 +68,10 @@ main() {
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.digest.*
+import cangjie_stdx::crypto.digest.*
 import std.convert.*
 import std.crypto.digest.*
-import stdx.encoding.hex.*
+import cangjie_stdx::encoding.hex.*
 
 main() {
     var str: String = "helloworld"
@@ -98,10 +98,10 @@ b033d770602994efa135c5248af300d81567ad5b59cec4bccbf15bcc
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.digest.*
+import cangjie_stdx::crypto.digest.*
 import std.convert.*
 import std.crypto.digest.*
-import stdx.encoding.hex.*
+import cangjie_stdx::encoding.hex.*
 
 main() {
     var str: String = "helloworld"
@@ -128,10 +128,10 @@ main() {
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.digest.*
+import cangjie_stdx::crypto.digest.*
 import std.convert.*
 import std.crypto.digest.*
-import stdx.encoding.hex.*
+import cangjie_stdx::encoding.hex.*
 
 main() {
     var str: String = "helloworld"
@@ -158,10 +158,10 @@ main() {
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.digest.*
+import cangjie_stdx::crypto.digest.*
 import std.convert.*
 import std.crypto.digest.*
-import stdx.encoding.hex.*
+import cangjie_stdx::encoding.hex.*
 
 main() {
     var str: String = "helloworld"
@@ -192,8 +192,8 @@ main() {
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.digest.*
-import stdx.encoding.hex.*
+import cangjie_stdx::crypto.digest.*
+import cangjie_stdx::encoding.hex.*
 
 main() {
     var algorithm: HashType = HashType.SHA512
@@ -236,10 +236,10 @@ true
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.digest.*
+import cangjie_stdx::crypto.digest.*
 import std.convert.*
 import std.crypto.digest.*
-import stdx.encoding.hex.*
+import cangjie_stdx::encoding.hex.*
 
 main() {
     var str: String = "helloworld"

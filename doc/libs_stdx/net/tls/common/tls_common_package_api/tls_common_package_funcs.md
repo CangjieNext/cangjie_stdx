@@ -20,10 +20,10 @@ public func getGlobalTlsKit(): TlsKit
 
 <!-- run -->
 ```cangjie
-import stdx.net.tls.common.*
+import cangjie_stdx::net.tls.common.*
 
-// 导入stdx.net.tls包，将使用默认 TLS 套件
-import stdx.net.tls.*
+// 导入cangjie_stdx::net.tls，将使用默认 TLS 套件
+import cangjie_stdx::net.tls.*
 
 main() {
     // 没有设置全局 TLS 套件将会抛出异常
@@ -48,8 +48,8 @@ public func setGlobalTlsKit(kit: TlsKit): Unit
 
 <!-- run -->
 ```cangjie
-import stdx.net.tls.common.*
-import stdx.net.tls.*
+import cangjie_stdx::net.tls.common.*
+import cangjie_stdx::net.tls.*
 
 main() {
     // 创建一个默认的 TLS 套件

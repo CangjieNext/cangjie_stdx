@@ -17,8 +17,8 @@ public func handleError(ctx: HttpContext, code: UInt16): Unit
 
 <!-- verify -->
 ```cangjie
-import stdx.net.http.*
-import stdx.log.*
+import cangjie_stdx::net.http.*
+import cangjie_stdx::log.*
 import std.sync.*
 
 main() {
@@ -72,8 +72,8 @@ public func notFound(ctx: HttpContext): Unit
 
 <!-- verify -->
 ```cangjie
-import stdx.net.http.*
-import stdx.log.*
+import cangjie_stdx::net.http.*
+import cangjie_stdx::log.*
 import std.sync.*
 
 main() {
@@ -138,7 +138,7 @@ public func upgrade(ctx: HttpContext): StreamingSocket
 
 <!-- verify -->
 ```cangjie
-import stdx.net.http.*
+import cangjie_stdx::net.http.*
 
 main() {
     // upgrade(ctx) 在服务端 handler 内用于获取底层 StreamingSocket。

@@ -27,7 +27,7 @@ public init()
 
 <!-- verify -->
 ```cangjie
-import stdx.encoding.json.*
+import cangjie_stdx::encoding.json.*
 
 main() {
     // 创建不带消息的JsonException
@@ -61,7 +61,7 @@ public init(message: String)
 
 <!-- verify -->
 ```cangjie
-import stdx.encoding.json.*
+import cangjie_stdx::encoding.json.*
 
 main() {
     // 创建带消息的JsonException

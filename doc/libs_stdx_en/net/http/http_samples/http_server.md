@@ -10,8 +10,8 @@ Example:
 
 <!-- compile -->
 ```cangjie
-import stdx.net.http.ServerBuilder
-import stdx.net.tls
+import cangjie_stdx::net.http.ServerBuilder
+import cangjie_stdx::net.tls
 
 main() {
     // 1. Create Server instance
@@ -31,7 +31,7 @@ Example:
 
 <!-- compile -->
 ```cangjie
-import stdx.net.http.{ServerBuilder, HttpRequestHandler, FuncHandler}
+import cangjie_stdx::net.http.{ServerBuilder, HttpRequestHandler, FuncHandler}
 
 main() {
     // 1. Create Server instance
@@ -60,8 +60,8 @@ Example:
 
 <!-- compile -->
 ```cangjie
-import stdx.net.http.*
-import stdx.net.tls.*
+import cangjie_stdx::net.http.*
+import cangjie_stdx::net.tls.*
 import std.collection.HashMap
 
 // Custom request distributor
@@ -102,10 +102,10 @@ Example:
 ```cangjie
 import std.io.*
 import std.fs.*
-import stdx.net.tls.*
-import stdx.crypto.x509.X509Certificate
-import stdx.crypto.keys.GeneralPrivateKey
-import stdx.net.http.*
+import cangjie_stdx::net.tls.*
+import cangjie_stdx::crypto.x509.X509Certificate
+import cangjie_stdx::crypto.keys.GeneralPrivateKey
+import cangjie_stdx::net.http.*
 
 main() {
     // 1. Custom configurations
@@ -141,8 +141,8 @@ Example:
 
 <!-- compile -->
 ```cangjie
-import stdx.net.http.*
-import stdx.net.tls
+import cangjie_stdx::net.http.*
+import cangjie_stdx::net.tls
 
 func checksum(chunk: Array<UInt8>): Int64 {
     var sum = 0
@@ -191,8 +191,8 @@ Example:
 
 <!-- compile -->
 ```cangjie
-import stdx.net.http.*
-import stdx.net.tls
+import cangjie_stdx::net.http.*
+import cangjie_stdx::net.tls
 
 main() {
     // 1. Create Server instance
@@ -213,11 +213,11 @@ Example:
 ```cangjie
 import std.io.*
 import std.fs.*
-import stdx.net.tls.*
-import stdx.net.tls.common.*
-import stdx.crypto.x509.X509Certificate
-import stdx.crypto.keys.GeneralPrivateKey
-import stdx.net.http.*
+import cangjie_stdx::net.tls.*
+import cangjie_stdx::net.tls.common.*
+import cangjie_stdx::crypto.x509.X509Certificate
+import cangjie_stdx::crypto.keys.GeneralPrivateKey
+import cangjie_stdx::net.http.*
 
 // Users must provide valid file paths for this program to execute
 main() {
@@ -253,10 +253,10 @@ Example:
 import std.io.*
 import std.fs.*
 import std.collection.ArrayList
-import stdx.net.tls.*
-import stdx.net.tls.common.*
-import stdx.crypto.x509.X509Certificate
-import stdx.net.http.*
+import cangjie_stdx::net.tls.*
+import cangjie_stdx::net.tls.common.*
+import cangjie_stdx::crypto.x509.X509Certificate
+import cangjie_stdx::net.http.*
 
 main() {
     // 1. TLS configuration (users must provide certificate files)
@@ -282,10 +282,10 @@ Example:
 ```cangjie
 import std.io.*
 import std.fs.*
-import stdx.net.tls.*
-import stdx.crypto.x509.X509Certificate
-import stdx.crypto.keys.GeneralPrivateKey
-import stdx.net.http.*
+import cangjie_stdx::net.tls.*
+import cangjie_stdx::crypto.x509.X509Certificate
+import cangjie_stdx::crypto.keys.GeneralPrivateKey
+import cangjie_stdx::net.http.*
 
 main() {
     // 1. TLS configuration (users must provide certificate files)

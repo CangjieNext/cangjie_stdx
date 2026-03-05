@@ -2,9 +2,9 @@
 <!-- verify -->
 
 ```cangjie
-import stdx.serialization.serialization.*
+import cangjie_stdx::serialization.serialization.*
 import std.math.*
-import stdx.encoding.json.*
+import cangjie_stdx::encoding.json.*
 
 /* Implement serialization and deserialization for custom types by implementing the Serializable interface */
 class Abc <: Serializable<Abc> {

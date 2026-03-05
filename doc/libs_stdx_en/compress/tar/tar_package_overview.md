@@ -1,4 +1,4 @@
-# stdx.compress.tar
+# cangjie_stdx::compress.tar
 
 ## Feature Introduction
 
@@ -10,7 +10,7 @@ This package implements the tar archive format, supporting four formats: V7, UST
 
 > **Note:**
 >
-> For file compression, please use stdx.compress.zlib for compression or use the stdx.compress combination tool TarGzip for archive compression operations.
+> For file compression, please use cangjie_stdx::compress.zlib for compression or use the cangjie_stdx::compress combination tool TarGzip for archive compression operations.
 
 ## API List
 

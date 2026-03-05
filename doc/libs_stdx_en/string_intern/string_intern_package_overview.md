@@ -1,4 +1,4 @@
-# stdx.string_intern
+# cangjie_stdx::string_intern
 
 ## Feature Description
 

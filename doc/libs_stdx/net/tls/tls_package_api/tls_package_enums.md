@@ -48,7 +48,7 @@ public func toString():String
 
 <!-- verify -->
 ```cangjie
-import stdx.net.tls.*
+import cangjie_stdx::net.tls.*
 
 main() {
     let sigAlg = SignatureAlgorithm.SignatureScheme(RSA_PKCS1_SHA256)
@@ -84,8 +84,8 @@ public operator func !=(other: SignatureAlgorithm): Bool
 
 <!-- verify -->
 ```cangjie
-import stdx.net.tls.*
-import stdx.crypto.digest.*
+import cangjie_stdx::net.tls.*
+import cangjie_stdx::crypto.digest.*
 
 main() {
     let sigAlg1 = SignatureAlgorithm.SignatureAndHashAlgorithm(SignatureType.RSA, HashType.SHA256)
@@ -122,8 +122,8 @@ public operator func ==(other: SignatureAlgorithm): Bool
 
 <!-- verify -->
 ```cangjie
-import stdx.net.tls.*
-import stdx.crypto.digest.*
+import cangjie_stdx::net.tls.*
+import cangjie_stdx::crypto.digest.*
 
 main() {
     let sigAlg1 = SignatureAlgorithm.SignatureAndHashAlgorithm(SignatureType.RSA, HashType.SHA256)
@@ -298,7 +298,7 @@ public func toString(): String
 
 <!-- verify -->
 ```cangjie
-import stdx.net.tls.*
+import cangjie_stdx::net.tls.*
 
 main() {
     let schemeType = SignatureSchemeType.RSA_PKCS1_SHA256
@@ -334,7 +334,7 @@ public operator func !=(other: SignatureSchemeType): Bool
 
 <!-- verify -->
 ```cangjie
-import stdx.net.tls.*
+import cangjie_stdx::net.tls.*
 
 main() {
     let schemeType1 = SignatureSchemeType.RSA_PKCS1_SHA256
@@ -371,7 +371,7 @@ public operator func ==(other: SignatureSchemeType): Bool
 
 <!-- verify -->
 ```cangjie
-import stdx.net.tls.*
+import cangjie_stdx::net.tls.*
 
 main() {
     let schemeType1 = SignatureSchemeType.RSA_PKCS1_SHA256
@@ -445,7 +445,7 @@ public func toString(): String
 
 <!-- verify -->
 ```cangjie
-import stdx.net.tls.*
+import cangjie_stdx::net.tls.*
 
 main() {
     let sigType = SignatureType.RSA
@@ -481,7 +481,7 @@ public operator func !=(other: SignatureType): Bool
 
 <!-- verify -->
 ```cangjie
-import stdx.net.tls.*
+import cangjie_stdx::net.tls.*
 
 main() {
     let sigType1 = SignatureType.RSA
@@ -518,7 +518,7 @@ public operator func ==(other: SignatureType): Bool
 
 <!-- verify -->
 ```cangjie
-import stdx.net.tls.*
+import cangjie_stdx::net.tls.*
 
 main() {
     let sigType1 = SignatureType.RSA

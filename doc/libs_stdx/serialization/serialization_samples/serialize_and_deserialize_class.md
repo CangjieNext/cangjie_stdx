@@ -2,9 +2,9 @@
 <!-- verify -->
 
 ```cangjie
-import stdx.serialization.serialization.*
+import cangjie_stdx::serialization.serialization.*
 import std.math.*
-import stdx.encoding.json.*
+import cangjie_stdx::encoding.json.*
 
 /* 通过实现 Serializable 接口，来实现对自定义类型的序列化和反序列化功能 */
 class Abc <: Serializable<Abc> {

@@ -10,7 +10,7 @@ Example:
 
 <!-- compile -->
 ```cangjie
-import stdx.net.http.*
+import cangjie_stdx::net.http.*
 
 main() {
     // 1. Create client instance
@@ -32,10 +32,10 @@ Example:
 ```cangjie
 import std.net.{TcpSocket, SocketAddress}
 import std.fs.*
-import stdx.net.tls.*
-import stdx.net.tls.common.*
-import stdx.crypto.x509.X509Certificate
-import stdx.net.http.*
+import cangjie_stdx::net.tls.*
+import cangjie_stdx::net.tls.common.*
+import cangjie_stdx::crypto.x509.X509Certificate
+import cangjie_stdx::net.http.*
 import std.io.*
 
 main() {
@@ -74,8 +74,8 @@ Example:
 ```cangjie
 import std.io.*
 import std.fs.*
-import stdx.net.http.*
-import stdx.net.tls.*
+import cangjie_stdx::net.http.*
+import cangjie_stdx::net.tls.*
 
 func checksum(chunk: Array<UInt8>): Int64 {
     var sum = 0
@@ -124,7 +124,7 @@ Example:
 
 <!-- compile -->
 ```cangjie
-import stdx.net.http.*
+import cangjie_stdx::net.http.*
 
 main() {
     // 1. Create client instance

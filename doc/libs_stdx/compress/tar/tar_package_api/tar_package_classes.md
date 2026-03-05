@@ -29,7 +29,7 @@ public prop accessTime: DateTime
 
 <!-- run -->
 ```cangjie
-import stdx.compress.tar.*
+import cangjie_stdx::compress.tar.*
 import std.fs.*
 
 main(): Unit {
@@ -67,7 +67,7 @@ public prop changeTime: DateTime
 
 <!-- run -->
 ```cangjie
-import stdx.compress.tar.*
+import cangjie_stdx::compress.tar.*
 import std.fs.*
 
 main(): Unit {
@@ -113,7 +113,7 @@ public init(path: Path)
 
 <!-- verify -->
 ```cangjie
-import stdx.compress.tar.*
+import cangjie_stdx::compress.tar.*
 import std.fs.*
 
 main(): Unit {
@@ -163,7 +163,7 @@ public init(path: String)
 
 <!-- verify -->
 ```cangjie
-import stdx.compress.tar.*
+import cangjie_stdx::compress.tar.*
 import std.fs.*
 
 main(): Unit {
@@ -211,7 +211,7 @@ public override func writeTo(target: OutputStream): Unit
 
 <!-- verify -->
 ```cangjie
-import stdx.compress.tar.*
+import cangjie_stdx::compress.tar.*
 import std.fs.*
 
 main(): Unit {
@@ -280,7 +280,7 @@ public init(path: Path)
 
 <!-- verify -->
 ```cangjie
-import stdx.compress.tar.*
+import cangjie_stdx::compress.tar.*
 import std.fs.*
 
 main(): Unit {
@@ -330,7 +330,7 @@ public init(path: String)
 
 <!-- verify -->
 ```cangjie
-import stdx.compress.tar.*
+import cangjie_stdx::compress.tar.*
 import std.fs.*
 
 main(): Unit {
@@ -379,7 +379,7 @@ public func getPaxData(key: String): ?String
 <!-- verify -->
 ```cangjie
 import std.process.*
-import stdx.compress.tar.*
+import cangjie_stdx::compress.tar.*
 import std.fs.*
 
 main(): Int64 {
@@ -443,7 +443,7 @@ public override func writeTo(target: OutputStream): Unit
 
 <!-- verify -->
 ```cangjie
-import stdx.compress.tar.*
+import cangjie_stdx::compress.tar.*
 import std.fs.*
 
 main(): Unit {
@@ -504,7 +504,7 @@ public prop deviceMajor: Int32
 
 <!-- verify -->
 ```cangjie
-import stdx.compress.tar.*
+import cangjie_stdx::compress.tar.*
 import std.fs.*
 
 main(): Unit {
@@ -542,7 +542,7 @@ public prop deviceMinor: Int32
 
 <!-- verify -->
 ```cangjie
-import stdx.compress.tar.*
+import cangjie_stdx::compress.tar.*
 import std.fs.*
 
 main(): Unit {
@@ -580,7 +580,7 @@ public prop groupName: String
 
 <!-- run -->
 ```cangjie
-import stdx.compress.tar.*
+import cangjie_stdx::compress.tar.*
 import std.fs.*
 
 main(): Unit {
@@ -618,7 +618,7 @@ public prop userName: String
 
 <!-- run -->
 ```cangjie
-import stdx.compress.tar.*
+import cangjie_stdx::compress.tar.*
 import std.fs.*
 
 main(): Unit {
@@ -664,7 +664,7 @@ public init(path: Path)
 
 <!-- run -->
 ```cangjie
-import stdx.compress.tar.*
+import cangjie_stdx::compress.tar.*
 import std.fs.*
 
 main(): Unit {
@@ -702,7 +702,7 @@ public init(path: String)
 
 <!-- run -->
 ```cangjie
-import stdx.compress.tar.*
+import cangjie_stdx::compress.tar.*
 import std.fs.*
 
 main(): Unit {
@@ -752,7 +752,7 @@ public static func archive(fromDir!: Path, filter!: (Path) -> Bool, destFile!: P
 
 <!-- verify -->
 ```cangjie
-import stdx.compress.tar.*
+import cangjie_stdx::compress.tar.*
 import std.fs.*
 
 main(): Unit {
@@ -808,7 +808,7 @@ public static func archive(fromDir!: Path, destFile!: Path, includeBaseDirectory
 
 <!-- verify -->
 ```cangjie
-import stdx.compress.tar.*
+import cangjie_stdx::compress.tar.*
 import std.fs.*
 
 main(): Unit {
@@ -868,7 +868,7 @@ public static func archive(fromDir!: String, filter!: (String) -> Bool, destFile
 
 <!-- verify -->
 ```cangjie
-import stdx.compress.tar.*
+import cangjie_stdx::compress.tar.*
 import std.fs.*
 
 main(): Unit {
@@ -926,7 +926,7 @@ public static func archive(fromDir!: String, destFile!: String, includeBaseDirec
 
 <!-- verify -->
 ```cangjie
-import stdx.compress.tar.*
+import cangjie_stdx::compress.tar.*
 import std.fs.*
 
 main(): Unit {
@@ -988,7 +988,7 @@ public static func archive<T>(fromDir!: Path, destStream!: T, includeBaseDirecto
 
 <!-- verify -->
 ```cangjie
-import stdx.compress.tar.*
+import cangjie_stdx::compress.tar.*
 import std.fs.*
 
 main(): Unit {
@@ -1052,7 +1052,7 @@ public static func archive<T>(fromDir!: String, destStream!: T, includeBaseDirec
 
 <!-- verify -->
 ```cangjie
-import stdx.compress.tar.*
+import cangjie_stdx::compress.tar.*
 import std.fs.*
 
 main(): Unit {
@@ -1112,7 +1112,7 @@ public static func extract(fromTar!: Path, destDir!: Path, overwrite!: Bool): Un
 
 <!-- verify -->
 ```cangjie
-import stdx.compress.tar.*
+import cangjie_stdx::compress.tar.*
 import std.fs.*
 
 main(): Unit {
@@ -1180,7 +1180,7 @@ public static func extract(fromTar!: String, destDir!: String, overwrite!: Bool)
 
 <!-- verify -->
 ```cangjie
-import stdx.compress.tar.*
+import cangjie_stdx::compress.tar.*
 import std.fs.*
 
 main(): Unit {
@@ -1248,7 +1248,7 @@ public static func extract<T>(fromStream!: T, destDir!: Path, overwrite!: Bool):
 
 <!-- verify -->
 ```cangjie
-import stdx.compress.tar.*
+import cangjie_stdx::compress.tar.*
 import std.fs.*
 
 main(): Unit {
@@ -1321,7 +1321,7 @@ public static func extract<T>(fromStream!: T, destDir!: String, overwrite!: Bool
 
 <!-- verify -->
 ```cangjie
-import stdx.compress.tar.*
+import cangjie_stdx::compress.tar.*
 import std.fs.*
 
 main(): Unit {
@@ -1395,7 +1395,7 @@ public prop entryType: TarEntryType
 
 <!-- verify -->
 ```cangjie
-import stdx.compress.tar.*
+import cangjie_stdx::compress.tar.*
 import std.fs.*
 
 main(): Unit {
@@ -1435,7 +1435,7 @@ public mut prop gid: Int32
 
 <!-- run -->
 ```cangjie
-import stdx.compress.tar.*
+import cangjie_stdx::compress.tar.*
 import std.fs.*
 
 main(): Unit {
@@ -1475,7 +1475,7 @@ public mut prop mode: Int32
 
 <!-- run -->
 ```cangjie
-import stdx.compress.tar.*
+import cangjie_stdx::compress.tar.*
 import std.fs.*
 
 main(): Unit {
@@ -1515,7 +1515,7 @@ public prop modificationTime: DateTime
 
 <!-- run -->
 ```cangjie
-import stdx.compress.tar.*
+import cangjie_stdx::compress.tar.*
 import std.fs.*
 
 main(): Unit {
@@ -1555,7 +1555,7 @@ public mut prop name: String
 
 <!-- run -->
 ```cangjie
-import stdx.compress.tar.*
+import cangjie_stdx::compress.tar.*
 import std.fs.*
 
 main(): Unit {
@@ -1595,7 +1595,7 @@ public prop size: Int64
 
 <!-- verify -->
 ```cangjie
-import stdx.compress.tar.*
+import cangjie_stdx::compress.tar.*
 import std.fs.*
 
 main(): Unit {
@@ -1635,7 +1635,7 @@ public prop stream: ?InputStream
 
 <!-- run -->
 ```cangjie
-import stdx.compress.tar.*
+import cangjie_stdx::compress.tar.*
 import std.fs.*
 
 main(): Unit {
@@ -1668,7 +1668,7 @@ public mut prop uid: Int32
 
 <!-- run -->
 ```cangjie
-import stdx.compress.tar.*
+import cangjie_stdx::compress.tar.*
 import std.fs.*
 
 main(): Unit {
@@ -1716,7 +1716,7 @@ protected init(path: Path)
 
 <!-- verify -->
 ```cangjie
-import stdx.compress.tar.*
+import cangjie_stdx::compress.tar.*
 import std.fs.*
 
 main(): Unit {
@@ -1764,7 +1764,7 @@ protected init(path: String)
 
 <!-- verify -->
 ```cangjie
-import stdx.compress.tar.*
+import cangjie_stdx::compress.tar.*
 import std.fs.*
 
 main(): Unit {
@@ -1810,7 +1810,7 @@ public open func writeTo(target: OutputStream): Unit
 
 <!-- verify -->
 ```cangjie
-import stdx.compress.tar.*
+import cangjie_stdx::compress.tar.*
 import std.fs.*
 
 main(): Unit {
@@ -1871,7 +1871,7 @@ public init(stream: T)
 
 <!-- verify -->
 ```cangjie
-import stdx.compress.tar.*
+import cangjie_stdx::compress.tar.*
 import std.fs.*
 import std.process.*
 
@@ -1923,7 +1923,7 @@ public func iterator(): Iterator<TarEntry>
 
 <!-- verify -->
 ```cangjie
-import stdx.compress.tar.*
+import cangjie_stdx::compress.tar.*
 import std.fs.*
 import std.process.*
 
@@ -1995,7 +1995,7 @@ public func close(): Unit
 
 <!-- verify -->
 ```cangjie
-import stdx.compress.tar.*
+import cangjie_stdx::compress.tar.*
 import std.fs.*
 import std.io.InputStream
 import std.process.*
@@ -2050,7 +2050,7 @@ public func isClosed(): Bool
 
 <!-- verify -->
 ```cangjie
-import stdx.compress.tar.*
+import cangjie_stdx::compress.tar.*
 import std.fs.*
 import std.io.InputStream
 import std.process.*
@@ -2121,7 +2121,7 @@ public prop format: TarEntryFormat
 
 <!-- verify -->
 ```cangjie
-import stdx.compress.tar.*
+import cangjie_stdx::compress.tar.*
 import std.fs.*
 import std.io.*
 
@@ -2167,7 +2167,7 @@ public init(stream: T)
 
 <!-- verify -->
 ```cangjie
-import stdx.compress.tar.*
+import cangjie_stdx::compress.tar.*
 import std.fs.*
 import std.io.*
 
@@ -2213,7 +2213,7 @@ public init(stream: T, format: TarEntryFormat)
 
 <!-- verify -->
 ```cangjie
-import stdx.compress.tar.*
+import cangjie_stdx::compress.tar.*
 import std.fs.*
 import std.io.*
 
@@ -2259,7 +2259,7 @@ public func finish(): Unit
 
 <!-- verify -->
 ```cangjie
-import stdx.compress.tar.*
+import cangjie_stdx::compress.tar.*
 import std.fs.*
 import std.io.*
 
@@ -2308,7 +2308,7 @@ public func flush(): Unit
 
 <!-- verify -->
 ```cangjie
-import stdx.compress.tar.*
+import cangjie_stdx::compress.tar.*
 import std.fs.*
 import std.io.*
 
@@ -2363,7 +2363,7 @@ public func write(info: FileInfo, entryName!: String): Unit
 
 <!-- run -->
 ```cangjie
-import stdx.compress.tar.*
+import cangjie_stdx::compress.tar.*
 import std.fs.*
 import std.io.*
 
@@ -2408,7 +2408,7 @@ public func write(it: Iterable<TarEntry>): Unit
 
 <!-- verify -->
 ```cangjie
-import stdx.compress.tar.*
+import cangjie_stdx::compress.tar.*
 import std.collection.*
 import std.fs.*
 import std.io.*
@@ -2475,7 +2475,7 @@ public func write(path: Path, entryName!: String): Unit
 
 <!-- run -->
 ```cangjie
-import stdx.compress.tar.*
+import cangjie_stdx::compress.tar.*
 import std.fs.*
 import std.io.*
 
@@ -2523,7 +2523,7 @@ public func write(path!: String, entryName!: String): Unit
 
 <!-- run -->
 ```cangjie
-import stdx.compress.tar.*
+import cangjie_stdx::compress.tar.*
 import std.fs.*
 import std.io.*
 
@@ -2567,7 +2567,7 @@ public func write(entry: TarEntry): Unit
 
 <!-- verify -->
 ```cangjie
-import stdx.compress.tar.*
+import cangjie_stdx::compress.tar.*
 import std.fs.*
 import std.io.*
 
@@ -2635,7 +2635,7 @@ public func close(): Unit
 
 <!-- verify -->
 ```cangjie
-import stdx.compress.tar.*
+import cangjie_stdx::compress.tar.*
 import std.fs.*
 import std.io.*
 
@@ -2679,7 +2679,7 @@ public func isClosed(): Bool
 
 <!-- verify -->
 ```cangjie
-import stdx.compress.tar.*
+import cangjie_stdx::compress.tar.*
 import std.fs.*
 import std.io.*
 
@@ -2751,7 +2751,7 @@ public init(path: Path)
 
 <!-- verify -->
 ```cangjie
-import stdx.compress.tar.*
+import cangjie_stdx::compress.tar.*
 import std.fs.*
 
 main(): Unit {
@@ -2801,7 +2801,7 @@ public init(path: String)
 
 <!-- verify -->
 ```cangjie
-import stdx.compress.tar.*
+import cangjie_stdx::compress.tar.*
 import std.fs.*
 
 main(): Unit {
@@ -2849,7 +2849,7 @@ public override func writeTo(target: OutputStream): Unit
 
 <!-- verify -->
 ```cangjie
-import stdx.compress.tar.*
+import cangjie_stdx::compress.tar.*
 import std.fs.*
 import std.io.*
 
@@ -2919,7 +2919,7 @@ public init(filePath: Path)
 
 <!-- verify -->
 ```cangjie
-import stdx.compress.tar.*
+import cangjie_stdx::compress.tar.*
 import std.fs.*
 
 main(): Unit {
@@ -2969,7 +2969,7 @@ public init(filePath: String)
 
 <!-- verify -->
 ```cangjie
-import stdx.compress.tar.*
+import cangjie_stdx::compress.tar.*
 import std.fs.*
 
 main(): Unit {

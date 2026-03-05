@@ -18,7 +18,7 @@ DataProvider 模式下，无法直观地判断各个 API 返回值分别是什�
 例如，上文代码触发异常后，添加 `enableDebugDataProvider` 重新编译，效果如下。
 
 ```cangjie
-import stdx.fuzz.fuzz.*
+import cangjie_stdx::fuzz.fuzz.*
 
 main() {
     let fuzzer = Fuzzer(api2)

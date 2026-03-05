@@ -174,7 +174,7 @@ public func close(): Unit
 
 <!-- run -->
 ```cangjie
-import stdx.net.http.*
+import cangjie_stdx::net.http.*
 
 main() {
     let client = ClientBuilder().build()
@@ -219,7 +219,7 @@ public func connect(url: String, header!: HttpHeaders = HttpHeaders(), version!:
 
 <!-- run -->
 ```cangjie
-import stdx.net.http.*
+import cangjie_stdx::net.http.*
 import std.net.*
 import std.sync.*
 
@@ -296,7 +296,7 @@ public func delete(url: String): HttpResponse
 
 <!-- run -->
 ```cangjie
-import stdx.net.http.*
+import cangjie_stdx::net.http.*
 import std.net.*
 import std.sync.*
 
@@ -362,7 +362,7 @@ public func get(url: String): HttpResponse
 
 <!-- run -->
 ```cangjie
-import stdx.net.http.*
+import cangjie_stdx::net.http.*
 import std.net.*
 import std.sync.*
 
@@ -424,7 +424,7 @@ public func getTlsConfig(): ?TlsConfig
 
 <!-- run -->
 ```cangjie
-import stdx.net.http.*
+import cangjie_stdx::net.http.*
 
 main() {
     // 未配置 tlsConfig 时，getTlsConfig() 预期返回 None
@@ -467,7 +467,7 @@ public func head(url: String): HttpResponse
 
 <!-- run -->
 ```cangjie
-import stdx.net.http.*
+import cangjie_stdx::net.http.*
 import std.net.*
 import std.sync.*
 
@@ -542,7 +542,7 @@ public func options(url: String): HttpResponse
 
 <!-- run -->
 ```cangjie
-import stdx.net.http.*
+import cangjie_stdx::net.http.*
 import std.net.*
 import std.sync.*
 
@@ -612,7 +612,7 @@ public func post(url: String, body: Array<UInt8>): HttpResponse
 
 <!-- run -->
 ```cangjie
-import stdx.net.http.*
+import cangjie_stdx::net.http.*
 import std.net.*
 import std.sync.*
 
@@ -694,7 +694,7 @@ public func post(url: String, body: InputStream): HttpResponse
 
 <!-- run -->
 ```cangjie
-import stdx.net.http.*
+import cangjie_stdx::net.http.*
 import std.io.*
 import std.net.*
 import std.sync.*
@@ -815,7 +815,7 @@ public func post(url: String, body: String): HttpResponse
 
 <!-- run -->
 ```cangjie
-import stdx.net.http.*
+import cangjie_stdx::net.http.*
 import std.net.*
 import std.sync.*
 
@@ -909,7 +909,7 @@ public func put(url: String, body: Array<UInt8>): HttpResponse
 
 <!-- run -->
 ```cangjie
-import stdx.net.http.*
+import cangjie_stdx::net.http.*
 import std.net.*
 import std.sync.*
 
@@ -992,7 +992,7 @@ public func put(url: String, body: InputStream): HttpResponse
 
 <!-- run -->
 ```cangjie
-import stdx.net.http.*
+import cangjie_stdx::net.http.*
 import std.io.*
 import std.net.*
 import std.sync.*
@@ -1110,7 +1110,7 @@ public func put(url: String, body: String): HttpResponse
 
 <!-- run -->
 ```cangjie
-import stdx.net.http.*
+import cangjie_stdx::net.http.*
 import std.net.*
 import std.sync.*
 
@@ -1206,8 +1206,8 @@ public func send(req: HttpRequest): HttpResponse
 
 <!-- run -->
 ```cangjie
-import stdx.net.http.*
-import stdx.encoding.url.*
+import cangjie_stdx::net.http.*
+import cangjie_stdx::encoding.url.*
 import std.net.*
 import std.sync.*
 
@@ -1291,8 +1291,8 @@ public func upgrade(req: HttpRequest): (HttpResponse, ?StreamingSocket)
 
 <!-- run -->
 ```cangjie
-import stdx.net.http.*
-import stdx.encoding.url.*
+import cangjie_stdx::net.http.*
+import cangjie_stdx::encoding.url.*
 import std.net.*
 import std.sync.*
 
@@ -1383,7 +1383,7 @@ public func initialWindowSize(size: UInt32): ClientBuilder
 
 <!-- run -->
 ```cangjie
-import stdx.net.http.*
+import cangjie_stdx::net.http.*
 
 main() {
     let client = ClientBuilder().initialWindowSize(65535).build()
@@ -1410,7 +1410,7 @@ public init()
 
 <!-- run -->
 ```cangjie
-import stdx.net.http.*
+import cangjie_stdx::net.http.*
 
 main() {
     let _ = ClientBuilder()
@@ -1437,7 +1437,7 @@ public func autoRedirect(auto: Bool): ClientBuilder
 
 <!-- run -->
 ```cangjie
-import stdx.net.http.*
+import cangjie_stdx::net.http.*
 
 main() {
     // 配置 ClientBuilder.autoRedirect，并验证 Client.autoRedirect
@@ -1475,7 +1475,7 @@ public func build(): Client
 
 <!-- run -->
 ```cangjie
-import stdx.net.http.*
+import cangjie_stdx::net.http.*
 
 main() {
     // build() 构建出 Client 实例
@@ -1511,7 +1511,7 @@ public func connector(c: (SocketAddress) -> StreamingSocket): ClientBuilder
 
 <!-- run -->
 ```cangjie
-import stdx.net.http.*
+import cangjie_stdx::net.http.*
 import std.net.*
 import std.sync.*
 
@@ -1580,7 +1580,7 @@ public func cookieJar(cookieJar: ?CookieJar): ClientBuilder
 
 <!-- run -->
 ```cangjie
-import stdx.net.http.*
+import cangjie_stdx::net.http.*
 
 main() {
     // 将 cookieJar 设为 None：禁用 Cookie
@@ -1616,7 +1616,7 @@ public func enablePush(enable: Bool): ClientBuilder
 
 <!-- run -->
 ```cangjie
-import stdx.net.http.*
+import cangjie_stdx::net.http.*
 
 main() {
     let client = ClientBuilder().enablePush(false).build()
@@ -1651,7 +1651,7 @@ public func headerTableSize(size: UInt32): ClientBuilder
 
 <!-- run -->
 ```cangjie
-import stdx.net.http.*
+import cangjie_stdx::net.http.*
 
 main() {
     let client = ClientBuilder().headerTableSize(1024).build()
@@ -1686,7 +1686,7 @@ public func httpProxy(addr: String): ClientBuilder
 
 <!-- run -->
 ```cangjie
-import stdx.net.http.*
+import cangjie_stdx::net.http.*
 
 main() {
     // 设置 http 代理（字符串形式）
@@ -1722,7 +1722,7 @@ public func httpsProxy(addr: String): ClientBuilder
 
 <!-- run -->
 ```cangjie
-import stdx.net.http.*
+import cangjie_stdx::net.http.*
 
 main() {
     // 设置 https 代理（注意：格式仍是 http://host:port）
@@ -1758,8 +1758,8 @@ public func logger(logger: Logger): ClientBuilder
 
 <!-- run -->
 ```cangjie
-import stdx.net.http.*
-import stdx.log.*
+import cangjie_stdx::net.http.*
+import cangjie_stdx::log.*
 
 main() {
     // 使用 NoopLogger 注入 logger
@@ -1798,7 +1798,7 @@ public func maxConcurrentStreams(size: UInt32): ClientBuilder
 
 <!-- run -->
 ```cangjie
-import stdx.net.http.*
+import cangjie_stdx::net.http.*
 
 main() {
     let client = ClientBuilder().maxConcurrentStreams(100).build()
@@ -1833,7 +1833,7 @@ public func maxFrameSize(size: UInt32): ClientBuilder
 
 <!-- run -->
 ```cangjie
-import stdx.net.http.*
+import cangjie_stdx::net.http.*
 
 main() {
     let client = ClientBuilder().maxFrameSize(16384).build()
@@ -1868,7 +1868,7 @@ public func maxHeaderListSize(size: UInt32): ClientBuilder
 
 <!-- run -->
 ```cangjie
-import stdx.net.http.*
+import cangjie_stdx::net.http.*
 
 main() {
     let client = ClientBuilder().maxHeaderListSize(1024).build()
@@ -1899,7 +1899,7 @@ public func noProxy(): ClientBuilder
 
 <!-- run -->
 ```cangjie
-import stdx.net.http.*
+import cangjie_stdx::net.http.*
 
 main() {
     // noProxy() 清空代理
@@ -1941,7 +1941,7 @@ public func poolSize(size: Int64): ClientBuilder
 
 <!-- run -->
 ```cangjie
-import stdx.net.http.*
+import cangjie_stdx::net.http.*
 
 main() {
     let client = ClientBuilder().poolSize(5).build()
@@ -1976,7 +1976,7 @@ public func readTimeout(timeout: Duration): ClientBuilder
 
 <!-- run -->
 ```cangjie
-import stdx.net.http.*
+import cangjie_stdx::net.http.*
 
 main() {
     let client = ClientBuilder().readTimeout(Duration.second * 1).build()
@@ -2011,8 +2011,8 @@ public func tlsConfig(config: TlsConfig): ClientBuilder
 
 <!-- run -->
 ```cangjie
-import stdx.net.http.*
-import stdx.net.tls.*
+import cangjie_stdx::net.http.*
+import cangjie_stdx::net.tls.*
 
 main() {
     // 配置 ClientBuilder.tlsConfig，并通过 Client.getTlsConfig() 验证已生效。
@@ -2051,7 +2051,7 @@ public func writeTimeout(timeout: Duration): ClientBuilder
 
 <!-- run -->
 ```cangjie
-import stdx.net.http.*
+import cangjie_stdx::net.http.*
 
 main() {
     let client = ClientBuilder().writeTimeout(Duration.second * 2).build()
@@ -2260,7 +2260,7 @@ public init(name: String, value: String, expires!: ?DateTime = None, maxAge!: ?I
 
 <!-- run -->
 ```cangjie
-import stdx.net.http.*
+import cangjie_stdx::net.http.*
 import std.time.*
 
 main() {
@@ -2298,7 +2298,7 @@ public func toSetCookieString(): String
 
 <!-- run -->
 ```cangjie
-import stdx.net.http.*
+import cangjie_stdx::net.http.*
 import std.time.*
 
 main() {
@@ -2379,7 +2379,7 @@ public init(path: String, handlerType!: FileHandlerType = DownLoad, bufferSize!:
 
 <!-- run -->
 ```cangjie
-import stdx.net.http.*
+import cangjie_stdx::net.http.*
 
 main() {
     let filePath: String = "./http_filehandler_download.txt"
@@ -2412,7 +2412,7 @@ public init(path: String, handlerType!: FileHandlerType = DownLoad, bufferSize!:
 
 <!-- run -->
 ```cangjie
-import stdx.net.http.*
+import cangjie_stdx::net.http.*
 
 main() {
     let filePath: String = "./http_filehandler_download.txt"
@@ -2437,8 +2437,8 @@ public func handle(ctx: HttpContext): Unit
 
 <!-- run -->
 ```cangjie
-import stdx.net.http.*
-import stdx.log.*
+import cangjie_stdx::net.http.*
+import cangjie_stdx::log.*
 import std.fs.*
 import std.io.*
 import std.sync.*
@@ -2524,8 +2524,8 @@ public FuncHandler(let handler: (HttpContext) -> Unit)
 
 <!-- run -->
 ```cangjie
-import stdx.net.http.*
-import stdx.log.*
+import cangjie_stdx::net.http.*
+import cangjie_stdx::log.*
 import std.fs.*
 import std.io.*
 import std.sync.*
@@ -2601,8 +2601,8 @@ public func handle(ctx: HttpContext): Unit
 
 <!-- run -->
 ```cangjie
-import stdx.net.http.*
-import stdx.log.*
+import cangjie_stdx::net.http.*
+import cangjie_stdx::log.*
 import std.fs.*
 import std.io.*
 import std.sync.*
@@ -2716,8 +2716,8 @@ public func isClosed(): Bool
 
 <!-- run -->
 ```cangjie
-import stdx.net.http.*
-import stdx.log.*
+import cangjie_stdx::net.http.*
+import cangjie_stdx::log.*
 import std.sync.*
 
 main() {
@@ -2807,7 +2807,7 @@ public func add(name: String, value: String): Unit
 
 <!-- run -->
 ```cangjie
-import stdx.net.http.*
+import cangjie_stdx::net.http.*
 
 main() {
     let headers = HttpHeaders()
@@ -2843,7 +2843,7 @@ public func del(name: String): Unit
 
 <!-- run -->
 ```cangjie
-import stdx.net.http.*
+import cangjie_stdx::net.http.*
 
 main() {
     let headers = HttpHeaders()
@@ -2881,7 +2881,7 @@ public func get(name: String): Collection<String>
 
 <!-- run -->
 ```cangjie
-import stdx.net.http.*
+import cangjie_stdx::net.http.*
 
 main() {
     let headers = HttpHeaders()
@@ -2920,7 +2920,7 @@ public func getFirst(name: String): ?String
 
 <!-- run -->
 ```cangjie
-import stdx.net.http.*
+import cangjie_stdx::net.http.*
 
 main() {
     let headers = HttpHeaders()
@@ -2954,7 +2954,7 @@ public func isEmpty(): Bool
 
 <!-- run -->
 ```cangjie
-import stdx.net.http.*
+import cangjie_stdx::net.http.*
 
 main() {
     let headers = HttpHeaders()
@@ -2989,7 +2989,7 @@ public func iterator(): Iterator<(String, Collection<String>)>
 
 <!-- run -->
 ```cangjie
-import stdx.net.http.*
+import cangjie_stdx::net.http.*
 
 main() {
     let headers = HttpHeaders()
@@ -3037,7 +3037,7 @@ public func set(name: String, value: String): Unit
 
 <!-- run -->
 ```cangjie
-import stdx.net.http.*
+import cangjie_stdx::net.http.*
 
 main() {
     let headers = HttpHeaders()
@@ -3229,7 +3229,7 @@ public override func toString(): String
 
 <!-- run -->
 ```cangjie
-import stdx.net.http.*
+import cangjie_stdx::net.http.*
 
 main() {
     let req = HttpRequestBuilder()
@@ -3280,7 +3280,7 @@ public func delete(): HttpRequestBuilder
 
 <!-- run -->
 ```cangjie
-import stdx.net.http.*
+import cangjie_stdx::net.http.*
 
 main() {
     let req = HttpRequestBuilder().delete().url("http://example.com/hello").build()
@@ -3306,7 +3306,7 @@ public init()
 
 <!-- run -->
 ```cangjie
-import stdx.net.http.*
+import cangjie_stdx::net.http.*
 
 main() {
     let _ = HttpRequestBuilder()
@@ -3329,7 +3329,7 @@ public init(request: HttpRequest)
 
 <!-- run -->
 ```cangjie
-import stdx.net.http.*
+import cangjie_stdx::net.http.*
 
 main() {
     let req = HttpRequestBuilder()
@@ -3363,7 +3363,7 @@ public func addHeaders(headers: HttpHeaders): HttpRequestBuilder
 
 <!-- run -->
 ```cangjie
-import stdx.net.http.*
+import cangjie_stdx::net.http.*
 
 main() {
     let extra = HttpHeaders()
@@ -3405,7 +3405,7 @@ public func addTrailers(trailers: HttpHeaders): HttpRequestBuilder
 
 <!-- run -->
 ```cangjie
-import stdx.net.http.*
+import cangjie_stdx::net.http.*
 
 main() {
     let extra = HttpHeaders()
@@ -3443,7 +3443,7 @@ public func body(body: Array<UInt8>): HttpRequestBuilder
 
 <!-- run -->
 ```cangjie
-import stdx.net.http.*
+import cangjie_stdx::net.http.*
 
 main() {
     let req = HttpRequestBuilder().url("http://example.com/hello").body("abc".toArray()).build()
@@ -3486,7 +3486,7 @@ public func body(body: InputStream): HttpRequestBuilder
 
 <!-- run -->
 ```cangjie
-import stdx.net.http.*
+import cangjie_stdx::net.http.*
 import std.io.*
 
 class MyBody <: InputStream {
@@ -3552,7 +3552,7 @@ public func body(body: String): HttpRequestBuilder
 
 <!-- run -->
 ```cangjie
-import stdx.net.http.*
+import cangjie_stdx::net.http.*
 
 main() {
     let req = HttpRequestBuilder().url("http://example.com/hello").body("abc").build()
@@ -3589,7 +3589,7 @@ public func build(): HttpRequest
 
 <!-- run -->
 ```cangjie
-import stdx.net.http.*
+import cangjie_stdx::net.http.*
 
 main() {
     let req = HttpRequestBuilder().method("GET").url("http://example.com/hello").build()
@@ -3621,7 +3621,7 @@ public func connect(): HttpRequestBuilder
 
 <!-- run -->
 ```cangjie
-import stdx.net.http.*
+import cangjie_stdx::net.http.*
 
 main() {
     let req = HttpRequestBuilder().connect().url("http://example.com/hello").build()
@@ -3651,7 +3651,7 @@ public func get(): HttpRequestBuilder
 
 <!-- run -->
 ```cangjie
-import stdx.net.http.*
+import cangjie_stdx::net.http.*
 
 main() {
     let req = HttpRequestBuilder().get().url("http://example.com/hello").build()
@@ -3681,7 +3681,7 @@ public func head(): HttpRequestBuilder
 
 <!-- run -->
 ```cangjie
-import stdx.net.http.*
+import cangjie_stdx::net.http.*
 
 main() {
     let req = HttpRequestBuilder().head().url("http://example.com/hello").build()
@@ -3720,7 +3720,7 @@ public func header(name: String, value: String): HttpRequestBuilder
 
 <!-- run -->
 ```cangjie
-import stdx.net.http.*
+import cangjie_stdx::net.http.*
 
 main() {
     let req = HttpRequestBuilder().url("http://example.com/hello").header("x-a", "1").build()
@@ -3759,7 +3759,7 @@ public func method(method: String): HttpRequestBuilder
 
 <!-- run -->
 ```cangjie
-import stdx.net.http.*
+import cangjie_stdx::net.http.*
 
 main() {
     let req = HttpRequestBuilder().method("PATCH").url("http://example.com/hello").build()
@@ -3789,7 +3789,7 @@ public func options(): HttpRequestBuilder
 
 <!-- run -->
 ```cangjie
-import stdx.net.http.*
+import cangjie_stdx::net.http.*
 
 main() {
     let req = HttpRequestBuilder().options().url("http://example.com/hello").build()
@@ -3819,7 +3819,7 @@ public func post(): HttpRequestBuilder
 
 <!-- run -->
 ```cangjie
-import stdx.net.http.*
+import cangjie_stdx::net.http.*
 
 main() {
     let req = HttpRequestBuilder().post().url("http://example.com/hello").body("x").build()
@@ -3860,7 +3860,7 @@ public func priority(urg: Int64, inc: Bool): HttpRequestBuilder
 
 <!-- run -->
 ```cangjie
-import stdx.net.http.*
+import cangjie_stdx::net.http.*
 
 main() {
     let req = HttpRequestBuilder().url("http://example.com/hello").priority(3, true).build()
@@ -3891,7 +3891,7 @@ public func put(): HttpRequestBuilder
 
 <!-- run -->
 ```cangjie
-import stdx.net.http.*
+import cangjie_stdx::net.http.*
 
 main() {
     let req = HttpRequestBuilder().put().url("http://example.com/hello").body("x").build()
@@ -3927,7 +3927,7 @@ public func readTimeout(timeout: Duration): HttpRequestBuilder
 
 <!-- run -->
 ```cangjie
-import stdx.net.http.*
+import cangjie_stdx::net.http.*
 
 main() {
     let req = HttpRequestBuilder().url("http://example.com/hello").readTimeout(Duration.second).build()
@@ -3961,7 +3961,7 @@ public func setHeaders(headers: HttpHeaders): HttpRequestBuilder
 
 <!-- run -->
 ```cangjie
-import stdx.net.http.*
+import cangjie_stdx::net.http.*
 
 main() {
     let h = HttpHeaders()
@@ -3998,7 +3998,7 @@ public func setTrailers(trailers: HttpHeaders): HttpRequestBuilder
 
 <!-- run -->
 ```cangjie
-import stdx.net.http.*
+import cangjie_stdx::net.http.*
 
 main() {
     let t = HttpHeaders()
@@ -4031,7 +4031,7 @@ public func trace(): HttpRequestBuilder
 
 <!-- run -->
 ```cangjie
-import stdx.net.http.*
+import cangjie_stdx::net.http.*
 
 main() {
     let req = HttpRequestBuilder().trace().url("http://example.com/hello").build()
@@ -4070,7 +4070,7 @@ public func trailer(name: String, value: String): HttpRequestBuilder
 
 <!-- run -->
 ```cangjie
-import stdx.net.http.*
+import cangjie_stdx::net.http.*
 
 main() {
     let req = HttpRequestBuilder().url("http://example.com/hello").trailer("x-t", "1").build()
@@ -4110,7 +4110,7 @@ public func url(rawUrl: String): HttpRequestBuilder
 
 <!-- run -->
 ```cangjie
-import stdx.net.http.*
+import cangjie_stdx::net.http.*
 
 main() {
     let req = HttpRequestBuilder().url("http://example.com/hello").build()
@@ -4144,8 +4144,8 @@ public func url(url: URL): HttpRequestBuilder
 
 <!-- run -->
 ```cangjie
-import stdx.net.http.*
-import stdx.encoding.url.*
+import cangjie_stdx::net.http.*
+import cangjie_stdx::encoding.url.*
 
 main() {
     let u = URL.parse("http://example.com/hello")
@@ -4180,7 +4180,7 @@ public func version(version: Protocol): HttpRequestBuilder
 
 <!-- run -->
 ```cangjie
-import stdx.net.http.*
+import cangjie_stdx::net.http.*
 
 main() {
     let req = HttpRequestBuilder().url("http://example.com/hello").version(HTTP1_1).build()
@@ -4214,7 +4214,7 @@ public func writeTimeout(timeout: Duration): HttpRequestBuilder
 
 <!-- run -->
 ```cangjie
-import stdx.net.http.*
+import cangjie_stdx::net.http.*
 
 main() {
     let req = HttpRequestBuilder().url("http://example.com/hello").writeTimeout(Duration.second).build()
@@ -4351,7 +4351,7 @@ public func close(): Unit
 
 <!-- run -->
 ```cangjie
-import stdx.net.http.*
+import cangjie_stdx::net.http.*
 
 main() {
     let resp = HttpResponseBuilder().body("abc").build()
@@ -4385,7 +4385,7 @@ public override func toString(): String
 
 <!-- run -->
 ```cangjie
-import stdx.net.http.*
+import cangjie_stdx::net.http.*
 
 main() {
     let resp = HttpResponseBuilder().body("abc").build()
@@ -4426,7 +4426,7 @@ public func getPush(): Option<ArrayList<HttpResponse>>
 
 <!-- run -->
 ```cangjie
-import stdx.net.http.*
+import cangjie_stdx::net.http.*
 
 main() {
     let resp = HttpResponseBuilder().status(404).build()
@@ -4463,7 +4463,7 @@ public init()
 
 <!-- run -->
 ```cangjie
-import stdx.net.http.*
+import cangjie_stdx::net.http.*
 
 main() {
     let _ = HttpResponseBuilder()
@@ -4490,7 +4490,7 @@ public func addHeaders(headers: HttpHeaders): HttpResponseBuilder
 
 <!-- run -->
 ```cangjie
-import stdx.net.http.*
+import cangjie_stdx::net.http.*
 
 main() {
     let h = HttpHeaders()
@@ -4527,7 +4527,7 @@ public func addTrailers(trailers: HttpHeaders): HttpResponseBuilder
 
 <!-- run -->
 ```cangjie
-import stdx.net.http.*
+import cangjie_stdx::net.http.*
 
 main() {
     let t = HttpHeaders()
@@ -4564,7 +4564,7 @@ public func body(body: Array<UInt8>): HttpResponseBuilder
 
 <!-- run -->
 ```cangjie
-import stdx.net.http.*
+import cangjie_stdx::net.http.*
 
 main() {
     let resp = HttpResponseBuilder().body("abc".toArray()).build()
@@ -4607,7 +4607,7 @@ public func body(body: InputStream): HttpResponseBuilder
 
 <!-- run -->
 ```cangjie
-import stdx.net.http.*
+import cangjie_stdx::net.http.*
 import std.io.*
 
 class MyBody <: InputStream {
@@ -4671,7 +4671,7 @@ public func body(body: String): HttpResponseBuilder
 
 <!-- run -->
 ```cangjie
-import stdx.net.http.*
+import cangjie_stdx::net.http.*
 
 main() {
     let resp = HttpResponseBuilder().body("abc").build()
@@ -4708,7 +4708,7 @@ public func build(): HttpResponse
 
 <!-- run -->
 ```cangjie
-import stdx.net.http.*
+import cangjie_stdx::net.http.*
 
 main() {
     let resp = HttpResponseBuilder().status(200).body("ok").build()
@@ -4751,7 +4751,7 @@ public func header(name: String, value: String): HttpResponseBuilder
 
 <!-- run -->
 ```cangjie
-import stdx.net.http.*
+import cangjie_stdx::net.http.*
 
 main() {
     let resp = HttpResponseBuilder().header("x-a", "1").build()
@@ -4786,7 +4786,7 @@ public func request(request: HttpRequest): HttpResponseBuilder
 
 <!-- run -->
 ```cangjie
-import stdx.net.http.*
+import cangjie_stdx::net.http.*
 
 main() {
     let req = HttpRequestBuilder().url("http://example.com/hello").build()
@@ -4821,7 +4821,7 @@ public func setHeaders(headers: HttpHeaders): HttpResponseBuilder
 
 <!-- run -->
 ```cangjie
-import stdx.net.http.*
+import cangjie_stdx::net.http.*
 
 main() {
     let h = HttpHeaders()
@@ -4858,7 +4858,7 @@ public func setTrailers(trailers: HttpHeaders): HttpResponseBuilder
 
 <!-- run -->
 ```cangjie
-import stdx.net.http.*
+import cangjie_stdx::net.http.*
 
 main() {
     let t = HttpHeaders()
@@ -4899,7 +4899,7 @@ public func status(status: UInt16): HttpResponseBuilder
 
 <!-- run -->
 ```cangjie
-import stdx.net.http.*
+import cangjie_stdx::net.http.*
 
 main() {
     let resp = HttpResponseBuilder().status(201).build()
@@ -4938,7 +4938,7 @@ public func trailer(name: String, value: String): HttpResponseBuilder
 
 <!-- run -->
 ```cangjie
-import stdx.net.http.*
+import cangjie_stdx::net.http.*
 
 main() {
     let resp = HttpResponseBuilder().trailer("x-t", "1").build()
@@ -4973,7 +4973,7 @@ public func version(version: Protocol): HttpResponseBuilder
 
 <!-- run -->
 ```cangjie
-import stdx.net.http.*
+import cangjie_stdx::net.http.*
 
 main() {
     let resp = HttpResponseBuilder().version(HTTP1_1).build()
@@ -5023,8 +5023,8 @@ public static func getPusher(ctx: HttpContext): ?HttpResponsePusher
 
 <!-- run -->
 ```cangjie
-import stdx.net.http.*
-import stdx.log.*
+import cangjie_stdx::net.http.*
+import cangjie_stdx::log.*
 import std.sync.*
 
 main() {
@@ -5081,8 +5081,8 @@ public func push(path: String, method: String, header: HttpHeaders): Unit
 
 <!-- run -->
 ```cangjie
-import stdx.net.http.*
-import stdx.log.*
+import cangjie_stdx::net.http.*
+import cangjie_stdx::log.*
 import std.sync.*
 
 main() {
@@ -5164,8 +5164,8 @@ public HttpResponseWriter(let ctx: HttpContext)
 
 <!-- run -->
 ```cangjie
-import stdx.net.http.*
-import stdx.log.*
+import cangjie_stdx::net.http.*
+import cangjie_stdx::log.*
 import std.sync.*
 
 main() {
@@ -5244,8 +5244,8 @@ public func write(buf: Array<Byte>): Unit
 
 <!-- run -->
 ```cangjie
-import stdx.net.http.*
-import stdx.log.*
+import cangjie_stdx::net.http.*
+import cangjie_stdx::log.*
 import std.sync.*
 
 main() {
@@ -5329,8 +5329,8 @@ public func handle(ctx: HttpContext): Unit
 
 <!-- run -->
 ```cangjie
-import stdx.net.http.*
-import stdx.log.*
+import cangjie_stdx::net.http.*
+import cangjie_stdx::log.*
 import std.sync.*
 
 main() {
@@ -5400,8 +5400,8 @@ public func handle(ctx: HttpContext): Unit
 
 <!-- run -->
 ```cangjie
-import stdx.net.http.*
-import stdx.log.*
+import cangjie_stdx::net.http.*
+import cangjie_stdx::log.*
 import std.sync.*
 
 main() {
@@ -5546,8 +5546,8 @@ protected open func close(): Unit
 
 <!-- run -->
 ```cangjie
-import stdx.net.http.*
-import stdx.log.*
+import cangjie_stdx::net.http.*
+import cangjie_stdx::log.*
 import std.net.*
 import std.sync.*
 
@@ -5628,8 +5628,8 @@ protected open func closeGracefully(): Unit
 
 <!-- run -->
 ```cangjie
-import stdx.net.http.*
-import stdx.log.*
+import cangjie_stdx::net.http.*
+import cangjie_stdx::log.*
 import std.net.*
 import std.sync.*
 
@@ -5710,8 +5710,8 @@ protected func serve(): Unit
 
 <!-- run -->
 ```cangjie
-import stdx.net.http.*
-import stdx.log.*
+import cangjie_stdx::net.http.*
+import cangjie_stdx::log.*
 import std.net.*
 import std.sync.*
 
@@ -5804,8 +5804,8 @@ public init(url: String, code: UInt16)
 
 <!-- run -->
 ```cangjie
-import stdx.net.http.*
-import stdx.log.*
+import cangjie_stdx::net.http.*
+import cangjie_stdx::log.*
 import std.sync.*
 
 main() {
@@ -5829,8 +5829,8 @@ public func handle(ctx: HttpContext): Unit
 
 <!-- run -->
 ```cangjie
-import stdx.net.http.*
-import stdx.log.*
+import cangjie_stdx::net.http.*
+import cangjie_stdx::log.*
 import std.sync.*
 
 main() {
@@ -6109,10 +6109,10 @@ public func afterBind(f: ()-> Unit): Unit
 
 <!-- run -->
 ```cangjie
-import stdx.net.http.*
-import stdx.log.*
+import cangjie_stdx::net.http.*
+import cangjie_stdx::log.*
 import std.sync.*
-import stdx.crypto.keys.RSAPrivateKey
+import cangjie_stdx::crypto.keys.RSAPrivateKey
 
 // 用于稳定获取响应 body（避免依赖 readToEnd/readAll 等 API）
 func readAllBytes(resp: HttpResponse): String {
@@ -6220,8 +6220,8 @@ public func close(): Unit
 
 <!-- run -->
 ```cangjie
-import stdx.net.http.*
-import stdx.log.*
+import cangjie_stdx::net.http.*
+import cangjie_stdx::log.*
 
 main() {
     let server = ServerBuilder().addr("127.0.0.1").port(18127).logger(NoopLogger()).build()
@@ -6254,10 +6254,10 @@ public func closeGracefully(): Unit
 
 <!-- run -->
 ```cangjie
-import stdx.net.http.*
-import stdx.log.*
+import cangjie_stdx::net.http.*
+import cangjie_stdx::log.*
 import std.sync.*
-import stdx.crypto.keys.RSAPrivateKey
+import cangjie_stdx::crypto.keys.RSAPrivateKey
 
 // 用于稳定获取响应 body（避免依赖 readToEnd/readAll 等 API）
 func readAllBytes(resp: HttpResponse): String {
@@ -6369,10 +6369,10 @@ public func getTlsConfig(): ?TlsConfig
 
 <!-- run -->
 ```cangjie
-import stdx.net.http.*
-import stdx.log.*
+import cangjie_stdx::net.http.*
+import cangjie_stdx::log.*
 import std.sync.*
-import stdx.crypto.keys.RSAPrivateKey
+import cangjie_stdx::crypto.keys.RSAPrivateKey
 
 // 用于稳定获取响应 body（避免依赖 readToEnd/readAll 等 API）
 func readAllBytes(resp: HttpResponse): String {
@@ -6484,10 +6484,10 @@ public func onShutdown(f: () -> Unit): Unit
 
 <!-- run -->
 ```cangjie
-import stdx.net.http.*
-import stdx.log.*
+import cangjie_stdx::net.http.*
+import cangjie_stdx::log.*
 import std.sync.*
-import stdx.crypto.keys.RSAPrivateKey
+import cangjie_stdx::crypto.keys.RSAPrivateKey
 
 // 用于稳定获取响应 body（避免依赖 readToEnd/readAll 等 API）
 func readAllBytes(resp: HttpResponse): String {
@@ -6672,10 +6672,10 @@ h2 请求优先级：
 
 <!-- run -->
 ```cangjie
-import stdx.net.http.*
-import stdx.log.*
+import cangjie_stdx::net.http.*
+import cangjie_stdx::log.*
 import std.sync.*
-import stdx.crypto.keys.RSAPrivateKey
+import cangjie_stdx::crypto.keys.RSAPrivateKey
 
 // 用于稳定获取响应 body（避免依赖 readToEnd/readAll 等 API）
 func readAllBytes(resp: HttpResponse): String {
@@ -6792,10 +6792,10 @@ public func updateCA(newCa: Array<Certificate>): Unit
 
 <!-- run -->
 ```cangjie
-import stdx.net.http.*
-import stdx.log.*
+import cangjie_stdx::net.http.*
+import cangjie_stdx::log.*
 import std.sync.*
-import stdx.crypto.keys.RSAPrivateKey
+import cangjie_stdx::crypto.keys.RSAPrivateKey
 
 // 用于稳定获取响应 body（避免依赖 readToEnd/readAll 等 API）
 func readAllBytes(resp: HttpResponse): String {
@@ -6912,10 +6912,10 @@ public func updateCA(newCaFile: String): Unit
 
 <!-- run -->
 ```cangjie
-import stdx.net.http.*
-import stdx.log.*
+import cangjie_stdx::net.http.*
+import cangjie_stdx::log.*
 import std.sync.*
-import stdx.crypto.keys.RSAPrivateKey
+import cangjie_stdx::crypto.keys.RSAPrivateKey
 
 // 用于稳定获取响应 body（避免依赖 readToEnd/readAll 等 API）
 func readAllBytes(resp: HttpResponse): String {
@@ -7032,10 +7032,10 @@ public func updateCert(certChain: Array<Certificate>, certKey: PrivateKey): Unit
 
 <!-- run -->
 ```cangjie
-import stdx.net.http.*
-import stdx.log.*
+import cangjie_stdx::net.http.*
+import cangjie_stdx::log.*
 import std.sync.*
-import stdx.crypto.keys.RSAPrivateKey
+import cangjie_stdx::crypto.keys.RSAPrivateKey
 
 // 用于稳定获取响应 body（避免依赖 readToEnd/readAll 等 API）
 func readAllBytes(resp: HttpResponse): String {
@@ -7153,10 +7153,10 @@ public func updateCert(certificateChainFile: String, privateKeyFile: String): Un
 
 <!-- run -->
 ```cangjie
-import stdx.net.http.*
-import stdx.log.*
+import cangjie_stdx::net.http.*
+import cangjie_stdx::log.*
 import std.sync.*
-import stdx.crypto.keys.RSAPrivateKey
+import cangjie_stdx::crypto.keys.RSAPrivateKey
 
 // 用于稳定获取响应 body（避免依赖 readToEnd/readAll 等 API）
 func readAllBytes(resp: HttpResponse): String {
@@ -7299,8 +7299,8 @@ public func initialWindowSize(size: UInt32): ServerBuilder
 
 <!-- run -->
 ```cangjie
-import stdx.net.http.*
-import stdx.log.*
+import cangjie_stdx::net.http.*
+import cangjie_stdx::log.*
 
 main() {
     let server = ServerBuilder()
@@ -7350,8 +7350,8 @@ public init()
 
 <!-- run -->
 ```cangjie
-import stdx.net.http.*
-import stdx.log.*
+import cangjie_stdx::net.http.*
+import cangjie_stdx::log.*
 
 main() {
     let _ = ServerBuilder()
@@ -7380,8 +7380,8 @@ public func addr(addr: String): ServerBuilder
 
 <!-- run -->
 ```cangjie
-import stdx.net.http.*
-import stdx.log.*
+import cangjie_stdx::net.http.*
+import cangjie_stdx::log.*
 
 main() {
     // addr(): 设置监听地址（只是配置，真正 bind 在 serve() 时发生）
@@ -7419,8 +7419,8 @@ public func afterBind(f: ()->Unit): ServerBuilder
 
 <!-- run -->
 ```cangjie
-import stdx.net.http.*
-import stdx.log.*
+import cangjie_stdx::net.http.*
+import cangjie_stdx::log.*
 import std.sync.*
 
 main() {
@@ -7471,8 +7471,8 @@ public func build(): Server
 
 <!-- run -->
 ```cangjie
-import stdx.net.http.*
-import stdx.log.*
+import cangjie_stdx::net.http.*
+import cangjie_stdx::log.*
 
 main() {
     // build(): 根据 builder 的配置生成 Server 实例
@@ -7559,8 +7559,8 @@ public func distributor(distributor: HttpRequestDistributor): ServerBuilder
 
 <!-- run -->
 ```cangjie
-import stdx.net.http.*
-import stdx.log.*
+import cangjie_stdx::net.http.*
+import cangjie_stdx::log.*
 
 // 自定义 distributor，用来证明 builder.distributor() 生效
 class MyDistributor <: HttpRequestDistributor {
@@ -7617,8 +7617,8 @@ public func enableConnectProtocol(flag: Bool): ServerBuilder
 
 <!-- run -->
 ```cangjie
-import stdx.net.http.*
-import stdx.log.*
+import cangjie_stdx::net.http.*
+import cangjie_stdx::log.*
 
 main() {
     let server = ServerBuilder()
@@ -7676,8 +7676,8 @@ public func headerTableSize(size: UInt32): ServerBuilder
 
 <!-- run -->
 ```cangjie
-import stdx.net.http.*
-import stdx.log.*
+import cangjie_stdx::net.http.*
+import cangjie_stdx::log.*
 
 main() {
     let server = ServerBuilder()
@@ -7735,8 +7735,8 @@ public func httpKeepAliveTimeout(timeout: Duration): ServerBuilder
 
 <!-- run -->
 ```cangjie
-import stdx.net.http.*
-import stdx.log.*
+import cangjie_stdx::net.http.*
+import cangjie_stdx::log.*
 
 main() {
     let server = ServerBuilder()
@@ -7788,8 +7788,8 @@ public func listener(listener: ServerSocket): ServerBuilder
 
 <!-- run -->
 ```cangjie
-import stdx.net.http.*
-import stdx.log.*
+import cangjie_stdx::net.http.*
+import cangjie_stdx::log.*
 import std.net.*
 
 main() {
@@ -7832,8 +7832,8 @@ public func logger(logger: Logger): ServerBuilder
 
 <!-- run -->
 ```cangjie
-import stdx.net.http.*
-import stdx.log.*
+import cangjie_stdx::net.http.*
+import cangjie_stdx::log.*
 
 main() {
     // logger(): 设定 Server 的 logger
@@ -7872,8 +7872,8 @@ public func maxConcurrentStreams(size: UInt32): ServerBuilder
 
 <!-- run -->
 ```cangjie
-import stdx.net.http.*
-import stdx.log.*
+import cangjie_stdx::net.http.*
+import cangjie_stdx::log.*
 
 main() {
     let server = ServerBuilder()
@@ -7931,8 +7931,8 @@ public func maxFrameSize(size: UInt32): ServerBuilder
 
 <!-- run -->
 ```cangjie
-import stdx.net.http.*
-import stdx.log.*
+import cangjie_stdx::net.http.*
+import cangjie_stdx::log.*
 
 main() {
     let server = ServerBuilder()
@@ -7990,8 +7990,8 @@ public func maxHeaderListSize(size: UInt32): ServerBuilder
 
 <!-- run -->
 ```cangjie
-import stdx.net.http.*
-import stdx.log.*
+import cangjie_stdx::net.http.*
+import cangjie_stdx::log.*
 
 main() {
     let server = ServerBuilder()
@@ -8053,8 +8053,8 @@ public func maxRequestBodySize(size: Int64): ServerBuilder
 
 <!-- run -->
 ```cangjie
-import stdx.net.http.*
-import stdx.log.*
+import cangjie_stdx::net.http.*
+import cangjie_stdx::log.*
 
 main() {
     let server = ServerBuilder()
@@ -8103,8 +8103,8 @@ public func maxRequestHeaderSize(size: Int64): ServerBuilder
 
 <!-- run -->
 ```cangjie
-import stdx.net.http.*
-import stdx.log.*
+import cangjie_stdx::net.http.*
+import cangjie_stdx::log.*
 
 main() {
     let server = ServerBuilder()
@@ -8149,8 +8149,8 @@ public func onShutdown(f: () -> Unit): ServerBuilder
 
 <!-- run -->
 ```cangjie
-import stdx.net.http.*
-import stdx.log.*
+import cangjie_stdx::net.http.*
+import cangjie_stdx::log.*
 
 main() {
     // onShutdown(): close/closeGracefully 时会触发回调
@@ -8191,8 +8191,8 @@ public func port(port: UInt16): ServerBuilder
 
 <!-- run -->
 ```cangjie
-import stdx.net.http.*
-import stdx.log.*
+import cangjie_stdx::net.http.*
+import cangjie_stdx::log.*
 
 main() {
     // port(): 设置监听端口
@@ -8229,8 +8229,8 @@ public func protocolServiceFactory(factory: ProtocolServiceFactory): ServerBuild
 
 <!-- run -->
 ```cangjie
-import stdx.net.http.*
-import stdx.log.*
+import cangjie_stdx::net.http.*
+import cangjie_stdx::log.*
 import std.net.*
 
 // 自定义 ProtocolService：不做真实 HTTP 解析，只打印并回一个固定响应
@@ -8305,8 +8305,8 @@ public func readHeaderTimeout(timeout: Duration): ServerBuilder
 
 <!-- run -->
 ```cangjie
-import stdx.net.http.*
-import stdx.log.*
+import cangjie_stdx::net.http.*
+import cangjie_stdx::log.*
 
 main() {
     let server = ServerBuilder()
@@ -8358,8 +8358,8 @@ public func readTimeout(timeout: Duration): ServerBuilder
 
 <!-- run -->
 ```cangjie
-import stdx.net.http.*
-import stdx.log.*
+import cangjie_stdx::net.http.*
+import cangjie_stdx::log.*
 
 main() {
     let server = ServerBuilder()
@@ -8411,8 +8411,8 @@ public func servicePoolConfig(cfg: ServicePoolConfig): ServerBuilder
 
 <!-- run -->
 ```cangjie
-import stdx.net.http.*
-import stdx.log.*
+import cangjie_stdx::net.http.*
+import cangjie_stdx::log.*
 
 main() {
     let poolCfg = ServicePoolConfig(capacity: 8, queueCapacity: 16, preheat: 2)
@@ -8454,8 +8454,8 @@ public func tlsConfig(config: TlsConfig): ServerBuilder
 
 <!-- run -->
 ```cangjie
-import stdx.net.http.*
-import stdx.log.*
+import cangjie_stdx::net.http.*
+import cangjie_stdx::log.*
 
 main() {
     // 默认不配置 TLS
@@ -8493,8 +8493,8 @@ public func transportConfig(config: TransportConfig): ServerBuilder
 
 <!-- run -->
 ```cangjie
-import stdx.net.http.*
-import stdx.log.*
+import cangjie_stdx::net.http.*
+import cangjie_stdx::log.*
 
 main() {
     var cfg = TransportConfig()
@@ -8535,8 +8535,8 @@ public func writeTimeout(timeout: Duration): ServerBuilder
 
 <!-- run -->
 ```cangjie
-import stdx.net.http.*
-import stdx.log.*
+import cangjie_stdx::net.http.*
+import cangjie_stdx::log.*
 
 main() {
     let server = ServerBuilder()
@@ -8638,11 +8638,11 @@ public static func upgradeFromClient(client: Client, url: URL,
 
 <!-- run -->
 ```cangjie
-import stdx.net.http.*
-import stdx.log.*
-import stdx.encoding.url.URL
+import cangjie_stdx::net.http.*
+import cangjie_stdx::log.*
+import cangjie_stdx::encoding.url.URL
 import std.sync.*
-import stdx.crypto.kit.DefaultCryptoKit
+import cangjie_stdx::crypto.kit.DefaultCryptoKit
 
 main() {
     let _ = DefaultCryptoKit()
@@ -8718,11 +8718,11 @@ public static func upgradeFromServer(ctx: HttpContext, subProtocols!: ArrayList<
 
 <!-- run -->
 ```cangjie
-import stdx.net.http.*
-import stdx.log.*
-import stdx.encoding.url.URL
+import cangjie_stdx::net.http.*
+import cangjie_stdx::log.*
+import cangjie_stdx::encoding.url.URL
 import std.sync.*
-import stdx.crypto.kit.DefaultCryptoKit
+import cangjie_stdx::crypto.kit.DefaultCryptoKit
 
 main() {
     let _ = DefaultCryptoKit()
@@ -8782,11 +8782,11 @@ public func closeConn(): Unit
 
 <!-- run -->
 ```cangjie
-import stdx.net.http.*
-import stdx.log.*
-import stdx.encoding.url.URL
+import cangjie_stdx::net.http.*
+import cangjie_stdx::log.*
+import cangjie_stdx::encoding.url.URL
 import std.sync.*
-import stdx.crypto.kit.DefaultCryptoKit
+import cangjie_stdx::crypto.kit.DefaultCryptoKit
 
 main() {
     // 触发 DefaultCryptoKit.static init（设置全局 crypto kit），供 WebSocket 握手生成随机 key/sha1 使用
@@ -8876,11 +8876,11 @@ read 函数返回一个 [WebSocketFrame](http_package_classes.md#class-websocket
 
 <!-- run -->
 ```cangjie
-import stdx.net.http.*
-import stdx.log.*
-import stdx.encoding.url.URL
+import cangjie_stdx::net.http.*
+import cangjie_stdx::log.*
+import cangjie_stdx::encoding.url.URL
 import std.sync.*
-import stdx.crypto.kit.DefaultCryptoKit
+import cangjie_stdx::crypto.kit.DefaultCryptoKit
 
 main() {
     // 触发 DefaultCryptoKit.static init（设置全局 crypto kit），供 WebSocket 握手生成随机 key/sha1 使用
@@ -8964,11 +8964,11 @@ public func write(frameType: WebSocketFrameType, byteArray: Array<UInt8>, frameS
 
 <!-- run -->
 ```cangjie
-import stdx.net.http.*
-import stdx.log.*
-import stdx.encoding.url.URL
+import cangjie_stdx::net.http.*
+import cangjie_stdx::log.*
+import cangjie_stdx::encoding.url.URL
 import std.sync.*
-import stdx.crypto.kit.DefaultCryptoKit
+import cangjie_stdx::crypto.kit.DefaultCryptoKit
 
 main() {
     // 触发 DefaultCryptoKit.static init（设置全局 crypto kit），供 WebSocket 握手生成随机 key/sha1 使用
@@ -9044,11 +9044,11 @@ public func writeCloseFrame(status!: ?UInt16 = None, reason!: String = ""): Unit
 
 <!-- run -->
 ```cangjie
-import stdx.net.http.*
-import stdx.log.*
-import stdx.encoding.url.URL
+import cangjie_stdx::net.http.*
+import cangjie_stdx::log.*
+import cangjie_stdx::encoding.url.URL
 import std.sync.*
-import stdx.crypto.kit.DefaultCryptoKit
+import cangjie_stdx::crypto.kit.DefaultCryptoKit
 
 main() {
     // 触发 DefaultCryptoKit.static init（设置全局 crypto kit），供 WebSocket 握手生成随机 key/sha1 使用
@@ -9114,11 +9114,11 @@ public func writePingFrame(byteArray: Array<UInt8>): Unit
 
 <!-- run -->
 ```cangjie
-import stdx.net.http.*
-import stdx.log.*
-import stdx.encoding.url.URL
+import cangjie_stdx::net.http.*
+import cangjie_stdx::log.*
+import cangjie_stdx::encoding.url.URL
 import std.sync.*
-import stdx.crypto.kit.DefaultCryptoKit
+import cangjie_stdx::crypto.kit.DefaultCryptoKit
 
 main() {
     // 触发 DefaultCryptoKit.static init（设置全局 crypto kit），供 WebSocket 握手生成随机 key/sha1 使用
@@ -9189,11 +9189,11 @@ public func writePongFrame(byteArray: Array<UInt8>): Unit
 
 <!-- run -->
 ```cangjie
-import stdx.net.http.*
-import stdx.log.*
-import stdx.encoding.url.URL
+import cangjie_stdx::net.http.*
+import cangjie_stdx::log.*
+import cangjie_stdx::encoding.url.URL
 import std.sync.*
-import stdx.crypto.kit.DefaultCryptoKit
+import cangjie_stdx::crypto.kit.DefaultCryptoKit
 
 main() {
     // 触发 DefaultCryptoKit.static init（设置全局 crypto kit），供 WebSocket 握手生成随机 key/sha1 使用

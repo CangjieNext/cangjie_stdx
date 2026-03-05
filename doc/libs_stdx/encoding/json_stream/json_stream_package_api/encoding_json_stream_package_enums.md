@@ -113,7 +113,7 @@ public func hashCode(): Int64
 
 <!-- verify -->
 ```cangjie
-import stdx.encoding.json.stream.*
+import cangjie_stdx::encoding.json.stream.*
 
 main() {
     // 创建一个JsonToken枚举对象 
@@ -152,7 +152,7 @@ public operator func !=(that: JsonToken): Bool
 
 <!-- verify -->
 ```cangjie
-import stdx.encoding.json.stream.*
+import cangjie_stdx::encoding.json.stream.*
 
 main() {
     // 创建两个不同的JsonToken对象 
@@ -202,7 +202,7 @@ public operator func ==(that: JsonToken): Bool
 
 <!-- verify -->
 ```cangjie
-import stdx.encoding.json.stream.*
+import cangjie_stdx::encoding.json.stream.*
 
 main() {
     // 创建两个相同的JsonToken对象 

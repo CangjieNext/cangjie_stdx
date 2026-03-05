@@ -69,7 +69,7 @@ public init(arguments: Array<Argument>, identifier: String, opKind: AtOpKind, co
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main() {
     // 创建 arguments
@@ -118,7 +118,7 @@ public func getAtOpPos(): CodePositionRange
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main(): Unit {
     // 创建 arguments
@@ -169,7 +169,7 @@ public func getCommasPos(): Array<CodePositionRange>
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main(): Unit {
     // 创建 arguments
@@ -223,7 +223,7 @@ public func getIdentifierPos(): CodePositionRange
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main(): Unit {
     // 创建 arguments
@@ -274,7 +274,7 @@ public func getLSquarePos(): Option<CodePositionRange>
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main(): Unit {
     // 创建 arguments
@@ -326,7 +326,7 @@ public func getRSquarePos(): Option<CodePositionRange>
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main(): Unit {
     // 创建 arguments
@@ -441,7 +441,7 @@ public init(identifier: Option<String>, isInOut: Bool, value: Expr, comments!: A
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main() {
     // 创建参数标识符（可选）
@@ -486,7 +486,7 @@ public func getColonPos(): Option<CodePositionRange>
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main(): Unit {
     // 创建参数标识符
@@ -534,7 +534,7 @@ public func getIdentifierPos(): Option<CodePositionRange>
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main(): Unit {
     // 创建参数标识符
@@ -582,7 +582,7 @@ public func getInoutKeyWordPos(): Option<CodePositionRange>
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main(): Unit {
     // 创建参数标识符
@@ -657,7 +657,7 @@ public init(elements: Array<Expr>, comments!: Array<Comment> = [])
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main() {
     // 创建 elements
@@ -697,7 +697,7 @@ public func getCommasPos(): Array<CodePositionRange>
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main(): Unit {
     // 创建 elements
@@ -741,7 +741,7 @@ public func getLSquarePos(): CodePositionRange
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main(): Unit {
     // 创建 elements
@@ -781,7 +781,7 @@ public func getRSquarePos(): CodePositionRange
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main(): Unit {
     // 创建 elements
@@ -859,7 +859,7 @@ public init(srcVal: Expr, targetTypeAnnotation: TypeAnnotation, comments!: Array
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main() {
     // 创建 srcVal
@@ -900,7 +900,7 @@ public func getAsKeyWordPos(): CodePositionRange
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main(): Unit {
     // 创建 srcVal
@@ -989,7 +989,7 @@ public init(assignOpKind: AssignOpKind, lhs: SyntaxTreeNode, rhs: Expr, comments
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main() {
     // 创建 assignOpKind
@@ -1034,7 +1034,7 @@ public func getAssignOpPos(): CodePositionRange
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main(): Unit {
     // 创建 assignOpKind
@@ -1095,7 +1095,7 @@ public open func rewrite(node: SyntaxTreeNode): SyntaxTreeNode
 
 <!-- compile -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 import std.collection.ArrayList
 
 // 继承 ASTRewriter
@@ -1167,7 +1167,7 @@ public func walk(startPoint: SyntaxTreeNode, detach!: Bool = false): SyntaxTreeN
 
 <!-- compile -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 import std.collection.ArrayList
 
 // 继承 ASTRewriter
@@ -1238,7 +1238,7 @@ public open func postAction(node: SyntaxTreeNode): PostActionMode
 
 <!-- compile -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 // 继承 ASTVisitor
 public class BinaryCounter <: ASTVisitor {
@@ -1296,7 +1296,7 @@ public open func preAction(node: SyntaxTreeNode): PreActionMode
 
 <!-- compile -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 //继承 ASTVisitor
 public class BinaryCounter <: ASTVisitor {
@@ -1350,7 +1350,7 @@ public func walk(root: SyntaxTreeNode): Unit
 
 <!-- compile -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 //继承 ASTVisitor
 public class BinaryCounter <: ASTVisitor {
@@ -1431,7 +1431,7 @@ public init(kind: AtomicTypeKind, comments!: Array<Comment> = [])
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main() {
     // 创建 kind
@@ -1517,7 +1517,7 @@ public init(lhs: Expr, opKind: BinaryOpKind, rhs: Expr, comments!: Array<Comment
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main() {
     // 创建 lhs
@@ -1562,7 +1562,7 @@ public func getOperatorPos(): CodePositionRange
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main(): Unit {
     // 创建 lhs
@@ -1634,7 +1634,7 @@ public init(nodes: Array<SyntaxTreeNode>, comments!: Array<Comment> = [])
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main() {
     // 创建 nodes
@@ -1675,7 +1675,7 @@ public func getLCurlPos(): CodePositionRange
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main(): Unit {
     // 创建 nodes
@@ -1714,7 +1714,7 @@ public func getRCurlPos(): CodePositionRange
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main(): Unit {
     // 创建 nodes
@@ -1778,7 +1778,7 @@ public init(memberDecls: Array<Decl>, comments!: Array<Comment> = [])
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main() {
     // 创建一个变量声明
@@ -1819,7 +1819,7 @@ public func getLCurlPos(): CodePositionRange
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main(): Unit {
     // 创建一个变量声明
@@ -1862,7 +1862,7 @@ body.getLCurlPos(): 1:1-1:2
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main(): Unit {
     // 创建一个变量声明
@@ -1921,7 +1921,7 @@ public init(comments!: Array<Comment> = [])
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main() {
     // 创建 BreakExpr 实例
@@ -1995,7 +1995,7 @@ public init(callee: Expr, arguments: Array<Argument>, comments!: Array<Comment> 
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main() {
     // 创建 callee
@@ -2040,7 +2040,7 @@ public func getCommasPos(): Array<CodePositionRange>
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main(): Unit {
     // 创建 callee
@@ -2087,7 +2087,7 @@ public func getLParenPos(): CodePositionRange
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main(): Unit {
     // 创建 callee
@@ -2127,7 +2127,7 @@ public func getRParenPos(): CodePositionRange
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main(): Unit {
     // 创建 callee
@@ -2209,7 +2209,7 @@ public init(pattern: Pattern, exceptionType: Array<TypeAnnotation>, comments!: A
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main() {
     // 创建 pattern
@@ -2250,7 +2250,7 @@ public func getBitOrsPos(): Array<CodePositionRange>
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main(): Unit {
     // 创建 pattern
@@ -2297,7 +2297,7 @@ public func getColonPos(): Option<CodePositionRange>
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main(): Unit {
     // 创建 pattern
@@ -2419,7 +2419,7 @@ public init(body: Body, genericConstraints: Option<GenericConstraints>, genericP
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main() {
     // 创建 body
@@ -2482,7 +2482,7 @@ public func getClassKeyWordPos(): CodePositionRange
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main(): Unit {
     // 创建 body
@@ -2539,7 +2539,7 @@ public func getGenericParamsCommasPos(): Array<CodePositionRange>
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main(): Unit {
     // 创建 body
@@ -2599,7 +2599,7 @@ public func getGenericParamsLAnglePos(): Option<CodePositionRange>
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main(): Unit {
     // 创建 body
@@ -2658,7 +2658,7 @@ public func getGenericParamsRAnglePos(): Option<CodePositionRange>
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main(): Unit {
     // 创建 body
@@ -2717,7 +2717,7 @@ public func getIdentifierPos(): CodePositionRange
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main(): Unit {
     // 创建 body
@@ -2774,7 +2774,7 @@ public func getSuperTyAnnotationsBitAndsPos(): Array<CodePositionRange>
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main(): Unit {
     // 创建 body
@@ -2838,7 +2838,7 @@ public func getUpperBoundPos(): Option<CodePositionRange>
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main(): Unit {
     // 创建 body
@@ -2931,7 +2931,7 @@ public init(content: String)
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main() {
     // 创建注释内容
@@ -3019,7 +3019,7 @@ public init(name: String, prefixes: Array<String>, typeArguments: Array<TypeAnno
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main() {
     // 创建 name
@@ -3064,7 +3064,7 @@ public func getCommasPos(): Array<CodePositionRange>
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main(): Unit {
     // 创建 CompositeType 实例
@@ -3101,7 +3101,7 @@ public func getDotsPos(): Array<CodePositionRange>
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main(): Unit {
     // 创建 CompositeType 实例
@@ -3138,7 +3138,7 @@ public func getLAnglePos(): Option<CodePositionRange>
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main(): Unit {
     // 创建 CompositeType 实例
@@ -3174,7 +3174,7 @@ public func getRAnglePos(): Option<CodePositionRange>
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main(): Unit {
     // 创建 CompositeType 实例
@@ -3241,7 +3241,7 @@ public init(cond: Array<AtomicCondition>, comments!: Array<Comment> = [])
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main() {
     // 创建 cond
@@ -3281,7 +3281,7 @@ public func getAndsPos(): Array<CodePositionRange>
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main(): Unit {
     // 创建 cond
@@ -3352,7 +3352,7 @@ public init(litConstExpr: LitConstExpr, comments!: Array<Comment> = [])
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main() {
     // 创建 litConstExpr
@@ -3405,7 +3405,7 @@ public init(comments!: Array<Comment> = [])
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main() {
     // 创建 ContinueExpr 实例
@@ -3531,7 +3531,7 @@ public init(cond: Array<ConjunctionCondition>, comments!: Array<Comment> = [])
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main() {
     // 创建 cond
@@ -3571,7 +3571,7 @@ public func getOrsPos(): Array<CodePositionRange>
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main(): Unit {
     // 创建 cond
@@ -3651,7 +3651,7 @@ public init(body: Block, condition: Expr, comments!: Array<Comment> = [])
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main() {
     // 创建循环体
@@ -3693,7 +3693,7 @@ public func getCondLParenPos(): CodePositionRange
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main(): Unit {
     // 创建循环体
@@ -3733,7 +3733,7 @@ public func getCondRParenPos(): CodePositionRange
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main(): Unit {
     // 创建循环体
@@ -3773,7 +3773,7 @@ public func getDoKeyWordPos(): CodePositionRange
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main(): Unit {
     // 创建循环体
@@ -3813,7 +3813,7 @@ public func getWhileKeyWordPos(): CodePositionRange
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main(): Unit {
     // 创建循环体
@@ -3898,7 +3898,7 @@ public init(name: String, paramTyAnnotations: Array<TypeAnnotation>, annotations
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main() {
     // 创建 name
@@ -3944,7 +3944,7 @@ public func getIdentifierPos(): CodePositionRange
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main(): Unit {
     // 创建 EnumConstructor 实例
@@ -3978,7 +3978,7 @@ public func getParamsCommasPos(): Array<CodePositionRange>
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main(): Unit {
     // 创建 EnumConstructor 实例
@@ -4015,7 +4015,7 @@ public func getParamsLParenPos(): Option<CodePositionRange>
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main(): Unit {
     // 创建 EnumConstructor 实例
@@ -4051,7 +4051,7 @@ public func getParamsRParenPos(): Option<CodePositionRange>
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main(): Unit {
     // 创建 EnumConstructor 实例
@@ -4180,7 +4180,7 @@ public init(body: Body, constructors: Array<EnumConstructor>, genericConstraints
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main() {
     // 创建 body
@@ -4244,7 +4244,7 @@ public func getCaseSeparatorsPos(): Array<CodePositionRange>
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main(): Unit {
     // 创建 EnumDecl 实例
@@ -4282,7 +4282,7 @@ public func getEnumKeyWordPos(): CodePositionRange
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main(): Unit {
     // 创建 EnumDecl 实例
@@ -4317,7 +4317,7 @@ public func getGenericParamsCommasPos(): Array<CodePositionRange>
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main(): Unit {
     // 创建 EnumDecl 实例
@@ -4355,7 +4355,7 @@ public func getGenericParamsLAnglePos(): Option<CodePositionRange>
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main(): Unit {
     // 创建 EnumDecl 实例
@@ -4392,7 +4392,7 @@ public func getGenericParamsRAnglePos(): Option<CodePositionRange>
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main(): Unit {
     // 创建 EnumDecl 实例
@@ -4429,7 +4429,7 @@ public func getIdentifierPos(): CodePositionRange
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main(): Unit {
     // 创建 EnumDecl 实例
@@ -4464,7 +4464,7 @@ public func getNonExhaustiveTripleDotPos(): Option<CodePositionRange>
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main(): Unit {
     // 创建 EnumDecl 实例
@@ -4500,7 +4500,7 @@ public func getSuperTyAnnotationsBitAndsPos(): Array<CodePositionRange>
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main(): Unit {
     // 创建 EnumDecl 实例
@@ -4538,7 +4538,7 @@ public func getUpperBoundPos(): Option<CodePositionRange>
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main(): Unit {
     // 创建 EnumDecl 实例
@@ -4625,7 +4625,7 @@ public init(enumConstructor: SymbolRef, enumType: Option<CompositeType>, subPatt
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main() {
     // 创建 enumConstructor
@@ -4670,7 +4670,7 @@ public func getCommasPos(): Array<CodePositionRange>
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main(): Unit {
     // 创建 EnumPattern 实例
@@ -4708,7 +4708,7 @@ public func getDotPos(): Option<CodePositionRange>
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main(): Unit {
     // 创建 EnumPattern 实例
@@ -4746,7 +4746,7 @@ public func getLParenPos(): Option<CodePositionRange>
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main(): Unit {
     // 创建 EnumPattern 实例
@@ -4783,7 +4783,7 @@ public func getRParenPos(): Option<CodePositionRange>
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main(): Unit {
     // 创建 EnumPattern 实例
@@ -4912,7 +4912,7 @@ public init(body: Body, extendedTyAnnotation: TypeAnnotation, genericConstraints
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main() {
     // 创建扩展体，包含一些成员声明
@@ -4972,7 +4972,7 @@ public func getExtendKeyWordPos(): CodePositionRange
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main(): Unit {
     // 创建扩展体
@@ -5029,7 +5029,7 @@ public func getGenericParamsCommasPos(): Array<CodePositionRange>
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main(): Unit {
     // 创建扩展体
@@ -5089,7 +5089,7 @@ public func getGenericParamsLAnglePos(): Option<CodePositionRange>
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main(): Unit {
     // 创建扩展体
@@ -5148,7 +5148,7 @@ public func getGenericParamsRAnglePos(): Option<CodePositionRange>
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main(): Unit {
     // 创建扩展体
@@ -5207,7 +5207,7 @@ public func getSuperTyAnnotationsBitAndsPos(): Array<CodePositionRange>
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main(): Unit {
     // 创建扩展体
@@ -5271,7 +5271,7 @@ public func getUpperBoundPos(): Option<CodePositionRange>
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main(): Unit {
     // 创建扩展体
@@ -5359,7 +5359,7 @@ public init(identifiers: Array<String>, comments!: Array<Comment> = [])
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main() {
     // 创建 identifiers
@@ -5396,7 +5396,7 @@ public func getDotPoses(): Array<CodePositionRange>
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main(): Unit {
     // 创建 identifiers
@@ -5438,7 +5438,7 @@ public func getIdentifierPos(): Array<CodePositionRange>
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main(): Unit {
     // 创建 identifiers
@@ -5521,7 +5521,7 @@ public init(annotations: Array<Annotation>, set: FeaturesSet, comments!: Array<C
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main() {
     // 创建注解
@@ -5566,7 +5566,7 @@ public func getFeaturesKeywordPos(): CodePositionRange
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main(): Unit {
     // 创建注解
@@ -5639,7 +5639,7 @@ public init(features: Array<FeatureId>, comments!: Array<Comment> = [])
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main() {
     // 创建 FeatureId
@@ -5675,7 +5675,7 @@ public func getLCurlPos(): CodePositionRange
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main(): Unit {
     // 创建 FeatureId
@@ -5714,7 +5714,7 @@ public func getRCurlPos(): CodePositionRange
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main(): Unit {
     // 创建 FeatureId
@@ -5753,7 +5753,7 @@ public func getCommaPoses(): Array<CodePositionRange>
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main(): Unit {
     // 创建多个 FeatureId
@@ -5861,7 +5861,7 @@ public init(body: Block, expr: Expr, pattern: Pattern, patternGuard: Option<Expr
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main() {
     // 创建 body
@@ -5911,7 +5911,7 @@ public func getForKeyWordPos(): CodePositionRange
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main(): Unit {
     // 创建 ForInExpr 实例
@@ -5945,7 +5945,7 @@ public func getInKeyWordPos(): CodePositionRange
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main(): Unit {
     // 创建 ForInExpr 实例
@@ -5979,7 +5979,7 @@ public func getLParenPos(): CodePositionRange
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main(): Unit {
     // 创建 ForInExpr 实例
@@ -6013,7 +6013,7 @@ public func getRParenPos(): CodePositionRange
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main(): Unit {
     // 创建 ForInExpr 实例
@@ -6047,7 +6047,7 @@ public func getWhereKeyWordPos(): Option<CodePositionRange>
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main(): Unit {
     // 创建 patternGuard
@@ -6188,7 +6188,7 @@ public init(body: Option<Block>, genericConstraints: Option<GenericConstraints>,
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main() {
     // 创建 body
@@ -6251,7 +6251,7 @@ public func getFuncKeyWordPos(): Option<CodePositionRange>
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main(): Unit {
     // 创建 FuncDecl 实例
@@ -6298,7 +6298,7 @@ public func getFuncKindKeyWordPos(): Option<CodePositionRange>
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main(): Unit {
     // 创建 Operator 类型的 FuncDecl 实例
@@ -6342,7 +6342,7 @@ public func getGenericParamsCommasPos(): Array<CodePositionRange>
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main(): Unit {
     // 创建带有多个泛型参数的 FuncDecl 实例
@@ -6389,7 +6389,7 @@ public func getGenericParamsLAnglePos(): Option<CodePositionRange>
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main(): Unit {
     // 创建带有泛型参数的 FuncDecl 实例
@@ -6432,7 +6432,7 @@ public func getGenericParamsRAnglePos(): Option<CodePositionRange>
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main(): Unit {
     // 创建带有泛型参数的 FuncDecl 实例
@@ -6479,7 +6479,7 @@ public func getIdentifierPos(): CodePositionRange
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main(): Unit {
     // 创建 FuncDecl 实例
@@ -6523,7 +6523,7 @@ public func getRetTyAnnotationColonPos(): Option<CodePositionRange>
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main(): Unit {
     // 创建带有返回类型注解的 FuncDecl 实例
@@ -6637,7 +6637,7 @@ public init(defaultValue: Option<Expr>, kind: Option<VarKind>, name: String, typ
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main() {
     // 创建 defaultValue
@@ -6690,7 +6690,7 @@ public func getAssignPos(): Option<CodePositionRange>
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main(): Unit {
     // 创建 FuncParam 实例
@@ -6726,7 +6726,7 @@ public func getIdentifierPos(): CodePositionRange
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main(): Unit {
     // 创建 FuncParam 实例
@@ -6760,7 +6760,7 @@ public func getNotPos(): Option<CodePositionRange>
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main(): Unit {
     // 创建 FuncParam 实例
@@ -6795,7 +6795,7 @@ public func getTypeAnnotationColonPos(): CodePositionRange
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main(): Unit {
     // 创建 FuncParam 实例
@@ -6829,7 +6829,7 @@ public func getVarKindKeyWordPos(): Option<CodePositionRange>
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main(): Unit {
     // 创建 FuncParam 实例
@@ -6917,7 +6917,7 @@ public init(paramTypes: Array<TypeAnnotation>, labels: Array<String>, retType: T
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main() {
     // 创建 paramTypes
@@ -6962,7 +6962,7 @@ public func getArrowPos(): CodePositionRange
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main(): Unit {
     // 创建 FuncType 实例
@@ -7002,7 +7002,7 @@ public func getColonsPos(): Array<CodePositionRange>
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main(): Unit {
     // 创建 FuncType 实例
@@ -7045,7 +7045,7 @@ public func getCommasPos(): Array<CodePositionRange>
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main(): Unit {
     // 创建 FuncType 实例
@@ -7088,7 +7088,7 @@ public func getLabelsPos(): Array<CodePositionRange>
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main(): Unit {
     // 创建 FuncType 实例
@@ -7131,7 +7131,7 @@ public func getLParenPos(): CodePositionRange
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main(): Unit {
     // 创建 FuncType 实例
@@ -7171,7 +7171,7 @@ public func getRParenPos(): CodePositionRange
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main(): Unit {
     // 创建 FuncType 实例
@@ -7257,7 +7257,7 @@ public init(typeArgument: TypeAnnotation, upperBounds: Array<TypeAnnotation>, co
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main() {
     // 创建 typeArgument
@@ -7298,7 +7298,7 @@ public func getBitAndsPos(): Array<CodePositionRange>
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main(): Unit {
     // 创建 GenericConstraint 实例
@@ -7336,7 +7336,7 @@ public func getUpperBoundPos(): CodePositionRange
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main(): Unit {
     // 创建 GenericConstraint 实例
@@ -7403,7 +7403,7 @@ public init(constraints: Array<GenericConstraint>, comments!: Array<Comment> = [
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main() {
     // 创建 constraints
@@ -7443,7 +7443,7 @@ public func getCommasPos(): Array<CodePositionRange>
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main(): Unit {
     // 创建 GenericConstraints 实例
@@ -7483,7 +7483,7 @@ public func getWhereKeyWordPos(): CodePositionRange
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main(): Unit {
     // 创建 GenericConstraints 实例
@@ -7551,7 +7551,7 @@ public init(name: String, comments!: Array<Comment> = [])
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main() {
     // 创建 name
@@ -7652,7 +7652,7 @@ public init(condition: DisjunctionCondition, elseBlock: Option<Block>, elseIf: O
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main() {
     // 创建 condition
@@ -7707,7 +7707,7 @@ public func getCondLParenPos(): CodePositionRange
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main(): Unit {
     // 创建 condition
@@ -7747,7 +7747,7 @@ public func getCondRParenPos(): CodePositionRange
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main(): Unit {
     // 创建 condition
@@ -7787,7 +7787,7 @@ public func getElseKeyWordPos(): Option<CodePositionRange>
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main(): Unit {
     // 创建 condition
@@ -7831,7 +7831,7 @@ public func getIfKeyWordPos(): CodePositionRange
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main(): Unit {
     // 创建 condition
@@ -7912,7 +7912,7 @@ public init(prefixes: Array<String>, identifier: String, alias: String, comments
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main() {
     // 创建 prefixes
@@ -7957,7 +7957,7 @@ public func getAliasNamePos(): CodePositionRange
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main(): Unit {
     // 创建 ImportAlias 实例
@@ -7991,7 +7991,7 @@ public func getAsPos(): CodePositionRange
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main(): Unit {
     // 创建 ImportAlias 实例
@@ -8025,7 +8025,7 @@ public func getIdentifierPos(): CodePositionRange
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main(): Unit {
     // 创建 ImportAlias 实例
@@ -8074,7 +8074,7 @@ public init(prefixes: Array<String>, comments!: Array<Comment> = [])
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main() {
     // 创建 prefixes
@@ -8111,7 +8111,7 @@ public func getMulPos(): CodePositionRange
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main(): Unit {
     // 创建 ImportAll 实例
@@ -8167,7 +8167,7 @@ public func getDotsPos(): Array<CodePositionRange>
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main(): Unit {
     // 使用 ImportSingle 子类来演示
@@ -8204,7 +8204,7 @@ public func getPrefixesPos(): Array<CodePositionRange>
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main(): Unit {
     // 使用 ImportSingle 子类来演示
@@ -8293,7 +8293,7 @@ public init(contents: ImportContent, modifier: Option<Modifier>, comments!: Arra
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main() {
     // 创建 contents
@@ -8334,7 +8334,7 @@ public func getImportKeyWordPos(): CodePositionRange
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main(): Unit {
     // 创建 ImportList 实例
@@ -8399,7 +8399,7 @@ public init(prefixes: Array<String>, contents: Array<ImportContent>, comments!: 
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main() {
     // 创建 prefixes
@@ -8440,7 +8440,7 @@ public func getCommasPos(): Array<CodePositionRange>
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main(): Unit {
     // 创建 ImportMulti 实例
@@ -8477,7 +8477,7 @@ public func getLCurlPos(): CodePositionRange
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main(): Unit {
     // 创建 ImportMulti 实例
@@ -8512,7 +8512,7 @@ public func getRCurlPos(): CodePositionRange
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main(): Unit {
     // 创建 ImportMulti 实例
@@ -8577,7 +8577,7 @@ public init(prefixes: Array<String>, identifier: String, comments!: Array<Commen
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main() {
     // 创建 prefixes
@@ -8618,7 +8618,7 @@ public func getIdentifierPos(): CodePositionRange
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main(): Unit {
     // 创建 ImportSingle 实例
@@ -8688,7 +8688,7 @@ public init(kind: IncOrDecOpKind, operand: Expr, comments!: Array<Comment> = [])
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main() {
     // 创建 kind
@@ -8729,7 +8729,7 @@ public func getOperatorPos(): CodePositionRange
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main(): Unit {
     // 创建 kind
@@ -8850,7 +8850,7 @@ public init(body: Body, genericConstraints: Option<GenericConstraints>, genericP
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main() {
     // 创建 body
@@ -8904,7 +8904,7 @@ public func getGenericParamsCommasPos(): Array<CodePositionRange>
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main(): Unit {
     // 创建 InterfaceDecl 实例
@@ -8945,7 +8945,7 @@ public func getGenericParamsLAnglePos(): Option<CodePositionRange>
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main(): Unit {
     // 创建 InterfaceDecl 实例
@@ -8982,7 +8982,7 @@ public func getGenericParamsRAnglePos(): Option<CodePositionRange>
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main(): Unit {
     // 创建 InterfaceDecl 实例
@@ -9019,7 +9019,7 @@ public func getIdentifierPos(): CodePositionRange
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main(): Unit {
     // 创建 InterfaceDecl 实例
@@ -9056,7 +9056,7 @@ public func getInterfaceKeyWordPos(): CodePositionRange
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main(): Unit {
     // 创建 InterfaceDecl 实例
@@ -9093,7 +9093,7 @@ public func getSuperTyAnnotationsBitAndsPos(): Array<CodePositionRange>
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main(): Unit {
     // 创建 InterfaceDecl 实例
@@ -9133,7 +9133,7 @@ public func getUpperBoundPos(): Option<CodePositionRange>
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main(): Unit {
     // 创建 InterfaceDecl 实例
@@ -9208,7 +9208,7 @@ public init(srcVal: Expr, targetTypeAnnotation: TypeAnnotation, comments!: Array
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main() {
     // 创建 srcVal
@@ -9249,7 +9249,7 @@ public func getIsKeyWordPos(): CodePositionRange
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main(): Unit {
     // 创建 srcVal
@@ -9327,7 +9327,7 @@ public init(body: Array<SyntaxTreeNode>, params: ParameterList, comments!: Array
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main() {
     // 创建 body
@@ -9368,7 +9368,7 @@ public func getDoubleArrowPos(): Option<CodePositionRange>
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main(): Unit {
     // 创建 Lambda 实例
@@ -9405,7 +9405,7 @@ public func getLCurlPos(): CodePositionRange
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main(): Unit {
     // 创建 Lambda 实例
@@ -9441,7 +9441,7 @@ public func getRCurlPos(): CodePositionRange
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main(): Unit {
     // 创建 Lambda 实例
@@ -9519,7 +9519,7 @@ public init(name: String, typeAnnotation: Option<TypeAnnotation>, comments!: Arr
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main() {
     // 创建 name
@@ -9560,7 +9560,7 @@ public func getIdentifierPos(): CodePositionRange
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main(): Unit {
     // 创建 LambdaParam 实例
@@ -9594,7 +9594,7 @@ public func getTypeAnnotationColonPos(): Option<CodePositionRange>
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main(): Unit {
     // 创建 LambdaParam 实例
@@ -9671,7 +9671,7 @@ public init(expr: Expr, patterns: Array<Pattern>, comments!: Array<Comment> = []
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main() {
     // 创建 expr
@@ -9712,7 +9712,7 @@ public func getBackArrowPos(): CodePositionRange
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main(): Unit {
     // 创建 expr
@@ -9752,7 +9752,7 @@ public func getBitOrsPos(): Array<CodePositionRange>
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main(): Unit {
     // 创建 expr
@@ -9799,7 +9799,7 @@ public func getLetKeyWordPos(): CodePositionRange
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main(): Unit {
     // 创建 expr
@@ -9885,7 +9885,7 @@ public init(kind: LitConstKind, rawValue: String, comments!: Array<Comment> = []
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main() {
     // 设置字面量类型
@@ -9963,7 +9963,7 @@ public init(kind: LitConstKind, rawValue: String, isSingleQuote: Bool, comments!
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main() {
     // 设置字面量类型
@@ -10075,7 +10075,7 @@ public init(kind: LitConstKind, rawValue: String, delimiterNum: Int64, isSingleQ
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main() {
     // 创建 kind
@@ -10132,7 +10132,7 @@ public func hasInterpolation(): Bool
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main(): Unit {
     // 创建 LitConstStrExpr 实例
@@ -10234,7 +10234,7 @@ public init(body: Block, name: String, params: ParameterList, retTyAnnotation: O
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main() {
     // 创建 body
@@ -10284,7 +10284,7 @@ public func getIdentifierPos(): CodePositionRange
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main(): Unit {
     // 创建 MacroDecl 实例
@@ -10320,7 +10320,7 @@ public func getMacroKeyWordPos(): CodePositionRange
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main(): Unit {
     // 创建 MacroDecl 实例
@@ -10356,7 +10356,7 @@ public func getRetTyAnnotationColonPos(): Option<CodePositionRange>
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main(): Unit {
     // 创建 MacroDecl 实例
@@ -10450,7 +10450,7 @@ public init(calleeMacro: Expr, macroAttrs: Tokens, macroInputs: MacroExpandInput
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main() {
     // 创建 calleeMacro
@@ -10505,7 +10505,7 @@ public func getAtPos(): CodePositionRange
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main() {
     // 创建 calleeMacro
@@ -10561,7 +10561,7 @@ public func getLParenPos(): Option<CodePositionRange>
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main() {
     // 创建 calleeMacro
@@ -10621,7 +10621,7 @@ public func getLSquarePos(): Option<CodePositionRange>
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main() {
     // 创建 calleeMacro
@@ -10678,7 +10678,7 @@ public func getRParenPos(): Option<CodePositionRange>
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main() {
     // 创建 calleeMacro
@@ -10738,7 +10738,7 @@ public func getRSquarePos(): Option<CodePositionRange>
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main() {
     // 创建 calleeMacro
@@ -10848,7 +10848,7 @@ public init(calleeMacro: Expr, macroAttrs: Tokens, macroInputs: MacroExpandInput
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main() {
     // 创建 calleeMacro
@@ -10902,7 +10902,7 @@ public func getAtPos(): CodePositionRange
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main() {
     // 创建 calleeMacro
@@ -10952,7 +10952,7 @@ public func getLParenPos(): Option<CodePositionRange>
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main() {
     // 创建 calleeMacro
@@ -11003,7 +11003,7 @@ public func getLSquarePos(): Option<CodePositionRange>
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main() {
     // 创建 calleeMacro
@@ -11054,7 +11054,7 @@ public func getRParenPos(): Option<CodePositionRange>
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main() {
     // 创建 calleeMacro
@@ -11105,7 +11105,7 @@ public func getRSquarePos(): Option<CodePositionRange>
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main() {
     // 创建 calleeMacro
@@ -11212,7 +11212,7 @@ public init(calleeMacro: Expr, macroAttrs: Tokens, macroInputs: MacroExpandInput
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main() {
     // 创建 calleeMacro
@@ -11266,7 +11266,7 @@ public func getAtPos(): CodePositionRange
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main(): Unit {
     // 创建 calleeMacro
@@ -11316,7 +11316,7 @@ public func getLParenPos(): Option<CodePositionRange>
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main(): Unit {
     // 创建 calleeMacro
@@ -11367,7 +11367,7 @@ public func getLSquarePos(): Option<CodePositionRange>
 <!-- verify -->
 
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main(): Unit {
     // 创建 calleeMacro
@@ -11417,7 +11417,7 @@ public func getRParenPos(): Option<CodePositionRange>
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main(): Unit {
     // 创建 calleeMacro
@@ -11467,7 +11467,7 @@ public func getRSquarePos(): Option<CodePositionRange>
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main(): Unit {
     // 创建 calleeMacro
@@ -11566,7 +11566,7 @@ public init(body: Block, params: ParameterList, retTyAnnotation: Option<TypeAnno
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main() {
     // 创建 body
@@ -11613,7 +11613,7 @@ public func getMainKeyWordPos(): CodePositionRange
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main(): Unit {
     // 创建 MainDecl 实例
@@ -11649,7 +11649,7 @@ public func getRetTyAnnotationColonPos(): Option<CodePositionRange>
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main(): Unit {
     // 创建 MainDecl 实例
@@ -11751,7 +11751,7 @@ public init(patterns: Array<Pattern>, patternGuardCond: Option<Expr>, caseCond: 
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main() {
     // 创建 patterns
@@ -11797,7 +11797,7 @@ public func getBitOrsPos(): Array<CodePositionRange>
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main(): Unit {
     // 创建 patterns
@@ -11840,7 +11840,7 @@ public func getCasePos(): CodePositionRange
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main(): Unit {
     // 创建 patterns
@@ -11880,7 +11880,7 @@ public func getDoubleArrowPos(): CodePositionRange
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main(): Unit {
     // 创建 patterns
@@ -11920,7 +11920,7 @@ public func getWherePos(): Option<CodePositionRange>
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main(): Unit {
     // 创建 patterns
@@ -12002,7 +12002,7 @@ public init(matchCases: Array<MatchCase>, selector: Option<Expr>, comments!: Arr
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main() {
     // 创建 matchCases
@@ -12045,7 +12045,7 @@ public func getMatchCasesLCurlPos(): CodePositionRange
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main(): Unit {
     // 创建 matchCases
@@ -12082,7 +12082,7 @@ public func getMatchCasesRCurlPos(): CodePositionRange
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main(): Unit {
     // 创建 matchCases
@@ -12119,7 +12119,7 @@ public func getMatchKeyWordPos(): CodePositionRange
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main(): Unit {
     // 创建 matchCases
@@ -12156,7 +12156,7 @@ public func getSelectorLParenPos(): Option<CodePositionRange>
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main(): Unit {
     // 创建 matchCases
@@ -12194,7 +12194,7 @@ public func getSelectorRParenPos(): Option<CodePositionRange>
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main(): Unit {
     // 创建 matchCases
@@ -12274,7 +12274,7 @@ public init(base: SyntaxTreeNode, field: SymbolRef, comments!: Array<Comment> = 
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main() {
     // 创建 base
@@ -12315,7 +12315,7 @@ public func getDotPos(): CodePositionRange
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main(): Unit {
     // 创建 base
@@ -12382,7 +12382,7 @@ public init(kind: ModifierKind, comments!: Array<Comment> = [])
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main() {
     // 创建 ModifierKind
@@ -12446,7 +12446,7 @@ public init(base: Expr, comments!: Array<Comment> = [])
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main() {
     // 创建 SymbolRef 实例
@@ -12481,7 +12481,7 @@ public func getQuestionPos(): CodePositionRange
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main() {
     // 创建 SymbolRef 实例
@@ -12569,7 +12569,7 @@ public init(isMacroPkg: Bool, name: String, srcFile: Array<SourceFile>)
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main() {
     let contents = ImportSingle(["pkg"], "a")
@@ -12643,7 +12643,7 @@ public func toString(): String
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main() {
     let contents = ImportSingle(["pkg"], "a")
@@ -12717,7 +12717,7 @@ public func toTokens(): Tokens
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main() {
     let contents = ImportSingle(["pkg"], "a")
@@ -12843,7 +12843,7 @@ public init(accessModifier: Option<Modifier>, isMacroPkg: Bool, packageNameIdent
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main() {
     // 创建 accessModifier
@@ -12888,7 +12888,7 @@ public func getDotsPos(): Array<CodePositionRange>
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main(): Unit {
     // 创建 PackageHeader 实例
@@ -12924,7 +12924,7 @@ public func getMacroKeyWordPos(): Option<CodePositionRange>
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main(): Unit {
     // 创建 PackageHeader 实例
@@ -12959,7 +12959,7 @@ public func getPackageIdentifiersPos(): Array<CodePositionRange>
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main(): Unit {
     // 创建 PackageHeader 实例
@@ -12996,7 +12996,7 @@ public func getPackageKeyWordPos(): CodePositionRange
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main(): Unit {
     // 创建 PackageHeader 实例
@@ -13030,7 +13030,7 @@ public func getPackageName(): String
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main(): Unit {
     // 创建 PackageHeader 实例
@@ -13065,7 +13065,7 @@ public func getParentPackageName(): String
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main(): Unit {
     // 创建 PackageHeader 实例
@@ -13138,7 +13138,7 @@ public init(parameters: Array<Parameter>, hasParen!: Bool = true, comments!: Arr
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main() {
     let name0 = "x"
@@ -13188,7 +13188,7 @@ public func getParamsCommasPos(): Array<CodePositionRange>
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main() {
     let name0 = "x"
@@ -13243,7 +13243,7 @@ public func getParamsLParenPos(): Option<CodePositionRange>
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main() {
     let name0 = "x"
@@ -13296,7 +13296,7 @@ public func getParamsRParenPos(): Option<CodePositionRange>
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main() {
     let name0 = "x"
@@ -13374,7 +13374,7 @@ public init(cond: DisjunctionCondition, comments!: Array<Comment> = [])
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main() {
     let symbolRef0 = SymbolRef("x", [])
@@ -13423,7 +13423,7 @@ public func getLParenPos(): CodePositionRange
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main() {
     let symbolRef0 = SymbolRef("x", [])
@@ -13474,7 +13474,7 @@ public func getRParenPos(): CodePositionRange
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main() {
     let symbolRef0 = SymbolRef("x", [])
@@ -13550,7 +13550,7 @@ public init(subExpr: Expr, comments!: Array<Comment> = [])
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main() {
     let srcVal = SymbolRef("a", [])
@@ -13591,7 +13591,7 @@ public func getLParenPos(): CodePositionRange
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main() {
     let srcVal = SymbolRef("a", [])
@@ -13634,7 +13634,7 @@ public func getRParenPos(): CodePositionRange
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main() {
     let srcVal = SymbolRef("a", [])
@@ -13704,7 +13704,7 @@ public init(subType: TypeAnnotation, comments!: Array<Comment> = [])
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main() {
     
@@ -13739,7 +13739,7 @@ public func getLParenPos(): CodePositionRange
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main() {
     let subType = AtomicType(AtomicTypeKind.Int64Type)
@@ -13775,7 +13775,7 @@ public func getRParenPos(): CodePositionRange
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main() {
     let subType = AtomicType(AtomicTypeKind.Int64Type)
@@ -13892,7 +13892,7 @@ public init(base: TypeAnnotation, prefixOp: PrefixTypeOpKind, comments!: Array<C
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main() {
     let base = AtomicType(AtomicTypeKind.Int64Type)
@@ -13930,7 +13930,7 @@ public func getOperatorPos(): CodePositionRange
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main() {
     let base = AtomicType(AtomicTypeKind.Int64Type)
@@ -14050,7 +14050,7 @@ public init(getter: Option<PropGetterOrSetter>, name: String, setter: Option<Pro
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main() {
     // 创建 getter
@@ -14104,7 +14104,7 @@ public func getIdentifierPos(): CodePositionRange
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main(): Unit {
     // 创建 PropDecl 实例
@@ -14139,7 +14139,7 @@ public func getLCurlPos(): Option<CodePositionRange>
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main(): Unit {
     // 创建 PropDecl 实例
@@ -14175,7 +14175,7 @@ public func getPropKeyWordPos(): CodePositionRange
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main(): Unit {
     // 创建 PropDecl 实例
@@ -14210,7 +14210,7 @@ public func getRCurlPos(): Option<CodePositionRange>
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main(): Unit {
     // 创建 PropDecl 实例
@@ -14246,7 +14246,7 @@ public func getTyAnnotationColonPos(): CodePositionRange
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main(): Unit {
     // 创建 PropDecl 实例
@@ -14335,7 +14335,7 @@ public init(block: Block, identifier: Option<String>, isGetter: Bool, annotation
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main() {
     let assignOpKind = AssignOpKind.Assign
@@ -14391,7 +14391,7 @@ public func getGetKeyWordPos(): Option<CodePositionRange>
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main() {
     let assignOpKind = AssignOpKind.Assign
@@ -14448,7 +14448,7 @@ public func getIdentifierPos(): Option<CodePositionRange>
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main() {
     let assignOpKind = AssignOpKind.Assign
@@ -14505,7 +14505,7 @@ public func getLParenPos(): CodePositionRange
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main() {
     let assignOpKind = AssignOpKind.Assign
@@ -14561,7 +14561,7 @@ public func getRParenPos(): CodePositionRange
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main() {
     let assignOpKind = AssignOpKind.Assign
@@ -14617,7 +14617,7 @@ public func getSetKeyWordPos(): Option<CodePositionRange>
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main() {
     let assignOpKind = AssignOpKind.Assign
@@ -14701,7 +14701,7 @@ public init(tokensOrRefExpr: Array<QuoteExprContent>, comments!: Array<Comment> 
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main() {
     // 创建 QuoteToken 实例
@@ -14738,7 +14738,7 @@ public func getLParenPos(): CodePositionRange
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main() {
     // 创建 QuoteToken 实例
@@ -14777,7 +14777,7 @@ public func getQuoteKeyWordPos(): CodePositionRange
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main() {
     // 创建 QuoteToken 实例
@@ -14816,7 +14816,7 @@ public func getRParenPos(): CodePositionRange
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main() {
     // 创建 QuoteToken 实例
@@ -14881,7 +14881,7 @@ public init(expr: Expr, hasParen!: Bool = false, comments!: Array<Comment> = [])
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main() {
     let symbolRef = SymbolRef("a", [])
@@ -14918,7 +14918,7 @@ public func getDollarPos(): CodePositionRange
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main() {
     let symbolRef = SymbolRef("a", [])
@@ -14957,7 +14957,7 @@ public func getLParenPos(): Option<CodePositionRange>
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main() {
     let symbolRef = SymbolRef("a", [])
@@ -14997,7 +14997,7 @@ public func getRParenPos(): Option<CodePositionRange>
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main() {
     let symbolRef = SymbolRef("a", [])
@@ -15066,7 +15066,7 @@ public init(content: Tokens, comments!: Array<Comment> = [])
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main() {
     let tokens = quote(hello world)
@@ -15160,7 +15160,7 @@ public init(start: Option<Expr>, kind: RangeKind, end: Option<Expr>, step: Optio
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main() {
     let kind = LitConstKind.IntergerLiteral
@@ -15218,7 +15218,7 @@ public func getColonPos(): Option<CodePositionRange>
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main() {
     let kind = LitConstKind.IntergerLiteral
@@ -15279,7 +15279,7 @@ public func getRangeOpPos(): CodePositionRange
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main() {
     let kind = LitConstKind.IntergerLiteral
@@ -15366,7 +15366,7 @@ public init(retVal: Option<Expr>, comments!: Array<Comment> = [])
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main() {
     let kind = LitConstKind.FloatLiteral
@@ -15409,7 +15409,7 @@ public func getReturnKeyWordPos(): CodePositionRange
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main() {
     let kind = LitConstKind.FloatLiteral
@@ -15542,7 +15542,7 @@ public init(importLists: Array<ImportList>, name: String, path: String, pkgHeade
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main() {
     let contents = ImportSingle(["pkg"], "a")
@@ -15655,7 +15655,7 @@ public init(threadContext: Option<Expr>, trailingLambdaExpr: Lambda, comments!: 
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main() {
     // 创建 LitConstExpr 实例
@@ -15704,7 +15704,7 @@ public func getSpawnKeyWordPos(): CodePositionRange
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main() {
     // 创建 LitConstExpr 实例
@@ -15755,7 +15755,7 @@ public func getThreadContextLParenPos(): Option<CodePositionRange>
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main() {
     // 创建 LitConstExpr 实例
@@ -15807,7 +15807,7 @@ public func getThreadContextRParenPos(): Option<CodePositionRange>
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main() {
     // 创建 LitConstExpr 实例
@@ -15884,7 +15884,7 @@ public init(body: Block, comments!: Array<Comment> = [])
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main() {
     let assignOpKind = AssignOpKind.Assign
@@ -15932,7 +15932,7 @@ public func getInitKeyWordPos(): CodePositionRange
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main() {
     let assignOpKind = AssignOpKind.Assign
@@ -15980,7 +15980,7 @@ public func getParamsLParenPos(): CodePositionRange
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main() {
     let assignOpKind = AssignOpKind.Assign
@@ -16028,7 +16028,7 @@ public func getParamsRParenPos(): CodePositionRange
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main() {
     let assignOpKind = AssignOpKind.Assign
@@ -16076,7 +16076,7 @@ public func getStaticKeyWordPos(): CodePositionRange
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main() {
     let assignOpKind = AssignOpKind.Assign
@@ -16151,7 +16151,7 @@ public init(interpolationBlock: Block, comments!: Array<Comment> = [])
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main() {
     // 创建 interpolationBlock
@@ -16186,7 +16186,7 @@ public func getDollarPos(): CodePositionRange
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main(): Unit {
     // 创建 interpolationBlock
@@ -16304,7 +16304,7 @@ public init(body: Body, genericConstraints: Option<GenericConstraints>, genericP
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main() {
     // 创建 body
@@ -16367,7 +16367,7 @@ public func getGenericParamsCommasPos(): Array<CodePositionRange>
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main() {
     // 创建 body
@@ -16432,7 +16432,7 @@ public func getGenericParamsLAnglePos(): Option<CodePositionRange>
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main() {
     // 创建 body
@@ -16496,7 +16496,7 @@ public func getGenericParamsRAnglePos(): Option<CodePositionRange>
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main() {
     // 创建 body
@@ -16560,7 +16560,7 @@ public func getIdentifierPos(): CodePositionRange
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main() {
     // 创建 body
@@ -16623,7 +16623,7 @@ public func getStructKeyWordPos(): CodePositionRange
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main() {
     // 创建 body
@@ -16686,7 +16686,7 @@ public func getSuperTyAnnotationsBitAndsPos(): Array<CodePositionRange>
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main() {
     // 创建 body
@@ -16751,7 +16751,7 @@ public func getUpperBoundPos(): Option<CodePositionRange>
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main() {
     // 创建 body
@@ -16857,7 +16857,7 @@ public init(base: Expr, indexs: Array<Expr>, comments!: Array<Comment> = [])
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main() {
     // 创建 base
@@ -16901,7 +16901,7 @@ public func getCommasPos(): Array<CodePositionRange>
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main(): Unit {
     // 创建 base
@@ -16948,7 +16948,7 @@ public func getLSquarePos(): CodePositionRange
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main(): Unit {
     // 创建 base
@@ -16988,7 +16988,7 @@ public func getRSquarePos(): CodePositionRange
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main(): Unit {
     // 创建 base
@@ -17068,7 +17068,7 @@ public init(name: String, typeArguments: Array<TypeAnnotation>, comments!: Array
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main() {
     // 创建 name
@@ -17109,7 +17109,7 @@ public func getCommasPos(): Array<CodePositionRange>
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main(): Unit {
     // 创建 typeArguments
@@ -17153,7 +17153,7 @@ public func getIdentifierPos(): CodePositionRange
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main(): Unit {
     // 创建 SymbolRef 实例
@@ -17187,7 +17187,7 @@ public func getLAnglePos(): Option<CodePositionRange>
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main(): Unit {
     // 创建 SymbolRef 实例
@@ -17222,7 +17222,7 @@ public func getRAnglePos(): Option<CodePositionRange>
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main(): Unit {
     // 创建 SymbolRef 实例
@@ -17292,7 +17292,7 @@ public init(block: Block, structuredMutex: Expr, comments!: Array<Comment> = [])
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main() {
     let callee = SymbolRef("foo", [])
@@ -17344,7 +17344,7 @@ public func getLParenPos(): CodePositionRange
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main() {
     let callee = SymbolRef("foo", [])
@@ -17396,7 +17396,7 @@ public func getRParenPos(): CodePositionRange
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main() {
     let callee = SymbolRef("foo", [])
@@ -17448,7 +17448,7 @@ public func getSynchronizedKeyWordPos(): CodePositionRange
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main() {
     let callee = SymbolRef("foo", [])
@@ -17554,7 +17554,7 @@ public func hashCode(): Int64
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main() {
     let quoteToken = QuoteToken(quote(hello world))
@@ -17594,7 +17594,7 @@ public open func toString(): String
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main() {
     let quoteToken = QuoteToken(quote(hello world))
@@ -17634,7 +17634,7 @@ public open func toTokens(): Tokens
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main() {
     let quoteToken = QuoteToken(quote(hello world))
@@ -17675,7 +17675,7 @@ public operator func ==(that: SyntaxTreeNode): Bool
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main() {
     let quoteToken = QuoteToken(quote(hello world))
@@ -17745,7 +17745,7 @@ public init(throwVal: Expr, comments!: Array<Comment> = [])
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main() {
     let callee = SymbolRef("Exception", [])
@@ -17787,7 +17787,7 @@ public func getThrowKeyWordPos(): CodePositionRange
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main() {
     let callee = SymbolRef("Exception", [])
@@ -17882,7 +17882,7 @@ public init(callee: Expr, arguments: Array<Argument>, trailingLambdaExpr: Lambda
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main() {
     // 创建 callee
@@ -17934,7 +17934,7 @@ public func getCommasPos(): Array<CodePositionRange>
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main(): Unit {
     // 创建 callee
@@ -17987,7 +17987,7 @@ public func getLParenPos(): Option<CodePositionRange>
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main(): Unit {
     // 创建 callee
@@ -18034,7 +18034,7 @@ public func getRParenPos(): Option<CodePositionRange>
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main(): Unit {
     // 创建 callee
@@ -18157,7 +18157,7 @@ public init(catchBlocks: Array<Block>, catchPatterns: Array<CatchPattern>, final
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main() {
     // 创建 catchBlocks
@@ -18216,7 +18216,7 @@ public func getCatchKeyWordsPos(): Array<CodePositionRange>
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main(): Unit {
     // 创建 catchBlocks
@@ -18273,7 +18273,7 @@ public func getCatchLParensPos(): Array<CodePositionRange>
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main(): Unit {
     // 创建 catchBlocks
@@ -18330,7 +18330,7 @@ public func getCatchRParensPos(): Array<CodePositionRange>
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main(): Unit {
     // 创建 catchBlocks
@@ -18387,7 +18387,7 @@ public func getFinallyKeyWordPos(): Option<CodePositionRange>
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main(): Unit {
     // 创建 catchBlocks
@@ -18445,7 +18445,7 @@ public func getResourceSpecCommasPos(): Array<CodePositionRange>
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main(): Unit {
     // 创建 catchBlocks
@@ -18505,7 +18505,7 @@ public func getResourceSpecLParenPos(): Option<CodePositionRange>
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main(): Unit {
     // 创建 catchBlocks
@@ -18563,7 +18563,7 @@ public func getResourceSpecRParenPos(): Option<CodePositionRange>
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main(): Unit {
     // 创建 catchBlocks
@@ -18621,7 +18621,7 @@ public func getTryKeyWordPos(): CodePositionRange
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main(): Unit {
     // 创建 catchBlocks
@@ -18703,7 +18703,7 @@ public init(elements: Array<SyntaxTreeNode>, comments!: Array<Comment> = [])
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main() {
     // 创建 LitConstExpr 实例
@@ -18751,7 +18751,7 @@ public func getCommasPos(): Array<CodePositionRange>
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main() {
     // 创建 LitConstExpr 实例
@@ -18804,7 +18804,7 @@ public func getLParenPos(): CodePositionRange
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main() {
     // 创建 LitConstExpr 实例
@@ -18854,7 +18854,7 @@ public func getRParenPos(): CodePositionRange
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main() {
     // 创建 LitConstExpr 实例
@@ -18935,7 +18935,7 @@ public init(subPatterns: Array<Pattern>, comments!: Array<Comment> = [])
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main() {
     // 创建 subPatterns
@@ -18972,7 +18972,7 @@ public func getCommasPos(): Array<CodePositionRange>
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main(): Unit {
     // 创建 subPatterns
@@ -19016,7 +19016,7 @@ public func getLParenPos(): CodePositionRange
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main(): Unit {
     // 创建 subPatterns
@@ -19053,7 +19053,7 @@ public func getRParenPos(): CodePositionRange
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main(): Unit {
     // 创建 subPatterns
@@ -19132,7 +19132,7 @@ public init(labels: Array<String>, elements: Array<TypeAnnotation>, comments!: A
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main() {
     // 创建 AtomicType 实例
@@ -19172,7 +19172,7 @@ public func getColonsPos(): Array<CodePositionRange>
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main() {
     // 创建 AtomicType 实例
@@ -19218,7 +19218,7 @@ public func getCommasPos(): Array<CodePositionRange>
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main() {
     // 创建 AtomicType 实例
@@ -19263,7 +19263,7 @@ public func getLabelsPos(): Array<CodePositionRange>
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main() {
     // 创建 AtomicType 实例
@@ -19309,7 +19309,7 @@ public func getLParenPos(): CodePositionRange
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main() {
     // 创建 AtomicType 实例
@@ -19351,7 +19351,7 @@ public func getRParenPos(): CodePositionRange
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main() {
     // 创建 AtomicType 实例
@@ -19449,7 +19449,7 @@ public init(aliasName: String, originalTyAnnotation: TypeAnnotation, typeParamet
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main() {
     // 创建 CompositeType 实例
@@ -19492,7 +19492,7 @@ public func getAssignPos(): CodePositionRange
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main() {
     // 创建 CompositeType 实例
@@ -19537,7 +19537,7 @@ public func getIdentifierPos(): CodePositionRange
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main() {
     // 创建 CompositeType 实例
@@ -19582,7 +19582,7 @@ public func getTypeAliasKeyWordPos(): CodePositionRange
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main() {
     // 创建 CompositeType 实例
@@ -19677,7 +19677,7 @@ public init(srcVal: Expr, targetTypeAnnotation: AtomicType, comments!: Array<Com
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main() {
     // 创建 LitConstExpr 实例
@@ -19721,7 +19721,7 @@ public func getLParenPos(): CodePositionRange
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main() {
     // 创建 LitConstExpr 实例
@@ -19767,7 +19767,7 @@ public func getRParenPos(): CodePositionRange
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main() {
     // 创建 LitConstExpr 实例
@@ -19855,7 +19855,7 @@ public init(subPattern: Pattern, patternType: TypeAnnotation, comments!: Array<C
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main() {
     // 创建 subPattern
@@ -19896,7 +19896,7 @@ public func getColonPos(): CodePositionRange
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main(): Unit {
     // 创建 subPattern
@@ -19974,7 +19974,7 @@ public init(opKind: UnaryOpKind, operand: Expr, comments!: Array<Comment> = [])
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main() {
     // 创建操作数（使用一个字面量表达式作为操作数）
@@ -20015,7 +20015,7 @@ public func getOperatorPos(): CodePositionRange
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main(): Unit {
     // 创建操作数（使用一个字面量表达式作为操作数）
@@ -20087,7 +20087,7 @@ public init(block: Block, comments!: Array<Comment> = [])
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main() {
     let callee = SymbolRef("foo", [])
@@ -20131,7 +20131,7 @@ public func getUnsafePos(): CodePositionRange
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main() {
     let callee = SymbolRef("foo", [])
@@ -20256,7 +20256,7 @@ public init(initializer: Option<Expr>, kind: VarKind, name: String, pattern: Pat
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main() {
     // 创建 initializer
@@ -20309,7 +20309,7 @@ public func getAssignPos(): Option<CodePositionRange>
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main(): Unit {
     // 创建 initializer
@@ -20347,7 +20347,7 @@ public func getIdentifierPos(): Option<CodePositionRange>
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main(): Unit {
     // 创建 initializer
@@ -20385,7 +20385,7 @@ public func getTyAnnotationColonPos(): Option<CodePositionRange>
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main(): Unit {
     // 创建 initializer
@@ -20423,7 +20423,7 @@ public func getVarKindKeyWordPos(): CodePositionRange
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main(): Unit {
     // 创建 initializer
@@ -20491,7 +20491,7 @@ public init(identifier: String, comments!: Array<Comment> = [])
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main() {
     // 创建 identifier
@@ -20559,7 +20559,7 @@ public init(name: String, comments!: Array<Comment> = [])
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main() {
     // 创建 VarPattern 实例
@@ -20633,7 +20633,7 @@ public init(argument: Argument, vArrayType: VArrayType, comments!: Array<Comment
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main() {
     let symbolRef = SymbolRef("i", [])
@@ -20688,7 +20688,7 @@ public func getLParenPos(): CodePositionRange
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main() {
     let symbolRef = SymbolRef("i", [])
@@ -20745,7 +20745,7 @@ public func getRParenPos(): CodePositionRange
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main() {
     let symbolRef = SymbolRef("i", [])
@@ -20844,7 +20844,7 @@ public init(elementType: TypeAnnotation, size: Int64, comments!: Array<Comment> 
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main() {
     let elementType = AtomicType(AtomicTypeKind.Int64Type)
@@ -20878,7 +20878,7 @@ public func getCommaPos(): CodePositionRange
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main() {
     let elementType = AtomicType(AtomicTypeKind.Int64Type)
@@ -20914,7 +20914,7 @@ public func getDollarPos(): CodePositionRange
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main() {
     let elementType = AtomicType(AtomicTypeKind.Int64Type)
@@ -20950,7 +20950,7 @@ public func getLAnglePos(): CodePositionRange
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main() {
     let elementType = AtomicType(AtomicTypeKind.Int64Type)
@@ -20986,7 +20986,7 @@ public func getRAnglePos(): CodePositionRange
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main() {
     let elementType = AtomicType(AtomicTypeKind.Int64Type)
@@ -21022,7 +21022,7 @@ public func getVArrayPos(): CodePositionRange
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main() {
     let elementType = AtomicType(AtomicTypeKind.Int64Type)
@@ -21096,7 +21096,7 @@ public init(body: Block, condition: DisjunctionCondition, comments!: Array<Comme
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main(): Unit {
     // 创建 body
@@ -21136,7 +21136,7 @@ public func getCondLParenPos(): CodePositionRange
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main(): Unit {
     // 创建 WhileExpr 实例
@@ -21172,7 +21172,7 @@ public func getCondRParenPos(): CodePositionRange
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main(): Unit {
     // 创建 WhileExpr 实例
@@ -21208,7 +21208,7 @@ public func getWhileKeyWordPos(): CodePositionRange
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main(): Unit {
     // 创建 WhileExpr 实例
@@ -21258,7 +21258,7 @@ public init(comments!: Array<Comment> = [])
 
 <!-- verify -->
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 main() {
     // 创建 WildcardPattern 实例

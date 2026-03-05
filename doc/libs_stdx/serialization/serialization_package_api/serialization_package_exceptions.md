@@ -27,7 +27,7 @@ public init()
 
 <!-- verify -->
 ```cangjie
-import stdx.serialization.serialization.*
+import cangjie_stdx::serialization.serialization.*
 
 main() {
     try {
@@ -63,7 +63,7 @@ public init(message: String)
 
 <!-- verify -->
 ```cangjie
-import stdx.serialization.serialization.*
+import cangjie_stdx::serialization.serialization.*
 
 main() {
     try {

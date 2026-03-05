@@ -40,7 +40,7 @@ public static let compact: WriteConfig
 <!-- verify -->
 ```cangjie
 import std.io.*
-import stdx.encoding.json.stream.*
+import cangjie_stdx::encoding.json.stream.*
 
 main() {
     // 创建使用compact配置的JsonWriter 
@@ -94,7 +94,7 @@ public static let pretty: WriteConfig
 <!-- verify -->
 ```cangjie
 import std.io.*
-import stdx.encoding.json.stream.*
+import cangjie_stdx::encoding.json.stream.*
 
 main() {
     // 创建使用pretty配置的JsonWriter 
@@ -143,7 +143,7 @@ public mut prop dateTimeFormat: String
 ```cangjie
 import std.io.*
 import std.time.*
-import stdx.encoding.json.stream.*
+import cangjie_stdx::encoding.json.stream.*
 
 main() {
     // 创建使用pretty配置的JsonWriter 
@@ -196,7 +196,7 @@ public mut prop htmlSafe: Bool
 <!-- verify -->
 ```cangjie
 import std.io.*
-import stdx.encoding.json.stream.*
+import cangjie_stdx::encoding.json.stream.*
 
 main() {
     // 创建使用pretty配置的JsonWriter 
@@ -253,7 +253,7 @@ public mut prop indent: String
 <!-- verify -->
 ```cangjie
 import std.io.*
-import stdx.encoding.json.stream.*
+import cangjie_stdx::encoding.json.stream.*
 
 main() {
     // 创建使用compact配置的JsonWriter 
@@ -310,7 +310,7 @@ public mut prop newline: String
 <!-- verify -->
 ```cangjie
 import std.io.*
-import stdx.encoding.json.stream.*
+import cangjie_stdx::encoding.json.stream.*
 
 main() {
     // 创建使用compact配置的JsonWriter 
@@ -366,7 +366,7 @@ public mut prop useSpaceAfterSeparators: Bool
 <!-- verify -->
 ```cangjie
 import std.io.*
-import stdx.encoding.json.stream.*
+import cangjie_stdx::encoding.json.stream.*
 
 main() {
     // 创建使用compact配置的JsonWriter 

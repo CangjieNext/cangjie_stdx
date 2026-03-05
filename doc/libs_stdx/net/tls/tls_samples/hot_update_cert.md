@@ -5,8 +5,8 @@
 <!-- run -->
 ```cangjie
 import std.net.StreamingSocket
-import stdx.crypto.common.{Certificate, PrivateKey}
-import stdx.net.tls.*
+import cangjie_stdx::crypto.common.{Certificate, PrivateKey}
+import cangjie_stdx::net.tls.*
 
 class MyServer {
     private var currentConfig: TlsServerConfig

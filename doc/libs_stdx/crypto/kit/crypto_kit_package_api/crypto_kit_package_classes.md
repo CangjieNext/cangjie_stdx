@@ -44,8 +44,8 @@ func certificateFromDer(encoded: DerBlob): Certificate
 import std.fs.*
 import std.io.*
 import std.process.*
-import stdx.crypto.kit.*
-import stdx.crypto.common.*
+import cangjie_stdx::crypto.kit.*
+import cangjie_stdx::crypto.common.*
 
 main() {
     // 创建默认的CryptoKit实例
@@ -110,7 +110,7 @@ func certificateFromPem(text: String): Array<Certificate>
 import std.fs.*
 import std.io.*
 import std.process.*
-import stdx.crypto.kit.*
+import cangjie_stdx::crypto.kit.*
 
 main() {
     // 创建默认的CryptoKit实例
@@ -176,8 +176,8 @@ func dhParametersFromDer(encoded: DerBlob): DHParameters
 import std.fs.*
 import std.io.*
 import std.process.*
-import stdx.crypto.kit.*
-import stdx.crypto.common.*
+import cangjie_stdx::crypto.kit.*
+import cangjie_stdx::crypto.common.*
 
 main() {
     // 创建默认的CryptoKit实例
@@ -239,7 +239,7 @@ func dhParametersFromPem(text: String): DHParameters
 import std.fs.*
 import std.io.*
 import std.process.*
-import stdx.crypto.kit.*
+import cangjie_stdx::crypto.kit.*
 
 main() {
     // 创建默认的CryptoKit实例
@@ -289,8 +289,8 @@ func getRandomGen(): RandomGenerator
 
 <!-- run -->
 ```cangjie
-import stdx.crypto.kit.*
-import stdx.crypto.common.*
+import cangjie_stdx::crypto.kit.*
+import cangjie_stdx::crypto.common.*
 
 main() {
     // 创建默认的CryptoKit实例
@@ -340,8 +340,8 @@ func privateKeyFromDer(encoded: DerBlob): PrivateKey
 import std.fs.*
 import std.io.*
 import std.process.*
-import stdx.crypto.kit.*
-import stdx.crypto.common.*
+import cangjie_stdx::crypto.kit.*
+import cangjie_stdx::crypto.common.*
 
 main() {
     // 创建默认的CryptoKit实例
@@ -405,8 +405,8 @@ func privateKeyFromDer(encoded: DerBlob, password!: ?String): PrivateKey
 import std.fs.*
 import std.io.*
 import std.process.*
-import stdx.crypto.kit.*
-import stdx.crypto.common.*
+import cangjie_stdx::crypto.kit.*
+import cangjie_stdx::crypto.common.*
 
 main() {
     // 创建默认的CryptoKit实例
@@ -470,7 +470,7 @@ func privateKeyFromPem(text: String): PrivateKey
 import std.fs.*
 import std.io.*
 import std.process.*
-import stdx.crypto.kit.*
+import cangjie_stdx::crypto.kit.*
 
 main() {
     // 创建默认的CryptoKit实例
@@ -533,7 +533,7 @@ func privateKeyFromPem(text: String, password!: ?String): PrivateKey
 import std.fs.*
 import std.io.*
 import std.process.*
-import stdx.crypto.kit.*
+import cangjie_stdx::crypto.kit.*
 
 main() {
     // 创建默认的CryptoKit实例
@@ -597,8 +597,8 @@ func publicKeyFromDer(encoded: DerBlob): PublicKey
 import std.fs.*
 import std.io.*
 import std.process.*
-import stdx.crypto.kit.*
-import stdx.crypto.common.*
+import cangjie_stdx::crypto.kit.*
+import cangjie_stdx::crypto.common.*
 
 main() {
     // 创建默认的CryptoKit实例
@@ -664,7 +664,7 @@ func publicKeyFromPem(text: String): PublicKey
 import std.fs.*
 import std.io.*
 import std.process.*
-import stdx.crypto.kit.*
+import cangjie_stdx::crypto.kit.*
 
 main() {
     // 创建默认的CryptoKit实例

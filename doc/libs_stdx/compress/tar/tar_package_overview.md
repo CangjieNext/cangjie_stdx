@@ -1,4 +1,4 @@
-# stdx.compress.tar
+# cangjie_stdx::compress.tar
 
 ## 功能介绍
 
@@ -10,7 +10,7 @@ compress.tar 提供了归档和读取功能。
 
 > **说明：**
 >
-> 要进行文件压缩请使用 stdx.compress.zlib 进行压缩或使用 stdx.compress 的组合工具 TarGzip 进行归档压缩操作。
+> 要进行文件压缩请使用 cangjie_stdx::compress.zlib 进行压缩或使用 cangjie_stdx::compress 的组合工具 TarGzip 进行归档压缩操作。
 
 ## API 列表
 

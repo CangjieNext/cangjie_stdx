@@ -35,8 +35,8 @@ public func getTlsClient(socket: StreamingSocket, config: TlsConfig, session!: ?
 <!-- verify -->
 ```cangjie
 import std.net.*
-import stdx.net.tls.*
-import stdx.net.tls.common.*
+import cangjie_stdx::net.tls.*
+import cangjie_stdx::net.tls.common.*
 
 main() {
     // 创建默认 TLS 套件
@@ -89,9 +89,9 @@ public func getTlsServer(socket: StreamingSocket, config: TlsConfig, session!: ?
 import std.fs.*
 import std.io.*
 import std.process.*
-import stdx.crypto.x509.*
-import stdx.crypto.keys.*
-import stdx.net.tls.*
+import cangjie_stdx::crypto.x509.*
+import cangjie_stdx::crypto.keys.*
+import cangjie_stdx::net.tls.*
 import std.net.*
 
 main() {
@@ -158,7 +158,7 @@ public func getTlsServerSession(name: String): TlsSession
 
 <!-- verify -->
 ```cangjie
-import stdx.net.tls.*
+import cangjie_stdx::net.tls.*
 
 main() {
     // 创建默认 TLS 套件
@@ -215,8 +215,8 @@ public var keylogCallback: ?(TlsSocket, String) -> Unit = None
 import std.fs.*
 import std.io.*
 import std.process.*
-import stdx.crypto.x509.*
-import stdx.net.tls.*
+import cangjie_stdx::crypto.x509.*
+import cangjie_stdx::net.tls.*
 
 main() {
     // 定义证书和私钥文件
@@ -283,8 +283,8 @@ public mut prop certificate: ?(Array<Certificate>, PrivateKey)
 import std.fs.*
 import std.io.*
 import std.process.*
-import stdx.crypto.x509.*
-import stdx.net.tls.*
+import cangjie_stdx::crypto.x509.*
+import cangjie_stdx::net.tls.*
 
 main() {
     // 定义证书和私钥文件
@@ -342,8 +342,8 @@ public mut prop clientIdentityRequired: TlsClientIdentificationMode
 import std.fs.*
 import std.io.*
 import std.process.*
-import stdx.crypto.x509.*
-import stdx.net.tls.*
+import cangjie_stdx::crypto.x509.*
+import cangjie_stdx::net.tls.*
 
 main() {
     // 定义证书和私钥文件
@@ -391,8 +391,8 @@ public mut prop dhParameters: ?DHParameters
 import std.fs.*
 import std.io.*
 import std.process.*
-import stdx.crypto.x509.*
-import stdx.net.tls.*
+import cangjie_stdx::crypto.x509.*
+import cangjie_stdx::net.tls.*
 
 main() {
     // 定义证书和私钥文件
@@ -450,8 +450,8 @@ public mut prop securityLevel: Int32
 import std.fs.*
 import std.io.*
 import std.process.*
-import stdx.crypto.x509.*
-import stdx.net.tls.*
+import cangjie_stdx::crypto.x509.*
+import cangjie_stdx::net.tls.*
 
 main() {
     // 定义证书和私钥文件
@@ -509,8 +509,8 @@ public mut prop supportedAlpnProtocols: Array<String>
 import std.fs.*
 import std.io.*
 import std.process.*
-import stdx.crypto.x509.*
-import stdx.net.tls.*
+import cangjie_stdx::crypto.x509.*
+import cangjie_stdx::net.tls.*
 
 main() {
     // 定义证书和私钥文件
@@ -569,9 +569,9 @@ import std.fs.*
 import std.io.*
 import std.process.*
 import std.collection.*
-import stdx.crypto.x509.*
-import stdx.net.tls.*
-import stdx.net.tls.common.*
+import cangjie_stdx::crypto.x509.*
+import cangjie_stdx::net.tls.*
+import cangjie_stdx::net.tls.common.*
 
 main() {
     // 定义证书和私钥文件
@@ -622,9 +622,9 @@ public mut prop supportedVersions: Array<TlsVersion>
 import std.fs.*
 import std.io.*
 import std.process.*
-import stdx.crypto.x509.*
-import stdx.net.tls.*
-import stdx.net.tls.common.*
+import cangjie_stdx::crypto.x509.*
+import cangjie_stdx::net.tls.*
+import cangjie_stdx::net.tls.common.*
 
 main() {
     // 定义证书和私钥文件
@@ -678,9 +678,9 @@ public mut prop verifyMode: CertificateVerifyMode
 import std.fs.*
 import std.io.*
 import std.process.*
-import stdx.crypto.x509.*
-import stdx.net.tls.*
-import stdx.net.tls.common.*
+import cangjie_stdx::crypto.x509.*
+import cangjie_stdx::net.tls.*
+import cangjie_stdx::net.tls.common.*
 
 main() {
     // 定义证书和私钥文件
@@ -742,8 +742,8 @@ public init(certChain: Array<X509Certificate>, signCallback: KeylessSignFunc, de
 import std.fs.*
 import std.io.*
 import std.process.*
-import stdx.crypto.x509.*
-import stdx.net.tls.*
+import cangjie_stdx::crypto.x509.*
+import cangjie_stdx::net.tls.*
 
 main() {
     // 定义证书和私钥文件
@@ -809,10 +809,10 @@ import std.io.*
 import std.fs.*
 import std.net.*
 import std.process.*
-import stdx.net.tls.*
-import stdx.crypto.x509.*
-import stdx.crypto.keys.*
-import stdx.net.tls.common.*
+import cangjie_stdx::net.tls.*
+import cangjie_stdx::crypto.x509.*
+import cangjie_stdx::crypto.keys.*
+import cangjie_stdx::net.tls.common.*
 
 main() {
     // 定义证书和私钥文件路径
@@ -1000,7 +1000,7 @@ public static func fromName(name: String): TlsServerSession
 
 <!-- verify -->
 ```cangjie
-import stdx.net.tls.*
+import cangjie_stdx::net.tls.*
 
 main() {
     // 通过名称创建 TLS 服务端会话
@@ -1033,7 +1033,7 @@ public override func toString(): String
 
 <!-- verify -->
 ```cangjie
-import stdx.net.tls.*
+import cangjie_stdx::net.tls.*
 
 main() {
     // 创建 TLS 服务端会话
@@ -1073,7 +1073,7 @@ public override operator func !=(other: TlsServerSession): Bool
 
 <!-- verify -->
 ```cangjie
-import stdx.net.tls.*
+import cangjie_stdx::net.tls.*
 
 main() {
     // 创建两个不同名称的 TLS 服务端会话
@@ -1118,7 +1118,7 @@ public override operator func ==(other: TlsServerSession): Bool
 
 <!-- verify -->
 ```cangjie
-import stdx.net.tls.*
+import cangjie_stdx::net.tls.*
 
 main() {
     // 创建两个相同名称的 TLS 服务端会话
@@ -1287,10 +1287,10 @@ import std.io.*
 import std.fs.*
 import std.net.*
 import std.process.*
-import stdx.net.tls.*
-import stdx.crypto.x509.*
-import stdx.crypto.keys.*
-import stdx.net.tls.common.*
+import cangjie_stdx::net.tls.*
+import cangjie_stdx::crypto.x509.*
+import cangjie_stdx::crypto.keys.*
+import cangjie_stdx::net.tls.common.*
 
 main() {
     // 定义证书和私钥文件路径
@@ -1390,9 +1390,9 @@ import std.io.*
 import std.fs.*
 import std.net.*
 import std.process.*
-import stdx.net.tls.*
-import stdx.crypto.x509.*
-import stdx.net.tls.common.*
+import cangjie_stdx::net.tls.*
+import cangjie_stdx::crypto.x509.*
+import cangjie_stdx::net.tls.common.*
 
 // 此处私钥仅用于生成证书，该示例采用 Keyless TLS
 let serverKey = "./server.key"
@@ -1511,10 +1511,10 @@ import std.io.*
 import std.fs.*
 import std.net.*
 import std.process.*
-import stdx.net.tls.*
-import stdx.crypto.x509.*
-import stdx.crypto.keys.*
-import stdx.net.tls.common.*
+import cangjie_stdx::net.tls.*
+import cangjie_stdx::crypto.x509.*
+import cangjie_stdx::crypto.keys.*
+import cangjie_stdx::net.tls.common.*
 
 main() {
     // 定义证书和私钥文件路径
@@ -1697,10 +1697,10 @@ import std.io.*
 import std.fs.*
 import std.net.*
 import std.process.*
-import stdx.net.tls.*
-import stdx.crypto.x509.*
-import stdx.crypto.keys.*
-import stdx.net.tls.common.*
+import cangjie_stdx::net.tls.*
+import cangjie_stdx::crypto.x509.*
+import cangjie_stdx::crypto.keys.*
+import cangjie_stdx::net.tls.common.*
 
 main() {
     // 定义证书和私钥文件路径
@@ -1827,10 +1827,10 @@ import std.io.*
 import std.fs.*
 import std.net.*
 import std.process.*
-import stdx.net.tls.*
-import stdx.crypto.x509.*
-import stdx.crypto.keys.*
-import stdx.net.tls.common.*
+import cangjie_stdx::net.tls.*
+import cangjie_stdx::crypto.x509.*
+import cangjie_stdx::crypto.keys.*
+import cangjie_stdx::net.tls.common.*
 
 main() {
     // 定义证书和私钥文件路径

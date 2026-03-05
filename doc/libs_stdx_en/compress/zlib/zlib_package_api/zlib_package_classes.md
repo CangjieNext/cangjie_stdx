@@ -75,7 +75,7 @@ Example:
 
 <!-- verify -->
 ```cangjie
-import stdx.compress.zlib.*
+import cangjie_stdx::compress.zlib.*
 import std.fs.*
 import std.io.*
 
@@ -184,7 +184,7 @@ Example:
 
 <!-- run -->
 ```cangjie
-import stdx.compress.zlib.*
+import cangjie_stdx::compress.zlib.*
 import std.io.*
 
 main(): Unit {
@@ -278,7 +278,7 @@ Example:
 
 <!-- verify -->
 ```cangjie
-import stdx.compress.zlib.*
+import cangjie_stdx::compress.zlib.*
 import std.fs.*
 import std.io.*
 
@@ -397,7 +397,7 @@ Example:
 
 <!-- verify -->
 ```cangjie
-import stdx.compress.zlib.*
+import cangjie_stdx::compress.zlib.*
 import std.fs.*
 import std.io.*
 

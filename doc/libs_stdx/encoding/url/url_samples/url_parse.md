@@ -6,7 +6,7 @@
 
 <!-- verify -->
 ```cangjie
-import stdx.encoding.url.*
+import cangjie_stdx::encoding.url.*
 
 main(): Int64 {
     // 调用 URL 静态函数 parse 解析网址获得名为 url 的对象 

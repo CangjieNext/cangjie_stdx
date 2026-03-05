@@ -3,8 +3,8 @@
 
 ```cangjie
 import std.collection.*
-import stdx.serialization.serialization.*
-import stdx.encoding.json.*
+import cangjie_stdx::serialization.serialization.*
+import cangjie_stdx::encoding.json.*
 
 main(): Unit {
     let s: HashSet<Values> = HashSet<Values>([Values(3), Values(5), Values(7)])

@@ -1,4 +1,4 @@
-# stdx.encoding.base64
+# cangjie_stdx::encoding.base64
 
 ## 功能介绍
 

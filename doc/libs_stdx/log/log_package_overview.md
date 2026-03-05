@@ -1,4 +1,4 @@
-# stdx.log
+# cangjie_stdx::log
 
 ## 功能介绍
 

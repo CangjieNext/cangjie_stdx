@@ -91,27 +91,26 @@ The following platform and architecture combinations are currently supported:
 ## Project Directory
 
 ```text
-/stdx
+/cangjie_stdx
 ├─ build                        # Directory of Engineering Construction
 ├─ doc                          # Directory of STDX library document
 ├─ figures                      # architecture pictures
 ├─ src                          # Directory of STDX package codes                     
-│   └─ stdx
-│       ├── actors              # Provides Actors
-│       ├── aspectCJ            # Provides AOP
-│       ├── compress            # Provides compression and decompression
-│       ├── crypto              # Provide security related capabilities
-│       ├── effect              # Provides user-level APIs for handling the Effect Handler feature. This is an experimental feature and requires the use of a Cangjie compiler that supports this mechanism.
-│       ├── dynamicLoader       # Openssl dynamic loading module
-│       ├── encoding            # Provide JSON and string encoding related capabilities
-│       ├── fuzz                # Provides the Cangjie fuzz engine based on coverage feedback
-│       ├── log                 # Provides logging related
-│       ├── logger              # Provides log printing functions in text format and JSON format
-│       ├── net                 # Provide network communication and other capabilities
-│       ├── serialization       # Provides serialization and deserialization
-│       ├── string_intern       # Provides polled caching capability for string objects
-│       ├── syntax              # Provides syntax parsing functions
-│       └── unittest            # Provides unit testing extension
+│   ├── actors              # Provides Actors
+│   ├── aspectCJ            # Provides AOP
+│   ├── compress            # Provides compression and decompression
+│   ├── crypto              # Provide security related capabilities
+│   ├── effect              # Provides user-level APIs for handling the Effect Handler feature. This is an experimental feature and requires the use of a Cangjie compiler that supports this mechanism.
+│   ├── dynamicLoader       # Openssl dynamic loading module
+│   ├── encoding            # Provide JSON and string encoding related capabilities
+│   ├── fuzz                # Provides the Cangjie fuzz engine based on coverage feedback
+│   ├── log                 # Provides logging related
+│   ├── logger              # Provides log printing functions in text format and JSON format
+│   ├── net                 # Provide network communication and other capabilities
+│   ├── serialization       # Provides serialization and deserialization
+│   ├── string_intern       # Provides polled caching capability for string objects
+│   ├── syntax              # Provides syntax parsing functions
+│   └── unittest            # Provides unit testing extension
 │
 ├─ third_party                  # Directory of third-party components
 └─ target                       # Directory of constructed products
@@ -202,7 +201,7 @@ Add the following configuration to the `cjpm.toml` file of the code project:
 ```toml
 [target.x86_64-w64-mingw32]                                                     # System architecture and OS information
   [target.x86_64-w64-mingw32.bin-dependencies]
-    path-option = ["D:\\cangjiestdx\\windows_x86_64_cjnative\\stdx\\dynamic\\stdx"] # The stdx path is configured according to the actual situation
+    path-option = ["D:\\cangjie_stdx\\windows_x86_64_cjnative\\stdx\\dynamic\\stdx"] # The stdx path is configured according to the actual situation
 ```
 
 explain:
@@ -256,20 +255,20 @@ cjc -L $STATIC_OPENSSL_DIR --link-option "-force_load" --link-option "$STATIC_OP
 
 [target.x86_64-w64-mingw32]                                                     # System architecture and OS information
   [target.x86_64-w64-mingw32.bin-dependencies]
-    path-option = ["D:\\cangjiestdx\\windows_x86_64_cjnative\\stdx\\dynamic\\stdx"] # The stdx path is configured according to the actual situation
+    path-option = ["D:\\cangjie_stdx\\windows_x86_64_cjnative\\stdx\\dynamic\\stdx"] # The stdx path is configured according to the actual situation
 ```
 
 ### Using stdx
 
 In the Cangjie source code file that needs to use `stdx`, import the corresponding package provided by `stdx` through import, and then call the API provided by the package. The import format is:
 
-**import stdx.fullPackageName.itemName**
+**import cangjie_stdx::fullPackageName.itemName**
 
 `fullPackageName` is the package name given in [package list](./doc/libs_stdx_en/libs_overview.md#package-list), `itemName` is the name of a visible declaration or definition,  `*` means importing all visible top-level declarations or definitions, for example:
 
-- import stdx.net.http.ServerBuilder：Import the top-level declaration of ServerBuilder in the net.http package of the stdx module.
-- import stdx.net.http.\* ：Import the net.http package of the stdx module.
-- import stdx.log.\* ：Import the log package from the stdx module.
+- import cangjie_stdx::net.http.ServerBuilder：Import the top-level declaration of ServerBuilder in the net.http package of the stdx module.
+- import cangjie_stdx::net.http.\* ：Import the net.http package of the stdx module.
+- import cangjie_stdx::log.\* ：Import the log package from the stdx module.
 
 ### Usage Examples
 
@@ -300,7 +299,7 @@ Write code: Create an `HTTP` service using the `net.http` package.
 ```cangjie
 package test
 
-import stdx.net.http.ServerBuilder
+import cangjie_stdx::net.http.ServerBuilder
 
 main () {
     // 1. Build a Server instance
