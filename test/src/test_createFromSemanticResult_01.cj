@@ -56,7 +56,6 @@ public class A {
         }
     }
 
-    @Skip
     @TestCase
     func test03() {
         let topLevelDecls = (semaContext.syntaxTree as Package).getOrThrow().srcFile[0].topLevelDecls
@@ -70,13 +69,16 @@ public class A {
         }
     }
 
-    @Skip
     @TestCase
     func test04() {
         let topLevelDecls = (semaContext.syntaxTree as Package).getOrThrow().srcFile[0].topLevelDecls
         let classDecl = (topLevelDecls[0] as ClassDecl).getOrThrow()
         let initFunc = classDecl.body.memberDecls[1]
-        @Expect(initFunc.toString(), "init(a: Int64)")
+        @Expect(initFunc.toString(), """
+public init(a: Int64) {
+        this.a = a
+    }"""
+)
         let declTyInfo = semaContext.getTypeInfo(initFunc)
         match (declTyInfo) {
             case Some(ty: SemanticType) => @Expect(ty.toString(), "(Int64) -> A")
