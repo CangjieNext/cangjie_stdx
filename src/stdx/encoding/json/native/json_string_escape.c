@@ -151,3 +151,184 @@ int64_t CJ_JSON_StringEscapeCharNumGet(const uint8_t* input, int64_t strlen, boo
     }
     return escapeCharacters;
 }
+
+// Optimized: Single-pass string escape with buffer capacity check
+// Returns: number of bytes written, or -1 if buffer is insufficient
+int64_t CJ_JSON_AppendEscapedString(const uint8_t* input, int64_t inputLen, uint8_t* buffer,
+                                     int64_t bufferOffset, int64_t bufferCapacity, bool htmlSafe)
+{
+    uint8_t* pointer = buffer + bufferOffset;
+    const uint8_t* inputPointer = input;
+    int64_t remainlen = inputLen;
+    int64_t written = 0;
+    static uint8_t hex[] = "0123456789abcdef";
+
+    for (; remainlen > 0; inputPointer++, remainlen--) {
+        uint8_t b = *inputPointer;
+
+        // Check buffer capacity (worst case: 6 bytes for \uXXXX)
+        if (written + 6 > bufferCapacity) {
+            return -1;
+        }
+
+        if (b == 0X7f) {
+            *pointer++ = '\\';
+            *pointer++ = 'u';
+            *pointer++ = '0';
+            *pointer++ = '0';
+            *pointer++ = '7';
+            *pointer++ = 'f';
+            written += 6;
+            continue;
+        }
+
+        if ((b >= 32) && (b != '\"') && (b != '\\') && ((!htmlSafe && b == '&') || (b != '&'))) {
+            *pointer++ = b;
+            written++;
+            continue;
+        }
+
+        switch (b) {
+            case '\b':
+                *pointer++ = '\\';
+                *pointer++ = 'b';
+                written += 2;
+                break;
+            case '\f':
+                *pointer++ = '\\';
+                *pointer++ = 'f';
+                written += 2;
+                break;
+            case '\n':
+                *pointer++ = '\\';
+                *pointer++ = 'n';
+                written += 2;
+                break;
+            case '\r':
+                *pointer++ = '\\';
+                *pointer++ = 'r';
+                written += 2;
+                break;
+            case '\t':
+                *pointer++ = '\\';
+                *pointer++ = 't';
+                written += 2;
+                break;
+            case '\\':
+                *pointer++ = '\\';
+                *pointer++ = '\\';
+                written += 2;
+                break;
+            case '\"':
+                *pointer++ = '\\';
+                *pointer++ = '\"';
+                written += 2;
+                break;
+            default:
+                *pointer++ = '\\';
+                *pointer++ = 'u';
+                *pointer++ = '0';
+                *pointer++ = '0';
+                *pointer++ = hex[b >> 4];
+                *pointer++ = hex[b & 0xF];
+                written += 6;
+                break;
+        }
+    }
+    return written;
+}
+
+// Optimized: Parse Int64 directly from byte array
+// Supports decimal, binary (0b), octal (0o), and hexadecimal (0x)
+int64_t CJ_JSON_ParseInt64(const uint8_t* data, int64_t start, int64_t end)
+{
+    if (start >= end) {
+        return 0;
+    }
+
+    int64_t result = 0;
+    int64_t sign = 1;
+    int64_t i = start;
+
+    // Handle sign
+    if (data[i] == '-') {
+        sign = -1;
+        i++;
+    } else if (data[i] == '+') {
+        i++;
+    }
+
+    // Check for number system prefix
+    if (i < end && data[i] == '0' && i + 1 < end) {
+        uint8_t prefix = data[i + 1];
+        if (prefix == 'b' || prefix == 'B') {
+            // Binary
+            i += 2;
+            for (; i < end; i++) {
+                uint8_t c = data[i];
+                if (c >= '0' && c <= '1') {
+                    result = result * 2 + (c - '0');
+                }
+            }
+            return sign * result;
+        } else if (prefix == 'o' || prefix == 'O') {
+            // Octal
+            i += 2;
+            for (; i < end; i++) {
+                uint8_t c = data[i];
+                if (c >= '0' && c <= '7') {
+                    result = result * 8 + (c - '0');
+                }
+            }
+            return sign * result;
+        } else if (prefix == 'x' || prefix == 'X') {
+            // Hexadecimal
+            i += 2;
+            for (; i < end; i++) {
+                uint8_t c = data[i];
+                if (c >= '0' && c <= '9') {
+                    result = result * 16 + (c - '0');
+                } else if (c >= 'a' && c <= 'f') {
+                    result = result * 16 + (c - 'a' + 10);
+                } else if (c >= 'A' && c <= 'F') {
+                    result = result * 16 + (c - 'A' + 10);
+                }
+            }
+            return sign * result;
+        }
+    }
+
+    // Decimal
+    for (; i < end; i++) {
+        uint8_t c = data[i];
+        if (c >= '0' && c <= '9') {
+            result = result * 10 + (c - '0');
+        }
+    }
+
+    return sign * result;
+}
+
+// Optimized: Parse Float64 directly from byte array
+#include <stdlib.h>
+#include <string.h>
+
+double CJ_JSON_ParseFloat64(const uint8_t* data, int64_t start, int64_t end)
+{
+    if (start >= end) {
+        return 0.0;
+    }
+
+    // Create a null-terminated temporary buffer
+    int64_t len = end - start;
+    char temp[512];  // Should be enough for most numbers
+
+    if (len >= 512) {
+        len = 511;  // Truncate if too long
+    }
+
+    memcpy(temp, data + start, len);
+    temp[len] = '\0';
+
+    return strtod(temp, NULL);
+}
