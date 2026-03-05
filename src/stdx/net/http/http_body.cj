@@ -230,7 +230,7 @@ class HttpChunkedBodyProvider <: InputStream & Resource {
     let isReq: Bool
     let conn: BufferedConn
 
-    HttpChunkedBodyProvider(let providerConn: BodyProviderConn, let msg: Object, let timer: HttpTimer) {
+    HttpChunkedBodyProvider(let providerConn: BodyProviderConn, let msg: Object, let timer: HttpTimer, let maxBodySize: Int64) {
         conn = providerConn.getBufferConn()
         match (msg) {
             case req: HttpRequest =>
@@ -293,6 +293,16 @@ class HttpChunkedBodyProvider <: InputStream & Resource {
         if (remainChunkSize == 0) {
             let chunkSize = readChunkSize()
             this.contentLength += chunkSize
+            // Check if total content length exceeds max body size
+            if (this.contentLength > maxBodySize) {
+                timer.cancel()
+                providerConn.closeConn()
+                if (isReq) {
+                    throw HttpStatusException(HttpStatusCode.STATUS_REQUEST_CONTENT_TOO_LARGE, "Request body too large.")
+                } else {
+                    throw HttpException("Response body too large.")
+                }
+            }
             // last-chunk = 1*("0") [ chunk-ext ] CRLF
             if (chunkSize == 0) {
                 eof = true
@@ -409,7 +419,7 @@ class HttpExpectBodyProvider <: InputStream {
         realBody = match {
             case chunked =>
                 request._bodySize = None
-                HttpChunkedBodyProvider(conn, request, timer)
+                HttpChunkedBodyProvider(conn, request, timer, 1024 * 1024 * 10)
             case _ => match (contentLength) {
                 case Some(length) =>
                     request._bodySize = length

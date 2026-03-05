@@ -282,7 +282,7 @@ class HttpEngineConn1 <: HttpEngineConn & BodyProviderConn {
                 case expectContinue => HttpExpectBodyProvider(this, request, chunked, contentLength, readTimer)
                 case chunked =>
                     request._bodySize = None
-                    HttpChunkedBodyProvider(this, request, readTimer)
+                    HttpChunkedBodyProvider(this, request, readTimer, 1024 * 1024 * 10)
                 case _ => match (contentLength) {
                     case Some(contentLength) =>
                         request._bodySize = contentLength

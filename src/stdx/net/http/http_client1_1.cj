@@ -999,7 +999,7 @@ class ConnNode <: BodyProviderConn {
             case None =>
                 checkTrailerInHeader(response.headers, false)
                 response._bodySize = None
-                return HttpChunkedBodyProvider(this, response, readTimer)
+                return HttpChunkedBodyProvider(this, response, readTimer, 1024 * 1024 * 10)
         }
     }
 
