@@ -320,6 +320,24 @@ main () {
  	 
 In addition to integrating stdx binaries, stdx currently supports source code dependency. For detailed usage, see [see Source Code Integration Guidance](./doc/libs_stdx_en/source_code_dependency.md)
 
+## Trae Skills
+
+This repository provides Trae IDE skills to assist with development:
+
+### stdx-contributor
+
+A skill that guides you through the complete workflow for contributing to the Cangjie stdx project, including:
+- Cloning code and checking out dev branch
+- Downloading SDK and building the project
+- Running test cases to verify changes
+- Committing and pushing code, creating PRs
+
+To use this skill, invoke it in Trae IDE when you want to fix bugs, add features, build, test, or submit PRs to cangjie_stdx repository.
+
+### stdx-debugger
+
+A skill for debugging and diagnosing issues in cangjie_stdx library. It helps locate code in stdx modules like http/tls/crypto/encoding etc. Invoke when you encounter stdx bugs, errors, or need to understand module implementations.
+
 ## License
 
 Please see [LICENSE](LICENSE) for more information.

@@ -1,0 +1,16 @@
+# Test Framework Configuration Template
+# Copy this file and modify paths as needed
+
+[test-home]
+# Specify test suite paths, separated by ':'
+dir =
+    /path/to/cangjie_test/testsuites/LLT
+
+[running]
+# Temporary directory for test execution
+temp_dir = /path/to/test_temp/run
+
+[logging]
+# Log directory and level
+name = /path/to/test_temp/log
+level = INFO
