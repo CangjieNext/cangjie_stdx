@@ -27,8 +27,8 @@ public open mut prop level: LogLevel
 
 <!-- run -->
 ```cangjie
-import stdx.log.*
-import stdx.logger.*
+import cangjie_stdx::log.*
+import cangjie_stdx::logger.*
 import std.env.*
 
 main() {
@@ -73,8 +73,8 @@ public func debug(message: () -> String, attrs: Array<Attr>): Unit
 
 <!-- run -->
 ```cangjie
-import stdx.log.*
-import stdx.logger.*
+import cangjie_stdx::log.*
+import cangjie_stdx::logger.*
 import std.env.*
 
 main() {
@@ -111,8 +111,8 @@ public func debug(message: String, attrs: Array<Attr>): Unit
 
 <!-- run -->
 ```cangjie
-import stdx.log.*
-import stdx.logger.*
+import cangjie_stdx::log.*
+import cangjie_stdx::logger.*
 import std.env.*
 
 main() {
@@ -154,8 +154,8 @@ public func enabled(level: LogLevel): Bool
 
 <!-- verify -->
 ```cangjie
-import stdx.log.*
-import stdx.logger.*
+import cangjie_stdx::log.*
+import cangjie_stdx::logger.*
 import std.env.*
 
 main() {
@@ -198,8 +198,8 @@ public func error(message: () -> String, attrs: Array<Attr>): Unit
 
 <!-- run -->
 ```cangjie
-import stdx.log.*
-import stdx.logger.*
+import cangjie_stdx::log.*
+import cangjie_stdx::logger.*
 import std.env.*
 
 main() {
@@ -235,8 +235,8 @@ public func error(message: String, attrs: Array<Attr>): Unit
 
 <!-- run -->
 ```cangjie
-import stdx.log.*
-import stdx.logger.*
+import cangjie_stdx::log.*
+import cangjie_stdx::logger.*
 import std.env.*
 
 main() {
@@ -272,8 +272,8 @@ public func fatal(message: () -> String, attrs: Array<Attr>): Unit
 
 <!-- run -->
 ```cangjie
-import stdx.log.*
-import stdx.logger.*
+import cangjie_stdx::log.*
+import cangjie_stdx::logger.*
 import std.env.*
 
 main() {
@@ -309,8 +309,8 @@ public func fatal(message: String, attrs: Array<Attr>): Unit
 
 <!-- run -->
 ```cangjie
-import stdx.log.*
-import stdx.logger.*
+import cangjie_stdx::log.*
+import cangjie_stdx::logger.*
 import std.env.*
 
 main() {
@@ -346,8 +346,8 @@ public func info(message: () -> String, attrs: Array<Attr>): Unit
 
 <!-- run -->
 ```cangjie
-import stdx.log.*
-import stdx.logger.*
+import cangjie_stdx::log.*
+import cangjie_stdx::logger.*
 import std.env.*
 
 main() {
@@ -383,8 +383,8 @@ public func info(message: String, attrs: Array<Attr>): Unit
 
 <!-- run -->
 ```cangjie
-import stdx.log.*
-import stdx.logger.*
+import cangjie_stdx::log.*
+import cangjie_stdx::logger.*
 import std.env.*
 
 main() {
@@ -421,8 +421,8 @@ public open func log(level: LogLevel, message: () -> String, attrs: Array<Attr>)
 
 <!-- run -->
 ```cangjie
-import stdx.log.*
-import stdx.logger.*
+import cangjie_stdx::log.*
+import cangjie_stdx::logger.*
 import std.env.*
 
 main() {
@@ -459,8 +459,8 @@ public open func log(level: LogLevel, message: String, attrs: Array<Attr>): Unit
 
 <!-- run -->
 ```cangjie
-import stdx.log.*
-import stdx.logger.*
+import cangjie_stdx::log.*
+import cangjie_stdx::logger.*
 import std.env.*
 
 main() {
@@ -495,8 +495,8 @@ public open func log(record: LogRecord): Unit
 
 <!-- run -->
 ```cangjie
-import stdx.log.*
-import stdx.logger.*
+import cangjie_stdx::log.*
+import cangjie_stdx::logger.*
 import std.env.*
 import std.time.*
 
@@ -536,8 +536,8 @@ public func trace(message: () -> String, attrs: Array<Attr>): Unit
 
 <!-- run -->
 ```cangjie
-import stdx.log.*
-import stdx.logger.*
+import cangjie_stdx::log.*
+import cangjie_stdx::logger.*
 import std.env.*
 
 main() {
@@ -574,8 +574,8 @@ public func trace(message: String, attrs: Array<Attr>): Unit
 
 <!-- run -->
 ```cangjie
-import stdx.log.*
-import stdx.logger.*
+import cangjie_stdx::log.*
+import cangjie_stdx::logger.*
 import std.env.*
 import std.collection.*
 
@@ -614,8 +614,8 @@ public func warn(message: () -> String, attrs: Array<Attr>): Unit
 
 <!-- run -->
 ```cangjie
-import stdx.log.*
-import stdx.logger.*
+import cangjie_stdx::log.*
+import cangjie_stdx::logger.*
 import std.env.*
 
 main() {
@@ -651,8 +651,8 @@ public func warn(message: String, attrs: Array<Attr>): Unit
 
 <!-- run -->
 ```cangjie
-import stdx.log.*
-import stdx.logger.*
+import cangjie_stdx::log.*
+import cangjie_stdx::logger.*
 import std.env.*
 
 main() {
@@ -691,8 +691,8 @@ public open func withAttrs(attrs: Array<Attr>): Logger
 
 <!-- run -->
 ```cangjie
-import stdx.log.*
-import stdx.logger.*
+import cangjie_stdx::log.*
+import cangjie_stdx::logger.*
 import std.env.*
 
 main() {
@@ -742,7 +742,7 @@ public mut prop attrs: Array<Attr>
 
 <!-- verify -->
 ```cangjie
-import stdx.log.*
+import cangjie_stdx::log.*
 import std.time.*
 
 main() {
@@ -781,7 +781,7 @@ public prop level: LogLevel
 
 <!-- verify -->
 ```cangjie
-import stdx.log.*
+import cangjie_stdx::log.*
 import std.time.*
 
 main() {
@@ -815,7 +815,7 @@ public mut prop message: String
 
 <!-- verify -->
 ```cangjie
-import stdx.log.*
+import cangjie_stdx::log.*
 import std.time.*
 
 main() {
@@ -854,7 +854,7 @@ public prop time: DateTime
 
 <!-- run -->
 ```cangjie
-import stdx.log.*
+import cangjie_stdx::log.*
 import std.time.*
 
 main() {
@@ -893,7 +893,7 @@ public init(time: DateTime, level: LogLevel, msg: String, attrs: Array<Attr>)
 
 <!-- verify -->
 ```cangjie
-import stdx.log.*
+import cangjie_stdx::log.*
 import std.time.*
 
 main() {
@@ -942,7 +942,7 @@ public func clone(): LogRecord
 
 <!-- verify -->
 ```cangjie
-import stdx.log.*
+import cangjie_stdx::log.*
 import std.time.*
 
 main() {
@@ -994,7 +994,7 @@ public func endArray(): Unit
 
 <!-- verify -->
 ```cangjie
-import stdx.log.*
+import cangjie_stdx::log.*
 import std.collection.*
 import std.time.*
 
@@ -1371,7 +1371,7 @@ public mut prop level: LogLevel
 
 <!-- verify -->
 ```cangjie
-import stdx.log.*
+import cangjie_stdx::log.*
 
 main() {
     // 创建一个NoopLogger实例
@@ -1409,7 +1409,7 @@ public init()
 
 <!-- run -->
 ```cangjie
-import stdx.log.*
+import cangjie_stdx::log.*
 
 main() {
     // 创建一个NoopLogger实例
@@ -1430,7 +1430,7 @@ public func close(): Unit
 
 <!-- verify -->
 ```cangjie
-import stdx.log.*
+import cangjie_stdx::log.*
 
 main() {
     // 创建一个NoopLogger实例
@@ -1467,7 +1467,7 @@ public func isClosed(): Bool
 
 <!-- verify -->
 ```cangjie
-import stdx.log.*
+import cangjie_stdx::log.*
 
 main() {
     // 创建一个NoopLogger实例
@@ -1505,7 +1505,7 @@ public func log(level: LogLevel, message: () -> String, attrs: Array<Attr>): Uni
 
 <!-- verify -->
 ```cangjie
-import stdx.log.*
+import cangjie_stdx::log.*
 
 main() {
     // 创建一个NoopLogger实例
@@ -1544,7 +1544,7 @@ public func log(level: LogLevel, message: String, attrs: Array<Attr>): Unit
 
 <!-- verify -->
 ```cangjie
-import stdx.log.*
+import cangjie_stdx::log.*
 
 main() {
     // 创建一个NoopLogger实例
@@ -1581,7 +1581,7 @@ public func log(record: LogRecord): Unit
 
 <!-- verify -->
 ```cangjie
-import stdx.log.*
+import cangjie_stdx::log.*
 import std.time.*
 
 main() {
@@ -1626,7 +1626,7 @@ public func withAttrs(attrs: Array<Attr>): Logger
 
 <!-- verify -->
 ```cangjie
-import stdx.log.*
+import cangjie_stdx::log.*
 
 main() {
     // 创建一个NoopLogger实例

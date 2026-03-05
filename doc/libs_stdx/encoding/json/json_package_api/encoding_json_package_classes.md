@@ -32,7 +32,7 @@ public init()
 
 <!-- verify -->
 ```cangjie
-import stdx.encoding.json.*
+import cangjie_stdx::encoding.json.*
 
 main() {
     let jsonArray: JsonArray = JsonArray()
@@ -64,7 +64,7 @@ public init(list: Array<JsonValue>)
 
 <!-- verify -->
 ```cangjie
-import stdx.encoding.json.*
+import cangjie_stdx::encoding.json.*
 import std.collection.*
 
 main() {
@@ -103,7 +103,7 @@ public init(list: ArrayList<JsonValue>)
 
 <!-- verify -->
 ```cangjie
-import stdx.encoding.json.*
+import cangjie_stdx::encoding.json.*
 import std.collection.*
 
 main() {
@@ -152,7 +152,7 @@ public func add(jv: JsonValue): JsonArray
 <!-- verify -->
 ```cangjie
 import std.collection.*
-import stdx.encoding.json.*
+import cangjie_stdx::encoding.json.*
 
 main() {
     var jsonArray: JsonArray = JsonArray()
@@ -214,7 +214,7 @@ public func get(index: Int64): Option<JsonValue>
 <!-- verify -->
 ```cangjie
 import std.collection.*
-import stdx.encoding.json.*
+import cangjie_stdx::encoding.json.*
 
 main() {
     var jsonArray: JsonArray = JsonArray()
@@ -274,7 +274,7 @@ public func getItems(): ArrayList<JsonValue>
 
 <!-- verify -->
 ```cangjie
-import stdx.encoding.json.*
+import cangjie_stdx::encoding.json.*
 import std.collection.*
 
 main() {
@@ -330,7 +330,7 @@ public func kind(): JsonKind
 <!-- verify -->
 ```cangjie
 import std.collection.*
-import stdx.encoding.json.*
+import cangjie_stdx::encoding.json.*
 
 main() {
     var jsonArray: JsonArray = JsonArray()
@@ -372,7 +372,7 @@ public func size(): Int64
 
 <!-- verify -->
 ```cangjie
-import stdx.encoding.json.*
+import cangjie_stdx::encoding.json.*
 
 main() {
     var jsonArray: JsonArray = JsonArray()
@@ -415,7 +415,7 @@ public func toJsonString(): String
 
 <!-- verify -->
 ```cangjie
-import stdx.encoding.json.*
+import cangjie_stdx::encoding.json.*
 import std.collection.*
 
 main() {
@@ -485,7 +485,7 @@ public func toJsonString(depth: Int64, bracketInNewLine!: Bool = false, indent!:
 <!-- verify -->
 ```cangjie
 import std.collection.*
-import stdx.encoding.json.*
+import cangjie_stdx::encoding.json.*
 
 main() {
     var jsonArray: JsonArray = JsonArray()
@@ -545,7 +545,7 @@ public func toJsonStringWithoutEscaping(): String
 
 <!-- verify -->
 ```cangjie
-import stdx.encoding.json.*
+import cangjie_stdx::encoding.json.*
 
 main() {
     var jsonArray: JsonArray = JsonArray()
@@ -602,7 +602,7 @@ public func toJsonStringWithoutEscaping(depth: Int64, bracketInNewLine!: Bool = 
 
 <!-- verify -->
 ```cangjie
-import stdx.encoding.json.*
+import cangjie_stdx::encoding.json.*
 
 main() {
     var jsonArray: JsonArray = JsonArray()
@@ -650,7 +650,7 @@ public func toString(): String
 <!-- verify -->
 ```cangjie
 import std.collection.*
-import stdx.encoding.json.*
+import cangjie_stdx::encoding.json.*
 
 main() {
     var jsonArray: JsonArray = JsonArray()
@@ -689,7 +689,7 @@ public func toStringWithoutEscaping(): String
 <!-- verify -->
 ```cangjie
 import std.collection.*
-import stdx.encoding.json.*
+import cangjie_stdx::encoding.json.*
 
 main() {
     var jsonArray: JsonArray = JsonArray()
@@ -736,7 +736,7 @@ public operator func [](index: Int64): JsonValue
 <!-- verify -->
 ```cangjie
 import std.collection.*
-import stdx.encoding.json.*
+import cangjie_stdx::encoding.json.*
 
 main() {
     var jsonArray: JsonArray = JsonArray()
@@ -812,7 +812,7 @@ public init(bv: Bool)
 
 <!-- verify -->
 ```cangjie
-import stdx.encoding.json.*
+import cangjie_stdx::encoding.json.*
 
 main() {
     var jsonTrue: JsonBool = JsonBool(true)
@@ -843,7 +843,7 @@ public func getValue(): Bool
 
 <!-- verify -->
 ```cangjie
-import stdx.encoding.json.*
+import cangjie_stdx::encoding.json.*
 
 main() {
     var jsonTrue: JsonBool = JsonBool(true)
@@ -876,7 +876,7 @@ public func kind(): JsonKind
 
 <!-- verify -->
 ```cangjie
-import stdx.encoding.json.*
+import cangjie_stdx::encoding.json.*
 
 main() {
     var jsonTrue: JsonBool = JsonBool(true)
@@ -913,7 +913,7 @@ public func toJsonString(): String
 
 <!-- verify -->
 ```cangjie
-import stdx.encoding.json.*
+import cangjie_stdx::encoding.json.*
 
 main() {
     var jsonTrue: JsonBool = JsonBool(true)
@@ -946,7 +946,7 @@ public func toJsonStringWithoutEscaping(): String
 
 <!-- verify -->
 ```cangjie
-import stdx.encoding.json.*
+import cangjie_stdx::encoding.json.*
 
 main() {
     var jsonTrue: JsonBool = JsonBool(true)
@@ -979,7 +979,7 @@ public func toString(): String
 
 <!-- verify -->
 ```cangjie
-import stdx.encoding.json.*
+import cangjie_stdx::encoding.json.*
 
 main() {
     var jsonTrue: JsonBool = JsonBool(true)
@@ -1012,7 +1012,7 @@ public func toStringWithoutEscaping(): String
 
 <!-- verify -->
 ```cangjie
-import stdx.encoding.json.*
+import cangjie_stdx::encoding.json.*
 
 main() {
     var jsonTrue: JsonBool = JsonBool(true)
@@ -1060,7 +1060,7 @@ public init(fv: Float64)
 
 <!-- verify -->
 ```cangjie
-import stdx.encoding.json.*
+import cangjie_stdx::encoding.json.*
 
 main() {
     let jsonFloat: JsonFloat = JsonFloat(3.14159)
@@ -1091,7 +1091,7 @@ public init(v: Int64)
 
 <!-- verify -->
 ```cangjie
-import stdx.encoding.json.*
+import cangjie_stdx::encoding.json.*
 
 main() {
     let jsonFloat: JsonFloat = JsonFloat(42)
@@ -1122,7 +1122,7 @@ public func getValue(): Float64
 
 <!-- verify -->
 ```cangjie
-import stdx.encoding.json.*
+import cangjie_stdx::encoding.json.*
 
 main() {
     let jsonFloat: JsonFloat = JsonFloat(3.14159)
@@ -1155,7 +1155,7 @@ public func kind(): JsonKind
 
 <!-- verify -->
 ```cangjie
-import stdx.encoding.json.*
+import cangjie_stdx::encoding.json.*
 
 main() {
     let jsonFloat: JsonFloat = JsonFloat(3.14159)
@@ -1192,7 +1192,7 @@ public func toJsonString(): String
 
 <!-- verify -->
 ```cangjie
-import stdx.encoding.json.*
+import cangjie_stdx::encoding.json.*
 
 main() {
     let jsonFloat: JsonFloat = JsonFloat(3.14159)
@@ -1225,7 +1225,7 @@ public func toJsonStringWithoutEscaping(): String
 
 <!-- verify -->
 ```cangjie
-import stdx.encoding.json.*
+import cangjie_stdx::encoding.json.*
 
 main() {
     let jsonFloat: JsonFloat = JsonFloat(3.14159)
@@ -1258,7 +1258,7 @@ public func toString(): String
 
 <!-- verify -->
 ```cangjie
-import stdx.encoding.json.*
+import cangjie_stdx::encoding.json.*
 
 main() {
     let jsonFloat: JsonFloat = JsonFloat(3.14159)
@@ -1291,7 +1291,7 @@ public func toStringWithoutEscaping(): String
 
 <!-- verify -->
 ```cangjie
-import stdx.encoding.json.*
+import cangjie_stdx::encoding.json.*
 
 main() {
     let jsonFloat: JsonFloat = JsonFloat(3.14159)
@@ -1338,7 +1338,7 @@ public init(iv: Int64)
 
 <!-- verify -->
 ```cangjie
-import stdx.encoding.json.*
+import cangjie_stdx::encoding.json.*
 
 main() {
     var jsonInt: JsonInt = JsonInt(42)
@@ -1369,7 +1369,7 @@ public func getValue(): Int64
 
 <!-- verify -->
 ```cangjie
-import stdx.encoding.json.*
+import cangjie_stdx::encoding.json.*
 
 main() {
     var jsonInt: JsonInt = JsonInt(42)
@@ -1402,7 +1402,7 @@ public func kind(): JsonKind
 
 <!-- verify -->
 ```cangjie
-import stdx.encoding.json.*
+import cangjie_stdx::encoding.json.*
 
 main() {
     var jsonInt: JsonInt = JsonInt(42)
@@ -1439,7 +1439,7 @@ public func toJsonString(): String
 
 <!-- verify -->
 ```cangjie
-import stdx.encoding.json.*
+import cangjie_stdx::encoding.json.*
 
 main() {
     var jsonInt: JsonInt = JsonInt(42)
@@ -1472,7 +1472,7 @@ public func toJsonStringWithoutEscaping(): String
 
 <!-- verify -->
 ```cangjie
-import stdx.encoding.json.*
+import cangjie_stdx::encoding.json.*
 
 main() {
     var jsonInt: JsonInt = JsonInt(42)
@@ -1505,7 +1505,7 @@ public func toString(): String
 
 <!-- verify -->
 ```cangjie
-import stdx.encoding.json.*
+import cangjie_stdx::encoding.json.*
 
 main() {
     var jsonInt: JsonInt = JsonInt(42)
@@ -1538,7 +1538,7 @@ public func toStringWithoutEscaping(): String
 
 <!-- verify -->
 ```cangjie
-import stdx.encoding.json.*
+import cangjie_stdx::encoding.json.*
 
 main() {
     var jsonInt: JsonInt = JsonInt(42)
@@ -1583,7 +1583,7 @@ public func kind(): JsonKind
 
 <!-- verify -->
 ```cangjie
-import stdx.encoding.json.*
+import cangjie_stdx::encoding.json.*
 
 main() {
     var jsonNull: JsonNull = JsonNull()
@@ -1619,7 +1619,7 @@ public func toJsonString(): String
 
 <!-- verify -->
 ```cangjie
-import stdx.encoding.json.*
+import cangjie_stdx::encoding.json.*
 
 main() {
     var jsonNull: JsonNull = JsonNull()
@@ -1651,7 +1651,7 @@ public func toJsonStringWithoutEscaping(): String
 
 <!-- verify -->
 ```cangjie
-import stdx.encoding.json.*
+import cangjie_stdx::encoding.json.*
 
 main() {
     var jsonNull: JsonNull = JsonNull()
@@ -1684,7 +1684,7 @@ public func toString(): String
 
 <!-- verify -->
 ```cangjie
-import stdx.encoding.json.*
+import cangjie_stdx::encoding.json.*
 
 main() {
     var jsonNull: JsonNull = JsonNull()
@@ -1716,7 +1716,7 @@ public func toStringWithoutEscaping(): String
 
 <!-- verify -->
 ```cangjie
-import stdx.encoding.json.*
+import cangjie_stdx::encoding.json.*
 
 main() {
     var jsonNull: JsonNull = JsonNull()
@@ -1760,7 +1760,7 @@ public init()
 
 <!-- verify -->
 ```cangjie
-import stdx.encoding.json.*
+import cangjie_stdx::encoding.json.*
 
 main() {
     var jsonObject: JsonObject = JsonObject()
@@ -1791,7 +1791,7 @@ public init(map: HashMap<String, JsonValue>)
 
 <!-- verify -->
 ```cangjie
-import stdx.encoding.json.*
+import cangjie_stdx::encoding.json.*
 import std.collection.*
 
 main() {
@@ -1833,7 +1833,7 @@ public func containsKey(key: String): Bool
 
 <!-- verify -->
 ```cangjie
-import stdx.encoding.json.*
+import cangjie_stdx::encoding.json.*
 
 main() {
     var jsonObject: JsonObject = JsonObject()
@@ -1875,7 +1875,7 @@ public func get(key: String): Option<JsonValue>
 
 <!-- verify -->
 ```cangjie
-import stdx.encoding.json.*
+import cangjie_stdx::encoding.json.*
 
 main() {
     var jsonObject: JsonObject = JsonObject()
@@ -1932,7 +1932,7 @@ public func getFields(): HashMap<String, JsonValue>
 
 <!-- verify -->
 ```cangjie
-import stdx.encoding.json.*
+import cangjie_stdx::encoding.json.*
 import std.collection.*
 
 main() {
@@ -1971,7 +1971,7 @@ public func kind(): JsonKind
 
 <!-- verify -->
 ```cangjie
-import stdx.encoding.json.*
+import cangjie_stdx::encoding.json.*
 
 main() {
     var jsonObject: JsonObject = JsonObject()
@@ -2010,7 +2010,7 @@ public func put(key: String, v: JsonValue): Unit
 
 <!-- verify -->
 ```cangjie
-import stdx.encoding.json.*
+import cangjie_stdx::encoding.json.*
 
 main() {
     var jsonObject: JsonObject = JsonObject()
@@ -2045,7 +2045,7 @@ public func size(): Int64
 
 <!-- verify -->
 ```cangjie
-import stdx.encoding.json.*
+import cangjie_stdx::encoding.json.*
 
 main() {
     var jsonObject: JsonObject = JsonObject()
@@ -2088,7 +2088,7 @@ public func toJsonString(): String
 
 <!-- verify -->
 ```cangjie
-import stdx.encoding.json.*
+import cangjie_stdx::encoding.json.*
 
 main() {
     var jsonObject: JsonObject = JsonObject()
@@ -2139,7 +2139,7 @@ public func toJsonString(depth: Int64, bracketInNewLine!: Bool = false, indent!:
 
 <!-- verify -->
 ```cangjie
-import stdx.encoding.json.*
+import cangjie_stdx::encoding.json.*
 
 main() {
     var jsonObject: JsonObject = JsonObject()
@@ -2189,7 +2189,7 @@ public func toJsonStringWithoutEscaping(): String
 
 <!-- verify -->
 ```cangjie
-import stdx.encoding.json.*
+import cangjie_stdx::encoding.json.*
 
 main() {
     var jsonObject: JsonObject = JsonObject()
@@ -2245,7 +2245,7 @@ public func toJsonStringWithoutEscaping(depth: Int64, bracketInNewLine!: Bool = 
 
 <!-- verify -->
 ```cangjie
-import stdx.encoding.json.*
+import cangjie_stdx::encoding.json.*
 
 main() {
     var jsonObject: JsonObject = JsonObject()
@@ -2292,7 +2292,7 @@ public func toString(): String
 
 <!-- verify -->
 ```cangjie
-import stdx.encoding.json.*
+import cangjie_stdx::encoding.json.*
 
 main() {
     var jsonObject: JsonObject = JsonObject()
@@ -2328,7 +2328,7 @@ public func toStringWithoutEscaping(): String
 
 <!-- verify -->
 ```cangjie
-import stdx.encoding.json.*
+import cangjie_stdx::encoding.json.*
 
 main() {
     var jsonObject: JsonObject = JsonObject()
@@ -2374,7 +2374,7 @@ public operator func [](key: String): JsonValue
 
 <!-- verify -->
 ```cangjie
-import stdx.encoding.json.*
+import cangjie_stdx::encoding.json.*
 
 main() {
     var jsonObject: JsonObject = JsonObject()
@@ -2428,7 +2428,7 @@ public init(sv: String)
 
 <!-- verify -->
 ```cangjie
-import stdx.encoding.json.*
+import cangjie_stdx::encoding.json.*
 
 main() {
     var jsonString: JsonString = JsonString("Hello, 世界")
@@ -2459,7 +2459,7 @@ public func getValue(): String
 
 <!-- verify -->
 ```cangjie
-import stdx.encoding.json.*
+import cangjie_stdx::encoding.json.*
 
 main() {
     var jsonString: JsonString = JsonString("Hello, 世界")
@@ -2492,7 +2492,7 @@ public func kind(): JsonKind
 
 <!-- verify -->
 ```cangjie
-import stdx.encoding.json.*
+import cangjie_stdx::encoding.json.*
 
 main() {
     var jsonString: JsonString = JsonString("Hello, 世界")
@@ -2529,7 +2529,7 @@ public func toJsonString(): String
 
 <!-- verify -->
 ```cangjie
-import stdx.encoding.json.*
+import cangjie_stdx::encoding.json.*
 
 main() {
     var jsonString: JsonString = JsonString("Hello, 世界")
@@ -2562,7 +2562,7 @@ public func toJsonStringWithoutEscaping(): String
 
 <!-- verify -->
 ```cangjie
-import stdx.encoding.json.*
+import cangjie_stdx::encoding.json.*
 
 main() {
     var jsonString: JsonString = JsonString("Hello & World <测试>")
@@ -2598,7 +2598,7 @@ public func toString(): String
 
 <!-- verify -->
 ```cangjie
-import stdx.encoding.json.*
+import cangjie_stdx::encoding.json.*
 
 main() {
     var jsonString: JsonString = JsonString("Hello, 世界")
@@ -2631,7 +2631,7 @@ public func toStringWithoutEscaping(): String
 
 <!-- verify -->
 ```cangjie
-import stdx.encoding.json.*
+import cangjie_stdx::encoding.json.*
 
 main() {
     var jsonString: JsonString = JsonString("Hello & World <测试>")
@@ -2695,7 +2695,7 @@ JSON 在解析 String 转换为 [JsonValue](encoding_json_package_classes.md#cla
 
 <!-- verify -->
 ```cangjie
-import stdx.encoding.json.*
+import cangjie_stdx::encoding.json.*
 
 main() {
     var jsonString = ##"{"name": "张三", "age": 25, "student": true}"##
@@ -2759,7 +2759,7 @@ public func asArray(): JsonArray
 
 <!-- verify -->
 ```cangjie
-import stdx.encoding.json.*
+import cangjie_stdx::encoding.json.*
 
 main() {
     var jsonString = ##"[1, 2, 3, "hello"]"##
@@ -2809,7 +2809,7 @@ public func asBool(): JsonBool
 
 <!-- verify -->
 ```cangjie
-import stdx.encoding.json.*
+import cangjie_stdx::encoding.json.*
 
 main() {
     var jsonString = ##"true"##
@@ -2859,7 +2859,7 @@ public func asFloat(): JsonFloat
 
 <!-- verify -->
 ```cangjie
-import stdx.encoding.json.*
+import cangjie_stdx::encoding.json.*
 
 main() {
     var jsonString = ##"3.14159"##
@@ -2909,7 +2909,7 @@ public func asInt(): JsonInt
 
 <!-- verify -->
 ```cangjie
-import stdx.encoding.json.*
+import cangjie_stdx::encoding.json.*
 
 main() {
     var jsonString = ##"42"##
@@ -2959,7 +2959,7 @@ public func asNull(): JsonNull
 
 <!-- verify -->
 ```cangjie
-import stdx.encoding.json.*
+import cangjie_stdx::encoding.json.*
 
 main() {
     var jsonString = ##"null"##
@@ -2997,7 +2997,7 @@ public func asObject(): JsonObject
 
 <!-- verify -->
 ```cangjie
-import stdx.encoding.json.*
+import cangjie_stdx::encoding.json.*
 
 main() {
     var jsonString = ##"{"name": "张三", "age": 25, "student": true}"##
@@ -3047,7 +3047,7 @@ public func asString(): JsonString
 
 <!-- verify -->
 ```cangjie
-import stdx.encoding.json.*
+import cangjie_stdx::encoding.json.*
 
 main() {
     var jsonString = ##""Hello, 世界""##
@@ -3093,7 +3093,7 @@ public func kind(): JsonKind
 
 <!-- verify -->
 ```cangjie
-import stdx.encoding.json.*
+import cangjie_stdx::encoding.json.*
 
 main() {
     var jsonString = ##"{"name": "张三", "age": 25}"##
@@ -3136,7 +3136,7 @@ public func toJsonString(): String
 
 <!-- verify -->
 ```cangjie
-import stdx.encoding.json.*
+import cangjie_stdx::encoding.json.*
 
 main() {
     var jsonString = ##"{"name": "张三", "age": 25, "hobbies": ["读书", "游泳"]}"##
@@ -3178,7 +3178,7 @@ public func toJsonStringWithoutEscaping(): String
 
 <!-- verify -->
 ```cangjie
-import stdx.encoding.json.*
+import cangjie_stdx::encoding.json.*
 
 main() {
     var jsonString = ##"{"description": "Hello & World <测试>"}"##
@@ -3221,7 +3221,7 @@ public func toString(): String
 
 <!-- verify -->
 ```cangjie
-import stdx.encoding.json.*
+import cangjie_stdx::encoding.json.*
 
 main() {
     var jsonString = ##"{"name": "张三", "age": 25}"##
@@ -3255,7 +3255,7 @@ public func toStringWithoutEscaping(): String
 
 <!-- verify -->
 ```cangjie
-import stdx.encoding.json.*
+import cangjie_stdx::encoding.json.*
 
 main() {
     var jsonString = ##"{"description": "Hello & World <测试>"}"##

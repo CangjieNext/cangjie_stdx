@@ -18,7 +18,7 @@ public let FUZZ_VERSION: String = "1.0.0"
 
 <!-- verify -->
 ```cangjie
-import stdx.fuzz.fuzz.*
+import cangjie_stdx::fuzz.fuzz.*
 
 main() {
     println("Fuzz 版本: ${FUZZ_VERSION}")

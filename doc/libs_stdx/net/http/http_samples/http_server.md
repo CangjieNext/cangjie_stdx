@@ -10,8 +10,8 @@
 
 <!-- compile -->
 ```cangjie
-import stdx.net.http.ServerBuilder
-import stdx.net.tls
+import cangjie_stdx::net.http.ServerBuilder
+import cangjie_stdx::net.tls
 
 main() {
     // 1. 构建 Server 实例
@@ -31,7 +31,7 @@ main() {
 
 <!-- compile -->
 ```cangjie
-import stdx.net.http.{ServerBuilder, HttpRequestHandler, FuncHandler}
+import cangjie_stdx::net.http.{ServerBuilder, HttpRequestHandler, FuncHandler}
 
 main() {
     // 1. 构建 Server 实例
@@ -60,8 +60,8 @@ main() {
 
 <!-- compile -->
 ```cangjie
-import stdx.net.http.*
-import stdx.net.tls.*
+import cangjie_stdx::net.http.*
+import cangjie_stdx::net.tls.*
 import std.collection.HashMap
 
 // 自定义请求分发器
@@ -102,10 +102,10 @@ main() {
 ```cangjie
 import std.io.*
 import std.fs.*
-import stdx.net.tls.*
-import stdx.crypto.x509.X509Certificate
-import stdx.crypto.keys.GeneralPrivateKey
-import stdx.net.http.*
+import cangjie_stdx::net.tls.*
+import cangjie_stdx::crypto.x509.X509Certificate
+import cangjie_stdx::crypto.keys.GeneralPrivateKey
+import cangjie_stdx::net.http.*
 
 main() {
     // 1. 自定义配置
@@ -141,8 +141,8 @@ main() {
 
 <!-- compile -->
 ```cangjie
-import stdx.net.http.*
-import stdx.net.tls
+import cangjie_stdx::net.http.*
+import cangjie_stdx::net.tls
 
 func checksum(chunk: Array<UInt8>): Int64 {
     var sum = 0
@@ -191,8 +191,8 @@ main() {
 
 <!-- compile -->
 ```cangjie
-import stdx.net.http.*
-import stdx.net.tls
+import cangjie_stdx::net.http.*
+import cangjie_stdx::net.tls
 
 main() {
     // 1. 构建 Server 实例
@@ -213,11 +213,11 @@ main() {
 ```cangjie
 import std.io.*
 import std.fs.*
-import stdx.net.tls.*
-import stdx.net.tls.common.*
-import stdx.crypto.x509.X509Certificate
-import stdx.crypto.keys.GeneralPrivateKey
-import stdx.net.http.*
+import cangjie_stdx::net.tls.*
+import cangjie_stdx::net.tls.common.*
+import cangjie_stdx::crypto.x509.X509Certificate
+import cangjie_stdx::crypto.keys.GeneralPrivateKey
+import cangjie_stdx::net.http.*
 
 //该程序需要用户配置存在且合法的文件路径才能执行
 main() {
@@ -253,10 +253,10 @@ client:
 import std.io.*
 import std.fs.*
 import std.collection.ArrayList
-import stdx.net.tls.*
-import stdx.net.tls.common.*
-import stdx.crypto.x509.X509Certificate
-import stdx.net.http.*
+import cangjie_stdx::net.tls.*
+import cangjie_stdx::net.tls.common.*
+import cangjie_stdx::crypto.x509.X509Certificate
+import cangjie_stdx::net.http.*
 
 main() {
     // 1. TLS 配置，其中 TLS 证书文件用户需自行提供
@@ -282,10 +282,10 @@ server:
 ```cangjie
 import std.io.*
 import std.fs.*
-import stdx.net.tls.*
-import stdx.crypto.x509.X509Certificate
-import stdx.crypto.keys.GeneralPrivateKey
-import stdx.net.http.*
+import cangjie_stdx::net.tls.*
+import cangjie_stdx::crypto.x509.X509Certificate
+import cangjie_stdx::crypto.keys.GeneralPrivateKey
+import cangjie_stdx::net.http.*
 
 main() {
     // 1. TLS 配置，其中 TLS 证书文件用户需自行提供

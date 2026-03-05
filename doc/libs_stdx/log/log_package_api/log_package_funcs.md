@@ -24,8 +24,8 @@ public func getGlobalLogger(attrs: Array<Attr>): Logger
 
 <!-- run -->
 ```cangjie
-import stdx.log.*
-import stdx.logger.*
+import cangjie_stdx::log.*
+import cangjie_stdx::logger.*
 import std.env.*
 
 main() {
@@ -77,8 +77,8 @@ public func setGlobalLogger(logger: Logger): Unit
 
 <!-- run -->
 ```cangjie
-import stdx.log.*
-import stdx.logger.*
+import cangjie_stdx::log.*
+import cangjie_stdx::logger.*
 import std.env.*
 
 main() {

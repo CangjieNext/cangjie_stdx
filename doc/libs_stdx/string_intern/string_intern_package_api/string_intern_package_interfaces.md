@@ -94,7 +94,7 @@ static func configInternPool(capacity!: Int64 = 8192, strMaxLength!: Int64 = 512
 
 <!-- run -->
 ```cangjie
-import stdx.string_intern.*
+import cangjie_stdx::string_intern.*
 
 main(): Unit {
     // 配置字符串缓存池
@@ -122,7 +122,7 @@ static func intern(array: Array<Byte>): String
 
 <!-- verify -->
 ```cangjie
-import stdx.string_intern.*
+import cangjie_stdx::string_intern.*
 
 main(): Unit {
     // 配置字符串缓存池
@@ -164,7 +164,7 @@ static func intern(str: String): String
 
 <!-- verify -->
 ```cangjie
-import stdx.string_intern.*
+import cangjie_stdx::string_intern.*
 
 main(): Unit {
     String.configInternPool(capacity: 10000, strMaxLength: 1000)

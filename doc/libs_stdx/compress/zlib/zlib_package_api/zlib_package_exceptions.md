@@ -30,7 +30,7 @@ public init(message: String)
 
 <!-- verify -->
 ```cangjie
-import stdx.compress.zlib.*
+import cangjie_stdx::compress.zlib.*
 
 main(): Unit {
     try {

@@ -6,8 +6,8 @@ Example:
 
 <!-- verify -->
 ```cangjie
-import stdx.serialization.serialization.*
-import stdx.encoding.json.*
+import cangjie_stdx::serialization.serialization.*
+import cangjie_stdx::encoding.json.*
 
 class Person <: Serializable<Person> {
     var name: String = ""

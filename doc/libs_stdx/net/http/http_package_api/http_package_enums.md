@@ -93,7 +93,7 @@ public override func toString(): String
 
 <!-- verify -->
 ```cangjie
-import stdx.net.http.*
+import cangjie_stdx::net.http.*
 
 main() {
     let protocol = Protocol.HTTP1_1
@@ -129,7 +129,7 @@ public override operator func !=(that: Protocol): Bool
 
 <!-- verify -->
 ```cangjie
-import stdx.net.http.*
+import cangjie_stdx::net.http.*
 
 main() {
     let protocol1 = Protocol.HTTP1_1
@@ -166,7 +166,7 @@ public override operator func ==(that: Protocol): Bool
 
 <!-- verify -->
 ```cangjie
-import stdx.net.http.*
+import cangjie_stdx::net.http.*
 
 main() {
     let protocol1 = Protocol.HTTP1_1
@@ -276,7 +276,7 @@ public override func toString(): String
 
 <!-- verify -->
 ```cangjie
-import stdx.net.http.*
+import cangjie_stdx::net.http.*
 
 main() {
     let frameType = WebSocketFrameType.TextWebFrame
@@ -312,7 +312,7 @@ public override operator func !=(that: WebSocketFrameType): Bool
 
 <!-- verify -->
 ```cangjie
-import stdx.net.http.*
+import cangjie_stdx::net.http.*
 
 main() {
     let frameType1 = WebSocketFrameType.TextWebFrame
@@ -349,7 +349,7 @@ public override operator func ==(that: WebSocketFrameType): Bool
 
 <!-- verify -->
 ```cangjie
-import stdx.net.http.*
+import cangjie_stdx::net.http.*
 
 main() {
     let frameType1 = WebSocketFrameType.TextWebFrame

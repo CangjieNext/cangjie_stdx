@@ -4,7 +4,7 @@ Example:
 
 <!-- verify -->
 ```cangjie
-import stdx.encoding.json.stream.{JsonWriter, WriteConfig, JsonSerializable}
+import cangjie_stdx::encoding.json.stream.{JsonWriter, WriteConfig, JsonSerializable}
 import std.io.ByteBuffer
 
 main() {

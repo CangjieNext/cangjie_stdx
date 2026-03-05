@@ -1,4 +1,4 @@
-# stdx.compress.zlib
+# cangjie_stdx::compress.zlib
 
 ## Function Description
 
@@ -18,7 +18,7 @@ This package provides streaming compression and decompression functionality, mea
 
 > **Note:**
 >
-> For file packaging, please use stdx.compress.tar for archiving or use the stdx.compress combination tool TarGzip for archive compression operations.
+> For file packaging, please use cangjie_stdx::compress.tar for archiving or use the cangjie_stdx::compress combination tool TarGzip for archive compression operations.
 
 ## API List
 

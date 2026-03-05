@@ -29,7 +29,7 @@ Example:
 
 <!-- verify -->
 ```cangjie
-import stdx.chir.*
+import cangjie_stdx::chir.*
 
 main() {
     let boolType = BoolType.get()
@@ -63,7 +63,7 @@ Example:
 
 <!-- verify -->
 ```cangjie
-import stdx.chir.*
+import cangjie_stdx::chir.*
 
 main() {
     let boolType1 = BoolType.get()
@@ -107,7 +107,7 @@ Example:
 
 <!-- verify -->
 ```cangjie
-import stdx.chir.*
+import cangjie_stdx::chir.*
 
 main() {
     let intType = IntType.getInt32()
@@ -145,7 +145,7 @@ Example:
 
 <!-- verify -->
 ```cangjie
-import stdx.chir.*
+import cangjie_stdx::chir.*
 
 main() {
     let intType = IntType.getInt32()
@@ -183,7 +183,7 @@ Example:
 
 <!-- verify -->
 ```cangjie
-import stdx.chir.*
+import cangjie_stdx::chir.*
 
 main() {
     let intType = IntType.getInt32()
@@ -214,7 +214,7 @@ Example:
 
 <!-- verify -->
 ```cangjie
-import stdx.chir.*
+import cangjie_stdx::chir.*
 
 main() {
     let intType = IntType.getInt32()
@@ -262,7 +262,7 @@ Example:
 
 <!-- verify -->
 ```cangjie
-import stdx.chir.*
+import cangjie_stdx::chir.*
 
 main() {
     let cStringType1 = CStringType.get()
@@ -293,7 +293,7 @@ Example:
 
 <!-- verify -->
 ```cangjie
-import stdx.chir.*
+import cangjie_stdx::chir.*
 
 main() {
     let cStringType = CStringType.get()
@@ -336,7 +336,7 @@ Example:
 
 <!-- verify -->
 ```cangjie
-import stdx.chir.*
+import cangjie_stdx::chir.*
 
 main() {
     let float16Type = FloatType.getFloat16()
@@ -366,7 +366,7 @@ Example:
 
 <!-- verify -->
 ```cangjie
-import stdx.chir.*
+import cangjie_stdx::chir.*
 
 main() {
     let float32Type = FloatType.getFloat32()
@@ -396,7 +396,7 @@ Example:
 
 <!-- verify -->
 ```cangjie
-import stdx.chir.*
+import cangjie_stdx::chir.*
 
 main() {
     let float64Type = FloatType.getFloat64()
@@ -430,7 +430,7 @@ Example:
 
 <!-- verify -->
 ```cangjie
-import stdx.chir.*
+import cangjie_stdx::chir.*
 
 main() {
     let float32Type1 = FloatType.getFloat32()
@@ -477,7 +477,7 @@ Example:
 
 <!-- verify -->
 ```cangjie
-import stdx.chir.*
+import cangjie_stdx::chir.*
 
 main() {
     let int16Type = IntType.getInt16()
@@ -507,7 +507,7 @@ Example:
 
 <!-- verify -->
 ```cangjie
-import stdx.chir.*
+import cangjie_stdx::chir.*
 
 main() {
     let int32Type = IntType.getInt32()
@@ -537,7 +537,7 @@ Example:
 
 <!-- verify -->
 ```cangjie
-import stdx.chir.*
+import cangjie_stdx::chir.*
 
 main() {
     let int64Type = IntType.getInt64()
@@ -567,7 +567,7 @@ Example:
 
 <!-- verify -->
 ```cangjie
-import stdx.chir.*
+import cangjie_stdx::chir.*
 
 main() {
     let int8Type = IntType.getInt8()
@@ -597,7 +597,7 @@ Example:
 
 <!-- verify -->
 ```cangjie
-import stdx.chir.*
+import cangjie_stdx::chir.*
 
 main() {
     let intNativeType = IntType.getIntNative()
@@ -627,7 +627,7 @@ Example:
 
 <!-- verify -->
 ```cangjie
-import stdx.chir.*
+import cangjie_stdx::chir.*
 
 main() {
     let uint16Type = IntType.getUInt16()
@@ -657,7 +657,7 @@ Example:
 
 <!-- verify -->
 ```cangjie
-import stdx.chir.*
+import cangjie_stdx::chir.*
 
 main() {
     let uint32Type = IntType.getUInt32()
@@ -687,7 +687,7 @@ Example:
 
 <!-- verify -->
 ```cangjie
-import stdx.chir.*
+import cangjie_stdx::chir.*
 
 main() {
     let uint64Type = IntType.getUInt64()
@@ -717,7 +717,7 @@ Example:
 
 <!-- verify -->
 ```cangjie
-import stdx.chir.*
+import cangjie_stdx::chir.*
 
 main() {
     let uint8Type = IntType.getUInt8()
@@ -747,7 +747,7 @@ Example:
 
 <!-- verify -->
 ```cangjie
-import stdx.chir.*
+import cangjie_stdx::chir.*
 
 main() {
     let uintNativeType = IntType.getUIntNative()
@@ -781,7 +781,7 @@ Example:
 
 <!-- verify -->
 ```cangjie
-import stdx.chir.*
+import cangjie_stdx::chir.*
 
 main() {
     let int32Type1 = IntType.getInt32()
@@ -815,7 +815,7 @@ Example:
 
 <!-- verify -->
 ```cangjie
-import stdx.chir.*
+import cangjie_stdx::chir.*
 
 main() {
     let int32Type = IntType.getInt32()
@@ -861,7 +861,7 @@ Example:
 
 <!-- verify -->
 ```cangjie
-import stdx.chir.*
+import cangjie_stdx::chir.*
 
 main() {
     let nothingType = NothingType.get()
@@ -895,7 +895,7 @@ Example:
 
 <!-- verify -->
 ```cangjie
-import stdx.chir.*
+import cangjie_stdx::chir.*
 
 main() {
     let nothingType1 = NothingType.get()
@@ -943,7 +943,7 @@ Example:
 
 <!-- verify -->
 ```cangjie
-import stdx.chir.*
+import cangjie_stdx::chir.*
 
 main() {
     let intType1 = IntType.getInt32()
@@ -990,7 +990,7 @@ Example:
 
 <!-- verify -->
 ```cangjie
-import stdx.chir.*
+import cangjie_stdx::chir.*
 
 main() {
     let intType = IntType.getInt32()
@@ -1028,7 +1028,7 @@ Example:
 
 <!-- verify -->
 ```cangjie
-import stdx.chir.*
+import cangjie_stdx::chir.*
 
 main() {
     let intType = IntType.getInt32()
@@ -1066,7 +1066,7 @@ Example:
 
 <!-- verify -->
 ```cangjie
-import stdx.chir.*
+import cangjie_stdx::chir.*
 
 main() {
     let intType = IntType.getInt32()
@@ -1097,7 +1097,7 @@ Example:
 
 <!-- verify -->
 ```cangjie
-import stdx.chir.*
+import cangjie_stdx::chir.*
 
 main() {
     let intType = IntType.getInt32()
@@ -1141,7 +1141,7 @@ Example:
 
 <!-- verify -->
 ```cangjie
-import stdx.chir.*
+import cangjie_stdx::chir.*
 
 main() {
     let runeType = RuneType.get()
@@ -1175,7 +1175,7 @@ Example:
 
 <!-- verify -->
 ```cangjie
-import stdx.chir.*
+import cangjie_stdx::chir.*
 
 main() {
     let runeType1 = RuneType.get()
@@ -1220,7 +1220,7 @@ Example:
 
 <!-- verify -->
 ```cangjie
-import stdx.chir.*
+import cangjie_stdx::chir.*
 
 main() {
     let intType = IntType.getInt32()
@@ -1246,7 +1246,7 @@ Example:
 
 <!-- verify -->
 ```cangjie
-import stdx.chir.*
+import cangjie_stdx::chir.*
 
 main() {
     let intType = IntType.getInt32()
@@ -1276,7 +1276,7 @@ Example:
 
 <!-- verify -->
 ```cangjie
-import stdx.chir.*
+import cangjie_stdx::chir.*
 
 main() {
     let intType = IntType.getInt32()
@@ -1306,7 +1306,7 @@ Example:
 
 <!-- verify -->
 ```cangjie
-import stdx.chir.*
+import cangjie_stdx::chir.*
 
 main() {
     let boolType = BoolType.get()
@@ -1339,7 +1339,7 @@ Example:
 
 <!-- verify -->
 ```cangjie
-import stdx.chir.*
+import cangjie_stdx::chir.*
 
 main() {
     let floatType = FloatType.getFloat32()
@@ -1372,7 +1372,7 @@ Example:
 
 <!-- verify -->
 ```cangjie
-import stdx.chir.*
+import cangjie_stdx::chir.*
 
 main() {
     let intType = IntType.getInt32()
@@ -1405,7 +1405,7 @@ Example:
 
 <!-- verify -->
 ```cangjie
-import stdx.chir.*
+import cangjie_stdx::chir.*
 
 main() {
     let nothingType = NothingType.get()
@@ -1438,7 +1438,7 @@ Example:
 
 <!-- verify -->
 ```cangjie
-import stdx.chir.*
+import cangjie_stdx::chir.*
 
 main() {
     let intType = IntType.getInt32()
@@ -1474,7 +1474,7 @@ Example:
 
 <!-- verify -->
 ```cangjie
-import stdx.chir.*
+import cangjie_stdx::chir.*
 
 main() {
     let intType = IntType.getInt32()
@@ -1507,7 +1507,7 @@ Example:
 
 <!-- verify -->
 ```cangjie
-import stdx.chir.*
+import cangjie_stdx::chir.*
 
 main() {
     let intType = IntType.getInt32()
@@ -1540,7 +1540,7 @@ Example:
 
 <!-- verify -->
 ```cangjie
-import stdx.chir.*
+import cangjie_stdx::chir.*
 
 main() {
     let runeType = RuneType.get()
@@ -1573,7 +1573,7 @@ Example:
 
 <!-- verify -->
 ```cangjie
-import stdx.chir.*
+import cangjie_stdx::chir.*
 
 main() {
     let intType = IntType.getInt32()
@@ -1606,7 +1606,7 @@ Example:
 
 <!-- verify -->
 ```cangjie
-import stdx.chir.*
+import cangjie_stdx::chir.*
 
 main() {
     let unitType = UnitType.get()
@@ -1639,7 +1639,7 @@ Example:
 
 <!-- verify -->
 ```cangjie
-import stdx.chir.*
+import cangjie_stdx::chir.*
 
 main() {
     let intType = IntType.getInt32()
@@ -1676,7 +1676,7 @@ Example:
 
 <!-- verify -->
 ```cangjie
-import stdx.chir.*
+import cangjie_stdx::chir.*
 
 main() {
     let type1 = IntType.getInt32()
@@ -1712,7 +1712,7 @@ Example:
 
 <!-- verify -->
 ```cangjie
-import stdx.chir.*
+import cangjie_stdx::chir.*
 
 main() {
     let intType = IntType.getInt32()
@@ -1746,7 +1746,7 @@ Example:
 
 <!-- verify -->
 ```cangjie
-import stdx.chir.*
+import cangjie_stdx::chir.*
 
 main() {
     let intType = IntType.getInt32()
@@ -1789,7 +1789,7 @@ Example:
 
 <!-- verify -->
 ```cangjie
-import stdx.chir.*
+import cangjie_stdx::chir.*
 
 main() {
     let unitType = UnitType.get()
@@ -1823,7 +1823,7 @@ Example:
 
 <!-- verify -->
 ```cangjie
-import stdx.chir.*
+import cangjie_stdx::chir.*
 
 main() {
     let unitType1 = UnitType.get()

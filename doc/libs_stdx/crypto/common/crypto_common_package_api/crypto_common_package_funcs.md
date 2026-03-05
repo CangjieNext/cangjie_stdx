@@ -20,10 +20,10 @@ public func getGlobalCryptoKit(): CryptoKit
 
 <!-- run -->
 ```cangjie
-import stdx.crypto.common.*
+import cangjie_stdx::crypto.common.*
 
-// 导入stdx.crypto.kit包，将使用默认全局加密套件
-import stdx.crypto.kit.*
+// 导入cangjie_stdx::crypto.kit，将使用默认全局加密套件
+import cangjie_stdx::crypto.kit.*
 
 main() {
     // 没有设置全局加密套件将会抛出异常
@@ -48,8 +48,8 @@ public func setGlobalCryptoKit(kit: CryptoKit): Unit
 
 <!-- run -->
 ```cangjie
-import stdx.crypto.common.*
-import stdx.crypto.kit.*
+import cangjie_stdx::crypto.common.*
+import cangjie_stdx::crypto.kit.*
 
 main() {
     // 创建一个默认的加密套件

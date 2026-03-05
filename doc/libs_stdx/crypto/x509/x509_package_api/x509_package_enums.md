@@ -63,7 +63,7 @@ public override func toString(): String
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.x509.*
+import cangjie_stdx::crypto.x509.*
 
 main() {
     // 创建一个 PublicKeyAlgorithm 枚举值
@@ -101,7 +101,7 @@ public override operator func !=(other: PublicKeyAlgorithm): Bool
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.x509.*
+import cangjie_stdx::crypto.x509.*
 
 main() {
     // 创建两个 PublicKeyAlgorithm 枚举值
@@ -145,7 +145,7 @@ public override operator func ==(other: PublicKeyAlgorithm): Bool
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.x509.*
+import cangjie_stdx::crypto.x509.*
 
 main() {
     // 创建两个 PublicKeyAlgorithm 枚举值
@@ -308,7 +308,7 @@ public override func toString(): String
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.x509.*
+import cangjie_stdx::crypto.x509.*
 
 main() {
     // 创建一个 SignatureAlgorithm 枚举值
@@ -346,7 +346,7 @@ public override operator func !=(other: SignatureAlgorithm): Bool
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.x509.*
+import cangjie_stdx::crypto.x509.*
 
 main() {
     // 创建两个 SignatureAlgorithm 枚举值
@@ -390,7 +390,7 @@ public override operator func ==(other: SignatureAlgorithm): Bool
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.x509.*
+import cangjie_stdx::crypto.x509.*
 
 main() {
     // 创建两个 SignatureAlgorithm 枚举值

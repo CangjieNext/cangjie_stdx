@@ -40,8 +40,8 @@ static func decodeDer(encoded: DerBlob): DHParameters
 import std.fs.*
 import std.io.*
 import std.process.*
-import stdx.crypto.x509.*
-import stdx.crypto.common.*
+import cangjie_stdx::crypto.x509.*
+import cangjie_stdx::crypto.common.*
 
 main() {
     // 生成测试用DH参数文件
@@ -97,7 +97,7 @@ static func decodeFromPem(text: String): DHParameters
 import std.fs.*
 import std.io.*
 import std.process.*
-import stdx.crypto.x509.*
+import cangjie_stdx::crypto.x509.*
 
 main() {
     // 生成测试用DH参数文件
@@ -149,8 +149,8 @@ func encodeToDer(): DerBlob
 import std.fs.*
 import std.io.*
 import std.process.*
-import stdx.crypto.x509.*
-import stdx.crypto.common.*
+import cangjie_stdx::crypto.x509.*
+import cangjie_stdx::crypto.common.*
 
 main() {
     // 生成测试用DH参数文件
@@ -203,7 +203,7 @@ func encodeToPem(): PemEntry
 import std.fs.*
 import std.io.*
 import std.process.*
-import stdx.crypto.x509.*
+import cangjie_stdx::crypto.x509.*
 
 main() {
     // 生成测试用DH参数文件
@@ -256,7 +256,7 @@ public override func toString(): String
 import std.fs.*
 import std.io.*
 import std.process.*
-import stdx.crypto.x509.*
+import cangjie_stdx::crypto.x509.*
 
 main() {
     // 生成测试用DH参数文件
@@ -325,7 +325,7 @@ public prop dnsNames: Array<String>
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.x509.*
+import cangjie_stdx::crypto.x509.*
 
 main() {
     // 找到系统根证书中的ISRG Root X1证书用作演示
@@ -362,7 +362,7 @@ public prop emailAddresses: Array<String>
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.x509.*
+import cangjie_stdx::crypto.x509.*
 
 main() {
     // 找到系统根证书中的ISRG Root X1证书用作演示
@@ -399,7 +399,7 @@ public prop extKeyUsage: ExtKeyUsage
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.x509.*
+import cangjie_stdx::crypto.x509.*
 
 main() {
     // 找到系统根证书中的ISRG Root X1证书用作演示
@@ -436,7 +436,7 @@ public prop IPAddresses: Array<IP>
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.x509.*
+import cangjie_stdx::crypto.x509.*
 
 main() {
     // 找到系统根证书中的ISRG Root X1证书用作演示
@@ -473,7 +473,7 @@ public prop issuer: X509Name
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.x509.*
+import cangjie_stdx::crypto.x509.*
 
 main() {
     // 找到系统根证书中的ISRG Root X1证书用作演示
@@ -510,7 +510,7 @@ public prop keyUsage: KeyUsage
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.x509.*
+import cangjie_stdx::crypto.x509.*
 
 main() {
     // 找到系统根证书中的ISRG Root X1证书用作演示
@@ -547,7 +547,7 @@ public prop notAfter: DateTime
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.x509.*
+import cangjie_stdx::crypto.x509.*
 
 main() {
     // 找到系统根证书中的ISRG Root X1证书用作演示
@@ -584,7 +584,7 @@ public prop notBefore: DateTime
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.x509.*
+import cangjie_stdx::crypto.x509.*
 
 main() {
     // 找到系统根证书中的ISRG Root X1证书用作演示
@@ -621,7 +621,7 @@ public prop publicKey: PublicKey
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.x509.*
+import cangjie_stdx::crypto.x509.*
 
 main() {
     // 找到系统根证书中的ISRG Root X1证书用作演示
@@ -661,7 +661,7 @@ public prop publicKeyAlgorithm: PublicKeyAlgorithm
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.x509.*
+import cangjie_stdx::crypto.x509.*
 
 main() {
     // 找到系统根证书中的ISRG Root X1证书用作演示
@@ -698,7 +698,7 @@ public prop serialNumber: SerialNumber
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.x509.*
+import cangjie_stdx::crypto.x509.*
 
 main() {
     // 找到系统根证书中的ISRG Root X1证书用作演示
@@ -735,7 +735,7 @@ public prop signature: Signature
 
 <!-- run -->
 ```cangjie
-import stdx.crypto.x509.*
+import cangjie_stdx::crypto.x509.*
 
 main() {
     // 找到系统根证书中的ISRG Root X1证书用作演示
@@ -766,7 +766,7 @@ public prop signatureAlgorithm: SignatureAlgorithm
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.x509.*
+import cangjie_stdx::crypto.x509.*
 
 main() {
     // 找到系统根证书中的ISRG Root X1证书用作演示
@@ -803,7 +803,7 @@ public prop subject: X509Name
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.x509.*
+import cangjie_stdx::crypto.x509.*
 
 main() {
     // 找到系统根证书中的ISRG Root X1证书用作演示
@@ -860,8 +860,8 @@ import std.fs.*
 import std.io.*
 import std.time.*
 import std.process.*
-import stdx.crypto.x509.*
-import stdx.crypto.keys.*
+import cangjie_stdx::crypto.x509.*
+import cangjie_stdx::crypto.keys.*
 
 main() {
     // 生成测试用的根证书和密钥对
@@ -945,8 +945,8 @@ public static func decodeFromDer(der: DerBlob): X509Certificate
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.common.*
-import stdx.crypto.x509.*
+import cangjie_stdx::crypto.common.*
+import cangjie_stdx::crypto.x509.*
 
 main() {
     // 模拟场景：从外部（文件/网络）获取的 DerBlob（此处通过系统根证书ISRG Root X1模拟）
@@ -999,7 +999,7 @@ public static func decodeFromPem(pem: String): Array<X509Certificate>
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.x509.*
+import cangjie_stdx::crypto.x509.*
 
 main() {
     // 模拟场景：从外部（文件/网络）获取的PEM格式证书字符串（此处通过系统根证书ISRG Root X1模拟）
@@ -1047,7 +1047,7 @@ public static func systemRootCerts(): Array<X509Certificate>
 
 <!-- run -->
 ```cangjie
-import stdx.crypto.x509.*
+import cangjie_stdx::crypto.x509.*
 
 main() {
     // 核心演示：获取系统根证书
@@ -1084,7 +1084,7 @@ public func encodeToDer(): DerBlob
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.x509.*
+import cangjie_stdx::crypto.x509.*
 
 main() {
     // 模拟场景：已有的X509证书对象（此处通过系统根证书ISRG Root X1模拟）
@@ -1125,7 +1125,7 @@ public func encodeToPem(): PemEntry
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.x509.*
+import cangjie_stdx::crypto.x509.*
 
 main() {
     // 模拟场景：已有的X509证书对象（此处通过系统根证书ISRG Root X1模拟）
@@ -1167,7 +1167,7 @@ public override func hashCode(): Int64
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.x509.*
+import cangjie_stdx::crypto.x509.*
 
 main() {
     // 模拟场景：已有的X509证书对象（此处通过系统根证书ISRG Root X1模拟）
@@ -1209,7 +1209,7 @@ public override func toString(): String
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.x509.*
+import cangjie_stdx::crypto.x509.*
 
 main() {
     // 模拟场景：已有的X509证书对象（此处通过系统根证书ISRG Root X1模拟）
@@ -1265,7 +1265,7 @@ public func verify(verifyOption: VerifyOption): Bool
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.x509.*
+import cangjie_stdx::crypto.x509.*
 import std.time.*
 
 main() {
@@ -1325,7 +1325,7 @@ public override operator func !=(other: X509Certificate): Bool
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.x509.*
+import cangjie_stdx::crypto.x509.*
 
 main() {
     // 模拟场景：已有的X509证书对象（此处通过系统根证书ISRG Root X1模拟）
@@ -1381,7 +1381,7 @@ public override operator func ==(other: X509Certificate): Bool
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.x509.*
+import cangjie_stdx::crypto.x509.*
 
 main() {
     // 模拟场景：已有的X509证书对象（此处通过系统根证书ISRG Root X1模拟）
@@ -1450,8 +1450,8 @@ public prop dnsNames: Array<String>
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.x509.*
-import stdx.crypto.keys.*
+import cangjie_stdx::crypto.x509.*
+import cangjie_stdx::crypto.keys.*
 
 main() {
     // 创建测试用的私钥
@@ -1497,8 +1497,8 @@ public prop emailAddresses: Array<String>
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.x509.*
-import stdx.crypto.keys.*
+import cangjie_stdx::crypto.x509.*
+import cangjie_stdx::crypto.keys.*
 
 main() {
     // 创建测试用的私钥
@@ -1544,8 +1544,8 @@ public prop IPAddresses: Array<IP>
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.x509.*
-import stdx.crypto.keys.*
+import cangjie_stdx::crypto.x509.*
+import cangjie_stdx::crypto.keys.*
 
 main() {
     // 创建测试用的私钥
@@ -1594,8 +1594,8 @@ public prop publicKey: PublicKey
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.x509.*
-import stdx.crypto.keys.*
+import cangjie_stdx::crypto.x509.*
+import cangjie_stdx::crypto.keys.*
 
 main() {
     // 创建测试用的私钥
@@ -1648,8 +1648,8 @@ public prop publicKeyAlgorithm: PublicKeyAlgorithm
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.x509.*
-import stdx.crypto.keys.*
+import cangjie_stdx::crypto.x509.*
+import cangjie_stdx::crypto.keys.*
 
 main() {
     // 创建测试用的私钥
@@ -1695,8 +1695,8 @@ public prop signature: Signature
 
 <!-- run -->
 ```cangjie
-import stdx.crypto.x509.*
-import stdx.crypto.keys.*
+import cangjie_stdx::crypto.x509.*
+import cangjie_stdx::crypto.keys.*
 
 main() {
     // 创建测试用的私钥
@@ -1735,8 +1735,8 @@ public prop signatureAlgorithm: SignatureAlgorithm
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.x509.*
-import stdx.crypto.keys.*
+import cangjie_stdx::crypto.x509.*
+import cangjie_stdx::crypto.keys.*
 
 main() {
     // 创建测试用的私钥
@@ -1782,8 +1782,8 @@ public prop subject: X509Name
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.x509.*
-import stdx.crypto.keys.*
+import cangjie_stdx::crypto.x509.*
+import cangjie_stdx::crypto.keys.*
 
 main() {
     // 创建测试用的私钥
@@ -1841,8 +1841,8 @@ public init(
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.x509.*
-import stdx.crypto.keys.*
+import cangjie_stdx::crypto.x509.*
+import cangjie_stdx::crypto.keys.*
 
 main() {
     // 创建测试用的私钥
@@ -1897,8 +1897,8 @@ public static func decodeFromDer(der: DerBlob): X509CertificateRequest
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.x509.*
-import stdx.crypto.keys.*
+import cangjie_stdx::crypto.x509.*
+import cangjie_stdx::crypto.keys.*
 
 main() {
     // 创建测试用的私钥
@@ -1959,8 +1959,8 @@ public static func decodeFromPem(pem: String): Array<X509CertificateRequest>
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.x509.*
-import stdx.crypto.keys.*
+import cangjie_stdx::crypto.x509.*
+import cangjie_stdx::crypto.keys.*
 
 main() {
     // 创建测试用的私钥
@@ -2015,8 +2015,8 @@ public func encodeToDer(): DerBlob
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.x509.*
-import stdx.crypto.keys.*
+import cangjie_stdx::crypto.x509.*
+import cangjie_stdx::crypto.keys.*
 
 main() {
     // 创建测试用的私钥
@@ -2066,8 +2066,8 @@ public func encodeToPem(): PemEntry
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.x509.*
-import stdx.crypto.keys.*
+import cangjie_stdx::crypto.x509.*
+import cangjie_stdx::crypto.keys.*
 
 main() {
     // 创建测试用的私钥
@@ -2117,8 +2117,8 @@ public override func hashCode(): Int64
 
 <!-- run -->
 ```cangjie
-import stdx.crypto.x509.*
-import stdx.crypto.keys.*
+import cangjie_stdx::crypto.x509.*
+import cangjie_stdx::crypto.keys.*
 
 main() {
     // 创建测试用的私钥
@@ -2168,8 +2168,8 @@ public override func toString(): String
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.x509.*
-import stdx.crypto.keys.*
+import cangjie_stdx::crypto.x509.*
+import cangjie_stdx::crypto.keys.*
 
 main() {
     // 创建测试用的私钥
@@ -2241,7 +2241,7 @@ public prop commonName: ?String
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.x509.*
+import cangjie_stdx::crypto.x509.*
 
 main() {
     // 创建X509Name对象
@@ -2273,7 +2273,7 @@ public prop countryName: ?String
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.x509.*
+import cangjie_stdx::crypto.x509.*
 
 main() {
     // 创建X509Name对象
@@ -2305,7 +2305,7 @@ public prop email: ?String
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.x509.*
+import cangjie_stdx::crypto.x509.*
 
 main() {
     // 创建X509Name对象
@@ -2337,7 +2337,7 @@ public prop localityName: ?String
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.x509.*
+import cangjie_stdx::crypto.x509.*
 
 main() {
     // 创建X509Name对象
@@ -2369,7 +2369,7 @@ public prop organizationalUnitName: ?String
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.x509.*
+import cangjie_stdx::crypto.x509.*
 
 main() {
     // 创建X509Name对象
@@ -2401,7 +2401,7 @@ public prop organizationName: ?String
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.x509.*
+import cangjie_stdx::crypto.x509.*
 
 main() {
     // 创建X509Name对象
@@ -2433,7 +2433,7 @@ public prop provinceName: ?String
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.x509.*
+import cangjie_stdx::crypto.x509.*
 
 main() {
     // 创建X509Name对象
@@ -2485,7 +2485,7 @@ Province Name: Some(Beijing)
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.x509.*
+import cangjie_stdx::crypto.x509.*
 
 main() {
     // 创建包含所有字段的X509Name对象
@@ -2526,7 +2526,7 @@ public override func toString(): String
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.x509.*
+import cangjie_stdx::crypto.x509.*
 
 main() {
     // 创建X509Name对象

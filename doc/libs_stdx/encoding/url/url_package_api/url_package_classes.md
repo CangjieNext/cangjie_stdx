@@ -25,7 +25,7 @@ public init()
 
 <!-- run -->
 ```cangjie
-import stdx.encoding.url.*
+import cangjie_stdx::encoding.url.*
 
 main() {
     // 使用无参构造函数创建Form实例 
@@ -56,7 +56,7 @@ public init(queryComponent: String)
 
 <!-- run -->
 ```cangjie
-import stdx.encoding.url.*
+import cangjie_stdx::encoding.url.*
 
 main() {
     // 使用带参构造函数创建Form实例 
@@ -81,7 +81,7 @@ public func add(key: String, value: String): Unit
 
 <!-- verify -->
 ```cangjie
-import stdx.encoding.url.*
+import cangjie_stdx::encoding.url.*
 
 main() {
     // 创建一个Form实例 
@@ -117,7 +117,7 @@ public func clone(): Form
 
 <!-- verify -->
 ```cangjie
-import stdx.encoding.url.*
+import cangjie_stdx::encoding.url.*
 
 main() {
     // 创建一个Form实例并添加一些键值对 
@@ -165,7 +165,7 @@ public func get(key: String): Option<String>
 
 <!-- verify -->
 ```cangjie
-import stdx.encoding.url.*
+import cangjie_stdx::encoding.url.*
 
 main() {
     // 创建一个Form实例并添加一些键值对 
@@ -212,7 +212,7 @@ public func getAll(key: String): ArrayList<String>
 
 <!-- verify -->
 ```cangjie
-import stdx.encoding.url.*
+import cangjie_stdx::encoding.url.*
 
 main() {
     // 创建一个Form实例并添加一些键值对 
@@ -257,7 +257,7 @@ public func isEmpty(): Bool
 
 <!-- verify -->
 ```cangjie
-import stdx.encoding.url.*
+import cangjie_stdx::encoding.url.*
 
 main() {
     // 创建一个空Form实例 
@@ -298,7 +298,7 @@ public func remove(key: String): Unit
 
 <!-- verify -->
 ```cangjie
-import stdx.encoding.url.*
+import cangjie_stdx::encoding.url.*
 
 main() {
     // 创建一个Form实例并添加一些键值对 
@@ -338,7 +338,7 @@ public func set(key: String, value: String): Unit
 
 <!-- verify -->
 ```cangjie
-import stdx.encoding.url.*
+import cangjie_stdx::encoding.url.*
 
 main() {
     // 创建一个Form实例并添加一些键值对 
@@ -382,7 +382,7 @@ public func toEncodeString(): String
 
 <!-- verify -->
 ```cangjie
-import stdx.encoding.url.*
+import cangjie_stdx::encoding.url.*
 
 main() {
     // 创建一个Form实例并添加一些键值对 
@@ -441,7 +441,7 @@ public prop fragment: ?String
 
 <!-- verify -->
 ```cangjie
-import stdx.encoding.url.*
+import cangjie_stdx::encoding.url.*
 
 main() {
     // 解析URL
@@ -471,7 +471,7 @@ public prop host: String
 
 <!-- verify -->
 ```cangjie
-import stdx.encoding.url.*
+import cangjie_stdx::encoding.url.*
 
 main() {
     // 解析URL
@@ -501,7 +501,7 @@ public prop hostName: String
 
 <!-- verify -->
 ```cangjie
-import stdx.encoding.url.*
+import cangjie_stdx::encoding.url.*
 
 main() {
     // 解析URL
@@ -531,7 +531,7 @@ public prop opaque: String
 
 <!-- verify -->
 ```cangjie
-import stdx.encoding.url.*
+import cangjie_stdx::encoding.url.*
 
 main() {
     let url = URL.parse("https:\\\\/example.com/foo/bar") // '\' 不是协议规定的分割符，无法被解析。
@@ -563,7 +563,7 @@ public prop path: String
 
 <!-- verify -->
 ```cangjie
-import stdx.encoding.url.*
+import cangjie_stdx::encoding.url.*
 
 main() {
     // 解析URL
@@ -593,7 +593,7 @@ public prop port: String
 
 <!-- verify -->
 ```cangjie
-import stdx.encoding.url.*
+import cangjie_stdx::encoding.url.*
 
 main() {
     // 解析URL
@@ -623,7 +623,7 @@ public prop query: ?String
 
 <!-- verify -->
 ```cangjie
-import stdx.encoding.url.*
+import cangjie_stdx::encoding.url.*
 
 main() {
     // 解析URL
@@ -653,7 +653,7 @@ public prop queryForm: Form
 
 <!-- verify -->
 ```cangjie
-import stdx.encoding.url.*
+import cangjie_stdx::encoding.url.*
 
 main() {
     // 解析URL
@@ -687,7 +687,7 @@ public prop rawFragment: ?String
 
 <!-- verify -->
 ```cangjie
-import stdx.encoding.url.*
+import cangjie_stdx::encoding.url.*
 
 main() {
     // 解析URL
@@ -717,7 +717,7 @@ public prop rawPath: String
 
 <!-- verify -->
 ```cangjie
-import stdx.encoding.url.*
+import cangjie_stdx::encoding.url.*
 
 main() {
     // 解析URL
@@ -747,7 +747,7 @@ public prop rawQuery: ?String
 
 <!-- verify -->
 ```cangjie
-import stdx.encoding.url.*
+import cangjie_stdx::encoding.url.*
 
 main() {
     // 解析URL
@@ -777,7 +777,7 @@ public prop rawUserInfo: UserInfo
 
 <!-- verify -->
 ```cangjie
-import stdx.encoding.url.*
+import cangjie_stdx::encoding.url.*
 
 main() {
     // 解析URL
@@ -807,7 +807,7 @@ public prop scheme: String
 
 <!-- verify -->
 ```cangjie
-import stdx.encoding.url.*
+import cangjie_stdx::encoding.url.*
 
 main() {
     // 解析URL
@@ -837,7 +837,7 @@ public prop userInfo: UserInfo
 
 <!-- verify -->
 ```cangjie
-import stdx.encoding.url.*
+import cangjie_stdx::encoding.url.*
 
 main() {
     // 解析URL
@@ -881,7 +881,7 @@ public init(scheme!: String, hostName!: String, path!: String)
 
 <!-- verify -->
 ```cangjie
-import stdx.encoding.url.*
+import cangjie_stdx::encoding.url.*
 
 main() {
     // 创建URL实例
@@ -923,7 +923,7 @@ static func decode(url: String): String
 
 <!-- verify -->
 ```cangjie
-import stdx.encoding.url.*
+import cangjie_stdx::encoding.url.*
 
 main() {
     // 解码URL编码的字符串‘Hello & World! %’
@@ -962,7 +962,7 @@ static func decodeComponent(component: String): String
 
 <!-- verify -->
 ```cangjie
-import stdx.encoding.url.*
+import cangjie_stdx::encoding.url.*
 
 main() {
     let encoded = "Hello%20%26%20World! %25"
@@ -1010,7 +1010,7 @@ static func encode(url: String): String
 
 <!-- verify -->
 ```cangjie
-import stdx.encoding.url.*
+import cangjie_stdx::encoding.url.*
 
 main() {
     // 编码URL字符串
@@ -1057,7 +1057,7 @@ static func encodeComponent(component: String): String
 
 <!-- verify -->
 ```cangjie
-import stdx.encoding.url.*
+import cangjie_stdx::encoding.url.*
 
 main() {
     // 编码URL字符串
@@ -1108,7 +1108,7 @@ public static func mergePaths(basePath: String, refPath: String): String
 
 <!-- verify -->
 ```cangjie
-import stdx.encoding.url.*
+import cangjie_stdx::encoding.url.*
 
 main() {
     // 合并路径
@@ -1159,7 +1159,7 @@ public static func parse(rawUrl: String): URL
 
 <!-- verify -->
 ```cangjie
-import stdx.encoding.url.*
+import cangjie_stdx::encoding.url.*
 
 main() {
     // 解析URL字符串
@@ -1191,7 +1191,7 @@ public func isAbsoluteURL(): Bool
 
 <!-- verify -->
 ```cangjie
-import stdx.encoding.url.*
+import cangjie_stdx::encoding.url.*
 
 main() {
     // 解析URL字符串
@@ -1252,7 +1252,7 @@ public func replace(scheme!: Option<String> = None, userInfo!: Option<String> = 
 
 <!-- verify -->
 ```cangjie
-import stdx.encoding.url.*
+import cangjie_stdx::encoding.url.*
 
 main() {
     // 解析URL字符串
@@ -1301,7 +1301,7 @@ public func resolveURL(ref: URL): URL
 
 <!-- verify -->
 ```cangjie
-import stdx.encoding.url.*
+import cangjie_stdx::encoding.url.*
 
 main() {
     // 解析基础URL
@@ -1340,7 +1340,7 @@ public func toString(): String
 
 <!-- verify -->
 ```cangjie
-import stdx.encoding.url.*
+import cangjie_stdx::encoding.url.*
 
 main() {
     // 解析URL字符串
@@ -1392,7 +1392,7 @@ public init()
 
 <!-- run -->
 ```cangjie
-import stdx.encoding.url.*
+import cangjie_stdx::encoding.url.*
 
 main() {
     // 使用无参构造函数创建UserInfo实例 
@@ -1416,7 +1416,7 @@ public init(userName: String)
 
 <!-- verify -->
 ```cangjie
-import stdx.encoding.url.*
+import cangjie_stdx::encoding.url.*
 
 main() {
     // 使用用户名参数创建UserInfo实例 
@@ -1448,7 +1448,7 @@ public init(userName: String, passWord: Option<String>)
 
 <!-- verify -->
 ```cangjie
-import stdx.encoding.url.*
+import cangjie_stdx::encoding.url.*
 
 main() {
     // 使用用户名和密码创建UserInfo实例 
@@ -1480,7 +1480,7 @@ public init(userName: String, passWord: String)
 
 <!-- verify -->
 ```cangjie
-import stdx.encoding.url.*
+import cangjie_stdx::encoding.url.*
 
 main() {
     // 使用用户名和密码创建UserInfo实例 
@@ -1516,7 +1516,7 @@ public func password(): Option<String>
 
 <!-- verify -->
 ```cangjie
-import stdx.encoding.url.*
+import cangjie_stdx::encoding.url.*
 
 main() {
     // 创建UserInfo实例 
@@ -1551,7 +1551,7 @@ public func toString(): String
 
 <!-- verify -->
 ```cangjie
-import stdx.encoding.url.*
+import cangjie_stdx::encoding.url.*
 
 main() {
     // 创建UserInfo实例 
@@ -1586,7 +1586,7 @@ public func username(): String
 
 <!-- verify -->
 ```cangjie
-import stdx.encoding.url.*
+import cangjie_stdx::encoding.url.*
 
 main() {
     // 创建UserInfo实例 

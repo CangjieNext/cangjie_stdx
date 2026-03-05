@@ -90,27 +90,26 @@ irm https://raw.gitcode.com/Cangjie/cangjie_stdx/raw/dev/downloader.ps1 -OutFile
 ## 目录结构
 
 ```text
-/stdx
+/cangjie_stdx
 ├─ build                        # 工程构建目录，编译构建工具、脚本等
 ├─ doc                          # STDX 库资料目录
 ├─ figures                      # 存放readme中的架构图
 ├─ src                          # STDX 各个包代码目录                        
-│   └─ stdx
-│       ├── actors              # 提供 Actors 功能                     
-│       ├── aspectCJ            # 提供 AOP 功能
-│       ├── compress            # 提供压缩和解压缩功能
-│       ├── crypto              # 提供安全相关能力
-│       ├── effect              # 提供用于处理 Effect Handler 特性的用户级 API。这是一个实验性功能，需要使用支持该机制的 Cangjie 编译器。
-│       ├── dynamicLoader       # Openssl 动态加载模块
-│       ├── encoding            # 提供 JSON 和字符串编码相关能力。
-│       ├── fuzz                # 提供基于覆盖率反馈的仓颉 fuzz 引擎及对应的接口
-│       ├── log                 # 提供了日志记录相关的能力
-│       ├── logger              # 提供文本格式和 JSON 格式日志打印功能
-│       ├── net                 # 提供网络通信等能力
-│       ├── serialization       # 提供序列化和反序列化能力
-│       ├── string_intern       # 提供string对象的池化缓存能力
-│       ├── syntax              # 提供语法解析能力
-│       └── unittest            # 提供单元测试扩展能力
+│   ├── actors              # 提供 Actors 功能                     
+│   ├── aspectCJ            # 提供 AOP 功能
+│   ├── compress            # 提供压缩和解压缩功能
+│   ├── crypto              # 提供安全相关能力
+│   ├── effect              # 提供用于处理 Effect Handler 特性的用户级 API。这是一个实验性功能，需要使用支持该机制的 Cangjie 编译器。
+│   ├── dynamicLoader       # Openssl 动态加载模块
+│   ├── encoding            # 提供 JSON 和字符串编码相关能力。
+│   ├── fuzz                # 提供基于覆盖率反馈的仓颉 fuzz 引擎及对应的接口
+│   ├── log                 # 提供了日志记录相关的能力
+│   ├── logger              # 提供文本格式和 JSON 格式日志打印功能
+│   ├── net                 # 提供网络通信等能力
+│   ├── serialization       # 提供序列化和反序列化能力
+│   ├── string_intern       # 提供string对象的池化缓存能力
+│   ├── syntax              # 提供语法解析能力
+│   └── unittest            # 提供单元测试扩展能力
 │
 ├─ third_party                  # 第三方组件目录
 └─ target                       # 编译构建产物目录
@@ -197,7 +196,7 @@ cjpm 的详细使用可以参考 [cjpm 文档](https://gitcode.com/Cangjie/cangj
 ```toml
 [target.x86_64-w64-mingw32]                                                     # 系统架构和 OS 信息
   [target.x86_64-w64-mingw32.bin-dependencies]
-    path-option = ["D:\\cangjiestdx\\windows_x86_64_cjnative\\stdx\\dynamic\\stdx"] # stdx 路径根据实际情况配置
+    path-option = ["D:\\cangjie_stdx\\windows_x86_64_cjnative\\stdx\\dynamic\\stdx"] # stdx 路径根据实际情况配置
 ```
 
 其中：
@@ -252,20 +251,20 @@ cjc -L $STATIC_OPENSSL_DIR --link-option "-force_load" --link-option "$STATIC_OP
 
 [target.x86_64-w64-mingw32]                                                     # 系统架构和 OS 信息
   [target.x86_64-w64-mingw32.bin-dependencies]
-    path-option = ["D:\\cangjiestdx\\windows_x86_64_cjnative\\stdx\\dynamic\\stdx"] # stdx 路径根据实际情况配置
+    path-option = ["D:\\cangjie_stdx\\windows_x86_64_cjnative\\stdx\\dynamic\\stdx"] # stdx 路径根据实际情况配置
 ```
 
 ### 使用 stdx
 
 在需要使用 `stdx` 的仓颉源代码文件中，通过 import 导入 `stdx` 提供的对应包，即可调用该包提供的 API。import 格式为：
 
-**import stdx.fullPackageName.itemName**
+**import cangjie_stdx::fullPackageName.itemName**
 
 其中 `fullPackageName` 为[包列表](./doc/libs_stdx/libs_overview.md#包列表)给出的包名，`itemName` 为可见声明或定义的名字,  `*` 表示导入所有可见的顶层声明或定义，例如：
 
-- import stdx.net.http.ServerBuilder：导入 stdx 模块的 net.http 包中的【顶层声明】ServerBuilder。
-- import stdx.net.http.\* ：导入 stdx 模块的 net.http 包。
-- import stdx.log.\* ：导入 stdx 模块的 log 包。
+- import cangjie_stdx::net.http.ServerBuilder：导入 stdx 模块的 net.http 包中的【顶层声明】ServerBuilder。
+- import cangjie_stdx::net.http.\* ：导入 stdx 模块的 net.http 包。
+- import cangjie_stdx::log.\* ：导入 stdx 模块的 log 包。
 
 ### 使用示例
 
@@ -296,7 +295,7 @@ cjc -L $STATIC_OPENSSL_DIR --link-option "-force_load" --link-option "$STATIC_OP
 ```cangjie
 package test
 
-import stdx.net.http.ServerBuilder
+import cangjie_stdx::net.http.ServerBuilder
 
 main () {
     // 1. 构建 Server 实例

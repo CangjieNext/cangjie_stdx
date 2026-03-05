@@ -30,7 +30,7 @@ main(){
 <!-- compile -->
 
 ```cangjie
-import stdx.syntax.*
+import cangjie_stdx::syntax.*
 
 // 1. 继承 ASTVisitor
 public class BinaryCounter <: ASTVisitor {

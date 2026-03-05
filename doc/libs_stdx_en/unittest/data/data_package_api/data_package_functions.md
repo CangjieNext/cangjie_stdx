@@ -83,7 +83,7 @@ Create a class that implements the [Serializable](../../../serialization/seriali
 
 <!--compile-->
 ```cangjie
-import stdx.serialization.serialization.*
+import cangjie_stdx::serialization.serialization.*
 import std.convert.*
 
 class User <: Serializable<User> {

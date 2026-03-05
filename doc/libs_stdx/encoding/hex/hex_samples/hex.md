@@ -4,7 +4,7 @@
 
 <!-- verify -->
 ```cangjie
-import stdx.encoding.hex.*
+import cangjie_stdx::encoding.hex.*
 
 main(): Int64 {
     var arr: Array<Byte> = [65, 66, 94, 97]

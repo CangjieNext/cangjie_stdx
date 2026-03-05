@@ -27,7 +27,7 @@ public init()
 
 <!-- verify -->
 ```cangjie
-import stdx.net.tls.common.*
+import cangjie_stdx::net.tls.common.*
 
 main() {
     try {
@@ -60,7 +60,7 @@ public init(message: String)
 
 <!-- verify -->
 ```cangjie
-import stdx.net.tls.common.*
+import cangjie_stdx::net.tls.common.*
 
 main() {
     try {

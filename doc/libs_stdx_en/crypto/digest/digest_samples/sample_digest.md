@@ -8,10 +8,10 @@ Example:
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.digest.*
+import cangjie_stdx::crypto.digest.*
 import std.convert.*
 import std.crypto.digest.*
-import stdx.encoding.hex.*
+import cangjie_stdx::encoding.hex.*
 
 main() {
     var str: String = "helloworld"
@@ -38,10 +38,10 @@ Example:
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.digest.*
+import cangjie_stdx::crypto.digest.*
 import std.convert.*
 import std.crypto.digest.*
-import stdx.encoding.hex.*
+import cangjie_stdx::encoding.hex.*
 
 main() {
     var str: String = "helloworld"
@@ -68,10 +68,10 @@ Example:
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.digest.*
+import cangjie_stdx::crypto.digest.*
 import std.convert.*
 import std.crypto.digest.*
-import stdx.encoding.hex.*
+import cangjie_stdx::encoding.hex.*
 
 main() {
     var str: String = "helloworld"
@@ -98,10 +98,10 @@ Example:
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.digest.*
+import cangjie_stdx::crypto.digest.*
 import std.convert.*
 import std.crypto.digest.*
-import stdx.encoding.hex.*
+import cangjie_stdx::encoding.hex.*
 
 main() {
     var str: String = "helloworld"
@@ -128,10 +128,10 @@ Example:
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.digest.*
+import cangjie_stdx::crypto.digest.*
 import std.convert.*
 import std.crypto.digest.*
-import stdx.encoding.hex.*
+import cangjie_stdx::encoding.hex.*
 
 main() {
     var str: String = "helloworld"
@@ -158,10 +158,10 @@ Example:
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.digest.*
+import cangjie_stdx::crypto.digest.*
 import std.convert.*
 import std.crypto.digest.*
-import stdx.encoding.hex.*
+import cangjie_stdx::encoding.hex.*
 
 main() {
     var str: String = "helloworld"
@@ -192,8 +192,8 @@ Example:
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.digest.*
-import stdx.encoding.hex.*
+import cangjie_stdx::crypto.digest.*
+import cangjie_stdx::encoding.hex.*
 
 main() {
     var algorithm: HashType = HashType.SHA512
@@ -236,10 +236,10 @@ Example:
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.digest.*
+import cangjie_stdx::crypto.digest.*
 import std.convert.*
 import std.crypto.digest.*
-import stdx.encoding.hex.*
+import cangjie_stdx::encoding.hex.*
 
 main() {
     var str: String = "helloworld"

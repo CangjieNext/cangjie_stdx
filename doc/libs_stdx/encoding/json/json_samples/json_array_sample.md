@@ -6,7 +6,7 @@
 
 <!-- verify -->
 ```cangjie
-import stdx.encoding.json.*
+import cangjie_stdx::encoding.json.*
 import std.collection.*
 
 main() {

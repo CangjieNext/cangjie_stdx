@@ -6,8 +6,8 @@ Example:
 
 <!-- run -->
 ```cangjie
-import stdx.net.http.*
-import stdx.encoding.url.*
+import cangjie_stdx::net.http.*
+import cangjie_stdx::encoding.url.*
 import std.net.*
 import std.time.*
 import std.sync.*
@@ -104,8 +104,8 @@ Example:
 
 <!-- run -->
 ```cangjie
-import stdx.net.http.*
-import stdx.net.tls.*
+import cangjie_stdx::net.http.*
+import cangjie_stdx::net.tls.*
 import std.net.*
 import std.sync.*
 

@@ -10,9 +10,9 @@ import std.io.{OutputStream, ByteBuffer, BufferedOutputStream}
 import std.env.*
 import std.fs.*
 import std.collection.{HashMap, ArrayList}
-import stdx.encoding.json.stream.*
-import stdx.log.*
-import stdx.logger.*
+import cangjie_stdx::encoding.json.stream.*
+import cangjie_stdx::log.*
+import cangjie_stdx::logger.*
 
 main() {
     let o = ByteBuffer()
@@ -112,8 +112,8 @@ import std.io.{OutputStream, ByteBuffer, BufferedOutputStream}
 import std.env.*
 import std.fs.*
 import std.collection.{HashMap, ArrayList}
-import stdx.log.*
-import stdx.logger.*
+import cangjie_stdx::log.*
+import cangjie_stdx::logger.*
 
 main() {
     let o = ByteBuffer()
@@ -215,8 +215,8 @@ import std.io.{OutputStream, ByteBuffer, BufferedOutputStream}
 import std.env.*
 import std.fs.*
 import std.collection.{HashMap, ArrayList}
-import stdx.log.*
-import stdx.logger.*
+import cangjie_stdx::log.*
+import cangjie_stdx::logger.*
 
 main() {
     let o = ByteBuffer()

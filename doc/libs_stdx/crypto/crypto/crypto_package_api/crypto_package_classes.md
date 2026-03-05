@@ -38,7 +38,7 @@ public init(priv!: Bool = false)
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.crypto.*
+import cangjie_stdx::crypto.crypto.*
 
 main() {
     // 创建一个默认的SecureRandom实例
@@ -85,7 +85,7 @@ public func nextBits(bits: UInt64): UInt64
 
 <!-- run -->
 ```cangjie
-import stdx.crypto.crypto.*
+import cangjie_stdx::crypto.crypto.*
 
 main() {
     let random = SecureRandom()
@@ -132,7 +132,7 @@ public func nextBool(): Bool
 
 <!-- run -->
 ```cangjie
-import stdx.crypto.crypto.*
+import cangjie_stdx::crypto.crypto.*
 
 main() {
     let random = SecureRandom()
@@ -174,7 +174,7 @@ public func nextBytes(bytes: Array<Byte>): Unit
 
 <!-- run -->
 ```cangjie
-import stdx.crypto.crypto.*
+import cangjie_stdx::crypto.crypto.*
 
 main() {
     let random = SecureRandom()
@@ -222,7 +222,7 @@ public func nextBytes(length: Int32): Array<Byte>
 
 <!-- run -->
 ```cangjie
-import stdx.crypto.crypto.*
+import cangjie_stdx::crypto.crypto.*
 
 main() {
     let random = SecureRandom()
@@ -266,7 +266,7 @@ public func nextFloat16(): Float16
 
 <!-- run -->
 ```cangjie
-import stdx.crypto.crypto.*
+import cangjie_stdx::crypto.crypto.*
 
 main() {
     let random = SecureRandom()
@@ -308,7 +308,7 @@ public func nextFloat32(): Float32
 
 <!-- run -->
 ```cangjie
-import stdx.crypto.crypto.*
+import cangjie_stdx::crypto.crypto.*
 
 main() {
     let random = SecureRandom()
@@ -350,7 +350,7 @@ public func nextFloat64(): Float64
 
 <!-- run -->
 ```cangjie
-import stdx.crypto.crypto.*
+import cangjie_stdx::crypto.crypto.*
 
 main() {
     let random = SecureRandom()
@@ -397,7 +397,7 @@ public func nextGaussianFloat16(mean!: Float16 = 0.0, sigma!: Float16 = 1.0): Fl
 
 <!-- run -->
 ```cangjie
-import stdx.crypto.crypto.*
+import cangjie_stdx::crypto.crypto.*
 
 main() {
     let random = SecureRandom()
@@ -444,7 +444,7 @@ public func nextGaussianFloat32(mean!: Float32 = 0.0, sigma!: Float32 = 1.0): Fl
 
 <!-- run -->
 ```cangjie
-import stdx.crypto.crypto.*
+import cangjie_stdx::crypto.crypto.*
 
 main() {
     let random = SecureRandom()
@@ -491,7 +491,7 @@ public func nextGaussianFloat64(mean!: Float64 = 0.0, sigma!: Float64 = 1.0): Fl
 
 <!-- run -->
 ```cangjie
-import stdx.crypto.crypto.*
+import cangjie_stdx::crypto.crypto.*
 
 main() {
     let random = SecureRandom()
@@ -533,7 +533,7 @@ public func nextInt16(): Int16
 
 <!-- run -->
 ```cangjie
-import stdx.crypto.crypto.*
+import cangjie_stdx::crypto.crypto.*
 
 main() {
     let random = SecureRandom()
@@ -580,7 +580,7 @@ public func nextInt16(max: Int16): Int16
 
 <!-- run -->
 ```cangjie
-import stdx.crypto.crypto.*
+import cangjie_stdx::crypto.crypto.*
 
 main() {
     let random = SecureRandom()
@@ -622,7 +622,7 @@ public func nextInt32(): Int32
 
 <!-- run -->
 ```cangjie
-import stdx.crypto.crypto.*
+import cangjie_stdx::crypto.crypto.*
 
 main() {
     let random = SecureRandom()
@@ -669,7 +669,7 @@ public func nextInt32(max: Int32): Int32
 
 <!-- run -->
 ```cangjie
-import stdx.crypto.crypto.*
+import cangjie_stdx::crypto.crypto.*
 
 main() {
     let random = SecureRandom()
@@ -711,7 +711,7 @@ public func nextInt64(): Int64
 
 <!-- run -->
 ```cangjie
-import stdx.crypto.crypto.*
+import cangjie_stdx::crypto.crypto.*
 
 main() {
     let random = SecureRandom()
@@ -758,7 +758,7 @@ public func nextInt64(max: Int64): Int64
 
 <!-- run -->
 ```cangjie
-import stdx.crypto.crypto.*
+import cangjie_stdx::crypto.crypto.*
 
 main() {
     let random = SecureRandom()
@@ -800,7 +800,7 @@ public func nextInt8(): Int8
 
 <!-- run -->
 ```cangjie
-import stdx.crypto.crypto.*
+import cangjie_stdx::crypto.crypto.*
 
 main() {
     let random = SecureRandom()
@@ -847,7 +847,7 @@ public func nextInt8(max: Int8): Int8
 
 <!-- run -->
 ```cangjie
-import stdx.crypto.crypto.*
+import cangjie_stdx::crypto.crypto.*
 
 main() {
     let random = SecureRandom()
@@ -889,7 +889,7 @@ public func nextUInt16(): UInt16
 
 <!-- run -->
 ```cangjie
-import stdx.crypto.crypto.*
+import cangjie_stdx::crypto.crypto.*
 
 main() {
     let random = SecureRandom()
@@ -936,7 +936,7 @@ public func nextUInt16(max: UInt16): UInt16
 
 <!-- run -->
 ```cangjie
-import stdx.crypto.crypto.*
+import cangjie_stdx::crypto.crypto.*
 
 main() {
     let random = SecureRandom()
@@ -978,7 +978,7 @@ public func nextUInt32(): UInt32
 
 <!-- run -->
 ```cangjie
-import stdx.crypto.crypto.*
+import cangjie_stdx::crypto.crypto.*
 
 main() {
     let random = SecureRandom()
@@ -1025,7 +1025,7 @@ public func nextUInt32(max: UInt32): UInt32
 
 <!-- run -->
 ```cangjie
-import stdx.crypto.crypto.*
+import cangjie_stdx::crypto.crypto.*
 
 main() {
     let random = SecureRandom()
@@ -1067,7 +1067,7 @@ public func nextUInt64(): UInt64
 
 <!-- run -->
 ```cangjie
-import stdx.crypto.crypto.*
+import cangjie_stdx::crypto.crypto.*
 
 main() {
     let random = SecureRandom()
@@ -1114,7 +1114,7 @@ public func nextUInt64(max: UInt64): UInt64
 
 <!-- run -->
 ```cangjie
-import stdx.crypto.crypto.*
+import cangjie_stdx::crypto.crypto.*
 
 main() {
     let random = SecureRandom()
@@ -1156,7 +1156,7 @@ public func nextUInt8(): UInt8
 
 <!-- run -->
 ```cangjie
-import stdx.crypto.crypto.*
+import cangjie_stdx::crypto.crypto.*
 
 main() {
     let random = SecureRandom()
@@ -1203,7 +1203,7 @@ public func nextUInt8(max: UInt8): UInt8
 
 <!-- run -->
 ```cangjie
-import stdx.crypto.crypto.*
+import cangjie_stdx::crypto.crypto.*
 
 main() {
     let random = SecureRandom()
@@ -1284,7 +1284,7 @@ public prop aad: Array<Byte>
 
 <!-- compile -->
 ```cangjie
-import stdx.crypto.crypto.*
+import cangjie_stdx::crypto.crypto.*
 
 main() {
     let random = SecureRandom(priv: true)
@@ -1324,7 +1324,7 @@ public prop algorithm: String
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.crypto.*
+import cangjie_stdx::crypto.crypto.*
 
 main() {
     let random = SecureRandom(priv: true)
@@ -1363,7 +1363,7 @@ public prop blockSize: Int64
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.crypto.*
+import cangjie_stdx::crypto.crypto.*
 
 main() {
     let random = SecureRandom(priv: true)
@@ -1402,7 +1402,7 @@ public prop iv: Array<Byte>
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.crypto.*
+import cangjie_stdx::crypto.crypto.*
 
 main() {
     let random = SecureRandom(priv: true)
@@ -1441,7 +1441,7 @@ public prop ivSize: Int64
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.crypto.*
+import cangjie_stdx::crypto.crypto.*
 
 main() {
     let random = SecureRandom(priv: true)
@@ -1480,7 +1480,7 @@ public prop key: Array<Byte>
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.crypto.*
+import cangjie_stdx::crypto.crypto.*
 
 main() {
     let random = SecureRandom(priv: true)
@@ -1519,7 +1519,7 @@ public prop keySize: Int64
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.crypto.*
+import cangjie_stdx::crypto.crypto.*
 
 main() {
     let random = SecureRandom(priv: true)
@@ -1558,7 +1558,7 @@ public prop optMode: OperationMode
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.crypto.*
+import cangjie_stdx::crypto.crypto.*
 
 main() {
     let random = SecureRandom(priv: true)
@@ -1597,7 +1597,7 @@ public prop paddingMode: PaddingMode
 
 <!-- run -->
 ```cangjie
-import stdx.crypto.crypto.*
+import cangjie_stdx::crypto.crypto.*
 
 main() {
     let random = SecureRandom(priv: true)
@@ -1628,7 +1628,7 @@ public prop tagSize: Int64
 
 <!-- compile -->
 ```cangjie
-import stdx.crypto.crypto.*
+import cangjie_stdx::crypto.crypto.*
 
 main() {
     let random = SecureRandom(priv: true)
@@ -1685,7 +1685,7 @@ public init(
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.crypto.*
+import cangjie_stdx::crypto.crypto.*
 
 main() {
     let random = SecureRandom(priv: true)
@@ -1736,7 +1736,7 @@ public func decrypt(input: Array<Byte>): Array<Byte>
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.crypto.*
+import cangjie_stdx::crypto.crypto.*
 
 main() {
     let random = SecureRandom(priv: true)
@@ -1796,7 +1796,7 @@ public func decrypt(input: Array<Byte>,  to!: Array<Byte>): Int64
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.crypto.*
+import cangjie_stdx::crypto.crypto.*
 
 main() {
     let random = SecureRandom(priv: true)
@@ -1864,7 +1864,7 @@ public func decrypt(input: InputStream, output: OutputStream): Unit
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.crypto.*
+import cangjie_stdx::crypto.crypto.*
 import std.fs.*
 
 main() {
@@ -1931,7 +1931,7 @@ public func encrypt(input: Array<Byte>): Array<Byte>
 
 <!-- run -->
 ```cangjie
-import stdx.crypto.crypto.*
+import cangjie_stdx::crypto.crypto.*
 
 main() {
     let random = SecureRandom(priv: true)
@@ -1992,7 +1992,7 @@ public func encrypt(input: Array<Byte>, to!: Array<Byte>): Int64
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.crypto.*
+import cangjie_stdx::crypto.crypto.*
 
 main() {
     let random = SecureRandom(priv: true)
@@ -2044,7 +2044,7 @@ public func encrypt(input: InputStream, output: OutputStream): Unit
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.crypto.*
+import cangjie_stdx::crypto.crypto.*
 import std.fs.*
 
 main() {

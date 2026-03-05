@@ -1,4 +1,4 @@
-# stdx.actors
+# cangjie_stdx::actors
 
 ## Function Description
 
@@ -236,8 +236,8 @@ An exception has occurred:
 Exception: Balance for account Hamid is not enough.
          at default.BalanceNotEnoughException::init(std.core::String)(/home/.../main.cj:6)
          at default.Account::withdraw::lambda.0()(/home/.../main.cj:25)
-         at stdx.actors.ActorFuture<...>::execute()(actors/actor_future.cj:90)
-         at stdx.actors.SequentialDispatcher::startActorLoop::lambda.0()(actors/actors.cj:46)
+         at cangjie_stdx::actors.ActorFuture<...>::execute()(actors/actor_future.cj:90)
+         at cangjie_stdx::actors.SequentialDispatcher::startActorLoop::lambda.0()(actors/actors.cj:46)
 ```
 
 When a receiver throws an exception, the actor's dedicated thread will proceed to execute the next receiver call in the queue:
@@ -267,8 +267,8 @@ An exception has occurred:
 Exception: Balance for account Hamid is not enough.
          at default.BalanceNotEnoughException::init(std.core::String)(/home/.../main.cj:6)
          at default.Account::withdraw::lambda.0()(/home/.../main.cj:25)
-         at stdx.actors.ActorFuture<...>::execute()(actors/actor_future.cj:90)
-         at stdx.actors.SequentialDispatcher::startActorLoop::lambda.0()(actors/actors.cj:46)
+         at cangjie_stdx::actors.ActorFuture<...>::execute()(actors/actor_future.cj:90)
+         at cangjie_stdx::actors.SequentialDispatcher::startActorLoop::lambda.0()(actors/actors.cj:46)
 
 Balance = 0.0
 ```
@@ -382,8 +382,8 @@ package actorDemo
 
 import std.collection.ArrayList
 
-import stdx.actors.*
-import stdx.actors.macros.*
+import cangjie_stdx::actors.*
+import cangjie_stdx::actors.macros.*
 
 @Actor[enableReceiverPriority: true]
 public class Account {

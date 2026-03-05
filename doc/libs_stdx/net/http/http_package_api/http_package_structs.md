@@ -775,7 +775,7 @@ public let capacity: Int64
 
 <!-- verify -->
 ```cangjie
-import stdx.net.http.*
+import cangjie_stdx::net.http.*
 
 main() {
     // 读取 ServicePoolConfig.capacity
@@ -804,7 +804,7 @@ public let preheat: Int64
 
 <!-- verify -->
 ```cangjie
-import stdx.net.http.*
+import cangjie_stdx::net.http.*
 
 main() {
     // 读取 ServicePoolConfig.preheat
@@ -833,7 +833,7 @@ public let queueCapacity: Int64
 
 <!-- verify -->
 ```cangjie
-import stdx.net.http.*
+import cangjie_stdx::net.http.*
 
 main() {
     // 读取 ServicePoolConfig.queueCapacity
@@ -874,7 +874,7 @@ public init(
 
 <!-- run -->
 ```cangjie
-import stdx.net.http.*
+import cangjie_stdx::net.http.*
 
 main() {
     // 初始化
@@ -904,7 +904,7 @@ public mut prop keepAliveConfig: SocketKeepAliveConfig
 
 <!-- verify -->
 ```cangjie
-import stdx.net.http.*
+import cangjie_stdx::net.http.*
 import std.net.*
 
 main() {
@@ -950,7 +950,7 @@ public mut prop readBufferSize: ?Int64
 
 <!-- verify -->
 ```cangjie
-import stdx.net.http.*
+import cangjie_stdx::net.http.*
 
 main() {
     var tc = TransportConfig()
@@ -991,7 +991,7 @@ public mut prop readTimeout: Duration
 
 <!-- verify -->
 ```cangjie
-import stdx.net.http.*
+import cangjie_stdx::net.http.*
 
 main() {
     var tc = TransportConfig()
@@ -1030,7 +1030,7 @@ public mut prop writeBufferSize: ?Int64
 
 <!-- verify -->
 ```cangjie
-import stdx.net.http.*
+import cangjie_stdx::net.http.*
 
 main() {
     var tc = TransportConfig()
@@ -1071,7 +1071,7 @@ public mut prop writeTimeout: Duration
 
 <!-- verify -->
 ```cangjie
-import stdx.net.http.*
+import cangjie_stdx::net.http.*
 
 main() {
     var tc = TransportConfig()

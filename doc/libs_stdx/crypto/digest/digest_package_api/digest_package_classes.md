@@ -29,8 +29,8 @@ public prop algorithm: String
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.digest.*
-import stdx.crypto.crypto.*
+import cangjie_stdx::crypto.digest.*
+import cangjie_stdx::crypto.crypto.*
 
 main() {
     let random = SecureRandom(priv: true)
@@ -65,8 +65,8 @@ public prop blockSize: Int64
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.digest.*
-import stdx.crypto.crypto.*
+import cangjie_stdx::crypto.digest.*
+import cangjie_stdx::crypto.crypto.*
 
 main() {
     let random = SecureRandom(priv: true)
@@ -101,8 +101,8 @@ public prop size: Int64
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.digest.*
-import stdx.crypto.crypto.*
+import cangjie_stdx::crypto.digest.*
+import cangjie_stdx::crypto.crypto.*
 
 main() {
     let random = SecureRandom(priv: true)
@@ -144,8 +144,8 @@ public init(key: Array<Byte>, digest: () -> Digest)
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.digest.*
-import stdx.crypto.crypto.*
+import cangjie_stdx::crypto.digest.*
+import cangjie_stdx::crypto.crypto.*
 
 main() {
     let random = SecureRandom(priv: true)
@@ -190,8 +190,8 @@ public init(key: Array<Byte>, algorithm: HashType)
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.digest.*
-import stdx.crypto.crypto.*
+import cangjie_stdx::crypto.digest.*
+import cangjie_stdx::crypto.crypto.*
 
 main() {
     let random = SecureRandom(priv: true)
@@ -236,8 +236,8 @@ public static func equal(mac1: Array<Byte>, mac2: Array<Byte>): Bool
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.digest.*
-import stdx.crypto.crypto.*
+import cangjie_stdx::crypto.digest.*
+import cangjie_stdx::crypto.crypto.*
 
 main() {
     let key1 = "mySecretKey".toArray()
@@ -287,8 +287,8 @@ public func finish(): Array<Byte>
 
 <!-- run -->
 ```cangjie
-import stdx.crypto.digest.*
-import stdx.crypto.crypto.*
+import cangjie_stdx::crypto.digest.*
+import cangjie_stdx::crypto.crypto.*
 
 main() {
     let random = SecureRandom(priv: true)
@@ -331,8 +331,8 @@ public func finish(to!: Array<Byte>): Unit
 
 <!-- run -->
 ```cangjie
-import stdx.crypto.digest.*
-import stdx.crypto.crypto.*
+import cangjie_stdx::crypto.digest.*
+import cangjie_stdx::crypto.crypto.*
 
 main() {
     let random = SecureRandom(priv: true)
@@ -372,8 +372,8 @@ public func reset(): Unit
 
 <!-- run -->
 ```cangjie
-import stdx.crypto.digest.*
-import stdx.crypto.crypto.*
+import cangjie_stdx::crypto.digest.*
+import cangjie_stdx::crypto.crypto.*
 
 main() {
     let random = SecureRandom(priv: true)
@@ -427,8 +427,8 @@ public func write(buffer: Array<Byte>): Unit
 
 <!-- run -->
 ```cangjie
-import stdx.crypto.digest.*
-import stdx.crypto.crypto.*
+import cangjie_stdx::crypto.digest.*
+import cangjie_stdx::crypto.crypto.*
 
 main() {
     let random = SecureRandom(priv: true)
@@ -483,7 +483,7 @@ public prop algorithm: String
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.digest.*
+import cangjie_stdx::crypto.digest.*
 
 main() {
     let md5 = MD5()
@@ -515,7 +515,7 @@ public prop blockSize: Int64
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.digest.*
+import cangjie_stdx::crypto.digest.*
 
 main() {
     let md5 = MD5()
@@ -547,7 +547,7 @@ public prop size: Int64
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.digest.*
+import cangjie_stdx::crypto.digest.*
 
 main() {
     let md5 = MD5()
@@ -577,7 +577,7 @@ public init()
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.digest.*
+import cangjie_stdx::crypto.digest.*
 
 main() {
     let md5 = MD5()
@@ -620,7 +620,7 @@ public func finish(): Array<Byte>
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.digest.*
+import cangjie_stdx::crypto.digest.*
 
 main() {
     let md5 = MD5()
@@ -661,7 +661,7 @@ public func finish(to!: Array<Byte>): Unit
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.digest.*
+import cangjie_stdx::crypto.digest.*
 
 main() {
     let md5 = MD5()
@@ -695,7 +695,7 @@ public func reset(): Unit
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.digest.*
+import cangjie_stdx::crypto.digest.*
 
 main() {
     let md5 = MD5()
@@ -742,7 +742,7 @@ public func write(buffer: Array<Byte>): Unit
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.digest.*
+import cangjie_stdx::crypto.digest.*
 
 main() {
     let md5 = MD5()
@@ -795,7 +795,7 @@ public prop algorithm: String
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.digest.*
+import cangjie_stdx::crypto.digest.*
 
 main() {
     let sha1 = SHA1()
@@ -827,7 +827,7 @@ public prop blockSize: Int64
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.digest.*
+import cangjie_stdx::crypto.digest.*
 
 main() {
     let sha1 = SHA1()
@@ -859,7 +859,7 @@ public prop size: Int64
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.digest.*
+import cangjie_stdx::crypto.digest.*
 
 main() {
     let sha1 = SHA1()
@@ -889,7 +889,7 @@ public init()
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.digest.*
+import cangjie_stdx::crypto.digest.*
 
 main() {
     let sha1 = SHA1()
@@ -932,8 +932,8 @@ public func finish(): Array<Byte>
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.digest.*
-import stdx.encoding.hex.*
+import cangjie_stdx::crypto.digest.*
+import cangjie_stdx::encoding.hex.*
 
 main() {
     let sha1 = SHA1()
@@ -975,8 +975,8 @@ public func finish(to!: Array<Byte>): Unit
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.digest.*
-import stdx.encoding.hex.*
+import cangjie_stdx::crypto.digest.*
+import cangjie_stdx::encoding.hex.*
 
 main() {
     let sha1 = SHA1()
@@ -1011,8 +1011,8 @@ public func reset(): Unit
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.digest.*
-import stdx.encoding.hex.*
+import cangjie_stdx::crypto.digest.*
+import cangjie_stdx::encoding.hex.*
 
 main() {
     let sha1 = SHA1()
@@ -1061,8 +1061,8 @@ public func write(buffer: Array<Byte>): Unit
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.digest.*
-import stdx.encoding.hex.*
+import cangjie_stdx::crypto.digest.*
+import cangjie_stdx::encoding.hex.*
 
 main() {
     let sha1 = SHA1()
@@ -1116,7 +1116,7 @@ public prop algorithm: String
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.digest.*
+import cangjie_stdx::crypto.digest.*
 
 main() {
     let sha224 = SHA224()
@@ -1148,7 +1148,7 @@ public prop blockSize: Int64
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.digest.*
+import cangjie_stdx::crypto.digest.*
 
 main() {
     let sha224 = SHA224()
@@ -1180,7 +1180,7 @@ public prop size: Int64
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.digest.*
+import cangjie_stdx::crypto.digest.*
 
 main() {
     let sha224 = SHA224()
@@ -1210,7 +1210,7 @@ public init()
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.digest.*
+import cangjie_stdx::crypto.digest.*
 
 main() {
     let sha224 = SHA224()
@@ -1253,8 +1253,8 @@ public func finish(): Array<Byte>
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.digest.*
-import stdx.encoding.hex.*
+import cangjie_stdx::crypto.digest.*
+import cangjie_stdx::encoding.hex.*
 
 main() {
     let sha224 = SHA224()
@@ -1296,8 +1296,8 @@ public func finish(to!: Array<Byte>): Unit
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.digest.*
-import stdx.encoding.hex.*
+import cangjie_stdx::crypto.digest.*
+import cangjie_stdx::encoding.hex.*
 
 main() {
     let sha224 = SHA224()
@@ -1332,8 +1332,8 @@ public func reset(): Unit
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.digest.*
-import stdx.encoding.hex.*
+import cangjie_stdx::crypto.digest.*
+import cangjie_stdx::encoding.hex.*
 
 main() {
     let sha224 = SHA224()
@@ -1382,8 +1382,8 @@ public func write(buffer: Array<Byte>): Unit
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.digest.*
-import stdx.encoding.hex.*
+import cangjie_stdx::crypto.digest.*
+import cangjie_stdx::encoding.hex.*
 
 main() {
     let sha224 = SHA224()
@@ -1437,7 +1437,7 @@ public prop algorithm: String
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.digest.*
+import cangjie_stdx::crypto.digest.*
 
 main() {
     let sha256 = SHA256()
@@ -1469,7 +1469,7 @@ public prop blockSize: Int64
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.digest.*
+import cangjie_stdx::crypto.digest.*
 
 main() {
     let sha256 = SHA256()
@@ -1501,7 +1501,7 @@ public prop size: Int64
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.digest.*
+import cangjie_stdx::crypto.digest.*
 
 main() {
     let sha256 = SHA256()
@@ -1531,7 +1531,7 @@ public init()
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.digest.*
+import cangjie_stdx::crypto.digest.*
 
 main() {
     let sha256 = SHA256()
@@ -1574,8 +1574,8 @@ public func finish(): Array<Byte>
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.digest.*
-import stdx.encoding.hex.*
+import cangjie_stdx::crypto.digest.*
+import cangjie_stdx::encoding.hex.*
 
 main() {
     let sha256 = SHA256()
@@ -1617,8 +1617,8 @@ public func finish(to!: Array<Byte>): Unit
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.digest.*
-import stdx.encoding.hex.*
+import cangjie_stdx::crypto.digest.*
+import cangjie_stdx::encoding.hex.*
 
 main() {
     let sha256 = SHA256()
@@ -1653,8 +1653,8 @@ public func reset(): Unit
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.digest.*
-import stdx.encoding.hex.*
+import cangjie_stdx::crypto.digest.*
+import cangjie_stdx::encoding.hex.*
 
 main() {
     let sha256 = SHA256()
@@ -1703,8 +1703,8 @@ public func write(buffer: Array<Byte>): Unit
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.digest.*
-import stdx.encoding.hex.*
+import cangjie_stdx::crypto.digest.*
+import cangjie_stdx::encoding.hex.*
 
 main() {
     let sha256 = SHA256()
@@ -1758,7 +1758,7 @@ public prop algorithm: String
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.digest.*
+import cangjie_stdx::crypto.digest.*
 
 main() {
     let sha384 = SHA384()
@@ -1790,7 +1790,7 @@ public prop blockSize: Int64
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.digest.*
+import cangjie_stdx::crypto.digest.*
 
 main() {
     let sha384 = SHA384()
@@ -1822,7 +1822,7 @@ public prop size: Int64
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.digest.*
+import cangjie_stdx::crypto.digest.*
 
 main() {
     let sha384 = SHA384()
@@ -1852,7 +1852,7 @@ public init()
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.digest.*
+import cangjie_stdx::crypto.digest.*
 
 main() {
     let sha384 = SHA384()
@@ -1895,8 +1895,8 @@ public func finish(): Array<Byte>
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.digest.*
-import stdx.encoding.hex.*
+import cangjie_stdx::crypto.digest.*
+import cangjie_stdx::encoding.hex.*
 
 main() {
     let sha384 = SHA384()
@@ -1938,8 +1938,8 @@ public func finish(to!: Array<Byte>): Unit
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.digest.*
-import stdx.encoding.hex.*
+import cangjie_stdx::crypto.digest.*
+import cangjie_stdx::encoding.hex.*
 
 main() {
     let sha384 = SHA384()
@@ -1974,8 +1974,8 @@ public func reset(): Unit
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.digest.*
-import stdx.encoding.hex.*
+import cangjie_stdx::crypto.digest.*
+import cangjie_stdx::encoding.hex.*
 
 main() {
     let sha384 = SHA384()
@@ -2024,8 +2024,8 @@ public func write(buffer: Array<Byte>): Unit
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.digest.*
-import stdx.encoding.hex.*
+import cangjie_stdx::crypto.digest.*
+import cangjie_stdx::encoding.hex.*
 
 main() {
     let sha384 = SHA384()
@@ -2079,7 +2079,7 @@ public prop algorithm: String
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.digest.*
+import cangjie_stdx::crypto.digest.*
 
 main() {
     let sha512 = SHA512()
@@ -2111,7 +2111,7 @@ public prop blockSize: Int64
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.digest.*
+import cangjie_stdx::crypto.digest.*
 
 main() {
     let sha512 = SHA512()
@@ -2143,7 +2143,7 @@ public prop size: Int64
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.digest.*
+import cangjie_stdx::crypto.digest.*
 
 main() {
     let sha512 = SHA512()
@@ -2173,7 +2173,7 @@ public init()
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.digest.*
+import cangjie_stdx::crypto.digest.*
 
 main() {
     let sha512 = SHA512()
@@ -2216,8 +2216,8 @@ public func finish(): Array<Byte>
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.digest.*
-import stdx.encoding.hex.*
+import cangjie_stdx::crypto.digest.*
+import cangjie_stdx::encoding.hex.*
 
 main() {
     let sha512 = SHA512()
@@ -2259,8 +2259,8 @@ public func finish(to!: Array<Byte>): Unit
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.digest.*
-import stdx.encoding.hex.*
+import cangjie_stdx::crypto.digest.*
+import cangjie_stdx::encoding.hex.*
 
 main() {
     let sha512 = SHA512()
@@ -2295,8 +2295,8 @@ public func reset(): Unit
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.digest.*
-import stdx.encoding.hex.*
+import cangjie_stdx::crypto.digest.*
+import cangjie_stdx::encoding.hex.*
 
 main() {
     let sha512 = SHA512()
@@ -2345,8 +2345,8 @@ public func write(buffer: Array<Byte>): Unit
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.digest.*
-import stdx.encoding.hex.*
+import cangjie_stdx::crypto.digest.*
+import cangjie_stdx::encoding.hex.*
 
 main() {
     let sha512 = SHA512()
@@ -2400,7 +2400,7 @@ public prop algorithm: String
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.digest.*
+import cangjie_stdx::crypto.digest.*
 
 main() {
     let sm3 = SM3()
@@ -2432,7 +2432,7 @@ public prop blockSize: Int64
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.digest.*
+import cangjie_stdx::crypto.digest.*
 
 main() {
     let sm3 = SM3()
@@ -2464,7 +2464,7 @@ public prop size: Int64
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.digest.*
+import cangjie_stdx::crypto.digest.*
 
 main() {
     let sm3 = SM3()
@@ -2494,7 +2494,7 @@ public init()
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.digest.*
+import cangjie_stdx::crypto.digest.*
 
 main() {
     let sm3 = SM3()
@@ -2537,8 +2537,8 @@ public func finish(): Array<Byte>
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.digest.*
-import stdx.encoding.hex.*
+import cangjie_stdx::crypto.digest.*
+import cangjie_stdx::encoding.hex.*
 
 main() {
     let sm3 = SM3()
@@ -2580,8 +2580,8 @@ public func finish(to!: Array<Byte>): Unit
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.digest.*
-import stdx.encoding.hex.*
+import cangjie_stdx::crypto.digest.*
+import cangjie_stdx::encoding.hex.*
 
 main() {
     let sm3 = SM3()
@@ -2616,8 +2616,8 @@ public func reset(): Unit
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.digest.*
-import stdx.encoding.hex.*
+import cangjie_stdx::crypto.digest.*
+import cangjie_stdx::encoding.hex.*
 
 main() {
     let sm3 = SM3()
@@ -2666,8 +2666,8 @@ public func write(buffer: Array<Byte>): Unit
 
 <!-- verify -->
 ```cangjie
-import stdx.crypto.digest.*
-import stdx.encoding.hex.*
+import cangjie_stdx::crypto.digest.*
+import cangjie_stdx::encoding.hex.*
 
 main() {
     let sm3 = SM3()
