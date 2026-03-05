@@ -32,6 +32,13 @@ public class JsonNull <: JsonValue { // cjlint-ignore !G.ENU.01
     }
 
     /**
+     * Optimized: Calculate capacity for null
+     */
+    protected func calculateCapacity(): Int64 {
+        return 4  // "null"
+    }
+
+    /**
      * Convert JsonNull to String.
      *
      * @return json-converted String is "".
@@ -114,6 +121,13 @@ public class JsonBool <: JsonValue { // cjlint-ignore !G.ENU.01
     }
 
     /**
+     * Optimized: Calculate capacity for bool
+     */
+    protected func calculateCapacity(): Int64 {
+        return 5  // max of "true" and "false"
+    }
+
+    /**
      * Convert JsonBool to String.
      *
      * @return json-converted String is value string data: true or false.
@@ -193,6 +207,13 @@ public class JsonInt <: JsonValue {
      */
     public func kind(): JsonKind {
         return JsInt
+    }
+
+    /**
+     * Optimized: Calculate capacity for int
+     */
+    protected func calculateCapacity(): Int64 {
+        return 22  // max length of Int64 string
     }
 
     /**
@@ -290,6 +311,13 @@ public class JsonFloat <: JsonValue {
     }
 
     /**
+     * Optimized: Calculate capacity for float
+     */
+    protected func calculateCapacity(): Int64 {
+        return 200  // conservative estimate for float representation
+    }
+
+    /**
      * Convert JsonFloat to String.
      *
      * @return json-converted String is value string data.
@@ -369,6 +397,13 @@ public class JsonString <: JsonValue { // cjlint-ignore !G.ENU.01
      */
     public func kind(): JsonKind {
         return JsString
+    }
+
+    /**
+     * Optimized: Calculate capacity for string
+     */
+    protected func calculateCapacity(): Int64 {
+        return value.size + 2  // "value" with quotes
     }
 
     /**
@@ -473,6 +508,17 @@ public class JsonArray <: JsonValue {
      */
     public func kind(): JsonKind {
         return JsArray
+    }
+
+    /**
+     * Optimized: Calculate capacity for array
+     */
+    protected func calculateCapacity(): Int64 {
+        var sum: Int64 = 2  // []
+        for (v in items) {
+            sum += v.estimateCapacity() + 1  // value + comma
+        }
+        return sum
     }
 
     /**
@@ -593,6 +639,7 @@ public class JsonArray <: JsonValue {
      */
     public func add(jv: JsonValue): JsonArray {
         items.add(jv)
+        invalidateCapacity()  // Optimized: Invalidate cache when modified
         return this
     }
 
@@ -679,6 +726,18 @@ public class JsonObject <: JsonValue {
      */
     public func kind(): JsonKind {
         return JsObject
+    }
+
+    /**
+     * Optimized: Calculate capacity for object
+     */
+    protected func calculateCapacity(): Int64 {
+        var sum: Int64 = 2  // {}
+        for ((k, v) in fields) {
+            sum += k.size + 4  // "key": ,
+            sum += v.estimateCapacity()
+        }
+        return sum
     }
 
     /**
@@ -812,6 +871,7 @@ public class JsonObject <: JsonValue {
      */
     public func put(key: String, v: JsonValue): Unit {
         fields.add(key, v)
+        invalidateCapacity()  // Optimized: Invalidate cache when modified
     }
 
     /**
