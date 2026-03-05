@@ -26,6 +26,37 @@ foreign func strlen(str: CPointer<UInt8>): UIntNative
 @FastNative
 foreign func CJ_JSON_StringEscapeCharNumGet(input: CPointer<UInt8>, inputlen: Int64, htmlSafe: Bool): Int64
 
+@FastNative
+foreign func CJ_JSON_ParseInt64(data: CPointer<UInt8>, start: Int64, end: Int64): Int64
+
+@FastNative
+foreign func CJ_JSON_ParseFloat64(data: CPointer<UInt8>, start: Int64, end: Int64): Float64
+
+/**
+ * Object pool for JsonParser to reduce allocation overhead
+ */
+class JsonParserPool {
+    private static let pool: ArrayList<JsonParser> = ArrayList<JsonParser>()
+    private static let maxPoolSize: Int64 = 16
+
+    public static func acquire(str: String): JsonParser {
+        if (pool.size > 0) {
+            let parser = pool[pool.size - 1]
+            pool.remove(pool.size - 1)
+            parser.reinit(str)
+            return parser
+        }
+        return JsonParser(str)
+    }
+
+    public static func release(parser: JsonParser): Unit {
+        if (pool.size < maxPoolSize) {
+            parser.reset()
+            pool.add(parser)
+        }
+    }
+}
+
 /**
  * @brief Get rows and columns of the error position
  *
@@ -92,8 +123,8 @@ enum NumberSystem {
 }
 
 class JsonParser {
-    let data: Array<Byte>
-    let size: Int64
+    var data: Array<Byte>
+    var size: Int64
     var offset: Int64
     let cache: Array<JsonValue>
     var cacheSize: Int64
@@ -109,7 +140,23 @@ class JsonParser {
             this.cache = Array<JsonValue>(16, repeat: JsonNull())
         }
         this.cacheSize = 0
-        this.strCache = ArrayList<Byte>()
+        // Optimized: Pre-allocate strCache with estimated capacity
+        let estimatedCacheSize = if (str.size / 4 > 64) { str.size / 4 } else { 64 }
+        this.strCache = ArrayList<Byte>(estimatedCacheSize)
+    }
+
+    // Optimized: Reset parser state for reuse
+    func reset(): Unit {
+        this.offset = 0
+        this.cacheSize = 0
+        this.strCache.clear()
+    }
+
+    // Optimized: Reinitialize parser with new string
+    func reinit(str: String): Unit {
+        this.data = unsafe { str.rawData() }
+        this.size = data.size
+        reset()
     }
 }
 
@@ -128,19 +175,24 @@ func parseString(str: String): JsonValue {
     if (str.size == 0) {
         throw JsonException("Json String is empty!")
     }
-    let parser = JsonParser(str)
-    let res = parseJson(parser)
-    if (parser.offset <= (parser.size - 1)) {
-        skipWhiteSpace(parser)
+    // Optimized: Use object pool to reuse parser
+    let parser = JsonParserPool.acquire(str)
+    try {
+        let res = parseJson(parser)
+        if (parser.offset <= (parser.size - 1)) {
+            skipWhiteSpace(parser)
+        }
+        if (parser.offset <= (parser.size - 1)) {
+            let errRowAndCol = getErrRowAndCol(parser.data, parser.offset)
+            let (errChr, _) = Rune.fromUtf8(parser.data, parser.offset)
+            let errStr = handleErrChr(errChr)
+            let errMsg: String = "Parse Error: [Line]: ${errRowAndCol[0]}, [Pos]: ${errRowAndCol[1]}, [Error]: Unexpected character: \'${errStr}\'."
+            throw JsonException("the json data is Non-standard, please check:\n${errMsg}")
+        }
+        return res
+    } finally {
+        JsonParserPool.release(parser)
     }
-    if (parser.offset <= (parser.size - 1)) {
-        let errRowAndCol = getErrRowAndCol(parser.data, parser.offset)
-        let (errChr, _) = Rune.fromUtf8(parser.data, parser.offset)
-        let errStr = handleErrChr(errChr)
-        let errMsg: String = "Parse Error: [Line]: ${errRowAndCol[0]}, [Pos]: ${errRowAndCol[1]}, [Error]: Unexpected character: \'${errStr}\'."
-        throw JsonException("the json data is Non-standard, please check:\n${errMsg}")
-    }
-    return res
 }
 
 func parseJson(parser: JsonParser): JsonValue {
@@ -319,11 +371,20 @@ func parseJsonNumber(parser: JsonParser): JsonValue {
         isFloat = parseExponent(parser, numSystem)
     }
     rightIndex = parser.offset
-    let numStr = unsafe { String.fromUtf8Unchecked(parser.data[leftIndex..rightIndex]) }
-    if (isFloat) {
-        return JsonFloat(Float64.parse(numStr))
+
+    // Optimized: Parse directly from byte array without creating temporary string
+    unsafe {
+        let ptr = acquireArrayRawData(parser.data)
+        if (isFloat) {
+            let value = CJ_JSON_ParseFloat64(ptr.pointer, leftIndex, rightIndex)
+            releaseArrayRawData(ptr)
+            return JsonFloat(value)
+        } else {
+            let value = CJ_JSON_ParseInt64(ptr.pointer, leftIndex, rightIndex)
+            releaseArrayRawData(ptr)
+            return JsonInt(value)
+        }
     }
-    return JsonInt(Int64.parse(numStr))
 }
 
 func parseSign(parser: JsonParser): Unit {
