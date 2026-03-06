@@ -38,5 +38,6 @@ endif()
 
 if (CANGJIE_CJPM_BUILD_SELF)
     string(TOLOWER ${CMAKE_BUILD_TYPE} type)
+    install(TARGETS ${libname} DESTINATION ${type}/crypto@cangjie_stdx)
     install(TARGETS ${libname}-shared DESTINATION ${type}/crypto@cangjie_stdx)
 endif()
