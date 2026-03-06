@@ -17,3 +17,8 @@ add_library(${libname}-objs OBJECT ${TAR_FFI_SRC})
 target_compile_options(${libname}-objs PRIVATE ${CMAKE_C_COVERAGE_FLAGS})
 add_library(${libname} STATIC $<TARGET_OBJECTS:${libname}-objs>)
 install_cangjie_library_ffi(${libname})
+
+if (CANGJIE_CJPM_BUILD_SELF)
+    string(TOLOWER ${CMAKE_BUILD_TYPE} type)
+    install(TARGETS ${libname} DESTINATION ${type}/compress@cangjie_stdx)
+endif()
