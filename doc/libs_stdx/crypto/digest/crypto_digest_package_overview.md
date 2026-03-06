@@ -23,6 +23,11 @@ digest 包提供常用的消息摘要算法，包括 MD5、SHA1、SHA224、SHA25
         - 在系统未安装 OpenSSL 的场景，安装时选择直接安装到系统路径下；
         - 安装在自定义目录的场景，将这些文件所在目录设置到环境变量 DYLD_LIBRARY_PATH 以及 LIBRARY_PATH 中。
 
+- 对于 Android 操作系统，可参考以下方式：
+    - 由于 Android 系统默认自带的 OpenSSL 是裁剪版本，部分接口可能找不到符号而抛出异常，因此需要用户自行编译安装完整的 OpenSSL 3.x.x 版本；
+    - 可自行下载 OpenSSL 3.x.x 源码，使用 Android NDK 交叉编译生成对应架构（当前只支持 arm64-v8a）的动态库文件，确保编译产物中含有 libcrypto.so 和 libcrypto.so.3 这些动态库文件；
+    - 将这些文件所在目录设置到环境变量 LD_LIBRARY_PATH 中。
+
 > **说明：**
 >
 > 如果未安装 OpenSSL 3 软件包或者安装低版本的软件包，程序可能无法使用并抛出相关异常 CryptoException：Can not load openssl library or function xxx。

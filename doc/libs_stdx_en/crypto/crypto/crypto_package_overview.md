@@ -23,6 +23,11 @@ This package requires the OpenSSL 3 crypto dynamic library as an external depend
         - For systems without OpenSSL installed, select the system path during installation;
         - For custom installation directories, add the directory containing these files to the `DYLD_LIBRARY_PATH` and `LIBRARY_PATH` environment variables.
 
+- For Android operating systems:
+    - Since Android ships with a stripped-down version of OpenSSL by default, some interfaces may throw exceptions due to missing symbols. Therefore, users need to compile and install a complete `OpenSSL 3.x.x` version themselves.
+    - Download the `OpenSSL 3.x.x` source code and use Android NDK to cross-compile dynamic library files for the target architectures (currently only `arm64-v8a` is supported). Ensure the build artifacts include `libcrypto.so` and `libcrypto.so.3`.
+    - Add the directory containing these files to the environment variables `LD_LIBRARY_PATH`.
+
 > **Note:**
 >
 > If OpenSSL 3 is not installed or an older version is installed, the program may fail to function and throw a `SecureRandomException`: `Can not load openssl library or function xxx`.
