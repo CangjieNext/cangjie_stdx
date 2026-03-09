@@ -5,6 +5,7 @@
 // See https://cangjie-lang.cn/pages/LICENSE for license information.
 
 import std.process.*
+import std.env.*
 import std.fs.*
 
 @When[os == "Windows"]

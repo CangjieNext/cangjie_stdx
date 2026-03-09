@@ -6,6 +6,7 @@
 
 import std.process.*
 import std.fs.*
+import std.env.*
 
 @When[os == "Windows"]
 func getPythonCommand(): String {
