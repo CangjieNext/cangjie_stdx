@@ -126,7 +126,7 @@ class JsonParser {
     var data: Array<Byte>
     var size: Int64
     var offset: Int64
-    let cache: Array<JsonValue>
+    var cache: Array<JsonValue>
     var cacheSize: Int64
     let strCache: ArrayList<Byte>
 
@@ -156,6 +156,11 @@ class JsonParser {
     func reinit(str: String): Unit {
         this.data = unsafe { str.rawData() }
         this.size = data.size
+        // Reallocate cache if needed
+        let requiredCacheSize = if ((size >> 1) > 16) { size >> 1 } else { 16 }
+        if (this.cache.size < requiredCacheSize) {
+            this.cache = Array<JsonValue>(requiredCacheSize, repeat: JsonNull())
+        }
         reset()
     }
 }
