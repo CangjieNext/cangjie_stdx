@@ -403,7 +403,13 @@ public class JsonString <: JsonValue { // cjlint-ignore !G.ENU.01
      * Optimized: Calculate capacity for string
      */
     protected func calculateCapacity(): Int64 {
-        return value.size + 2  // "value" with quotes
+        var escapenum: Int64 = 0
+        unsafe {
+            let input = acquireArrayRawData(value.rawData())
+            escapenum = CJ_JSON_StringEscapeCharNumGet(input.pointer, value.size, true)
+            releaseArrayRawData(input)
+        }
+        return value.size + 2 + escapenum
     }
 
     /**
