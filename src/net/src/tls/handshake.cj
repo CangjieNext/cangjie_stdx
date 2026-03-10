@@ -18,6 +18,50 @@ enum HandshakeConfig {
     | KeylessServer(KeylessTlsServerConfig, ?TlsServerSession)
 }
 
+@C
+func signCallback(key: CString, alg: CString, digestPtr: CPointer<Byte>, digestLen: Int64, written: CPointer<Int64>): CPointer<Byte> {
+    let (signCb, _) = TlsSocket.keylessCallback.get(key.toString()) ?? throw TlsException("Missing keyless sign callback.")
+
+    let digest = Array<Byte>(digestLen, repeat: 0)
+    for (i in 0..digestLen) {
+        unsafe { digest[i] = digestPtr.read(i) }
+    }
+
+    var signature: Array<Byte> = signCb(digest)
+    let sigPtr = unsafe { LibC.malloc<Byte>(count: signature.size) }
+
+    unsafe {
+        for (i in 0..signature.size) {
+            sigPtr.write(i, signature[i])
+        }
+
+        written.write(signature.size)
+    }
+    return sigPtr
+}
+
+@C
+func decryptCallback(key: CString, ciphertextPtr: CPointer<Byte>, ciphertextLen: Int64, written: CPointer<Int64>): CPointer<Byte> {
+    let (_, decryptCbOpt) = TlsSocket.keylessCallback.get(key.toString()) ?? throw TlsException("Missing keyless decrypt callback.")
+    let decryptCb = decryptCbOpt ?? throw TlsException("Decrypt callback is not provided.")
+
+    let ciphertext = Array<Byte>(ciphertextLen, repeat: 0)
+    for (i in 0..ciphertextLen) {
+        unsafe { ciphertext[i] = ciphertextPtr.read(i) }
+    }
+    let plain: Array<Byte> = decryptCb(ciphertext)
+    let cipherPtr = unsafe { LibC.malloc<Byte>(count: plain.size) }
+
+    unsafe {
+        for (i in 0..plain.size) {
+            cipherPtr.write(i, plain[i])
+        }
+        written.write(plain.size)
+    }
+    plain.fill(0)
+    return cipherPtr
+}
+
 extend TlsContext {
 
     func setCertificateChainAndCallback(chain: Array<X509Certificate>): Unit {
@@ -60,52 +104,11 @@ extend TlsContext {
     }
 
     private func signCallbackWrapper(): CKeylessSignCallback {
-        return {
-            key: CString, alg: CString, digestPtr: CPointer<Byte>, digestLen: Int64, written: CPointer<Int64> =>
-                let (signCb, _) = TlsSocket.keylessCallback.get(key.toString()) ?? throw TlsException("Missing keyless sign callback.")
-
-                let digest = Array<Byte>(digestLen, repeat: 0)
-                for (i in 0..digestLen) {
-                    unsafe { digest[i] = digestPtr.read(i) }
-                }
-
-                var signature: Array<Byte> = signCb(digest)
-                let sigPtr = unsafe { LibC.malloc<Byte>(count: signature.size) }
-
-                unsafe {
-                    for (i in 0..signature.size) {
-                        sigPtr.write(i, signature[i])
-                    }
-
-                    written.write(signature.size)
-                }
-                return sigPtr
-        }
+        signCallback
     }
 
     private func decryptCallbackWrapper(): CKeylessDecryptCallback {
-        return {
-            key: CString, ciphertextPtr: CPointer<Byte>, ciphertextLen: Int64, written: CPointer<Int64> =>
-                let (_, decryptCbOpt) = TlsSocket.keylessCallback.get(key.toString()) ?? throw TlsException("Missing keyless decrypt callback.")
-                let decryptCb = decryptCbOpt ?? throw TlsException("Decrypt callback is not provided.")
-
-                let ciphertext = Array<Byte>(ciphertextLen, repeat: 0)
-                for (i in 0..ciphertextLen) {
-                    unsafe { ciphertext[i] = ciphertextPtr.read(i) }
-                }
-                let plain: Array<Byte> = decryptCb(ciphertext)
-                let cipherPtr = unsafe { LibC.malloc<Byte>(count: plain.size) }
-
-                unsafe {
-                    for (i in 0..plain.size) {
-                        cipherPtr.write(i, plain[i])
-                    }
-                    written.write(plain.size)
-                }
-                plain.fill(0)
-                return cipherPtr
-
-        }
+        decryptCallback
     }
 
     private func setCertificateChainAndCallback(
