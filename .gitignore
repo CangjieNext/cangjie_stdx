@@ -3,6 +3,7 @@
 .vscode
 .vs
 .codecheck
+.cache
 
 build_temp/
 target/

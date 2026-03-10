@@ -416,7 +416,7 @@ def generate_cmake_defs(args):
         "-DCANGJIE_TARGET_TOOLCHAIN=" + (args.target_toolchain if args.target_toolchain else ""),
         "-DCANGJIE_INCLUDE=" + (";".join(args.include) if args.include else ""),
         "-DCANGJIE_CJPM_DIR=" + (CJPM_DIR.replace("\\", "/") if IS_WINDOWS else CJPM_DIR),
-        "-DCANGJIE_CJPM_BUILD_SELF=" + ("ON" if not "stdx" in STDX_DIR or CJPM_DIR == STDX_DIR else "OFF"),
+        "-DCANGJIE_CJPM_BUILD_SELF=" + ("ON" if not "stdx" in STDX_DIR or CJPM_DIR == STDX_DIR or DEVECO_OH_NATIVE_HOME != "" else "OFF"),
         "-DCANGJIE_CJPM_BUILD_TYPE=True",
         "-DCANGJIE_TARGET_SYSROOT=" + (args.target_sysroot if args.target_sysroot else ""),
         "-DCANGJIE_BUILD_WITHOUT_EFFECT_HANDLERS=" + bool_to_opt(args.without_effect_handlers),
