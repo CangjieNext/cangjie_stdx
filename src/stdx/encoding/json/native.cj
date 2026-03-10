@@ -40,11 +40,16 @@ class JsonParserPool {
     private static let maxPoolSize: Int64 = 16
 
     public static func acquire(str: String): JsonParser {
+        let requiredCacheSize = if ((str.size >> 1) > 16) { str.size >> 1 } else { 16 }
+
         if (pool.size > 0) {
             let parser = pool[pool.size - 1]
-            pool.remove(at: pool.size - 1)
-            parser.reinit(str)
-            return parser
+            // Only reuse if cache is large enough
+            if (parser.cache.size >= requiredCacheSize) {
+                pool.remove(at: pool.size - 1)
+                parser.reinit(str)
+                return parser
+            }
         }
         return JsonParser(str)
     }
@@ -126,7 +131,7 @@ class JsonParser {
     var data: Array<Byte>
     var size: Int64
     var offset: Int64
-    var cache: Array<JsonValue>
+    let cache: Array<JsonValue>
     var cacheSize: Int64
     let strCache: ArrayList<Byte>
 
@@ -156,11 +161,6 @@ class JsonParser {
     func reinit(str: String): Unit {
         this.data = unsafe { str.rawData() }
         this.size = data.size
-        // Reallocate cache if needed
-        let requiredCacheSize = if ((size >> 1) > 16) { size >> 1 } else { 16 }
-        if (this.cache.size < requiredCacheSize) {
-            this.cache = Array<JsonValue>(requiredCacheSize, repeat: JsonNull())
-        }
         reset()
     }
 }
