@@ -40,25 +40,13 @@ class JsonParserPool {
     private static let maxPoolSize: Int64 = 16
 
     public static func acquire(str: String): JsonParser {
-        let requiredCacheSize = if ((str.size >> 1) > 16) { str.size >> 1 } else { 16 }
-
-        if (pool.size > 0) {
-            let parser = pool[pool.size - 1]
-            // Only reuse if cache is large enough
-            if (parser.cache.size >= requiredCacheSize) {
-                pool.remove(at: pool.size - 1)
-                parser.reinit(str)
-                return parser
-            }
-        }
+        // Temporarily disable pooling to fix thread safety issues
         return JsonParser(str)
     }
 
     public static func release(parser: JsonParser): Unit {
-        if (pool.size < maxPoolSize) {
-            parser.reset()
-            pool.add(parser)
-        }
+        // Temporarily disable pooling to fix thread safety issues
+        // Parser will be garbage collected
     }
 }
 
