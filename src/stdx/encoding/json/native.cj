@@ -10,6 +10,7 @@ package stdx.encoding.json
 
 import std.collection.*
 import std.convert.*
+import std.sync.Mutex
 
 @FastNative
 foreign func CJ_JSON_ReplaceEscapeChar(input: CPointer<UInt8>, inputlen: Int64, buffer: CPointer<UInt8>, htmlSafe: Bool): Int64
@@ -33,20 +34,37 @@ foreign func CJ_JSON_ParseInt64(data: CPointer<UInt8>, start: Int64, end: Int64)
 foreign func CJ_JSON_ParseFloat64(data: CPointer<UInt8>, start: Int64, end: Int64): Float64
 
 /**
- * Object pool for JsonParser to reduce allocation overhead
+ * Thread-safe object pool for JsonParser to reduce allocation overhead
  */
 class JsonParserPool {
     private static let pool: ArrayList<JsonParser> = ArrayList<JsonParser>()
     private static let maxPoolSize: Int64 = 16
+    private static let mutex: Mutex = Mutex()
 
     public static func acquire(str: String): JsonParser {
-        // Temporarily disable pooling to fix thread safety issues
+        let requiredCacheSize = if ((str.size >> 1) > 16) { str.size >> 1 } else { 16 }
+
+        synchronized(mutex) {
+            if (pool.size > 0) {
+                let parser = pool[pool.size - 1]
+                // Only reuse if cache is large enough
+                if (parser.cache.size >= requiredCacheSize) {
+                    pool.remove(at: pool.size - 1)
+                    parser.reinit(str)
+                    return parser
+                }
+            }
+        }
         return JsonParser(str)
     }
 
     public static func release(parser: JsonParser): Unit {
-        // Temporarily disable pooling to fix thread safety issues
-        // Parser will be garbage collected
+        synchronized(mutex) {
+            if (pool.size < maxPoolSize) {
+                parser.reset()
+                pool.add(parser)
+            }
+        }
     }
 }
 
