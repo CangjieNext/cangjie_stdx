@@ -34,7 +34,7 @@ extern int CJ_TAR_SetModificationTime(const char *path, int64_t timestamp) {
     if (wpath == NULL) {
         return -1;
     }
-    HANDLE hFile = CreateFileW(wpath, FILE_WRITE_ATTRIBUTES, 0, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+    HANDLE hFile = CreateFileW(wpath, FILE_WRITE_ATTRIBUTES, 0, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL | FILE_FLAG_BACKUP_SEMANTICS, NULL);
     free(wpath);
     if (hFile == INVALID_HANDLE_VALUE) {
         return -1;
@@ -54,7 +54,7 @@ extern int CJ_TAR_SetAccessTime(const char *path, int64_t timestamp) {
     if (wpath == NULL) {
         return -1;
     }
-    HANDLE hFile = CreateFileW(wpath, FILE_WRITE_ATTRIBUTES, 0, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+    HANDLE hFile = CreateFileW(wpath, FILE_WRITE_ATTRIBUTES, 0, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL | FILE_FLAG_BACKUP_SEMANTICS, NULL);
     free(wpath);
     if (hFile == INVALID_HANDLE_VALUE) {
         return -1;
@@ -71,7 +71,7 @@ extern int CJ_TAR_SetAccessTime(const char *path, int64_t timestamp) {
 
 extern int CJ_TAR_SetChangeTime(const char *path, int64_t timestamp) {
     wchar_t* wpath = ToWString(path);
-    HANDLE hFile = CreateFileW(wpath, FILE_WRITE_ATTRIBUTES, FILE_SHARE_READ, NULL, OPEN_EXISTING, 0, NULL);
+    HANDLE hFile = CreateFileW(wpath, FILE_WRITE_ATTRIBUTES, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS, NULL);
     free(wpath);
     if (hFile == INVALID_HANDLE_VALUE) {
         return -1;
