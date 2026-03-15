@@ -148,8 +148,17 @@ public class TarReader<T> <: Iterable<TarEntry> where T <: InputStream {
                     if (b'0' <= c && c <= b'9') {
                         current++
                     } else if (c == b' ') {
+                        if (position == current) {
+                            throw TarException("Invalid PAX record, empty length field.")
+                        }
                         length = parseInt64(data[position..current])
+                        if (length < 1) {
+                            throw TarException("Invalid PAX record, length must be positive.")
+                        }
                         end = position + length
+                        if (end > data.size) {
+                            throw TarException("Invalid PAX record, length ${length} exceeds available data size ${data.size - position}.")
+                        }
                         current++
                         position = current
                         state = PaxDataState.Keyword
@@ -189,11 +198,11 @@ public class TarReader<T> <: Iterable<TarEntry> where T <: InputStream {
         return result
     }
 
+    @OverflowThrowing
     private static func parseInt64(data: Array<UInt8>): Int64 {
-        var result = 0
+        var result: Int64 = 0
         for (digit in data) {
-            result *= 10
-            result += Int64(digit - b'0')
+            result = result * 10 + Int64(digit - b'0')
         }
         return result
     }
