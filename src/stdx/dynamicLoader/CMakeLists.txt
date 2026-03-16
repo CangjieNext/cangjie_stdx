@@ -13,8 +13,11 @@ file(
 set(libname cangjie-dynamicLoader-opensslFFI)
 add_library(${libname}-objs OBJECT ${openssl_ffi_src})
 add_library(${libname}-auto-objs OBJECT ${openssl_ffi_src})
+add_library(${libname}-strong-objs OBJECT ${openssl_ffi_src})
 target_compile_definitions(${libname}-auto-objs PRIVATE CANGJIE_OPENSSL_RESOLVE_AUTO=1)
+target_compile_definitions(${libname}-strong-objs PRIVATE CANGJIE_OPENSSL_RESOLVE_STRONG=1)
 target_compile_options(${libname}-auto-objs PRIVATE -Wno-deprecated-declarations)
+target_compile_options(${libname}-strong-objs PRIVATE -Wno-deprecated-declarations)
 
 
 if(CANGJIE_CODEGEN_CJNATIVE_BACKEND)
@@ -23,6 +26,7 @@ endif()
 
 target_include_directories(${libname}-objs PRIVATE ${OPENSSL_INCLUDE_DIR})
 target_include_directories(${libname}-auto-objs PRIVATE ${OPENSSL_INCLUDE_DIR})
+target_include_directories(${libname}-strong-objs PRIVATE ${OPENSSL_INCLUDE_DIR})
 
 install_cangjie_library_ffi(${libname})
 
