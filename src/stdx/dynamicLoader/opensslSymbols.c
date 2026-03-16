@@ -146,6 +146,7 @@ CANGJIE_PRAGMA_WEAK(X509_EXTENSION_free)
 #undef DEFINEFUNCTION
 #endif
 
+#ifndef CANGJIE_OPENSSL_RESOLVE_STRONG
 #ifndef _WIN32
 static void* TryDlopen(const char* const* candidates, size_t count)
 {
@@ -259,18 +260,20 @@ static void* FindFunction(const char* name)
 #endif
     return func;
 }
+#endif
 
-/* In non-auto mode, pre-load OpenSSL libraries at load time. */
+/* In runtime-loader mode, pre-load OpenSSL libraries at load time. */
 __attribute__((constructor)) void Singleton(void)
 {
-#ifndef CANGJIE_OPENSSL_RESOLVE_AUTO
+#if !defined(CANGJIE_OPENSSL_RESOLVE_AUTO) && !defined(CANGJIE_OPENSSL_RESOLVE_STRONG)
     EnsureLoaded();
 #endif
 }
 
-/* Auto free or close OpenSSL libraries when the library is unloaded. */
+/* Close runtime-loaded OpenSSL libraries when the library is unloaded. */
 __attribute__((destructor)) void CloseSymbolTable(void)
 {
+#ifndef CANGJIE_OPENSSL_RESOLVE_STRONG
 #ifdef _WIN32
     if (g_singletonHandle != NULL) {
         (void)FreeLibrary(g_singletonHandle);
@@ -286,6 +289,7 @@ __attribute__((destructor)) void CloseSymbolTable(void)
         (void)dlclose(g_singletonHandleSsl);
     }
 #endif
+#endif
 }
 
 /**============= Api =============*/
@@ -297,7 +301,14 @@ __attribute__((destructor)) void CloseSymbolTable(void)
         return errCode;                                                                                                                                                            \
     }
 
-#if defined(CANGJIE_OPENSSL_RESOLVE_AUTO)
+#if defined(CANGJIE_OPENSSL_RESOLVE_STRONG)
+#define FINDFUNCTIONI(dynMsg, index, name, errCode)                                                                                                                                \
+    static SSLFunc##index func##index = NULL;                                                                                                                                      \
+    if (func##index == NULL) {                                                                                                                                                     \
+        func##index = (SSLFunc##index)(name);                                                                                                                                      \
+    }                                                                                                                                                                              \
+    CHECKFUNCTION(dynMsg, index, #name, errCode)
+#elif defined(CANGJIE_OPENSSL_RESOLVE_AUTO)
 #if CANGJIE_OPENSSL_AUTO_WEAK_AVAILABLE
 #define FINDFUNCTIONI(dynMsg, index, name, errCode)                                                                                                                                \
     static SSLFunc##index func##index = NULL;                                                                                                                                      \
@@ -702,7 +713,14 @@ void DynPopFree(void* extlist, char* funcName, DynMsg* dynMsg)
 {
     typedef void (*SSLFunc0)(void*);
     SSLFunc0 func0 = NULL;
-#if defined(CANGJIE_OPENSSL_RESOLVE_AUTO)
+#if defined(CANGJIE_OPENSSL_RESOLVE_STRONG)
+    if (strcmp(funcName, "GENERAL_NAME_free") == 0) {
+        func0 = (SSLFunc0)GENERAL_NAME_free;
+    } else if (strcmp(funcName, "X509_EXTENSION_free") == 0) {
+        func0 = (SSLFunc0)X509_EXTENSION_free;
+    }
+    CHECKFUNCTION(dynMsg, 0, funcName, )
+#elif defined(CANGJIE_OPENSSL_RESOLVE_AUTO)
     if (CANGJIE_OPENSSL_AUTO_WEAK_AVAILABLE) {
         if (strcmp(funcName, "GENERAL_NAME_free") == 0 && &GENERAL_NAME_free != NULL) {
             func0 = (SSLFunc0)GENERAL_NAME_free;
