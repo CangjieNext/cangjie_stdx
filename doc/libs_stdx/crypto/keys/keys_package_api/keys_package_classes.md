@@ -83,7 +83,7 @@ main() {
     let originalKey = ECDSAPrivateKey(Curve.P256)
     let encodedBlob = originalKey.encodeToDer()
 
-    // 核心演示：从 DerBlob 解码还原 ECDSA 私钥
+    // 从 DerBlob 解码还原 ECDSA 私钥
     let decodedKey = ECDSAPrivateKey.decodeDer(encodedBlob)
     println("解码成功")
     println("解码后密钥类型: ${decodedKey}")
@@ -131,7 +131,7 @@ main() {
     let originalKey = ECDSAPrivateKey(Curve.P256)
     let encodedBlob = originalKey.encodeToDer(password: "mypassword")
 
-    // 核心演示：从 DerBlob 解码还原 ECDSA 私钥
+    // 从 DerBlob 解码还原 ECDSA 私钥
     let decodedKey = ECDSAPrivateKey.decodeDer(encodedBlob, password: "mypassword")
     println("解码加密DER成功")
     println("解码后密钥类型: ${decodedKey}")
@@ -179,7 +179,7 @@ main() {
     let pemEntry = originalKey.encodeToPem()
     let pemString = pemEntry.encode()
 
-    // 核心演示：从 PEM 字符串解码还原 ECDSA 私钥
+    // 从 PEM 字符串解码还原 ECDSA 私钥
     let decodedKey = ECDSAPrivateKey.decodeFromPem(pemString)
     println("从PEM解码成功")
     println("解码后密钥类型: ${decodedKey}")
@@ -228,7 +228,7 @@ main() {
     let pemEntry = originalKey.encodeToPem(password: "mypassword")
     let pemString = pemEntry.encode()
 
-    // 核心演示：从加密的 PEM 字符串解码还原 ECDSA 私钥
+    // 从加密的 PEM 字符串解码还原 ECDSA 私钥
     let decodedKey = ECDSAPrivateKey.decodeFromPem(pemString, password: "mypassword")
     println("从加密PEM解码成功")
     println("解码后密钥类型: ${decodedKey}")
@@ -878,7 +878,7 @@ main() {
 
     executeWithOutput("sh", ["-c", cmdStr])
 
-    // 核心演示：从 DerBlob 解码还原私钥
+    // 从 DerBlob 解码还原私钥
     let decodedKey = GeneralPrivateKey.decodeDer(DerBlob(readToEnd(File(privateDer, Read))))
     println("解码成功")
     println("解码后密钥类型: ${decodedKey}")
@@ -937,7 +937,7 @@ main() {
 
     executeWithOutput("sh", ["-c", cmdStr])
 
-    // 核心演示：从加密的 DerBlob 解码还原私钥
+    // 从加密的 DerBlob 解码还原私钥
     let decodedKey = GeneralPrivateKey.decodeDer(DerBlob(readToEnd(File(privateDer, Read))), password: password)
     println("解码加密DER成功")
     println("解码后密钥类型: ${decodedKey}")
@@ -991,7 +991,7 @@ main() {
 
     executeWithOutput("sh", ["-c", cmdStr])
 
-    // 核心演示：从 PEM 字符串解码还原私钥
+    // 从 PEM 字符串解码还原私钥
     let pemContent = String.fromUtf8(readToEnd(File(privatePem, Read)))
     let decodedKey = GeneralPrivateKey.decodeFromPem(pemContent)
     println("从PEM解码成功")
@@ -1047,7 +1047,7 @@ main() {
 
     executeWithOutput("sh", ["-c", cmdStr])
 
-    // 核心演示：从加密的 PEM 字符串解码还原私钥
+    // 从加密的 PEM 字符串解码还原私钥
     let pemContent = String.fromUtf8(readToEnd(File(privatePem, Read)))
     let decodedKey = GeneralPrivateKey.decodeFromPem(pemContent, password: password)
     println("从加密PEM解码成功")
@@ -1103,7 +1103,7 @@ main() {
     // 从 DER 文件读取并解码为私钥
     let originalKey = GeneralPrivateKey.decodeDer(DerBlob(readToEnd(File(privateDer, Read))))
 
-    // 核心演示：将私钥编码为 DER 格式
+    // 将私钥编码为 DER 格式
     let encodedBlob = originalKey.encodeToDer()
     println("编码为DER格式成功")
     println("DER数据大小: ${encodedBlob.size}")
@@ -1163,7 +1163,7 @@ main() {
     // 从 DER 文件读取并解码为私钥
     let originalKey = GeneralPrivateKey.decodeDer(DerBlob(readToEnd(File(privateDer, Read))))
 
-    // 核心演示：将私钥加密编码为 DER 格式
+    // 将私钥加密编码为 DER 格式
     let encodedBlob = originalKey.encodeToDer(password: "mypassword")
     println("编码为加密DER格式成功")
     println("DER数据大小: ${encodedBlob.size}")
@@ -1217,7 +1217,7 @@ main() {
     let pemContent = String.fromUtf8(readToEnd(File(privatePem, Read)))
     let originalKey = GeneralPrivateKey.decodeFromPem(pemContent)
 
-    // 核心演示：将私钥编码为 PEM 格式
+    // 将私钥编码为 PEM 格式
     let encodedPem = originalKey.encodeToPem()
     println("编码为PEM格式成功")
     println("PEM标签: ${encodedPem.label}")
@@ -1274,7 +1274,7 @@ main() {
     let pemContent = String.fromUtf8(readToEnd(File(privatePem, Read)))
     let originalKey = GeneralPrivateKey.decodeFromPem(pemContent)
 
-    // 核心演示：将私钥加密编码为 PEM 格式
+    // 将私钥加密编码为 PEM 格式
     let encodedPem = originalKey.encodeToPem(password: "mypassword")
     println("编码为加密PEM格式成功")
     println("PEM标签: ${encodedPem.label}")
@@ -1327,7 +1327,7 @@ main() {
     let pemContent = String.fromUtf8(readToEnd(File(privatePem, Read)))
     let key = GeneralPrivateKey.decodeFromPem(pemContent)
 
-    // 核心演示：获取私钥类型描述
+    // 获取私钥类型描述
     let keyType = key.toString()
     println("私钥类型: ${keyType}")
 
@@ -1394,7 +1394,7 @@ main() {
 
     executeWithOutput("sh", ["-c", cmdStr])
 
-    // 核心演示：从 DerBlob 解码还原公钥
+    // 从 DerBlob 解码还原公钥
     let decodedKey = GeneralPublicKey.decodeDer(DerBlob(readToEnd(File(publicDer, Read))))
     println("解码成功")
     println("解码后公钥类型: ${decodedKey}")
@@ -1450,7 +1450,7 @@ main() {
 
     executeWithOutput("sh", ["-c", cmdStr])
 
-    // 核心演示：从 PEM 字符串解码还原公钥
+    // 从 PEM 字符串解码还原公钥
     let pemContent = String.fromUtf8(readToEnd(File(publicPem, Read)))
     let decodedKey = GeneralPublicKey.decodeFromPem(pemContent)
     println("从PEM解码成功")
@@ -1507,7 +1507,7 @@ main() {
     let pemContent = String.fromUtf8(readToEnd(File(publicPem, Read)))
     let originalKey = GeneralPublicKey.decodeFromPem(pemContent)
 
-    // 核心演示：将公钥编码为 DER 格式
+    // 将公钥编码为 DER 格式
     let encodedBlob = originalKey.encodeToDer()
     println("编码为DER格式成功")
     println("DER数据大小: ${encodedBlob.size}")
@@ -1562,7 +1562,7 @@ main() {
     let pemContent = String.fromUtf8(readToEnd(File(publicPem, Read)))
     let originalKey = GeneralPublicKey.decodeFromPem(pemContent)
 
-    // 核心演示：将公钥编码为 PEM 格式
+    // 将公钥编码为 PEM 格式
     let encodedPem = originalKey.encodeToPem()
     println("编码为PEM格式成功")
     println("PEM标签: ${encodedPem.label}")
@@ -1617,7 +1617,7 @@ main() {
     let pemContent = String.fromUtf8(readToEnd(File(publicPem, Read)))
     let key = GeneralPublicKey.decodeFromPem(pemContent)
 
-    // 核心演示：获取公钥类型描述
+    // 获取公钥类型描述
     let keyType = key.toString()
     println("公钥类型: ${keyType}")
 
@@ -1759,7 +1759,7 @@ main() {
     let originalKey = RSAPrivateKey(2048)
     let encodedBlob = originalKey.encodeToDer()
 
-    // 核心演示：从 DerBlob 解码还原 RSA 私钥
+    // 从 DerBlob 解码还原 RSA 私钥
     let decodedKey = RSAPrivateKey.decodeDer(encodedBlob)
     println("解码成功")
     println("解码后密钥类型: ${decodedKey}")
@@ -1807,7 +1807,7 @@ main() {
     let originalKey = RSAPrivateKey(2048)
     let encodedBlob = originalKey.encodeToDer(password: "mypassword")
 
-    // 核心演示：从加密的 DerBlob 解码还原 RSA 私钥
+    // 从加密的 DerBlob 解码还原 RSA 私钥
     let decodedKey = RSAPrivateKey.decodeDer(encodedBlob, password: "mypassword")
     println("解码加密DER成功")
     println("解码后密钥类型: ${decodedKey}")
@@ -1855,7 +1855,7 @@ main() {
     let pemEntry = originalKey.encodeToPem()
     let pemString = pemEntry.encode()
 
-    // 核心演示：从 PEM 字符串解码还原 RSA 私钥
+    // 从 PEM 字符串解码还原 RSA 私钥
     let decodedKey = RSAPrivateKey.decodeFromPem(pemString)
     println("从PEM解码成功")
     println("解码后密钥类型: ${decodedKey}")
@@ -1904,7 +1904,7 @@ main() {
     let pemEntry = originalKey.encodeToPem(password: "mypassword")
     let pemString = pemEntry.encode()
 
-    // 核心演示：从加密的 PEM 字符串解码还原 RSA 私钥
+    // 从加密的 PEM 字符串解码还原 RSA 私钥
     let decodedKey = RSAPrivateKey.decodeFromPem(pemString, password: "mypassword")
     println("从加密PEM解码成功")
     println("解码后密钥类型: ${decodedKey}")
@@ -2701,7 +2701,7 @@ main() {
     let originalKey = SM2PrivateKey()
     let encodedBlob = originalKey.encodeToDer()
 
-    // 核心演示：从 DerBlob 解码还原 SM2 私钥
+    // 从 DerBlob 解码还原 SM2 私钥
     let decodedKey = SM2PrivateKey.decodeDer(encodedBlob)
     println("解码成功")
     println("解码后密钥类型: ${decodedKey}")
@@ -2749,7 +2749,7 @@ main() {
     let originalKey = SM2PrivateKey()
     let encodedBlob = originalKey.encodeToDer(password: "mypassword")
 
-    // 核心演示：从加密的 DerBlob 解码还原 SM2 私钥
+    // 从加密的 DerBlob 解码还原 SM2 私钥
     let decodedKey = SM2PrivateKey.decodeDer(encodedBlob, password: "mypassword")
     println("解码加密DER成功")
     println("解码后密钥类型: ${decodedKey}")
@@ -2797,7 +2797,7 @@ main() {
     let pemEntry = originalKey.encodeToPem()
     let pemString = pemEntry.encode()
 
-    // 核心演示：从 PEM 字符串解码还原 SM2 私钥
+    // 从 PEM 字符串解码还原 SM2 私钥
     let decodedKey = SM2PrivateKey.decodeFromPem(pemString)
     println("从PEM解码成功")
     println("解码后密钥类型: ${decodedKey}")
@@ -2846,7 +2846,7 @@ main() {
     let pemEntry = originalKey.encodeToPem(password: "mypassword")
     let pemString = pemEntry.encode()
 
-    // 核心演示：从加密的 PEM 字符串解码还原 SM2 私钥
+    // 从加密的 PEM 字符串解码还原 SM2 私钥
     let decodedKey = SM2PrivateKey.decodeFromPem(pemString, password: "mypassword")
     println("从加密PEM解码成功")
     println("解码后密钥类型: ${decodedKey}")

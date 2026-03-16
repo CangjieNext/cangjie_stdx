@@ -837,7 +837,7 @@ main() {
         try (server = TcpServerSocket(bindAt: 8443)) {
             // 绑定并监听
             server.bind()
-            // 接受客户端连接，如果需要多次连接，可以使用循环，参考 samples
+            // 接受客户端连接，如果需要多次连接，可以使用循环，参考模块下示例教程
             try (clientSocket = server.accept()) {
                 // 创建 TLS 套接字并进行握手
                 try (tls = TlsSocket.server(clientSocket, serverConfig: config, session: None)) {
@@ -882,7 +882,7 @@ main() {
             tls.write("这是一个由客户端发送的消息".toArray())
         }
     } catch (e: Exception) {
-        println("客户端连接失败 ${e}, 重试中...")
+        println("客户端连接失败: ${e.message}")
     }
     // 删除生成的证书和私钥文件
     removeIfExists(serverKey)
@@ -1171,15 +1171,115 @@ public prop certificate: Array<X509Certificate>
 
 - [TlsException](../common/tls_common_package_api/tls_common_package_exceptions.md#class-tlsexception) - 当套接字未完成 TLS 握手或本端 TLS 套接字已关闭时，抛出异常。
 
+示例：
+
+<!-- run -->
+```cangjie
+import std.io.*
+import std.fs.*
+import std.net.*
+import std.process.*
+import stdx.net.tls.*
+import stdx.crypto.x509.*
+import stdx.crypto.keys.*
+import stdx.net.tls.common.*
+
+main() {
+    // 定义证书和私钥文件路径
+    let serverKey = "./server.key"
+    let serverCrt = "./server.crt"
+
+    // 启动服务器
+    spawn {
+        // OpenSSL 官方标准、无风险的测试命令用来本地生成证书和私钥
+        let cmdStr = "openssl req -x509 -newkey rsa:2048 -nodes -keyout ${serverKey} -out ${serverCrt} -days 365 -subj \"/CN=localhost\""
+        executeWithOutput("sh", ["-c", cmdStr])
+        // 对证书以及私钥进行解析
+        let pemString = String.fromUtf8(readToEnd(File(serverCrt, OpenMode.Read)))
+        let keyString = String.fromUtf8(readToEnd(File(serverKey, OpenMode.Read)))
+
+        let certificate = X509Certificate.decodeFromPem(pemString)
+        let privateKey = GeneralPrivateKey.decodeFromPem(keyString)
+
+        var config = TlsServerConfig(certificate, privateKey)
+        config.supportedAlpnProtocols = ["h2", "http/1.1"]
+        // 启动 TCP 服务器
+        try (server = TcpServerSocket(bindAt: 8443)) {
+            // 绑定并监听
+            server.bind()
+            // 接受客户端连接，如果需要多次连接，可以使用循环，参考模块下示例教程
+            try (clientSocket = server.accept()) {
+                // 创建 TLS 套接字并进行握手
+                try (tls = TlsSocket.server(clientSocket, serverConfig: config)) {
+                    tls.handshake()
+                    println("服务端 certificate size: ${tls.certificate.size}")
+                    // alpnProtocol 将返回选择列表中第一个双方都支持的协议，而不是遍历
+                    println("服务端 handshakeResult: ${tls.handshakeResult?.alpnProtocol ?? ""}")
+                    println("服务端 remoteAddress: ${tls.remoteAddress}")
+                }
+            }
+        }
+    }
+    // 等待服务器启动
+    sleep(Duration.second)
+
+    // 客户端配置
+    var config = TlsClientConfig()
+    config.verifyMode = TrustAll
+    config.supportedAlpnProtocols = ["http/1.1"]
+
+    // 连接服务器
+    try (socket = TcpSocket("127.0.0.1", 8443)) {
+        // 首先进行 TCP 连接
+        socket.connect()
+        // 创建 TLS 套接字并进行握手
+        try (tls = TlsSocket.client(socket, clientConfig: config)) {
+            tls.handshake()
+            // alpnProtocol 将返回选择列表中第一个双方都支持的协议，而不是遍历
+            println("客户端 handshakeResult: ${tls.handshakeResult?.alpnProtocol ?? ""}")
+            println("客户端 localAddress: ${tls.localAddress}")
+            // 未设置就是默认值 None
+            println("客户端 readTimeout: ${tls.readTimeout}")
+            println("客户端 writeTimeout: ${tls.writeTimeout}")
+            println("客户端 remoteAddress: ${tls.remoteAddress}")
+            // 获取底层套接字
+            let _: StreamingSocket = tls.socket
+        }
+    } catch (e: Exception) {
+        println("客户端连接失败: ${e.message}")
+    }
+    removeIfExists(serverKey)
+    removeIfExists(serverCrt)
+    return 0
+}
+```
+
+可能的运行结果：
+
+```text
+客户端 handshakeResult: http/1.1
+客户端 localAddress: 127.0.0.1:48824
+客户端 readTimeout: None
+客户端 writeTimeout: None
+客户端 remoteAddress: 127.0.0.1:8443
+服务端 certificate size: 1
+服务端 handshakeResult: http/1.1
+服务端 remoteAddress: 127.0.0.1:48824
+```
+
 ### prop handshakeResult
 
 ```cangjie
 public prop handshakeResult: ?TlsHandshakeResult
 ```
 
-功能：获取 TLS 握手结果。
+功能：获取 TLS 握手结果。握手失败或者未握手，返回 None。
 
 类型：[TlsHandshakeResult](../common/tls_common_package_api/tls_common_package_interfaces.md#interface-tlshandshakeresult)
+
+示例：
+<!-- associated_example -->
+参见 [prop certificate](#prop-certificate) 示例。
 
 ### prop localAddress
 
@@ -1195,6 +1295,10 @@ public override prop localAddress: SocketAddress
 
 - SocketException - 本端建连的底层 TCP 套接字关闭，抛出异常。
 - [TlsException](../common/tls_common_package_api/tls_common_package_exceptions.md#class-tlsexception) - 本端配置为 TLS 的套接字已关闭时，抛出异常。
+
+示例：
+<!-- associated_example -->
+参见 [prop certificate](#prop-certificate) 示例。
 
 ### prop readTimeout
 
@@ -1212,6 +1316,10 @@ public override mut prop readTimeout: ?Duration
 - [TlsException](../common/tls_common_package_api/tls_common_package_exceptions.md#class-tlsexception) - 本端配置为 TLS 的套接字已关闭时，抛出异常。
 - IllegalArgumentException - 设定的读超时时间为负值时，抛出异常。
 
+示例：
+<!-- associated_example -->
+参见 [prop certificate](#prop-certificate) 示例。
+
 ### prop remoteAddress
 
 ```cangjie
@@ -1227,6 +1335,10 @@ public override prop remoteAddress: SocketAddress
 - SocketException - 本端建连的底层 TCP 套接字关闭，抛出异常。
 - [TlsException](../common/tls_common_package_api/tls_common_package_exceptions.md#class-tlsexception) - 本端配置为 TLS 的套接字已关闭时，抛出异常。
 
+示例：
+<!-- associated_example -->
+参见 [prop certificate](#prop-certificate) 示例。
+
 ### prop socket
 
 ```cangjie
@@ -1240,6 +1352,10 @@ public prop socket: StreamingSocket
 异常：
 
 - [TlsException](../common/tls_common_package_api/tls_common_package_exceptions.md#class-tlsexception) - 本端配置为 TLS 套接字已关闭时，抛出异常。
+
+示例：
+<!-- associated_example -->
+参见 [prop certificate](#prop-certificate) 示例。
 
 ### prop writeTimeout
 
@@ -1256,6 +1372,10 @@ public override mut prop writeTimeout: ?Duration
 - SocketException - 本端建连的底层 TCP 套接字关闭，抛出异常。
 - [TlsException](../common/tls_common_package_api/tls_common_package_exceptions.md#class-tlsexception) - 本端配置为 TLS 的套接字已关闭时，抛出异常。
 - IllegalArgumentException - 设定的写超时时间为负值时，抛出异常。
+
+示例：
+<!-- associated_example -->
+参见 [prop certificate](#prop-certificate) 示例。
 
 ### static func client(StreamingSocket, ?TlsClientSession, TlsClientConfig)
 
@@ -1315,7 +1435,7 @@ main() {
         try (server = TcpServerSocket(bindAt: 8443)) {
             // 绑定并监听
             server.bind()
-            // 接受客户端连接，如果需要多次连接，可以使用循环，参考 samples
+            // 接受客户端连接，如果需要多次连接，可以使用循环，参考模块下示例教程
             try (clientSocket = server.accept()) {
                 // 创建 TLS 套接字并进行握手
                 try (tls = TlsSocket.server(clientSocket, serverConfig: config)) {
@@ -1346,7 +1466,7 @@ main() {
             tls.write("这是一个由客户端发送的消息".toArray())
         }
     } catch (e: Exception) {
-        println("client connection failed ${e}, retrying...")
+        println("客户端连接失败: ${e.message}")
     }
     removeIfExists(serverKey)
     removeIfExists(serverCrt)
@@ -1416,7 +1536,7 @@ main() {
         try (server = TcpServerSocket(bindAt: 8443)) {
             // 绑定并监听
             server.bind()
-            // 接受客户端连接，如果需要多次连接，可以使用循环，参考 samples
+            // 接受客户端连接，如果需要多次连接，可以使用循环，参考模块下示例教程
             try (clientSocket = server.accept()) {
                 // 创建 TLS 套接字并进行握手
                 try (tls = TlsSocket.server(clientSocket, serverConfig: config)) {
@@ -1445,7 +1565,7 @@ main() {
             // 后续其他行为
         }
     } catch (e: Exception) {
-        println("client connection failed ${e}, retrying...")
+        println("客户端连接失败: ${e.message}")
     }
     removeIfExists(serverKey)
     removeIfExists(serverCrt)
@@ -1539,7 +1659,7 @@ main() {
         try (server = TcpServerSocket(bindAt: 8443)) {
             // 绑定并监听
             server.bind()
-            // 接受客户端连接，如果需要多次连接，可以使用循环，参考 samples
+            // 接受客户端连接，如果需要多次连接，可以使用循环，参考模块下示例教程
             try (clientSocket = server.accept()) {
                 // 创建 TLS 套接字并进行握手
                 let tls = TlsSocket.server(clientSocket, serverConfig: config)
@@ -1574,7 +1694,7 @@ main() {
         tls.close()
         println("客户端成功关闭连接: ${tls.isClosed()}")
     } catch (e: Exception) {
-        println("client connection failed ${e}, retrying...")
+        println("客户端连接失败: ${e.message}")
     }
     removeIfExists(serverKey)
     removeIfExists(serverCrt)
@@ -1725,7 +1845,7 @@ main() {
         try (server = TcpServerSocket(bindAt: 8443)) {
             // 绑定并监听
             server.bind()
-            // 接受客户端连接，如果需要多次连接，可以使用循环，参考 samples
+            // 接受客户端连接，如果需要多次连接，可以使用循环，参考模块下示例教程
             try (clientSocket = server.accept()) {
                 // 创建 TLS 套接字并进行握手
                 try (tls = TlsSocket.server(clientSocket, serverConfig: config)) {
@@ -1764,7 +1884,7 @@ main() {
             println("客户端 hashCode: ${tls.hashCode()}")
         }
     } catch (e: Exception) {
-        println("client connection failed ${e}, retrying...")
+        println("客户端连接失败: ${e.message}")
     }
     removeIfExists(serverKey)
     removeIfExists(serverCrt)
@@ -1855,7 +1975,7 @@ main() {
         try (server = TcpServerSocket(bindAt: 8443)) {
             // 绑定并监听
             server.bind()
-            // 接受客户端连接，如果需要多次连接，可以使用循环，参考 samples
+            // 接受客户端连接，如果需要多次连接，可以使用循环，参考模块下示例教程
             try (clientSocket = server.accept()) {
                 // 创建 TLS 套接字并进行握手
                 try (tls = TlsSocket.server(clientSocket, serverConfig: config)) {
@@ -1888,7 +2008,7 @@ main() {
             tls.write("这是一个由客户端发送的消息".toArray())
         }
     } catch (e: Exception) {
-        println("client connection failed ${e}, retrying...")
+        println("客户端连接失败: ${e.message}")
     }
     removeIfExists(serverKey)
     removeIfExists(serverCrt)
