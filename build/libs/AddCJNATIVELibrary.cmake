@@ -316,6 +316,20 @@ add_and_combine_static_lib(
         $<TARGET_OBJECTS:${CANGJIE_OPENSSL_FFI_OBJECTS_TARGET}>
     DEPENDS
         ${tls_depends})
+if(CMAKE_BUILD_STAGE STREQUAL "postBuild")
+    set(tls_strong_depends stdx.net.tlsFFI-strong ${CANGJIE_OPENSSL_FFI_STRONG_OBJECTS_TARGET})
+else()
+    set(tls_strong_depends cangjie${BACKEND_TYPE}Tls stdx.net.tlsFFI-strong ${CANGJIE_OPENSSL_FFI_STRONG_OBJECTS_TARGET})
+endif()
+add_and_combine_static_lib(
+    TARGET stdx-net-tls-strong
+    OUTPUT_NAME libstdx.net.tls-strong.a
+    LIBRARIES
+        $<TARGET_OBJECTS:stdx.net.tlsFFI-objs>
+        ${output_cj_object_dir}/stdx/net.tls.o
+        $<TARGET_OBJECTS:${CANGJIE_OPENSSL_FFI_STRONG_OBJECTS_TARGET}>
+    DEPENDS
+        ${tls_strong_depends})
 install(FILES ${CMAKE_ARCHIVE_OUTPUT_DIRECTORY}/libstdx.net.tls.a
         DESTINATION ${output_triple_name}_${CJNATIVE_BACKEND}${SANITIZER_SUBPATH}/static/stdx)
 
@@ -396,8 +410,11 @@ make_cangjie_lib(
 
 get_target_property(DIGESTFFI_OBJS cangjie-dynamicLoader-opensslFFI SOURCES)
 add_library(stdx.crypto.digest STATIC ${DIGESTFFI_OBJS} ${output_cj_object_dir}/stdx/crypto.digest.o)
+get_target_property(DIGESTFFI_STRONG_OBJS cangjie-dynamicLoader-opensslFFI-strong SOURCES)
+add_library(stdx.crypto.digest-strong STATIC ${DIGESTFFI_STRONG_OBJS} ${output_cj_object_dir}/stdx/crypto.digest.o)
 
 set_target_properties(stdx.crypto.digest PROPERTIES LINKER_LANGUAGE C)
+set_target_properties(stdx.crypto.digest-strong PROPERTIES LINKER_LANGUAGE C OUTPUT_NAME stdx.crypto.digest-strong)
 install(TARGETS stdx.crypto.digest DESTINATION ${output_triple_name}_${CJNATIVE_BACKEND}${SANITIZER_SUBPATH}/static/stdx)
 
 make_cangjie_lib(
@@ -422,7 +439,11 @@ make_cangjie_lib(
 get_target_property(KEYSFFI_OBJS stdx.crypto.keysFFI SOURCES)
 get_target_property(OPENSSLFFI_OBJS cangjie-dynamicLoader-opensslFFI SOURCES)
 add_library(stdx.crypto.keys  STATIC ${KEYSFFI_OBJS} ${OPENSSLFFI_OBJS} ${output_cj_object_dir}/stdx/crypto.keys.o)
+get_target_property(KEYSFFI_STRONG_OBJS stdx.crypto.keysFFI-strong SOURCES)
+get_target_property(OPENSSLFFI_STRONG_OBJS cangjie-dynamicLoader-opensslFFI-strong SOURCES)
+add_library(stdx.crypto.keys-strong STATIC ${KEYSFFI_STRONG_OBJS} ${OPENSSLFFI_STRONG_OBJS} ${output_cj_object_dir}/stdx/crypto.keys.o)
 set_target_properties(stdx.crypto.keys PROPERTIES LINKER_LANGUAGE C)
+set_target_properties(stdx.crypto.keys-strong PROPERTIES LINKER_LANGUAGE C OUTPUT_NAME stdx.crypto.keys-strong)
 install(TARGETS stdx.crypto.keys DESTINATION ${output_triple_name}_${CJNATIVE_BACKEND}${SANITIZER_SUBPATH}/static/stdx)
 
 make_cangjie_lib(
@@ -435,7 +456,10 @@ make_cangjie_lib(
     $<$<NOT:$<BOOL:${WIN32}>>:-ldl>)
 get_target_property(CRYPTOCRYPTOFFI_OBJS cangjie-dynamicLoader-opensslFFI SOURCES)
 add_library(stdx.crypto.crypto STATIC ${CRYPTOCRYPTOFFI_OBJS} ${output_cj_object_dir}/stdx/crypto.crypto.o)
+get_target_property(CRYPTOCRYPTOFFI_STRONG_OBJS cangjie-dynamicLoader-opensslFFI-strong SOURCES)
+add_library(stdx.crypto.crypto-strong STATIC ${CRYPTOCRYPTOFFI_STRONG_OBJS} ${output_cj_object_dir}/stdx/crypto.crypto.o)
 set_target_properties(stdx.crypto.crypto PROPERTIES LINKER_LANGUAGE C)
+set_target_properties(stdx.crypto.crypto-strong PROPERTIES LINKER_LANGUAGE C OUTPUT_NAME stdx.crypto.crypto-strong)
 install(TARGETS stdx.crypto.crypto DESTINATION ${output_triple_name}_${CJNATIVE_BACKEND}${SANITIZER_SUBPATH}/static/stdx)
 
 make_cangjie_lib(
@@ -556,6 +580,20 @@ add_and_combine_static_lib(
         $<TARGET_OBJECTS:${CANGJIE_OPENSSL_FFI_OBJECTS_TARGET}>
     DEPENDS
         ${x509_depends})
+if(CMAKE_BUILD_STAGE STREQUAL "postBuild")
+    set(x509_strong_depends stdx.crypto.x509FFI-strong ${CANGJIE_OPENSSL_FFI_STRONG_OBJECTS_TARGET})
+else()
+    set(x509_strong_depends cangjie${BACKEND_TYPE}X509 stdx.crypto.x509FFI-strong ${CANGJIE_OPENSSL_FFI_STRONG_OBJECTS_TARGET})
+endif()
+add_and_combine_static_lib(
+    OUTPUT_NAME libstdx.crypto.x509-strong.a
+    TARGET stdx.crypto.x509-strong
+    LIBRARIES
+        $<TARGET_OBJECTS:stdx.crypto.x509FFI-objs>
+        ${output_cj_object_dir}/stdx/crypto.x509.o
+        $<TARGET_OBJECTS:${CANGJIE_OPENSSL_FFI_STRONG_OBJECTS_TARGET}>
+    DEPENDS
+        ${x509_strong_depends})
 install(FILES ${CMAKE_ARCHIVE_OUTPUT_DIRECTORY}/libstdx.crypto.x509.a
         DESTINATION ${output_triple_name}_${CJNATIVE_BACKEND}${SANITIZER_SUBPATH}/static/stdx)
 
@@ -1078,3 +1116,28 @@ if(NOT CANGJIE_CJPM_BUILD_TYPE)
         SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/stdx/syntax
         DEPENDS ${SYNTAX_DEPENDENCIES})
 endif()
+
+set(OPENSSL_STRONG_STATIC_VARIANT_DIR
+    "${output_triple_name}_${CJNATIVE_BACKEND}${SANITIZER_SUBPATH}/static/stdx_openssl_strong")
+set(OPENSSL_STRONG_PACKAGE_ARCHIVE_DIR
+    "${CMAKE_BINARY_DIR}/lib/${output_triple_name}_${CJNATIVE_BACKEND}${SANITIZER_SUBPATH}")
+set(OPENSSL_STRONG_FFI_ARCHIVE_DIR
+    "${CMAKE_BINARY_DIR}/lib")
+install(FILES ${CMAKE_SOURCE_DIR}/cjpm_openssl_strong.toml
+        DESTINATION ${output_triple_name}_${CJNATIVE_BACKEND}${SANITIZER_SUBPATH})
+install(CODE "
+    set(default_dir \"\$ENV{DESTDIR}\${CMAKE_INSTALL_PREFIX}/${output_triple_name}_${CJNATIVE_BACKEND}${SANITIZER_SUBPATH}/static/stdx\")
+    set(variant_dir \"\$ENV{DESTDIR}\${CMAKE_INSTALL_PREFIX}/${OPENSSL_STRONG_STATIC_VARIANT_DIR}\")
+    file(REMOVE_RECURSE \"\${variant_dir}\")
+    file(MAKE_DIRECTORY \"\${variant_dir}\")
+    file(COPY \"\${default_dir}/\" DESTINATION \"\${variant_dir}\")
+    file(INSTALL DESTINATION \"\${variant_dir}\" TYPE FILE FILES \"${OPENSSL_STRONG_FFI_ARCHIVE_DIR}/libcangjie-dynamicLoader-opensslFFI-strong.a\" RENAME \"libcangjie-dynamicLoader-opensslFFI.a\")
+    file(INSTALL DESTINATION \"\${variant_dir}\" TYPE FILE FILES \"${OPENSSL_STRONG_FFI_ARCHIVE_DIR}/libstdx.net.tlsFFI-strong.a\" RENAME \"libstdx.net.tlsFFI.a\")
+    file(INSTALL DESTINATION \"\${variant_dir}\" TYPE FILE FILES \"${OPENSSL_STRONG_FFI_ARCHIVE_DIR}/libstdx.crypto.keysFFI-strong.a\" RENAME \"libstdx.crypto.keysFFI.a\")
+    file(INSTALL DESTINATION \"\${variant_dir}\" TYPE FILE FILES \"${OPENSSL_STRONG_FFI_ARCHIVE_DIR}/libstdx.crypto.x509FFI-strong.a\" RENAME \"libstdx.crypto.x509FFI.a\")
+    file(INSTALL DESTINATION \"\${variant_dir}\" TYPE FILE FILES \"${OPENSSL_STRONG_PACKAGE_ARCHIVE_DIR}/libstdx.net.tls-strong.a\" RENAME \"libstdx.net.tls.a\")
+    file(INSTALL DESTINATION \"\${variant_dir}\" TYPE FILE FILES \"${OPENSSL_STRONG_PACKAGE_ARCHIVE_DIR}/libstdx.crypto.digest-strong.a\" RENAME \"libstdx.crypto.digest.a\")
+    file(INSTALL DESTINATION \"\${variant_dir}\" TYPE FILE FILES \"${OPENSSL_STRONG_PACKAGE_ARCHIVE_DIR}/libstdx.crypto.keys-strong.a\" RENAME \"libstdx.crypto.keys.a\")
+    file(INSTALL DESTINATION \"\${variant_dir}\" TYPE FILE FILES \"${OPENSSL_STRONG_PACKAGE_ARCHIVE_DIR}/libstdx.crypto.crypto-strong.a\" RENAME \"libstdx.crypto.crypto.a\")
+    file(INSTALL DESTINATION \"\${variant_dir}\" TYPE FILE FILES \"${OPENSSL_STRONG_PACKAGE_ARCHIVE_DIR}/libstdx.crypto.x509-strong.a\" RENAME \"libstdx.crypto.x509.a\")
+")
