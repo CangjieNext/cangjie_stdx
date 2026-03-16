@@ -22,6 +22,33 @@ public prop autoRedirect: Bool
 
 类型：Bool
 
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.net.http.*
+
+main() {
+    // 创建启用自动重定向的Client
+    let client = ClientBuilder().build()
+    println("默认自动重定向设置: ${client.autoRedirect}")
+    
+    // 创建禁用自动重定向的Client
+    let noRedirectClient = ClientBuilder().autoRedirect(false).build()
+    println("禁用自动重定向设置: ${noRedirectClient.autoRedirect}")
+    
+    client.close()
+    noRedirectClient.close()
+}
+```
+
+运行结果：
+
+```text
+默认自动重定向设置: true
+禁用自动重定向设置: false
+```
+
 ### prop connector
 
 ```cangjie
@@ -31,6 +58,36 @@ public prop connector: (SocketAddress) -> StreamingSocket
 功能：客户端调用此函数获取到服务器的连接。
 
 类型：(SocketAddress) -> StreamingSocket
+
+示例：
+
+<!-- run -->
+```cangjie
+import stdx.net.http.*
+import std.net.*
+
+main() {
+    // 创建Client实例
+    let client = ClientBuilder().build()
+
+    // 获取默认的connector函数
+    let _ = client.connector
+
+    // 创建自定义connector的Client
+    let customConnector = {
+        sa: SocketAddress =>
+            let socket = TcpSocket(sa)
+            socket.connect()
+            return socket
+    }
+
+    // 创建自定义connector的Client实例
+    let customClient = ClientBuilder().connector(customConnector).build()
+
+    client.close()
+    customClient.close()
+}
+```
 
 ### prop cookieJar
 
@@ -42,6 +99,41 @@ public prop cookieJar: ?CookieJar
 
 类型：?[CookieJar](http_package_interfaces.md#interface-cookiejar)
 
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.net.http.*
+
+main() {
+    // 创建Client实例
+    let client = ClientBuilder().build()
+    
+    // 检查默认的cookieJar设置
+    match (client.cookieJar) {
+        case Some(jar) => println("默认启用了CookieJar")
+        case None => println("默认未启用CookieJar")
+    }
+    
+    // 创建禁用Cookie的Client
+    let noCookieClient = ClientBuilder().cookieJar(None).build()
+    match (noCookieClient.cookieJar) {
+        case Some(_) => println("CookieJar仍然启用")
+        case None => println("已禁用CookieJar")
+    }
+    
+    client.close()
+    noCookieClient.close()
+}
+```
+
+运行结果：
+
+```text
+默认启用了CookieJar
+已禁用CookieJar
+```
+
 ### prop enablePush
 
 ```cangjie
@@ -51,6 +143,35 @@ public prop enablePush: Bool
 功能：客户端 HTTP/2 是否支持服务器推送，默认值为 true。
 
 类型：Bool
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.net.http.*
+
+main() {
+    // 创建Client实例
+    let client = ClientBuilder().build()
+    
+    // 检查默认的HTTP/2推送设置
+    println("默认HTTP/2推送设置: ${client.enablePush}")
+    
+    // 创建禁用HTTP/2推送的Client
+    let noPushClient = ClientBuilder().enablePush(false).build()
+    println("禁用HTTP/2推送设置: ${noPushClient.enablePush}")
+    
+    client.close()
+    noPushClient.close()
+}
+```
+
+运行结果：
+
+```text
+默认HTTP/2推送设置: true
+禁用HTTP/2推送设置: false
+```
 
 ### prop headerTableSize
 
@@ -62,6 +183,35 @@ public prop headerTableSize: UInt32
 
 类型：UInt32
 
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.net.http.*
+
+main() {
+    // 创建Client实例
+    let client = ClientBuilder().build()
+    
+    // 获取默认的HTTP/2头部表大小
+    println("默认HTTP/2头部表大小: ${client.headerTableSize}")
+    
+    // 创建自定义头部表大小的Client
+    let customClient = ClientBuilder().headerTableSize(8192).build()
+    println("自定义HTTP/2头部表大小: ${customClient.headerTableSize}")
+    
+    client.close()
+    customClient.close()
+}
+```
+
+运行结果：
+
+```text
+默认HTTP/2头部表大小: 4096
+自定义HTTP/2头部表大小: 8192
+```
+
 ### prop httpProxy
 
 ```cangjie
@@ -71,6 +221,45 @@ public prop httpProxy: String
 功能：获取客户端 http 代理，默认使用系统环境变量 http_proxy 的值，用字符串表示，格式为：`"http://host:port"`，例如：`"http://192.168.1.1:80"`。
 
 类型：String
+
+示例：
+
+<!-- verify -->
+```cangjie
+import std.env.*
+import stdx.net.http.*
+
+main() {
+    // 创建Client实例
+    let client = ClientBuilder().build()
+    println("默认HTTP代理: ${client.httpProxy}")
+
+    // 设置一个环境变量
+    setVariable("http_proxy", "http://192.168.1.1:8080")
+
+    // 创建Client实例
+    let clientWithEnv = ClientBuilder().build()
+
+    // 获取拥有环境变量的HTTP代理设置，会使用环境变量中的值
+    println("拥有环境变量的HTTP代理: ${clientWithEnv.httpProxy}")
+
+    // 创建自定义HTTP代理的Client
+    let proxyClient = ClientBuilder().httpProxy("http://192.168.1.1:8081").build()
+    println("自定义HTTP代理: ${proxyClient.httpProxy}")
+
+    client.close()
+    clientWithEnv.close()
+    proxyClient.close()
+}
+```
+
+运行结果：
+
+```text
+默认HTTP代理: 
+拥有环境变量的HTTP代理: http://192.168.1.1:8080
+自定义HTTP代理: http://192.168.1.1:8081
+```
 
 ### prop httpsProxy
 
@@ -82,6 +271,45 @@ public prop httpsProxy: String
 
 类型：String
 
+示例：
+
+<!-- verify -->
+```cangjie
+import std.env.*
+import stdx.net.http.*
+
+main() {
+    // 创建Client实例
+    let client = ClientBuilder().build()
+    println("默认HTTPS代理: ${client.httpsProxy}")
+
+    // 设置一个环境变量
+    setVariable("https_proxy", "http://192.168.1.1:8080")
+
+    // 创建Client实例
+    let clientWithEnv = ClientBuilder().build()
+
+    // 获取拥有环境变量的HTTPS代理设置，会使用环境变量中的值
+    println("拥有环境变量的HTTPS代理: ${clientWithEnv.httpsProxy}")
+
+    // 创建自定义HTTPS代理的Client
+    let proxyClient = ClientBuilder().httpProxy("http://192.168.1.1:8081").build()
+    println("自定义HTTPS代理: ${proxyClient.httpsProxy}")
+
+    client.close()
+    clientWithEnv.close()
+    proxyClient.close()
+}
+```
+
+运行结果：
+
+```text
+默认HTTPS代理: 
+拥有环境变量的HTTPS代理: http://192.168.1.1:8080
+自定义HTTPS代理: http://192.168.1.1:8080
+```
+
 ### prop initialWindowSize
 
 ```cangjie
@@ -91,6 +319,35 @@ public prop initialWindowSize: UInt32
 功能：获取客户端 HTTP/2 流控窗口初始值，默认值为 65535 ，取值范围为 0 至 2^31 - 1。
 
 类型：UInt32
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.net.http.*
+
+main() {
+    // 创建Client实例
+    let client = ClientBuilder().build()
+    
+    // 获取默认的HTTP/2初始窗口大小
+    println("默认HTTP/2初始窗口大小: ${client.initialWindowSize}")
+    
+    // 创建自定义窗口大小的Client
+    let customClient = ClientBuilder().initialWindowSize(131072).build()
+    println("自定义HTTP/2初始窗口大小: ${customClient.initialWindowSize}")
+    
+    client.close()
+    customClient.close()
+}
+```
+
+运行结果：
+
+```text
+默认HTTP/2初始窗口大小: 65535
+自定义HTTP/2初始窗口大小: 131072
+```
 
 ### prop logger
 
@@ -102,6 +359,34 @@ public prop logger: Logger
 
 类型：[Logger](../../../log/log_package_api/log_package_classes.md#class-logger)
 
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.log.*
+import stdx.net.http.*
+
+main() {
+    // 创建Client实例
+    let client = ClientBuilder().build()
+
+    // 只要设置就会生效
+    client.logger.level = LogLevel.WARN
+
+    // 获取当前日志记录器等级
+    let defaultLogger = client.logger
+    println("当前日志记录器等级: ${defaultLogger.level}")
+    
+    client.close()
+}
+```
+
+运行结果：
+
+```text
+当前日志记录器等级: WARN
+```
+
 ### prop maxConcurrentStreams
 
 ```cangjie
@@ -111,6 +396,35 @@ public prop maxConcurrentStreams: UInt32
 功能：获取客户端 HTTP/2 初始最大并发流数量，默认值为 2^31 - 1。
 
 类型：UInt32
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.net.http.*
+
+main() {
+    // 创建Client实例
+    let client = ClientBuilder().build()
+    
+    // 获取默认的HTTP/2最大并发流数
+    println("默认HTTP/2最大并发流数: ${client.maxConcurrentStreams}")
+    
+    // 创建自定义并发流数的Client
+    let customClient = ClientBuilder().maxConcurrentStreams(100).build()
+    println("自定义HTTP/2最大并发流数: ${customClient.maxConcurrentStreams}")
+    
+    client.close()
+    customClient.close()
+}
+```
+
+运行结果：
+
+```text
+默认HTTP/2最大并发流数: 2147483647
+自定义HTTP/2最大并发流数: 100
+```
 
 ### prop maxFrameSize
 
@@ -122,6 +436,35 @@ public prop maxFrameSize: UInt32
 
 类型：UInt32
 
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.net.http.*
+
+main() {
+    // 创建Client实例
+    let client = ClientBuilder().build()
+    
+    // 获取默认的HTTP/2最大帧大小
+    println("默认HTTP/2最大帧大小: ${client.maxFrameSize}")
+    
+    // 创建自定义帧大小的Client
+    let customClient = ClientBuilder().maxFrameSize(32768).build()
+    println("自定义HTTP/2最大帧大小: ${customClient.maxFrameSize}")
+    
+    client.close()
+    customClient.close()
+}
+```
+
+运行结果：
+
+```text
+默认HTTP/2最大帧大小: 16384
+自定义HTTP/2最大帧大小: 32768
+```
+
 ### prop maxHeaderListSize
 
 ```cangjie
@@ -131,6 +474,35 @@ public prop maxHeaderListSize: UInt32
 功能：获取客户端支持的 HTTP/2 最大头部（Header）大小。这个大小指的是响应头部中所有头部字段（Header Field）的最大允许长度之和，其中包括所有字段名称（name）的长度、字段值（value）的长度以及每个字段自动添加的伪头开销（通常每个字段会有 32 字节的开销，这包括了 HTTP/2 协议本身为头部字段添加的伪头部信息）。默认情况下，这个最大长度被设置为 UInt32.Max。
 
 类型：UInt32
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.net.http.*
+
+main() {
+    // 创建Client实例
+    let client = ClientBuilder().build()
+    
+    // 获取默认的HTTP/2最大头部列表大小
+    println("默认HTTP/2最大头部列表大小: ${client.maxHeaderListSize}")
+    
+    // 创建自定义头部列表大小的Client
+    let customClient = ClientBuilder().maxHeaderListSize(65536).build()
+    println("自定义HTTP/2最大头部列表大小: ${customClient.maxHeaderListSize}")
+    
+    client.close()
+    customClient.close()
+}
+```
+
+运行结果：
+
+```text
+默认HTTP/2最大头部列表大小: 4294967295
+自定义HTTP/2最大头部列表大小: 65536
+```
 
 ### prop poolSize
 
@@ -142,6 +514,35 @@ public prop poolSize: Int64
 
 类型：Int64
 
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.net.http.*
+
+main() {
+    // 创建Client实例
+    let client = ClientBuilder().build()
+    
+    // 获取默认的连接池大小
+    println("默认连接池大小: ${client.poolSize}")
+    
+    // 创建自定义连接池大小的Client
+    let customClient = ClientBuilder().poolSize(20).build()
+    println("自定义连接池大小: ${customClient.poolSize}")
+    
+    client.close()
+    customClient.close()
+}
+```
+
+运行结果：
+
+```text
+默认连接池大小: 10
+自定义连接池大小: 20
+```
+
 ### prop readTimeout
 
 ```cangjie
@@ -152,6 +553,35 @@ public prop readTimeout: Duration
 
 类型：Duration
 
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.net.http.*
+
+main() {
+    // 创建Client实例
+    let client = ClientBuilder().build()
+    
+    // 获取默认的读取超时时间
+    println("默认读取超时时间: ${client.readTimeout}")
+    
+    // 创建自定义读取超时时间的Client
+    let customClient = ClientBuilder().readTimeout(Duration.second * 30).build()
+    println("自定义读取超时时间: ${customClient.readTimeout}")
+    
+    client.close()
+    customClient.close()
+}
+```
+
+运行结果：
+
+```text
+默认读取超时时间: 15s
+自定义读取超时时间: 30s
+```
+
 ### prop writeTimeout
 
 ```cangjie
@@ -161,6 +591,35 @@ public prop writeTimeout: Duration
 功能：获取客户端设定的写请求的超时时间，默认值为 15 秒。
 
 类型：Duration
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.net.http.*
+
+main() {
+    // 创建Client实例
+    let client = ClientBuilder().build()
+    
+    // 获取默认的写入超时时间
+    println("默认写入超时时间: ${client.writeTimeout}")
+    
+    // 创建自定义写入超时时间的Client
+    let customClient = ClientBuilder().writeTimeout(Duration.second * 30).build()
+    println("自定义写入超时时间: ${customClient.writeTimeout}")
+    
+    client.close()
+    customClient.close()
+}
+```
+
+运行结果：
+
+```text
+默认写入超时时间: 15s
+自定义写入超时时间: 30s
+```
 
 ### func close()
 
@@ -177,18 +636,12 @@ public func close(): Unit
 import stdx.net.http.*
 
 main() {
+    // 创建Client实例
     let client = ClientBuilder().build()
-
-    // 调用 func close() 关闭客户端
+    
+    // 关闭Client
     client.close()
-    println("closed")
 }
-```
-
-运行结果：
-
-```text
-closed
 ```
 
 ### func connect(String, HttpHeaders, Protocol)
@@ -217,57 +670,41 @@ public func connect(url: String, header!: HttpHeaders = HttpHeaders(), version!:
 
 示例：
 
-<!-- run -->
+<!-- verify -->
 ```cangjie
 import stdx.net.http.*
-import std.net.*
-import std.sync.*
 
 main() {
-    // 1) 启动一个最简 "代理"：只要收到 CONNECT，就回 200 并保持连接可读。
-    let ss = TcpServerSocket(bindAt: 0)
-    ss.bind()
-    let done = SyncCounter(1)
-
+    // 启动服务器
     spawn {
         =>
-            let s = ss.accept()
-            println("[server] CONNECT received")
-            let buf = Array<UInt8>(2048, repeat: 0)
-            let _ = s.read(buf)
-            // CONNECT 成功：2xx
-            s.write("HTTP/1.1 200 Connection Established\r\n\r\n".toArray())
-            // 等 client 关闭
-            s.close()
-            done.dec()
+            // 构建 Server 实例
+            let server = ServerBuilder().addr("127.0.0.1").port(8080).build()
+            // 注册 HttpRequestHandler
+            server.distributor.register("", {
+                httpContext => httpContext.responseBuilder.status(200)
+            })
+            server.serve()
     }
+    // 等待服务启动
+    sleep(Duration.second)
 
-    let port = (ss.localAddress as IPSocketAddress)?.port ?? throw Exception("Port not found")
-
+    // 创建客户端
     let client = ClientBuilder().build()
-    // 2) func connect：与服务端建立隧道，返回 (HttpResponse, ?StreamingSocket)
-    let (resp, sockOpt) = client.connect("http://127.0.0.1:${port}")
-    println("status = ${resp.status}")
-    println("hasSocket = ${sockOpt.isSome()}")
 
-    // 3) 关闭返回的 socket（由用户负责），再关闭 client。
-    match (sockOpt) {
-        case Some(s) => s.close()
-        case None => ()
-    }
+    // 向服务器发起connect请求
+    let (resp, _) = client.connect("http://127.0.0.1:8080")
+    println("建立隧道成功, 状态码: ${resp.status}")
+
+    // 关闭客户端
     client.close()
-
-    done.waitUntilZero()
-    ss.close()
 }
 ```
 
 运行结果：
 
 ```text
-[server] CONNECT received
-status = 200
-hasSocket = true
+建立隧道成功, 状态码: 200
 ```
 
 ### func delete(String)
@@ -294,46 +731,48 @@ public func delete(url: String): HttpResponse
 
 示例：
 
-<!-- run -->
+<!-- verify -->
 ```cangjie
 import stdx.net.http.*
-import std.net.*
-import std.sync.*
 
 main() {
-    let ss = TcpServerSocket(bindAt: 0)
-    ss.bind()
-    let done = SyncCounter(1)
-
+    // 启动服务器
     spawn {
         =>
-            let s = ss.accept()
-            let buf = Array<UInt8>(1024, repeat: 0)
-            let n = s.read(buf)
-            let firstLine = (String.fromUtf8(buf[..n]).split("\r\n"))[0]
-            println("[server] ${firstLine}")
-            s.write("HTTP/1.1 204 No Content\r\nConnection: close\r\n\r\n".toArray())
-            s.close()
-            done.dec()
+            let server = ServerBuilder().addr("127.0.0.1").port(8080).build()
+            server.distributor.register("/delete-test", {
+                httpContext => if (httpContext.request.method == "DELETE") {
+                    httpContext.responseBuilder.status(200).body("Resource deleted successfully")
+                } else {
+                    httpContext.responseBuilder.status(405).body("Method Not Allowed")
+                }
+            })
+            server.serve()
     }
+    // 等待服务器启动
+    sleep(Duration.second)
 
-    let port = (ss.localAddress as IPSocketAddress)?.port ?? throw Exception("Port not found")
-
+    // 创建Client实例
     let client = ClientBuilder().build()
-    let resp = client.delete("http://127.0.0.1:${port}/d")
-    println("status = ${resp.status}")
+
+    // 发送DELETE请求
+    let response = client.delete("http://127.0.0.1:8080/delete-test")
+    println("响应状态码: ${response.status}")
+
+    // 读取响应体
+    let bodyBuf = Array<UInt8>(1024, repeat: 0)
+    let readLength = response.body.read(bodyBuf)
+    println("响应体: ${String.fromUtf8(bodyBuf[..readLength])}")
 
     client.close()
-    done.waitUntilZero()
-    ss.close()
 }
 ```
 
 运行结果：
 
 ```text
-[server] DELETE /d HTTP/1.1
-status = 204
+响应状态码: 200
+响应体: Resource deleted successfully
 ```
 
 ### func get(String)
@@ -360,52 +799,43 @@ public func get(url: String): HttpResponse
 
 示例：
 
-<!-- run -->
+<!-- verify -->
 ```cangjie
 import stdx.net.http.*
-import std.net.*
-import std.sync.*
 
 main() {
-    let ss = TcpServerSocket(bindAt: 0)
-    ss.bind()
-    let done = SyncCounter(1)
-
+    // 启动服务器
     spawn {
         =>
-            let s = ss.accept()
-            let buf = Array<UInt8>(1024, repeat: 0)
-            let n = s.read(buf)
-            let firstLine = (String.fromUtf8(buf[..n]).split("\r\n"))[0]
-            println("[server] ${firstLine}")
-            s.write("HTTP/1.1 200 OK\r\nContent-Length: 2\r\nConnection: close\r\n\r\nOK".toArray())
-            s.close()
-            done.dec()
+            // 构建 Server 实例
+            let server = ServerBuilder().addr("127.0.0.1").port(8080).build()
+            // 注册 HttpRequestHandler
+            server.distributor.register("/index", {
+                httpContext => httpContext.responseBuilder.body("Hello 仓颉!")
+            })
+            // 启动服务
+            server.serve()
     }
+    // 等待服务启动
+    sleep(Duration.second)
 
-    let port = (ss.localAddress as IPSocketAddress)?.port ?? throw Exception("Port not found")
-
+    // 创建 Client
     let client = ClientBuilder().build()
+    // 发送GET请求
+    let resp = client.get("http://127.0.0.1:8080/index")
 
-    // func get(String)
-    let resp = client.get("http://127.0.0.1:${port}/hello")
-    println("status = ${resp.status}")
-    let bodyBuf = Array<UInt8>(16, repeat: 0)
-    let m = resp.body.read(bodyBuf)
-    println("body = ${String.fromUtf8(bodyBuf[..m])}")
-
+    // 读取响应体
+    let bodyBuf = Array<UInt8>(1024, repeat: 0)
+    let bytesRead = resp.body.read(bodyBuf)
+    println("响应体: ${String.fromUtf8(bodyBuf[..bytesRead])}")
     client.close()
-    done.waitUntilZero()
-    ss.close()
 }
 ```
 
 运行结果：
 
 ```text
-[server] GET /hello HTTP/1.1
-status = 200
-body = OK
+响应体: Hello 仓颉!
 ```
 
 ### func getTlsConfig()
@@ -422,15 +852,20 @@ public func getTlsConfig(): ?TlsConfig
 
 示例：
 
-<!-- run -->
+<!-- verify -->
 ```cangjie
 import stdx.net.http.*
 
 main() {
-    // 未配置 tlsConfig 时，getTlsConfig() 预期返回 None
+    // 创建普通Client实例
     let client = ClientBuilder().build()
-    let tls = client.getTlsConfig()
-    println("tlsConfig.isSome = ${tls.isSome()}")
+    
+    // 检查默认的TLS配置
+    match (client.getTlsConfig()) {
+        case Some(config) => println("找到了TLS配置")
+        case None => println("未设置TLS配置")
+    }
+    
     client.close()
 }
 ```
@@ -438,7 +873,7 @@ main() {
 运行结果：
 
 ```text
-tlsConfig.isSome = false
+未设置TLS配置
 ```
 
 ### func head(String)
@@ -465,55 +900,41 @@ public func head(url: String): HttpResponse
 
 示例：
 
-<!-- run -->
+<!-- verify -->
 ```cangjie
 import stdx.net.http.*
-import std.net.*
-import std.sync.*
 
 main() {
-    let ss = TcpServerSocket(bindAt: 0)
-    ss.bind()
-    let done = SyncCounter(1)
-
+    // 启动服务器
     spawn {
         =>
-            let s = ss.accept()
-            let buf = Array<UInt8>(1024, repeat: 0)
-            let n = s.read(buf)
-            let firstLine = (String.fromUtf8(buf[..n]).split("\r\n"))[0]
-            println("[server] ${firstLine}")
-            // HEAD 响应可以带 Content-Length，但不返回 body
-            s.write("HTTP/1.1 200 OK\r\nContent-Length: 2\r\nConnection: close\r\n\r\n".toArray())
-            s.close()
-            done.dec()
+            // 构建 Server 实例
+            let server = ServerBuilder().addr("127.0.0.1").port(8080).build()
+            // 注册 HttpRequestHandler
+            server.distributor.register("/index", {
+                httpContext => httpContext.responseBuilder.status(200)
+            })
+            server.serve()
     }
+    // 等待服务启动
+    sleep(Duration.second)
 
-    let port = (ss.localAddress as IPSocketAddress)?.port ?? throw Exception("Port not found")
-
+    // 创建客户端
     let client = ClientBuilder().build()
-    let resp = client.head("http://127.0.0.1:${port}/h")
-    println("status = ${resp.status}")
-    println("bodySize = ${resp.bodySize}")
 
-    // 读 body：预期读到 0
-    let buf = Array<UInt8>(8, repeat: 0)
-    let n = resp.body.read(buf)
-    println("body.read = ${n}")
+    // 发送HEAD请求
+    let resp= client.head("http://127.0.0.1:8080/index")
+    println("状态码: ${resp.status}")
 
+    // 关闭客户端
     client.close()
-    done.waitUntilZero()
-    ss.close()
 }
 ```
 
 运行结果：
 
 ```text
-[server] HEAD /h HTTP/1.1
-status = 200
-bodySize = Some(0)
-body.read = 0
+状态码: 200
 ```
 
 ### func options(String)
@@ -540,49 +961,48 @@ public func options(url: String): HttpResponse
 
 示例：
 
-<!-- run -->
+<!-- verify -->
 ```cangjie
 import stdx.net.http.*
-import std.net.*
-import std.sync.*
 
 main() {
-    let ss = TcpServerSocket(bindAt: 0)
-    ss.bind()
-    let done = SyncCounter(1)
-
+    // 启动测试服务器
     spawn {
         =>
-            let s = ss.accept()
-            let buf = Array<UInt8>(1024, repeat: 0)
-            let n = s.read(buf)
-            let firstLine = (String.fromUtf8(buf[..n]).split("\r\n"))[0]
-            println("[server] ${firstLine}")
-            // 返回 Allow 头，表示支持的方法
-            s.write("HTTP/1.1 204 No Content\r\nAllow: GET, POST, OPTIONS\r\nConnection: close\r\n\r\n".toArray())
-            s.close()
-            done.dec()
+            let server = ServerBuilder().addr("127.0.0.1").port(8084).build()
+            server.distributor.register("/options-test", {
+                httpContext => if (httpContext.request.method == "OPTIONS") {
+                    httpContext
+                        .responseBuilder
+                        .status(200)
+                        .header("Allow", "OPTIONS, GET, HEAD, POST, PUT, DELETE")
+                        .header("Content-Length", "0")
+                } else {
+                    httpContext.responseBuilder.status(405).body("Method Not Allowed")
+                }
+            })
+            server.serve()
     }
+    // 等待服务器启动
+    sleep(Duration.second)
 
-    let port = (ss.localAddress as IPSocketAddress)?.port ?? throw Exception("Port not found")
-
+    // 创建Client实例
     let client = ClientBuilder().build()
-    let resp = client.options("http://127.0.0.1:${port}/")
-    println("status = ${resp.status}")
-    println("allow = ${resp.headers.getFirst("allow") ?? ""}")
+
+    // 发送OPTIONS请求
+    let response = client.options("http://127.0.0.1:8084/options-test")
+    println("响应状态码: ${response.status}")
+    println("允许的方法: ${response.headers.getFirst("allow") ?? "未设置"}")
 
     client.close()
-    done.waitUntilZero()
-    ss.close()
 }
 ```
 
 运行结果：
 
 ```text
-[server] OPTIONS / HTTP/1.1
-status = 204
-allow = GET, POST, OPTIONS
+响应状态码: 200
+允许的方法: OPTIONS, GET, HEAD, POST, PUT, DELETE
 ```
 
 ### func post(String, Array\<UInt8>)
@@ -610,61 +1030,55 @@ public func post(url: String, body: Array<UInt8>): HttpResponse
 
 示例：
 
-<!-- run -->
+<!-- verify -->
 ```cangjie
 import stdx.net.http.*
-import std.net.*
-import std.sync.*
 
 main() {
-    let ss = TcpServerSocket(bindAt: 0)
-    ss.bind()
-    let done = SyncCounter(1)
-
+    // 启动服务器
     spawn {
         =>
-            let s = ss.accept()
-            let buf = Array<UInt8>(4096, repeat: 0)
-            var total = s.read(buf)
-            var reqStr = String.fromUtf8(buf[..total])
-            if (!reqStr.contains("\r\n\r\nabc")) {
-                total += s.read(buf[total..])
-                reqStr = String.fromUtf8(buf[..total])
-            }
-            let firstLine = (reqStr.split("\r\n"))[0]
-            println("[server] ${firstLine}")
-            let parts = reqStr.split("\r\n\r\n")
-            if (parts.size > 1) {
-                println("[server] body = ${parts[1]}")
-            }
-            s.write("HTTP/1.1 200 OK\r\nContent-Length: 2\r\nConnection: close\r\n\r\nOK".toArray())
-            s.close()
-            done.dec()
+            let server = ServerBuilder().addr("127.0.0.1").port(8088).build()
+            server.distributor.register("/post-bytes", {
+                httpContext => if (httpContext.request.method == "POST") {
+                    // 读取请求体
+                    let bodyBuf = Array<UInt8>(1024, repeat: 0)
+                    let readLength = httpContext.request.body.read(bodyBuf)
+                    println("服务端收到请求体: ${String.fromUtf8(bodyBuf[..readLength])}")
+
+                    httpContext.responseBuilder.status(200).body("收到${readLength}字节的POST请求")
+                } else {
+                    httpContext.responseBuilder.status(405).body("Method Not Allowed")
+                }
+            })
+            server.serve()
     }
+    // 等待服务器启动
+    sleep(Duration.second)
 
-    let port = (ss.localAddress as IPSocketAddress)?.port ?? throw Exception("Port not found")
-
+    // 创建Client实例
     let client = ClientBuilder().build()
-    let resp = client.post("http://127.0.0.1:${port}/p", [97, 98, 99]) // func post(String, Array<UInt8>)
 
-    let out = Array<UInt8>(8, repeat: 0)
-    let m = resp.body.read(out)
-    println("status = ${resp.status}")
-    println("body = ${String.fromUtf8(out[..m])}")
+    // 发送POST请求（字节数组形式的请求体）
+    let postData: Array<UInt8> = [72, 101, 108, 108, 111, 32, 228, 184, 150, 231, 149, 140, 33] // "Hello 世界!"
+    let response = client.post("http://127.0.0.1:8088/post-bytes", postData)
+    println("响应状态码: ${response.status}")
+
+    // 读取响应体
+    let bodyBuf = Array<UInt8>(1024, repeat: 0)
+    let readLength = response.body.read(bodyBuf)
+    println("响应体: ${String.fromUtf8(bodyBuf[..readLength])}")
 
     client.close()
-    done.waitUntilZero()
-    ss.close()
 }
 ```
 
 运行结果：
 
 ```text
-[server] POST /p HTTP/1.1
-[server] body = abc
-status = 200
-body = OK
+服务端收到请求体: Hello 世界!
+响应状态码: 200
+响应体: 收到13字节的POST请求
 ```
 
 ### func post(String, InputStream)
@@ -692,100 +1106,59 @@ public func post(url: String, body: InputStream): HttpResponse
 
 示例：
 
-<!-- run -->
+<!-- verify -->
 ```cangjie
-import stdx.net.http.*
 import std.io.*
-import std.net.*
-import std.sync.*
-
-// 一个最简可 seek 的 InputStream：提供 length，满足 http 库对 bodySize 的要求。
-public class ByteArrayInputStream <: InputStream & Seekable {
-    let bytes: Array<Byte>
-    var start: Int64
-    var remain: Int64
-
-    public init(str: String) {
-        this.bytes = unsafe { str.rawData() }
-        this.start = 0
-        this.remain = bytes.size
-    }
-
-    public prop length: Int64 {
-        get() {
-            bytes.size
-        }
-    }
-
-    public func read(buf: Array<Byte>): Int64 {
-        if (remain == 0) {
-            return 0
-        }
-        let size = min(buf.size, remain)
-        bytes.copyTo(buf, start, 0, size)
-        start += size
-        remain -= size
-        return size
-    }
-
-    public func seek(_: SeekPosition): Int64 {
-        // 示例中不做真正 seek，仅满足接口要求。
-        0
-    }
-}
+import stdx.net.http.*
 
 main() {
-    let ss = TcpServerSocket(bindAt: 0)
-    ss.bind()
-    let done = SyncCounter(1)
-
+    // 启动服务器
     spawn {
         =>
-            let s = ss.accept()
-            let buf = Array<UInt8>(4096, repeat: 0)
-            var total = s.read(buf)
-            var reqStr = String.fromUtf8(buf[..total])
-            if (!reqStr.contains("\r\n\r\nhi")) {
-                total += s.read(buf[total..])
-                reqStr = String.fromUtf8(buf[..total])
-            }
-            let firstLine = (reqStr.split("\r\n"))[0]
-            println("[server] ${firstLine}")
-            let parts = reqStr.split("\r\n\r\n")
-            if (parts.size > 1) {
-                println("[server] body = ${parts[1]}")
-            }
-            s.write("HTTP/1.1 200 OK\r\nContent-Length: 2\r\nConnection: close\r\n\r\nOK".toArray())
-            s.close()
-            done.dec()
+            let server = ServerBuilder().addr("127.0.0.1").port(8089).build()
+            server.distributor.register("/post-stream", {
+                httpContext => if (httpContext.request.method == "POST") {
+                    // 读取请求体
+                    let bodyBuf = Array<UInt8>(1024, repeat: 0)
+                    let readLength = httpContext.request.body.read(bodyBuf)
+                    println("服务端收到请求体: ${String.fromUtf8(bodyBuf[..readLength])}")
+                    
+                    httpContext.responseBuilder.status(200).body("收到${readLength}字节的流式POST请求")
+                } else {
+                    httpContext.responseBuilder.status(405).body("Method Not Allowed")
+                }
+            })
+            server.serve()
     }
+    // 等待服务器启动
+    sleep(Duration.second)
 
-    let port = (ss.localAddress as IPSocketAddress)?.port ?? throw Exception("Port not found")
-
-    // func post(String, InputStream)
-    let body: InputStream = ByteArrayInputStream("hi")
-
+    // 创建Client实例
     let client = ClientBuilder().build()
-    let resp = client.post("http://127.0.0.1:${port}/p", body)
 
-    let out = Array<UInt8>(8, repeat: 0)
-    let m = resp.body.read(out)
-    println("status = ${resp.status}")
-    println("body = ${String.fromUtf8(out[..m])}")
+    // 创建字节数组输入流
+    let dataBytes: Array<UInt8> = [72, 101, 108, 108, 111, 32, 228, 184, 150, 231, 149, 140, 33] // "Hello 世界!"
+    let inputStream = ByteBuffer(dataBytes)
+
+    // 发送POST请求（InputStream形式的请求体）
+    let response = client.post("http://127.0.0.1:8089/post-stream", inputStream)
+    println("响应状态码: ${response.status}")
+
+    // 读取响应体
+    let bodyBuf = Array<UInt8>(1024, repeat: 0)
+    let readLength = response.body.read(bodyBuf)
+    println("响应体: ${String.fromUtf8(bodyBuf[..readLength])}")
 
     client.close()
-    done.waitUntilZero()
-    ss.close()
 }
 ```
 
 运行结果：
 
 ```text
-[server] POST /p HTTP/1.1
-[server] body = hi
-status = 200
-body = OK
+服务端收到请求体: Hello 世界!
+响应状态码: 200
+响应体: 收到13字节的流式POST请求
 ```
 
 ### func post(String, String)
@@ -813,73 +1186,57 @@ public func post(url: String, body: String): HttpResponse
 
 示例：
 
-<!-- run -->
+<!-- verify -->
 ```cangjie
+import std.io.*
 import stdx.net.http.*
-import std.net.*
-import std.sync.*
 
 main() {
-    let ss = TcpServerSocket(bindAt: 0)
-    ss.bind()
-    let done = SyncCounter(1)
-
+    // 启动服务器
     spawn {
         =>
-            let s = ss.accept()
-            let buf = Array<UInt8>(4096, repeat: 0)
-            var total = 0
-
-            // 先读一段（通常包含完整 header，可能也包含 body）
-            total += s.read(buf)
-            var reqStr = String.fromUtf8(buf[..total])
-
-            // 如果 body 还没读到（TCP 分包），继续读一段补齐。
-            if (!reqStr.contains("\r\n\r\nhi")) {
-                total += s.read(buf[total..])
-                reqStr = String.fromUtf8(buf[..total])
-            }
-            let firstLine = (reqStr.split("\r\n"))[0]
-            println("[server] ${firstLine}")
-            let parts = reqStr.split("\r\n\r\n")
-            if (parts.size > 1) {
-                println("[server] body = ${parts[1]}")
-            }
-            let body = match (reqStr.indexOf("\r\n\r\n")) {
-                case Some(idx) => reqStr[(idx + 4)..]
-                case None => ""
-            }
-
-            let respBody = "echo:${body}"
-            s.write(
-                "HTTP/1.1 200 OK\r\nContent-Length: ${respBody.size}\r\nConnection: close\r\n\r\n${respBody}".toArray())
-            s.close()
-            done.dec()
+            let server = ServerBuilder().addr("127.0.0.1").port(8090).build()
+            server.distributor.register("/post-string", {
+                httpContext => if (httpContext.request.method == "POST") {
+                    // 读取请求体
+                    let bodyBuf = Array<UInt8>(1024, repeat: 0)
+                    let readLength = httpContext.request.body.read(bodyBuf)
+                    let requestBody = String.fromUtf8(bodyBuf[..readLength])
+                    println("服务端收到请求体: ${requestBody}")
+                    
+                    httpContext.responseBuilder.status(200).body("收到POST请求，内容长度: ${readLength}")
+                } else {
+                    httpContext.responseBuilder.status(405).body("Method Not Allowed")
+                }
+            })
+            server.serve()
     }
+    // 等待服务器启动
+    sleep(Duration.second)
 
-    let port = (ss.localAddress as IPSocketAddress)?.port ?? throw Exception("Port not found")
-
+    // 创建Client实例
     let client = ClientBuilder().build()
-    let resp = client.post("http://127.0.0.1:${port}/p", "hi") // func post(String, String)
 
-    let out = Array<UInt8>(64, repeat: 0)
-    let m = resp.body.read(out)
-    println("status = ${resp.status}")
-    println("body = ${String.fromUtf8(out[..m])}")
+    // 发送POST请求（字符串形式的请求体）
+    let postData = "Hello 仓颉 HTTP!"
+    let response = client.post("http://127.0.0.1:8090/post-string", postData)
+    println("响应状态码: ${response.status}")
+
+    // 读取响应体
+    let bodyBuf = Array<UInt8>(1024, repeat: 0)
+    let readLength = response.body.read(bodyBuf)
+    println("响应体: ${String.fromUtf8(bodyBuf[..readLength])}")
 
     client.close()
-    done.waitUntilZero()
-    ss.close()
 }
 ```
 
 运行结果：
 
 ```text
-[server] POST /p HTTP/1.1
-[server] body = hi
-status = 200
-body = echo:hi
+服务端收到请求体: Hello 仓颉 HTTP!
+响应状态码: 200
+响应体: 收到POST请求，内容长度: 18
 ```
 
 ### func put(String, Array\<UInt8>)
@@ -907,62 +1264,57 @@ public func put(url: String, body: Array<UInt8>): HttpResponse
 
 示例：
 
-<!-- run -->
+<!-- verify -->
 ```cangjie
+import std.io.*
 import stdx.net.http.*
-import std.net.*
-import std.sync.*
 
 main() {
-    let ss = TcpServerSocket(bindAt: 0)
-    ss.bind()
-    let done = SyncCounter(1)
-
+    // 启动服务器
     spawn {
         =>
-            let s = ss.accept()
-            let buf = Array<UInt8>(4096, repeat: 0)
-            var total = s.read(buf)
-            var reqStr = String.fromUtf8(buf[..total])
-            // 如果 body 未读全，补一段（这里 body 就是 "abc"）
-            if (!reqStr.contains("\r\n\r\nabc")) {
-                total += s.read(buf[total..])
-                reqStr = String.fromUtf8(buf[..total])
-            }
-            let firstLine = (reqStr.split("\r\n"))[0]
-            println("[server] ${firstLine}")
-            let parts = reqStr.split("\r\n\r\n")
-            if (parts.size > 1) {
-                println("[server] body = ${parts[1]}")
-            }
-            s.write("HTTP/1.1 200 OK\r\nContent-Length: 2\r\nConnection: close\r\n\r\nOK".toArray())
-            s.close()
-            done.dec()
+            let server = ServerBuilder().addr("127.0.0.1").port(8091).build()
+            server.distributor.register("/put-bytes", {
+                httpContext => if (httpContext.request.method == "PUT") {
+                    // 读取请求体
+                    let bodyBuf = Array<UInt8>(1024, repeat: 0)
+                    let readLength = httpContext.request.body.read(bodyBuf)
+                    let requestBody = String.fromUtf8(bodyBuf[..readLength])
+                    println("服务端收到请求体: ${requestBody}")
+
+                    httpContext.responseBuilder.status(200).body("收到${readLength}字节的PUT请求")
+                } else {
+                    httpContext.responseBuilder.status(405).body("Method Not Allowed")
+                }
+            })
+            server.serve()
     }
+    // 等待服务器启动
+    sleep(Duration.second)
 
-    let port = (ss.localAddress as IPSocketAddress)?.port ?? throw Exception("Port not found")
-
+    // 创建Client实例
     let client = ClientBuilder().build()
-    let resp = client.put("http://127.0.0.1:${port}/u", [97, 98, 99]) // func put(String, Array<UInt8>)
 
-    let out = Array<UInt8>(8, repeat: 0)
-    let m = resp.body.read(out)
-    println("status = ${resp.status}")
-    println("body = ${String.fromUtf8(out[..m])}")
+    // 发送PUT请求（字节数组形式的请求体）
+    let putData: Array<UInt8> = [72, 101, 108, 108, 111, 32, 228, 184, 150, 231, 149, 140, 33] // "Hello 世界!"
+    let response = client.put("http://127.0.0.1:8091/put-bytes", putData)
+    println("响应状态码: ${response.status}")
+
+    // 读取响应体
+    let bodyBuf = Array<UInt8>(1024, repeat: 0)
+    let readLength = response.body.read(bodyBuf)
+    println("响应体: ${String.fromUtf8(bodyBuf[..readLength])}")
 
     client.close()
-    done.waitUntilZero()
-    ss.close()
 }
 ```
 
 运行结果：
 
 ```text
-[server] PUT /u HTTP/1.1
-[server] body = abc
-status = 200
-body = OK
+服务端收到请求体: Hello 世界!
+响应状态码: 200
+响应体: 收到13字节的PUT请求
 ```
 
 ### func put(String, InputStream)
@@ -990,97 +1342,60 @@ public func put(url: String, body: InputStream): HttpResponse
 
 示例：
 
-<!-- run -->
+<!-- verify -->
 ```cangjie
-import stdx.net.http.*
 import std.io.*
-import std.net.*
-import std.sync.*
-
-public class ByteArrayInputStream <: InputStream & Seekable {
-    let bytes: Array<Byte>
-    var start: Int64
-    var remain: Int64
-
-    public init(str: String) {
-        this.bytes = unsafe { str.rawData() }
-        this.start = 0
-        this.remain = bytes.size
-    }
-
-    public prop length: Int64 {
-        get() {
-            bytes.size
-        }
-    }
-
-    public func read(buf: Array<Byte>): Int64 {
-        if (remain == 0) {
-            return 0
-        }
-        let size = min(buf.size, remain)
-        bytes.copyTo(buf, start, 0, size)
-        start += size
-        remain -= size
-        return size
-    }
-
-    public func seek(_: SeekPosition): Int64 {
-        0
-    }
-}
+import stdx.net.http.*
 
 main() {
-    let ss = TcpServerSocket(bindAt: 0)
-    ss.bind()
-    let done = SyncCounter(1)
-
+    // 启动服务器
     spawn {
         =>
-            let s = ss.accept()
-            let buf = Array<UInt8>(4096, repeat: 0)
-            var total = s.read(buf)
-            var reqStr = String.fromUtf8(buf[..total])
-            if (!reqStr.contains("\r\n\r\nhi")) {
-                total += s.read(buf[total..])
-                reqStr = String.fromUtf8(buf[..total])
-            }
-            let firstLine = (reqStr.split("\r\n"))[0]
-            println("[server] ${firstLine}")
-            let parts = reqStr.split("\r\n\r\n")
-            if (parts.size > 1) {
-                println("[server] body = ${parts[1]}")
-            }
-            s.write("HTTP/1.1 200 OK\r\nContent-Length: 2\r\nConnection: close\r\n\r\nOK".toArray())
-            s.close()
-            done.dec()
+            let server = ServerBuilder().addr("127.0.0.1").port(8092).build()
+            server.distributor.register("/put-stream", {
+                httpContext => if (httpContext.request.method == "PUT") {
+                    // 读取请求体
+                    let bodyBuf = Array<UInt8>(1024, repeat: 0)
+                    let readLength = httpContext.request.body.read(bodyBuf)
+                    let requestBody = String.fromUtf8(bodyBuf[..readLength])
+                    println("服务端收到请求体: ${requestBody}")
+                    
+                    httpContext.responseBuilder.status(200).body("收到${readLength}字节的流式PUT请求")
+                } else {
+                    httpContext.responseBuilder.status(405).body("Method Not Allowed")
+                }
+            })
+            server.serve()
     }
+    // 等待服务器启动
+    sleep(Duration.second)
 
-    let port = (ss.localAddress as IPSocketAddress)?.port ?? throw Exception("Port not found")
-
-    let body: InputStream = ByteArrayInputStream("hi")
-
+    // 创建Client实例
     let client = ClientBuilder().build()
-    let resp = client.put("http://127.0.0.1:${port}/u", body) // func put(String, InputStream)
 
-    let out = Array<UInt8>(8, repeat: 0)
-    let m = resp.body.read(out)
-    println("status = ${resp.status}")
-    println("body = ${String.fromUtf8(out[..m])}")
+    // 创建字节数组输入流
+    let updateBytes: Array<UInt8> = [83, 116, 114, 101, 97, 109, 105, 110, 103, 32, 117, 112, 100, 97, 116, 101] // "Streaming update"
+    let inputStream = ByteBuffer(updateBytes)
+
+    // 发送PUT请求（InputStream形式的请求体）
+    let response = client.put("http://127.0.0.1:8092/put-stream", inputStream)
+    println("响应状态码: ${response.status}")
+
+    // 读取响应体
+    let bodyBuf = Array<UInt8>(1024, repeat: 0)
+    let readLength = response.body.read(bodyBuf)
+    println("响应体: ${String.fromUtf8(bodyBuf[..readLength])}")
 
     client.close()
-    done.waitUntilZero()
-    ss.close()
 }
 ```
 
 运行结果：
 
 ```text
-[server] PUT /u HTTP/1.1
-[server] body = hi
-status = 200
-body = OK
+服务端收到请求体: Streaming update
+响应状态码: 200
+响应体: 收到16字节的流式PUT请求
 ```
 
 ### func put(String, String)
@@ -1108,61 +1423,57 @@ public func put(url: String, body: String): HttpResponse
 
 示例：
 
-<!-- run -->
+<!-- verify -->
 ```cangjie
+import std.io.*
 import stdx.net.http.*
-import std.net.*
-import std.sync.*
 
 main() {
-    let ss = TcpServerSocket(bindAt: 0)
-    ss.bind()
-    let done = SyncCounter(1)
-
+    // 启动服务器
     spawn {
         =>
-            let s = ss.accept()
-            let buf = Array<UInt8>(4096, repeat: 0)
-            var total = s.read(buf)
-            var reqStr = String.fromUtf8(buf[..total])
-            if (!reqStr.contains("\r\n\r\nhi")) {
-                total += s.read(buf[total..])
-                reqStr = String.fromUtf8(buf[..total])
-            }
-            let firstLine = (reqStr.split("\r\n"))[0]
-            println("[server] ${firstLine}")
-            let parts = reqStr.split("\r\n\r\n")
-            if (parts.size > 1) {
-                println("[server] body = ${parts[1]}")
-            }
-            s.write("HTTP/1.1 200 OK\r\nContent-Length: 2\r\nConnection: close\r\n\r\nOK".toArray())
-            s.close()
-            done.dec()
+            let server = ServerBuilder().addr("127.0.0.1").port(8093).build()
+            server.distributor.register("/put-string", {
+                httpContext => if (httpContext.request.method == "PUT") {
+                    // 读取请求体
+                    let bodyBuf = Array<UInt8>(1024, repeat: 0)
+                    let readLength = httpContext.request.body.read(bodyBuf)
+                    let requestBody = String.fromUtf8(bodyBuf[..readLength])
+                    println("服务端收到请求体: ${requestBody}")
+
+                    httpContext.responseBuilder.status(200).body("收到PUT请求，内容长度${readLength}")
+                } else {
+                    httpContext.responseBuilder.status(405).body("Method Not Allowed")
+                }
+            })
+            server.serve()
     }
+    // 等待服务器启动
+    sleep(Duration.second)
 
-    let port = (ss.localAddress as IPSocketAddress)?.port ?? throw Exception("Port not found")
-
+    // 创建Client实例
     let client = ClientBuilder().build()
-    let resp = client.put("http://127.0.0.1:${port}/u", "hi") // func put(String, String)
 
-    let out = Array<UInt8>(8, repeat: 0)
-    let m = resp.body.read(out)
-    println("status = ${resp.status}")
-    println("body = ${String.fromUtf8(out[..m])}")
+    // 发送PUT请求（字符串形式的请求体）
+    let putData = "Update 仓颉 HTTP data"
+    let response = client.put("http://127.0.0.1:8093/put-string", putData)
+    println("响应状态码: ${response.status}")
+
+    // 读取响应体
+    let bodyBuf = Array<UInt8>(1024, repeat: 0)
+    let readLength = response.body.read(bodyBuf)
+    println("响应体: ${String.fromUtf8(bodyBuf[..readLength])}")
 
     client.close()
-    done.waitUntilZero()
-    ss.close()
 }
 ```
 
 运行结果：
 
 ```text
-[server] PUT /u HTTP/1.1
-[server] body = hi
-status = 200
-body = OK
+服务端收到请求体: Update 仓颉 HTTP data
+响应状态码: 200
+响应体: 收到PUT请求，内容长度23
 ```
 
 ### func send(HttpRequest)
@@ -1204,51 +1515,65 @@ public func send(req: HttpRequest): HttpResponse
 
 示例：
 
-<!-- run -->
+<!-- verify -->
 ```cangjie
+import std.io.*
 import stdx.net.http.*
-import stdx.encoding.url.*
-import std.net.*
-import std.sync.*
 
 main() {
-    // server: 回 204 并关闭
-    let ss = TcpServerSocket(bindAt: 0)
-    ss.bind()
-    let done = SyncCounter(1)
+    // 启动服务器
     spawn {
         =>
-            let s = ss.accept()
-            let buf = Array<UInt8>(1024, repeat: 0)
-            let n = s.read(buf)
-            let firstLine = (String.fromUtf8(buf[..n]).split("\r\n"))[0]
-            println("[server] ${firstLine}")
-            s.write("HTTP/1.1 204 No Content\r\nConnection: close\r\n\r\n".toArray())
-            s.close()
-            done.dec()
+            let server = ServerBuilder().addr("127.0.0.1").port(8094).build()
+            server.distributor.register(
+                "/custom-request",
+                {
+                    httpContext =>
+                        let request = httpContext.request
+                        let method = request.method
+                        let path = request.url.path
+                        let userAgent = request.headers.getFirst("user-agent")
+                        request.body
+                        println("服务端收到请求: 方法=${method}, 路径=${path}, User-Agent=${userAgent ?? "未知"}")
+
+                        httpContext.responseBuilder.status(200).body("服务端已收到请求")
+                }
+            )
+            server.serve()
     }
+    // 等待服务器启动
+    sleep(Duration.second)
 
-    let port = (ss.localAddress as IPSocketAddress)?.port ?? throw Exception("Port not found")
-
+    // 创建Client实例
     let client = ClientBuilder().build()
 
-    // func send(HttpRequest): 通过 HttpRequestBuilder 构建请求
-    let u = URL.parse("http://127.0.0.1:${port}/send")
-    let req = HttpRequestBuilder().url(u).method("GET").build()
-    let resp = client.send(req)
-    println("status = ${resp.status}")
+    // 构建自定义请求
+    let request = HttpRequestBuilder()
+        .method("PATCH")
+        .url("http://127.0.0.1:8094/custom-request")
+        .header("User-Agent", "MyCustomClient/1.0")
+        .body("自定义请求体内容")
+        .build()
+
+    // 发送自定义请求
+    let response = client.send(request)
+    println("响应状态码: ${response.status}")
+
+    // 读取响应体
+    let bodyBuf = Array<UInt8>(1024, repeat: 0)
+    let readLength = response.body.read(bodyBuf)
+    println("响应体: ${String.fromUtf8(bodyBuf[..readLength])}")
 
     client.close()
-    done.waitUntilZero()
-    ss.close()
 }
 ```
 
 运行结果：
 
 ```text
-[server] GET /send HTTP/1.1
-status = 204
+服务端收到请求: 方法=PATCH, 路径=/custom-request, User-Agent=MyCustomClient/1.0
+响应状态码: 200
+响应体: 服务端已收到请求
 ```
 
 ### func upgrade(HttpRequest)
@@ -1289,64 +1614,59 @@ public func upgrade(req: HttpRequest): (HttpResponse, ?StreamingSocket)
 
 示例：
 
-<!-- run -->
+<!-- verify -->
 ```cangjie
 import stdx.net.http.*
-import stdx.encoding.url.*
-import std.net.*
-import std.sync.*
 
 main() {
-    let ss = TcpServerSocket(bindAt: 0)
-    ss.bind()
-    let done = SyncCounter(1)
-
+    // 启动服务器
     spawn {
         =>
-            let s = ss.accept()
-            let buf = Array<UInt8>(2048, repeat: 0)
-            let n = s.read(buf)
-            let reqStr = String.fromUtf8(buf[..n])
-            // 打印方法（避免随机端口）
-            println("method = ${reqStr.split(" ")[0]}")
-
-            // 按协议回 101 Switching Protocols
-            s.write("HTTP/1.1 101 Switching Protocols\r\nUpgrade: test/1\r\nConnection: Upgrade\r\n\r\n".toArray())
-            // 等 client 关闭
-            s.close()
-            done.dec()
+            let server = ServerBuilder().addr("127.0.0.1").port(8094).build()
+            server.distributor.register(
+                "/upgrade",
+                {
+                    httpContext =>
+                        httpContext.responseBuilder.status(101)
+                        // 升级连接
+                        let streamingSocket = upgrade(httpContext)
+                        // 通过streamingSocket写入数据
+                        streamingSocket.write("Hello Cangjie!".toArray())
+                }
+            )
+            server.serve()
     }
+    // 等待服务器启动
+    sleep(Duration.second)
 
-    let port = (ss.localAddress as IPSocketAddress)?.port ?? throw Exception("Port not found")
-
+    // 创建Client实例
     let client = ClientBuilder().build()
 
-    // func upgrade(HttpRequest)
+    // 必须添加Upgrade头才支持升级连接
     let headers = HttpHeaders()
-    headers.add("Upgrade", "test/1")
-    let req = HttpRequestBuilder().url(URL.parse("http://127.0.0.1:${port}/up")).get().setHeaders(headers).build()
+    headers.add("Upgrade", "abc")
 
-    let (resp, sockOpt) = client.upgrade(req)
-    println("status = ${resp.status}")
-    println("hasSocket = ${sockOpt.isSome()}")
+    // 创建HttpRequest实例
+    let req = HttpRequestBuilder().url("http://127.0.0.1:8094/upgrade").get().setHeaders(headers).build()
 
-    match (sockOpt) {
-        case Some(s) => s.close()
-        case None => ()
-    }
+    // 升级连接
+    let (resp, streamingSocket) = client.upgrade(req)
+    let buf = Array<UInt8>(1024, repeat: 0)
+
+    // 通过streamingSocket读取数据
+    let readLength = streamingSocket?.read(buf) ?? 0
+    println("状态码: ${resp.status}")
+    println("读取内容: ${String.fromUtf8(buf[..readLength])}, 长度: ${readLength}")
+    streamingSocket?.close()
     client.close()
-
-    done.waitUntilZero()
-    ss.close()
 }
 ```
 
 运行结果：
 
 ```text
-method = GET
-status = 101
-hasSocket = true
+状态码: 101
+读取内容: Hello Cangjie!, 长度: 14
 ```
 
 ## class ClientBuilder
@@ -1362,41 +1682,6 @@ public class ClientBuilder {
 > **说明：**
 >
 > 该类提供了一系列配置参数的函数，配置完成后调用 [build](./http_package_classes.md#func-build) 函数构造出 [Client](./http_package_classes.md#class-client) 实例。配置函数中说明了参数的取值范围，但配置函数本身不做参数合法性校验，[build](./http_package_classes.md#func-build) 时统一进行校验。
-
-### func initialWindowSize(UInt32)
-
-```cangjie
-public func initialWindowSize(size: UInt32): ClientBuilder
-```
-
-功能：配置客户端 HTTP/2 流控窗口初始值。
-
-参数：
-
-- size: UInt32 - 默认值 65535 ， 取值范围为 0 至 2^31 - 1。
-
-返回值：
-
-- [ClientBuilder](http_package_classes.md#class-clientbuilder) - 当前 [ClientBuilder](http_package_classes.md#class-clientbuilder) 实例的引用。
-
-示例：
-
-<!-- run -->
-```cangjie
-import stdx.net.http.*
-
-main() {
-    let client = ClientBuilder().initialWindowSize(65535).build()
-    println("initialWindowSize = ${client.initialWindowSize}")
-    client.close()
-}
-```
-
-运行结果：
-
-```text
-initialWindowSize = 65535
-```
 
 ### init()
 
@@ -1434,24 +1719,8 @@ public func autoRedirect(auto: Bool): ClientBuilder
 - [ClientBuilder](http_package_classes.md#class-clientbuilder) - 当前 [ClientBuilder](http_package_classes.md#class-clientbuilder) 实例的引用。
 
 示例：
-
-<!-- run -->
-```cangjie
-import stdx.net.http.*
-
-main() {
-    // 配置 ClientBuilder.autoRedirect，并验证 Client.autoRedirect
-    let client = ClientBuilder().autoRedirect(false).build()
-    println("autoRedirect = ${client.autoRedirect}")
-    client.close()
-}
-```
-
-运行结果：
-
-```text
-autoRedirect = false
-```
+<!-- associated_example -->
+参见 [prop autoRedirect](#prop-autoredirect) 示例。
 
 ### func build()
 
@@ -1478,17 +1747,10 @@ public func build(): Client
 import stdx.net.http.*
 
 main() {
-    // build() 构建出 Client 实例
-    let client = ClientBuilder().build()
-    println("poolSize = ${client.poolSize}")
-    client.close()
+    // 链式调用可以一次性设置多个属性
+    let customClient = ClientBuilder().poolSize(20).maxHeaderListSize(65536).build()
+    customClient.close()
 }
-```
-
-运行结果：
-
-```text
-poolSize = 10
 ```
 
 ### func connector((SocketAddress) -> StreamingSocket)
@@ -1508,57 +1770,8 @@ public func connector(c: (SocketAddress) -> StreamingSocket): ClientBuilder
 - [ClientBuilder](http_package_classes.md#class-clientbuilder) - 当前 [ClientBuilder](http_package_classes.md#class-clientbuilder) 实例的引用。
 
 示例：
-
-<!-- run -->
-```cangjie
-import stdx.net.http.*
-import std.net.*
-import std.sync.*
-
-main() {
-    // 用 connector 注入自定义建连逻辑
-    let ss = TcpServerSocket(bindAt: 0)
-    ss.bind()
-    let done = SyncCounter(1)
-
-    spawn {
-        =>
-            let s = ss.accept()
-            let buf = Array<UInt8>(1024, repeat: 0)
-            let n = s.read(buf)
-            println((String.fromUtf8(buf[..n]).split("\r\n"))[0])
-            s.write("HTTP/1.1 200 OK\r\nContent-Length: 2\r\nConnection: close\r\n\r\nOK".toArray())
-            s.close()
-            done.dec()
-    }
-
-    let port = (ss.localAddress as IPSocketAddress)?.port ?? throw Exception("Port not found")
-
-    let myConnector: (SocketAddress) -> StreamingSocket = {
-        addr =>
-            println("connector called")
-            let socket = TcpSocket(addr)
-            socket.connect()
-            socket
-    }
-
-    let client = ClientBuilder().connector(myConnector).build()
-    let resp = client.get("http://127.0.0.1:${port}/")
-    println("status = ${resp.status}")
-
-    client.close()
-    done.waitUntilZero()
-    ss.close()
-}
-```
-
-运行结果：
-
-```text
-connector called
-GET / HTTP/1.1
-status = 200
-```
+<!-- associated_example -->
+参见 [prop connector](#prop-connector) 示例。
 
 ### func cookieJar(?CookieJar)
 
@@ -1577,24 +1790,8 @@ public func cookieJar(cookieJar: ?CookieJar): ClientBuilder
 - [ClientBuilder](http_package_classes.md#class-clientbuilder) - 当前 [ClientBuilder](http_package_classes.md#class-clientbuilder) 实例的引用。
 
 示例：
-
-<!-- run -->
-```cangjie
-import stdx.net.http.*
-
-main() {
-    // 将 cookieJar 设为 None：禁用 Cookie
-    let client = ClientBuilder().cookieJar(None).build()
-    println("cookieJar.isSome = ${client.cookieJar.isSome()}")
-    client.close()
-}
-```
-
-运行结果：
-
-```text
-cookieJar.isSome = false
-```
+<!-- associated_example -->
+参见 [prop cookieJar](#prop-cookiejar) 示例。
 
 ### func enablePush(Bool)
 
@@ -1613,23 +1810,8 @@ public func enablePush(enable: Bool): ClientBuilder
 - [ClientBuilder](http_package_classes.md#class-clientbuilder) - 当前 [ClientBuilder](http_package_classes.md#class-clientbuilder) 实例的引用。
 
 示例：
-
-<!-- run -->
-```cangjie
-import stdx.net.http.*
-
-main() {
-    let client = ClientBuilder().enablePush(false).build()
-    println("enablePush = ${client.enablePush}")
-    client.close()
-}
-```
-
-运行结果：
-
-```text
-enablePush = false
-```
+<!-- associated_example -->
+参见 [prop enablePush](#prop-enablepush) 示例。
 
 ### func headerTableSize(UInt32)
 
@@ -1648,23 +1830,8 @@ public func headerTableSize(size: UInt32): ClientBuilder
 - [ClientBuilder](http_package_classes.md#class-clientbuilder) - 当前 [ClientBuilder](http_package_classes.md#class-clientbuilder) 实例的引用。
 
 示例：
-
-<!-- run -->
-```cangjie
-import stdx.net.http.*
-
-main() {
-    let client = ClientBuilder().headerTableSize(1024).build()
-    println("headerTableSize = ${client.headerTableSize}")
-    client.close()
-}
-```
-
-运行结果：
-
-```text
-headerTableSize = 1024
-```
+<!-- associated_example -->
+参见 [prop headerTableSize](#prop-headertablesize) 示例。
 
 ### func httpProxy(String)
 
@@ -1683,24 +1850,8 @@ public func httpProxy(addr: String): ClientBuilder
 - [ClientBuilder](http_package_classes.md#class-clientbuilder) - 当前 [ClientBuilder](http_package_classes.md#class-clientbuilder) 实例的引用。
 
 示例：
-
-<!-- run -->
-```cangjie
-import stdx.net.http.*
-
-main() {
-    // 设置 http 代理（字符串形式）
-    let client = ClientBuilder().httpProxy("http://proxy.example:8080").build()
-    println("httpProxy = ${client.httpProxy}")
-    client.close()
-}
-```
-
-运行结果：
-
-```text
-httpProxy = http://proxy.example:8080
-```
+<!-- associated_example -->
+参见 [prop httpProxy](#prop-httpproxy) 示例。
 
 ### func httpsProxy(String)
 
@@ -1719,24 +1870,28 @@ public func httpsProxy(addr: String): ClientBuilder
 - [ClientBuilder](http_package_classes.md#class-clientbuilder) - 当前 [ClientBuilder](http_package_classes.md#class-clientbuilder) 实例的引用。
 
 示例：
+<!-- associated_example -->
+参见 [prop httpsProxy](#prop-httpsproxy) 示例。
 
-<!-- run -->
+### func initialWindowSize(UInt32)
+
 ```cangjie
-import stdx.net.http.*
-
-main() {
-    // 设置 https 代理（注意：格式仍是 http://host:port）
-    let client = ClientBuilder().httpsProxy("http://proxy.example:443").build()
-    println("httpsProxy = ${client.httpsProxy}")
-    client.close()
-}
+public func initialWindowSize(size: UInt32): ClientBuilder
 ```
 
-运行结果：
+功能：配置客户端 HTTP/2 流控窗口初始值。
 
-```text
-httpsProxy = http://proxy.example:443
-```
+参数：
+
+- size: UInt32 - 默认值 65535 ， 取值范围为 0 至 2^31 - 1。
+
+返回值：
+
+- [ClientBuilder](http_package_classes.md#class-clientbuilder) - 当前 [ClientBuilder](http_package_classes.md#class-clientbuilder) 实例的引用。
+
+示例：
+<!-- associated_example -->
+参见 [prop initialWindowSize](#prop-initialwindowsize) 示例。
 
 ### func logger(Logger)
 
@@ -1759,23 +1914,15 @@ public func logger(logger: Logger): ClientBuilder
 <!-- run -->
 ```cangjie
 import stdx.net.http.*
-import stdx.log.*
+import stdx.logger.*
+import std.env.*
 
 main() {
-    // 使用 NoopLogger 注入 logger
-    let logger = NoopLogger()
-    logger.level = LogLevel.INFO
-
+    // 创建SimpleLogger实例，使用标准输出流
+    let logger = SimpleLogger(getStdOut())
     let client = ClientBuilder().logger(logger).build()
-    println("client.logger.level = ${client.logger.level}")
     client.close()
 }
-```
-
-运行结果：
-
-```text
-client.logger.level = OFF
 ```
 
 ### func maxConcurrentStreams(UInt32)
@@ -1795,23 +1942,8 @@ public func maxConcurrentStreams(size: UInt32): ClientBuilder
 - [ClientBuilder](http_package_classes.md#class-clientbuilder) - 当前 [ClientBuilder](http_package_classes.md#class-clientbuilder) 实例的引用。
 
 示例：
-
-<!-- run -->
-```cangjie
-import stdx.net.http.*
-
-main() {
-    let client = ClientBuilder().maxConcurrentStreams(100).build()
-    println("maxConcurrentStreams = ${client.maxConcurrentStreams}")
-    client.close()
-}
-```
-
-运行结果：
-
-```text
-maxConcurrentStreams = 100
-```
+<!-- associated_example -->
+参见 [prop maxConcurrentStreams](#prop-maxconcurrentstreams) 示例。
 
 ### func maxFrameSize(UInt32)
 
@@ -1830,23 +1962,8 @@ public func maxFrameSize(size: UInt32): ClientBuilder
 - [ClientBuilder](http_package_classes.md#class-clientbuilder) - 当前 [ClientBuilder](http_package_classes.md#class-clientbuilder) 实例的引用。
 
 示例：
-
-<!-- run -->
-```cangjie
-import stdx.net.http.*
-
-main() {
-    let client = ClientBuilder().maxFrameSize(16384).build()
-    println("maxFrameSize = ${client.maxFrameSize}")
-    client.close()
-}
-```
-
-运行结果：
-
-```text
-maxFrameSize = 16384
-```
+<!-- associated_example -->
+参见 [prop maxFrameSize](#prop-maxframesize) 示例。
 
 ### func maxHeaderListSize(UInt32)
 
@@ -1865,23 +1982,8 @@ public func maxHeaderListSize(size: UInt32): ClientBuilder
 - [ClientBuilder](http_package_classes.md#class-clientbuilder) - 当前 [ClientBuilder](http_package_classes.md#class-clientbuilder) 实例的引用。
 
 示例：
-
-<!-- run -->
-```cangjie
-import stdx.net.http.*
-
-main() {
-    let client = ClientBuilder().maxHeaderListSize(1024).build()
-    println("maxHeaderListSize = ${client.maxHeaderListSize}")
-    client.close()
-}
-```
-
-运行结果：
-
-```text
-maxHeaderListSize = 1024
-```
+<!-- associated_example -->
+参见 [prop maxHeaderListSize](#prop-maxheaderlistsize) 示例。
 
 ### func noProxy()
 
@@ -1897,15 +1999,21 @@ public func noProxy(): ClientBuilder
 
 示例：
 
-<!-- run -->
+<!-- verify -->
 ```cangjie
+import std.env.*
 import stdx.net.http.*
 
 main() {
-    // noProxy() 清空代理
+    // 先设置代理环境变量
+    setVariable("http_proxy", "http://192.168.1.1:8080")
+
+    // 使用ClientBuilder设置不使用代理
     let client = ClientBuilder().noProxy().build()
-    println("httpProxy = '${client.httpProxy}'")
-    println("httpsProxy = '${client.httpsProxy}'")
+
+    println("即使有代理设置，客户端也不会使用代理: ${client.httpProxy}")
+
+    // 关闭客户端
     client.close()
 }
 ```
@@ -1913,8 +2021,7 @@ main() {
 运行结果：
 
 ```text
-httpProxy = ''
-httpsProxy = ''
+即使有代理设置，客户端也不会使用代理: 
 ```
 
 ### func poolSize(Int64)
@@ -1938,23 +2045,8 @@ public func poolSize(size: Int64): ClientBuilder
 - [HttpException](http_package_exceptions.md#class-httpexception) - 如果传参小于等于 0，则会抛出该异常。
 
 示例：
-
-<!-- run -->
-```cangjie
-import stdx.net.http.*
-
-main() {
-    let client = ClientBuilder().poolSize(5).build()
-    println("poolSize = ${client.poolSize}")
-    client.close()
-}
-```
-
-运行结果：
-
-```text
-poolSize = 5
-```
+<!-- associated_example -->
+参见 [prop poolSize](#prop-poolsize) 示例。
 
 ### func readTimeout(Duration)
 
@@ -1973,23 +2065,8 @@ public func readTimeout(timeout: Duration): ClientBuilder
 - [ClientBuilder](http_package_classes.md#class-clientbuilder) - 当前 [ClientBuilder](http_package_classes.md#class-clientbuilder) 实例的引用。
 
 示例：
-
-<!-- run -->
-```cangjie
-import stdx.net.http.*
-
-main() {
-    let client = ClientBuilder().readTimeout(Duration.second * 1).build()
-    println("readTimeout = ${client.readTimeout}")
-    client.close()
-}
-```
-
-运行结果：
-
-```text
-readTimeout = 1s
-```
+<!-- associated_example -->
+参见 [prop readTimeout](#prop-readtimeout) 示例。
 
 ### func tlsConfig(TlsConfig)
 
@@ -2015,20 +2092,14 @@ import stdx.net.http.*
 import stdx.net.tls.*
 
 main() {
-    // 配置 ClientBuilder.tlsConfig，并通过 Client.getTlsConfig() 验证已生效。
+    // 配置 TlsClientConfig
     var tls = TlsClientConfig()
     tls.supportedAlpnProtocols = ["h2"]
 
+    // 创建 TlsClientConfig 实例并配置
     let client = ClientBuilder().tlsConfig(tls).build()
-    println("tlsConfig.isSome = ${client.getTlsConfig().isSome()}")
     client.close()
 }
-```
-
-运行结果：
-
-```text
-tlsConfig.isSome = true
 ```
 
 ### func writeTimeout(Duration)
@@ -2048,23 +2119,8 @@ public func writeTimeout(timeout: Duration): ClientBuilder
 - [ClientBuilder](http_package_classes.md#class-clientbuilder) - 当前 [ClientBuilder](http_package_classes.md#class-clientbuilder) 实例的引用。
 
 示例：
-
-<!-- run -->
-```cangjie
-import stdx.net.http.*
-
-main() {
-    let client = ClientBuilder().writeTimeout(Duration.second * 2).build()
-    println("writeTimeout = ${client.writeTimeout}")
-    client.close()
-}
-```
-
-运行结果：
-
-```text
-writeTimeout = 2s
-```
+<!-- associated_example -->
+参见 [prop writeTimeout](#prop-writetimeout) 示例。
 
 ## class Cookie
 
@@ -2094,6 +2150,10 @@ public prop cookieName: String
 
 类型：String
 
+示例：
+<!-- associated_example -->
+参见 [init](#initstring-string-datetime-int64-string-string-bool-bool) 示例。
+
 ### prop cookieValue
 
 ```cangjie
@@ -2103,6 +2163,10 @@ public prop cookieValue: String
 功能：获取 [Cookie](http_package_classes.md#class-cookie) 对象的 cookie-value 值。
 
 类型：String
+
+示例：
+<!-- associated_example -->
+参见 [init](#initstring-string-datetime-int64-string-string-bool-bool) 示例。
 
 ### prop domain
 
@@ -2114,6 +2178,10 @@ public prop domain: String
 
 类型：String
 
+示例：
+<!-- associated_example -->
+参见 [init](#initstring-string-datetime-int64-string-string-bool-bool) 示例。
+
 ### prop expires
 
 ```cangjie
@@ -2123,6 +2191,10 @@ public prop expires: ?DateTime
 功能：获取 [Cookie](http_package_classes.md#class-cookie) 对象的 expires-av 值。
 
 类型：?DateTime
+
+示例：
+<!-- associated_example -->
+参见 [init](#initstring-string-datetime-int64-string-string-bool-bool) 示例。
 
 ### prop httpOnly
 
@@ -2134,6 +2206,10 @@ public prop httpOnly: Bool
 
 类型：Bool
 
+示例：
+<!-- associated_example -->
+参见 [init](#initstring-string-datetime-int64-string-string-bool-bool) 示例。
+
 ### prop maxAge
 
 ```cangjie
@@ -2143,6 +2219,10 @@ public prop maxAge: ?Int64
 功能：获取 [Cookie](http_package_classes.md#class-cookie) 对象的 max-age-av 值。
 
 类型：?Int64
+
+示例：
+<!-- associated_example -->
+参见 [init](#initstring-string-datetime-int64-string-string-bool-bool) 示例。
 
 ### prop others
 
@@ -2154,6 +2234,10 @@ public prop others: ArrayList<String>
 
 类型：ArrayList\<String>
 
+示例：
+<!-- associated_example -->
+参见 [init](#initstring-string-datetime-int64-string-string-bool-bool) 示例。
+
 ### prop path
 
 ```cangjie
@@ -2164,6 +2248,10 @@ public prop path: String
 
 类型：String
 
+示例：
+<!-- associated_example -->
+参见 [init](#initstring-string-datetime-int64-string-string-bool-bool) 示例。
+
 ### prop secure
 
 ```cangjie
@@ -2173,6 +2261,10 @@ public prop secure: Bool
 功能：获取 [Cookie](http_package_classes.md#class-cookie) 对象的 secure-av 值。
 
 类型：Bool
+
+示例：
+<!-- associated_example -->
+参见 [init](#initstring-string-datetime-int64-string-string-bool-bool) 示例。
 
 ### init(String, String, ?DateTime, ?Int64, String, String, Bool, Bool)
 
@@ -2212,7 +2304,7 @@ public init(name: String, value: String, expires!: ?DateTime = None, maxAge!: ?I
     ```
 
 - expires!: ?DateTime - 设置 [Cookie](http_package_classes.md#class-cookie) 的过期时间，默认为 None，时间必须在 1601 年之后。
-- maxAge!: ?Int64 - [Cookie](http_package_classes.md#class-cookie) 的最大生命周期，默认为 None，如果 [Cookie](http_package_classes.md#class-cookie) 既有 expires 属性，也有 maxAge，则表示该 [Cookie](http_package_classes.md#class-cookie) 只维护到会话结束（维护到 [Client](http_package_classes.md#class-client) 关闭之前，[Client](http_package_classes.md#class-client) 关闭之后设置了过期的 [Cookie](http_package_classes.md#class-cookie) 也不再维护）。
+- maxAge!: ?Int64 - [Cookie](http_package_classes.md#class-cookie) 的最大生命周期，默认为 None，如果 [Cookie](http_package_classes.md#class-cookie) 既有 expires 属性，也有 maxAge，这两个过期时间都会失效，[Cookie](http_package_classes.md#class-cookie) 会被降级为会话级，Client 打开期间有效，Client 关闭后就失效。
 
     ```text
     max-age-av     = "Max-Age=" non-zero-digit *DIGIT
@@ -2222,7 +2314,7 @@ public init(name: String, value: String, expires!: ?DateTime = None, maxAge!: ?I
                     ; digits 0 through 9
     ```
 
-- domain!: String - 默认为空字符串，表示该收到该 [Cookie](http_package_classes.md#class-cookie) 的客户端只会发送该 [Cookie](http_package_classes.md#class-cookie) 给原始服务器。如果设置了合法的 domain，则收到该 [Cookie](http_package_classes.md#class-cookie) 的客户端只会发送该 [Cookie](http_package_classes.md#class-cookie) 给所有该 domain 的子域（且满足其他属性条件要求才会发）。
+- domain!: String - 默认为空字符串，表示收到该 [Cookie](http_package_classes.md#class-cookie) 的客户端只会发送该 [Cookie](http_package_classes.md#class-cookie) 给原始服务器。如果设置了合法的 domain，则收到该 [Cookie](http_package_classes.md#class-cookie) 的客户端只会发送该 [Cookie](http_package_classes.md#class-cookie) 给所有该 domain 的子域（在这基础上还需满足其他属性条件要求）。
 
     ```text
     domain          = <subdomain> | " "
@@ -2241,7 +2333,7 @@ public init(name: String, value: String, expires!: ?DateTime = None, maxAge!: ?I
     3、label 的开头和结尾必须是数字或者字母，label 的中间字符必须是数字、字母或者 "-"
     ```
 
-- path!: String - 默认为空字符串，客户端会根据 url 计算出默认的 path 属性，见 RFC 6265 5.1.4.。 收到该 [Cookie](http_package_classes.md#class-cookie) 的客户端只会发送该 [Cookie](http_package_classes.md#class-cookie) 给所有该 path 的子目录（且满足其他属性条件要求才会发）。
+- path!: String - 默认为空字符串，客户端会根据 url 计算出默认的 path 属性，见 RFC 6265 5.1.4.。 收到该 [Cookie](http_package_classes.md#class-cookie) 的客户端只会发送该 [Cookie](http_package_classes.md#class-cookie) 给所有该 path 的子目录（在这基础上还需满足其他属性条件要求）。
 
     ```text
     path            = <any RUNE except CTLs or ";">
@@ -2258,23 +2350,42 @@ public init(name: String, value: String, expires!: ?DateTime = None, maxAge!: ?I
 
 示例：
 
-<!-- run -->
+<!-- verify -->
 ```cangjie
 import stdx.net.http.*
 import std.time.*
 
 main() {
-    let cookie = Cookie("sid", "abc", expires: DateTime.of(year: 2099, month: 1, dayOfMonth: 1, timeZone: TimeZone.UTC),
-        maxAge: 3600, domain: "example.com", path: "/", secure: true, httpOnly: true)
-    // 当前属性：secure
-    println("secure = ${cookie.secure}")
+    // expires 和 maxAge 是互斥的，不能同时设置，此处仅做演示
+    let cookie = Cookie("myCookieName", "myCookieValue",
+        expires: DateTime.of(year: 2099, month: 1, dayOfMonth: 1, timeZone: TimeZone.UTC), maxAge: 3600,
+        domain: "example.com", path: "/", secure: true, httpOnly: true)
+    println("cookieName: ${cookie.cookieName}")
+    println("cookieValue: ${cookie.cookieValue}")
+    println("expires: ${cookie.expires}")
+    println("maxAge: ${cookie.maxAge}")
+    println("domain: ${cookie.domain}")
+    println("path: ${cookie.path}")
+    println("secure: ${cookie.secure}")
+    println("httpOnly: ${cookie.httpOnly}")
+    println("others: ${cookie.others}")
+    println("toSetCookieString(): ${cookie.toSetCookieString()}")
 }
 ```
 
 运行结果：
 
 ```text
-secure = true
+cookieName: myCookieName
+cookieValue: myCookieValue
+expires: Some(2099-01-01T00:00:00Z)
+maxAge: Some(3600)
+domain: example.com
+path: /
+secure: true
+httpOnly: true
+others: []
+toSetCookieString(): myCookieName=myCookieValue; Expires=Thu, 01 Jan 2099 00:00:00 UTC; Max-Age=3600; Domain=example.com; Path=/; Secure; HttpOnly
 ```
 
 ### func toSetCookieString()
@@ -2295,35 +2406,8 @@ public func toSetCookieString(): String
 - String - 字符串对象，用于设置 `Set-Cookie` header。
 
 示例：
-
-<!-- run -->
-```cangjie
-import stdx.net.http.*
-import std.time.*
-
-main() {
-    // func toSetCookieString(): 将 Cookie 转成 Set-Cookie header 的 value
-    let cookie = Cookie(
-        "sid",
-        "abc",
-        expires: DateTime.of(year: 2099, month: 1, dayOfMonth: 1, timeZone: TimeZone.UTC),
-        maxAge: 3600,
-        domain: ".example.com", // 以 '.' 开头也会被规范化
-        path: "/",
-        secure: true,
-        httpOnly: true
-    )
-
-    let setCookieValue = cookie.toSetCookieString()
-    println(setCookieValue)
-}
-```
-
-运行结果：
-
-```text
-sid=abc; Expires=Thu, 01 Jan 2099 00:00:00 UTC; Max-Age=3600; Domain=example.com; Path=/; Secure; HttpOnly
-```
+<!-- associated_example -->
+参见 [init](#initstring-string-datetime-int64-string-string-bool-bool) 示例。
 
 ## class FileHandler
 
@@ -2377,15 +2461,65 @@ public init(path: String, handlerType!: FileHandlerType = DownLoad, bufferSize!:
 
 示例：
 
-<!-- run -->
+<!-- verify -->
 ```cangjie
+import std.fs.*
+import std.io.*
 import stdx.net.http.*
 
-main() {
-    let filePath: String = "./http_filehandler_download.txt"
-    FileHandler(filePath)
-    return 0
+// 此示例为文件下载演示，上传文件演示请参见另一个构造函数
+main(): Unit {
+    // 创建一个有内容的临时文件给服务端，作为文件下载的测试文件
+    let fileServer = "./filehandler_download.txt"
+    try (file = File(fileServer, Write)) {
+        file.write("file-content file-content".toArray())
+    }
+    // 启动服务器
+    spawn {
+        =>
+            var server = ServerBuilder().addr("127.0.0.1").port(8080).build()
+            server.distributor.register("/file", FileHandler(fileServer))
+            server.serve()
+    }
+    // 等待服务启动
+    sleep(Duration.second)
+
+    // 客户端访问服务器，下载文件
+    let client = ClientBuilder().build()
+    let resp = client.get("http://127.0.0.1:8080/file")
+
+    // 创建一个缓冲区用于读取响应体
+    var buf = Array<UInt8>(10, repeat: 0)
+
+    // 创建一个空的临时文件给服务端，作为文件下载的接收容器
+    let fileClient = "./filehandler_download_empty.txt"
+    try (file = File(fileClient, Write)) {
+        while (true) {
+            // 读取响应体
+            let readLenth = resp.body.read(buf)
+            println("客户端读取了 ${readLenth} 字节")
+            if (readLenth <= 0) {
+                break
+            }
+            file.write(buf[..readLenth])
+        }
+    }
+    // 关闭客户端
+    client.close()
+
+    // 删除测试文件
+    removeIfExists(fileServer)
+    removeIfExists(fileClient)
 }
+```
+
+运行结果：
+
+```text
+客户端读取了 10 字节
+客户端读取了 10 字节
+客户端读取了 5 字节
+客户端读取了 0 字节
 ```
 
 ### init(String, FileHandlerType, Int64, (String) -> Bool)
@@ -2410,15 +2544,71 @@ public init(path: String, handlerType!: FileHandlerType = DownLoad, bufferSize!:
 
 示例：
 
-<!-- run -->
+<!-- verify -->
 ```cangjie
+import std.fs.*
+import std.io.*
 import stdx.net.http.*
 
-main() {
-    let filePath: String = "./http_filehandler_download.txt"
-    FileHandler(filePath, validator: {fileName: String => fileName.contains(".txt")})
-    return 0
+// 此示例为文件上传演示，下载文件演示请参见另一个构造函数
+main(): Unit {
+    // 启动服务器
+    spawn {
+        =>
+            var server = ServerBuilder().addr("127.0.0.1").port(8080).build()
+            // 注册文件上传程序，并且设置文件类型验证器（txt 文件）
+            server
+                .distributor
+                .register("/file",
+                    FileHandler("./", handlerType: UpLoad, validator: {str: String => str.endsWith(".txt")}))
+            server.serve()
+    }
+    // 等待服务启动
+    sleep(Duration.second)
+
+    // 客户端访问服务器，上传文件
+    let client = ClientBuilder().build()
+    // 创建一个边界字符串用于分隔表单数据
+    let boundary = "----WebKitFormBoundary7B8HS8VxGf4OHfS7"
+
+    // 创建一个文件名用于上传
+    let fileName = "upload.txt"
+
+    // 创建一个 HTTP 请求
+    let req = HttpRequestBuilder()
+        .post()
+        .url("http://127.0.0.1:8080/file")
+        .header("Content-Type", "multipart/form-data; boundary=${boundary}")
+        .body(buildBodyData(fileName, boundary))
+        .build()
+    // 发送请求并获取响应
+    let resp = client.send(req)
+    println("上传成功? ${resp.status == 200}")
+
+    // 关闭客户端
+    client.close()
+    // 删除上传的文件
+    removeIfExists(fileName)
 }
+
+// 构建 HTTP 请求体数据
+func buildBodyData(fileName: String, boundary: String): Array<Byte> {
+    let body = ByteBuffer()
+    body.write("--${boundary}\r\n".toArray())
+    body.write("Content-Disposition: form-data; name=\"myFile\"; filename=\"${fileName}\"".toArray())
+    body.write("\r\n".toArray())
+    body.write("Content-Type: text/plain\r\n\r\n".toArray())
+    body.write("这是待上传的文件内的数据".toArray())
+    body.write("\r\n".toArray())
+    body.write("--${boundary}--\r\n".toArray())
+    return body.bytes()
+}
+```
+
+运行结果：
+
+```text
+上传成功? true
 ```
 
 ### func handle(HttpContext)
@@ -2435,63 +2625,72 @@ public func handle(ctx: HttpContext): Unit
 
 示例：
 
-<!-- run -->
+<!-- verify -->
 ```cangjie
-import stdx.net.http.*
-import stdx.log.*
 import std.fs.*
 import std.io.*
-import std.sync.*
+import stdx.net.http.*
 
-main() {
-    // 创建一个临时文件，供 FileHandler 下载
-    let filePath: Path = Path("./http_filehandler_download.txt")
-    if (exists(filePath)) {
-        remove(filePath)
+// 此示例为文件下载演示
+main(): Unit {
+    // 创建一个有内容的临时文件给服务端，作为文件下载的测试文件
+    let fileServer = "./filehandler_download.txt"
+    try (file = File(fileServer, Write)) {
+        file.write("file-content file-content".toArray())
     }
-    let f = File(filePath, Write)
-    f.write("file-content".toArray())
-    f.close()
+    // 启动服务器
+    spawn {
+        =>
+            var server = ServerBuilder().addr("127.0.0.1").port(8080).build()
+            server.distributor.register(
+                "/file",
+                {
+                    httpContext =>
+                        let fileHandler = FileHandler(fileServer)
+                        // 处理文件下载请求
+                        fileHandler.handle(httpContext)
+                }
+            )
+            server.serve()
+    }
+    // 等待服务启动
+    sleep(Duration.second)
 
-    // 启动服务并注册 FileHandler
-    let sc = SyncCounter(1)
-    let server = ServerBuilder().addr("127.0.0.1").port(18090).afterBind({=> sc.dec()}).build()
-    server.distributor.register("/file", FileHandler(filePath.toString()))
-    server.logger.level = LogLevel.ERROR
-
-    spawn {server.serve()}
-    sc.waitUntilZero()
-
-    // 访问 /file，触发 FileHandler.handle(ctx)
+    // 客户端访问服务器，下载文件
     let client = ClientBuilder().build()
-    let resp = client.get("http://127.0.0.1:18090/file")
+    let resp = client.get("http://127.0.0.1:8080/file")
 
-    var buf = Array<UInt8>(1024, repeat: 0)
-    var body = ""
-    while (true) {
-        let n = resp.body.read(buf)
-        if (n <= 0) {
-            break
+    // 创建一个缓冲区用于读取响应体
+    var buf = Array<UInt8>(10, repeat: 0)
+
+    // 创建一个空的临时文件给服务端，作为文件下载的接收容器
+    let fileClient = "./filehandler_download_empty.txt"
+    try (file = File(fileClient, Write)) {
+        while (true) {
+            // 读取响应体
+            let readLenth = resp.body.read(buf)
+            println("客户端读取了 ${readLenth} 字节")
+            if (readLenth <= 0) {
+                break
+            }
+            file.write(buf[..readLenth])
         }
-        body = body + String.fromUtf8(buf[..n])
     }
-    resp.close()
-
-    // 输出稳定内容（不打印随机端口等信息）
-    println("status = ${resp.status}")
-    println("body = ${body}")
-
+    // 关闭客户端
     client.close()
-    server.closeGracefully()
-    remove(filePath)
+    // 删除测试文件
+    removeIfExists(fileServer)
+    removeIfExists(fileClient)
 }
 ```
 
 运行结果：
 
 ```text
-status = 200
-body = file-content
+客户端读取了 10 字节
+客户端读取了 10 字节
+客户端读取了 5 字节
+客户端读取了 0 字节
 ```
 
 ## class FuncHandler
@@ -2522,67 +2721,49 @@ public FuncHandler(let handler: (HttpContext) -> Unit)
 
 示例：
 
-<!-- run -->
+<!-- verify -->
 ```cangjie
 import stdx.net.http.*
-import stdx.log.*
-import std.fs.*
-import std.io.*
-import std.sync.*
 
 main() {
-    // 准备一个临时文件，让 handler 返回该文件内容（稳定输出）
-    let filePath: Path = Path("./http_funchandler_resp.txt")
-    if (exists(filePath)) {
-        remove(filePath)
+    // 定义一个可复用，逻辑复杂的处理函数
+    let funcHandler = FuncHandler({ctx: HttpContext => ctx.responseBuilder.body("模拟逻辑很复杂")})
+
+    // 启动服务器
+    spawn {
+        =>
+            let server = ServerBuilder().addr("127.0.0.1").port(8080).build()
+            // 直接注册处理函数
+            server.distributor.register("/test1", funcHandler)
+            // 可以对HttpContext进行特殊处理
+            server.distributor.register(
+                "/test2",
+                {
+                    httpContext =>
+                        println("获得${httpContext.request.method}请求")
+                        funcHandler.handle(httpContext)
+                }
+            )
+            server.serve()
     }
-    let f = File(filePath, Write)
-    f.write("hello".toArray())
-    f.close()
+    // 等待服务器启动
+    sleep(Duration.second)
 
-    // 使用 FuncHandler 注册一个处理函数
-    let handler = FuncHandler({
-        ctx =>
-        // 当前函数：handle(ctx) 会触发这里的逻辑
-        ctx.responseBuilder.status(200).header("content-type", "text/plain").body(File(filePath, Read))
-    })
-
-    let sc = SyncCounter(1)
-    let server = ServerBuilder().addr("127.0.0.1").port(18091).afterBind({=> sc.dec()}).build()
-    server.distributor.register("/hi", handler)
-    server.logger.level = LogLevel.ERROR
-
-    spawn {server.serve()}
-    sc.waitUntilZero()
-
+    // 创建Client实例
     let client = ClientBuilder().build()
-    let resp = client.get("http://127.0.0.1:18091/hi")
 
-    var buf = Array<UInt8>(1024, repeat: 0)
-    var body = ""
-    while (true) {
-        let n = resp.body.read(buf)
-        if (n <= 0) {
-            break
-        }
-        body = body + String.fromUtf8(buf[..n])
-    }
-    resp.close()
-
-    println("status = ${resp.status}")
-    println("body = ${body}")
-
+    // 发送GET请求，但是不处理响应体
+    let response = client.get("http://127.0.0.1:8080/test2")
+    println("响应状态码: ${response.status}")
     client.close()
-    server.closeGracefully()
-    remove(filePath)
 }
 ```
 
 运行结果：
 
 ```text
-status = 200
-body = hello
+获得GET请求
+响应状态码: 200
 ```
 
 ### func handle(HttpContext)
@@ -2598,69 +2779,8 @@ public func handle(ctx: HttpContext): Unit
 - ctx: [HttpContext](http_package_classes.md#class-httpcontext) - Http 请求上下文。
 
 示例：
-
-<!-- run -->
-```cangjie
-import stdx.net.http.*
-import stdx.log.*
-import std.fs.*
-import std.io.*
-import std.sync.*
-
-main() {
-    // 准备一个临时文件，让 handler 返回该文件内容（稳定输出）
-    let filePath: Path = Path("./http_funchandler_resp.txt")
-    if (exists(filePath)) {
-        remove(filePath)
-    }
-    let f = File(filePath, Write)
-    f.write("hello".toArray())
-    f.close()
-
-    // 使用 FuncHandler 注册一个处理函数
-    let handler = FuncHandler({
-        ctx =>
-        // 当前函数：handle(ctx) 会触发这里的逻辑
-        ctx.responseBuilder.status(200).header("content-type", "text/plain").body(File(filePath, Read))
-    })
-
-    let sc = SyncCounter(1)
-    let server = ServerBuilder().addr("127.0.0.1").port(18091).afterBind({=> sc.dec()}).build()
-    server.distributor.register("/hi", handler)
-    server.logger.level = LogLevel.ERROR
-
-    spawn {server.serve()}
-    sc.waitUntilZero()
-
-    let client = ClientBuilder().build()
-    let resp = client.get("http://127.0.0.1:18091/hi")
-
-    var buf = Array<UInt8>(1024, repeat: 0)
-    var body = ""
-    while (true) {
-        let n = resp.body.read(buf)
-        if (n <= 0) {
-            break
-        }
-        body = body + String.fromUtf8(buf[..n])
-    }
-    resp.close()
-
-    println("status = ${resp.status}")
-    println("body = ${body}")
-
-    client.close()
-    server.closeGracefully()
-    remove(filePath)
-}
-```
-
-运行结果：
-
-```text
-status = 200
-body = hello
-```
+<!-- associated_example -->
+参见 [FuncHandler](#funchandlerhttpcontext---unit) 示例。
 
 ## class HttpContext
 
@@ -2680,6 +2800,123 @@ public prop clientCertificate: ?Array<Certificate>
 
 类型：?Array\<[Certificate](../../../crypto/common/crypto_common_package_api/crypto_common_package_interfaces.md#interface-certificate)>
 
+示例：
+
+<!-- verify -->
+```cangjie
+import std.io.*
+import std.fs.*
+import std.process.*
+import stdx.net.tls.*
+import stdx.crypto.x509.*
+import stdx.crypto.keys.*
+import stdx.net.tls.common.*
+import stdx.net.http.*
+
+main(): Unit {
+    // OpenSSL 官方标准、无风险的测试命令用来本地生成证书和私钥
+    // 生成服务器私钥、证书、证书请求路径
+    let serverKey = "./server.key"
+    let serverCrt = "./server.crt"
+    let serverCsr = "./server.csr"
+
+    // 根证书/私钥路径
+    let rootCrt = "./rootCA.crt"
+    let rootKey = "./rootCA.key"
+
+    // 客户端私钥、证书、证书请求路径
+    let clientKey = "./client.key"
+    let clientCrt = "./client.crt"
+    let clientCsr = "./client.csr"
+
+    // 生成根CA证书
+    let rootCmd = "openssl req -x509 -newkey rsa:4096 -nodes -keyout ${rootKey} -out ${rootCrt} -days 3650 -subj \"/C=CN/ST=Beijing/L=Beijing/O=MyCA/OU=CA/CN=MyRootCA\""
+    executeWithOutput("sh", ["-c", rootCmd])
+
+    // 生成服务器私钥+证书请求（CSR） 
+    let csrCmd = "openssl req -newkey rsa:2048 -nodes -keyout ${serverKey} -out ${serverCsr} -subj \"/C=CN/ST=Beijing/L=Beijing/O=MyServer/OU=Server/CN=localhost\""
+    executeWithOutput("sh", ["-c", csrCmd])
+
+    // 用根CA签发服务器证书
+    let signCmd = "openssl x509 -req -in ${serverCsr} -CA ${rootCrt} -CAkey ${rootKey} -CAcreateserial -out ${serverCrt} -days 365 -sha256"
+    executeWithOutput("sh", ["-c", signCmd])
+
+    // 生成客户端私钥+证书请求（CSR）
+    let clientCsrCmd = "openssl req -newkey rsa:2048 -nodes -keyout ${clientKey} -out ${clientCsr} -subj \"/C=CN/ST=Beijing/L=Beijing/O=MyClient/OU=Client/CN=MyClient\""
+    executeWithOutput("sh", ["-c", clientCsrCmd])
+
+    // 用根CA签发客户端证书（和服务端同根CA，服务端会信任）
+    let clientSignCmd = "openssl x509 -req -in ${clientCsr} -CA ${rootCrt} -CAkey ${rootKey} -CAcreateserial -out ${clientCrt} -days 365 -sha256"
+    executeWithOutput("sh", ["-c", clientSignCmd])
+
+    // 读取根证书PEM
+    let pem = String.fromUtf8(readToEnd(File(rootCrt, OpenMode.Read)))
+
+    // 启动服务器
+    spawn {
+        =>
+            // 对服务器证书以及私钥进行解析 
+            let pemString = String.fromUtf8(readToEnd(File(serverCrt, OpenMode.Read)))
+            let keyString = String.fromUtf8(readToEnd(File(serverKey, OpenMode.Read)))
+
+            let certificate = X509Certificate.decodeFromPem(pemString)
+            let privateKey = GeneralPrivateKey.decodeFromPem(keyString)
+
+            // 创建 TLS 服务器配置
+            var config = TlsServerConfig(certificate, privateKey)
+
+            // 只有开启客户端身份验证，才会得到客户端证书
+            config.clientIdentityRequired = Required
+            config.verifyMode = CustomCA(X509Certificate.decodeFromPem(pem).map({c => c}))
+
+            // 构建带 TLS 配置的 Server 实例
+            let server = ServerBuilder().addr("127.0.0.1").tlsConfig(config).port(8080).build()
+
+            // 注册 HttpRequestHandler
+            server.distributor.register("/index", {
+                httpContext => println("Hello 客户端，你的证书数量是${httpContext.clientCertificate?.size ?? 0}")
+            })
+            // 启动服务
+            server.serve()
+    }
+    // 等待服务启动
+    sleep(Duration.second)
+
+    // 客户端配置
+    var config = TlsClientConfig()
+    let clientPem = String.fromUtf8(readToEnd(File(clientCrt, OpenMode.Read)))
+    let clientKeyStr = String.fromUtf8(readToEnd(File(clientKey, OpenMode.Read)))
+    let clientPriKey = GeneralPrivateKey.decodeFromPem(clientKeyStr)
+
+    // 设置客户端证书和私钥
+    config.certificate = (X509Certificate.decodeFromPem(clientPem).map({c => c}), clientPriKey)
+    // 设置验证模式
+    config.verifyMode = CustomCA(X509Certificate.decodeFromPem(pem).map({c => c}))
+
+    // 创建带 TLS 配置的 Client 实例
+    let client = ClientBuilder().tlsConfig(config).build()
+
+    // 发送https GET请求，忽略响应
+    let _ = client.get("https://127.0.0.1:8080/index")
+
+    // 删除生成的文件
+    removeIfExists(serverKey)
+    removeIfExists(serverCrt)
+    removeIfExists(serverCsr)
+    removeIfExists(clientKey)
+    removeIfExists(clientCrt)
+    removeIfExists(clientCsr)
+    removeIfExists(rootKey)
+    removeIfExists(rootCrt)
+}
+```
+
+运行结果：
+
+```text
+Hello 客户端，你的证书数量是2
+```
+
 ### prop request
 
 ```cangjie
@@ -2690,6 +2927,56 @@ public prop request: HttpRequest
 
 类型：[HttpRequest](http_package_classes.md#class-httprequest)
 
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.net.http.*
+
+main() {
+    // 启动服务器
+    spawn {
+        =>
+            // 构建 Server 实例
+            let server = ServerBuilder().addr("127.0.0.1").port(8080).build()
+            // 注册 HttpRequestHandler
+            server.distributor.register("/index", {
+                httpContext => if (httpContext.request.method == "GET") {
+                    println("isClosed: ${httpContext.isClosed()}")
+                    httpContext.responseBuilder.body("Hello 仓颉!")
+                } else {
+                    httpContext.responseBuilder.status(404)
+                }
+            })
+            // 启动服务
+            server.serve()
+    }
+    // 等待服务启动
+    sleep(Duration.second)
+
+    // 创建 Client
+    let client = ClientBuilder().build()
+    
+    // 发送GET请求
+    let resp = client.get("http://127.0.0.1:8080/index")
+
+    // 读取响应体
+    let bodyBuf = Array<UInt8>(100, repeat: 0)
+    let bytesRead = resp.body.read(bodyBuf)
+    println("响应体: ${String.fromUtf8(bodyBuf[..bytesRead])}")
+
+    // 关闭客户端
+    client.close()
+}
+```
+
+运行结果：
+
+```text
+isClosed: false
+响应体: Hello 仓颉!
+```
+
 ### prop responseBuilder
 
 ```cangjie
@@ -2699,6 +2986,10 @@ public prop responseBuilder: HttpResponseBuilder
 功能：获取 Http 响应构建器。
 
 类型：[HttpResponseBuilder](http_package_classes.md#class-httpresponsebuilder)
+
+示例：
+<!-- associated_example -->
+参见 [prop request]((#prop-request)) 示例。
 
 ### func isClosed()
 
@@ -2713,46 +3004,8 @@ public func isClosed(): Bool
 - Bool - 如果 HTTP/1.1 的 socket 或 HTTP/2 的流已关闭，返回 true，否则返回 false。
 
 示例：
-
-<!-- run -->
-```cangjie
-import stdx.net.http.*
-import stdx.log.*
-import std.sync.*
-
-main() {
-    let sc = SyncCounter(1)
-    let server = ServerBuilder().addr("127.0.0.1").port(18095).afterBind({=> sc.dec()}).build()
-    server.logger.level = LogLevel.ERROR
-
-    server.distributor.register(
-        "/t",
-        FuncHandler(
-            {
-                ctx =>
-                    // 当前函数：isClosed()
-                    println("isClosed = ${ctx.isClosed()}")
-                    ctx.responseBuilder.status(200).body("ok")
-            }
-        )
-    )
-
-    spawn {server.serve()}
-    sc.waitUntilZero()
-
-    let client = ClientBuilder().build()
-    let resp = client.get("http://127.0.0.1:18095/t")
-    resp.close()
-    client.close()
-    server.closeGracefully()
-}
-```
-
-运行结果：
-
-```text
-isClosed = false
-```
+<!-- associated_example -->
+参见 [prop request]((#prop-request)) 示例。
 
 ## class HttpHeaders
 
@@ -2805,26 +3058,31 @@ public func add(name: String, value: String): Unit
 
 示例：
 
-<!-- run -->
+<!-- verify -->
 ```cangjie
 import stdx.net.http.*
 
 main() {
     let headers = HttpHeaders()
-    // 当前函数：add(name, value)
-    headers.add("x-a", "1")
-    headers.add("x-a", "2")
 
-    println("x-a.first = ${headers.getFirst("X-A") ?? ""}")
-    println("x-a.size = ${headers.get("x-a").size}")
+    // 添加不同key的header
+    headers.add("Content-Type", "application/json")
+    headers.add("Authorization", "Bearer token123")
+
+    // 添加相同key的header，后添加的会覆盖先添加的
+    headers.add("Accept", "application/json")
+    headers.add("Accept", "text/plain")
+
+    println("Content-Type = ${headers.get("Content-Type").toArray()}")
+    println("Accept = ${headers.get("Accept").toArray()}")
 }
 ```
 
 运行结果：
 
 ```text
-x-a.first = 1
-x-a.size = 2
+Content-Type = [application/json]
+Accept = [application/json, text/plain]
 ```
 
 ### func del(String)
@@ -2841,24 +3099,39 @@ public func del(name: String): Unit
 
 示例：
 
-<!-- run -->
+<!-- verify -->
 ```cangjie
 import stdx.net.http.*
 
 main() {
     let headers = HttpHeaders()
-    headers.add("x-a", "1")
 
-    // 当前函数：del(name)
-    headers.del("x-a")
-    println("isEmpty = ${headers.isEmpty()}")
+    // 添加一些header
+    headers.add("Content-Type", "application/json")
+    headers.add("Authorization", "Bearer token123")
+
+    println("删除前:")
+    println("Content-Type = ${headers.get("Content-Type").toArray()}")
+    println("Authorization = ${headers.get("Authorization").toArray()}")
+
+    // 删除指定header
+    headers.del("Authorization")
+
+    println("删除后:")
+    println("Content-Type = ${headers.get("Content-Type").toArray()}")
+    println("Authorization = ${headers.get("Authorization").toArray()}")
 }
 ```
 
 运行结果：
 
 ```text
-isEmpty = true
+删除前:
+Content-Type = [application/json]
+Authorization = [Bearer token123]
+删除后:
+Content-Type = [application/json]
+Authorization = []
 ```
 
 ### func get(String)
@@ -2879,25 +3152,40 @@ public func get(name: String): Collection<String>
 
 示例：
 
-<!-- run -->
+<!-- verify -->
 ```cangjie
 import stdx.net.http.*
 
 main() {
     let headers = HttpHeaders()
-    headers.add("x-a", "1")
-    headers.add("x-a", "2")
 
-    // 当前函数：get(name)
-    let values = headers.get("x-a")
-    println("x-a.size = ${values.size}")
+    // 添加header，包括重复key的情况
+    headers.add("Content-Type", "application/json")
+    headers.add("Accept", "text/html")
+    headers.add("Accept", "application/xml")
+
+    // 获取存在的header
+    let contentTypeValues = headers.get("Content-Type")
+    println("Content-Type values: ${contentTypeValues.toArray()}")
+
+    // 获取有多个值的header
+    let acceptValues = headers.get("Accept")
+    println("Accept values: ${acceptValues.toArray()}")
+
+    // 获取不存在的header（不区分大小写）
+    let notExistValues = headers.get("X-Custom-Header")
+    println("X-Custom-Header values: ${notExistValues.toArray()}")
+    println("是否为空: ${notExistValues.isEmpty()}")
 }
 ```
 
 运行结果：
 
 ```text
-x-a.size = 2
+Content-Type values: [application/json]
+Accept values: [text/html, application/xml]
+X-Custom-Header values: []
+是否为空: true
 ```
 
 ### func getFirst(String)
@@ -2918,24 +3206,44 @@ public func getFirst(name: String): ?String
 
 示例：
 
-<!-- run -->
+<!-- verify -->
 ```cangjie
 import stdx.net.http.*
 
 main() {
     let headers = HttpHeaders()
-    headers.add("x-a", "1")
-    headers.add("x-a", "2")
 
-    // 当前函数：getFirst(name)
-    println("x-a.first = ${headers.getFirst("x-a") ?? ""}")
+    // 添加header，包括重复key的情况
+    headers.add("Content-Type", "application/json")
+    headers.add("Accept", "text/html")
+    headers.add("Accept", "application/xml")
+
+    // 获取存在的header的第一个值
+    match (headers.getFirst("Content-Type")) {
+        case Some(v) => println("Content-Type第一个值: ${v}")
+        case None => println("Content-Type不存在")
+    }
+
+    // 获取有多个值的header的第一个值
+    match (headers.getFirst("Accept")) {
+        case Some(v) => println("Accept第一个值: ${v}")
+        case None => println("Accept不存在")
+    }
+
+    // 获取不存在的header（返回None）
+    match (headers.getFirst("X-Custom-Header")) {
+        case Some(v) => println("X-Custom-Header值: ${v}")
+        case None => println("X-Custom-Header不存在")
+    }
 }
 ```
 
 运行结果：
 
 ```text
-x-a.first = 1
+Content-Type第一个值: application/json
+Accept第一个值: text/html
+X-Custom-Header不存在
 ```
 
 ### func isEmpty()
@@ -2952,25 +3260,32 @@ public func isEmpty(): Bool
 
 示例：
 
-<!-- run -->
+<!-- verify -->
 ```cangjie
 import stdx.net.http.*
 
 main() {
     let headers = HttpHeaders()
-    println("empty0 = ${headers.isEmpty()}")
 
-    headers.add("x-a", "1")
-    // 当前函数：isEmpty()
-    println("empty1 = ${headers.isEmpty()}")
+    // 检查空headers
+    println("初始是否为空: ${headers.isEmpty()}")
+
+    // 添加header
+    headers.add("Content-Type", "application/json")
+    println("添加后是否为空: ${headers.isEmpty()}")
+
+    // 删除所有header
+    headers.del("Content-Type")
+    println("删除后是否为空: ${headers.isEmpty()}")
 }
 ```
 
 运行结果：
 
 ```text
-empty0 = true
-empty1 = false
+初始是否为空: true
+添加后是否为空: false
+删除后是否为空: true
 ```
 
 ### func iterator()
@@ -2987,24 +3302,23 @@ public func iterator(): Iterator<(String, Collection<String>)>
 
 示例：
 
-<!-- run -->
+<!-- verify -->
 ```cangjie
 import stdx.net.http.*
 
 main() {
     let headers = HttpHeaders()
-    headers.add("x-a", "1")
-    headers.add("x-b", "2")
 
-    // 当前函数：iterator()（遍历 header 键值）
-    let it = headers.iterator()
-    while (true) {
-        match (it.next()) {
-            case Some((k, v)) =>
-                // k 已被规范化为小写
-                println("${k} = ${v.size}")
-            case None => break
-        }
+    // 添加多个header
+    headers.add("Content-Type", "application/json")
+    headers.add("Accept", "text/html")
+    headers.add("Accept", "application/xml")
+    headers.add("Authorization", "Bearer token123")
+
+    // 使用迭代器遍历所有header
+    println("遍历所有header:")
+    for ((name, values) in headers) {
+        println(" ${name}: ${values.toArray()}")
     }
 }
 ```
@@ -3012,8 +3326,10 @@ main() {
 运行结果：
 
 ```text
-x-a = 1
-x-b = 1
+遍历所有header:
+ content-type: [application/json]
+ accept: [text/html, application/xml]
+ authorization: [Bearer token123]
 ```
 
 ### func set(String, String)
@@ -3035,26 +3351,29 @@ public func set(name: String, value: String): Unit
 
 示例：
 
-<!-- run -->
+<!-- verify -->
 ```cangjie
 import stdx.net.http.*
 
 main() {
     let headers = HttpHeaders()
-    headers.add("x-a", "1")
-    // 当前函数：set(name, value) 会覆盖同名 header
-    headers.set("x-a", "100")
 
-    println("x-a.first = ${headers.getFirst("x-a") ?? ""}")
-    println("x-a.size = ${headers.get("x-a").size}")
+    // 使用add添加header（可以重复添加相同key）
+    headers.add("Accept", "text/html")
+    headers.add("Accept", "application/xml")
+    println("add后 Accept: ${headers.get("Accept").toArray()}")
+
+    // 使用set设置header（会覆盖之前的所有值）
+    headers.set("Accept", "application/json")
+    println("set后 Accept: ${headers.get("Accept").toArray()}")
 }
 ```
 
 运行结果：
 
 ```text
-x-a.first = 100
-x-a.size = 1
+add后 Accept: [text/html, application/xml]
+set后 Accept: [application/json]
 ```
 
 ## class HttpRequest
@@ -3088,6 +3407,34 @@ public prop body: InputStream
 
 类型：InputStream
 
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.net.http.*
+
+main() {
+    // 创建带有body的请求
+    let req = HttpRequestBuilder().method("POST").url("http://example.com/api").body("Hello World").build()
+
+    // 创建buffer并读取body内容
+    let buffer = Array<Byte>(1024, repeat: 0)
+    let bytesRead = req.body.read(buffer)
+
+    // 将读取的内容转换为字符串
+    let bodyContent = String.fromUtf8(buffer[0..bytesRead])
+    println("读取字节数: ${bytesRead}")
+    println("Body内容: ${bodyContent}")
+}
+```
+
+运行结果：
+
+```text
+读取字节数: 11
+Body内容: Hello World
+```
+
 ### prop bodySize
 
 ```cangjie
@@ -3096,11 +3443,33 @@ public prop bodySize: Option<Int64>
 
 功能：获取请求 body 长度。
 
-- 如果未设置 body，则 bodySize 为 Some(0)；
-- 如果 body 长度已知，即通过 Array\<UInt8> 或 String 传入 body，或传入的 InputStream 有确定的 length (length >= 0)，则 bodySize 为 Some(Int64)；
-- 如果 body 长度未知，即通过用户自定义的 InputStream 实例传入 body 且 InputStream 实例没有确定的 length (length < 0)，则 bodySize 为 None。
+> **说明：**
+> 
+> - 如果未设置 body，则 bodySize 为 Some(0)。
+> - 如果 body 长度已知，即通过 Array\<UInt8> 或 String 传入 body，或传入的 InputStream 有确定的 length (length >= 0)，则 bodySize 为 Some(Int64)。
+> - 如果 body 长度未知，即通过用户自定义的 InputStream 实例传入 body 且 InputStream 实例没有确定的 length (length < 0)，则 bodySize 为 None。
 
 类型：Option\<Int64>
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.net.http.*
+
+main() {
+    // 创建带有String body的请求（长度已知）
+    let req = HttpRequestBuilder().method("POST").url("http://example.com/api").body("Hello World").build()
+
+    println("String body长度: ${req.bodySize ?? 0}")
+}
+```
+
+运行结果：
+
+```text
+String body长度: 11
+```
 
 ### prop form
 
@@ -3110,15 +3479,47 @@ public prop form: Form
 
 功能：获取请求中的表单信息。
 
-- 如果请求方法为 POST，PUT，PATCH，且 content-type 包含 application/x-www-form-urlencoded，获取请求 body 部分，用 form 格式解析；
-- 如果请求方法不为 POST，PUT，PATCH，获取请求 url 中 query 部分。
+> **说明：**
+> 
+> - 如果请求方法为 POST，PUT，PATCH，且 content-type 包含 application/x-www-form-urlencoded，获取请求 body 部分，用 form 格式解析。
+> - 如果请求方法不为 POST，PUT，PATCH，获取请求 url 中 query 部分。
 
 > **注意：**
 >
-> - 如果用该接口读取了 body，body 已被消费完，后续将无法通过 body.read 读取 body；
+> - 如果用该接口读取了 body，body 已被消费完，后续将无法通过 body.read 读取 body。
 > - 如果 form 不符合 [Form](../../../encoding/url/url_package_api/url_package_classes.md#class-form) 格式，抛 [UrlSyntaxException](../../../encoding/url/url_package_api/url_package_exceptions.md#class-urlsyntaxexception) 异常。
 
 类型：[Form](../../../encoding/url/url_package_api/url_package_classes.md#class-form)
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.net.http.*
+
+main() {
+    // 创建带有表单数据的POST请求
+    let req = HttpRequestBuilder()
+        .method("POST")
+        .url("http://example.com/api")
+        .header("Content-Type", "application/x-www-form-urlencoded")
+        .body("name=张三&age=25")
+        .build()
+
+    // 获取表单数据
+    let form = req.form
+
+    println("name: ${form.get("name") ?? ""}")
+    println("age: ${form.get("age") ?? ""}")
+}
+```
+
+运行结果：
+
+```text
+name: 张三
+age: 25
+```
 
 ### prop headers
 
@@ -3130,18 +3531,74 @@ public prop headers: HttpHeaders
 
 类型：[HttpHeaders](http_package_classes.md#class-httpheaders)
 
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.net.http.*
+
+main() {
+    // 创建请求并设置headers
+    let req = HttpRequestBuilder()
+        .method("GET")
+        .url("http://example.com/api")
+        .header("Accept", "application/json")
+        .build()
+
+    // 获取并修改headers
+    let headers = req.headers
+    println("Accept: ${headers.getFirst("Accept")}")
+}
+```
+
+运行结果：
+
+```text
+Accept: Some(application/json)
+```
+
 ### prop isPersistent
 
 ```cangjie
 public prop isPersistent: Bool
 ```
 
-功能：表示该请求是否为长连接，即请求 header 是否不包含 `Connection: close`。包含 `Connection: close` 为 false，否则为 true。
+功能：表示该请求是否为长连接。
 
-- 对于服务端，isPersistent 为 false 表示处理完该请求应该关闭连接。
-- 对于客户端，isPersistent 为 false 表示如果收到响应后服务端未关闭连接，客户端应主动关闭连接。
+请求 header 包含 `Connection: close` 为 false。不包含为 true。
+
+> **说明：**
+> 
+> - 对于服务端，isPersistent 为 false 表示处理完该请求应该关闭连接。
+> - 对于客户端，isPersistent 为 false 表示如果收到响应后服务端未关闭连接，客户端应主动关闭连接。
 
 类型：Bool
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.net.http.*
+
+main() {
+    // 创建默认请求（长连接）
+    let req1 = HttpRequestBuilder().method("GET").url("http://example.com/api").build()
+
+    println("默认请求isPersistent: ${req1.isPersistent}")
+
+    // 创建带Connection: close的请求（短连接）
+    let req2 = HttpRequestBuilder().method("GET").url("http://example.com/api").header("Connection", "close").build()
+
+    println("带Connection: close的isPersistent: ${req2.isPersistent}")
+}
+```
+
+运行结果：
+
+```text
+默认请求isPersistent: true
+带Connection: close的isPersistent: false
+```
 
 ### prop method
 
@@ -3149,9 +3606,35 @@ public prop isPersistent: Bool
 public prop method: String
 ```
 
-功能：获取 method，如 "GET", "POST"，request 实例的 method 无法修改。
+功能：获取 method。如 "GET", "POST"，request 实例的 method 无法修改。
 
 类型：String
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.net.http.*
+
+main() {
+    // 创建GET请求
+    let getReq = HttpRequestBuilder().method("GET").url("http://example.com/api").build()
+
+    println("GET请求方法: ${getReq.method}")
+
+    // 创建POST请求
+    let postReq = HttpRequestBuilder().method("POST").url("http://example.com/api").build()
+
+    println("POST请求方法: ${postReq.method}")
+}
+```
+
+运行结果：
+
+```text
+GET请求方法: GET
+POST请求方法: POST
+```
 
 ### prop readTimeout
 
@@ -3159,9 +3642,32 @@ public prop method: String
 public prop readTimeout: ?Duration
 ```
 
-功能：表示该请求的请求级读超时时间。None 表示没有设置；Some(Duration) 表示设置了读超时时间。
+功能：表示该请求的请求级读超时时间。None 表示没有设置；Some(Duration) 表示已设置。
 
 类型：?Duration
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.net.http.*
+
+main() {
+    // 创建设置了超时时间的请求
+    let req = HttpRequestBuilder().method("GET").url("http://example.com/api").readTimeout(Duration.second * 30).build()
+
+    match (req.readTimeout) {
+        case Some(timeout) => println("设置了读超时: ${timeout}")
+        case None => println("未设置读超时")
+    }
+}
+```
+
+运行结果：
+
+```text
+设置了读超时: 30s
+```
 
 ### prop remoteAddr
 
@@ -3173,6 +3679,47 @@ public prop remoteAddr: String
 
 类型：String
 
+示例：
+
+<!-- run -->
+```cangjie
+import stdx.net.http.*
+
+main() {
+    // 启动服务器
+    spawn {
+        =>
+            // 构建 Server 实例
+            let server = ServerBuilder().addr("127.0.0.1").port(8080).build()
+            // 注册 HttpRequestHandler
+            server.distributor.register(
+                "/index",
+                {
+                    httpContext =>
+                        let request = httpContext.request
+                        println("远程地址: ${request.remoteAddr}")
+                }
+            )
+            // 启动服务
+            server.serve()
+    }
+    // 等待服务启动
+    sleep(Duration.second)
+
+    // 创建 Client
+    let client = ClientBuilder().build()
+    // 发送GET请求
+    client.get("http://127.0.0.1:8080/index")
+    client.close()
+}
+```
+
+运行结果：
+
+```text
+远程地址: 127.0.0.1:54321
+```
+
 ### prop trailers
 
 ```cangjie
@@ -3182,6 +3729,73 @@ public prop trailers: HttpHeaders
 功能：获取 trailers，trailers 详述见 [HttpHeaders](http_package_classes.md#class-httpheaders) 类，获取后，可通过调用 [HttpHeaders](http_package_classes.md#class-httpheaders) 实例成员函数，修改该请求的 trailers。
 
 类型：[HttpHeaders](http_package_classes.md#class-httpheaders)
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.net.http.*
+
+main() {
+    // 启动服务器
+    spawn {
+        =>
+            // 构建 Server 实例
+            let server = ServerBuilder().addr("127.0.0.1").port(8080).build()
+            // 注册 HttpRequestHandler
+            server.distributor.register(
+                "/index",
+                {
+                    httpContext => httpContext
+                        .responseBuilder
+                        .header("Trailer", "X-Checksum, X-Transfer-Time")
+                        .header("Content-Type", "text/plain")
+                        // 必须使用分块传输编码，才能在响应中获取trailers
+                        .header("Transfer-Encoding", "chunked")
+                        .body("Hello Cangjie!")
+                        .trailer("X-Checksum", "md5:123456")
+                        .trailer("X-Transfer-Time", "50ms")
+                }
+            )
+            // 启动服务
+            server.serve()
+    }
+    // 等待服务启动
+    sleep(Duration.second)
+
+    // 创建 Client
+    let client = ClientBuilder().build()
+
+    // 发送GET请求
+    let resp = client.get("http://127.0.0.1:8080/index")
+
+    // 必须先读取完 body 内容，trailers 才会被填充
+    let buffer = Array<Byte>(1024, repeat: 0)
+    let bytesRead = resp.body.read(buffer)
+    let bodyContent = String.fromUtf8(buffer[0..bytesRead])
+    println("先读取完响应body, trailers 才会被填充: ${bodyContent}")
+
+    // 读取trailers
+    let trailers = resp.trailers
+
+    // 使用迭代器遍历所有header
+    println("遍历所有trailers:")
+    for ((name, values) in trailers) {
+        println(" ${name}: ${values.toArray()}")
+    }
+    // 关闭客户端
+    client.close()
+}
+```
+
+运行结果：
+
+```text
+先读取完响应body, trailers 才会被填充: Hello Cangjie!
+遍历所有trailers:
+ x-checksum: [md5:123456]
+ x-transfer-time: [50ms]
+```
 
 ### prop url
 
@@ -3193,6 +3807,36 @@ public prop url: URL
 
 类型：[URL](../../../encoding/url/url_package_api/url_package_classes.md#class-url)
 
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.net.http.*
+
+main() {
+    // 创建带有完整URL的请求
+    let req = HttpRequestBuilder().method("GET").url("http://example.com:8080/path?key=value&foo=bar").build()
+
+    // 获取URL各组成部分
+    let url = req.url
+    println("完整URL: ${url}")
+    println("协议: ${url.scheme}")
+    println("主机: ${url.hostName}")
+    println("端口: ${url.port}")
+    println("路径: ${url.path}")
+}
+```
+
+运行结果：
+
+```text
+完整URL: http://example.com:8080/path?key=value&foo=bar
+协议: http
+主机: example.com
+端口: 8080
+路径: /path
+```
+
 ### prop version
 
 ```cangjie
@@ -3203,6 +3847,32 @@ public prop version: Protocol
 
 类型：[Protocol](http_package_enums.md#enum-protocol)
 
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.net.http.*
+
+main() {
+    // 创建HTTP/1.1请求（默认）
+    let req1 = HttpRequestBuilder().method("GET").url("http://example.com/api").build()
+
+    println("默认HTTP版本: ${req1.version}")
+
+    // 创建HTTP/2请求
+    let req2 = HttpRequestBuilder().method("GET").url("http://example.com/api").version(Protocol.HTTP2_0).build()
+
+    println("HTTP/2版本: ${req2.version}")
+}
+```
+
+运行结果：
+
+```text
+默认HTTP版本: HTTP/1.1
+HTTP/2版本: HTTP/2.0
+```
+
 ### prop writeTimeout
 
 ```cangjie
@@ -3212,6 +3882,42 @@ public prop writeTimeout: ?Duration
 功能：表示该请求的请求级写超时时间，None 表示没有设置；Some(Duration) 表示设置了写超时时间。
 
 类型：?Duration
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.net.http.*
+
+main() {
+    // 创建未设置写超时时间的请求
+    let req1 = HttpRequestBuilder().method("GET").url("http://example.com/api").build()
+
+    match (req1.writeTimeout) {
+        case Some(timeout) => println("设置了写超时: ${timeout}")
+        case None => println("未设置写超时")
+    }
+
+    // 创建设置了写超时时间的请求
+    let req2 = HttpRequestBuilder()
+        .method("POST")
+        .url("http://example.com/api")
+        .writeTimeout(Duration.second * 60)
+        .build()
+
+    match (req2.writeTimeout) {
+        case Some(timeout) => println("设置了写超时: ${timeout}")
+        case None => println("未设置写超时")
+    }
+}
+```
+
+运行结果：
+
+```text
+未设置写超时
+设置了写超时: 1m
+```
 
 ### func toString()
 
@@ -3227,30 +3933,39 @@ public override func toString(): String
 
 示例：
 
-<!-- run -->
+<!-- verify -->
 ```cangjie
 import stdx.net.http.*
 
 main() {
     let req = HttpRequestBuilder()
-        .method("GET")
+        .method("POST")
         .url("http://example.com/hello")
         .header("x-test", "1")
+        .header("Content-Type", "text/plain")
         .body("abc")
         .build()
 
-    // 当前函数：toString()
+    // 不调用 toString() 也行，会自动调用
+    println("POST请求信息:")
+    println("-----------------------------")
     println(req.toString())
+    println("-----------------------------")
 }
 ```
 
 运行结果：
 
 ```text
-GET /hello HTTP/1.1
+POST请求信息:
+-----------------------------
+POST /hello HTTP/1.1
 x-test: 1
+content-type: text/plain
 
 body size: 3
+
+-----------------------------
 ```
 
 ## class HttpRequestBuilder
@@ -3263,36 +3978,6 @@ public class HttpRequestBuilder {
 ```
 
 功能：[HttpRequestBuilder](http_package_classes.md#class-httprequestbuilder) 类用于构造 [HttpRequest](http_package_classes.md#class-httprequest) 实例。
-
-### func delete()
-
-```cangjie
-public func delete(): HttpRequestBuilder
-```
-
-功能：构造 method 为 "DELETE" 的请求的便捷函数。
-
-返回值：
-
-- [HttpRequestBuilder](http_package_classes.md#class-httprequestbuilder) - 当前 [HttpRequestBuilder](http_package_classes.md#class-httprequestbuilder) 实例的引用。
-
-示例：
-
-<!-- run -->
-```cangjie
-import stdx.net.http.*
-
-main() {
-    let req = HttpRequestBuilder().delete().url("http://example.com/hello").build()
-    println(req.toString())
-}
-```
-
-运行结果：
-
-```text
-DELETE /hello HTTP/1.1
-```
 
 ### init()
 
@@ -3319,7 +4004,13 @@ main() {
 public init(request: HttpRequest)
 ```
 
-功能： 通过 request 构造一个具有 request 属性的 [HttpRequestBuilder](http_package_classes.md#class-httprequestbuilder)。由于 body 成员是一个 InputStream，对原始的 request 的 body 的操作会影响到复制得到的 [HttpRequest](http_package_classes.md#class-httprequest) 的 body。[HttpRequestBuilder](http_package_classes.md#class-httprequestbuilder) 的 headers 和 trailers 是入参 request 的深拷贝。其余元素都是入参 request 的浅拷贝（因为是不可变对象，无需深拷贝）。
+功能：基于已有 HttpRequest 实例构造 HttpRequestBuilder。
+
+> **说明：**
+> 
+> - body 特殊处理：因 body 是 InputStream 类型（流式数据），对原始 request 的 body 进行读写操作，会影响通过该 Builder 构建出的新 HttpRequest 的 body。
+> - 深拷贝项：Builder 的 headers、trailers 是原始 request 对应属性的深拷贝（修改 Builder 的 headers/trailers 不会影响原始 request）。
+> - 浅拷贝项：method、url、readTimeout 等其余不可变属性，均为原始 request 的浅拷贝（不可变对象无需深拷贝）。
 
 参数：
 
@@ -3361,28 +4052,39 @@ public func addHeaders(headers: HttpHeaders): HttpRequestBuilder
 
 示例：
 
-<!-- run -->
+<!-- verify -->
 ```cangjie
 import stdx.net.http.*
 
 main() {
-    let extra = HttpHeaders()
-    extra.add("x-a", "1")
-    extra.add("x-b", "2")
+    // 创建基础请求
+    let builder = HttpRequestBuilder()
+        .method("GET")
+        .url("http://example.com/api")
+        .header("Accept", "application/json")
 
-    let req = HttpRequestBuilder().url("http://example.com/hello").addHeaders(extra).build()
-    let a = req.headers.getFirst("x-a") ?? ""
-    let b = req.headers.getFirst("x-b") ?? ""
-    println("x-a = ${a}")
-    println("x-b = ${b}")
+    // 创建额外的headers
+    let extraHeaders = HttpHeaders()
+    extraHeaders.add("Authorization", "Bearer token123")
+    extraHeaders.add("X-Custom-Header", "custom-value")
+
+    // 使用addHeaders添加多个header
+    let req = builder.addHeaders(extraHeaders).build()
+
+    // 验证headers已添加
+    let headers = req.headers
+    println("Accept: ${headers.getFirst("Accept")}")
+    println("Authorization: ${headers.getFirst("Authorization")}")
+    println("X-Custom-Header: ${headers.getFirst("X-Custom-Header")}")
 }
 ```
 
 运行结果：
 
 ```text
-x-a = 1
-x-b = 2
+Accept: Some(application/json)
+Authorization: Some(Bearer token123)
+X-Custom-Header: Some(custom-value)
 ```
 
 ### func addTrailers(HttpHeaders)
@@ -3403,24 +4105,37 @@ public func addTrailers(trailers: HttpHeaders): HttpRequestBuilder
 
 示例：
 
-<!-- run -->
+<!-- verify -->
 ```cangjie
 import stdx.net.http.*
 
 main() {
-    let extra = HttpHeaders()
-    extra.add("x-t", "1")
+    // 创建基础请求
+    let builder = HttpRequestBuilder()
+        .method("POST")
+        .url("http://example.com/api")
+        .header("Content-Type", "application/json")
 
-    let req = HttpRequestBuilder().url("http://example.com/hello").addTrailers(extra).build()
-    let t = req.trailers.getFirst("x-t") ?? ""
-    println("x-t = ${t}")
+    // 创建额外的trailers
+    let extraTrailers = HttpHeaders()
+    extraTrailers.add("X-Checksum", "md5:abc123")
+    extraTrailers.add("X-Timestamp", "1234567890")
+
+    // 使用addTrailers添加多个trailer
+    let req = builder.addTrailers(extraTrailers).build()
+
+    // 验证trailers已添加
+    let trailers = req.trailers
+    println("X-Checksum: ${trailers.getFirst("X-Checksum")}")
+    println("X-Timestamp: ${trailers.getFirst("X-Timestamp")}")
 }
 ```
 
 运行结果：
 
 ```text
-x-t = 1
+X-Checksum: Some(md5:abc123)
+X-Timestamp: Some(1234567890)
 ```
 
 ### func body(Array\<UInt8>)
@@ -3441,29 +4156,37 @@ public func body(body: Array<UInt8>): HttpRequestBuilder
 
 示例：
 
-<!-- run -->
+<!-- verify -->
 ```cangjie
 import stdx.net.http.*
 
 main() {
-    let req = HttpRequestBuilder().url("http://example.com/hello").body("abc".toArray()).build()
-    let buf = Array<UInt8>(16, repeat: 0)
-    let n = req.body.read(buf)
-    let s = if (n > 0) {
-        String.fromUtf8(buf[..n])
-    } else {
-        ""
-    }
-    println("body = ${s}")
-    println("bodySize = ${req.bodySize.getOrThrow()}")
+    // 创建字节数组body
+    let bodyData = "Hello from Array<UInt8>".toArray()
+
+    // 使用字节数组创建请求
+    let req = HttpRequestBuilder()
+        .method("POST")
+        .url("http://example.com/api")
+        .header("Content-Type", "text/plain")
+        .body(bodyData)
+        .build()
+
+    // 读取并验证body
+    let buffer = Array<Byte>(1024, repeat: 0)
+    let bytesRead = req.body.read(buffer)
+    let content = String.fromUtf8(buffer[0..bytesRead])
+
+    println("Body大小: ${req.bodySize}")
+    println("Body内容: ${content}")
 }
 ```
 
 运行结果：
 
 ```text
-body = abc
-bodySize = 3
+Body大小: Some(23)
+Body内容: Hello from Array<UInt8>
 ```
 
 ### func body(InputStream)
@@ -3484,52 +4207,38 @@ public func body(body: InputStream): HttpRequestBuilder
 
 示例：
 
-<!-- run -->
+<!-- verify -->
 ```cangjie
-import stdx.net.http.*
 import std.io.*
-
-class MyBody <: InputStream {
-    let data: Array<UInt8>
-    var pos: Int64 = 0
-
-    init(s: String) {
-        data = s.toArray()
-    }
-
-    public func read(buf: Array<Byte>): Int64 {
-        if (pos >= data.size) {
-            return 0
-        }
-        let n = min(buf.size, data.size - pos)
-        data.copyTo(buf, pos, 0, n)
-        pos += n
-        return n
-    }
-}
+import stdx.net.http.*
 
 main() {
-    let input: InputStream = MyBody("abc")
-    let req = HttpRequestBuilder().url("http://example.com/hello").body(input).build()
+    // 创建一个流
+    let body = ByteBuffer("Hello World".toArray())
 
-    // 自定义 InputStream 不一定实现 Seekable，因此 bodySize 可能为 None
-    println("bodySize.isSome = ${req.bodySize.isSome()}")
-    let buf = Array<UInt8>(16, repeat: 0)
-    let n = req.body.read(buf)
-    let s = if (n > 0) {
-        String.fromUtf8(buf[..n])
-    } else {
-        ""
-    }
-    println("body = ${s}")
+    // 创建一个简单的POST请求
+    let req = HttpRequestBuilder()
+        .method("POST")
+        .url("http://example.com/api")
+        .header("Content-Type", "text/plain")
+        .body(body)
+        .build()
+
+    // 读取并验证body
+    let buffer = Array<Byte>(1024, repeat: 0)
+    let bytesRead = req.body.read(buffer)
+    let content = String.fromUtf8(buffer[0..bytesRead])
+
+    println("Body大小: ${req.bodySize}")
+    println("Body内容: ${content}")
 }
 ```
 
 运行结果：
 
 ```text
-bodySize.isSome = false
-body = abc
+Body大小: Some(11)
+Body内容: Hello World
 ```
 
 ### func body(String)
@@ -3550,27 +4259,34 @@ public func body(body: String): HttpRequestBuilder
 
 示例：
 
-<!-- run -->
+<!-- verify -->
 ```cangjie
 import stdx.net.http.*
 
 main() {
-    let req = HttpRequestBuilder().url("http://example.com/hello").body("abc").build()
-    let buf = Array<UInt8>(16, repeat: 0)
-    let n = req.body.read(buf)
-    let s = if (n > 0) {
-        String.fromUtf8(buf[..n])
-    } else {
-        ""
-    }
-    println("body = ${s}")
+    // 使用String设置请求body
+    let req = HttpRequestBuilder()
+        .method("POST")
+        .url("http://example.com/api")
+        .header("Content-Type", "application/json")
+        .body("{\"name\": \"张三\", \"age\": 25}")
+        .build()
+
+    // 读取并验证body
+    let buffer = Array<Byte>(1024, repeat: 0)
+    let bytesRead = req.body.read(buffer)
+    let content = String.fromUtf8(buffer[0..bytesRead])
+
+    println("Body大小: ${req.bodySize}")
+    println("Body内容: ${content}")
 }
 ```
 
 运行结果：
 
 ```text
-body = abc
+Body大小: Some(29)
+Body内容: {"name": "张三", "age": 25}
 ```
 
 ### func build()
@@ -3587,22 +4303,28 @@ public func build(): HttpRequest
 
 示例：
 
-<!-- run -->
+<!-- verify -->
 ```cangjie
 import stdx.net.http.*
 
 main() {
-    let req = HttpRequestBuilder().method("GET").url("http://example.com/hello").build()
-    println("method = ${req.method}")
-    println("path = ${req.url.path}")
+    // 使用builder构建GET请求
+    let getReq = HttpRequestBuilder()
+        .method("GET")
+        .url("http://example.com/users")
+        .header("Accept", "application/json")
+        .build()
+
+    println("GET请求方法: ${getReq.method}")
+    println("GET请求URL: ${getReq.url}")
 }
 ```
 
 运行结果：
 
 ```text
-method = GET
-path = /hello
+GET请求方法: GET
+GET请求URL: http://example.com/users
 ```
 
 ### func connect()
@@ -3619,20 +4341,52 @@ public func connect(): HttpRequestBuilder
 
 示例：
 
-<!-- run -->
+<!-- verify -->
 ```cangjie
 import stdx.net.http.*
 
 main() {
-    let req = HttpRequestBuilder().connect().url("http://example.com/hello").build()
-    println(req.toString())
+    // 使用connect便捷方法创建CONNECT请求
+    let req = HttpRequestBuilder().url("http://example.com:8080").connect().build()
+    println("CONNECT方法: ${req.method}")
 }
 ```
 
 运行结果：
 
 ```text
-CONNECT example.com HTTP/1.1
+CONNECT方法: CONNECT
+```
+
+### func delete()
+
+```cangjie
+public func delete(): HttpRequestBuilder
+```
+
+功能：构造 method 为 "DELETE" 的请求的便捷函数。
+
+返回值：
+
+- [HttpRequestBuilder](http_package_classes.md#class-httprequestbuilder) - 当前 [HttpRequestBuilder](http_package_classes.md#class-httprequestbuilder) 实例的引用。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.net.http.*
+
+main() {
+    // 使用delete便捷方法创建DELETE请求
+    let req = HttpRequestBuilder().url("http://example.com/api/123").delete().build()
+    println("DELETE方法: ${req.method}")
+}
+```
+
+运行结果：
+
+```text
+DELETE方法: DELETE
 ```
 
 ### func get()
@@ -3649,20 +4403,21 @@ public func get(): HttpRequestBuilder
 
 示例：
 
-<!-- run -->
+<!-- verify -->
 ```cangjie
 import stdx.net.http.*
 
 main() {
-    let req = HttpRequestBuilder().get().url("http://example.com/hello").build()
-    println(req.toString())
+    // 使用get便捷方法创建GET请求
+    let req = HttpRequestBuilder().url("http://example.com/api").get().build()
+    println("GET方法: ${req.method}")
 }
 ```
 
 运行结果：
 
 ```text
-GET /hello HTTP/1.1
+GET方法: GET
 ```
 
 ### func head()
@@ -3679,20 +4434,21 @@ public func head(): HttpRequestBuilder
 
 示例：
 
-<!-- run -->
+<!-- verify -->
 ```cangjie
 import stdx.net.http.*
 
 main() {
-    let req = HttpRequestBuilder().head().url("http://example.com/hello").build()
-    println(req.toString())
+    // 使用head便捷方法创建HEAD请求
+    let req = HttpRequestBuilder().url("http://example.com/api").head().build()
+    println("HEAD方法: ${req.method}")
 }
 ```
 
 运行结果：
 
 ```text
-HEAD /hello HTTP/1.1
+HEAD方法: HEAD
 ```
 
 ### func header(String, String)
@@ -3718,21 +4474,33 @@ public func header(name: String, value: String): HttpRequestBuilder
 
 示例：
 
-<!-- run -->
+<!-- verify -->
 ```cangjie
 import stdx.net.http.*
 
 main() {
-    let req = HttpRequestBuilder().url("http://example.com/hello").header("x-a", "1").build()
-    let v = req.headers.getFirst("x-a") ?? ""
-    println("x-a = ${v}")
+    // 使用header方法添加多个请求头
+    let req = HttpRequestBuilder()
+        .method("GET")
+        .url("http://example.com/api")
+        .header("Accept", "application/json")
+        .header("Authorization", "Bearer token123")
+        .header("X-Request-ID", "req-456")
+        .build()
+
+    let headers = req.headers
+    println("Accept: ${headers.getFirst("Accept")}")
+    println("Authorization: ${headers.getFirst("Authorization")}")
+    println("X-Request-ID: ${headers.getFirst("X-Request-ID")}")
 }
 ```
 
 运行结果：
 
 ```text
-x-a = 1
+Accept: Some(application/json)
+Authorization: Some(Bearer token123)
+X-Request-ID: Some(req-456)
 ```
 
 ### func method(String)
@@ -3757,20 +4525,34 @@ public func method(method: String): HttpRequestBuilder
 
 示例：
 
-<!-- run -->
+<!-- verify -->
 ```cangjie
 import stdx.net.http.*
 
 main() {
-    let req = HttpRequestBuilder().method("PATCH").url("http://example.com/hello").build()
-    println(req.toString())
+    // 使用method方法设置自定义HTTP方法
+    let req1 = HttpRequestBuilder()
+        .url("http://example.com/api")
+        .method("GET")
+        .build()
+    println("GET请求: ${req1.method}")
+
+    // 使用PATCH方法
+    let req2 = HttpRequestBuilder()
+        .url("http://example.com/api/123")
+        .method("PATCH")
+        .header("Content-Type", "application/json")
+        .body("{\"field\": \"value\"}")
+        .build()
+    println("PATCH请求: ${req2.method}")
 }
 ```
 
 运行结果：
 
 ```text
-PATCH /hello HTTP/1.1
+GET请求: GET
+PATCH请求: PATCH
 ```
 
 ### func options()
@@ -3787,20 +4569,21 @@ public func options(): HttpRequestBuilder
 
 示例：
 
-<!-- run -->
+<!-- verify -->
 ```cangjie
 import stdx.net.http.*
 
 main() {
-    let req = HttpRequestBuilder().options().url("http://example.com/hello").build()
-    println(req.toString())
+    // 使用options便捷方法创建OPTIONS请求
+    let req = HttpRequestBuilder().url("http://example.com/api").options().build()
+    println("OPTIONS方法: ${req.method}")
 }
 ```
 
 运行结果：
 
 ```text
-OPTIONS /hello HTTP/1.1
+OPTIONS方法: OPTIONS
 ```
 
 ### func post()
@@ -3817,22 +4600,26 @@ public func post(): HttpRequestBuilder
 
 示例：
 
-<!-- run -->
+<!-- verify -->
 ```cangjie
 import stdx.net.http.*
 
 main() {
-    let req = HttpRequestBuilder().post().url("http://example.com/hello").body("x").build()
-    println(req.toString())
+    // 使用post便捷方法创建POST请求
+    let req = HttpRequestBuilder()
+        .url("http://example.com/api")
+        .header("Content-Type", "application/json")
+        .body("{\"name\": \"test\"}")
+        .post()
+        .build()
+    println("POST方法: ${req.method}")
 }
 ```
 
 运行结果：
 
 ```text
-POST /hello HTTP/1.1
-
-body size: 1
+POST方法: POST
 ```
 
 ### func priority(Int64, Bool)
@@ -3846,7 +4633,7 @@ public func priority(urg: Int64, inc: Bool): HttpRequestBuilder
 参数：
 
 - urg: Int64 - 表示请求优先级，取值范围为 [0, 7]，0 表示最高优先级。
-- inc: Bool - 表示请求是否需要增量处理，为 true 表示希望服务器并发处理与之同 urg 同 inc 的请求，为 false 表示不希望服务器并发处理。
+- inc: Bool - 同优先级请求的处理方式：true 表示希望服务器把「和当前请求优先级相同」的这类请求一起并发处理；false 表示希望服务器对这类请求一个一个串行处理，不并发。
 
 返回值：
 
@@ -3858,21 +4645,26 @@ public func priority(urg: Int64, inc: Bool): HttpRequestBuilder
 
 示例：
 
-<!-- run -->
+<!-- verify -->
 ```cangjie
 import stdx.net.http.*
 
 main() {
-    let req = HttpRequestBuilder().url("http://example.com/hello").priority(3, true).build()
-    let p = req.headers.getFirst("priority") ?? ""
-    println("priority = ${p}")
+    // 设置高优先级请求（urgency=0表示最高优先级）
+    let highPriorityReq = HttpRequestBuilder()
+        .method("GET")
+        .url("http://example.com/api/critical")
+        .priority(0, true)
+        .build()
+    let priority = highPriorityReq.headers.getFirst("priority") ?? ""
+    println("priority: ${priority}")
 }
 ```
 
 运行结果：
 
 ```text
-priority = u=3, i
+priority: u=0, i
 ```
 
 ### func put()
@@ -3889,22 +4681,26 @@ public func put(): HttpRequestBuilder
 
 示例：
 
-<!-- run -->
+<!-- verify -->
 ```cangjie
 import stdx.net.http.*
 
 main() {
-    let req = HttpRequestBuilder().put().url("http://example.com/hello").body("x").build()
-    println(req.toString())
+    // 使用put便捷方法创建PUT请求
+    let req = HttpRequestBuilder()
+        .url("http://example.com/api/123")
+        .header("Content-Type", "application/json")
+        .body("{\"name\": \"updated\"}")
+        .put()
+        .build()
+    println("PUT方法: ${req.method}")
 }
 ```
 
 运行结果：
 
 ```text
-PUT /hello HTTP/1.1
-
-body size: 1
+PUT方法: PUT
 ```
 
 ### func readTimeout(Duration)
@@ -3925,20 +4721,29 @@ public func readTimeout(timeout: Duration): HttpRequestBuilder
 
 示例：
 
-<!-- run -->
+<!-- verify -->
 ```cangjie
 import stdx.net.http.*
 
 main() {
-    let req = HttpRequestBuilder().url("http://example.com/hello").readTimeout(Duration.second).build()
-    println("readTimeout.isSome = ${req.readTimeout.isSome()}")
+    // 设置30秒读超时
+    let req1 = HttpRequestBuilder()
+        .method("GET")
+        .url("http://example.com/api")
+        .readTimeout(Duration.second * 30)
+        .build()
+
+    match (req1.readTimeout) {
+        case Some(timeout) => println("读超时: ${timeout}")
+        case None => println("没有设置读超时")
+    }
 }
 ```
 
 运行结果：
 
 ```text
-readTimeout.isSome = true
+读超时: 30s
 ```
 
 ### func setHeaders(HttpHeaders)
@@ -3959,23 +4764,34 @@ public func setHeaders(headers: HttpHeaders): HttpRequestBuilder
 
 示例：
 
-<!-- run -->
+<!-- verify -->
 ```cangjie
 import stdx.net.http.*
 
 main() {
-    let h = HttpHeaders()
-    h.add("x-a", "1")
-    let req = HttpRequestBuilder().url("http://example.com/hello").setHeaders(h).build()
-    let v = req.headers.getFirst("x-a") ?? ""
-    println("x-a = ${v}")
+    // 创建新的headers对象
+    let newHeaders = HttpHeaders()
+    newHeaders.add("Content-Type", "application/json")
+
+    // 使用setHeaders替换所有headers
+    let req = HttpRequestBuilder()
+        .method("POST")
+        .url("http://example.com/api")
+        .header("Old-Header", "old-value") // 这个会被替换掉
+        .setHeaders(newHeaders)
+        .build()
+
+    let headers = req.headers
+    println("Content-Type: ${headers.getFirst("Content-Type")}")
+    println("Old-Header: ${headers.getFirst("Old-Header")}") // 应该是None
 }
 ```
 
 运行结果：
 
 ```text
-x-a = 1
+Content-Type: Some(application/json)
+Old-Header: None
 ```
 
 ### func setTrailers(HttpHeaders)
@@ -3996,23 +4812,37 @@ public func setTrailers(trailers: HttpHeaders): HttpRequestBuilder
 
 示例：
 
-<!-- run -->
+<!-- verify -->
 ```cangjie
 import stdx.net.http.*
 
 main() {
-    let t = HttpHeaders()
-    t.add("x-t", "1")
-    let req = HttpRequestBuilder().url("http://example.com/hello").setTrailers(t).build()
-    let v = req.trailers.getFirst("x-t") ?? ""
-    println("x-t = ${v}")
+    // 创建新的trailers对象
+    let newTrailers = HttpHeaders()
+    newTrailers.add("X-Checksum", "sha256:abc123")
+    newTrailers.add("X-Timestamp", "1234567890")
+
+    // 使用setTrailers替换所有trailers
+    let req = HttpRequestBuilder()
+        .method("POST")
+        .url("http://example.com/api")
+        .trailer("Old-Trailer", "old-value") // 这个会被替换掉
+        .setTrailers(newTrailers)
+        .build()
+
+    let trailers = req.trailers
+    println("X-Checksum: ${trailers.getFirst("X-Checksum")}")
+    println("X-Timestamp: ${trailers.getFirst("X-Timestamp")}")
+    println("Old-Trailer: ${trailers.getFirst("Old-Trailer")}") // 应该是None
 }
 ```
 
 运行结果：
 
 ```text
-x-t = 1
+X-Checksum: Some(sha256:abc123)
+X-Timestamp: Some(1234567890)
+Old-Trailer: None
 ```
 
 ### func trace()
@@ -4029,20 +4859,21 @@ public func trace(): HttpRequestBuilder
 
 示例：
 
-<!-- run -->
+<!-- verify -->
 ```cangjie
 import stdx.net.http.*
 
 main() {
-    let req = HttpRequestBuilder().trace().url("http://example.com/hello").build()
-    println(req.toString())
+    // 使用trace便捷方法创建TRACE请求
+    let req = HttpRequestBuilder().url("http://example.com/api").trace().build()
+    println("TRACE方法: ${req.method}")
 }
 ```
 
 运行结果：
 
 ```text
-TRACE /hello HTTP/1.1
+TRACE方法: TRACE
 ```
 
 ### func trailer(String, String)
@@ -4068,21 +4899,32 @@ public func trailer(name: String, value: String): HttpRequestBuilder
 
 示例：
 
-<!-- run -->
+<!-- verify -->
 ```cangjie
 import stdx.net.http.*
 
 main() {
-    let req = HttpRequestBuilder().url("http://example.com/hello").trailer("x-t", "1").build()
-    let v = req.trailers.getFirst("x-t") ?? ""
-    println("x-t = ${v}")
+    // 使用trailer方法添加多个trailer
+    let req = HttpRequestBuilder()
+        .method("POST")
+        .url("http://example.com/api")
+        .header("Content-Type", "application/json")
+        .body("{\"data\": \"test\"}")
+        .trailer("X-Checksum", "md5:def789")
+        .trailer("X-Request-Time", "100ms")
+        .build()
+
+    let trailers = req.trailers
+    println("X-Checksum: ${trailers.getFirst("X-Checksum")}")
+    println("X-Request-Time: ${trailers.getFirst("X-Request-Time")}")
 }
 ```
 
 运行结果：
 
 ```text
-x-t = 1
+X-Checksum: Some(md5:def789)
+X-Request-Time: Some(100ms)
 ```
 
 ### func url(String)
@@ -4108,20 +4950,21 @@ public func url(rawUrl: String): HttpRequestBuilder
 
 示例：
 
-<!-- run -->
+<!-- verify -->
 ```cangjie
 import stdx.net.http.*
 
 main() {
-    let req = HttpRequestBuilder().url("http://example.com/hello").build()
-    println("path = ${req.url.path}")
+    // 使用url方法设置请求URL
+    let req = HttpRequestBuilder().method("GET").url("http://example.com/api/users").build()
+    println("URL: ${req.url}")
 }
 ```
 
 运行结果：
 
 ```text
-path = /hello
+URL: http://example.com/api/users
 ```
 
 ### func url(URL)
@@ -4142,22 +4985,34 @@ public func url(url: URL): HttpRequestBuilder
 
 示例：
 
-<!-- run -->
+<!-- verify -->
 ```cangjie
 import stdx.net.http.*
 import stdx.encoding.url.*
 
 main() {
-    let u = URL.parse("http://example.com/hello")
-    let req = HttpRequestBuilder().url(u).build()
-    println("path = ${req.url.path}")
+    // 使用URL对象设置请求URL
+    let url = URL.parse("http://example.com:9090/api/v1/users?id=123")
+
+    let req = HttpRequestBuilder()
+        .method("GET")
+        .url(url)
+        .build()
+
+    println("URL: ${req.url}")
+    println("协议: ${req.url.scheme}")
+    println("路径: ${req.url.path}")
+    println("查询: ${req.url.query}")
 }
 ```
 
 运行结果：
 
 ```text
-path = /hello
+URL: http://example.com:9090/api/v1/users?id=123
+协议: http
+路径: /api/v1/users
+查询: Some(id=123)
 ```
 
 ### func version(Protocol)
@@ -4178,20 +5033,42 @@ public func version(version: Protocol): HttpRequestBuilder
 
 示例：
 
-<!-- run -->
+<!-- verify -->
 ```cangjie
 import stdx.net.http.*
 
 main() {
-    let req = HttpRequestBuilder().url("http://example.com/hello").version(HTTP1_1).build()
-    println("version = ${req.version.toString()}")
+    // 默认HTTP/1.1
+    let req1 = HttpRequestBuilder()
+        .method("GET")
+        .url("http://example.com/api")
+        .build()
+    println("默认版本: ${req1.version}")
+
+    // 显式设置HTTP/1.1
+    let req2 = HttpRequestBuilder()
+        .method("GET")
+        .url("http://example.com/api")
+        .version(Protocol.HTTP1_1)
+        .build()
+    println("HTTP/1.1: ${req2.version}")
+
+    // 设置HTTP/2
+    let req3 = HttpRequestBuilder()
+        .method("GET")
+        .url("http://example.com/api")
+        .version(Protocol.HTTP2_0)
+        .build()
+    println("HTTP/2: ${req3.version}")
 }
 ```
 
 运行结果：
 
 ```text
-version = HTTP/1.1
+默认版本: HTTP/1.1
+HTTP/1.1: HTTP/1.1
+HTTP/2: HTTP/2.0
 ```
 
 ### func writeTimeout(Duration)
@@ -4212,20 +5089,29 @@ public func writeTimeout(timeout: Duration): HttpRequestBuilder
 
 示例：
 
-<!-- run -->
+<!-- verify -->
 ```cangjie
 import stdx.net.http.*
 
 main() {
-    let req = HttpRequestBuilder().url("http://example.com/hello").writeTimeout(Duration.second).build()
-    println("writeTimeout.isSome = ${req.writeTimeout.isSome()}")
+    // 设置30秒写超时
+    let req = HttpRequestBuilder()
+        .method("POST")
+        .url("http://example.com/api")
+        .writeTimeout(Duration.second * 30)
+        .build()
+
+    match (req.writeTimeout) {
+        case Some(timeout) => println("写超时: ${timeout}")
+        case None => println("没有设置写超时")
+    }
 }
 ```
 
 运行结果：
 
 ```text
-writeTimeout.isSome = true
+写超时: 30s
 ```
 
 ## class HttpResponse
@@ -4257,6 +5143,35 @@ public prop body: InputStream
 
 类型：InputStream
 
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.net.http.*
+
+main() {
+    // 使用 HttpResponseBuilder 构造响应
+    let resp = HttpResponseBuilder().status(200).header("Content-Type", "text/plain").body("Hello World").build()
+
+    // 读取响应 body
+    let buffer = Array<Byte>(1024, repeat: 0)
+    let bytesRead = resp.body.read(buffer)
+    let bodyContent = String.fromUtf8(buffer[0..bytesRead])
+
+    println("状态码: ${resp.status}")
+    println("Body大小: ${resp.bodySize}")
+    println("Body内容: ${bodyContent}")
+}
+```
+
+运行结果：
+
+```text
+状态码: 200
+Body大小: Some(11)
+Body内容: Hello World
+```
+
 ### prop bodySize
 
 ```cangjie
@@ -4271,6 +5186,35 @@ public prop bodySize: Option<Int64>
 
 类型：Option\<Int64>
 
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.net.http.*
+
+main() {
+    // 构造带有String body的响应（长度已知）
+    let resp1 = HttpResponseBuilder()
+        .status(200)
+        .body("Hello World")
+        .build()
+    println("String body大小: ${resp1.bodySize}")
+
+    // 构造不带有body的响应
+    let resp2 = HttpResponseBuilder()
+        .status(204)
+        .build()
+    println("无body时大小: ${resp2.bodySize}")
+}
+```
+
+运行结果：
+
+```text
+String body大小: Some(11)
+无body时大小: Some(0)
+```
+
 ### prop headers
 
 ```cangjie
@@ -4280,6 +5224,40 @@ public prop headers: HttpHeaders
 功能：获取 headers，headers 详述见 [HttpHeaders](http_package_classes.md#class-httpheaders) 类，获取后，可通过调用 [HttpHeaders](http_package_classes.md#class-httpheaders) 实例成员函数，修改该请求的 headers。
 
 类型：[HttpHeaders](http_package_classes.md#class-httpheaders)
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.net.http.*
+
+main() {
+    // 构造带有headers的响应
+    let resp = HttpResponseBuilder()
+        .status(200)
+        .header("Content-Type", "application/json")
+        .header("X-Request-ID", "req-123")
+        .body("{\"status\": \"ok\"}")
+        .build()
+
+    // 获取并修改headers
+    let headers = resp.headers
+    println("Content-Type: ${headers.getFirst("Content-Type")}")
+    println("X-Request-ID: ${headers.getFirst("X-Request-ID")}")
+
+    // 添加新header
+    headers.add("X-Custom-Header", "custom-value")
+    println("X-Custom-Header: ${headers.getFirst("X-Custom-Header")}")
+}
+```
+
+运行结果：
+
+```text
+Content-Type: Some(application/json)
+X-Request-ID: Some(req-123)
+X-Custom-Header: Some(custom-value)
+```
 
 ### prop isPersistent
 
@@ -4295,6 +5273,37 @@ public prop isPersistent: Bool
 
 类型：Bool
 
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.net.http.*
+
+main() {
+    // 构造默认响应（长连接）
+    let resp1 = HttpResponseBuilder()
+        .status(200)
+        .body("OK")
+        .build()
+    println("默认响应isPersistent: ${resp1.isPersistent}")
+
+    // 构造带Connection: close的响应（短连接）
+    let resp2 = HttpResponseBuilder()
+        .status(200)
+        .header("Connection", "close")
+        .body("OK")
+        .build()
+    println("带Connection: close的isPersistent: ${resp2.isPersistent}")
+}
+```
+
+运行结果：
+
+```text
+默认响应isPersistent: true
+带Connection: close的isPersistent: false
+```
+
 ### prop request
 
 ```cangjie
@@ -4304,6 +5313,40 @@ public prop request: Option<HttpRequest>
 功能：获取该响应对应的请求，默认为 None。
 
 类型：Option\<[HttpRequest](http_package_classes.md#class-httprequest)>
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.net.http.*
+
+main() {
+    // 构造请求
+    let req = HttpRequestBuilder()
+        .method("GET")
+        .url("http://example.com/api")
+        .build()
+
+    // 构造响应对应该请求
+    let resp = HttpResponseBuilder()
+        .status(200)
+        .request(req)
+        .body("OK")
+        .build()
+
+    // 获取响应对应的请求
+    match (resp.request) {
+        case Some(r) => println("请求方法: ${r.method}")
+        case None => println("无关联请求")
+    }
+}
+```
+
+运行结果：
+
+```text
+请求方法: GET
+```
 
 ### prop status
 
@@ -4315,6 +5358,28 @@ public prop status: UInt16
 
 类型：UInt16
 
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.net.http.*
+
+main() {
+    // 构造200 OK响应
+    let resp = HttpResponseBuilder()
+        .status(200)
+        .body("OK")
+        .build()
+    println("成功响应状态码: ${resp.status}")
+}
+```
+
+运行结果：
+
+```text
+成功响应状态码: 200
+```
+
 ### prop trailers
 
 ```cangjie
@@ -4325,6 +5390,36 @@ public prop trailers: HttpHeaders
 
 类型：[HttpHeaders](http_package_classes.md#class-httpheaders)
 
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.net.http.*
+
+main() {
+    // 构造带有trailers的响应
+    let resp = HttpResponseBuilder()
+        .status(200)
+        .header("Trailer", "X-Checksum, X-Timestamp")
+        .body("Response data")
+        .trailer("X-Checksum", "md5:abc123")
+        .trailer("X-Timestamp", "1234567890")
+        .build()
+
+    // 获取trailers
+    let trailers = resp.trailers
+    println("X-Checksum: ${trailers.getFirst("X-Checksum")}")
+    println("X-Timestamp: ${trailers.getFirst("X-Timestamp")}")
+}
+```
+
+运行结果：
+
+```text
+X-Checksum: Some(md5:abc123)
+X-Timestamp: Some(1234567890)
+```
+
 ### prop version
 
 ```cangjie
@@ -4334,6 +5429,37 @@ public prop version: Protocol
 功能：获取响应的协议版本，默认值为 [HTTP1_1](./http_package_enums.md#enum-protocol)。
 
 类型：[Protocol](http_package_enums.md#enum-protocol)
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.net.http.*
+
+main() {
+    // 构造HTTP/1.1响应（默认）
+    let resp1 = HttpResponseBuilder()
+        .status(200)
+        .body("OK")
+        .build()
+    println("默认HTTP版本: ${resp1.version}")
+
+    // 构造HTTP/2响应
+    let resp2 = HttpResponseBuilder()
+        .status(200)
+        .version(Protocol.HTTP2_0)
+        .body("OK")
+        .build()
+    println("HTTP/2版本: ${resp2.version}")
+}
+```
+
+运行结果：
+
+```text
+默认HTTP版本: HTTP/1.1
+HTTP/2版本: HTTP/2.0
+```
 
 ### func close()
 
@@ -4354,17 +5480,15 @@ public func close(): Unit
 import stdx.net.http.*
 
 main() {
-    let resp = HttpResponseBuilder().body("abc").build()
-    // 当前函数：close()
+    // 构造一个带body的响应
+    let resp = HttpResponseBuilder()
+        .status(200)
+        .body("这是一个巨大的不想读完的响应体")
+        .build()
+
+    // 在未读完body时关闭连接释放资源
     resp.close()
-    println("closed")
 }
-```
-
-运行结果：
-
-```text
-closed
 ```
 
 ### func toString()
@@ -4375,30 +5499,40 @@ public override func toString(): String
 
 功能：把响应转换为字符串，包括 status-line，headers，body size， trailers。
 
-例如：HTTP/1.1 200 OK\r\ncontent-length: 5\r\n\r\nbody size: 5\r\nbar: foo\r\n。
-
 返回值：
 
 - String - 响应的字符串表示。
 
 示例：
 
-<!-- run -->
+<!-- verify -->
 ```cangjie
 import stdx.net.http.*
 
 main() {
-    let resp = HttpResponseBuilder().body("abc").build()
-    println(resp)
+    // 构造一个完整的响应
+    let resp = HttpResponseBuilder()
+        .status(200)
+        .header("Content-Type", "application/json")
+        .header("Content-Length", "12")
+        .body("this is body")
+        .build()
+
+    // 转换为字符串表示
+    println("响应信息:")
+    println(resp.toString())
 }
 ```
 
 运行结果：
 
 ```text
+响应信息:
 HTTP/1.1 200 OK
+content-type: application/json
+content-length: 12
 
-body size: 3
+body size: 12
 
 ```
 
@@ -4423,23 +5557,8 @@ public func getPush(): Option<ArrayList<HttpResponse>>
 - Option\<ArrayList\<[HttpResponse](http_package_classes.md#class-httpresponse)>> - 服务器推送的响应列表。
 
 示例：
-
-<!-- run -->
-```cangjie
-import stdx.net.http.*
-
-main() {
-    let resp = HttpResponseBuilder().status(404).build()
-    // 当前函数：toString()
-    println(resp.toString().split("\n")[0])
-}
-```
-
-运行结果：
-
-```text
-HTTP/1.1 404 Not Found
-```
+<!-- associated_example -->
+参见 [static func getPusher](#static-func-getpusherhttpcontext) 示例。
 
 ## class HttpResponseBuilder
 
@@ -4488,23 +5607,34 @@ public func addHeaders(headers: HttpHeaders): HttpResponseBuilder
 
 示例：
 
-<!-- run -->
+<!-- verify -->
 ```cangjie
 import stdx.net.http.*
 
 main() {
-    let h = HttpHeaders()
-    h.add("x-a", "1")
-    let resp = HttpResponseBuilder().addHeaders(h).build()
-    let v = resp.headers.getFirst("x-a") ?? ""
-    println("x-a = ${v}")
+    // 创建 HttpResponseBuilder 并添加 headers
+    let headers = HttpHeaders()
+    headers.add("X-Custom-Header", "custom-value")
+    headers.add("X-Request-Id", "12345")
+    
+    let resp = HttpResponseBuilder()
+        .status(200)
+        .addHeaders(headers)
+        .body("OK")
+        .build()
+    
+    // 验证 headers 已添加
+    let respHeaders = resp.headers
+    println("X-Custom-Header: ${respHeaders.getFirst("X-Custom-Header")}")
+    println("X-Request-Id: ${respHeaders.getFirst("X-Request-Id")}")
 }
 ```
 
 运行结果：
 
 ```text
-x-a = 1
+X-Custom-Header: Some(custom-value)
+X-Request-Id: Some(12345)
 ```
 
 ### func addTrailers(HttpHeaders)
@@ -4525,23 +5655,31 @@ public func addTrailers(trailers: HttpHeaders): HttpResponseBuilder
 
 示例：
 
-<!-- run -->
+<!-- verify -->
 ```cangjie
 import stdx.net.http.*
 
 main() {
-    let t = HttpHeaders()
-    t.add("x-t", "1")
-    let resp = HttpResponseBuilder().addTrailers(t).build()
-    let v = resp.trailers.getFirst("x-t") ?? ""
-    println("x-t = ${v}")
+    // 创建 HttpResponseBuilder 并添加 trailers
+    let trailers = HttpHeaders()
+    trailers.add("X-Trailer-Info", "end-of-response")
+    
+    let resp = HttpResponseBuilder()
+        .status(200)
+        .addTrailers(trailers)
+        .body("OK")
+        .build()
+    
+    // 验证 trailers 已添加
+    let respTrailers = resp.trailers
+    println("X-Trailer-Info: ${respTrailers.getFirst("X-Trailer-Info")}")
 }
 ```
 
 运行结果：
 
 ```text
-x-t = 1
+X-Trailer-Info: Some(end-of-response)
 ```
 
 ### func body(Array\<UInt8>)
@@ -4562,29 +5700,27 @@ public func body(body: Array<UInt8>): HttpResponseBuilder
 
 示例：
 
-<!-- run -->
+<!-- verify -->
 ```cangjie
 import stdx.net.http.*
 
 main() {
-    let resp = HttpResponseBuilder().body("abc".toArray()).build()
-    let buf = Array<UInt8>(16, repeat: 0)
-    let n = resp.body.read(buf)
-    let s = if (n > 0) {
-        String.fromUtf8(buf[..n])
-    } else {
-        ""
-    }
-    println("body = ${s}")
-    println("bodySize = ${resp.bodySize.getOrThrow()}")
+    // 使用字节数组设置 body
+    let data: Array<UInt8> = [72, 101, 108, 108, 111] // "Hello"
+    
+    let resp = HttpResponseBuilder()
+        .status(200)
+        .body(data)
+        .build()
+    
+    println("响应 body 大小: ${resp.bodySize}")
 }
 ```
 
 运行结果：
 
 ```text
-body = abc
-bodySize = 3
+响应 body 大小: Some(5)
 ```
 
 ### func body(InputStream)
@@ -4605,50 +5741,26 @@ public func body(body: InputStream): HttpResponseBuilder
 
 示例：
 
-<!-- run -->
+<!-- verify -->
 ```cangjie
-import stdx.net.http.*
 import std.io.*
-
-class MyBody <: InputStream {
-    let data: Array<UInt8>
-    var pos: Int64 = 0
-
-    init(s: String) {
-        data = s.toArray()
-    }
-
-    public func read(buf: Array<Byte>): Int64 {
-        if (pos >= data.size) {
-            return 0
-        }
-        let n = min(buf.size, data.size - pos)
-        data.copyTo(buf, pos, 0, n)
-        pos += n
-        return n
-    }
-}
+import stdx.net.http.*
 
 main() {
-    let input: InputStream = MyBody("abc")
-    let resp = HttpResponseBuilder().body(input).build()
-    println("bodySize.isSome = ${resp.bodySize.isSome()}")
-    let buf = Array<UInt8>(16, repeat: 0)
-    let n = resp.body.read(buf)
-    let s = if (n > 0) {
-        String.fromUtf8(buf[..n])
-    } else {
-        ""
-    }
-    println("body = ${s}")
+    // 使用 ByteBuffer 作为 InputStream 设置 body
+    let data: Array<UInt8> = [72, 101, 108, 108, 111] // "Hello"
+    let buffer = ByteBuffer(data)
+
+    let resp = HttpResponseBuilder().status(200).body(buffer).build()
+
+    println("响应 body 大小: ${resp.bodySize}")
 }
 ```
 
 运行结果：
 
 ```text
-bodySize.isSome = false
-body = abc
+响应 body 大小: Some(5)
 ```
 
 ### func body(String)
@@ -4669,27 +5781,25 @@ public func body(body: String): HttpResponseBuilder
 
 示例：
 
-<!-- run -->
+<!-- verify -->
 ```cangjie
 import stdx.net.http.*
 
 main() {
-    let resp = HttpResponseBuilder().body("abc").build()
-    let buf = Array<UInt8>(16, repeat: 0)
-    let n = resp.body.read(buf)
-    let s = if (n > 0) {
-        String.fromUtf8(buf[..n])
-    } else {
-        ""
-    }
-    println("body = ${s}")
+    // 使用字符串设置 body
+    let resp = HttpResponseBuilder()
+        .status(200)
+        .body("Hello World")
+        .build()
+    
+    println("响应 body 大小: ${resp.bodySize}")
 }
 ```
 
 运行结果：
 
 ```text
-body = abc
+响应 body 大小: Some(11)
 ```
 
 ### func build()
@@ -4706,24 +5816,28 @@ public func build(): HttpResponse
 
 示例：
 
-<!-- run -->
+<!-- verify -->
 ```cangjie
 import stdx.net.http.*
 
 main() {
-    let resp = HttpResponseBuilder().status(200).body("ok").build()
-    println("status = ${resp.status}")
-    let buf = Array<UInt8>(8, repeat: 0)
-    let n = resp.body.read(buf)
-    println("body = ${String.fromUtf8(buf[..n])}")
+    // 使用 build() 构建 HttpResponse
+    let resp = HttpResponseBuilder()
+        .status(200)
+        .header("Content-Type", "text/plain")
+        .body("OK")
+        .build()
+    
+    println("响应状态码: ${resp.status}")
+    println("Content-Type: ${resp.headers.getFirst("Content-Type")}")
 }
 ```
 
 运行结果：
 
 ```text
-status = 200
-body = ok
+响应状态码: 200
+Content-Type: Some(text/plain)
 ```
 
 ### func header(String, String)
@@ -4749,21 +5863,30 @@ public func header(name: String, value: String): HttpResponseBuilder
 
 示例：
 
-<!-- run -->
+<!-- verify -->
 ```cangjie
 import stdx.net.http.*
 
 main() {
-    let resp = HttpResponseBuilder().header("x-a", "1").build()
-    let v = resp.headers.getFirst("x-a") ?? ""
-    println("x-a = ${v}")
+    // 使用 header() 添加单个 header
+    let resp = HttpResponseBuilder()
+        .status(200)
+        .header("Content-Type", "application/json")
+        .header("X-Request-Id", "abc123")
+        .body("{}")
+        .build()
+    
+    let headers = resp.headers
+    println("Content-Type: ${headers.getFirst("Content-Type")}")
+    println("X-Request-Id: ${headers.getFirst("X-Request-Id")}")
 }
 ```
 
 运行结果：
 
 ```text
-x-a = 1
+Content-Type: Some(application/json)
+X-Request-Id: Some(abc123)
 ```
 
 ### func request(HttpRequest)
@@ -4784,21 +5907,37 @@ public func request(request: HttpRequest): HttpResponseBuilder
 
 示例：
 
-<!-- run -->
+<!-- verify -->
 ```cangjie
 import stdx.net.http.*
 
 main() {
-    let req = HttpRequestBuilder().url("http://example.com/hello").build()
-    let resp = HttpResponseBuilder().request(req).build()
-    println("request.isSome = ${resp.request.isSome()}")
+    // 创建关联的请求
+    let req = HttpRequestBuilder()
+        .method("GET")
+        .url("http://example.com/api")
+        .build()
+    
+    // 使用 request() 设置响应对应的请求
+    let resp = HttpResponseBuilder()
+        .status(200)
+        .request(req)
+        .body("OK")
+        .build()
+    
+    println("响应状态码：${resp.status}")
+    match (resp.request) {
+        case Some(r) => println("关联请求方法：${r.method}")
+        case None => println("无关联请求")
+    }
 }
 ```
 
 运行结果：
 
 ```text
-request.isSome = true
+响应状态码：200
+关联请求方法：GET
 ```
 
 ### func setHeaders(HttpHeaders)
@@ -4819,23 +5958,33 @@ public func setHeaders(headers: HttpHeaders): HttpResponseBuilder
 
 示例：
 
-<!-- run -->
+<!-- verify -->
 ```cangjie
 import stdx.net.http.*
 
 main() {
-    let h = HttpHeaders()
-    h.add("x-a", "1")
-    let resp = HttpResponseBuilder().setHeaders(h).build()
-    let v = resp.headers.getFirst("x-a") ?? ""
-    println("x-a = ${v}")
+    // 创建新的 headers 替换原有 headers
+    let newHeaders = HttpHeaders()
+    newHeaders.add("X-New-Header", "new-value")
+    
+    let resp = HttpResponseBuilder()
+        .status(200)
+        .header("X-Old-Header", "old-value")
+        .setHeaders(newHeaders)
+        .body("OK")
+        .build()
+    
+    let headers = resp.headers
+    println("X-New-Header: ${headers.getFirst("X-New-Header")}")
+    println("X-Old-Header: ${headers.getFirst("X-Old-Header")}")
 }
 ```
 
 运行结果：
 
 ```text
-x-a = 1
+X-New-Header: Some(new-value)
+X-Old-Header: None
 ```
 
 ### func setTrailers(HttpHeaders)
@@ -4856,23 +6005,33 @@ public func setTrailers(trailers: HttpHeaders): HttpResponseBuilder
 
 示例：
 
-<!-- run -->
+<!-- verify -->
 ```cangjie
 import stdx.net.http.*
 
 main() {
-    let t = HttpHeaders()
-    t.add("x-t", "1")
-    let resp = HttpResponseBuilder().setTrailers(t).build()
-    let v = resp.trailers.getFirst("x-t") ?? ""
-    println("x-t = ${v}")
+    // 创建新的 trailers 替换原有 trailers
+    let newTrailers = HttpHeaders()
+    newTrailers.add("X-New-Trailer", "new-value")
+    
+    let resp = HttpResponseBuilder()
+        .status(200)
+        .trailer("X-Old-Trailer", "old-value")
+        .setTrailers(newTrailers)
+        .body("OK")
+        .build()
+    
+    let trailers = resp.trailers
+    println("X-New-Trailer: ${trailers.getFirst("X-New-Trailer")}")
+    println("X-Old-Trailer: ${trailers.getFirst("X-Old-Trailer")}")
 }
 ```
 
 运行结果：
 
 ```text
-x-t = 1
+X-New-Trailer: Some(new-value)
+X-Old-Trailer: None
 ```
 
 ### func status(UInt16)
@@ -4897,20 +6056,25 @@ public func status(status: UInt16): HttpResponseBuilder
 
 示例：
 
-<!-- run -->
+<!-- verify -->
 ```cangjie
 import stdx.net.http.*
 
 main() {
-    let resp = HttpResponseBuilder().status(201).build()
-    println("status = ${resp.status}")
+    // 使用 status() 设置状态码
+    let resp = HttpResponseBuilder()
+        .status(404)
+        .body("Not Found")
+        .build()
+    
+    println("响应状态码：${resp.status}")
 }
 ```
 
 运行结果：
 
 ```text
-status = 201
+响应状态码：404
 ```
 
 ### func trailer(String, String)
@@ -4936,21 +6100,30 @@ public func trailer(name: String, value: String): HttpResponseBuilder
 
 示例：
 
-<!-- run -->
+<!-- verify -->
 ```cangjie
 import stdx.net.http.*
 
 main() {
-    let resp = HttpResponseBuilder().trailer("x-t", "1").build()
-    let v = resp.trailers.getFirst("x-t") ?? ""
-    println("x-t = ${v}")
+    // 使用 trailer() 添加单个 trailer
+    let resp = HttpResponseBuilder()
+        .status(200)
+        .trailer("X-Checksum", "md5:abc123")
+        .trailer("X-Timestamp", "1234567890")
+        .body("OK")
+        .build()
+    
+    let trailers = resp.trailers
+    println("X-Checksum: ${trailers.getFirst("X-Checksum")}")
+    println("X-Timestamp: ${trailers.getFirst("X-Timestamp")}")
 }
 ```
 
 运行结果：
 
 ```text
-x-t = 1
+X-Checksum: Some(md5:abc123)
+X-Timestamp: Some(1234567890)
 ```
 
 ### func version(Protocol)
@@ -4971,20 +6144,26 @@ public func version(version: Protocol): HttpResponseBuilder
 
 示例：
 
-<!-- run -->
+<!-- verify -->
 ```cangjie
 import stdx.net.http.*
 
 main() {
-    let resp = HttpResponseBuilder().version(HTTP1_1).build()
-    println("version = ${resp.version.toString()}")
+    // 使用 version() 设置协议版本
+    let resp = HttpResponseBuilder()
+        .status(200)
+        .version(Protocol.HTTP1_1)
+        .body("OK")
+        .build()
+    
+    println("响应协议版本：${resp.version}")
 }
 ```
 
 运行结果：
 
 ```text
-version = HTTP/1.1
+响应协议版本：HTTP/1.1
 ```
 
 ## class HttpResponsePusher
@@ -5021,46 +6200,154 @@ public static func getPusher(ctx: HttpContext): ?HttpResponsePusher
 
 示例：
 
-<!-- run -->
+<!-- verify -->
 ```cangjie
+import std.io.*
+import std.fs.*
+import std.process.*
+import stdx.net.tls.*
+import stdx.crypto.x509.*
+import stdx.crypto.keys.*
+import stdx.net.tls.common.*
 import stdx.net.http.*
-import stdx.log.*
-import std.sync.*
 
-main() {
-    let sc = SyncCounter(1)
-    let logger = NoopLogger()
+main(): Unit {
+    // OpenSSL 官方标准、无风险的测试命令用来本地生成证书和私钥
+    // 生成服务器私钥、证书、证书请求路径
+    let serverKey = "./server.key"
+    let serverCrt = "./server.crt"
+    let serverCsr = "./server.csr"
 
-    let server = ServerBuilder().addr("127.0.0.1").port(18100).logger(logger).afterBind({=> sc.dec()}).build()
+    // 根证书/私钥路径
+    let rootCrt = "./rootCA.crt"
+    let rootKey = "./rootCA.key"
 
-    server.distributor.register(
-        "/p",
-        FuncHandler(
-            {
-                ctx =>
-                    // 当前函数：getPusher(ctx)
-                    let p = HttpResponsePusher.getPusher(ctx)
-                    println("pusher.isSome = ${p.isSome()}")
-                    ctx.responseBuilder.status(200).body("ok")
-            }
-        )
-    )
+    // 客户端私钥、证书、证书请求路径
+    let clientKey = "./client.key"
+    let clientCrt = "./client.crt"
+    let clientCsr = "./client.csr"
 
-    spawn {server.serve()}
-    sc.waitUntilZero()
+    // 生成根CA证书
+    let rootCmd = "openssl req -x509 -newkey rsa:4096 -nodes -keyout ${rootKey} -out ${rootCrt} -days 3650 -subj \"/C=CN/ST=Beijing/L=Beijing/O=MyCA/OU=CA/CN=MyRootCA\""
+    executeWithOutput("sh", ["-c", rootCmd])
 
-    let client = ClientBuilder().build()
-    let resp = client.get("http://127.0.0.1:18100/p")
-    resp.close()
-    client.close()
-    server.closeGracefully()
+    // 生成服务器私钥+证书请求（CSR） 
+    let csrCmd = "openssl req -newkey rsa:2048 -nodes -keyout ${serverKey} -out ${serverCsr} -subj \"/C=CN/ST=Beijing/L=Beijing/O=MyServer/OU=Server/CN=localhost\""
+    executeWithOutput("sh", ["-c", csrCmd])
+
+    // 用根CA签发服务器证书
+    let signCmd = "openssl x509 -req -in ${serverCsr} -CA ${rootCrt} -CAkey ${rootKey} -CAcreateserial -out ${serverCrt} -days 365 -sha256"
+    executeWithOutput("sh", ["-c", signCmd])
+
+    // 生成客户端私钥+证书请求（CSR）
+    let clientCsrCmd = "openssl req -newkey rsa:2048 -nodes -keyout ${clientKey} -out ${clientCsr} -subj \"/C=CN/ST=Beijing/L=Beijing/O=MyClient/OU=Client/CN=MyClient\""
+    executeWithOutput("sh", ["-c", clientCsrCmd])
+
+    // 用根CA签发客户端证书（和服务端同根CA，服务端会信任）
+    let clientSignCmd = "openssl x509 -req -in ${clientCsr} -CA ${rootCrt} -CAkey ${rootKey} -CAcreateserial -out ${clientCrt} -days 365 -sha256"
+    executeWithOutput("sh", ["-c", clientSignCmd])
+
+    // 读取根证书PEM
+    let pem = String.fromUtf8(readToEnd(File(rootCrt, OpenMode.Read)))
+
+    // 启动服务器
+    spawn {
+        =>
+            // 对服务器证书以及私钥进行解析 
+            let pemString = String.fromUtf8(readToEnd(File(serverCrt, OpenMode.Read)))
+            let keyString = String.fromUtf8(readToEnd(File(serverKey, OpenMode.Read)))
+
+            let certificate = X509Certificate.decodeFromPem(pemString)
+            let privateKey = GeneralPrivateKey.decodeFromPem(keyString)
+
+            // 创建 TLS 服务器配置
+            var config = TlsServerConfig(certificate, privateKey)
+            // 一定要设置 ALPN 协议为 h2
+            config.supportedAlpnProtocols = ["h2"]
+            // 开启客户端身份验证，也可以不开启
+            config.clientIdentityRequired = Required
+            // 设置验证模式
+            config.verifyMode = CustomCA(X509Certificate.decodeFromPem(pem).map({c => c}))
+
+            // 构建 Server 实例
+            let server = ServerBuilder().addr("127.0.0.1").tlsConfig(config).port(8080).build()
+            // 注册 HttpRequestHandler
+            server.distributor.register(
+                "/index.html",
+                {
+                    httpContext =>
+                        httpContext.responseBuilder.body("index.html 资源").status(200)
+                        let pusher = HttpResponsePusher.getPusher(httpContext).getOrThrow()
+                        // 推送 index.css 和 index.js
+                        pusher.push("/index.css", "GET", HttpHeaders())
+                        pusher.push("/index.js", "GET", HttpHeaders())
+                }
+            )
+            server.distributor.register(
+                "/index.css",
+                {
+                    httpContext => httpContext.responseBuilder.body("index.css 资源").status(200)
+                }
+            )
+            server.distributor.register(
+                "/index.js",
+                {
+                    httpContext => httpContext.responseBuilder.body("index.js 资源").status(200)
+                }
+            )
+            // 启动服务
+            server.serve()
+    }
+    // 等待服务启动
+    sleep(Duration.second)
+
+    // 客户端配置
+    var config = TlsClientConfig()
+    let clientPem = String.fromUtf8(readToEnd(File(clientCrt, OpenMode.Read)))
+    let clientKeyStr = String.fromUtf8(readToEnd(File(clientKey, OpenMode.Read)))
+    let clientPriKey = GeneralPrivateKey.decodeFromPem(clientKeyStr)
+    // 设置客户端证书和私钥
+    config.certificate = (X509Certificate.decodeFromPem(clientPem).map({c => c}), clientPriKey)
+    // 一定要设置 ALPN 协议为 h2
+    config.supportedAlpnProtocols = ["h2"]
+    // 设置验证模式
+    config.verifyMode = CustomCA(X509Certificate.decodeFromPem(pem).map({c => c}))
+
+    // 创建 Client
+    let client = ClientBuilder().tlsConfig(config).build()
+    // 发送GET请求
+    let resp = client.get("https://127.0.0.1:8080/index.html")
+    // 读取响应体
+    let bodyBuf = Array<UInt8>(1024, repeat: 0)
+    let bytesRead = resp.body.read(bodyBuf)
+    println("主请求获得: ${String.fromUtf8(bodyBuf[..bytesRead])}")
+
+    // 处理推送请求
+    let pushResponses = resp.getPush().getOrThrow()
+    // 遍历推送请求
+    for (pushResponse in pushResponses) {
+        let bodyBuf = Array<UInt8>(1024, repeat: 0)
+        let bytesRead = pushResponse.body.read(bodyBuf)
+        println("推送请求获得: ${String.fromUtf8(bodyBuf[..bytesRead])}")
+    }
+    // 清理生成的文件
+    removeIfExists(serverKey)
+    removeIfExists(serverCrt)
+    removeIfExists(serverCsr)
+    removeIfExists(rootCrt)
+    removeIfExists(rootKey)
+    removeIfExists(clientKey)
+    removeIfExists(clientCrt)
+    removeIfExists(clientCsr)
 }
 ```
 
 运行结果：
 
 ```text
-pusher.isSome = false
+主请求获得: index.html 资源
+推送请求获得: index.css 资源
+推送请求获得: index.js 资源
 ```
 
 ### func push(String, String, HttpHeaders)
@@ -5078,59 +6365,8 @@ public func push(path: String, method: String, header: HttpHeaders): Unit
 - header: [HttpHeaders](#class-httpheaders) - 推送的请求头。
 
 示例：
-
-<!-- run -->
-```cangjie
-import stdx.net.http.*
-import stdx.log.*
-import std.sync.*
-
-main() {
-    let sc = SyncCounter(1)
-    let logger = NoopLogger()
-
-    let server = ServerBuilder().addr("127.0.0.1").port(18101).logger(logger).afterBind({=> sc.dec()}).build()
-
-    server.distributor.register(
-        "/p",
-        FuncHandler(
-            {
-                ctx =>
-                    // 当前函数：push(path, method, header)
-                    let p = HttpResponsePusher.getPusher(ctx)
-                    match (p) {
-                        case Some(v) =>
-                            v.push("/asset", "GET", HttpHeaders())
-                            println("push called")
-                        case None =>
-                            // HTTP/1.1 下无法获取 pusher，这里演示如何安全跳过 push
-                            println("push skipped (no pusher)")
-                    }
-                    ctx.responseBuilder.status(200).body("ok")
-            }
-        )
-    )
-
-    server.distributor.register("/asset", FuncHandler({
-        ctx => ctx.responseBuilder.status(200).body("asset")
-    }))
-
-    spawn {server.serve()}
-    sc.waitUntilZero()
-
-    let client = ClientBuilder().build()
-    let resp = client.get("http://127.0.0.1:18101/p")
-    resp.close()
-    client.close()
-    server.closeGracefully()
-}
-```
-
-运行结果：
-
-```text
-push skipped (no pusher)
-```
+<!-- associated_example -->
+参见 [static func getPusher](#static-func-getpusherhttpcontext) 示例。
 
 ## class HttpResponseWriter
 
@@ -5162,63 +6398,138 @@ public HttpResponseWriter(let ctx: HttpContext)
 
 示例：
 
-<!-- run -->
+<!-- verify -->
 ```cangjie
+import std.io.*
+import std.fs.*
+import std.process.*
+import stdx.net.tls.*
+import stdx.crypto.x509.*
+import stdx.crypto.keys.*
+import stdx.net.tls.common.*
 import stdx.net.http.*
-import stdx.log.*
-import std.sync.*
 
-main() {
-    let sc = SyncCounter(1)
-    let logger = NoopLogger()
+main(): Unit {
+    // OpenSSL 官方标准、无风险的测试命令用来本地生成证书和私钥
+    // 生成服务器私钥、证书、证书请求路径
+    let serverKey = "./server.key"
+    let serverCrt = "./server.crt"
+    let serverCsr = "./server.csr"
 
-    let server = ServerBuilder().addr("127.0.0.1").port(18102).logger(logger).afterBind({=> sc.dec()}).build()
+    // 根证书/私钥路径
+    let rootCrt = "./rootCA.crt"
+    let rootKey = "./rootCA.key"
 
-    server.distributor.register(
-        "/w",
-        FuncHandler(
-            {
-                ctx =>
-                    ctx.responseBuilder.status(200).header("transfer-encoding", "chunked")
+    // 客户端私钥、证书、证书请求路径
+    let clientKey = "./client.key"
+    let clientCrt = "./client.crt"
+    let clientCsr = "./client.csr"
 
-                    // 构造 writer 后，通过 write 控制 body 的发送过程
-                    let w = HttpResponseWriter(ctx)
-                    w.write("hi".toArray())
-                    w.write("!".toArray())
-            }
-        )
-    )
+    // 生成根CA证书
+    let rootCmd = "openssl req -x509 -newkey rsa:4096 -nodes -keyout ${rootKey} -out ${rootCrt} -days 3650 -subj \"/C=CN/ST=Beijing/L=Beijing/O=MyCA/OU=CA/CN=MyRootCA\""
+    executeWithOutput("sh", ["-c", rootCmd])
 
-    spawn {server.serve()}
-    sc.waitUntilZero()
+    // 生成服务器私钥+证书请求（CSR） 
+    let csrCmd = "openssl req -newkey rsa:2048 -nodes -keyout ${serverKey} -out ${serverCsr} -subj \"/C=CN/ST=Beijing/L=Beijing/O=MyServer/OU=Server/CN=localhost\""
+    executeWithOutput("sh", ["-c", csrCmd])
 
-    let client = ClientBuilder().build()
-    let resp = client.get("http://127.0.0.1:18102/w")
+    // 用根CA签发服务器证书
+    let signCmd = "openssl x509 -req -in ${serverCsr} -CA ${rootCrt} -CAkey ${rootKey} -CAcreateserial -out ${serverCrt} -days 365 -sha256"
+    executeWithOutput("sh", ["-c", signCmd])
 
-    var buf = Array<UInt8>(64, repeat: 0)
-    var body = ""
-    while (true) {
-        let n = resp.body.read(buf)
-        if (n <= 0) {
-            break
-        }
-        body = body + String.fromUtf8(buf[..n])
+    // 生成客户端私钥+证书请求（CSR）
+    let clientCsrCmd = "openssl req -newkey rsa:2048 -nodes -keyout ${clientKey} -out ${clientCsr} -subj \"/C=CN/ST=Beijing/L=Beijing/O=MyClient/OU=Client/CN=MyClient\""
+    executeWithOutput("sh", ["-c", clientCsrCmd])
+
+    // 用根CA签发客户端证书（和服务端同根CA，服务端会信任）
+    let clientSignCmd = "openssl x509 -req -in ${clientCsr} -CA ${rootCrt} -CAkey ${rootKey} -CAcreateserial -out ${clientCrt} -days 365 -sha256"
+    executeWithOutput("sh", ["-c", clientSignCmd])
+
+    // 读取根证书PEM
+    let pem = String.fromUtf8(readToEnd(File(rootCrt, OpenMode.Read)))
+
+    // 启动服务器
+    spawn {
+        =>
+            // 对服务器证书以及私钥进行解析 
+            let pemString = String.fromUtf8(readToEnd(File(serverCrt, OpenMode.Read)))
+            let keyString = String.fromUtf8(readToEnd(File(serverKey, OpenMode.Read)))
+
+            let certificate = X509Certificate.decodeFromPem(pemString)
+            let privateKey = GeneralPrivateKey.decodeFromPem(keyString)
+
+            // 创建 TLS 服务器配置
+            var config = TlsServerConfig(certificate, privateKey)
+            // 一定要设置 ALPN 协议为 h2，否则要有 Content-Length 或 transfer-encoding: chunked 头
+            config.supportedAlpnProtocols = ["h2"]
+            // 开启客户端身份验证，也可以不开启
+            config.clientIdentityRequired = Required
+            // 设置验证模式
+            config.verifyMode = CustomCA(X509Certificate.decodeFromPem(pem).map({c => c}))
+
+            // 构建 Server 实例
+            let server = ServerBuilder().addr("127.0.0.1").tlsConfig(config).port(8080).build()
+            // 注册 HttpRequestHandler
+            server.distributor.register(
+                "/index",
+                {
+                    httpContext =>
+                        let writer = HttpResponseWriter(httpContext)
+                        // 第一次写入
+                        writer.write("Hello, World!".toArray())
+                        // 第二次写入
+                        writer.write("Cangjie!".toArray())
+                }
+            )
+            // 启动服务
+            server.serve()
     }
-    resp.close()
+    // 等待服务启动
+    sleep(Duration.second)
 
-    println("status = ${resp.status}")
-    println("body = ${body}")
+    // 客户端配置
+    var config = TlsClientConfig()
+    let clientPem = String.fromUtf8(readToEnd(File(clientCrt, OpenMode.Read)))
+    let clientKeyStr = String.fromUtf8(readToEnd(File(clientKey, OpenMode.Read)))
+    let clientPriKey = GeneralPrivateKey.decodeFromPem(clientKeyStr)
+    // 设置客户端证书和私钥
+    config.certificate = (X509Certificate.decodeFromPem(clientPem).map({c => c}), clientPriKey)
+    // 一定要设置 ALPN 协议为 h2，否则服务器响应要有 Content-Length 或 transfer-encoding: chunked 头
+    config.supportedAlpnProtocols = ["h2"]
+    // 设置验证模式
+    config.verifyMode = CustomCA(X509Certificate.decodeFromPem(pem).map({c => c}))
 
-    client.close()
-    server.closeGracefully()
+    // 创建 Client
+    let client = ClientBuilder().tlsConfig(config).build()
+    // 发送GET请求
+    let resp = client.get("https://127.0.0.1:8080/index")
+
+    // 读取响应体
+    let bodyBuf = Array<UInt8>(1024, repeat: 0)
+    let bytesRead = resp.body.read(bodyBuf)
+    println("第一次获得: ${String.fromUtf8(bodyBuf[..bytesRead])}")
+
+    // 读取响应体
+    let bodyBuf1 = Array<UInt8>(1024, repeat: 0)
+    let bytesRead1 = resp.body.read(bodyBuf1)
+    println("第二次获得: ${String.fromUtf8(bodyBuf1[..bytesRead1])}")
+    // 清理生成的文件
+    removeIfExists(serverKey)
+    removeIfExists(serverCrt)
+    removeIfExists(serverCsr)
+    removeIfExists(rootCrt)
+    removeIfExists(rootKey)
+    removeIfExists(clientKey)
+    removeIfExists(clientCrt)
+    removeIfExists(clientCsr)
 }
 ```
 
 运行结果：
 
 ```text
-status = 200
-body = hi!
+第一次获得: Hello, World!
+第二次获得: Cangjie!
 ```
 
 ### func write(Array\<Byte>)
@@ -5227,7 +6538,7 @@ body = hi!
 public func write(buf: Array<Byte>): Unit
 ```
 
-功能：发送 buf 中数据到客户端。
+功能：发送数据到客户端。
 
 参数：
 
@@ -5241,65 +6552,8 @@ public func write(buf: Array<Byte>): Unit
 - [HttpException](http_package_exceptions.md#class-httpexception) - 响应连接已升级为 [WebSocket](http_package_classes.md#class-websocket)。
 
 示例：
-
-<!-- run -->
-```cangjie
-import stdx.net.http.*
-import stdx.log.*
-import std.sync.*
-
-main() {
-    let sc = SyncCounter(1)
-    let logger = NoopLogger()
-
-    let server = ServerBuilder().addr("127.0.0.1").port(18102).logger(logger).afterBind({=> sc.dec()}).build()
-
-    server.distributor.register(
-        "/w",
-        FuncHandler(
-            {
-                ctx =>
-                    ctx.responseBuilder.status(200).header("transfer-encoding", "chunked")
-
-                    // 当前函数：write(buf)
-                    let w = HttpResponseWriter(ctx)
-                    w.write("hi".toArray())
-                    w.write("!".toArray())
-            }
-        )
-    )
-
-    spawn {server.serve()}
-    sc.waitUntilZero()
-
-    let client = ClientBuilder().build()
-    let resp = client.get("http://127.0.0.1:18102/w")
-
-    var buf = Array<UInt8>(64, repeat: 0)
-    var body = ""
-    while (true) {
-        let n = resp.body.read(buf)
-        if (n <= 0) {
-            break
-        }
-        body = body + String.fromUtf8(buf[..n])
-    }
-    resp.close()
-
-    println("status = ${resp.status}")
-    println("body = ${body}")
-
-    client.close()
-    server.closeGracefully()
-}
-```
-
-运行结果：
-
-```text
-status = 200
-body = hi!
-```
+<!-- associated_example -->
+参见 [HttpResponseWriter](#httpresponsewriterhttpcontext) 示例。
 
 ## class NotFoundHandler
 
@@ -5327,49 +6581,50 @@ public func handle(ctx: HttpContext): Unit
 
 示例：
 
-<!-- run -->
+<!-- verify -->
 ```cangjie
 import stdx.net.http.*
-import stdx.log.*
-import std.sync.*
 
 main() {
-    let sc = SyncCounter(1)
-    let logger = NoopLogger()
-
-    let server = ServerBuilder().addr("127.0.0.1").port(18103).logger(logger).afterBind({=> sc.dec()}).build()
-
-    // 当前函数：NotFoundHandler.handle(ctx)
-    server.distributor.register("/nf", NotFoundHandler())
-
-    spawn {server.serve()}
-    sc.waitUntilZero()
-
-    let client = ClientBuilder().build()
-    let resp = client.get("http://127.0.0.1:18103/nf")
-
-    var buf = Array<UInt8>(64, repeat: 0)
-    let n = resp.body.read(buf)
-    let body = if (n > 0) {
-        String.fromUtf8(buf[..n])
-    } else {
-        ""
+    // 启动服务器
+    spawn {
+        =>
+            // 构建 Server 实例
+            let server = ServerBuilder().addr("127.0.0.1").port(8080).build()
+            // 注册 HttpRequestHandler，也可以直接 register("/index", NotFoundHandler())
+            server.distributor.register(
+                "/index",
+                {
+                    httpContext =>
+                        let notFoundHandler = NotFoundHandler()
+                        notFoundHandler.handle(httpContext)
+                }
+            )
+            // 启动服务
+            server.serve()
     }
-    resp.close()
+    // 等待服务启动
+    sleep(Duration.second)
 
-    println("status = ${resp.status}")
-    println("body = ${body}")
+    // 创建 Client
+    let client = ClientBuilder().build()
+    // 发送GET请求
+    let resp = client.get("http://127.0.0.1:8080/index")
 
+    // 读取响应体
+    let bodyBuf = Array<UInt8>(1000, repeat: 0)
+    let bytesRead = resp.body.read(bodyBuf)
+    println("状态码: ${resp.status}")
+    println("响应体: ${String.fromUtf8(bodyBuf[..bytesRead])}")
     client.close()
-    server.closeGracefully()
 }
 ```
 
 运行结果：
 
 ```text
-status = 404
-body = 404 Not Found
+状态码: 404
+响应体: 404 Not Found
 ```
 
 ## class OptionsHandler
@@ -5398,42 +6653,52 @@ public func handle(ctx: HttpContext): Unit
 
 示例：
 
-<!-- run -->
+<!-- verify -->
 ```cangjie
 import stdx.net.http.*
-import stdx.log.*
-import std.sync.*
 
 main() {
-    let sc = SyncCounter(1)
-    let logger = NoopLogger()
+    // 启动服务器
+    spawn {
+        =>
+            // 构建 Server 实例
+            let server = ServerBuilder().addr("127.0.0.1").port(8080).build()
+            // 注册 HttpRequestHandler，也可以直接 register("/index", OptionsHandler())
+            server.distributor.register(
+                "/index",
+                {
+                    httpContext =>
+                        let optionsHandler = OptionsHandler()
+                        optionsHandler.handle(httpContext)
+                }
+            )
+            // 启动服务
+            server.serve()
+    }
+    // 等待服务启动
+    sleep(Duration.second)
 
-    let server = ServerBuilder().addr("127.0.0.1").port(18104).logger(logger).afterBind({=> sc.dec()}).build()
-
-    // 当前函数：OptionsHandler.handle(ctx)
-    server.distributor.register("/opt", OptionsHandler())
-
-    spawn {server.serve()}
-    sc.waitUntilZero()
-
+    // 创建 Client
     let client = ClientBuilder().build()
-    let req = HttpRequestBuilder().url("http://127.0.0.1:18104/opt").method("OPTIONS").build()
-    let resp = client.send(req)
+    // 发送GET请求
+    let resp = client.get("http://127.0.0.1:8080/index")
 
-    println("status = ${resp.status}")
-    println("allow = ${resp.headers.getFirst("allow") ?? ""}")
-
-    resp.close()
+    // 读取响应体
+    let bodyBuf = Array<UInt8>(1000, repeat: 0)
+    let bytesRead = resp.body.read(bodyBuf)
+    println("状态码: ${resp.status}")
+    println("响应体: ${String.fromUtf8(bodyBuf[..bytesRead])}")
+    println("响应头: ${resp.headers.getFirst("allow") ?? ""}")
     client.close()
-    server.closeGracefully()
 }
 ```
 
 运行结果：
 
 ```text
-status = 200
-allow = OPTIONS, GET, HEAD, POST, PUT, DELETE
+状态码: 200
+响应体: 
+响应头: OPTIONS, GET, HEAD, POST, PUT, DELETE
 ```
 
 ## class ProtocolService
@@ -5452,7 +6717,13 @@ protected prop distributor: HttpRequestDistributor
 
 功能：获取请求分发器，请求分发器会根据 url 将请求分发给对应的 handler。
 
+
+
 类型：[HttpRequestDistributor](http_package_interfaces.md#interface-httprequestdistributor)
+
+示例：
+<!-- associated_example -->
+参见 [func serve](#func-serve) 示例。
 
 ### prop httpKeepAliveTimeout
 
@@ -5464,6 +6735,10 @@ protected prop httpKeepAliveTimeout: Duration
 
 类型：Duration
 
+示例：
+<!-- associated_example -->
+参见 [func serve](#func-serve) 示例。
+
 ### prop logger
 
 ```cangjie
@@ -5473,6 +6748,10 @@ protected prop logger: Logger
 功能：获取服务器日志记录器，设置 logger.level 将立即生效，记录器应该是线程安全的。
 
 类型：[Logger](../../../log/log_package_api/log_package_classes.md#class-logger)
+
+示例：
+<!-- associated_example -->
+参见 [func serve](#func-serve) 示例。
 
 ### prop maxRequestBodySize
 
@@ -5484,6 +6763,10 @@ protected prop maxRequestBodySize: Int64
 
 类型：Int64
 
+示例：
+<!-- associated_example -->
+参见 [func serve](#func-serve) 示例。
+
 ### prop maxRequestHeaderSize
 
 ```cangjie
@@ -5493,6 +6776,10 @@ protected prop maxRequestHeaderSize: Int64
 功能：获取服务器设定的读取请求的请求头最大值。仅对 HTTP/1.1 生效，HTTP/2 中有专门的配置 maxHeaderListSize。
 
 类型：Int64
+
+示例：
+<!-- associated_example -->
+参见 [func serve](#func-serve) 示例。
 
 ### prop readHeaderTimeout
 
@@ -5504,6 +6791,10 @@ protected prop readHeaderTimeout: Duration
 
 类型：Duration
 
+示例：
+<!-- associated_example -->
+参见 [func serve](#func-serve) 示例。
+
 ### prop readTimeout
 
 ```cangjie
@@ -5513,6 +6804,10 @@ protected prop readTimeout: Duration
 功能：获取服务器设定的读取整个请求的超时时间。
 
 类型：Duration
+
+示例：
+<!-- associated_example -->
+参见 [func serve](#func-serve) 示例。
 
 ### prop server
 
@@ -5524,6 +6819,10 @@ protected open mut prop server: Server
 
 类型：Server
 
+示例：
+<!-- associated_example -->
+参见 [func serve](#func-serve) 示例。
+
 ### prop writeTimeout
 
 ```cangjie
@@ -5534,6 +6833,10 @@ protected prop writeTimeout: Duration
 
 类型：Duration
 
+示例：
+<!-- associated_example -->
+参见 [func serve](#func-serve) 示例。
+
 ### func close()
 
 ```cangjie
@@ -5543,78 +6846,8 @@ protected open func close(): Unit
 功能：强制关闭连接，提供默认实现，无任何行为。
 
 示例：
-
-<!-- run -->
-```cangjie
-import stdx.net.http.*
-import stdx.log.*
-import std.net.*
-import std.sync.*
-
-class MyFactory <: ProtocolServiceFactory {
-    public func create(p: Protocol, s: StreamingSocket): ProtocolService {
-        // 固定响应（避免依赖内部协议解析）
-        let _ = p
-        s.write("HTTP/1.1 200 OK\r\ncontent-length: 2\r\nconnection: close\r\n\r\nOK".toArray())
-        return MyService()
-    }
-}
-
-class MyService <: ProtocolService {
-    let running = AtomicBool(true)
-
-    protected func serve(): Unit {
-        while (running.load()) {
-            sleep(Duration.millisecond * 10)
-        }
-    }
-
-    protected override func close(): Unit {
-        running.store(false)
-        println("close called")
-    }
-
-    protected override func closeGracefully(): Unit {
-        running.store(false)
-        println("closeGracefully called")
-    }
-}
-
-main() {
-    let sc = SyncCounter(1)
-
-    let server = ServerBuilder()
-        .addr("127.0.0.1")
-        .port(18119)
-        .logger(NoopLogger())
-        .enableConnectProtocol(true)
-        .maxRequestHeaderSize(123)
-        .maxRequestBodySize(456)
-        .readTimeout(Duration.second)
-        .writeTimeout(Duration.second)
-        .readHeaderTimeout(Duration.second)
-        .httpKeepAliveTimeout(Duration.second)
-        .protocolServiceFactory(MyFactory())
-        .afterBind({=> sc.dec()})
-        .build()
-
-    spawn {=> server.serve()}
-    sc.waitUntilZero()
-
-    let client = ClientBuilder().build()
-    let rsp = client.get("http://127.0.0.1:18119/")
-    rsp.close()
-    client.close()
-
-    server.close()
-}
-```
-
-运行结果：
-
-```text
-close called
-```
+<!-- associated_example -->
+参见 [func serve](#func-serve) 示例。
 
 ### func closeGracefully()
 
@@ -5625,78 +6858,8 @@ protected open func closeGracefully(): Unit
 功能：优雅关闭连接，提供默认实现，无任何行为。
 
 示例：
-
-<!-- run -->
-```cangjie
-import stdx.net.http.*
-import stdx.log.*
-import std.net.*
-import std.sync.*
-
-class MyFactory <: ProtocolServiceFactory {
-    public func create(p: Protocol, s: StreamingSocket): ProtocolService {
-        // 固定响应（避免依赖内部协议解析）
-        let _ = p
-        s.write("HTTP/1.1 200 OK\r\ncontent-length: 2\r\nconnection: close\r\n\r\nOK".toArray())
-        return MyService()
-    }
-}
-
-class MyService <: ProtocolService {
-    let running = AtomicBool(true)
-
-    protected func serve(): Unit {
-        while (running.load()) {
-            sleep(Duration.millisecond * 10)
-        }
-    }
-
-    protected override func close(): Unit {
-        running.store(false)
-        println("close called")
-    }
-
-    protected override func closeGracefully(): Unit {
-        running.store(false)
-        println("closeGracefully called")
-    }
-}
-
-main() {
-    let sc = SyncCounter(1)
-
-    let server = ServerBuilder()
-        .addr("127.0.0.1")
-        .port(18120)
-        .logger(NoopLogger())
-        .enableConnectProtocol(true)
-        .maxRequestHeaderSize(123)
-        .maxRequestBodySize(456)
-        .readTimeout(Duration.second)
-        .writeTimeout(Duration.second)
-        .readHeaderTimeout(Duration.second)
-        .httpKeepAliveTimeout(Duration.second)
-        .protocolServiceFactory(MyFactory())
-        .afterBind({=> sc.dec()})
-        .build()
-
-    spawn {=> server.serve()}
-    sc.waitUntilZero()
-
-    let client = ClientBuilder().build()
-    let rsp = client.get("http://127.0.0.1:18120/")
-    rsp.close()
-    client.close()
-
-    server.closeGracefully()
-}
-```
-
-运行结果：
-
-```text
-closeGracefully called
-```
+<!-- associated_example -->
+参见 [func serve](#func-serve) 示例。
 
 ### func serve()
 
@@ -5708,65 +6871,98 @@ protected func serve(): Unit
 
 示例：
 
-<!-- run -->
+<!-- verify -->
 ```cangjie
 import stdx.net.http.*
-import stdx.log.*
 import std.net.*
-import std.sync.*
 
-class MyFactory <: ProtocolServiceFactory {
-    public func create(p: Protocol, s: StreamingSocket): ProtocolService {
-        // 固定响应（避免依赖内部协议解析）
-        let _ = p
-        s.write("HTTP/1.1 200 OK\r\ncontent-length: 2\r\nconnection: close\r\n\r\nOK".toArray())
-        return MyService()
+class MyProtocolServiceFactory <: ProtocolServiceFactory {
+    // 此处获得协议类型，socket连接，可以根据需要创建不同的ProtocolService
+    public func create(protocol: Protocol, socket: StreamingSocket): ProtocolService {
+        println("协议: ${protocol}")
+        return MyProtocolService(socket)
     }
 }
 
-class MyService <: ProtocolService {
-    let running = AtomicBool(true)
-
-    protected func serve(): Unit {
-        println("serve called")
-        sleep(Duration.millisecond * 10)
+// 自定义ProtocolService，满足自定义/个性化需求
+class MyProtocolService <: ProtocolService {
+    let socket: StreamingSocket
+    init(socket: StreamingSocket) {
+        this.socket = socket
+    }
+    protected func serve() {
+        // 注意：自定义ProtocolService的分发器无法使用
+        let _ = this.distributor
+        println("保持长连接的超时时间: ${this.httpKeepAliveTimeout}")
+        println("日志等级: ${this.logger.level}")
+        println("最大请求体大小: ${this.maxRequestBodySize}")
+        println("最大请求头大小: ${this.maxRequestHeaderSize}")
+        println("读取请求头超时时间: ${this.readHeaderTimeout}")
+        println("读取整个请求的超时时间: ${this.readTimeout}")
+        println("服务器地址: ${this.server.addr}")
+        println("写入超时时间: ${this.writeTimeout}")
+        // 无任何实现，可自定义
+        this.close()
+        // 无任何实现，可自定义
+        this.closeGracefully()
+        // 写入响应
+        socket.write("HTTP/1.1 200 ok\r\ncontent-length: 23\r\n\r\nHello MyProtocolService".toArray())
+        this.socket.close()
     }
 }
 
 main() {
-    let sc = SyncCounter(1)
+    // 启动服务器
+    spawn {
+        =>
+            // 构建 Server 实例
+            let server = ServerBuilder()
+                .addr("127.0.0.1")
+                .port(8080)
+                .protocolServiceFactory(MyProtocolServiceFactory())
+                .maxRequestBodySize(1024)
+                .maxRequestHeaderSize(1024)
+                .readHeaderTimeout(Duration.second * 10)
+                .httpKeepAliveTimeout(Duration.second * 10)
+                .readTimeout(Duration.second * 10)
+                .writeTimeout(Duration.second * 10)
+                .build()
+            // 注册的 HttpRequestHandler 已无法使用
+            server.distributor.register("/index", OptionsHandler())
+            // 启动服务
+            server.serve()
+    }
+    // 等待服务启动
+    sleep(Duration.second)
 
-    let server = ServerBuilder()
-        .addr("127.0.0.1")
-        .port(18121)
-        .logger(NoopLogger())
-        .enableConnectProtocol(true)
-        .maxRequestHeaderSize(123)
-        .maxRequestBodySize(456)
-        .readTimeout(Duration.second)
-        .writeTimeout(Duration.second)
-        .readHeaderTimeout(Duration.second)
-        .httpKeepAliveTimeout(Duration.second)
-        .protocolServiceFactory(MyFactory())
-        .afterBind({=> sc.dec()})
-        .build()
-
-    spawn {=> server.serve()}
-    sc.waitUntilZero()
-
+    // 创建 Client
     let client = ClientBuilder().build()
-    let rsp = client.get("http://127.0.0.1:18121/")
-    rsp.close()
-    client.close()
+    // 发送GET请求
+    let resp = client.get("http://127.0.0.1:8080/index")
 
-    server.closeGracefully()
+    // 读取响应体
+    let bodyBuf = Array<UInt8>(1000, repeat: 0)
+    let bytesRead = resp.body.read(bodyBuf)
+    println("状态码: ${resp.status}")
+    println("响应体: ${String.fromUtf8(bodyBuf[..bytesRead])}")
+    client.close()
 }
 ```
 
 运行结果：
 
 ```text
-serve called
+协议: HTTP/1.1
+保持长连接的超时时间: 10s
+日志等级: INFO
+最大请求体大小: 1024
+最大请求头大小: 1024
+读取请求头超时时间: 10s
+读取整个请求的超时时间: 10s
+服务器地址: 127.0.0.1
+写入超时时间: 10s
+状态码: 200
+响应体: Hello MyProtocolService
 ```
 
 ## class RedirectHandler
@@ -5801,17 +6997,8 @@ public init(url: String, code: UInt16)
 - [HttpException](http_package_exceptions.md#class-httpexception) - url 为空或响应码不是除 304 以外的 3XX 状态码时抛出异常。
 
 示例：
-
-<!-- run -->
-```cangjie
-import stdx.net.http.*
-import stdx.log.*
-import std.sync.*
-
-main() {
-    let _ = RedirectHandler("/to", 302)
-}
-```
+<!-- associated_example -->
+参见 [func handle](#func-handlehttpcontext-4) 示例。
 
 ### func handle(HttpContext)
 
@@ -5827,52 +7014,54 @@ public func handle(ctx: HttpContext): Unit
 
 示例：
 
-<!-- run -->
+<!-- verify -->
 ```cangjie
 import stdx.net.http.*
-import stdx.log.*
-import std.sync.*
 
 main() {
-    let sc = SyncCounter(1)
-    let logger = NoopLogger()
-
-    let server = ServerBuilder().addr("127.0.0.1").port(18105).logger(logger).afterBind({=> sc.dec()}).build()
-
-    // 当前函数：RedirectHandler.handle(ctx)
-    server.distributor.register("/from", RedirectHandler("/to", 302))
-
-    spawn {server.serve()}
-    sc.waitUntilZero()
-
-    // 关闭自动重定向，以便直接读取 302 与 Location
-    let client = ClientBuilder().autoRedirect(false).build()
-    let resp = client.get("http://127.0.0.1:18105/from")
-
-    var buf = Array<UInt8>(128, repeat: 0)
-    let n = resp.body.read(buf)
-    let body = if (n > 0) {
-        String.fromUtf8(buf[..n])
-    } else {
-        ""
+    // 启动服务器
+    spawn {
+        =>
+            // 构建 Server 实例
+            let server = ServerBuilder().addr("127.0.0.1").port(8080).build()
+            // 注册 HttpRequestHandler，也可以直接 register("/index", RedirectHandler("/to", 302))
+            server.distributor.register(
+                "/index",
+                {
+                    httpContext =>
+                        let redirectHandler = RedirectHandler("/toOptions", 302)
+                        redirectHandler.handle(httpContext)
+                }
+            )
+            server.distributor.register("/toOptions", OptionsHandler())
+            server.distributor.register("/toNotFound", NotFoundHandler())
+            // 启动服务
+            server.serve()
     }
+    // 等待服务启动
+    sleep(Duration.second)
 
-    println("status = ${resp.status}")
-    println("location = ${resp.headers.getFirst("location") ?? ""}")
-    println("body = ${body}")
+    // 创建 Client
+    let client = ClientBuilder().build()
+    // 发送GET请求
+    let resp = client.get("http://127.0.0.1:8080/index")
 
-    resp.close()
+    // 读取响应体
+    let bodyBuf = Array<UInt8>(1000, repeat: 0)
+    let bytesRead = resp.body.read(bodyBuf)
+    println("状态码: ${resp.status}")
+    println("响应体: ${String.fromUtf8(bodyBuf[..bytesRead])}")
+    println("响应头: ${resp.headers.getFirst("allow") ?? ""}")
     client.close()
-    server.closeGracefully()
 }
 ```
 
 运行结果：
 
 ```text
-status = 302
-location = /to
-body = <a href="/to">Found</a>
+状态码: 200
+响应体: 
+响应头: OPTIONS, GET, HEAD, POST, PUT, DELETE
 ```
 
 ## class Server
@@ -6096,7 +7285,7 @@ public prop writeTimeout: Duration
 ### func afterBind(() -> Unit)
 
 ```cangjie
-public func afterBind(f: ()-> Unit): Unit
+public func afterBind(f: () -> Unit): Unit
 ```
 
 功能：注册服务器启动时的回调函数，服务内部 ServerSocket 实例 bind 之后，accept 之前将调用该函数。重复调用将覆盖之前注册的函数。
@@ -6104,109 +7293,6 @@ public func afterBind(f: ()-> Unit): Unit
 参数：
 
 - f: () -> Unit - 回调函数，入参为空，返回值为 Unit 类型。
-
-示例：
-
-<!-- run -->
-```cangjie
-import stdx.net.http.*
-import stdx.log.*
-import std.sync.*
-import stdx.crypto.keys.RSAPrivateKey
-
-// 用于稳定获取响应 body（避免依赖 readToEnd/readAll 等 API）
-func readAllBytes(resp: HttpResponse): String {
-    let buf = Array<UInt8>(1024, repeat: 0)
-    var body = ""
-    while (true) {
-        let n = resp.body.read(buf)
-        if (n <= 0) {
-            break
-        }
-        body += String.fromUtf8(buf[..n])
-    }
-    return body
-}
-
-main() {
-    let sc = SyncCounter(1)
-
-    let server = ServerBuilder().addr("127.0.0.1").port(18126).logger(NoopLogger()).build()
-
-    // func afterBind(): 注册 bind 后回调（此处用它做“就绪信号”）
-    server.afterBind(
-        {
-            =>
-                println("afterBind set by Server.afterBind")
-                sc.dec()
-        }
-    )
-
-    // 注册一个最简 handler，便于 serve() 可测
-    server.distributor.register("/ping", {
-        httpContext => httpContext.responseBuilder.body("pong")
-    })
-
-    spawn {server.serve()}
-    sc.waitUntilZero()
-
-    // func serve(): 发起一次请求，证明服务正常
-    let client = ClientBuilder().noProxy().build()
-    let resp = client.get("http://127.0.0.1:18126/ping")
-    let body = readAllBytes(resp)
-    println("status = ${resp.status}")
-    println("body = ${body}")
-    resp.close()
-
-    // func getTlsConfig(): 未设置 TLS，返回 None
-    println("tlsConfig.isSome = ${server.getTlsConfig().isSome()}")
-
-    // func onShutdown(): close/closeGracefully 时回调
-    server.onShutdown({=> println("onShutdown set by Server.onShutdown")})
-
-    client.close()
-
-    // func closeGracefully(): 触发回调并关闭
-    server.closeGracefully()
-
-    // func updateCA / updateCert(): 未配置 TLS，调用会抛 HttpException
-    try {
-        server.updateCA([])
-    } catch (e: HttpException) {
-        println("updateCA(Array) HttpException: ${e.message}")
-    }
-    try {
-        server.updateCA("/tmp/not-exist.pem")
-    } catch (e: HttpException) {
-        println("updateCA(String) HttpException: ${e.message}")
-    }
-    // 不引入证书/私钥文件依赖：仅展示未配置 TLS 时的异常行为
-    try {
-        server.updateCert([], RSAPrivateKey(1024))
-    } catch (e: HttpException) {
-        println("updateCert(Array,Key) HttpException: ${e.message}")
-    }
-    try {
-        server.updateCert("/tmp/a.pem", "/tmp/b.pem")
-    } catch (e: HttpException) {
-        println("updateCert(String,String) HttpException: ${e.message}")
-    }
-}
-```
-
-运行结果：
-
-```text
-afterBind set by Server.afterBind
-status = 200
-body = pong
-tlsConfig.isSome = false
-onShutdown set by Server.onShutdown
-updateCA(Array) HttpException: The TLS certificate is not configured.
-updateCA(String) HttpException: The TLS certificate is not configured.
-updateCert(Array,Key) HttpException: The TLS certificate is not configured.
-updateCert(String,String) HttpException: The TLS certificate is not configured.
-```
 
 ### func close()
 
@@ -6216,32 +7302,6 @@ public func close(): Unit
 
 功能：关闭服务器，服务器关闭后将不再对请求进行读取与处理，重复关闭将只有第一次生效（包括 close 和 closeGracefully）。
 
-示例：
-
-<!-- run -->
-```cangjie
-import stdx.net.http.*
-import stdx.log.*
-
-main() {
-    let server = ServerBuilder().addr("127.0.0.1").port(18127).logger(NoopLogger()).build()
-
-    // func close(): 关闭服务（可重复调用）
-    server.close()
-    println("closed once")
-
-    server.close()
-    println("closed twice")
-}
-```
-
-运行结果：
-
-```text
-closed once
-closed twice
-```
-
 ### func closeGracefully()
 
 ```cangjie
@@ -6249,109 +7309,6 @@ public func closeGracefully(): Unit
 ```
 
 功能：关闭服务器，服务器关闭后将不再对请求进行读取，当前正在进行处理的服务器待处理结束后进行关闭。
-
-示例：
-
-<!-- run -->
-```cangjie
-import stdx.net.http.*
-import stdx.log.*
-import std.sync.*
-import stdx.crypto.keys.RSAPrivateKey
-
-// 用于稳定获取响应 body（避免依赖 readToEnd/readAll 等 API）
-func readAllBytes(resp: HttpResponse): String {
-    let buf = Array<UInt8>(1024, repeat: 0)
-    var body = ""
-    while (true) {
-        let n = resp.body.read(buf)
-        if (n <= 0) {
-            break
-        }
-        body += String.fromUtf8(buf[..n])
-    }
-    return body
-}
-
-main() {
-    let sc = SyncCounter(1)
-
-    let server = ServerBuilder().addr("127.0.0.1").port(18126).logger(NoopLogger()).build()
-
-    // func afterBind(): 注册 bind 后回调（此处用它做“就绪信号”）
-    server.afterBind(
-        {
-            =>
-                println("afterBind set by Server.afterBind")
-                sc.dec()
-        }
-    )
-
-    // 注册一个最简 handler，便于 serve() 可测
-    server.distributor.register("/ping", {
-        httpContext => httpContext.responseBuilder.body("pong")
-    })
-
-    spawn {server.serve()}
-    sc.waitUntilZero()
-
-    // func serve(): 发起一次请求，证明服务正常
-    let client = ClientBuilder().noProxy().build()
-    let resp = client.get("http://127.0.0.1:18126/ping")
-    let body = readAllBytes(resp)
-    println("status = ${resp.status}")
-    println("body = ${body}")
-    resp.close()
-
-    // func getTlsConfig(): 未设置 TLS，返回 None
-    println("tlsConfig.isSome = ${server.getTlsConfig().isSome()}")
-
-    // func onShutdown(): close/closeGracefully 时回调
-    server.onShutdown({=> println("onShutdown set by Server.onShutdown")})
-
-    client.close()
-
-    // func closeGracefully(): 触发回调并关闭
-    server.closeGracefully()
-
-    // func updateCA / updateCert(): 未配置 TLS，调用会抛 HttpException
-    try {
-        server.updateCA([])
-    } catch (e: HttpException) {
-        println("updateCA(Array) HttpException: ${e.message}")
-    }
-    try {
-        server.updateCA("/tmp/not-exist.pem")
-    } catch (e: HttpException) {
-        println("updateCA(String) HttpException: ${e.message}")
-    }
-    // 不引入证书/私钥文件依赖：仅展示未配置 TLS 时的异常行为
-    try {
-        server.updateCert([], RSAPrivateKey(1024))
-    } catch (e: HttpException) {
-        println("updateCert(Array,Key) HttpException: ${e.message}")
-    }
-    try {
-        server.updateCert("/tmp/a.pem", "/tmp/b.pem")
-    } catch (e: HttpException) {
-        println("updateCert(String,String) HttpException: ${e.message}")
-    }
-}
-```
-
-运行结果：
-
-```text
-afterBind set by Server.afterBind
-status = 200
-body = pong
-tlsConfig.isSome = false
-onShutdown set by Server.onShutdown
-updateCA(Array) HttpException: The TLS certificate is not configured.
-updateCA(String) HttpException: The TLS certificate is not configured.
-updateCert(Array,Key) HttpException: The TLS certificate is not configured.
-updateCert(String,String) HttpException: The TLS certificate is not configured.
-```
 
 ### func getTlsConfig()
 
@@ -6365,109 +7322,6 @@ public func getTlsConfig(): ?TlsConfig
 
 - ?[TlsConfig](../../tls/common/tls_common_package_api/tls_common_package_interfaces.md#interface-tlsconfig) - 服务端设定的 TLS 层配置，如果没有设置则返回 None。
 
-示例：
-
-<!-- run -->
-```cangjie
-import stdx.net.http.*
-import stdx.log.*
-import std.sync.*
-import stdx.crypto.keys.RSAPrivateKey
-
-// 用于稳定获取响应 body（避免依赖 readToEnd/readAll 等 API）
-func readAllBytes(resp: HttpResponse): String {
-    let buf = Array<UInt8>(1024, repeat: 0)
-    var body = ""
-    while (true) {
-        let n = resp.body.read(buf)
-        if (n <= 0) {
-            break
-        }
-        body += String.fromUtf8(buf[..n])
-    }
-    return body
-}
-
-main() {
-    let sc = SyncCounter(1)
-
-    let server = ServerBuilder().addr("127.0.0.1").port(18126).logger(NoopLogger()).build()
-
-    // func afterBind(): 注册 bind 后回调（此处用它做“就绪信号”）
-    server.afterBind(
-        {
-            =>
-                println("afterBind set by Server.afterBind")
-                sc.dec()
-        }
-    )
-
-    // 注册一个最简 handler，便于 serve() 可测
-    server.distributor.register("/ping", {
-        httpContext => httpContext.responseBuilder.body("pong")
-    })
-
-    spawn {server.serve()}
-    sc.waitUntilZero()
-
-    // func serve(): 发起一次请求，证明服务正常
-    let client = ClientBuilder().noProxy().build()
-    let resp = client.get("http://127.0.0.1:18126/ping")
-    let body = readAllBytes(resp)
-    println("status = ${resp.status}")
-    println("body = ${body}")
-    resp.close()
-
-    // func getTlsConfig(): 未设置 TLS，返回 None
-    println("tlsConfig.isSome = ${server.getTlsConfig().isSome()}")
-
-    // func onShutdown(): close/closeGracefully 时回调
-    server.onShutdown({=> println("onShutdown set by Server.onShutdown")})
-
-    client.close()
-
-    // func closeGracefully(): 触发回调并关闭
-    server.closeGracefully()
-
-    // func updateCA / updateCert(): 未配置 TLS，调用会抛 HttpException
-    try {
-        server.updateCA([])
-    } catch (e: HttpException) {
-        println("updateCA(Array) HttpException: ${e.message}")
-    }
-    try {
-        server.updateCA("/tmp/not-exist.pem")
-    } catch (e: HttpException) {
-        println("updateCA(String) HttpException: ${e.message}")
-    }
-    // 不引入证书/私钥文件依赖：仅展示未配置 TLS 时的异常行为
-    try {
-        server.updateCert([], RSAPrivateKey(1024))
-    } catch (e: HttpException) {
-        println("updateCert(Array,Key) HttpException: ${e.message}")
-    }
-    try {
-        server.updateCert("/tmp/a.pem", "/tmp/b.pem")
-    } catch (e: HttpException) {
-        println("updateCert(String,String) HttpException: ${e.message}")
-    }
-}
-```
-
-运行结果：
-
-```text
-afterBind set by Server.afterBind
-status = 200
-body = pong
-tlsConfig.isSome = false
-onShutdown set by Server.onShutdown
-updateCA(Array) HttpException: The TLS certificate is not configured.
-updateCA(String) HttpException: The TLS certificate is not configured.
-updateCert(Array,Key) HttpException: The TLS certificate is not configured.
-updateCert(String,String) HttpException: The TLS certificate is not configured.
-```
-
 ### func onShutdown(() -> Unit)
 
 ```cangjie
@@ -6479,109 +7333,6 @@ public func onShutdown(f: () -> Unit): Unit
 参数：
 
 - f: () -> Unit - 回调函数，入参为空，返回值为 Unit 类型。
-
-示例：
-
-<!-- run -->
-```cangjie
-import stdx.net.http.*
-import stdx.log.*
-import std.sync.*
-import stdx.crypto.keys.RSAPrivateKey
-
-// 用于稳定获取响应 body（避免依赖 readToEnd/readAll 等 API）
-func readAllBytes(resp: HttpResponse): String {
-    let buf = Array<UInt8>(1024, repeat: 0)
-    var body = ""
-    while (true) {
-        let n = resp.body.read(buf)
-        if (n <= 0) {
-            break
-        }
-        body += String.fromUtf8(buf[..n])
-    }
-    return body
-}
-
-main() {
-    let sc = SyncCounter(1)
-
-    let server = ServerBuilder().addr("127.0.0.1").port(18126).logger(NoopLogger()).build()
-
-    // func afterBind(): 注册 bind 后回调（此处用它做“就绪信号”）
-    server.afterBind(
-        {
-            =>
-                println("afterBind set by Server.afterBind")
-                sc.dec()
-        }
-    )
-
-    // 注册一个最简 handler，便于 serve() 可测
-    server.distributor.register("/ping", {
-        httpContext => httpContext.responseBuilder.body("pong")
-    })
-
-    spawn {server.serve()}
-    sc.waitUntilZero()
-
-    // func serve(): 发起一次请求，证明服务正常
-    let client = ClientBuilder().noProxy().build()
-    let resp = client.get("http://127.0.0.1:18126/ping")
-    let body = readAllBytes(resp)
-    println("status = ${resp.status}")
-    println("body = ${body}")
-    resp.close()
-
-    // func getTlsConfig(): 未设置 TLS，返回 None
-    println("tlsConfig.isSome = ${server.getTlsConfig().isSome()}")
-
-    // func onShutdown(): close/closeGracefully 时回调
-    server.onShutdown({=> println("onShutdown set by Server.onShutdown")})
-
-    client.close()
-
-    // func closeGracefully(): 触发回调并关闭
-    server.closeGracefully()
-
-    // func updateCA / updateCert(): 未配置 TLS，调用会抛 HttpException
-    try {
-        server.updateCA([])
-    } catch (e: HttpException) {
-        println("updateCA(Array) HttpException: ${e.message}")
-    }
-    try {
-        server.updateCA("/tmp/not-exist.pem")
-    } catch (e: HttpException) {
-        println("updateCA(String) HttpException: ${e.message}")
-    }
-    // 不引入证书/私钥文件依赖：仅展示未配置 TLS 时的异常行为
-    try {
-        server.updateCert([], RSAPrivateKey(1024))
-    } catch (e: HttpException) {
-        println("updateCert(Array,Key) HttpException: ${e.message}")
-    }
-    try {
-        server.updateCert("/tmp/a.pem", "/tmp/b.pem")
-    } catch (e: HttpException) {
-        println("updateCert(String,String) HttpException: ${e.message}")
-    }
-}
-```
-
-运行结果：
-
-```text
-afterBind set by Server.afterBind
-status = 200
-body = pong
-tlsConfig.isSome = false
-onShutdown set by Server.onShutdown
-updateCA(Array) HttpException: The TLS certificate is not configured.
-updateCA(String) HttpException: The TLS certificate is not configured.
-updateCert(Array,Key) HttpException: The TLS certificate is not configured.
-updateCert(String,String) HttpException: The TLS certificate is not configured.
-```
 
 ### func serve()
 
@@ -6668,109 +7419,6 @@ h2 请求优先级：
 
 - SocketException - 当端口监听失败时，抛出异常。
 
-示例：
-
-<!-- run -->
-```cangjie
-import stdx.net.http.*
-import stdx.log.*
-import std.sync.*
-import stdx.crypto.keys.RSAPrivateKey
-
-// 用于稳定获取响应 body（避免依赖 readToEnd/readAll 等 API）
-func readAllBytes(resp: HttpResponse): String {
-    let buf = Array<UInt8>(1024, repeat: 0)
-    var body = ""
-    while (true) {
-        let n = resp.body.read(buf)
-        if (n <= 0) {
-            break
-        }
-        body += String.fromUtf8(buf[..n])
-    }
-    return body
-}
-
-main() {
-    let sc = SyncCounter(1)
-
-    let server = ServerBuilder().addr("127.0.0.1").port(18126).logger(NoopLogger()).build()
-
-    // func afterBind(): 注册 bind 后回调（此处用它做“就绪信号”）
-    server.afterBind(
-        {
-            =>
-                println("afterBind set by Server.afterBind")
-                sc.dec()
-        }
-    )
-
-    // 注册一个最简 handler，便于 serve() 可测
-    server.distributor.register("/ping", {
-        httpContext => httpContext.responseBuilder.body("pong")
-    })
-
-    spawn {server.serve()}
-    sc.waitUntilZero()
-
-    // func serve(): 发起一次请求，证明服务正常
-    let client = ClientBuilder().noProxy().build()
-    let resp = client.get("http://127.0.0.1:18126/ping")
-    let body = readAllBytes(resp)
-    println("status = ${resp.status}")
-    println("body = ${body}")
-    resp.close()
-
-    // func getTlsConfig(): 未设置 TLS，返回 None
-    println("tlsConfig.isSome = ${server.getTlsConfig().isSome()}")
-
-    // func onShutdown(): close/closeGracefully 时回调
-    server.onShutdown({=> println("onShutdown set by Server.onShutdown")})
-
-    client.close()
-
-    // func closeGracefully(): 触发回调并关闭
-    server.closeGracefully()
-
-    // func updateCA / updateCert(): 未配置 TLS，调用会抛 HttpException
-    try {
-        server.updateCA([])
-    } catch (e: HttpException) {
-        println("updateCA(Array) HttpException: ${e.message}")
-    }
-    try {
-        server.updateCA("/tmp/not-exist.pem")
-    } catch (e: HttpException) {
-        println("updateCA(String) HttpException: ${e.message}")
-    }
-    // 不引入证书/私钥文件依赖：仅展示未配置 TLS 时的异常行为
-    try {
-        server.updateCert([], RSAPrivateKey(1024))
-    } catch (e: HttpException) {
-        println("updateCert(Array,Key) HttpException: ${e.message}")
-    }
-    try {
-        server.updateCert("/tmp/a.pem", "/tmp/b.pem")
-    } catch (e: HttpException) {
-        println("updateCert(String,String) HttpException: ${e.message}")
-    }
-}
-```
-
-运行结果：
-
-```text
-afterBind set by Server.afterBind
-status = 200
-body = pong
-tlsConfig.isSome = false
-onShutdown set by Server.onShutdown
-updateCA(Array) HttpException: The TLS certificate is not configured.
-updateCA(String) HttpException: The TLS certificate is not configured.
-updateCert(Array,Key) HttpException: The TLS certificate is not configured.
-updateCert(String,String) HttpException: The TLS certificate is not configured.
-```
-
 ### func updateCA(Array\<Certificate>)
 
 ```cangjie
@@ -6787,109 +7435,6 @@ public func updateCA(newCa: Array<Certificate>): Unit
 
 - IllegalArgumentException - 参数包含空字符时抛出异常。
 - [HttpException](http_package_exceptions.md#class-httpexception) - 服务端未配置 tlsConfig 时抛出异常。
-
-示例：
-
-<!-- run -->
-```cangjie
-import stdx.net.http.*
-import stdx.log.*
-import std.sync.*
-import stdx.crypto.keys.RSAPrivateKey
-
-// 用于稳定获取响应 body（避免依赖 readToEnd/readAll 等 API）
-func readAllBytes(resp: HttpResponse): String {
-    let buf = Array<UInt8>(1024, repeat: 0)
-    var body = ""
-    while (true) {
-        let n = resp.body.read(buf)
-        if (n <= 0) {
-            break
-        }
-        body += String.fromUtf8(buf[..n])
-    }
-    return body
-}
-
-main() {
-    let sc = SyncCounter(1)
-
-    let server = ServerBuilder().addr("127.0.0.1").port(18126).logger(NoopLogger()).build()
-
-    // func afterBind(): 注册 bind 后回调（此处用它做“就绪信号”）
-    server.afterBind(
-        {
-            =>
-                println("afterBind set by Server.afterBind")
-                sc.dec()
-        }
-    )
-
-    // 注册一个最简 handler，便于 serve() 可测
-    server.distributor.register("/ping", {
-        httpContext => httpContext.responseBuilder.body("pong")
-    })
-
-    spawn {server.serve()}
-    sc.waitUntilZero()
-
-    // func serve(): 发起一次请求，证明服务正常
-    let client = ClientBuilder().noProxy().build()
-    let resp = client.get("http://127.0.0.1:18126/ping")
-    let body = readAllBytes(resp)
-    println("status = ${resp.status}")
-    println("body = ${body}")
-    resp.close()
-
-    // func getTlsConfig(): 未设置 TLS，返回 None
-    println("tlsConfig.isSome = ${server.getTlsConfig().isSome()}")
-
-    // func onShutdown(): close/closeGracefully 时回调
-    server.onShutdown({=> println("onShutdown set by Server.onShutdown")})
-
-    client.close()
-
-    // func closeGracefully(): 触发回调并关闭
-    server.closeGracefully()
-
-    // func updateCA / updateCert(): 未配置 TLS，调用会抛 HttpException
-    try {
-        server.updateCA([])
-    } catch (e: HttpException) {
-        println("updateCA(Array) HttpException: ${e.message}")
-    }
-    try {
-        server.updateCA("/tmp/not-exist.pem")
-    } catch (e: HttpException) {
-        println("updateCA(String) HttpException: ${e.message}")
-    }
-    // 不引入证书/私钥文件依赖：仅展示未配置 TLS 时的异常行为
-    try {
-        server.updateCert([], RSAPrivateKey(1024))
-    } catch (e: HttpException) {
-        println("updateCert(Array,Key) HttpException: ${e.message}")
-    }
-    try {
-        server.updateCert("/tmp/a.pem", "/tmp/b.pem")
-    } catch (e: HttpException) {
-        println("updateCert(String,String) HttpException: ${e.message}")
-    }
-}
-```
-
-运行结果：
-
-```text
-afterBind set by Server.afterBind
-status = 200
-body = pong
-tlsConfig.isSome = false
-onShutdown set by Server.onShutdown
-updateCA(Array) HttpException: The TLS certificate is not configured.
-updateCA(String) HttpException: The TLS certificate is not configured.
-updateCert(Array,Key) HttpException: The TLS certificate is not configured.
-updateCert(String,String) HttpException: The TLS certificate is not configured.
-```
 
 ### func updateCA(String)
 
@@ -6908,109 +7453,6 @@ public func updateCA(newCaFile: String): Unit
 - IllegalArgumentException - 参数包含空字符时抛出异常。
 - [HttpException](http_package_exceptions.md#class-httpexception) - 服务端未配置 tlsConfig 时抛出异常。
 
-示例：
-
-<!-- run -->
-```cangjie
-import stdx.net.http.*
-import stdx.log.*
-import std.sync.*
-import stdx.crypto.keys.RSAPrivateKey
-
-// 用于稳定获取响应 body（避免依赖 readToEnd/readAll 等 API）
-func readAllBytes(resp: HttpResponse): String {
-    let buf = Array<UInt8>(1024, repeat: 0)
-    var body = ""
-    while (true) {
-        let n = resp.body.read(buf)
-        if (n <= 0) {
-            break
-        }
-        body += String.fromUtf8(buf[..n])
-    }
-    return body
-}
-
-main() {
-    let sc = SyncCounter(1)
-
-    let server = ServerBuilder().addr("127.0.0.1").port(18126).logger(NoopLogger()).build()
-
-    // func afterBind(): 注册 bind 后回调（此处用它做“就绪信号”）
-    server.afterBind(
-        {
-            =>
-                println("afterBind set by Server.afterBind")
-                sc.dec()
-        }
-    )
-
-    // 注册一个最简 handler，便于 serve() 可测
-    server.distributor.register("/ping", {
-        httpContext => httpContext.responseBuilder.body("pong")
-    })
-
-    spawn {server.serve()}
-    sc.waitUntilZero()
-
-    // func serve(): 发起一次请求，证明服务正常
-    let client = ClientBuilder().noProxy().build()
-    let resp = client.get("http://127.0.0.1:18126/ping")
-    let body = readAllBytes(resp)
-    println("status = ${resp.status}")
-    println("body = ${body}")
-    resp.close()
-
-    // func getTlsConfig(): 未设置 TLS，返回 None
-    println("tlsConfig.isSome = ${server.getTlsConfig().isSome()}")
-
-    // func onShutdown(): close/closeGracefully 时回调
-    server.onShutdown({=> println("onShutdown set by Server.onShutdown")})
-
-    client.close()
-
-    // func closeGracefully(): 触发回调并关闭
-    server.closeGracefully()
-
-    // func updateCA / updateCert(): 未配置 TLS，调用会抛 HttpException
-    try {
-        server.updateCA([])
-    } catch (e: HttpException) {
-        println("updateCA(Array) HttpException: ${e.message}")
-    }
-    try {
-        server.updateCA("/tmp/not-exist.pem")
-    } catch (e: HttpException) {
-        println("updateCA(String) HttpException: ${e.message}")
-    }
-    // 不引入证书/私钥文件依赖：仅展示未配置 TLS 时的异常行为
-    try {
-        server.updateCert([], RSAPrivateKey(1024))
-    } catch (e: HttpException) {
-        println("updateCert(Array,Key) HttpException: ${e.message}")
-    }
-    try {
-        server.updateCert("/tmp/a.pem", "/tmp/b.pem")
-    } catch (e: HttpException) {
-        println("updateCert(String,String) HttpException: ${e.message}")
-    }
-}
-```
-
-运行结果：
-
-```text
-afterBind set by Server.afterBind
-status = 200
-body = pong
-tlsConfig.isSome = false
-onShutdown set by Server.onShutdown
-updateCA(Array) HttpException: The TLS certificate is not configured.
-updateCA(String) HttpException: The TLS certificate is not configured.
-updateCert(Array,Key) HttpException: The TLS certificate is not configured.
-updateCert(String,String) HttpException: The TLS certificate is not configured.
-```
-
 ### func updateCert(Array\<Certificate>, PrivateKey)
 
 ```cangjie
@@ -7027,109 +7469,6 @@ public func updateCert(certChain: Array<Certificate>, certKey: PrivateKey): Unit
 异常：
 
 - [HttpException](http_package_exceptions.md#class-httpexception) - 服务端未配置 tlsConfig 时抛出异常。
-
-示例：
-
-<!-- run -->
-```cangjie
-import stdx.net.http.*
-import stdx.log.*
-import std.sync.*
-import stdx.crypto.keys.RSAPrivateKey
-
-// 用于稳定获取响应 body（避免依赖 readToEnd/readAll 等 API）
-func readAllBytes(resp: HttpResponse): String {
-    let buf = Array<UInt8>(1024, repeat: 0)
-    var body = ""
-    while (true) {
-        let n = resp.body.read(buf)
-        if (n <= 0) {
-            break
-        }
-        body += String.fromUtf8(buf[..n])
-    }
-    return body
-}
-
-main() {
-    let sc = SyncCounter(1)
-
-    let server = ServerBuilder().addr("127.0.0.1").port(18126).logger(NoopLogger()).build()
-
-    // func afterBind(): 注册 bind 后回调（此处用它做“就绪信号”）
-    server.afterBind(
-        {
-            =>
-                println("afterBind set by Server.afterBind")
-                sc.dec()
-        }
-    )
-
-    // 注册一个最简 handler，便于 serve() 可测
-    server.distributor.register("/ping", {
-        httpContext => httpContext.responseBuilder.body("pong")
-    })
-
-    spawn {server.serve()}
-    sc.waitUntilZero()
-
-    // func serve(): 发起一次请求，证明服务正常
-    let client = ClientBuilder().noProxy().build()
-    let resp = client.get("http://127.0.0.1:18126/ping")
-    let body = readAllBytes(resp)
-    println("status = ${resp.status}")
-    println("body = ${body}")
-    resp.close()
-
-    // func getTlsConfig(): 未设置 TLS，返回 None
-    println("tlsConfig.isSome = ${server.getTlsConfig().isSome()}")
-
-    // func onShutdown(): close/closeGracefully 时回调
-    server.onShutdown({=> println("onShutdown set by Server.onShutdown")})
-
-    client.close()
-
-    // func closeGracefully(): 触发回调并关闭
-    server.closeGracefully()
-
-    // func updateCA / updateCert(): 未配置 TLS，调用会抛 HttpException
-    try {
-        server.updateCA([])
-    } catch (e: HttpException) {
-        println("updateCA(Array) HttpException: ${e.message}")
-    }
-    try {
-        server.updateCA("/tmp/not-exist.pem")
-    } catch (e: HttpException) {
-        println("updateCA(String) HttpException: ${e.message}")
-    }
-    // 不引入证书/私钥文件依赖：仅展示未配置 TLS 时的异常行为
-    try {
-        server.updateCert([], RSAPrivateKey(1024))
-    } catch (e: HttpException) {
-        println("updateCert(Array,Key) HttpException: ${e.message}")
-    }
-    try {
-        server.updateCert("/tmp/a.pem", "/tmp/b.pem")
-    } catch (e: HttpException) {
-        println("updateCert(String,String) HttpException: ${e.message}")
-    }
-}
-```
-
-运行结果：
-
-```text
-afterBind set by Server.afterBind
-status = 200
-body = pong
-tlsConfig.isSome = false
-onShutdown set by Server.onShutdown
-updateCA(Array) HttpException: The TLS certificate is not configured.
-updateCA(String) HttpException: The TLS certificate is not configured.
-updateCert(Array,Key) HttpException: The TLS certificate is not configured.
-updateCert(String,String) HttpException: The TLS certificate is not configured.
-```
 
 ### func updateCert(String, String)
 
@@ -7148,109 +7487,6 @@ public func updateCert(certificateChainFile: String, privateKeyFile: String): Un
 
 - IllegalArgumentException - 参数包含空字符时抛出异常。
 - [HttpException](http_package_exceptions.md#class-httpexception) - 服务端未配置 tlsConfig 时抛出异常。
-
-示例：
-
-<!-- run -->
-```cangjie
-import stdx.net.http.*
-import stdx.log.*
-import std.sync.*
-import stdx.crypto.keys.RSAPrivateKey
-
-// 用于稳定获取响应 body（避免依赖 readToEnd/readAll 等 API）
-func readAllBytes(resp: HttpResponse): String {
-    let buf = Array<UInt8>(1024, repeat: 0)
-    var body = ""
-    while (true) {
-        let n = resp.body.read(buf)
-        if (n <= 0) {
-            break
-        }
-        body += String.fromUtf8(buf[..n])
-    }
-    return body
-}
-
-main() {
-    let sc = SyncCounter(1)
-
-    let server = ServerBuilder().addr("127.0.0.1").port(18126).logger(NoopLogger()).build()
-
-    // func afterBind(): 注册 bind 后回调（此处用它做“就绪信号”）
-    server.afterBind(
-        {
-            =>
-                println("afterBind set by Server.afterBind")
-                sc.dec()
-        }
-    )
-
-    // 注册一个最简 handler，便于 serve() 可测
-    server.distributor.register("/ping", {
-        httpContext => httpContext.responseBuilder.body("pong")
-    })
-
-    spawn {server.serve()}
-    sc.waitUntilZero()
-
-    // func serve(): 发起一次请求，证明服务正常
-    let client = ClientBuilder().noProxy().build()
-    let resp = client.get("http://127.0.0.1:18126/ping")
-    let body = readAllBytes(resp)
-    println("status = ${resp.status}")
-    println("body = ${body}")
-    resp.close()
-
-    // func getTlsConfig(): 未设置 TLS，返回 None
-    println("tlsConfig.isSome = ${server.getTlsConfig().isSome()}")
-
-    // func onShutdown(): close/closeGracefully 时回调
-    server.onShutdown({=> println("onShutdown set by Server.onShutdown")})
-
-    client.close()
-
-    // func closeGracefully(): 触发回调并关闭
-    server.closeGracefully()
-
-    // func updateCA / updateCert(): 未配置 TLS，调用会抛 HttpException
-    try {
-        server.updateCA([])
-    } catch (e: HttpException) {
-        println("updateCA(Array) HttpException: ${e.message}")
-    }
-    try {
-        server.updateCA("/tmp/not-exist.pem")
-    } catch (e: HttpException) {
-        println("updateCA(String) HttpException: ${e.message}")
-    }
-    // 不引入证书/私钥文件依赖：仅展示未配置 TLS 时的异常行为
-    try {
-        server.updateCert([], RSAPrivateKey(1024))
-    } catch (e: HttpException) {
-        println("updateCert(Array,Key) HttpException: ${e.message}")
-    }
-    try {
-        server.updateCert("/tmp/a.pem", "/tmp/b.pem")
-    } catch (e: HttpException) {
-        println("updateCert(String,String) HttpException: ${e.message}")
-    }
-}
-```
-
-运行结果：
-
-```text
-afterBind set by Server.afterBind
-status = 200
-body = pong
-tlsConfig.isSome = false
-onShutdown set by Server.onShutdown
-updateCA(Array) HttpException: The TLS certificate is not configured.
-updateCA(String) HttpException: The TLS certificate is not configured.
-updateCert(Array,Key) HttpException: The TLS certificate is not configured.
-updateCert(String,String) HttpException: The TLS certificate is not configured.
-```
 
 ## class ServerBuilder
 
@@ -7279,65 +7515,6 @@ public class ServerBuilder {
 >
 > 该类提供了一系列配置参数的函数，配置完成后调用 [build](./http_package_classes.md#func-build-3) 函数构造出 [Server](./http_package_classes.md#class-server) 实例。配置函数中说明了参数的取值范围，但配置函数本身不做参数合法性校验，[build](./http_package_classes.md#func-build-3) 时统一进行校验。
 
-### func initialWindowSize(UInt32)
-
-```cangjie
-public func initialWindowSize(size: UInt32): ServerBuilder
-```
-
-功能：HTTP/2 专用，设置当前服务器上每个流的接收报文的初始流量窗口大小，默认值为 65535。取值范围为 0 至 2^31 - 1。
-
-参数：
-
-- size: UInt32 - 本端一个 stream 上接收报文的初始流量窗口大小。
-
-返回值：
-
-- [ServerBuilder](http_package_classes.md#class-serverbuilder) - 当前 [ServerBuilder](http_package_classes.md#class-serverbuilder) 的引用。
-
-示例：
-
-<!-- run -->
-```cangjie
-import stdx.net.http.*
-import stdx.log.*
-
-main() {
-    let server = ServerBuilder()
-        .addr("127.0.0.1")
-        .port(18118)
-        .logger(NoopLogger())
-        // HTTP/2 settings
-        .headerTableSize(1024)
-        .maxConcurrentStreams(123)
-        .initialWindowSize(65535)
-        .maxFrameSize(16384)
-        .maxHeaderListSize(4096)
-        .enableConnectProtocol(true)
-        .build()
-
-    println("headerTableSize = ${server.headerTableSize}")
-    println("maxConcurrentStreams = ${server.maxConcurrentStreams}")
-    println("initialWindowSize = ${server.initialWindowSize}")
-    println("maxFrameSize = ${server.maxFrameSize}")
-    println("maxHeaderListSize = ${server.maxHeaderListSize}")
-    println("enableConnectProtocol = ${server.enableConnectProtocol}")
-
-    server.closeGracefully()
-}
-```
-
-运行结果：
-
-```text
-headerTableSize = 1024
-maxConcurrentStreams = 123
-initialWindowSize = 65535
-maxFrameSize = 16384
-maxHeaderListSize = 4096
-enableConnectProtocol = true
-```
-
 ### init()
 
 ```cangjie
@@ -7351,7 +7528,6 @@ public init()
 <!-- run -->
 ```cangjie
 import stdx.net.http.*
-import stdx.log.*
 
 main() {
     let _ = ServerBuilder()
@@ -7378,38 +7554,38 @@ public func addr(addr: String): ServerBuilder
 
 示例：
 
-<!-- run -->
+<!-- verify -->
 ```cangjie
 import stdx.net.http.*
-import stdx.log.*
 
 main() {
-    // addr(): 设置监听地址（只是配置，真正 bind 在 serve() 时发生）
-    let server = ServerBuilder().addr("127.0.0.1").port(18110).logger(NoopLogger()).build()
-
-    // 关注点：读取 Server.addr
-    println("addr = ${server.addr}")
-    server.closeGracefully()
+    // 创建 ServerBuilder 并设置监听地址
+    let server = ServerBuilder()
+        .addr("127.0.0.1")
+        .port(8080)
+        .build()
+    
+    println("服务器监听地址：${server.addr}")
 }
 ```
 
 运行结果：
 
 ```text
-addr = 127.0.0.1
+服务器监听地址：127.0.0.1
 ```
 
-### func afterBind(()->Unit)
+### func afterBind(() -> Unit)
 
 ```cangjie
-public func afterBind(f: ()->Unit): ServerBuilder
+public func afterBind(f: () -> Unit): ServerBuilder
 ```
 
 功能：注册服务器启动时的回调函数，服务内部 ServerSocket 实例 bind 之后，accept 之前将调用该函数。重复调用将覆盖之前注册的函数。
 
 参数：
 
-- f: () ->Unit - 回调函数，入参为空，返回值为 Unit 类型。
+- f: () -> Unit - 回调函数，入参为空，返回值为 Unit 类型。
 
 返回值：
 
@@ -7417,35 +7593,27 @@ public func afterBind(f: ()->Unit): ServerBuilder
 
 示例：
 
-<!-- run -->
+<!-- verify -->
 ```cangjie
 import stdx.net.http.*
-import stdx.log.*
-import std.sync.*
 
 main() {
-    let sc = SyncCounter(1)
-
-    // afterBind(): bind() 完成后会回调
-    let server = ServerBuilder().addr("127.0.0.1").port(18112).logger(NoopLogger()).afterBind(
-        {
-            =>
-                println("afterBind called")
-                sc.dec()
-        }
-    ).build()
-
-    spawn {server.serve()}
-    sc.waitUntilZero()
-
-    server.closeGracefully()
+    spawn {
+        // 启动时触发回调函数
+        let server = ServerBuilder().addr("127.0.0.1").port(8080).afterBind({
+            => println("服务器已启动")
+        }).build()
+        server.serve()
+    }
+    // 等待服务启动
+    sleep(Duration.second)
 }
 ```
 
 运行结果：
 
 ```text
-afterBind called
+服务器已启动
 ```
 
 ### func build()
@@ -7469,74 +7637,27 @@ public func build(): Server
 
 示例：
 
-<!-- run -->
+<!-- verify -->
 ```cangjie
 import stdx.net.http.*
-import stdx.log.*
 
 main() {
-    // build(): 根据 builder 的配置生成 Server 实例
+    // 使用 build() 构建 Server 实例
     let server = ServerBuilder()
         .addr("127.0.0.1")
-        .port(18124)
-        .logger(NoopLogger())
-        .readTimeout(Duration.second)
-        .writeTimeout(Duration.second * 2)
-        .readHeaderTimeout(Duration.millisecond * 300)
-        .httpKeepAliveTimeout(Duration.second * 3)
-        .maxRequestHeaderSize(1024)
-        .maxRequestBodySize(2048)
-        .headerTableSize(1024)
-        .maxConcurrentStreams(123)
-        .initialWindowSize(65535)
-        .maxFrameSize(16384)
-        .maxHeaderListSize(4096)
-        .enableConnectProtocol(true)
-        .servicePoolConfig(ServicePoolConfig(capacity: 8, queueCapacity: 16, preheat: 2))
+        .port(8080)
         .build()
-
-    // 关注点：读取 Server 上的配置结果
-    println("addr = ${server.addr}")
-    println("port = ${server.port}")
-    println("logger.level = ${server.logger.level}")
-    println("readTimeout = ${server.readTimeout}")
-    println("writeTimeout = ${server.writeTimeout}")
-    println("readHeaderTimeout = ${server.readHeaderTimeout}")
-    println("httpKeepAliveTimeout = ${server.httpKeepAliveTimeout}")
-    println("maxRequestHeaderSize = ${server.maxRequestHeaderSize}")
-    println("maxRequestBodySize = ${server.maxRequestBodySize}")
-    println("headerTableSize = ${server.headerTableSize}")
-    println("maxConcurrentStreams = ${server.maxConcurrentStreams}")
-    println("initialWindowSize = ${server.initialWindowSize}")
-    println("maxFrameSize = ${server.maxFrameSize}")
-    println("maxHeaderListSize = ${server.maxHeaderListSize}")
-    println("enableConnectProtocol = ${server.enableConnectProtocol}")
-    println(
-        "servicePoolConfig = (capacity=${server.servicePoolConfig.capacity}, queueCapacity=${server.servicePoolConfig.queueCapacity}, preheat=${server.servicePoolConfig.preheat})")
-
-    server.closeGracefully()
+    
+    println("监听地址：${server.addr}")
+    println("监听端口：${server.port}")
 }
 ```
 
 运行结果：
 
 ```text
-addr = 127.0.0.1
-port = 18124
-logger.level = OFF
-readTimeout = 1s
-writeTimeout = 2s
-readHeaderTimeout = 300ms
-httpKeepAliveTimeout = 3s
-maxRequestHeaderSize = 1024
-maxRequestBodySize = 2048
-headerTableSize = 1024
-maxConcurrentStreams = 123
-initialWindowSize = 65535
-maxFrameSize = 16384
-maxHeaderListSize = 4096
-enableConnectProtocol = true
-servicePoolConfig = (capacity=8, queueCapacity=16, preheat=2)
+监听地址：127.0.0.1
+监听端口：8080
 ```
 
 ### func distributor(HttpRequestDistributor)
@@ -7557,44 +7678,47 @@ public func distributor(distributor: HttpRequestDistributor): ServerBuilder
 
 示例：
 
-<!-- run -->
+<!-- verify -->
 ```cangjie
+import std.collection.*
 import stdx.net.http.*
-import stdx.log.*
 
-// 自定义 distributor，用来证明 builder.distributor() 生效
+// 自定义简易 HttpRequestDistributor 以演示注册和分发请求
 class MyDistributor <: HttpRequestDistributor {
+    var handlers: HashMap<String, HttpRequestHandler> = HashMap<String, HttpRequestHandler>()
     public func register(path: String, handler: HttpRequestHandler): Unit {
-        let _ = path
-        let _ = handler
+        println("注册路径: ${path}")
+        handlers[path] = handler
     }
 
     public func distribute(path: String): HttpRequestHandler {
-        let _ = path
-        return NotFoundHandler()
+        return handlers.get(path).getOrThrow()
     }
 }
 
-main() {
-    let server = ServerBuilder()
-        .addr("127.0.0.1")
-        .port(18113)
-        .logger(NoopLogger())
-        .distributor(MyDistributor())
-        .build()
+main(): Unit {
+    spawn {
+        let server = ServerBuilder().addr("127.0.0.1").port(8080).distributor(MyDistributor()).build()
+        server.distributor.register("/index", OptionsHandler())
+        server.serve()
+    }
+    // 等待服务启动
+    sleep(Duration.second)
 
-    // 关注点：检查 Server.distributor 的动态类型
-    let d = server.distributor as MyDistributor
-    println("is MyDistributor: ${d.isSome()}")
-
-    server.closeGracefully()
+    // 创建 Client
+    let client = ClientBuilder().build()
+    // 发送GET请求
+    let resp = client.get("http://127.0.0.1:8080/index")
+    // 打印响应状态码
+    println("响应状态码: ${resp.status}")
 }
 ```
 
 运行结果：
 
 ```text
-is MyDistributor: true
+注册路径: /index
+响应状态码: 200
 ```
 
 ### func enableConnectProtocol(Bool)
@@ -7615,45 +7739,22 @@ public func enableConnectProtocol(flag: Bool): ServerBuilder
 
 示例：
 
-<!-- run -->
+<!-- verify -->
 ```cangjie
 import stdx.net.http.*
-import stdx.log.*
 
 main() {
-    let server = ServerBuilder()
-        .addr("127.0.0.1")
-        .port(18118)
-        .logger(NoopLogger())
-        // HTTP/2 settings
-        .headerTableSize(1024)
-        .maxConcurrentStreams(123)
-        .initialWindowSize(65535)
-        .maxFrameSize(16384)
-        .maxHeaderListSize(4096)
-        .enableConnectProtocol(true)
-        .build()
+    // 使用 build() 构建 Server 实例
+    let server = ServerBuilder().addr("127.0.0.1").port(8080).enableConnectProtocol(true).build()
 
-    println("headerTableSize = ${server.headerTableSize}")
-    println("maxConcurrentStreams = ${server.maxConcurrentStreams}")
-    println("initialWindowSize = ${server.initialWindowSize}")
-    println("maxFrameSize = ${server.maxFrameSize}")
-    println("maxHeaderListSize = ${server.maxHeaderListSize}")
-    println("enableConnectProtocol = ${server.enableConnectProtocol}")
-
-    server.closeGracefully()
+    println("enableConnectProtocol: ${server.enableConnectProtocol}")
 }
 ```
 
 运行结果：
 
 ```text
-headerTableSize = 1024
-maxConcurrentStreams = 123
-initialWindowSize = 65535
-maxFrameSize = 16384
-maxHeaderListSize = 4096
-enableConnectProtocol = true
+enableConnectProtocol: true
 ```
 
 ### func headerTableSize(UInt32)
@@ -7674,45 +7775,22 @@ public func headerTableSize(size: UInt32): ServerBuilder
 
 示例：
 
-<!-- run -->
+<!-- verify -->
 ```cangjie
 import stdx.net.http.*
-import stdx.log.*
 
 main() {
-    let server = ServerBuilder()
-        .addr("127.0.0.1")
-        .port(18118)
-        .logger(NoopLogger())
-        // HTTP/2 settings
-        .headerTableSize(1024)
-        .maxConcurrentStreams(123)
-        .initialWindowSize(65535)
-        .maxFrameSize(16384)
-        .maxHeaderListSize(4096)
-        .enableConnectProtocol(true)
-        .build()
+    // 设置 HTTP/2 Hpack 动态表大小
+    let server = ServerBuilder().addr("127.0.0.1").port(8080).headerTableSize(8192).build()
 
-    println("headerTableSize = ${server.headerTableSize}")
-    println("maxConcurrentStreams = ${server.maxConcurrentStreams}")
-    println("initialWindowSize = ${server.initialWindowSize}")
-    println("maxFrameSize = ${server.maxFrameSize}")
-    println("maxHeaderListSize = ${server.maxHeaderListSize}")
-    println("enableConnectProtocol = ${server.enableConnectProtocol}")
-
-    server.closeGracefully()
+    println("headerTableSize: ${server.headerTableSize}")
 }
 ```
 
 运行结果：
 
 ```text
-headerTableSize = 1024
-maxConcurrentStreams = 123
-initialWindowSize = 65535
-maxFrameSize = 16384
-maxHeaderListSize = 4096
-enableConnectProtocol = true
+headerTableSize: 8192
 ```
 
 ### func httpKeepAliveTimeout(Duration)
@@ -7733,39 +7811,58 @@ public func httpKeepAliveTimeout(timeout: Duration): ServerBuilder
 
 示例：
 
-<!-- run -->
+<!-- verify -->
 ```cangjie
 import stdx.net.http.*
-import stdx.log.*
 
 main() {
-    let server = ServerBuilder()
-        .addr("127.0.0.1")
-        .port(18117)
-        .logger(NoopLogger())
-        // 关注点：这些配置最终体现在 Server 的 prop 上
-        .readTimeout(Duration.second)
-        .writeTimeout(Duration.second * 2)
-        .readHeaderTimeout(Duration.millisecond * 300)
-        .httpKeepAliveTimeout(Duration.second * 3)
-        .build()
+    // 设置 HTTP/1.1 连接保活超时为 30 秒
+    let server = ServerBuilder().addr("127.0.0.1").port(8080).httpKeepAliveTimeout(Duration.second * 30).build()
 
-    println("readTimeout = ${server.readTimeout}")
-    println("writeTimeout = ${server.writeTimeout}")
-    println("readHeaderTimeout = ${server.readHeaderTimeout}")
-    println("httpKeepAliveTimeout = ${server.httpKeepAliveTimeout}")
-
-    server.closeGracefully()
+    println("httpKeepAliveTimeout: ${server.httpKeepAliveTimeout}")
 }
 ```
 
 运行结果：
 
 ```text
-readTimeout = 1s
-writeTimeout = 2s
-readHeaderTimeout = 300ms
-httpKeepAliveTimeout = 3s
+httpKeepAliveTimeout: 30s
+```
+
+### func initialWindowSize(UInt32)
+
+```cangjie
+public func initialWindowSize(size: UInt32): ServerBuilder
+```
+
+功能：HTTP/2 专用，设置当前服务器上每个流的接收报文的初始流量窗口大小，默认值为 65535。取值范围为 0 至 2^31 - 1。
+
+参数：
+
+- size: UInt32 - 本端一个 stream 上接收报文的初始流量窗口大小。
+
+返回值：
+
+- [ServerBuilder](http_package_classes.md#class-serverbuilder) - 当前 [ServerBuilder](http_package_classes.md#class-serverbuilder) 的引用。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.net.http.*
+
+main() {
+    // 设置 HTTP/2 初始窗口大小
+    let server = ServerBuilder().addr("127.0.0.1").port(8080).initialWindowSize(65535).build()
+
+    println("初始流量窗口大小：${server.initialWindowSize}")
+}
+```
+
+运行结果：
+
+```text
+初始流量窗口大小：65535
 ```
 
 ### func listener(ServerSocket)
@@ -7786,30 +7883,26 @@ public func listener(listener: ServerSocket): ServerBuilder
 
 示例：
 
-<!-- run -->
+<!-- verify -->
 ```cangjie
-import stdx.net.http.*
-import stdx.log.*
 import std.net.*
+import stdx.net.http.*
 
 main() {
-    // listener(): 直接注入一个已经指定 bind 地址/端口的 ServerSocket
-    let socket = TcpServerSocket(bindAt: IPSocketAddress("127.0.0.1", 18122))
+    // 直接注入一个已经指定 bind 地址/端口的 ServerSocket
+    let socket = TcpServerSocket(bindAt: IPSocketAddress("127.0.0.1", 8080))
 
-    let server = ServerBuilder().listener(socket).logger(NoopLogger()).build()
+    // 构建 Server 实例
+    let server = ServerBuilder().addr("127.0.0.1").port(8080).listener(socket).build()
 
-    println("addr = ${server.addr}")
-    println("port = ${server.port}")
-
-    server.closeGracefully()
+    println("listener: ${server.listener}")
 }
 ```
 
 运行结果：
 
 ```text
-addr = 127.0.0.1
-port = 18122
+listener: TcpServerSocket(unconnected, unbound)
 ```
 
 ### func logger(Logger)
@@ -7830,26 +7923,24 @@ public func logger(logger: Logger): ServerBuilder
 
 示例：
 
-<!-- run -->
+<!-- verify -->
 ```cangjie
+import std.env.*
 import stdx.net.http.*
-import stdx.log.*
+import stdx.logger.*
 
 main() {
-    // logger(): 设定 Server 的 logger
-    let server = ServerBuilder().addr("127.0.0.1").port(18114).logger(NoopLogger()).build()
+    // 构建 Server 实例
+    let server = ServerBuilder().addr("127.0.0.1").port(8080).logger(SimpleLogger(getStdOut())).build()
 
-    // 关注点：NoopLogger.level 恒为 OFF
-    println("logger.level = ${server.logger.level}")
-
-    server.closeGracefully()
+    println("日志等级: ${server.logger.level}")
 }
 ```
 
 运行结果：
 
 ```text
-logger.level = OFF
+日志等级: INFO
 ```
 
 ### func maxConcurrentStreams(UInt32)
@@ -7870,45 +7961,22 @@ public func maxConcurrentStreams(size: UInt32): ServerBuilder
 
 示例：
 
-<!-- run -->
+<!-- verify -->
 ```cangjie
 import stdx.net.http.*
-import stdx.log.*
 
 main() {
-    let server = ServerBuilder()
-        .addr("127.0.0.1")
-        .port(18118)
-        .logger(NoopLogger())
-        // HTTP/2 settings
-        .headerTableSize(1024)
-        .maxConcurrentStreams(123)
-        .initialWindowSize(65535)
-        .maxFrameSize(16384)
-        .maxHeaderListSize(4096)
-        .enableConnectProtocol(true)
-        .build()
+    // 设置最大并发流数
+    let server = ServerBuilder().addr("127.0.0.1").port(8080).maxConcurrentStreams(100).build()
 
-    println("headerTableSize = ${server.headerTableSize}")
-    println("maxConcurrentStreams = ${server.maxConcurrentStreams}")
-    println("initialWindowSize = ${server.initialWindowSize}")
-    println("maxFrameSize = ${server.maxFrameSize}")
-    println("maxHeaderListSize = ${server.maxHeaderListSize}")
-    println("enableConnectProtocol = ${server.enableConnectProtocol}")
-
-    server.closeGracefully()
+    println("maxConcurrentStreams: ${server.maxConcurrentStreams}")
 }
 ```
 
 运行结果：
 
 ```text
-headerTableSize = 1024
-maxConcurrentStreams = 123
-initialWindowSize = 65535
-maxFrameSize = 16384
-maxHeaderListSize = 4096
-enableConnectProtocol = true
+maxConcurrentStreams: 100
 ```
 
 ### func maxFrameSize(UInt32)
@@ -7929,45 +7997,22 @@ public func maxFrameSize(size: UInt32): ServerBuilder
 
 示例：
 
-<!-- run -->
+<!-- verify -->
 ```cangjie
 import stdx.net.http.*
-import stdx.log.*
 
 main() {
-    let server = ServerBuilder()
-        .addr("127.0.0.1")
-        .port(18118)
-        .logger(NoopLogger())
-        // HTTP/2 settings
-        .headerTableSize(1024)
-        .maxConcurrentStreams(123)
-        .initialWindowSize(65535)
-        .maxFrameSize(16384)
-        .maxHeaderListSize(4096)
-        .enableConnectProtocol(true)
-        .build()
+    // 设置最大帧大小
+    let server = ServerBuilder().addr("127.0.0.1").port(8080).maxFrameSize(16384).build()
 
-    println("headerTableSize = ${server.headerTableSize}")
-    println("maxConcurrentStreams = ${server.maxConcurrentStreams}")
-    println("initialWindowSize = ${server.initialWindowSize}")
-    println("maxFrameSize = ${server.maxFrameSize}")
-    println("maxHeaderListSize = ${server.maxHeaderListSize}")
-    println("enableConnectProtocol = ${server.enableConnectProtocol}")
-
-    server.closeGracefully()
+    println("最大帧大小: ${server.maxFrameSize}")
 }
 ```
 
 运行结果：
 
 ```text
-headerTableSize = 1024
-maxConcurrentStreams = 123
-initialWindowSize = 65535
-maxFrameSize = 16384
-maxHeaderListSize = 4096
-enableConnectProtocol = true
+最大帧大小: 16384
 ```
 
 ### func maxHeaderListSize(UInt32)
@@ -7988,45 +8033,22 @@ public func maxHeaderListSize(size: UInt32): ServerBuilder
 
 示例：
 
-<!-- run -->
+<!-- verify -->
 ```cangjie
 import stdx.net.http.*
-import stdx.log.*
 
 main() {
-    let server = ServerBuilder()
-        .addr("127.0.0.1")
-        .port(18118)
-        .logger(NoopLogger())
-        // HTTP/2 settings
-        .headerTableSize(1024)
-        .maxConcurrentStreams(123)
-        .initialWindowSize(65535)
-        .maxFrameSize(16384)
-        .maxHeaderListSize(4096)
-        .enableConnectProtocol(true)
-        .build()
+    // 设置最大 header 列表大小
+    let server = ServerBuilder().addr("127.0.0.1").port(8080).maxHeaderListSize(8192).build()
 
-    println("headerTableSize = ${server.headerTableSize}")
-    println("maxConcurrentStreams = ${server.maxConcurrentStreams}")
-    println("initialWindowSize = ${server.initialWindowSize}")
-    println("maxFrameSize = ${server.maxFrameSize}")
-    println("maxHeaderListSize = ${server.maxHeaderListSize}")
-    println("enableConnectProtocol = ${server.enableConnectProtocol}")
-
-    server.closeGracefully()
+    println("报文头最大长度: ${server.maxHeaderListSize}")
 }
 ```
 
 运行结果：
 
 ```text
-headerTableSize = 1024
-maxConcurrentStreams = 123
-initialWindowSize = 65535
-maxFrameSize = 16384
-maxHeaderListSize = 4096
-enableConnectProtocol = true
+报文头最大长度: 8192
 ```
 
 ### func maxRequestBodySize(Int64)
@@ -8051,32 +8073,22 @@ public func maxRequestBodySize(size: Int64): ServerBuilder
 
 示例：
 
-<!-- run -->
+<!-- verify -->
 ```cangjie
 import stdx.net.http.*
-import stdx.log.*
 
 main() {
-    let server = ServerBuilder()
-        .addr("127.0.0.1")
-        .port(18119)
-        .logger(NoopLogger())
-        .maxRequestHeaderSize(1024)
-        .maxRequestBodySize(2048)
-        .build()
+    // 设置最大请求 body 大小
+    let server = ServerBuilder().addr("127.0.0.1").port(8080).maxRequestBodySize(1024).build()
 
-    println("maxRequestHeaderSize = ${server.maxRequestHeaderSize}")
-    println("maxRequestBodySize = ${server.maxRequestBodySize}")
-
-    server.closeGracefully()
+    println("最大请求体大小: ${server.maxRequestBodySize}")
 }
 ```
 
 运行结果：
 
 ```text
-maxRequestHeaderSize = 1024
-maxRequestBodySize = 2048
+最大请求体大小: 1024
 ```
 
 ### func maxRequestHeaderSize(Int64)
@@ -8101,32 +8113,22 @@ public func maxRequestHeaderSize(size: Int64): ServerBuilder
 
 示例：
 
-<!-- run -->
+<!-- verify -->
 ```cangjie
 import stdx.net.http.*
-import stdx.log.*
 
 main() {
-    let server = ServerBuilder()
-        .addr("127.0.0.1")
-        .port(18119)
-        .logger(NoopLogger())
-        .maxRequestHeaderSize(1024)
-        .maxRequestBodySize(2048)
-        .build()
+    // 设置最大请求 header 大小
+    let server = ServerBuilder().addr("127.0.0.1").port(8080).maxRequestHeaderSize(8192).build()
 
-    println("maxRequestHeaderSize = ${server.maxRequestHeaderSize}")
-    println("maxRequestBodySize = ${server.maxRequestBodySize}")
-
-    server.closeGracefully()
+    println("最大请求 header 大小: ${server.maxRequestHeaderSize}")
 }
 ```
 
 运行结果：
 
 ```text
-maxRequestHeaderSize = 1024
-maxRequestBodySize = 2048
+最大请求 header 大小: 8192
 ```
 
 ### func onShutdown(() -> Unit)
@@ -8147,28 +8149,30 @@ public func onShutdown(f: () -> Unit): ServerBuilder
 
 示例：
 
-<!-- run -->
+<!-- verify -->
 ```cangjie
 import stdx.net.http.*
-import stdx.log.*
 
 main() {
-    // onShutdown(): close/closeGracefully 时会触发回调
-    let server = ServerBuilder()
-        .addr("127.0.0.1")
-        .port(18123)
-        .logger(NoopLogger())
-        .onShutdown({=> println("onShutdown called")})
-        .build()
+    let server = ServerBuilder().addr("127.0.0.1").port(8080).onShutdown({
+        => println("服务器已关闭")
+    }).build()
+    spawn {
+        // 启动服务器
+        server.serve()
+    }
+    // 等待服务启动
+    sleep(Duration.second)
 
-    server.closeGracefully()
+    // 关闭服务器
+    server.close()
 }
 ```
 
 运行结果：
 
 ```text
-onShutdown called
+服务器已关闭
 ```
 
 ### func port(UInt16)
@@ -8189,24 +8193,25 @@ public func port(port: UInt16): ServerBuilder
 
 示例：
 
-<!-- run -->
+<!-- verify -->
 ```cangjie
 import stdx.net.http.*
-import stdx.log.*
 
 main() {
-    // port(): 设置监听端口
-    let server = ServerBuilder().addr("127.0.0.1").port(18111).logger(NoopLogger()).build()
-
-    println("port = ${server.port}")
-    server.closeGracefully()
+    // 设置监听端口
+    let server = ServerBuilder()
+        .addr("127.0.0.1")
+        .port(9090)
+        .build()
+    
+    println("port 设置成功：${server.port}")
 }
 ```
 
 运行结果：
 
 ```text
-port = 18111
+port 设置成功：9090
 ```
 
 ### func protocolServiceFactory(ProtocolServiceFactory)
@@ -8226,64 +8231,8 @@ public func protocolServiceFactory(factory: ProtocolServiceFactory): ServerBuild
 - [ServerBuilder](http_package_classes.md#class-serverbuilder) - 当前 [ServerBuilder](http_package_classes.md#class-serverbuilder) 的引用。
 
 示例：
-
-<!-- run -->
-```cangjie
-import stdx.net.http.*
-import stdx.log.*
-import std.net.*
-
-// 自定义 ProtocolService：不做真实 HTTP 解析，只打印并回一个固定响应
-class MyProtocolService <: ProtocolService {
-    let conn: StreamingSocket
-
-    public init(conn: StreamingSocket) {
-        this.conn = conn
-    }
-
-    protected override func serve(): Unit {
-        println("MyProtocolService.serve")
-        conn.write("HTTP/1.1 200 OK\r\nContent-Length: 2\r\nConnection: close\r\n\r\nOK".toArray())
-        conn.close()
-    }
-
-    protected override func closeGracefully(): Unit {
-        conn.close()
-    }
-
-    protected override func close(): Unit {
-        conn.close()
-    }
-}
-
-class MyFactory <: ProtocolServiceFactory {
-    public func create(protocol: Protocol, socket: StreamingSocket): ProtocolService {
-        let _ = protocol
-        return MyProtocolService(socket)
-    }
-}
-
-main() {
-    let server = ServerBuilder()
-        .addr("127.0.0.1")
-        .port(18121)
-        .logger(NoopLogger())
-        .protocolServiceFactory(MyFactory())
-        .build()
-
-    // 关注点：Server.protocolServiceFactory 的动态类型
-    let f = server.protocolServiceFactory as MyFactory
-    println("protocolServiceFactory is MyFactory: ${f.isSome()}")
-
-    server.closeGracefully()
-}
-```
-
-运行结果：
-
-```text
-protocolServiceFactory is MyFactory: true
-```
+<!-- associated_example -->
+参见 [func serve](#func-serve) 示例。
 
 ### func readHeaderTimeout(Duration)
 
@@ -8303,39 +8252,22 @@ public func readHeaderTimeout(timeout: Duration): ServerBuilder
 
 示例：
 
-<!-- run -->
+<!-- verify -->
 ```cangjie
 import stdx.net.http.*
-import stdx.log.*
 
 main() {
-    let server = ServerBuilder()
-        .addr("127.0.0.1")
-        .port(18117)
-        .logger(NoopLogger())
-        // 关注点：这些配置最终体现在 Server 的 prop 上
-        .readTimeout(Duration.second)
-        .writeTimeout(Duration.second * 2)
-        .readHeaderTimeout(Duration.millisecond * 300)
-        .httpKeepAliveTimeout(Duration.second * 3)
-        .build()
+    // 设置读取 header 超时时间为 10 秒
+    let server = ServerBuilder().addr("127.0.0.1").port(8080).readHeaderTimeout(Duration.second * 10).build()
 
-    println("readTimeout = ${server.readTimeout}")
-    println("writeTimeout = ${server.writeTimeout}")
-    println("readHeaderTimeout = ${server.readHeaderTimeout}")
-    println("httpKeepAliveTimeout = ${server.httpKeepAliveTimeout}")
-
-    server.closeGracefully()
+    println("读取 header 超时时间：${server.readHeaderTimeout}")
 }
 ```
 
 运行结果：
 
 ```text
-readTimeout = 1s
-writeTimeout = 2s
-readHeaderTimeout = 300ms
-httpKeepAliveTimeout = 3s
+读取 header 超时时间：10s
 ```
 
 ### func readTimeout(Duration)
@@ -8356,39 +8288,22 @@ public func readTimeout(timeout: Duration): ServerBuilder
 
 示例：
 
-<!-- run -->
+<!-- verify -->
 ```cangjie
 import stdx.net.http.*
-import stdx.log.*
 
 main() {
-    let server = ServerBuilder()
-        .addr("127.0.0.1")
-        .port(18117)
-        .logger(NoopLogger())
-        // 关注点：这些配置最终体现在 Server 的 prop 上
-        .readTimeout(Duration.second)
-        .writeTimeout(Duration.second * 2)
-        .readHeaderTimeout(Duration.millisecond * 300)
-        .httpKeepAliveTimeout(Duration.second * 3)
-        .build()
+    // 设置读取超时时间为 30 秒
+    let server = ServerBuilder().addr("127.0.0.1").port(8080).readTimeout(Duration.second * 30).build()
 
-    println("readTimeout = ${server.readTimeout}")
-    println("writeTimeout = ${server.writeTimeout}")
-    println("readHeaderTimeout = ${server.readHeaderTimeout}")
-    println("httpKeepAliveTimeout = ${server.httpKeepAliveTimeout}")
-
-    server.closeGracefully()
+    println("读取超时时间：${server.readTimeout}")
 }
 ```
 
 运行结果：
 
 ```text
-readTimeout = 1s
-writeTimeout = 2s
-readHeaderTimeout = 300ms
-httpKeepAliveTimeout = 3s
+读取超时时间：30s
 ```
 
 ### func servicePoolConfig(ServicePoolConfig)
@@ -8409,29 +8324,22 @@ public func servicePoolConfig(cfg: ServicePoolConfig): ServerBuilder
 
 示例：
 
-<!-- run -->
+<!-- verify -->
 ```cangjie
 import stdx.net.http.*
-import stdx.log.*
 
 main() {
-    let poolCfg = ServicePoolConfig(capacity: 8, queueCapacity: 16, preheat: 2)
+    // 设置读取超时时间为 30 秒
+    let server = ServerBuilder().addr("127.0.0.1").port(8080).readTimeout(Duration.second * 30).build()
 
-    let server = ServerBuilder().addr("127.0.0.1").port(18120).logger(NoopLogger()).servicePoolConfig(poolCfg).build()
-
-    let c = server.servicePoolConfig.capacity
-    let q = server.servicePoolConfig.queueCapacity
-    let p = server.servicePoolConfig.preheat
-    println("servicePoolConfig = (capacity=${c}, queueCapacity=${q}, preheat=${p})")
-
-    server.closeGracefully()
+    println("读取超时时间：${server.readTimeout}")
 }
 ```
 
 运行结果：
 
 ```text
-servicePoolConfig = (capacity=8, queueCapacity=16, preheat=2)
+读取超时时间：30s
 ```
 
 ### func tlsConfig(TlsConfig)
@@ -8450,29 +8358,6 @@ public func tlsConfig(config: TlsConfig): ServerBuilder
 
 - [ServerBuilder](http_package_classes.md#class-serverbuilder) - 当前 [ServerBuilder](http_package_classes.md#class-serverbuilder) 的引用。
 
-示例：
-
-<!-- run -->
-```cangjie
-import stdx.net.http.*
-import stdx.log.*
-
-main() {
-    // 默认不配置 TLS
-    let server = ServerBuilder().addr("127.0.0.1").port(18116).logger(NoopLogger()).build()
-
-    println("tlsConfig.isSome = ${server.getTlsConfig().isSome()}")
-
-    server.closeGracefully()
-}
-```
-
-运行结果：
-
-```text
-tlsConfig.isSome = false
-```
-
 ### func transportConfig(TransportConfig)
 
 ```cangjie
@@ -8488,32 +8373,6 @@ public func transportConfig(config: TransportConfig): ServerBuilder
 返回值：
 
 - [ServerBuilder](http_package_classes.md#class-serverbuilder) - 当前 [ServerBuilder](http_package_classes.md#class-serverbuilder) 的引用。
-
-示例：
-
-<!-- run -->
-```cangjie
-import stdx.net.http.*
-import stdx.log.*
-
-main() {
-    var cfg = TransportConfig()
-    cfg.readBufferSize = 8192
-
-    let server = ServerBuilder().addr("127.0.0.1").port(18115).logger(NoopLogger()).transportConfig(cfg).build()
-
-    let rb = server.transportConfig.readBufferSize ?? 0
-    println("transport.readBufferSize = ${rb}")
-
-    server.closeGracefully()
-}
-```
-
-运行结果：
-
-```text
-transport.readBufferSize = 8192
-```
 
 ### func writeTimeout(Duration)
 
@@ -8533,39 +8392,22 @@ public func writeTimeout(timeout: Duration): ServerBuilder
 
 示例：
 
-<!-- run -->
+<!-- verify -->
 ```cangjie
 import stdx.net.http.*
-import stdx.log.*
 
 main() {
-    let server = ServerBuilder()
-        .addr("127.0.0.1")
-        .port(18117)
-        .logger(NoopLogger())
-        // 关注点：这些配置最终体现在 Server 的 prop 上
-        .readTimeout(Duration.second)
-        .writeTimeout(Duration.second * 2)
-        .readHeaderTimeout(Duration.millisecond * 300)
-        .httpKeepAliveTimeout(Duration.second * 3)
-        .build()
+    // 设置写入超时时间为 30 秒
+    let server = ServerBuilder().addr("127.0.0.1").port(8080).writeTimeout(Duration.second * 30).build()
 
-    println("readTimeout = ${server.readTimeout}")
-    println("writeTimeout = ${server.writeTimeout}")
-    println("readHeaderTimeout = ${server.readHeaderTimeout}")
-    println("httpKeepAliveTimeout = ${server.httpKeepAliveTimeout}")
-
-    server.closeGracefully()
+    println("写入超时时间：${server.writeTimeout}")
 }
 ```
 
 运行结果：
 
 ```text
-readTimeout = 1s
-writeTimeout = 2s
-readHeaderTimeout = 300ms
-httpKeepAliveTimeout = 3s
+写入超时时间：30s
 ```
 
 ## class WebSocket

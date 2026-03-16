@@ -36,7 +36,7 @@ public func api(dp: FuzzDataProvider): Int32 {
 }
 ```
 
-运行结果如下：
+运行结果：
 
 ```text
 ...
@@ -70,7 +70,7 @@ public func api(dp: FuzzDataProvider): Int32 {
 }
 ```
 
-运行结果如下：
+运行结果：
 
 ```text
 INFO: Running with entropic power schedule (0xFF, 100).
