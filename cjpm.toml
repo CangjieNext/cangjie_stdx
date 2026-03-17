@@ -13,11 +13,14 @@
   version = "1.0.5"
   target-dir = ""
   script-dir = ""
+  documentation = "https://gitcode.com/Cangjie/cangjie_stdx"
+  repository = "https://gitcode.com/Cangjie/cangjie_stdx.git"
+  homepage = "https://gitcode.com/Cangjie/cangjie_stdx"
   src-dir = "src/stdx"
   output-type = "static"
   compile-option = "-Woff=all"
   link-option = ""
-  package-configuration = {}
+  exclude = ["build_temp", "third_party/zlib", "third_party/flatbuffers"]
 
 [target.x86_64-unknown-linux-gnu]
   link-option = "-L target/release/stdx -L target/debug/stdx -L target/linux_ohos_aarch64_cjnative/static/stdx -L target/linux_x86_64_cjnative/static/stdx -lstdx.encoding.jsonFFI -lstdx.encoding.json.streamFFI -lstdx.compress.zlibFFI -lstdx.compress.tarFFI -lcangjie-dynamicLoader-opensslFFI -lstdx.net.tlsFFI -lstdx.crypto.keysFFI -lstdx.crypto.x509FFI -ldl -lstdx.fuzz.fuzzFFI"
