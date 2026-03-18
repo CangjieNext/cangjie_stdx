@@ -15,7 +15,8 @@
 
 package stdx.actors
 
-import std.collection.concurrent.ConcurrentLinkedQueue
+import std.collection.concurrent.LinkedBlockingQueue
+import std.time.*
 
 const DEFAULT_PRIORITY = 5
 
@@ -23,17 +24,22 @@ private type Item = (SequentialDispatcher, () -> Unit)
 
 interface Mailbox {
     func add(item: Item, priority: Int64): Unit
-    func remove(): Option<Item>
+    func remove(timeout!: Duration): Option<Item>
+    func removeBlock(): Item
 }
 
 class UnboundedMailbox <: Mailbox {
-    private let queue = ConcurrentLinkedQueue<Item>()
+    private let queue = LinkedBlockingQueue<Item>()
 
     public func add(item: Item, _: Int64): Unit {
         queue.add(item)
     }
 
-    public func remove(): Option<Item> {
+    public func remove(timeout!: Duration = Duration.Zero): Option<Item> {
+        queue.remove(timeout)
+    }
+
+    public func removeBlock(): Item {
         queue.remove()
     }
 }
@@ -45,7 +51,11 @@ class UnboundedPriorityMailbox <: Mailbox {
         queue.add(item, priority)
     }
 
-    public func remove(): Option<Item> {
-        queue.remove()
+    public func remove(timeout!: Duration = Duration.Zero): Option<Item> {
+        queue.remove(timeout)
+    }
+
+    public func removeBlock(): Item {
+        queue.removeBlock()
     }
 }
