@@ -128,9 +128,20 @@ public class Tar {
                     }
                 case TarEntryType.RegularFile | TarEntryType.V7RegularFile | TarEntryType.ContiguousFile =>
                     let parentDir = entryPath.parent
+                    // For the first time, before creating the parent directory, prevent existing symlinks.
+                    // For example, if an existing ancestor of parentDir is a symbolic link pointing outside the
+                    // directory, even if parentDir lexically appears to be within the extraction root,
+                    // after actual resolution, it will have escaped outside.
+                    ensureRegularFileParentWithinDirectory(parentDir, destAbsoluteDir, entry.name)
                     if (!parentDir.isEmpty() && !exists(parentDir)) {
                         Directory.create(parentDir, recursive: true)
                     }
+                    // The second time after executing Directory.create(parentDir, recursive: true), the result of
+                    // preventing creation is inconsistent with expectations. Although under normal circumstances,
+                    // the newly created directory is still within the root, after creation, performing a canonicalize
+                    // check on the complete parentDir can ensure that the final actual parent directory has not been
+                    // redirected before proceeding with file writing.
+                    ensureRegularFileParentWithinDirectory(parentDir, destAbsoluteDir, entry.name)
                     if (let Some(stream) <- entry.stream) {
                         try (outputFile = File(entryPath.toString(), OpenMode.Write)) {
                             copy(stream, to: outputFile)
@@ -186,5 +197,35 @@ public class Tar {
         }
 
         return normalizedPath.startsWith("${normalizedDir}${Path.Separator}")
+    }
+
+    /**
+     * Ensure the parentDir is within the target directory
+     */
+    private static func ensureRegularFileParentWithinDirectory(parentDir: Path, destDir: Path, entryName: String): Unit {
+        if (parentDir.isEmpty()) {
+            return
+        }
+
+        var nearestExistingAncestor = parentDir
+        while (!nearestExistingAncestor.isEmpty() && !exists(nearestExistingAncestor)) {
+            nearestExistingAncestor = nearestExistingAncestor.parent
+        }
+
+        if (nearestExistingAncestor.isEmpty()) {
+            throw TarException("Cannot resolve parent path for tar entry: ${entryName}.")
+        }
+
+        let resolvedAncestor = canonicalize(nearestExistingAncestor)
+        if (!isPathWithinDirectory(resolvedAncestor, destDir)) {
+            throw TarException("Resolved parent path escapes target dir for tar entry: ${entryName}.")
+        }
+
+        if (exists(parentDir)) {
+            let resolvedParentDir = canonicalize(parentDir)
+            if (!isPathWithinDirectory(resolvedParentDir, destDir)) {
+                throw TarException("Resolved parent path escapes target dir for tar entry: ${entryName}.")
+            }
+        }
     }
 }
