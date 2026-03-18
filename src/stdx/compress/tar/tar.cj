@@ -108,7 +108,7 @@ public class Tar {
         for (entry in tarReader) {
             let entryPath = destAbsoluteDir.join(entry.name)
 
-            if (!entryPath.normalize().toString().startsWith(destAbsoluteDir.toString())) {
+            if (!isPathWithinDirectory(entryPath.normalize(), destAbsoluteDir)) {
                 throw TarException("Zip Slip detected: ${entry.name}.")
             }
 
@@ -153,7 +153,7 @@ public class Tar {
         if (linkTarget.isRelative()) {
             linkTarget = destDir.join(linkTarget).normalize()
         }
-        if (!linkTarget.toString().startsWith(destDir.toString())) {
+        if (!isPathWithinDirectory(linkTarget, destDir)) {
             throw TarException("Symlink points outside target dir.")
         }
     }
@@ -165,8 +165,26 @@ public class Tar {
         } else {
             throw TarException("Hardlink points to absolute path outside target dir.")
         }
-        if (!linkTarget.toString().startsWith(destDir.toString())) {
+        if (!isPathWithinDirectory(linkTarget, destDir)) {
             throw TarException("Hardlink points outside target dir.")
         }
+    }
+
+    /**
+     * Check whether a path is within the directory. 
+     */
+    private static func isPathWithinDirectory(path: Path, dir: Path): Bool {
+        let normalizedPath = path.normalize().toString()
+        let normalizedDir = dir.normalize().toString()
+
+        if (normalizedPath == normalizedDir) {
+            return true
+        }
+
+        if (normalizedDir.endsWith(Path.Separator)) {
+            return normalizedPath.startsWith(normalizedDir)
+        }
+
+        return normalizedPath.startsWith("${normalizedDir}${Path.Separator}")
     }
 }
