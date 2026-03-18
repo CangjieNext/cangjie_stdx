@@ -49,14 +49,24 @@ extend String {
     func trimZero(): String { this.trimStart('\0').trimEnd('\0') }
 
     func normalizePath(): String {
-        Path(this).normalize().toString().replace('\\', '/').trimZero()
+        Path(this).normalizePath()
     }
 }
 
 extend Path {
     func normalizePath(): String {
-        this.normalize().toString().replace('\\', '/').trimZero()
+        normalizeTarPathSeparators(this.normalize().toString()).trimZero()
     }
+}
+
+@When[os == "Windows"]
+private func normalizeTarPathSeparators(path: String): String {
+    return path.replace('\\', '/')
+}
+
+@When[os != "Windows"]
+private func normalizeTarPathSeparators(path: String): String {
+    return path
 }
 
 @Derive[Equatable]
