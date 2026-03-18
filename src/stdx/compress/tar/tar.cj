@@ -155,7 +155,9 @@ public class Tar {
                     HardLink.create(entryPath, to: Path(entry.linkName))
                 case _ => continue
             }
-            Native.setFileAttributes(entryPath, entry)
+            if (entry.entryType != TarEntryType.Symlink) {
+                Native.setFileAttributes(entryPath, entry)
+            }
         }
     }
 
