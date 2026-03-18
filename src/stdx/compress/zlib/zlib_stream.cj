@@ -20,6 +20,8 @@ import std.io.{InputStream, OutputStream}
  */
 const MAX_BUFFER_LENGTH_IN: Int64 = 0xFFFF_FFFF
 const MAX_BUFFER_LENGTH_OUT: Int64 = 0xFFFF_FFFF
+const MAX_DECOMPRESSION_RATIO: Int64 = 1000
+const MIN_OUTPUT_BYTES_FOR_RATIO_CHECK: Int64 = 8 * 1024 * 1024
 
 func min(a: Int64, b: Int64): Int64 {
     if (a > b) {
@@ -308,6 +310,10 @@ public class DecompressInputStream <: InputStream {
 
     private var inBufEnd: Int64
 
+    private var totalInputBytes: Int64 = 0
+
+    private var totalOutputBytes: Int64 = 0
+
     /**
      * Create a input stream for decompressing data from inputStream.
      *
@@ -356,11 +362,13 @@ public class DecompressInputStream <: InputStream {
                 inBufCursor += singleInLen
             }
             var singleOutLen = min(outBuf.size - outBufCursor, MAX_BUFFER_LENGTH_OUT)
-            outBufCursor += if (readEnd) {
+            let produced = if (readEnd) {
                 inflater.inflate(outBuf.slice(outBufCursor, singleOutLen), Finish)
             } else {
                 inflater.inflate(outBuf.slice(outBufCursor, singleOutLen), NoFlush)
             }
+            onOutputProduced(produced)
+            outBufCursor += produced
         }
         return outBufCursor
     }
@@ -374,6 +382,8 @@ public class DecompressInputStream <: InputStream {
                 if (!readStarted) {
                     return false
                 }
+            } else {
+                totalInputBytes += readRet
             }
             readStarted = true
             inBufCursor = 0
@@ -393,6 +403,23 @@ public class DecompressInputStream <: InputStream {
         }
         inflater.inflateEnd()
         closed = true
+    }
+
+    private func onOutputProduced(produced: Int64): Unit {
+        if (produced <= 0) {
+            return
+        }
+        totalOutputBytes += produced
+        enforceDecompressionRatio()
+    }
+
+    private func enforceDecompressionRatio(): Unit {
+        if (totalOutputBytes < MIN_OUTPUT_BYTES_FOR_RATIO_CHECK || totalInputBytes <= 0) {
+            return
+        }
+        if (totalOutputBytes / totalInputBytes > MAX_DECOMPRESSION_RATIO) {
+            throw ZlibException("Decompressed output exceeds safety compression ratio ${MAX_DECOMPRESSION_RATIO}:1.")
+        }
     }
 }
 
@@ -417,6 +444,10 @@ public class DecompressOutputStream <: OutputStream {
 
     /* Flag whether the current class is closed */
     private var closed: Bool
+
+    private var totalInputBytes: Int64 = 0
+
+    private var totalOutputBytes: Int64 = 0
 
     /**
      * @throws ZlibException if bufLen <= 0 or failed to malloc memory for zlib stream,
@@ -449,6 +480,7 @@ public class DecompressOutputStream <: OutputStream {
         var inBufCursor = 0
         var singleInLen = min(inBuf.size, MAX_BUFFER_LENGTH_IN)
         while (singleInLen > 0) {
+            totalInputBytes += singleInLen
             inflater.addInputBytes(inBuf.slice(inBufCursor, singleInLen), singleInLen)
             inBufCursor += singleInLen
             while (!inflater.needsInput() && !inflater.isFinished()) {
@@ -456,7 +488,9 @@ public class DecompressOutputStream <: OutputStream {
                     flushOutBuf()
                 }
                 var singleOutLen = min(outBuf.size - outBufCursor, MAX_BUFFER_LENGTH_OUT)
-                outBufCursor += inflater.inflate(outBuf.slice(outBufCursor, singleOutLen), NoFlush)
+                let produced = inflater.inflate(outBuf.slice(outBufCursor, singleOutLen), NoFlush)
+                onOutputProduced(produced)
+                outBufCursor += produced
             }
             singleInLen = min(inBuf.size - inBufCursor, MAX_BUFFER_LENGTH_IN)
         }
@@ -499,7 +533,9 @@ public class DecompressOutputStream <: OutputStream {
                 flushOutBuf()
             }
             var singleOutLen = min(outBuf.size - outBufCursor, MAX_BUFFER_LENGTH_OUT)
-            outBufCursor += inflater.inflate(outBuf.slice(outBufCursor, singleOutLen), NoFlush)
+            let produced = inflater.inflate(outBuf.slice(outBufCursor, singleOutLen), NoFlush)
+            onOutputProduced(produced)
+            outBufCursor += produced
         }
         flush()
     }
@@ -512,5 +548,22 @@ public class DecompressOutputStream <: OutputStream {
     private func flushOutBuf(): Unit {
         outputStream.write(outBuf.slice(0, outBufCursor))
         outBufCursor = 0
+    }
+
+    private func onOutputProduced(produced: Int64): Unit {
+        if (produced <= 0) {
+            return
+        }
+        totalOutputBytes += produced
+        enforceDecompressionRatio()
+    }
+
+    private func enforceDecompressionRatio(): Unit {
+        if (totalOutputBytes < MIN_OUTPUT_BYTES_FOR_RATIO_CHECK || totalInputBytes <= 0) {
+            return
+        }
+        if (totalOutputBytes / totalInputBytes > MAX_DECOMPRESSION_RATIO) {
+            throw ZlibException("Decompressed output exceeds safety compression ratio ${MAX_DECOMPRESSION_RATIO}:1.")
+        }
     }
 }
