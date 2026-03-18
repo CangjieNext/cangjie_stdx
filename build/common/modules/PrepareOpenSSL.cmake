@@ -25,6 +25,13 @@
 if(OHOS)
     set(OPENSSL_CRYPTO_LINK_OPTIONS -lcrypto_openssl.z)
     set(OPENSSL_SSL_LINK_OPTIONS -lssl_openssl.z -lcrypto_openssl.z)
+    if(NOT DEFINED OPENSSL_INCLUDE_DIR)
+        if(DEFINED ENV{OPENSSL_INCLUDE_DIR} AND NOT "$ENV{OPENSSL_INCLUDE_DIR}" STREQUAL "")
+            set(OPENSSL_INCLUDE_DIR $ENV{OPENSSL_INCLUDE_DIR})
+        elseif(DEFINED ENV{OPENSSL_ROOT_DIR} AND NOT "$ENV{OPENSSL_ROOT_DIR}" STREQUAL "")
+            set(OPENSSL_INCLUDE_DIR $ENV{OPENSSL_ROOT_DIR}/include)
+        endif()
+    endif()
 else()
     # The following variables will be restore once find_package is finished.
     set(CMAKE_PREFIX_PATH_TEMP ${CMAKE_PREFIX_PATH})
