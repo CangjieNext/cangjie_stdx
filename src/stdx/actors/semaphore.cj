@@ -18,6 +18,7 @@ package stdx.actors
 import std.sync.AtomicUInt64
 import std.sync.Mutex
 import std.sync.Condition
+import std.time.DateTime
 
 class SingleConsumerSemaphore {
     private let cnt = AtomicUInt64(0)
@@ -30,7 +31,7 @@ class SingleConsumerSemaphore {
         }
     }
 
-    func signal() {
+    func signal(): Unit {
         let n = cnt.fetchAdd(1)
         if (n == 0) {
             synchronized(mtx) {
@@ -39,12 +40,17 @@ class SingleConsumerSemaphore {
         }
     }
 
-    func wait() {
+    func wait(timeout: Duration): Unit {
         let n = cnt.load()
         if (n == 0) {
+            let startTime = DateTime.now()
             synchronized(mtx) {
                 while (cnt.load() == 0) {
-                    cond.wait()
+                    let timeElapsed = DateTime.now() - startTime
+                    if (timeElapsed >= timeout) {
+                        return
+                    }
+                    cond.wait(timeout: timeout - timeElapsed)
                 }
             }
         }
