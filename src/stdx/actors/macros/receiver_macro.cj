@@ -40,84 +40,48 @@ public macro Receiver(input: Tokens): Tokens {
 class ReceiverMacro {
     private let opts: MacroOptionSet
     private let errors: MacroErrors
-    /*
-        Because annotations are interpreted as MacroExpandDecl,
-        the input tokens could be parsed into the following structure:
-        head-MacroExpandDecl --> ... -> actual FuncDecl
-        for example:
-            @Receiver
-            @Annotation1 // this is the head
-            @Annotation2
-            func foo()
-     */
     private let headDecl: Decl
-    private var fd: FuncDecl = unsafe { zeroValue<FuncDecl>() }
+    private let fd: FuncDecl
+
+    static let ALLOWED_OPTIONS: Array<MacroOptionKey> = [
+        Priority
+    ]
 
     static func run(attrs: Tokens, input: Tokens): Tokens {
-        let errors = MacroErrors()
+        ReceiverMacro(attrs, input).expand()
+    }
 
-        // first check if @Receiver is inside @Actor
+    private init(attrs: Tokens, input: Tokens) {
+        errors = MacroErrors()
         if (!insideParentContext(ACTOR_MACRO_NAME)) {
             errors.add(MacroError.ReceiverMacroInsideActor)
-            return errors.doThrow()
+            errors.doThrow()
         }
 
-        // parse the options
-        let opts = MacroOptionParser.run(attrs, errors)
-        errors.report()
-
-        let rMacro = ReceiverMacro(input, opts, errors)
-
-        // check the options
-        rMacro.checkOptions()
-
-        // check if it is a func decl
-        rMacro.checkDecl()
-
-        // check if receiver is valid
-        rMacro.checkReceiver()
-
-        // return modified recceiver
-        rMacro.modifyReceiver(attrs)
-    }
-
-    private init(input: Tokens, opts: MacroOptionSet, errors: MacroErrors) {
-        this.opts = opts
-        this.errors = errors
-        this.headDecl = parseDecl(input)
-    }
-
-    private func checkDecl(): Unit {
-        var decl = headDecl
-        while (true) {
-            if (let Some(fd) <- (decl as FuncDecl)) {
-                this.fd = fd
-                return
-            } else if (let Some(mc) <- (decl as MacroExpandDecl)) {
-                decl = mc.macroInputDecl
-            } else {
+        opts = MacroOptionParser.run(attrs, errors)
+        headDecl = parseDecl(input)
+        fd = match (findDeclUnderMacro<FuncDecl>(headDecl)) {
+            case Some(fd) => fd
+            case None =>
                 errors.add(MacroError.ReceiverMacroInvalidDecl)
-                return errors.doThrow()
-            }
+                errors.doThrow()
         }
+    }
+
+    private func expand(): Tokens {
+        checkOptions()
+        checkReceiver()
+        modifyReceiver()
     }
 
     private func checkOptions(): Unit {
-        opts.iterate {
-            key, _ =>
-                if (key != Priority) {
-                    errors.add(MacroError.ReceiverMacroInvalidOption(key))
-                }
-                true
-        }
+        opts.checkOptions(ALLOWED_OPTIONS, errors, "@Receiver")
         errors.report()
     }
 
     private func checkReceiver(): Unit {
-        for (mod in fd.modifiers) {
-            if (mod.keyword.kind == STATIC || mod.keyword.kind == OPEN || mod.keyword.kind == OVERRIDE) {
-                errors.add(MacroError.ReceiverMacroInvalidModifier(fd.identifier.value))
-            }
+        if (!checkModifiers(fd.modifiers, [STATIC, OPEN, OVERRIDE])) {
+            errors.add(MacroError.ReceiverMacroInvalidModifier(fd.identifier.value))
         }
         try {
             fd.declType
@@ -127,7 +91,7 @@ class ReceiverMacro {
         errors.report()
     }
 
-    private func modifyReceiver(attrs: Tokens): Tokens {
+    private func modifyReceiver(): Tokens {
         /*
             @Receiver[expr]
             func foo(arg1: Ty1, ..., argN: TyN): RetTy { body }
@@ -135,13 +99,13 @@ class ReceiverMacro {
             @prefixReceiver[expr]
             func foo(arg1: Ty1, ..., argN: TyN): RetTy { body }
          */
-        let options = if (attrs.size == 0) {
-            Tokens()
+        let options = if (opts.contains(Priority)) {
+            quote([priority: $(opts.getPriority())])
         } else {
-            quote([$attrs])
+            Tokens()
         }
         quote(
-            @$receiverMarkerToken$options
+            @$RECEIVER_MARKER_TOKEN$options
             $headDecl
         )
     }

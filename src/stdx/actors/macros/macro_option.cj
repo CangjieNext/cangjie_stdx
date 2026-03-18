@@ -19,6 +19,8 @@ import std.ast.*
 import std.collection.{HashMap, HashSet}
 import std.convert.Parsable
 
+private const DEFAULT_PRIORITY = 5
+
 enum MacroOptionKey <: Hashable & ToString & Equatable<MacroOptionKey> {
     EnableReceiverPriority
     | Priority
@@ -76,11 +78,32 @@ class MacroOptionSet {
         }
     }
 
+    func checkOptions(allowed: Array<MacroOptionKey>, errors: MacroErrors, name: String): Unit {
+        iterate {
+            key, _ =>
+                if (!allowed.contains(key)) {
+                    match (name) {
+                        case "@Actor" => errors.add(MacroError.ActorMacroInvalidMacroOption(key))
+                        case "@Receiver" => errors.add(MacroError.ReceiverMacroInvalidOption(key))
+                        case _ => ()
+                    }
+                }
+                true
+        }
+    }
+
     func hasEnabledReceiverPriority(): Bool {
         if (let Some(EnableReceiverPriority(b)) <- opts.get(EnableReceiverPriority)) {
             return b
         }
         return false
+    }
+
+    func getPriority(): Int64 {
+        if (let Some(Priority(p)) <- opts.get(Priority)) {
+            return p
+        }
+        return DEFAULT_PRIORITY
     }
 }
 
@@ -106,6 +129,9 @@ class MacroOptionParser {
 
     private func parse(): Unit {
         while (let Some(t) <- it.next()) {
+            if (t.kind == TokenKind.NL) {
+                continue
+            }
             if (t.kind != IDENTIFIER) {
                 errors.add(MacroError.MacroOptionUnexpectedToken(t.value))
                 break
@@ -132,6 +158,7 @@ class MacroOptionParser {
             // next token must be a COMMA or nothing
             match (it.next()) {
                 case Some(n) where n.kind == TokenKind.COMMA => continue
+                case Some(n) where n.kind == TokenKind.NL => continue
                 case Some(_) =>
                     errors.add(MacroError.MacroOptionInvalidFormat)
                     break
