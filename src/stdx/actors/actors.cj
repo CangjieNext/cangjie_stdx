@@ -15,11 +15,10 @@
 
 package stdx.actors
 
-import std.collection.concurrent.ConcurrentLinkedQueue
+import std.time.*
 
 public class SequentialDispatcher {
     let mailbox: Mailbox
-    let numMsg: SingleConsumerSemaphore
     let threadHandle: Future<Unit>
 
     public init(enableReceiverPriority!: Bool = false) {
@@ -28,20 +27,17 @@ public class SequentialDispatcher {
         } else {
             UnboundedMailbox()
         }
-        this.numMsg = SingleConsumerSemaphore()
-        this.threadHandle = startActorLoop(mailbox, numMsg)
+        this.threadHandle = startActorLoop(mailbox)
     }
 
-    static func startActorLoop(mailbox: Mailbox, numMsg: SingleConsumerSemaphore): Future<Unit> {
+    static func startActorLoop(mailbox: Mailbox): Future<Unit> {
         spawn {
             while (true) {
-                numMsg.wait()
-
                 if (Thread.currentThread.hasPendingCancellation) {
                     return
                 }
 
-                match (mailbox.remove()) {
+                match (mailbox.remove(timeout: Duration.second * 5)) {
                     case Some((_, f)) => f()
                     case None => ()
                 }
@@ -52,7 +48,6 @@ public class SequentialDispatcher {
     public func post<T>(f: () -> T, priority!: Int64 = 5): ActorFuture<T> {
         let fut = ActorFuture<T>(f)
         mailbox.add((this, fut.execute), priority)
-        numMsg.signal()
         return fut
     }
 
@@ -60,6 +55,5 @@ public class SequentialDispatcher {
         while (!threadHandle.thread.hasPendingCancellation) {
             threadHandle.cancel()
         }
-        numMsg.signal()
     }
 }
