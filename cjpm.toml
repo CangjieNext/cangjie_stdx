@@ -22,23 +22,53 @@
   link-option = ""
   exclude = ["build_temp", "third_party/zlib", "third_party/flatbuffers"]
 
+[package.package-configuration."stdx.compress.zlib"]
+  compile-option = "-lstdx.compress.zlibFFI"
+
+[package.package-configuration."stdx.compress.tar"]
+  compile-option = "-lstdx.compress.tarFFI"
+
+[package.package-configuration."stdx.crypto.keys"]
+  compile-option = "-lstdx.crypto.keysFFI -lcangjie-dynamicLoader-opensslFFI"
+
+[package.package-configuration."stdx.crypto.x509"]
+  compile-option = "-lstdx.crypto.x509FFI -lcangjie-dynamicLoader-opensslFFI"
+
+[package.package-configuration."stdx.crypto.digest"]
+  compile-option = "-lcangjie-dynamicLoader-opensslFFI"
+
+[package.package-configuration."stdx.crypto.crypto"]
+  compile-option = "-lcangjie-dynamicLoader-opensslFFI"
+
+[package.package-configuration."stdx.encoding.json"]
+  compile-option = "-lstdx.encoding.jsonFFI"
+
+[package.package-configuration."stdx.encoding.json.stream"]
+  compile-option = "-lstdx.encoding.json.streamFFI"
+
+[package.package-configuration."stdx.net.tls"]
+  compile-option = "-lcangjie-dynamicLoader-opensslFFI -lstdx.net.tlsFFI -lstdx.crypto.keysFFI -lstdx.crypto.x509FFI"
+
+[package.package-configuration."stdx.net.http"]
+  compile-option = "-lcangjie-dynamicLoader-opensslFFI"
+
 [target.x86_64-unknown-linux-gnu]
-  link-option = "-L target/release/stdx -L target/debug/stdx -L target/linux_ohos_aarch64_cjnative/static/stdx -L target/linux_x86_64_cjnative/static/stdx -lstdx.encoding.jsonFFI -lstdx.encoding.json.streamFFI -lstdx.compress.zlibFFI -lstdx.compress.tarFFI -lcangjie-dynamicLoader-opensslFFI -lstdx.net.tlsFFI -lstdx.crypto.keysFFI -lstdx.crypto.x509FFI -ldl -lstdx.fuzz.fuzzFFI"
+  link-option = "-L target/release/stdx -L target/debug/stdx -L target/linux_ohos_aarch64_cjnative/static/stdx -L target/linux_x86_64_cjnative/static/stdx -lstdx.fuzz.fuzzFFI"
 
 [target.aarch64-unknown-linux-gnu]
-  link-option = "-L target/release/stdx -L target/debug/stdx -L target/linux_ohos_aarch64_cjnative/static/stdx -L target/linux_aarch64_cjnative/static/stdx -lstdx.encoding.jsonFFI -lstdx.encoding.json.streamFFI -lstdx.compress.zlibFFI -lstdx.compress.tarFFI -lcangjie-dynamicLoader-opensslFFI -lstdx.net.tlsFFI -lstdx.crypto.keysFFI -lstdx.crypto.x509FFI -ldl -lstdx.fuzz.fuzzFFI"
+  link-option = "-L target/release/stdx -L target/debug/stdx -L target/linux_ohos_aarch64_cjnative/static/stdx -L target/linux_aarch64_cjnative/static/stdx -lstdx.fuzz.fuzzFFI"
 
 [target.aarch64-apple-darwin]
-  link-option = "-L target/release/stdx -L target/debug/stdx -L target/darwin_aarch64_cjnative/static/stdx -L /tmp/stdx/target/release/stdx -lstdx.encoding.jsonFFI -lstdx.encoding.json.streamFFI -lstdx.compress.zlibFFI -lstdx.compress.tarFFI -lcangjie-dynamicLoader-opensslFFI -lstdx.net.tlsFFI -lstdx.crypto.keysFFI -lstdx.crypto.x509FFI -ldl -undefined suppress -flat_namespace -lstdx.fuzz.fuzzFFI"
+  link-option = "-L target/release/stdx -L target/debug/stdx -L target/darwin_aarch64_cjnative/static/stdx -L /tmp/stdx/target/release/stdx -undefined suppress -flat_namespace -lstdx.fuzz.fuzzFFI"
 
 [target.x86_64-apple-darwin]
-  link-option = "-L target/release/stdx -L target/debug/stdx -L target/darwin_x86_64_cjnative/static/stdx -L /tmp/stdx/target/release/stdx -lstdx.encoding.jsonFFI -lstdx.encoding.json.streamFFI -lstdx.compress.zlibFFI -lstdx.compress.tarFFI -lcangjie-dynamicLoader-opensslFFI -lstdx.net.tlsFFI -lstdx.crypto.keysFFI -lstdx.crypto.x509FFI -ldl -undefined suppress -flat_namespace -lstdx.fuzz.fuzzFFI"
+  link-option = "-L target/release/stdx -L target/debug/stdx -L target/darwin_x86_64_cjnative/static/stdx -L /tmp/stdx/target/release/stdx -undefined suppress -flat_namespace -lstdx.fuzz.fuzzFFI"
 
 [target.x86_64-w64-mingw32]
-  link-option = "-L ${LOCALAPPDATA}/stdx/target/release/stdx -L target/debug/stdx -l:libstdx.encoding.jsonFFI.a -l:libstdx.encoding.json.streamFFI.a -l:libstdx.compress.zlibFFI.a -l:libstdx.compress.tarFFI.a -l:libcangjie-dynamicLoader-opensslFFI.dll -l:libstdx.net.tlsFFI.dll -l:libstdx.crypto.keysFFI.dll -l:libstdx.crypto.x509FFI.dll -lpthread -lws2_32 -lcrypt32"
+  link-option = "-L target/release/stdx -L target/debug/stdx -L target/windows_x86_64_cjnative/static/stdx -lpthread -lws2_32 -lcrypt32"
 
 [target.x86_64-linux-ohos]
-  compile-option = "-B \"${DEVECO_CANGJIE_HOME}/build-tools/third_party/llvm/bin\" -B \"${DEVECO_OH_NATIVE_HOME}/sysroot/usr/lib/x86_64-linux-ohos\" -L \"${DEVECO_OH_NATIVE_HOME}/sysroot/usr/lib/x86_64-linux-ohos\" -L \"${DEVECO_OH_NATIVE_HOME}/llvm/lib/clang/15.0.4/lib/x86_64-linux-ohos\" -L \"${DEVECO_OH_NATIVE_HOME}/llvm/lib/x86_64-linux-ohos\" --sysroot \"${DEVECO_OH_NATIVE_HOME}/sysroot\""
+  compile-option = "-L target/release/stdx -L target/debug/stdx -B \"${DEVECO_CANGJIE_HOME}/build-tools/third_party/llvm/bin\" -B \"${DEVECO_OH_NATIVE_HOME}/sysroot/usr/lib/x86_64-linux-ohos\" -L \"${DEVECO_OH_NATIVE_HOME}/sysroot/usr/lib/x86_64-linux-ohos\" -L \"${DEVECO_OH_NATIVE_HOME}/llvm/lib/clang/15.0.4/lib/x86_64-linux-ohos\" -L \"${DEVECO_OH_NATIVE_HOME}/llvm/lib/x86_64-linux-ohos\" --sysroot \"${DEVECO_OH_NATIVE_HOME}/sysroot\""
 
 [target.aarch64-linux-ohos]
-  compile-option = "-B \"${DEVECO_CANGJIE_HOME}/build-tools/third_party/llvm/bin\" -B \"${DEVECO_OH_NATIVE_HOME}/sysroot/usr/lib/aarch64-linux-ohos\" -L \"${DEVECO_OH_NATIVE_HOME}/sysroot/usr/lib/aarch64-linux-ohos\" -L \"${DEVECO_OH_NATIVE_HOME}/llvm/lib/clang/15.0.4/lib/aarch64-linux-ohos\" -L \"${DEVECO_OH_NATIVE_HOME}/llvm/lib/aarch64-linux-ohos\" --sysroot \"${DEVECO_OH_NATIVE_HOME}/sysroot\""
+  compile-option = "-L target/release/stdx -L target/debug/stdx -B \"${DEVECO_CANGJIE_HOME}/build-tools/third_party/llvm/bin\" -B \"${DEVECO_OH_NATIVE_HOME}/sysroot/usr/lib/aarch64-linux-ohos\" -L \"${DEVECO_OH_NATIVE_HOME}/sysroot/usr/lib/aarch64-linux-ohos\" -L \"${DEVECO_OH_NATIVE_HOME}/llvm/lib/clang/15.0.4/lib/aarch64-linux-ohos\" -L \"${DEVECO_OH_NATIVE_HOME}/llvm/lib/aarch64-linux-ohos\" --sysroot \"${DEVECO_OH_NATIVE_HOME}/sysroot\""

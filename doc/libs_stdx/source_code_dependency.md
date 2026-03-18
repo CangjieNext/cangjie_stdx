@@ -2,7 +2,7 @@
 
 ## 两种集成方式
 
-stdx 有两种源码集成方式：git 源码依赖和本地源码依赖。
+stdx 有三种源码集成方式：git 源码依赖、本地源码依赖和仓颉中心仓源码依赖。
 
 ### git 源码依赖
 
@@ -25,6 +25,19 @@ stdx 有两种源码集成方式：git 源码依赖和本地源码依赖。
 ```
 
 完成本地模块依赖添加之后，即可在项目中使用 stdx。
+
+### 仓颉中心仓源码依赖
+
+如果开发者不希望直接依赖本地源码，也可以通过仓颉中心仓依赖 stdx。
+
+通过仓颉中心仓依赖 stdx 时，需要在工程中添加仓颉中心仓配置文件，并且在 cjpm.toml 文件中添加仓颉中心仓模块依赖。具体请参考[仓颉中心仓使用说明](https://pkgdocs.cangjie-lang.cn/docs/zh/1.0.0/central-repo/source_zh_cn/overview.html)
+
+```toml
+[dependencies]
+  stdx = { version = "x.y.z", output-type="dynamic"}
+```
+
+完成仓颉中心仓模块依赖添加之后，即可在项目中使用 stdx。
 
 ## 包范围
 
@@ -66,4 +79,11 @@ DevEco Studio 自带 OpenHarmony 交叉编译工具链，无需设置上面的�
 - ninja: >1.10
 - openssl: >= 3 （需要配置环境变量 OPENSSL_ROOT_DIR，指向 OpenSSL 安装的根目录）
 - clang: >= 15.0.4 且 < 16 (Linux or macOS)
-- mingw-w64 (Windows) [下载地址](https://github.com/niXman/mingw-builds-binaries/releases/download/12.2.0-rt_v10-rev2/x86_64-12.2.0-release-posix-seh-msvcrt-rt_v10-rev2.7z) 
+- mingw-w64 (Windows) [下载地址](https://github.com/niXman/mingw-builds-binaries/releases/download/12.2.0-rt_v10-rev2/x86_64-12.2.0-release-posix-seh-msvcrt-rt_v10-rev2.7z)
+
+## 常见问题
+
+- 找不到 OPENSSL：请检查是否配置了环境变量 OPENSSL_ROOT_DIR，并且 OPENSSL_ROOT_DIR/lib 目录下包含 openssl 动态库。
+- stdx 编译过程中 zlib 编译失败：首先检查 third_party/zlib 目录下是否包含 zlib 源文件，如果没有则是代码拉取失败，请检查网络连接。如果有请检查 cmake 版本是否符合要求（>= 3.16.5 且 < 4）。
+- windows 平台编译时出现 vsnprintf_s 重复定义：请检查 gcc 是否是依赖中的 mingw-w64 提供的。
+- 编译时出现 undefined reference to `CJ_XXX`：改为依赖stdx动态库，或在项目的 cjpm.toml 文件的 `compile-option` 中手动添加 `-lstdx.encoding.jsonFFI -lstdx.encoding.json.streamFFI -lstdx.compress.zlibFFI -lstdx.compress.tarFFI -lstdx.crypto.keysFFI -lstdx.crypto.x509FFI -lstdx.net.tlsFFI -lcangjie-dynamicLoader-opensslFFI`。

@@ -2,7 +2,7 @@
 
 ## Two Integration Methods
 
-stdx has two source code integration methods: git source dependency and local source dependency.
+stdx has three source code integration methods: git source dependency, local source dependency, and Cangjie central repository source dependency.
 
 ### git source code dependency
 
@@ -25,6 +25,19 @@ If developers do not wish to depend on this repository via git, Developers can d
 ```
 
 After completing the addition of local module dependencies, developers can use stdx in the project.
+
+### Cangjie Central Repository Source Code Dependency
+
+If developers do not wish to directly depend on local source code, they can also depend on stdx via the Cangjie central repository.
+
+To depend on stdx via the Cangjie central repository, developers need to add a central repository configuration file in the project and add a central repository module dependency in the project's cjpm.toml file. Please refer to [Cangjie central repository usage guide](https://pkgdocs.cangjie-lang.cn/docs/zh/1.0.0/central-repo/source_zh_cn/overview.html) for specific configuration steps.
+
+```toml
+[dependencies]
+  stdx = { version = "x.y.z", output-type="dynamic"}
+```
+
+After completing the addition of central repository module dependencies, developers can use stdx in the project.
 
 ## Package Scope
 
@@ -67,3 +80,10 @@ Since stdx needs to pull and compile external open-source C libraries, and there
 - openssl: >= 3 (The environment variable OPENSSL_ROOT_DIR needs to be configured to point to the root directory of the OpenSSL installation)
 - clang: >= 15.0.4 且 < 16 (Linux or macOS)
 - mingw-w64 (Windows) [Download link](https://github.com/niXman/mingw-builds-binaries/releases/download/12.2.0-rt_v10-rev2/x86_64-12.2.0-release-posix-seh-msvcrt-rt_v10-rev2.7z)
+
+## Common Issues
+
+- **Cannot find OPENSSL**: Please check if the environment variable OPENSSL_ROOT_DIR is configured, and if the lib directory under OPENSSL_ROOT_DIR contains the openssl dynamic library.
+- **zlib compilation fails**: First check if the third_party/zlib directory contains zlib source files. If not, it is a code pull failure. Please check the network connection. If it is present, please check if the cmake version is compatible (>= 3.16.5 and < 4).
+- **vsnprintf_s redefinition error on Windows**: Please check if gcc is the one provided by the mingw-w64 dependency.
+- **undefined reference to `CJ_XXX`**: Either depend on the stdx dynamic library or manually add compile-option `-lstdx.encoding.jsonFFI -lstdx.encoding.json.streamFFI -lstdx.compress.zlibFFI -lstdx.compress.tarFFI -lstdx.crypto.keysFFI -lstdx.crypto.x509FFI -lstdx.net.tlsFFI -lcangjie-dynamicLoader-opensslFFI` to the project's cjpm.toml file.
