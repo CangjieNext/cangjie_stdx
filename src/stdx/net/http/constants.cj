@@ -12,7 +12,8 @@ import stdx.encoding.url.URL
 
 const TLS_CTX_SESSION_NAME = "CANGJIE-SERVER"
 const MAX_METHOD_SIZE = 100
-const MAX_LINE_SIZE = 8 * 1000 * 1024
+const MAX_LINE_SIZE = 32 * 1024
+const MAX_TRAILER_LINE_COUNT = 64
 const NULL_BYTE = "\0"
 const CHUNK_SIZE = 8 * 1024
 const DEFAULT_HEADER_CAPACITY = 8

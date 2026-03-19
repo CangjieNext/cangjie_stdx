@@ -389,7 +389,7 @@ class MultipartReader {
     /**
      * for read boundary line or header field
      * read until \r\n, but return bytes without \r\n
-     * @throw HttpStatusException if multipart header size exceed 8M
+     * @throw HttpStatusException if multipart header size exceeds MAX_LINE_SIZE
      */
     func readLine(): Array<UInt8> {
         let start = curParse
