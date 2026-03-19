@@ -57,8 +57,6 @@ private class GnuBase256 {
 
 extend Int64 {
     static func parseDecimal(buffer: Array<UInt8>): Int64 {
-        const DECIMAL = 10
-
         if (buffer.size == 0) {
             return 0
         }
@@ -108,8 +106,6 @@ extend Int64 {
 
 extend Int32 {
     static func parseDecimal(buffer: Array<UInt8>): Int32 {
-        const DECIMAL = 10
-
         if (buffer.size == 0) {
             return 0
         }
