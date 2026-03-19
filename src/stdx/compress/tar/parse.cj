@@ -9,7 +9,7 @@
 package stdx.compress.tar
 
 import std.time.DateTime
-import std.convert.Parsable
+import std.convert.{Parsable, RadixConvertible}
 
 // cjlint-ignore -start !G.OTH.03
 /**
@@ -36,7 +36,6 @@ private class GnuBase256 {
 
     private static const BYTE_SIZE = 8
 
-    @OverflowThrowing
     static func parsePositive(buffer: Array<UInt8>): Int64 {
         var value: Int64 = 0
         for (b in buffer.iterator().skip(1)) {
@@ -45,7 +44,6 @@ private class GnuBase256 {
         return value
     }
 
-    @OverflowThrowing
     static func parseNegative(buffer: Array<UInt8>): Int64 {
         var value: Int64 = 0
         for (b in buffer) {
@@ -57,8 +55,6 @@ private class GnuBase256 {
 
 extend Int64 {
     static func parseDecimal(buffer: Array<UInt8>): Int64 {
-        const DECIMAL = 10
-
         if (buffer.size == 0) {
             return 0
         }
@@ -79,16 +75,7 @@ extend Int64 {
         if (trim.size == 0) {
             return 0
         }
-        var result: Int64 = 0
-        for (d in trim) {
-            if (d < b'0' || d > b'7') {
-                throw TarException("Invalid octal digit '${d}' in buffer: ${buffer}.")
-            }
-            let digit = d - b'0'
-            result *= OCTAL
-            result += Int64(digit)
-        }
-        return result
+        return Int64.parse(String.fromUtf8(trim), radix: OCTAL)
     }
 
     static func parseNumeric(buffer: Array<UInt8>): Int64 {
@@ -108,8 +95,6 @@ extend Int64 {
 
 extend Int32 {
     static func parseDecimal(buffer: Array<UInt8>): Int32 {
-        const DECIMAL = 10
-
         if (buffer.size == 0) {
             return 0
         }
@@ -123,7 +108,14 @@ extend Int32 {
     }
 
     static func parseOctal(buffer: Array<UInt8>): Int32 {
-        return Int32(Int64.parseOctal(buffer))
+        const OCTAL = 8
+
+        let trim = buffer.trimEnd(b'\0', b' ').trimStart(b'\0', b' ')
+
+        if (trim.size == 0) {
+            return 0
+        }
+        return Int32.parse(String.fromUtf8(trim), radix: OCTAL)
     }
 
     static func parseNumeric(buffer: Array<UInt8>): Int32
