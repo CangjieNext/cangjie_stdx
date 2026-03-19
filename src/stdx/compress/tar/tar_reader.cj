@@ -198,7 +198,6 @@ public class TarReader<T> <: Iterable<TarEntry> where T <: InputStream {
         return result
     }
 
-    @OverflowThrowing
     private static func parseInt64(data: Array<UInt8>): Int64 {
         var result: Int64 = 0
         for (digit in data) {
