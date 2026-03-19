@@ -11,6 +11,8 @@ package stdx.encoding.json
 import std.collection.*
 import std.convert.*
 
+const MAX_JSON_PARSE_DEPTH = 100
+
 @FastNative
 foreign func CJ_JSON_ReplaceEscapeChar(input: CPointer<UInt8>, inputlen: Int64, buffer: CPointer<UInt8>, htmlSafe: Bool): Int64
 
@@ -95,6 +97,7 @@ class JsonParser {
     let data: Array<Byte>
     let size: Int64
     var offset: Int64
+    var depth: Int64
     let cache: Array<JsonValue>
     var cacheSize: Int64
     let strCache: ArrayList<Byte>
@@ -103,6 +106,7 @@ class JsonParser {
         this.data = unsafe { str.rawData() }
         this.size = data.size
         this.offset = 0
+        this.depth = 0
         if ((size >> 1) > 16) {
             this.cache = Array<JsonValue>(size >> 1, repeat: JsonNull())
         } else {
@@ -148,8 +152,8 @@ func parseJson(parser: JsonParser): JsonValue {
         skipWhiteSpace(parser)
         let start = parser.data[parser.offset]
         match {
-            case start == b'{' => return parseJsonObject(parser)
-            case start == b'[' => return parseJsonArray(parser)
+            case start == b'{' => return parseNestedJson(parser, {=> parseJsonObject(parser)})
+            case start == b'[' => return parseNestedJson(parser, {=> parseJsonArray(parser)})
             case start == b'n' => return parseJsonNull(parser)
             case start == b't' => return parseJsonTrue(parser)
             case start == b'f' => return parseJsonFalse(parser)
@@ -170,6 +174,18 @@ func parseJson(parser: JsonParser): JsonValue {
             let errMsg: String = "Parse Error: [Line]: ${errRowAndCol[0]}, [Pos]: ${errRowAndCol[1]}, [Error]: Unexpected character: \'${errStr}\'."
             throw JsonException("the json data is Non-standard, please check:\n${errMsg}")
         }
+    }
+}
+
+func parseNestedJson(parser: JsonParser, block: () -> JsonValue): JsonValue {
+    parser.depth++
+    if (parser.depth > MAX_JSON_PARSE_DEPTH) {
+        throw JsonException("Json nested depth exceeds ${MAX_JSON_PARSE_DEPTH}.")
+    }
+    try {
+        return block()
+    } finally {
+        parser.depth--
     }
 }
 
