@@ -10,6 +10,7 @@ package stdx.net.http
 
 import std.io.*
 import std.net.*
+import stdx.log.*
 
 /**
  * BufferedReader - Used to represent the conn(e.g. a tcp socket connection) message
@@ -23,8 +24,19 @@ class BufferedReader {
     // starting point for writing data into this BufferedReader
     var curWrite: Int64 = 0
 
+    var _logger: ?Logger = None
+
     init(socket: StreamingSocket) {
         this.socket = socket
+    }
+
+    mut prop logger: Logger {
+        get() {
+            _logger ?? throw HttpException("[BufferedReader] logger not set yet.")
+        }
+        set(v) {
+            _logger = v
+        }
     }
 
     // boundary of both reading and writing out from or into this BufferedReader
@@ -49,6 +61,9 @@ class BufferedReader {
     func fill(): Int64 {
         let readBytes = getWriteBuffer() |> socket.read
         if (readBytes == 0) {
+            if (logger.enabled(LogLevel.TRACE)) {
+                httpLogTrace(logger, "[BufferedReader#fill] prepare to close socket")
+            }
             socket.close() // make sure the socket is closed
             throw ConnectionException("Socket is closed.")
         }
@@ -100,8 +115,19 @@ class BufferedWriter {
     let buf = Array<Byte>(WRITE_CHUNK_SIZE, repeat: 0)
     var curWrite = 0
 
+    var _logger: ?Logger = None
+
     init(socket: StreamingSocket) {
         this.socket = socket
+    }
+
+    mut prop logger: Logger {
+        get() {
+            _logger ?? throw HttpException("[BufferedWriter] logger not set yet.")
+        }
+        set(v) {
+            _logger = v
+        }
     }
 
     func write(data: Array<Byte>): Unit {
@@ -179,10 +205,23 @@ class BufferedConn <: StreamingSocket {
     let bufferedReader: BufferedReader
     let bufferedWriter: BufferedWriter
 
+    var _logger: ?Logger = None
+
     init(socket: StreamingSocket) {
         this.socket = socket
         this.bufferedReader = BufferedReader(socket)
         this.bufferedWriter = BufferedWriter(socket)
+    }
+
+    mut prop logger: Logger {
+        get() {
+            _logger ?? throw HttpException("[BufferedConn] logger not set yet.")
+        }
+        set(v) {
+            _logger = v
+            bufferedReader.logger = v
+            bufferedWriter.logger = v
+        }
     }
 
     func readLine(): Str {
@@ -266,6 +305,9 @@ class BufferedConn <: StreamingSocket {
     }
 
     public func close(): Unit {
+        if (logger.enabled(LogLevel.TRACE)) {
+            httpLogTrace(logger, "[BufferedConn#close] prepare to close socket")
+        }
         socket.close()
     }
 

@@ -140,6 +140,9 @@ class HttpClient1 <: HttpClient {
     }
 
     func close() {
+        if (client.logger.enabled(LogLevel.TRACE)) {
+            httpLogTrace(client.logger, "[HttpClient1#close] start to close")
+        }
         synchronized(mapMtx) {
             isClosed = true
             for ((_, engine) in h1EngineMap) {
@@ -459,6 +462,9 @@ class HttpEngine1 {
 
     private func closeConn(connNode: ConnNode): Unit {
         // close
+        if (logger.enabled(LogLevel.TRACE)) {
+            httpLogTrace(logger, "[HttpEngine1#closeConn] prepare to close connNode")
+        }
         connNode.close()
         connNum.fetchAdd(-1)
     }
@@ -552,6 +558,7 @@ class ConnNode <: BodyProviderConn {
         let isToHttpsProxy: Bool
     ) {
         conn = BufferedConn(h1Engine.connect(request, isTls, isToHttpsProxy: isToHttpsProxy))
+        conn.logger = client.logger
         logger = client.logger
         readTimeout = client.readTimeout
         writeTimeout = client.writeTimeout
@@ -591,6 +598,9 @@ class ConnNode <: BodyProviderConn {
         try {
             sendRequestTimeout(request)
         } catch (e: Exception) {
+            if (logger.enabled(LogLevel.TRACE)) {
+                httpLogTrace(logger, "[ConnNode#sendRequest] catch exception on sendRequestTimeout: ${e}")
+            }
             writeTimer.cancel()
             readTimer.cancel()
             throw match {
@@ -1107,6 +1117,9 @@ class ConnNode <: BodyProviderConn {
      * close the connection
      */
     func close(): Unit {
+        if (logger.enabled(LogLevel.TRACE)) {
+            httpLogTrace(logger, "[ConnNode#close] start to close")
+        }
         if (!isClosed.swap(true)) {
             conn.close()
         }

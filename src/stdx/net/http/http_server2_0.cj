@@ -91,6 +91,7 @@ class HttpServer2 <: ProtocolService {
             httpLogDebug(logger, "[HttpServer2#serve] Http/2.0 serve...")
         }
 
+        conn.logger = logger
         decoder.logger = logger
         encoder.logger = logger
         remoteAddress = conn.socket.remoteAddress
