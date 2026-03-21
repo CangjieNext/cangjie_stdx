@@ -284,6 +284,7 @@ class HttpClientEngine2 {
     init(socket: StreamingSocket, settings: Map<UInt16, UInt32>, logger: Logger, readTimeout: Duration,
         writeTimeout: Duration) {
         this.conn = BufferedConn(socket)
+        this.conn.logger = logger
         this.fieldsWriter = FieldsWriter(conn.bufferedWriter)
         this.localSettings = settings
         this.logger = logger
