@@ -237,6 +237,7 @@ class HttpEngineConn1 <: HttpEngineConn & BodyProviderConn {
         }
         set(v) {
             _logger = v
+            conn.logger = v
         }
     }
 
