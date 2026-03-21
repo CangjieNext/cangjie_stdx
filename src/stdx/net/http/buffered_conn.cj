@@ -191,6 +191,9 @@ class BufferedConn <: StreamingSocket {
         }
 
         var line = bufferedReader.tryReadLine() // the size of line must less than MAX_LINE_SIZE
+        if (line.size > MAX_LINE_SIZE) {
+            throw HttpException("ReadLine too long.")
+        }
         if (line.endWith(LF)) {
             return line.removeLast(LF).removeLast(CR)
         }
