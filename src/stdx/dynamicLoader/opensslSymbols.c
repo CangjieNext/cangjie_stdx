@@ -39,6 +39,15 @@
 void* g_singletonHandle = NULL;
 void* g_singletonHandleSsl = NULL;
 
+typedef enum OpenSslBackendMode {
+    OPENSSL_BACKEND_UNINITIALIZED = 0,
+    OPENSSL_BACKEND_WEAK_IMPORT,
+    OPENSSL_BACKEND_DLOPEN,
+    OPENSSL_BACKEND_UNAVAILABLE,
+} OpenSslBackendMode;
+
+static OpenSslBackendMode g_backendMode = OPENSSL_BACKEND_UNINITIALIZED;
+
 typedef struct OpenSslBackendCandidate {
     const char* cryptoPath;
     const char* sslPath;
@@ -82,6 +91,18 @@ void FreeDynMsg(DynMsg* dynMsgPtr)
 /* On Apple + lld, weak imports can still error at link time; rely on dlsym instead. */
 #define CANGJIE_OPENSSL_AUTO_WEAK_AVAILABLE 0
 #define CANGJIE_PRAGMA_WEAK(sym)
+#endif
+
+#if defined(__APPLE__) && defined(CANGJIE_OPENSSL_RESOLVE_AUTO)
+#define CANGJIE_WEAK_IMPORT __attribute__((weak_import))
+extern const SSL_METHOD* TLS_client_method(void) CANGJIE_WEAK_IMPORT;
+extern SSL_CTX* SSL_CTX_new(const SSL_METHOD*) CANGJIE_WEAK_IMPORT;
+extern SSL* SSL_new(SSL_CTX*) CANGJIE_WEAK_IMPORT;
+extern void CRYPTO_free(void*, const char*, int) CANGJIE_WEAK_IMPORT;
+extern BIO* BIO_new(const BIO_METHOD*) CANGJIE_WEAK_IMPORT;
+extern void OPENSSL_init(void) CANGJIE_WEAK_IMPORT;
+#else
+#define CANGJIE_WEAK_IMPORT
 #endif
 
 #ifdef CANGJIE_OPENSSL_RESOLVE_AUTO
@@ -148,9 +169,12 @@ CANGJIE_PRAGMA_WEAK(X509_EXTENSION_free)
 #undef DEFINEFUNCTIONCB2
 #undef DEFINEFUNCTIONCB3
 #undef DEFINEFUNCTION
+
 #endif
 
 #ifndef _WIN32
+static void EnsureLoaded(void);
+
 static void* TryDlopenOne(const char* path)
 {
     if (&dlopen == NULL) {
@@ -202,6 +226,75 @@ static bool IsSslSymbol(const char* name)
            strncmp(name, "d2i_SSL_", strlen("d2i_SSL_")) == 0 ||
            strcmp(name, "OPENSSL_cipher_name") == 0 ||
            strncmp(name, "OPENSSL_init_ssl", strlen("OPENSSL_init_ssl")) == 0;
+}
+
+static bool WeakImportBackendAvailable(void)
+{
+    return &TLS_client_method != NULL &&
+           &SSL_CTX_new != NULL &&
+           &SSL_new != NULL &&
+           &CRYPTO_free != NULL &&
+           &BIO_new != NULL &&
+           &OPENSSL_init != NULL;
+}
+#endif
+
+static void EnsureBackendSelected(void)
+{
+    if (g_backendMode != OPENSSL_BACKEND_UNINITIALIZED) {
+        return;
+    }
+
+#if defined(__APPLE__) && defined(CANGJIE_OPENSSL_RESOLVE_AUTO)
+    if (WeakImportBackendAvailable()) {
+        g_backendMode = OPENSSL_BACKEND_WEAK_IMPORT;
+        return;
+    }
+#endif
+
+    EnsureLoaded();
+    if (g_singletonHandle != NULL || g_singletonHandleSsl != NULL) {
+        g_backendMode = OPENSSL_BACKEND_DLOPEN;
+    } else {
+        g_backendMode = OPENSSL_BACKEND_UNAVAILABLE;
+    }
+}
+
+static void* FindDlopenedFunction(const char* name)
+{
+    void* func = NULL;
+    if (&dlsym == NULL) {
+        return NULL;
+    }
+#if defined(CANGJIE_OPENSSL_RESOLVE_AUTO) && defined(RTLD_DEFAULT) && !defined(__APPLE__)
+    /*
+     * On ELF platforms, static OpenSSL can be linked into the main binary.
+     * Try the default symbol scope first so static links resolve without dlopen.
+     */
+    func = dlsym(RTLD_DEFAULT, name);
+    if (func != NULL) {
+        return func;
+    }
+#endif
+    if (g_singletonHandle == NULL && g_singletonHandleSsl == NULL) {
+        return NULL;
+    }
+    if (IsSslSymbol(name)) {
+        if (g_singletonHandleSsl != NULL) {
+            func = dlsym(g_singletonHandleSsl, name);
+        }
+        if (func == NULL && g_singletonHandleSsl == g_singletonHandle && g_singletonHandle != NULL) {
+            func = dlsym(g_singletonHandle, name);
+        }
+    } else {
+        if (g_singletonHandle != NULL) {
+            func = dlsym(g_singletonHandle, name);
+        }
+        if (func == NULL && g_singletonHandle == g_singletonHandleSsl && g_singletonHandleSsl != NULL) {
+            func = dlsym(g_singletonHandleSsl, name);
+        }
+    }
+    return func;
 }
 #endif
 
@@ -269,28 +362,10 @@ static void EnsureLoaded(void)
 static void* FindFunction(const char* name)
 {
     void* func = NULL;
-#ifndef _WIN32
-    if (&dlsym == NULL) {
-        return NULL;
-    }
-#if defined(CANGJIE_OPENSSL_RESOLVE_AUTO) && defined(RTLD_DEFAULT) && !defined(__APPLE__)
-    /*
-     * On ELF platforms, static OpenSSL can be linked into the main binary.
-     * Try the default symbol scope first so static links resolve without dlopen.
-     */
-    func = dlsym(RTLD_DEFAULT, name);
-    if (func != NULL) {
-        return func;
-    }
-#endif
-#endif
+#ifdef _WIN32
     if (g_singletonHandle == NULL && g_singletonHandleSsl == NULL) {
         EnsureLoaded();
     }
-    if (g_singletonHandle == NULL && g_singletonHandleSsl == NULL) {
-        return NULL;
-    }
-#ifdef _WIN32
     if (g_singletonHandle != NULL) {
         func = GetProcAddress(g_singletonHandle, name);
     }
@@ -301,21 +376,19 @@ static void* FindFunction(const char* name)
         return NULL;
     }
 #else
-    if (IsSslSymbol(name)) {
-        if (g_singletonHandleSsl != NULL) {
-            func = dlsym(g_singletonHandleSsl, name);
-        }
-        if (func == NULL && g_singletonHandleSsl == g_singletonHandle && g_singletonHandle != NULL) {
-            func = dlsym(g_singletonHandle, name);
-        }
-    } else {
-        if (g_singletonHandle != NULL) {
-            func = dlsym(g_singletonHandle, name);
-        }
-        if (func == NULL && g_singletonHandle == g_singletonHandleSsl && g_singletonHandleSsl != NULL) {
-            func = dlsym(g_singletonHandleSsl, name);
-        }
+    EnsureBackendSelected();
+    if (g_backendMode == OPENSSL_BACKEND_UNAVAILABLE) {
+        return NULL;
     }
+#if defined(__APPLE__) && defined(CANGJIE_OPENSSL_RESOLVE_AUTO)
+    if (g_backendMode == OPENSSL_BACKEND_WEAK_IMPORT) {
+        if (&dlsym == NULL) {
+            return NULL;
+        }
+        return dlsym(RTLD_DEFAULT, name);
+    }
+#endif
+    func = FindDlopenedFunction(name);
     if (func == NULL) {
         return NULL;
     }
