@@ -154,7 +154,7 @@ def find_ancestor_and_cwd(target_name="cjpm"):
     global BUILD_TARGET
     current_pid = os.getpid()
     plat = get_platform()
-
+    win_cwd = None
     # We start checking from the current process logic (which covers self-renamed usage)
     # and then move up to parents.
 
@@ -186,7 +186,7 @@ def find_ancestor_and_cwd(target_name="cjpm"):
                 name = os.path.basename(name_str.strip())
 
         elif plat == "windows":
-            cmd = "{} process where processid={} get ParentProcessId,Name /value".format(WMIC_PATH, current_pid)
+            cmd = "{} process where processid={} get ParentProcessId,Name,ExecutablePath /value".format(WMIC_PATH, current_pid)
             out = run_command(cmd)
             if out:
                 info = {}
@@ -198,6 +198,10 @@ def find_ancestor_and_cwd(target_name="cjpm"):
                     ppid = int(info["ParentProcessId"])
                 if "Name" in info:
                     name = info["Name"]
+                if "ExecutablePath" in info:
+                    if "build-script-cache" in info["ExecutablePath"]:
+                        win_cwd = info["ExecutablePath"].split("build-script-cache")[0]
+                        print("ExecutablePath: " + win_cwd)
 
         if not ppid or not name:
             break
@@ -211,7 +215,7 @@ def find_ancestor_and_cwd(target_name="cjpm"):
             elif plat == "macos":
                 cwd = get_cwd_macos(current_pid)
             elif plat == "windows":
-                cwd = get_cwd_windows(current_pid)
+                cwd = win_cwd
 
             cmdline = []
             if plat == "linux":
