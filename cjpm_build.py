@@ -31,6 +31,8 @@ from logging.handlers import TimedRotatingFileHandler
 from pathlib import Path
 from subprocess import DEVNULL, PIPE
 
+DEVECO_CUR_DIR = ""
+BUILD_TARGET_DIR = ""
 BUILD_TARGET = ""
 DEVECO_OH_NATIVE_HOME = None
 HAS_DEBUG_FLAG = False
@@ -89,7 +91,7 @@ def get_cmdline_windows(pid):
 
             val = line.strip().split("=", 1)[1]
             # Windows command lines can be tricky. shlex might not be perfect for cmd/powershell but is better than space split.
-            return shlex.split(val)
+            return val.split()
     return []
 
 
@@ -103,6 +105,15 @@ def extract_target_value(args):
             return arg.split("=", 1)[1]
     return None
 
+def extract_target_dir_value(args):
+    # Args is a list of strings
+    for i, arg in enumerate(args):
+        if arg == "--target-dir":
+            if i + 1 < len(args):
+                return args[i + 1]
+        elif arg.startswith("--target-dir="):
+            return arg.split("=", 1)[1]
+    return None
 
 def check_debug_flag(args):
     """
@@ -152,6 +163,8 @@ def get_cwd_windows(pid, debug=False):
 
 def find_ancestor_and_cwd(target_name="cjpm"):
     global BUILD_TARGET
+    global BUILD_TARGET_DIR
+    global DEVECO_OH_NATIVE_HOME
     current_pid = os.getpid()
     plat = get_platform()
     win_cwd = None
@@ -198,10 +211,12 @@ def find_ancestor_and_cwd(target_name="cjpm"):
                     ppid = int(info["ParentProcessId"])
                 if "Name" in info:
                     name = info["Name"]
-                if "ExecutablePath" in info:
-                    if "build-script-cache" in info["ExecutablePath"]:
-                        win_cwd = info["ExecutablePath"].split("build-script-cache")[0]
-                        print("ExecutablePath: " + win_cwd)
+                if "ExecutablePath" in info and "build-script" in info["ExecutablePath"]:
+                    win_cwd = info["ExecutablePath"].split("build-script-cache")[0]
+                    print("ExecutablePath: " + win_cwd)
+                    if DEVECO_OH_NATIVE_HOME != "":
+                        DEVECO_CUR_DIR = win_cwd
+                        print("DEVECO_CUR_DIR:", DEVECO_CUR_DIR)
 
         if not ppid or not name:
             break
@@ -227,6 +242,8 @@ def find_ancestor_and_cwd(target_name="cjpm"):
 
             target_val = extract_target_value(cmdline)
             BUILD_TARGET = target_val
+            target_dir_val = extract_target_dir_value(cmdline)
+            BUILD_TARGET_DIR = target_dir_val
 
             global HAS_DEBUG_FLAG
             global BUILD_TYPE_CJPM
@@ -421,7 +438,7 @@ def generate_cmake_defs(args):
         "-DCANGJIE_TARGET_TOOLCHAIN=" + (args.target_toolchain if args.target_toolchain else ""),
         "-DCANGJIE_INCLUDE=" + (";".join(args.include) if args.include else ""),
         "-DCANGJIE_CJPM_DIR=" + (CJPM_DIR.replace("\\", "/") if IS_WINDOWS else CJPM_DIR),
-        "-DCANGJIE_CJPM_BUILD_SELF=" + ("ON" if CJPM_DIR == STDX_DIR else "OFF"),
+        "-DCANGJIE_CJPM_BUILD_SELF=" + ("ON" if CJPM_DIR == STDX_DIR or DEVECO_OH_NATIVE_HOME != "" else "OFF"),
         "-DCANGJIE_CJPM_BUILD_TYPE=True",
         "-DCANGJIE_TARGET_SYSROOT=" + (args.target_sysroot if args.target_sysroot else ""),
         "-DCANGJIE_BUILD_WITHOUT_EFFECT_HANDLERS=" + bool_to_opt(args.without_effect_handlers),
