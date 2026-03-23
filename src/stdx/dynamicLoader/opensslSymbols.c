@@ -39,6 +39,15 @@
 void* g_singletonHandle = NULL;
 void* g_singletonHandleSsl = NULL;
 
+typedef enum OpenSslBackendMode {
+    OPENSSL_BACKEND_UNINITIALIZED = 0,
+    OPENSSL_BACKEND_WEAK_IMPORT,
+    OPENSSL_BACKEND_DLOPEN,
+    OPENSSL_BACKEND_UNAVAILABLE,
+} OpenSslBackendMode;
+
+static OpenSslBackendMode g_backendMode = OPENSSL_BACKEND_UNINITIALIZED;
+
 typedef struct OpenSslBackendCandidate {
     const char* cryptoPath;
     const char* sslPath;
@@ -148,9 +157,12 @@ CANGJIE_PRAGMA_WEAK(X509_EXTENSION_free)
 #undef DEFINEFUNCTIONCB2
 #undef DEFINEFUNCTIONCB3
 #undef DEFINEFUNCTION
+
 #endif
 
 #ifndef _WIN32
+static void EnsureLoaded(void);
+
 static void* TryDlopenOne(const char* path)
 {
     if (&dlopen == NULL) {
@@ -203,6 +215,90 @@ static bool IsSslSymbol(const char* name)
            strcmp(name, "OPENSSL_cipher_name") == 0 ||
            strncmp(name, "OPENSSL_init_ssl", strlen("OPENSSL_init_ssl")) == 0;
 }
+
+#if defined(__APPLE__) && defined(CANGJIE_OPENSSL_RESOLVE_AUTO)
+static bool WeakImportBackendAvailable(void)
+{
+    static const char* const anchorNames[] = {
+            "TLS_client_method",
+            "SSL_CTX_new",
+            "SSL_new",
+            "CRYPTO_free",
+            "BIO_new",
+            "OPENSSL_init",
+    };
+
+    if (&dlsym == NULL) {
+        return false;
+    }
+
+    for (size_t i = 0; i < sizeof(anchorNames) / sizeof(anchorNames[0]); i++) {
+        if (dlsym(RTLD_MAIN_ONLY, anchorNames[i]) == NULL) {
+            return false;
+        }
+    }
+    return true;
+}
+#endif
+
+static void EnsureBackendSelected(void)
+{
+    if (g_backendMode != OPENSSL_BACKEND_UNINITIALIZED) {
+        return;
+    }
+
+#if defined(__APPLE__) && defined(CANGJIE_OPENSSL_RESOLVE_AUTO)
+    if (WeakImportBackendAvailable()) {
+        g_backendMode = OPENSSL_BACKEND_WEAK_IMPORT;
+        return;
+    }
+#endif
+
+    EnsureLoaded();
+    if (g_singletonHandle != NULL || g_singletonHandleSsl != NULL) {
+        g_backendMode = OPENSSL_BACKEND_DLOPEN;
+    } else {
+        g_backendMode = OPENSSL_BACKEND_UNAVAILABLE;
+    }
+}
+
+static void* FindDlopenedFunction(const char* name)
+{
+    void* func = NULL;
+    if (&dlsym == NULL) {
+        return NULL;
+    }
+#if defined(CANGJIE_OPENSSL_RESOLVE_AUTO) && defined(RTLD_DEFAULT) && !defined(__APPLE__)
+    /*
+     * On ELF platforms, static OpenSSL can be linked into the main binary.
+     * Try the default symbol scope first so static links resolve without dlopen.
+     */
+    func = dlsym(RTLD_DEFAULT, name);
+    if (func != NULL) {
+        return func;
+    }
+#endif
+    if (g_singletonHandle == NULL && g_singletonHandleSsl == NULL) {
+        return NULL;
+    }
+    if (IsSslSymbol(name)) {
+        if (g_singletonHandleSsl != NULL) {
+            func = dlsym(g_singletonHandleSsl, name);
+        }
+        if (func == NULL && g_singletonHandleSsl == g_singletonHandle && g_singletonHandle != NULL) {
+            func = dlsym(g_singletonHandle, name);
+        }
+    } else {
+        if (g_singletonHandle != NULL) {
+            func = dlsym(g_singletonHandle, name);
+        }
+        if (func == NULL && g_singletonHandle == g_singletonHandleSsl && g_singletonHandleSsl != NULL) {
+            func = dlsym(g_singletonHandleSsl, name);
+        }
+    }
+    return func;
+}
+
 #endif
 
 static void EnsureLoaded(void)
@@ -269,28 +365,10 @@ static void EnsureLoaded(void)
 static void* FindFunction(const char* name)
 {
     void* func = NULL;
-#ifndef _WIN32
-    if (&dlsym == NULL) {
-        return NULL;
-    }
-#if defined(CANGJIE_OPENSSL_RESOLVE_AUTO) && defined(RTLD_DEFAULT) && !defined(__APPLE__)
-    /*
-     * On ELF platforms, static OpenSSL can be linked into the main binary.
-     * Try the default symbol scope first so static links resolve without dlopen.
-     */
-    func = dlsym(RTLD_DEFAULT, name);
-    if (func != NULL) {
-        return func;
-    }
-#endif
-#endif
+#ifdef _WIN32
     if (g_singletonHandle == NULL && g_singletonHandleSsl == NULL) {
         EnsureLoaded();
     }
-    if (g_singletonHandle == NULL && g_singletonHandleSsl == NULL) {
-        return NULL;
-    }
-#ifdef _WIN32
     if (g_singletonHandle != NULL) {
         func = GetProcAddress(g_singletonHandle, name);
     }
@@ -301,21 +379,19 @@ static void* FindFunction(const char* name)
         return NULL;
     }
 #else
-    if (IsSslSymbol(name)) {
-        if (g_singletonHandleSsl != NULL) {
-            func = dlsym(g_singletonHandleSsl, name);
-        }
-        if (func == NULL && g_singletonHandleSsl == g_singletonHandle && g_singletonHandle != NULL) {
-            func = dlsym(g_singletonHandle, name);
-        }
-    } else {
-        if (g_singletonHandle != NULL) {
-            func = dlsym(g_singletonHandle, name);
-        }
-        if (func == NULL && g_singletonHandle == g_singletonHandleSsl && g_singletonHandleSsl != NULL) {
-            func = dlsym(g_singletonHandleSsl, name);
-        }
+    EnsureBackendSelected();
+    if (g_backendMode == OPENSSL_BACKEND_UNAVAILABLE) {
+        return NULL;
     }
+#if defined(__APPLE__) && defined(CANGJIE_OPENSSL_RESOLVE_AUTO)
+    if (g_backendMode == OPENSSL_BACKEND_WEAK_IMPORT) {
+        if (&dlsym == NULL) {
+            return NULL;
+        }
+        return dlsym(RTLD_MAIN_ONLY, name);
+    }
+#endif
+    func = FindDlopenedFunction(name);
     if (func == NULL) {
         return NULL;
     }
