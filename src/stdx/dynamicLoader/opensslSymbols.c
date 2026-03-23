@@ -39,6 +39,15 @@
 void* g_singletonHandle = NULL;
 void* g_singletonHandleSsl = NULL;
 
+typedef enum OpenSslBackendMode {
+    OPENSSL_BACKEND_UNINITIALIZED = 0,
+    OPENSSL_BACKEND_WEAK_IMPORT,
+    OPENSSL_BACKEND_DLOPEN,
+    OPENSSL_BACKEND_UNAVAILABLE,
+} OpenSslBackendMode;
+
+static OpenSslBackendMode g_backendMode = OPENSSL_BACKEND_UNINITIALIZED;
+
 typedef struct OpenSslBackendCandidate {
     const char* cryptoPath;
     const char* sslPath;
@@ -82,6 +91,12 @@ void FreeDynMsg(DynMsg* dynMsgPtr)
 /* On Apple + lld, weak imports can still error at link time; rely on dlsym instead. */
 #define CANGJIE_OPENSSL_AUTO_WEAK_AVAILABLE 0
 #define CANGJIE_PRAGMA_WEAK(sym)
+#endif
+
+#if defined(__APPLE__) && defined(CANGJIE_OPENSSL_RESOLVE_AUTO)
+#define CANGJIE_WEAK_IMPORT __attribute__((weak_import))
+#else
+#define CANGJIE_WEAK_IMPORT
 #endif
 
 #ifdef CANGJIE_OPENSSL_RESOLVE_AUTO
@@ -148,9 +163,59 @@ CANGJIE_PRAGMA_WEAK(X509_EXTENSION_free)
 #undef DEFINEFUNCTIONCB2
 #undef DEFINEFUNCTIONCB3
 #undef DEFINEFUNCTION
+
+#if defined(__APPLE__)
+#define CANGJIE_DECLARE_WEAK_IMPORT(sym) extern __typeof__(sym) sym CANGJIE_WEAK_IMPORT
+CANGJIE_DECLARE_WEAK_IMPORT(CRYPTO_strdup);
+CANGJIE_DECLARE_WEAK_IMPORT(CRYPTO_strndup);
+CANGJIE_DECLARE_WEAK_IMPORT(CRYPTO_memdup);
+CANGJIE_DECLARE_WEAK_IMPORT(CRYPTO_free);
+CANGJIE_DECLARE_WEAK_IMPORT(CRYPTO_secure_malloc);
+CANGJIE_DECLARE_WEAK_IMPORT(CRYPTO_secure_zalloc);
+CANGJIE_DECLARE_WEAK_IMPORT(CRYPTO_secure_free);
+CANGJIE_DECLARE_WEAK_IMPORT(BN_num_bits);
+CANGJIE_DECLARE_WEAK_IMPORT(SSL_CTX_ctrl);
+CANGJIE_DECLARE_WEAK_IMPORT(SSL_ctrl);
+CANGJIE_DECLARE_WEAK_IMPORT(SSL_CTX_callback_ctrl);
+CANGJIE_DECLARE_WEAK_IMPORT(BIO_ctrl);
+CANGJIE_DECLARE_WEAK_IMPORT(BIO_clear_flags);
+CANGJIE_DECLARE_WEAK_IMPORT(BIO_new);
+CANGJIE_DECLARE_WEAK_IMPORT(BIO_s_mem);
+CANGJIE_DECLARE_WEAK_IMPORT(GENERAL_NAME_free);
+CANGJIE_DECLARE_WEAK_IMPORT(X509_EXTENSION_free);
+
+#undef DEFINEFUNCTION
+#define DEFINEFUNCTION0(name, errCode, type0) CANGJIE_DECLARE_WEAK_IMPORT(name);
+#define DEFINEFUNCTION1(name, errCode, type0, type1) CANGJIE_DECLARE_WEAK_IMPORT(name);
+#define DEFINEFUNCTION2(name, errCode, type0, type1, type2) CANGJIE_DECLARE_WEAK_IMPORT(name);
+#define DEFINEFUNCTION3(name, errCode, type0, type1, type2, type3) CANGJIE_DECLARE_WEAK_IMPORT(name);
+#define DEFINEFUNCTION4(name, errCode, type0, type1, type2, type3, type4) CANGJIE_DECLARE_WEAK_IMPORT(name);
+#define DEFINEFUNCTION5(name, errCode, type0, type1, type2, type3, type4, type5) CANGJIE_DECLARE_WEAK_IMPORT(name);
+#define DEFINEFUNCTION6(name, errCode, type0, type1, type2, type3, type4, type5, type6) CANGJIE_DECLARE_WEAK_IMPORT(name);
+#define DEFINEFUNCTION7(name, errCode, type0, type1, type2, type3, type4, type5, type6, type7) CANGJIE_DECLARE_WEAK_IMPORT(name);
+#define DEFINEFUNCTION8(name, errCode, type0, type1, type2, type3, type4, type5, type6, type7, type8) CANGJIE_DECLARE_WEAK_IMPORT(name);
+#define DEFINEFUNCTIONCB2(name, errCode, type0, type1, type2) CANGJIE_DECLARE_WEAK_IMPORT(name);
+#define DEFINEFUNCTIONCB3(name, errCode, type0, type1, type2, type3) CANGJIE_DECLARE_WEAK_IMPORT(name);
+#include "defineFunction.inc"
+#undef DEFINEFUNCTION0
+#undef DEFINEFUNCTION1
+#undef DEFINEFUNCTION2
+#undef DEFINEFUNCTION3
+#undef DEFINEFUNCTION4
+#undef DEFINEFUNCTION5
+#undef DEFINEFUNCTION6
+#undef DEFINEFUNCTION7
+#undef DEFINEFUNCTION8
+#undef DEFINEFUNCTIONCB2
+#undef DEFINEFUNCTIONCB3
+#undef DEFINEFUNCTION
+#undef CANGJIE_DECLARE_WEAK_IMPORT
+#endif
 #endif
 
 #ifndef _WIN32
+static void EnsureLoaded(void);
+
 static void* TryDlopenOne(const char* path)
 {
     if (&dlopen == NULL) {
@@ -202,6 +267,127 @@ static bool IsSslSymbol(const char* name)
            strncmp(name, "d2i_SSL_", strlen("d2i_SSL_")) == 0 ||
            strcmp(name, "OPENSSL_cipher_name") == 0 ||
            strncmp(name, "OPENSSL_init_ssl", strlen("OPENSSL_init_ssl")) == 0;
+}
+
+#if defined(__APPLE__) && defined(CANGJIE_OPENSSL_RESOLVE_AUTO)
+static void* FindWeakImportedFunction(const char* name)
+{
+#define CANGJIE_FIND_WEAK_IMPORT(sym)      \
+    if (strcmp(name, #sym) == 0) {         \
+        return (void*)sym;                 \
+    }
+    CANGJIE_FIND_WEAK_IMPORT(CRYPTO_strdup)
+    CANGJIE_FIND_WEAK_IMPORT(CRYPTO_strndup)
+    CANGJIE_FIND_WEAK_IMPORT(CRYPTO_memdup)
+    CANGJIE_FIND_WEAK_IMPORT(CRYPTO_free)
+    CANGJIE_FIND_WEAK_IMPORT(CRYPTO_secure_malloc)
+    CANGJIE_FIND_WEAK_IMPORT(CRYPTO_secure_zalloc)
+    CANGJIE_FIND_WEAK_IMPORT(CRYPTO_secure_free)
+    CANGJIE_FIND_WEAK_IMPORT(BN_num_bits)
+    CANGJIE_FIND_WEAK_IMPORT(SSL_CTX_ctrl)
+    CANGJIE_FIND_WEAK_IMPORT(SSL_ctrl)
+    CANGJIE_FIND_WEAK_IMPORT(SSL_CTX_callback_ctrl)
+    CANGJIE_FIND_WEAK_IMPORT(BIO_ctrl)
+    CANGJIE_FIND_WEAK_IMPORT(BIO_clear_flags)
+    CANGJIE_FIND_WEAK_IMPORT(BIO_new)
+    CANGJIE_FIND_WEAK_IMPORT(BIO_s_mem)
+    CANGJIE_FIND_WEAK_IMPORT(GENERAL_NAME_free)
+    CANGJIE_FIND_WEAK_IMPORT(X509_EXTENSION_free)
+
+#define DEFINEFUNCTION0(sym, errCode, type0) CANGJIE_FIND_WEAK_IMPORT(sym)
+#define DEFINEFUNCTION1(sym, errCode, type0, type1) CANGJIE_FIND_WEAK_IMPORT(sym)
+#define DEFINEFUNCTION2(sym, errCode, type0, type1, type2) CANGJIE_FIND_WEAK_IMPORT(sym)
+#define DEFINEFUNCTION3(sym, errCode, type0, type1, type2, type3) CANGJIE_FIND_WEAK_IMPORT(sym)
+#define DEFINEFUNCTION4(sym, errCode, type0, type1, type2, type3, type4) CANGJIE_FIND_WEAK_IMPORT(sym)
+#define DEFINEFUNCTION5(sym, errCode, type0, type1, type2, type3, type4, type5) CANGJIE_FIND_WEAK_IMPORT(sym)
+#define DEFINEFUNCTION6(sym, errCode, type0, type1, type2, type3, type4, type5, type6) CANGJIE_FIND_WEAK_IMPORT(sym)
+#define DEFINEFUNCTION7(sym, errCode, type0, type1, type2, type3, type4, type5, type6, type7) CANGJIE_FIND_WEAK_IMPORT(sym)
+#define DEFINEFUNCTION8(sym, errCode, type0, type1, type2, type3, type4, type5, type6, type7, type8) CANGJIE_FIND_WEAK_IMPORT(sym)
+#define DEFINEFUNCTIONCB2(sym, errCode, type0, type1, type2) CANGJIE_FIND_WEAK_IMPORT(sym)
+#define DEFINEFUNCTIONCB3(sym, errCode, type0, type1, type2, type3) CANGJIE_FIND_WEAK_IMPORT(sym)
+#include "defineFunction.inc"
+#undef DEFINEFUNCTION0
+#undef DEFINEFUNCTION1
+#undef DEFINEFUNCTION2
+#undef DEFINEFUNCTION3
+#undef DEFINEFUNCTION4
+#undef DEFINEFUNCTION5
+#undef DEFINEFUNCTION6
+#undef DEFINEFUNCTION7
+#undef DEFINEFUNCTION8
+#undef DEFINEFUNCTIONCB2
+#undef DEFINEFUNCTIONCB3
+#undef CANGJIE_FIND_WEAK_IMPORT
+    return NULL;
+}
+
+static bool WeakImportBackendAvailable(void)
+{
+    return FindWeakImportedFunction("TLS_client_method") != NULL &&
+           FindWeakImportedFunction("SSL_CTX_new") != NULL &&
+           FindWeakImportedFunction("SSL_new") != NULL &&
+           FindWeakImportedFunction("CRYPTO_free") != NULL &&
+           FindWeakImportedFunction("BIO_new") != NULL &&
+           FindWeakImportedFunction("OPENSSL_init") != NULL;
+}
+#endif
+
+static void EnsureBackendSelected(void)
+{
+    if (g_backendMode != OPENSSL_BACKEND_UNINITIALIZED) {
+        return;
+    }
+
+#if defined(__APPLE__) && defined(CANGJIE_OPENSSL_RESOLVE_AUTO)
+    if (WeakImportBackendAvailable()) {
+        g_backendMode = OPENSSL_BACKEND_WEAK_IMPORT;
+        return;
+    }
+#endif
+
+    EnsureLoaded();
+    if (g_singletonHandle != NULL || g_singletonHandleSsl != NULL) {
+        g_backendMode = OPENSSL_BACKEND_DLOPEN;
+    } else {
+        g_backendMode = OPENSSL_BACKEND_UNAVAILABLE;
+    }
+}
+
+static void* FindDlopenedFunction(const char* name)
+{
+    void* func = NULL;
+    if (&dlsym == NULL) {
+        return NULL;
+    }
+#if defined(CANGJIE_OPENSSL_RESOLVE_AUTO) && defined(RTLD_DEFAULT) && !defined(__APPLE__)
+    /*
+     * On ELF platforms, static OpenSSL can be linked into the main binary.
+     * Try the default symbol scope first so static links resolve without dlopen.
+     */
+    func = dlsym(RTLD_DEFAULT, name);
+    if (func != NULL) {
+        return func;
+    }
+#endif
+    if (g_singletonHandle == NULL && g_singletonHandleSsl == NULL) {
+        return NULL;
+    }
+    if (IsSslSymbol(name)) {
+        if (g_singletonHandleSsl != NULL) {
+            func = dlsym(g_singletonHandleSsl, name);
+        }
+        if (func == NULL && g_singletonHandleSsl == g_singletonHandle && g_singletonHandle != NULL) {
+            func = dlsym(g_singletonHandle, name);
+        }
+    } else {
+        if (g_singletonHandle != NULL) {
+            func = dlsym(g_singletonHandle, name);
+        }
+        if (func == NULL && g_singletonHandle == g_singletonHandleSsl && g_singletonHandleSsl != NULL) {
+            func = dlsym(g_singletonHandleSsl, name);
+        }
+    }
+    return func;
 }
 #endif
 
@@ -269,28 +455,10 @@ static void EnsureLoaded(void)
 static void* FindFunction(const char* name)
 {
     void* func = NULL;
-#ifndef _WIN32
-    if (&dlsym == NULL) {
-        return NULL;
-    }
-#if defined(CANGJIE_OPENSSL_RESOLVE_AUTO) && defined(RTLD_DEFAULT) && !defined(__APPLE__)
-    /*
-     * On ELF platforms, static OpenSSL can be linked into the main binary.
-     * Try the default symbol scope first so static links resolve without dlopen.
-     */
-    func = dlsym(RTLD_DEFAULT, name);
-    if (func != NULL) {
-        return func;
-    }
-#endif
-#endif
+#ifdef _WIN32
     if (g_singletonHandle == NULL && g_singletonHandleSsl == NULL) {
         EnsureLoaded();
     }
-    if (g_singletonHandle == NULL && g_singletonHandleSsl == NULL) {
-        return NULL;
-    }
-#ifdef _WIN32
     if (g_singletonHandle != NULL) {
         func = GetProcAddress(g_singletonHandle, name);
     }
@@ -301,21 +469,16 @@ static void* FindFunction(const char* name)
         return NULL;
     }
 #else
-    if (IsSslSymbol(name)) {
-        if (g_singletonHandleSsl != NULL) {
-            func = dlsym(g_singletonHandleSsl, name);
-        }
-        if (func == NULL && g_singletonHandleSsl == g_singletonHandle && g_singletonHandle != NULL) {
-            func = dlsym(g_singletonHandle, name);
-        }
-    } else {
-        if (g_singletonHandle != NULL) {
-            func = dlsym(g_singletonHandle, name);
-        }
-        if (func == NULL && g_singletonHandle == g_singletonHandleSsl && g_singletonHandleSsl != NULL) {
-            func = dlsym(g_singletonHandleSsl, name);
-        }
+    EnsureBackendSelected();
+    if (g_backendMode == OPENSSL_BACKEND_UNAVAILABLE) {
+        return NULL;
     }
+#if defined(__APPLE__) && defined(CANGJIE_OPENSSL_RESOLVE_AUTO)
+    if (g_backendMode == OPENSSL_BACKEND_WEAK_IMPORT) {
+        return FindWeakImportedFunction(name);
+    }
+#endif
+    func = FindDlopenedFunction(name);
     if (func == NULL) {
         return NULL;
     }
