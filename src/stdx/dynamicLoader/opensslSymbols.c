@@ -198,6 +198,8 @@ static bool IsSslSymbol(const char* name)
     return strncmp(name, "SSL_", strlen("SSL_")) == 0 ||
            strncmp(name, "TLS_", strlen("TLS_")) == 0 ||
            strncmp(name, "DTLS_", strlen("DTLS_")) == 0 ||
+           strncmp(name, "i2d_SSL_", strlen("i2d_SSL_")) == 0 ||
+           strncmp(name, "d2i_SSL_", strlen("d2i_SSL_")) == 0 ||
            strncmp(name, "OPENSSL_init_ssl", strlen("OPENSSL_init_ssl")) == 0;
 }
 #endif
