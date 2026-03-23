@@ -5,7 +5,6 @@
  *
  * See https://cangjie-lang.cn/pages/LICENSE for license information.
  */
-
 #include <securec.h>
 #include <stddef.h>
 #include <stdint.h>
@@ -39,6 +38,11 @@
 #include "opensslSymbols.h"
 void* g_singletonHandle = NULL;
 void* g_singletonHandleSsl = NULL;
+
+typedef struct OpenSslBackendCandidate {
+    const char* cryptoPath;
+    const char* sslPath;
+} OpenSslBackendCandidate;
 
 DynMsg* MallocDynMsg(void)
 {
@@ -147,18 +151,54 @@ CANGJIE_PRAGMA_WEAK(X509_EXTENSION_free)
 #endif
 
 #ifndef _WIN32
-static void* TryDlopen(const char* const* candidates, size_t count)
+static void* TryDlopenOne(const char* path)
 {
     if (&dlopen == NULL) {
         return NULL;
     }
+    return dlopen(path, RTLD_LAZY | RTLD_LOCAL);
+}
+
+static void* TryDlopen(const char* const* candidates, size_t count)
+{
     for (size_t i = 0; i < count; i++) {
-        void* handle = dlopen(candidates[i], RTLD_LAZY | RTLD_GLOBAL);
+        void* handle = TryDlopenOne(candidates[i]);
         if (handle != NULL) {
             return handle;
         }
     }
     return NULL;
+}
+
+static void CloseHandle(void* handle)
+{
+    if (&dlclose != NULL && handle != NULL) {
+        (void)dlclose(handle);
+    }
+}
+
+static bool TryLoadBackendPair(const OpenSslBackendCandidate* candidates, size_t count)
+{
+    for (size_t i = 0; i < count; i++) {
+        void* cryptoHandle = TryDlopenOne(candidates[i].cryptoPath);
+        void* sslHandle = TryDlopenOne(candidates[i].sslPath);
+        if (cryptoHandle != NULL && sslHandle != NULL) {
+            g_singletonHandle = cryptoHandle;
+            g_singletonHandleSsl = sslHandle;
+            return true;
+        }
+        CloseHandle(cryptoHandle);
+        CloseHandle(sslHandle);
+    }
+    return false;
+}
+
+static bool IsSslSymbol(const char* name)
+{
+    return strncmp(name, "SSL_", strlen("SSL_")) == 0 ||
+           strncmp(name, "TLS_", strlen("TLS_")) == 0 ||
+           strncmp(name, "DTLS_", strlen("DTLS_")) == 0 ||
+           strncmp(name, "OPENSSL_init_ssl", strlen("OPENSSL_init_ssl")) == 0;
 }
 #endif
 
@@ -171,14 +211,16 @@ static void EnsureLoaded(void)
     g_singletonHandle = LoadLibraryA(OPENSSLPATH);
     g_singletonHandleSsl = LoadLibraryA(OPENSSLPATHSSL);
 #else
-    /*
-     * Load libcrypto + libssl separately (instead of relying on libssl's dependency on libcrypto).
-     *
-     * On some platforms/configurations, `dlsym(handle, ...)` is not guaranteed to resolve symbols
-     * from DT_NEEDED dependencies of `handle`, so resolving `CRYPTO_*` via a libssl handle can fail.
-     * Also, some stdx users may only need crypto-related symbols at runtime (libcrypto present but
-     * libssl absent). Trying both improves robustness and keeps symbol resolution deterministic.
-     */
+#if defined(__APPLE__)
+    const OpenSslBackendCandidate backendCandidates[] = {
+            { "libcrypto.3.dylib", "libssl.3.dylib" },
+            { "libcrypto.dylib", "libssl.dylib" },
+    };
+#else
+    const OpenSslBackendCandidate backendCandidates[] = {
+            { OPENSSLPATH, OPENSSLPATHSSL },
+    };
+#endif
     const char* const cryptoCandidates[] = {
             OPENSSLPATH,
 #if defined(__APPLE__)
@@ -200,14 +242,23 @@ static void EnsureLoaded(void)
 #endif
     };
 
-    g_singletonHandle = TryDlopen(cryptoCandidates, sizeof(cryptoCandidates) / sizeof(cryptoCandidates[0]));
-    g_singletonHandleSsl = TryDlopen(sslCandidates, sizeof(sslCandidates) / sizeof(sslCandidates[0]));
+    if (TryLoadBackendPair(backendCandidates, sizeof(backendCandidates) / sizeof(backendCandidates[0]))) {
+        return;
+    }
 
-    /* If only one library loads successfully, keep both handles usable for the unified lookup path. */
-    if (g_singletonHandle == NULL) {
-        g_singletonHandle = g_singletonHandleSsl;
-    } else if (g_singletonHandleSsl == NULL) {
+    /*
+     * Fallback for crypto-only consumers. Keep the single-handle case intact, but do not stitch
+     * together two independently chosen backends: that can mix incompatible SSL implementations.
+     */
+    g_singletonHandle = TryDlopen(cryptoCandidates, sizeof(cryptoCandidates) / sizeof(cryptoCandidates[0]));
+    if (g_singletonHandle != NULL) {
         g_singletonHandleSsl = g_singletonHandle;
+        return;
+    }
+
+    g_singletonHandleSsl = TryDlopen(sslCandidates, sizeof(sslCandidates) / sizeof(sslCandidates[0]));
+    if (g_singletonHandleSsl != NULL) {
+        g_singletonHandle = g_singletonHandleSsl;
     }
 #endif
 }
@@ -219,9 +270,9 @@ static void* FindFunction(const char* name)
     if (&dlsym == NULL) {
         return NULL;
     }
-#if defined(CANGJIE_OPENSSL_RESOLVE_AUTO) && defined(RTLD_DEFAULT)
+#if defined(CANGJIE_OPENSSL_RESOLVE_AUTO) && defined(RTLD_DEFAULT) && !defined(__APPLE__)
     /*
-     * On platforms like macOS, static OpenSSL can be linked into the main binary.
+     * On ELF platforms, static OpenSSL can be linked into the main binary.
      * Try the default symbol scope first so static links resolve without dlopen.
      */
     func = dlsym(RTLD_DEFAULT, name);
@@ -247,11 +298,20 @@ static void* FindFunction(const char* name)
         return NULL;
     }
 #else
-    if (g_singletonHandle != NULL) {
-        func = dlsym(g_singletonHandle, name);
-    }
-    if (func == NULL && g_singletonHandleSsl != NULL) {
-        func = dlsym(g_singletonHandleSsl, name);
+    if (IsSslSymbol(name)) {
+        if (g_singletonHandleSsl != NULL) {
+            func = dlsym(g_singletonHandleSsl, name);
+        }
+        if (func == NULL && g_singletonHandleSsl == g_singletonHandle && g_singletonHandle != NULL) {
+            func = dlsym(g_singletonHandle, name);
+        }
+    } else {
+        if (g_singletonHandle != NULL) {
+            func = dlsym(g_singletonHandle, name);
+        }
+        if (func == NULL && g_singletonHandle == g_singletonHandleSsl && g_singletonHandleSsl != NULL) {
+            func = dlsym(g_singletonHandleSsl, name);
+        }
     }
     if (func == NULL) {
         return NULL;
