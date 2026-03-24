@@ -38,6 +38,7 @@ DEVECO_OH_NATIVE_HOME = None
 HAS_DEBUG_FLAG = False
 BUILD_TYPE_CJPM = "release"
 WMIC_PATH = "C:/Windows/System32/wbem/wmic.exe"
+IS_MOCK = False
 
 def get_platform():
     if sys.platform.startswith("linux"):
@@ -248,7 +249,10 @@ def find_ancestor_and_cwd(target_name="cjpm"):
 
             global HAS_DEBUG_FLAG
             global BUILD_TYPE_CJPM
+            global IS_MOCK
             HAS_DEBUG_FLAG = check_debug_flag(cmdline)
+            if "--mock" in cmdline:
+                IS_MOCK = True
             if(HAS_DEBUG_FLAG):
                 BUILD_TYPE_CJPM = "debug"
             else:
@@ -425,13 +429,17 @@ def generate_cmake_defs(args):
 
     if args.target:
         fields = args.target.split("-")
-
+    global IS_MOCK
+    target_dir = "target"
+    if IS_MOCK:
+        target_dir = "target/mock"
     if CJPM_DIR == STDX_DIR:
-        install_prefix = os.path.join(CJPM_DIR, "target")
+        install_prefix = os.path.join(CJPM_DIR, target_dir)
     else:
-        install_prefix = os.path.join(CJPM_DIR, "target/" + BUILD_TYPE_CJPM)
+        install_prefix = os.path.join(CJPM_DIR, target_dir + "/" + BUILD_TYPE_CJPM)
     result = [
         "-DCMAKE_BUILD_TYPE=" + args.build_type.value,
+        "-DCMAKE_IS_MOCK=" + bool_to_opt(IS_MOCK),
         "-DCMAKE_BUILD_STAGE=" + args.build_stage.value,
         "-DCMAKE_TOOLCHAIN_FILE=../../build/common/" + toolchain_file,
         "-DCMAKE_INSTALL_PREFIX=" + install_prefix,
@@ -494,6 +502,7 @@ def run_cmake_and_build(args):
 
 def build(args):
     global CJPM_DIR
+    global IS_MOCK
     global DEVECO_OH_NATIVE_HOME
     
     if not HAS_DEBUG_FLAG:
@@ -546,16 +555,19 @@ def build(args):
     
     LOG.info("begin build py----")
     if args.build_stage.value == "postBuild":
+        target_dir = "target"
+        if IS_MOCK:
+            target_dir = "target/mock"
         if not IS_WINDOWS:
             if CJPM_DIR != STDX_DIR:
                 return 0
-            parts = [CJPM_DIR, "target", args.target, BUILD_TYPE_CJPM, "stdx"]
+            parts = [CJPM_DIR, target_dir, args.target, BUILD_TYPE_CJPM, "stdx"]
             target_dir = os.path.join(*(p for p in parts if p is not None))
             if not extract_libstdx(target_dir, args):
                 LOG.info("skip to extract libstdx")
                 return 0
         else:
-            parts = [STDX_DIR, "target", args.target, BUILD_TYPE_CJPM, "stdx"]
+            parts = [STDX_DIR, target_dir, args.target, BUILD_TYPE_CJPM, "stdx"]
             target_dir = os.path.join(*(p for p in parts if p is not None))
             if not extract_libstdx(target_dir, args):
                 LOG.info("skip to extract libstdx")
