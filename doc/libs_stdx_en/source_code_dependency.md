@@ -1,6 +1,6 @@
 # Extension Library Source Code Integration Guide
 
-## Two Integration Methods
+## Three Integration Methods
 
 stdx has three source code integration methods: git source dependency, local source dependency, and Cangjie central repository source dependency.
 
