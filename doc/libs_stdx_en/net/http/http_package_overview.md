@@ -26,6 +26,11 @@ This package requires external dependencies on `OpenSSL 3`'s `ssl` and `crypto` 
     - Since `Android` ships with a stripped-down version of `OpenSSL` by default, some interfaces may throw exceptions due to missing symbols. Therefore, users need to compile and install a complete `OpenSSL 3.x.x` version themselves.
     - Download the `OpenSSL 3.x.x` source code and use Android NDK to cross-compile dynamic library files for the target architectures (currently only `arm64-v8a` is supported). Ensure the build artifacts include `libssl.so`, `libssl.so.3`, `libcrypto.so`, and `libcrypto.so.3`.
     - Add the directory containing these files to the environment variables `LD_LIBRARY_PATH`.
+- For `HarmonyOS` operating systems:
+    - Since `stdx` cannot directly access the system ROM's `OpenSSL` in the `HarmonyOS` environment, users need to compile `OpenSSL` dynamic libraries for `HarmonyOS` and package them into the application.
+    - Download the `OpenSSL 3.x.x` source code and use `HarmonyOS` NDK to cross-compile dynamic library files for the target architectures (supports `arm64-v8a` and `x86_64`). Ensure the build artifacts include `libssl.so`, `libssl.so.3`, `libcrypto.so`, and `libcrypto.so.3`.
+    - For compiling `OpenSSL` for `HarmonyOS`, refer to [OHOS Cangjie SDK Build Guide](https://gitcode.com/Cangjie/cangjie_build/blob/dev/docs/linux_ohos_toolchain.md).
+    - Package the compiled dynamic library files into the application and ensure they can be correctly loaded at runtime.
 
 If the `OpenSSL 3` package is not installed or an older version is installed, the program may fail to function and throw TLS-related exceptions.
 
