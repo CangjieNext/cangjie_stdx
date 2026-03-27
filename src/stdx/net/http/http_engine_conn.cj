@@ -18,6 +18,7 @@ abstract class HttpEngineConn {
     protected var _readHeaderTimeout: ?Duration = None
     protected var _httpKeepAliveTimeout: ?Duration = None
     protected var _maxRequestHeaderSize: ?Int64 = None
+    protected var _maxRequestHeaderCount: ?Int64 = None
     protected var _maxRequestBodySize: ?Int64 = None
 
     protected mut prop readTimeout: Duration {
@@ -53,6 +54,15 @@ abstract class HttpEngineConn {
         }
         set(v) {
             _maxRequestHeaderSize = v
+        }
+    }
+
+    protected mut prop maxRequestHeaderCount: Int64 {
+        get() {
+            _maxRequestHeaderCount ?? throw HttpException("The maxRequestHeaderCount not set yet.")
+        }
+        set(v) {
+            _maxRequestHeaderCount = v
         }
     }
 
