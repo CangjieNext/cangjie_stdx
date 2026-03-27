@@ -549,3 +549,37 @@ extend String {
         return this
     }
 }
+
+protected func isIPAddress(host: String): Bool {
+    if (host.isEmpty()) {
+        return false
+    }
+    var s = host
+    if (host.size >= 2 && host[0] == b'[' && host[host.size - 1] == b']') {
+        s = host[1..host.size - 1]
+    }
+    var hasColon = false
+    var hasDot = false
+    for (c in s) {
+        if (c == b':') {
+            hasColon = true
+        } else if (c == b'.') {
+            hasDot = true
+        }
+    }
+    if (hasColon) {
+        return true
+    }
+    if (hasDot) {
+        var dotCount = 0
+        for (c in s) {
+            if (c == b'.') {
+                dotCount++
+            } else if (!c.isAsciiNumber()) {
+                return false
+            }
+        }
+        return dotCount == 3
+    }
+    return false
+}
