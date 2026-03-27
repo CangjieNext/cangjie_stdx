@@ -497,8 +497,41 @@ public class URL <: ToString {
      * @throws IllegalArgumentException if there is an invalid utf8 leading code
      */
     private func parsePath(start: Int64, end: Int64): Unit {
-        _path = checkAndDecode(PATH, _rawUrl[start..end])
-        _rawPath = _rawUrl[start..end]
+        let rawPath = _rawUrl[start..end]
+        // Normalize dot-segments for absolute URIs (RFC 3986 Section 5.2.4)
+        // Only normalize if we have a scheme and the path is absolute (starts with /)
+        if (!_scheme.isEmpty() && !rawPath.isEmpty() && rawPath[0] == b'/') {
+            _rawPath = normalizePath(rawPath)
+        } else {
+            _rawPath = rawPath
+        }
+        _path = checkAndDecode(PATH, _rawPath)
+    }
+
+    /**
+     * Normalize path by removing dot-segments (. and ..) according to RFC 3986 Section 5.2.4.
+     *
+     * @param path The path to normalize
+     * @return The normalized path
+     */
+    private static func normalizePath(path: String): String {
+        let resultPath = StringBuilder()
+        let variablePaths = ArrayList<String>()
+        var theEndNeedSlashForced = false
+        if (!path.isEmpty()) {
+            let paths = path.lazySplit("/")
+            theEndNeedSlashForced = isEndSlashNeeded(paths, variablePaths)
+            // If the path starts with a slash (/), the result still starts with a slash (/).
+            if (path[0] == b'/') {
+                resultPath.append("/")
+            }
+        }
+        resultPath.append(String.join(variablePaths.toArray(), delimiter: "/"))
+        // If path ends with /, the result still ends with /.
+        if ((variablePaths.size != 0 && (path[path.size - 1] == b'/' || theEndNeedSlashForced))) {
+            resultPath.append("/")
+        }
+        return resultPath.toString()
     }
 
     private func parsePort(start: Int64, end: Int64): Unit {
