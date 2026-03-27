@@ -63,6 +63,7 @@ public class ServerBuilder {
     var _readHeaderTimeout: Duration = Duration.Max
     var _httpKeepAliveTimeout: Duration = Duration.Max
     var _maxRequestHeaderSize: Int64 = Int64(DEFAULT_MAX_HEADER_LIST_SIZE)
+    var _maxRequestHeaderCount: Int64 = Int64(DEFAULT_MAX_HEADER_COUNT)
     var _maxRequestBodySize: Int64 = DEFAULT_MAX_BODY_SIZE
 
     var _headerTableSize: UInt32 = 4096
@@ -228,6 +229,24 @@ public class ServerBuilder {
     }
 
     /**
+     * The generated server rejects requests that exceed this header count limit.
+     * This prevents header count attacks where an attacker sends many small headers
+     * to consume memory and CPU.
+     *
+     * @param count max count of headers per request, value 0 means unlimited, the default value is 100.
+     * @return ServerBuilder whose max count of request headers has been set.
+     *
+     * @throws IllegalArgumentException, if count is negative.
+     */
+    public func maxRequestHeaderCount(count: Int64): ServerBuilder {
+        if (count < 0) {
+            throw IllegalArgumentException("Headers count shouldn't be negative, got ${count}.")
+        }
+        _maxRequestHeaderCount = count
+        return this
+    }
+
+    /**
      * The generated server rejects requests that exceed this body limit.
      *
      * @param size max size of body per request, value 0 means unlimited, the default value is 0.
@@ -381,6 +400,7 @@ public class ServerBuilder {
             _readHeaderTimeout: _readHeaderTimeout,
             _httpKeepAliveTimeout: _httpKeepAliveTimeout,
             _maxRequestHeaderSize: _maxRequestHeaderSize,
+            _maxRequestHeaderCount: _maxRequestHeaderCount,
             _maxRequestBodySize: _maxRequestBodySize,
             _headerTableSize: _headerTableSize,
             _maxConcurrentStreams: _maxConcurrentStreams,
@@ -417,6 +437,7 @@ public class Server { // cjlint-ignore !G.ENU.01
         let _readHeaderTimeout!: Duration,
         let _httpKeepAliveTimeout!: Duration,
         let _maxRequestHeaderSize!: Int64,
+        let _maxRequestHeaderCount!: Int64,
         let _maxRequestBodySize!: Int64,
         let _headerTableSize!: UInt32,
         let _maxConcurrentStreams!: UInt32,
@@ -522,6 +543,13 @@ public class Server { // cjlint-ignore !G.ENU.01
     public prop maxRequestHeaderSize: Int64 {
         get() {
             _maxRequestHeaderSize
+        }
+    }
+
+    /* Gets the maxRequestHeaderCount of this server. */
+    public prop maxRequestHeaderCount: Int64 {
+        get() {
+            _maxRequestHeaderCount
         }
     }
 
