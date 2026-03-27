@@ -905,7 +905,10 @@ class ConnNode <: BodyProviderConn {
         // HTTP does not place a predefined limit on the length of each field line,
         // field value, or on the length of a header or trailer section as a whole
         // RFC 9112 5.4.
+        // However, we apply limits to protect against malicious servers.
         let header = HttpHeaders()
+        var headerSize = 0
+        var headerCount = 0
 
         // although the line terminator for the start-line and fields is the sequence CRLF,
         // a recipient may recognize a single LF as a line terminator and ignore any preceding CR
@@ -924,6 +927,21 @@ class ConnNode <: BodyProviderConn {
             // obs-text         = %x80-FF
             // RFC 9110 5.5.
             let (name, value) = parseAndCheckHeaderLine(line, false)
+
+            // Security: Check header size limit
+            if (Int64(DEFAULT_MAX_HEADER_LIST_SIZE) != 0) {
+                headerSize += name.size + value.size + 1
+                if (headerSize >= Int64(DEFAULT_MAX_HEADER_LIST_SIZE)) {
+                    throw HttpException("Response header size out of limit ${DEFAULT_MAX_HEADER_LIST_SIZE}.")
+                }
+            }
+
+            // Security: Check header count limit
+            headerCount++
+            if (headerCount > Int64(DEFAULT_MAX_HEADER_COUNT)) {
+                throw HttpException("Response header count out of limit ${DEFAULT_MAX_HEADER_COUNT}.")
+            }
+
             header.add(name, value)
             line = readLine()
         }
@@ -1128,6 +1146,7 @@ func toHeaderString(httpHeaders: HttpHeaders): StringBuilder {
 }
 
 class ResponseBodyProviderUtilConnectionClose <: InputStream & Resource {
+    var bytesRead: Int64 = 0
     ResponseBodyProviderUtilConnectionClose(let connNode: ConnNode, let timer: HttpTimer) {}
     // if there is data in the cache,
     // the value is returned immediately
@@ -1137,7 +1156,17 @@ class ResponseBodyProviderUtilConnectionClose <: InputStream & Resource {
         }
 
         try {
-            return connNode.conn.read(buf)
+            let n = connNode.conn.read(buf)
+            if (n > 0) {
+                // Security: Check body size limit for responses without Content-Length
+                // This prevents malicious servers from sending unlimited data
+                bytesRead += n
+                if (bytesRead > DEFAULT_MAX_BODY_SIZE) {
+                    connNode.h1Engine.closeConnInUse(connNode)
+                    throw HttpException("Response body size out of limit ${DEFAULT_MAX_BODY_SIZE}.")
+                }
+            }
+            return n
         } catch (e: Exception) {
             connNode.h1Engine.closeConnInUse(connNode)
             if (e is ConnectionException) { // socket is closed
