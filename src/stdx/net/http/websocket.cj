@@ -731,7 +731,11 @@ func parseUpgradeRequestCommon(ctx: HttpContext, origins: ArrayList<String>, sub
     // an Origin header field in the client's handshake indicates the origin of the script establishing the connection.
     // the server may use this information as part of a determination of whether to accept the incoming connection.
     // if the server does not validate the origin (origins.isEmpty() == true), it will accept connections from anywhere.
-    if (!origins.isEmpty()) {
+    if (origins.isEmpty()) {
+        httpLogWarn(mutexLogger(), "[WebSocket#upgradeFromServer] No origin restrictions configured. " +
+            "This enables Cross-Site WebSocket Hijacking (CSWSH) vulnerability. " +
+            "Consider setting allowed origins explicitly.")
+    } else {
         let originValues = ctx.request.headers.getInternal("origin") ?? responseAndThrows(ctx, // cjlint-ignore !G.EXP.03
             HttpStatusCode.STATUS_FORBIDDEN, "the upgrade request lacks Origin field")
         if (!originValues.isSingle() || !origins.contains(originValues.single)) {
