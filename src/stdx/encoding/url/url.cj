@@ -490,6 +490,27 @@ public class URL <: ToString {
         if (_host.hostname.contains(":")) {
             throw UrlSyntaxException(_host.hostname, "Invalid URL: IPv6 address literals must within square brackets (\"[\" and \"]\")")
         }
+        // Validate hostname does not contain control characters (0x00-0x1F, 0x7F)
+        // to prevent CRLF injection and other header injection attacks.
+        // Similar to Go CVE-2023-29406.
+        validateNoControlChars(_host.hostname, "hostname")
+    }
+
+    /**
+     * Validate that a string does not contain control characters (bytes 0x00-0x1F, 0x7F).
+     * Control characters can enable injection attacks like CRLF injection when used
+     * in HTTP headers.
+     *
+     * @param str The string to validate
+     * @param context The context for error message (e.g., "hostname")
+     * @throws UrlSyntaxException if control characters are found
+     */
+    private static func validateNoControlChars(str: String, context: String): Unit {
+        for (b in str) {
+            if ((b >= 0 && b <= 0x1F) || b == 0x7F) {
+                throw UrlSyntaxException(str, "Invalid ${context}: contains control characters")
+            }
+        }
     }
 
     /*
