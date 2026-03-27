@@ -154,22 +154,25 @@ public struct TlsServerConfig <: TlsConfig {
     }
 
     /**
-     * securityLevel 0-5， refer to openssl SSL_CTX_set_security_level
+     * securityLevel 2-5， refer to openssl SSL_CTX_set_security_level
+     * Level 2 is the minimum recommended security level
+     * Levels 0 and 1 are not allowed for security reasons:
+     * - Level 0 disables all security checks (allows NULL ciphers, export ciphers, and keys of any length)
+     * - Level 1 disables some security checks
      */
     public mut prop securityLevel: Int32 {
         get() {
             _securityLevel
         }
         set(value) {
-            if (value < 0 || value > 5) {
-                throw IllegalArgumentException("SecurityLevel should be from 0 to 5.")
+            if (value < 2 || value > 5) {
+                throw IllegalArgumentException("SecurityLevel should be from 2 to 5. Levels 0 and 1 are not allowed for security reasons.")
             }
             _securityLevel = value
         }
     }
-}
-
-extend TlsContext {
+ 
+    extend TlsContext {
     func configureServer(cfg: TlsServerConfig, session: ?TlsServerSession): Unit {
         withContext<Unit> {
             nativeContext, _ => configureServerContext(nativeContext, cfg, session)
