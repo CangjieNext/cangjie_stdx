@@ -208,6 +208,15 @@ public class URL <: ToString {
      */
     private func parseURL(rawUrl: String): URL {
         _rawUrl = rawUrl
+        // Reject backslashes in URL to prevent path traversal attacks.
+        // Many HTTP servers and browsers treat \ as equivalent to /.
+        // A URL like http://example.com/allowed\..\secret would be parsed
+        // literally but the server might resolve .. traversals through backslashes.
+        // Per WHATWG URL Standard, backslashes should be normalized to /,
+        // but we choose to reject them for security.
+        if (_rawUrl.contains("\\")) {
+            throw UrlSyntaxException(_rawUrl, "Backslash is not allowed in URL")
+        }
         var i = 0
         while (i < _rawUrl.size) {
             match (_rawUrl[i]) {
