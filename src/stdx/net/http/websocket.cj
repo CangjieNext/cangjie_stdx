@@ -21,6 +21,8 @@ const GUID = "258EAFA5-E914-47DA-95CA-C5AB0DC85B11"
 const FRAMESIZE = 4 * 1024
 // the limit of each frame payload length is 20M, to prevent the DOS attack
 const MAX_FRAME_PAYLOAD_LENGTH = 20 * 1024 * 1024
+// the limit of aggregate message size across continuation frames is 100M
+const MAX_MESSAGE_SIZE = 100 * 1024 * 1024
 
 @FastNative
 foreign func DYN_SHA1(d: CPointer<UInt8>, n: Int32, md: CPointer<UInt8>, msg: CPointer<DynMsg>): CPointer<UInt8>
@@ -47,6 +49,8 @@ public class WebSocket {
     let readMutex = Mutex()
     let isClosed = AtomicBool(false)
     let isSentCloseFrame = AtomicBool(false)
+    var _currentMessageSize: Int64 = 0
+    var _isReadingFragmentedMessage: Bool = false
 
     init(conn: WebSocketConn, subProtocol: String, isClient: Bool) {
         this.conn = conn
@@ -175,6 +179,7 @@ public class WebSocket {
     private func readFramePayload(frame: WebSocketFrame): Unit {
         if (frame.payloadLength != 0) {
             checkFramePayloadLimit(frame.payloadLength)
+            checkAndUpdateMessageSize(frame)
             let payloadData = Array<UInt8>(frame.payloadLength, repeat: 0)
             conn.readRaw(payloadData)
             // server must remove masking for data frames received from a client.
@@ -183,6 +188,32 @@ public class WebSocket {
             } else {
                 payloadData
             }
+        } else {
+            checkAndUpdateMessageSize(frame)
+        }
+    }
+
+    private func checkAndUpdateMessageSize(frame: WebSocketFrame): Unit {
+        match (frame.frameType) {
+            case TextWebFrame | BinaryWebFrame =>
+                _isReadingFragmentedMessage = !frame.fin
+                _currentMessageSize = frame.payloadLength
+                checkMessageSizeLimit()
+            case ContinuationWebFrame =>
+                _currentMessageSize += frame.payloadLength
+                checkMessageSizeLimit()
+                if (frame.fin) {
+                    _isReadingFragmentedMessage = false
+                    _currentMessageSize = 0
+                }
+            case _ => ()
+        }
+    }
+
+    private func checkMessageSizeLimit(): Unit {
+        if (_currentMessageSize > MAX_MESSAGE_SIZE) {
+            failTheWebSocketConnection(WebSocketStatusCode.MESSAGE_TOO_BIG,
+                "aggregate message size too large, current size: ${_currentMessageSize}, limit: ${MAX_MESSAGE_SIZE}")
         }
     }
 
