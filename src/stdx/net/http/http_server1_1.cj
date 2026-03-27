@@ -32,7 +32,6 @@ class HttpServer1 <: ProtocolService {
         httpConn.writeTimeout = writeTimeout
         httpConn.readHeaderTimeout = readHeaderTimeout
         httpConn.maxRequestHeaderSize = maxRequestHeaderSize
-        httpConn.maxRequestHeaderCount = maxRequestHeaderCount
         httpConn.maxRequestBodySize = maxRequestBodySize
         httpConn.logger = logger
 
@@ -386,9 +385,9 @@ class HttpEngineConn1 <: HttpEngineConn & BodyProviderConn {
             // Security: Check header count limit to prevent header count attacks
             // where an attacker sends many small headers to consume memory and CPU
             headerCount++
-            if (maxRequestHeaderCount != 0 && headerCount > maxRequestHeaderCount) {
+            if (headerCount > DEFAULT_MAX_HEADER_COUNT) {
                 throw HttpStatusException(HttpStatusCode.STATUS_REQUEST_HEADER_FIELDS_TOO_LARGE,
-                    "Header count out of limit ${maxRequestHeaderCount}.")
+                    "Header count out of limit ${DEFAULT_MAX_HEADER_COUNT}.")
             }
 
             headers.add(name, value)
