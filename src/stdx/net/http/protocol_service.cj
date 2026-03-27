@@ -106,15 +106,6 @@ public abstract class ProtocolService {
     }
 
     /*
-     * Max count of headers per request.
-     */
-    protected prop maxRequestHeaderCount: Int64 {
-        get() {
-            server.maxRequestHeaderCount
-        }
-    }
-
-    /*
      * Max size of body per request.
      */
     protected prop maxRequestBodySize: Int64 {
