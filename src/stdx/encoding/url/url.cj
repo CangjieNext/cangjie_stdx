@@ -607,6 +607,13 @@ public class URL <: ToString {
                     if (!b1.isAsciiHex() || !b2.isAsciiHex()) {
                         throw UrlSyntaxException(raw, "Invalid URL escape.")
                     }
+                    let decodedByte = hexToDec(b1) << 4 | hexToDec(b2)
+                    // Reject null bytes (%00) to prevent null byte injection attacks
+                    // In C-style strings, null bytes can truncate strings, causing
+                    // parsed values to differ from actual network requests.
+                    if (decodedByte == 0) {
+                        throw UrlSyntaxException(raw, "Null byte (\\%00) is not allowed in URL.")
+                    }
                     let decoded = match (decodedArr) {
                         case Some(v) => v
                         case None =>
@@ -615,7 +622,7 @@ public class URL <: ToString {
                             decodedArr = arr
                             arr
                     }
-                    decoded.add(hexToDec(b1) << 4 | hexToDec(b2))
+                    decoded.add(decodedByte)
                     i += 3
                 case _ =>
                     if (let Some(v) <- decodedArr) {
