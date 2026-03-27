@@ -748,7 +748,7 @@ class GoawayFrame <: Frame {
         sb.append("Goaway Frame [ ")
         sb.append("Last Stream Id: ${lastStreamId} ")
         sb.append("Error Code: ${errorCode} ")
-        sb.append("Debug data: ${String.fromUtf8(debugData)} ]")
+        sb.append("Debug data: ${sanitizeForLog(debugData)} ]")
         return sb.toString()
     }
 }
