@@ -7,5 +7,4 @@
 
 set(CHIR_SRCS
     "*.cj"
-    "utils/*.cj"
     CACHE INTERNAL "")

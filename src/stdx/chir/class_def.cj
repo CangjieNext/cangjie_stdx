@@ -97,7 +97,6 @@ public class ClassLikeDef <: CustomTypeDef & Equatable<ClassLikeDef> {
         if (let Some(superClass) <- _superClass) {
             superClassStr.append(superClass.toString())
             superClassStr.append(if (implementedInterfaceTypes.isEmpty()) { " <: " } else { " & " })
-            superClassStr.append(superClassStr)
         }
         return super.printTitle() + superClassStr.toString()
     }
