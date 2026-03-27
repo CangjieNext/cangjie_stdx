@@ -28,11 +28,36 @@ public class UrlSyntaxException <: Exception {
      *
      */
     public init(input: String, reason: String) {
-        super(reason + " Input = ${input}.")
+        super(reason + " Input = ${sanitizeUrl(input)}.")
     }
 
     public init(input: String, reason: String, pos: String) {
-        super(reason + " Input = ${input} (at '${pos}').")
+        super(reason + " Input = ${sanitizeUrl(input)} (at '${pos}').")
+    }
+
+    private static func sanitizeUrl(input: String): String {
+        var result = input
+        let atIdx = result.indexOf('@') ?? -1
+        if (atIdx != -1) {
+            let schemeEnd = result.indexOf("://") ?? -1
+            if (schemeEnd != -1 && atIdx > schemeEnd) {
+                let hostStart = atIdx + 1
+                let userinfo = result[(schemeEnd + 3)..atIdx]
+                let colonIdx = userinfo.indexOf(':') ?? -1
+                var sanitizedUserinfo = ""
+                if (colonIdx != -1) {
+                    let username = userinfo[0..colonIdx]
+                    let password = userinfo[(colonIdx + 1)..]
+                    let maskedUsername = "*" * username.size
+                    let maskedPassword = "*" * password.size
+                    sanitizedUserinfo = "${maskedUsername}:${maskedPassword}"
+                } else {
+                    sanitizedUserinfo = "*" * userinfo.size
+                }
+                result = result[0..(schemeEnd + 3)] + sanitizedUserinfo + "@" + result[hostStart..]
+            }
+        }
+        return result
     }
 
     protected override func getClassName(): String {
