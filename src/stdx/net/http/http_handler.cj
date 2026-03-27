@@ -11,6 +11,7 @@ package stdx.net.http
 import std.fs.*
 import std.io.*
 import std.collection.ArrayList
+import std.unicode.*
 import stdx.encoding.url.URL
 
 public interface HttpRequestHandler {
@@ -369,6 +370,36 @@ func basename(fileName: String): String {
     return filePathList[filePathList.size - 1]
 }
 
+let WINDOWS_RESERVED_NAMES: Array<String> = [
+    "CON", "PRN", "AUX", "NUL",
+    "COM1", "COM2", "COM3", "COM4", "COM5", "COM6", "COM7", "COM8", "COM9",
+    "LPT1", "LPT2", "LPT3", "LPT4", "LPT5", "LPT6", "LPT7", "LPT8", "LPT9"
+]
+
+func containsNullByte(fileName: String): Bool {
+    for (c in fileName) {
+        if (c == b'\0') {
+            return true
+        }
+    }
+    return false
+}
+
+func isWindowsReservedName(fileName: String): Bool {
+    let upperName = fileName.toUpper()
+    let dotIndex = upperName.indexOf('.')
+    let baseName = match (dotIndex) {
+        case Some(idx) => upperName[..idx]
+        case None => upperName
+    }
+    for (reserved in WINDOWS_RESERVED_NAMES) {
+        if (baseName == reserved) {
+            return true
+        }
+    }
+    return false
+}
+
 // read multipart/form-data
 class MultipartReader {
     let startBoundary: Array<UInt8>
@@ -572,19 +603,25 @@ class MultipartParser {
 
         // strip any directory info in the fileName
         fileName = basename(fileName)
-        let fullPath = concatPath(fileName)
-        if (exists(fullPath)) {
-            throw FSException("File `${fileName}` already exist.") /*cjlint-ignore !G.ERR.01 !G.ERR.02*/
+
+        // reject null bytes in filename
+        if (containsNullByte(fileName)) {
+            throw HttpStatusException(HttpStatusCode.STATUS_BAD_REQUEST, "Filename contains null byte.")
         }
-        let file = File(fullPath, Write)
+
+        // reject Windows reserved device names
+        if (isWindowsReservedName(fileName)) {
+            throw HttpStatusException(HttpStatusCode.STATUS_BAD_REQUEST, "Filename is a reserved device name.")
+        }
+
+        let fullPath = concatPath(fileName)
+        let file = File.create(fullPath)
         var parseEnd = false
         try {
             parseEnd = writeFile(file)
         } catch (e: Exception) {
             file.close()
-            if (exists(fullPath)) {
-                remove(fullPath)
-            }
+            removeIfExists(fullPath)
             throw e
         } finally {
             file.close()
