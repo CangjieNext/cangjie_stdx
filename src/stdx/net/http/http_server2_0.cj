@@ -876,7 +876,7 @@ class HttpServer2 <: ProtocolService {
     private func onGoawayRead(frame: GoawayFrame) {
         if (logger.enabled(LogLevel.DEBUG)) {
             httpLogDebug(logger,
-                "[HttpServer2#onGoawayRead] connection closing, received goaway frame, errCode = ${frame.errorCode}, debugMsg = ${String.fromUtf8(frame.debugData)}"
+                "[HttpServer2#onGoawayRead] connection closing, received goaway frame, errCode = ${frame.errorCode}, debugMsg = ${sanitizeForLog(frame.debugData)}"
             )
         }
         shutdown(shouldSleep: false)

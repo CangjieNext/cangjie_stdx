@@ -801,7 +801,7 @@ class HttpClientEngine2 {
     private func onGoawayRead(frame: GoawayFrame): Unit {
         let code = frame.errorCode
         httpLogDebug(logger,
-            "[HttpClientEngine2#onGoawayRead] HTTP/2 client received goaway, error code:${code}, debug msg:${String.fromUtf8(frame.debugData)}"
+            "[HttpClientEngine2#onGoawayRead] HTTP/2 client received goaway, error code:${code}, debug msg:${sanitizeForLog(frame.debugData)}"
         )
         // if error code is NO_ERROR or there is no active stream, close the connection
         if (streams.size == 0 || code != NoError.code) {
