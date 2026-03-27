@@ -539,8 +539,14 @@ public class URL <: ToString {
     private func parseUserInfo(nameStart: Int64, nameEnd: Int64, passwordStart: Int64, passwordEnd: Int64): Unit {
         try {
             let name = checkAndDecode(USERINFO, _rawUrl[nameStart..nameEnd])
+            if (name.contains("@")) {
+                throw UrlSyntaxException("The userinfo contains an encoded '@' character which is not allowed.")
+            }
             if (passwordStart != -1) {
                 let password = checkAndDecode(USERINFO, _rawUrl[passwordStart..passwordEnd]) // cjlint-ignore !G.OTH.02
+                if (password.contains("@")) {
+                    throw UrlSyntaxException("The userinfo contains an encoded '@' character which is not allowed.")
+                }
                 _userInfo = UserInfo(name, password)
                 _rawUserInfo = UserInfo(_rawUrl[nameStart..nameEnd], _rawUrl[passwordStart..passwordEnd])
             } else {
