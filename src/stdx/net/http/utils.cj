@@ -22,6 +22,7 @@ import std.sync.*
 
 const INT64_TO_HEX: String = "0123456789abcdef"
 const MASK_I64: Int64 = 0x0f
+const DEFAULT_LOG_LENTH: Int64 = 256
 let shortDayOfWeekForm: Array<Str> = [Str("Sun"), Str("Mon"), Str("Tue"), Str("Wed"), Str("Thu"), Str("Fri"), Str("Sat")]
 let shortMonthForm: Array<Str> = [Str("Jan"), Str("Feb"), Str("Mar"), Str("Apr"), Str("May"), Str("Jun"), Str("Jul"),
     Str("Aug"), Str("Sep"), Str("Oct"), Str("Nov"), Str("Dec")]
@@ -722,4 +723,22 @@ func max(a: UInt32, b: UInt32): UInt32 {
         return a
     }
     return b
+}
+
+func sanitizeForLog(data: Array<UInt8>, maxLen!: Int64 = DEFAULT_LOG_LENTH): String {
+    let result = StringBuilder()
+    let len = min(data.size, maxLen)
+    for (i in 0..len) {
+        let b = data[i]
+        if (b >= 0x20 && b != 0x7F) {
+            result.append(Rune(b))
+        } else {
+            result.append('.')
+        }
+    }
+    let sanitized = result.toString()
+    if (data.size > maxLen) {
+        return "${sanitized}... (truncated, ${data.size} bytes total)"
+    }
+    return sanitized
 }
