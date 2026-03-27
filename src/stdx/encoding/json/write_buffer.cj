@@ -16,6 +16,7 @@ let BOOL_FALSE_STRING = "false".toArray()
 let NULL_STRING = "null".toArray()
 const MIN_CAPACITY = 16
 const BLANK: Byte = ' '
+const MAX_JSON_SERIALIZE_DEPTH = 1000
 
 /*
  * This is a stringbuilder customized for json serialization.
@@ -109,6 +110,9 @@ class WriteBuffer {
     }
 
     func append(fl: Float64): WriteBuffer {
+        if (fl != fl || fl == fl / 0.0) {
+            throw JsonException("NaN and Infinity are not valid JSON values per RFC 8259.")
+        }
         unsafe {
             let p: CPointer<UInt8> = CJ_CORE_Float64ToCPointer(fl)
             if (p.isNull()) {
@@ -224,6 +228,9 @@ func jsonWriteWithoutFormat(json: JsonValue, buff: WriteBuffer, htmlSafe!: Bool 
 }
 
 func jsonWriteObject(json: JsonObject, buff: WriteBuffer, depth: Int64, bracketInNewLine: Bool, indent: String, htmlSafe!: Bool = true): Unit {
+    if (depth > MAX_JSON_SERIALIZE_DEPTH) {
+        throw JsonException("JSON serialization depth exceeds maximum limit of ${MAX_JSON_SERIALIZE_DEPTH}.")
+    }
     if (bracketInNewLine) {
         for (_ in 0..depth) {
             buff.append(indent)
@@ -259,6 +266,9 @@ func jsonWriteObject(json: JsonObject, buff: WriteBuffer, depth: Int64, bracketI
 }
 
 func jsonWriteArray(json: JsonArray, buff: WriteBuffer, depth: Int64, bracketInNewLine: Bool, indent: String, htmlSafe!: Bool = true): Unit {
+    if (depth > MAX_JSON_SERIALIZE_DEPTH) {
+        throw JsonException("JSON serialization depth exceeds maximum limit of ${MAX_JSON_SERIALIZE_DEPTH}.")
+    }
     if (bracketInNewLine) {
         for (_ in 0..depth) {
             buff.append(indent)

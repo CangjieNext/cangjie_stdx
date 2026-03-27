@@ -330,7 +330,6 @@ extend Float64 <: Serializable<Float64> {
     public static func deserialize(dm: DataModel): Float64 {
         return match (dm) {
             case dmf: DataModelFloat => dmf.getValue()
-            case dmi: DataModelInt => Float64(dmi.getValue())
             case _ => throw DataModelException("This data is not DataModelFloat.")
         }
     }

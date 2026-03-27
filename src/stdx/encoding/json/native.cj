@@ -157,7 +157,7 @@ func parseJson(parser: JsonParser): JsonValue {
             case start >= b'0' && start <= b'9' || start == b'-' => return parseJsonNumber(parser)
             case _ => throw JsonException()
         }
-    } catch (_: Exception) {
+    } catch (_: JsonException) {
         unsafe {
             let strArr = parser.data
             var errPos = parser.offset

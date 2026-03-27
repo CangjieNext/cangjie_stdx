@@ -316,7 +316,7 @@ public struct WriteConfig {
         _newline: "",
         _indent: "",
         _usesSpaceAfterSeparators: false,
-        _htmlSafe: false,
+        _htmlSafe: true,
         _timeFormat: DateTimeFormat.RFC3339
     )
 
@@ -324,7 +324,7 @@ public struct WriteConfig {
         _newline: "\n",
         _indent: "    ",
         _usesSpaceAfterSeparators: true,
-        _htmlSafe: false,
+        _htmlSafe: true,
         _timeFormat: DateTimeFormat.RFC3339
     )
 }

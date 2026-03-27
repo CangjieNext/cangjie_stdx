@@ -16,6 +16,9 @@ package stdx.serialization.serialization
 
 import std.collection.*
 
+const MAX_DATAMODEL_SEQ_SIZE = 10000
+const MAX_DATAMODEL_STRUCT_FIELDS = 10000
+
 /**
  * DataModel abstract class used for various data type operations.
  */
@@ -207,6 +210,9 @@ public class DataModelSeq <: DataModel {
      * @since 0.17.4
      */
     public func add(dm: DataModel): Unit {
+        if (items.size >= MAX_DATAMODEL_SEQ_SIZE) {
+            throw DataModelException("DataModelSeq size exceeds maximum limit of ${MAX_DATAMODEL_SEQ_SIZE}.")
+        }
         items.add(dm)
     }
 }
@@ -267,6 +273,9 @@ public class DataModelStruct <: DataModel {
                 field.data = fie.data
                 return this
             }
+        }
+        if (fields.size >= MAX_DATAMODEL_STRUCT_FIELDS) {
+            throw DataModelException("DataModelStruct field count exceeds maximum limit of ${MAX_DATAMODEL_STRUCT_FIELDS}.")
         }
         this.fields.add(fie)
         return this
