@@ -330,7 +330,13 @@ extend Float64 <: Serializable<Float64> {
     public static func deserialize(dm: DataModel): Float64 {
         return match (dm) {
             case dmf: DataModelFloat => dmf.getValue()
-            case dmi: DataModelInt => Float64(dmi.getValue())
+            case dmi: DataModelInt => 
+                let value = dmi.getValue()
+                let maxSafeInt: Int64 = 9007199254740991
+                if (value > maxSafeInt || value < -maxSafeInt) {
+                    throw DataModelException("Integer value ${value} exceeds Float64 safe integer range [${-maxSafeInt}, ${maxSafeInt}].")
+                }
+                Float64(value)
             case _ => throw DataModelException("This data is not DataModelFloat.")
         }
     }
