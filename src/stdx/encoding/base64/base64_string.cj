@@ -135,6 +135,18 @@ func verifyBase64(value: Array<UInt8>): Bool {
             return false
         }
     }
+    let last = value.size - 1
+    if (value[last] == b'=' && value[last - 1] == b'=') {
+        let second = ArrayBASE64[Int64(UInt32(value[last - 2]))]
+        if ((second & 0x0F) != 0) {
+            return false
+        }
+    } else if (value[last] == b'=') {
+        let third = ArrayBASE64[Int64(UInt32(value[last - 1]))]
+        if ((third & 0x03) != 0) {
+            return false
+        }
+    }
     return true
 }
 
