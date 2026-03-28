@@ -20,6 +20,13 @@ const HIGH_4_UInt8: UInt8 = 0b11110000 // 0xf0
 const HIGH_5_UInt8: UInt8 = 0b11111000 // 0xf8
 const HIGH_6_UInt8: UInt8 = 0b11111100 // 0xfc
 
+func ensureFiniteJsonFloat(value: Float64): Float64 {
+    if (value.isNaN() || value.isInf()) {
+        throw IllegalStateException("Invalid float dectected.")
+    }
+    return value
+}
+
 public class JsonReader {
     let inputStream: InputStream // the input stream
     let buffer: Array<Byte> = Array<Byte>(1024, repeat: 0)
@@ -1032,7 +1039,7 @@ public class JsonReader {
             throw IllegalStateException("Failed to read json number.")
         }
 
-        let result = readFloatEx()
+        let result = ensureFiniteJsonFloat(readFloatEx())
         if (let Some(c) <- tryNextNonJsonWhitespace()) {
             if (c == b'e' || c == b'E') {
                 index++
@@ -1041,7 +1048,7 @@ public class JsonReader {
                 if (overflow) {
                     throw OverflowException("Overflow while reading JSON number.")
                 }
-                return result * (10.0 ** exponent)
+                return ensureFiniteJsonFloat(result * (10.0 ** exponent))
             }
         }
         return result

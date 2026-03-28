@@ -117,6 +117,13 @@ class JsonParser {
     }
 }
 
+func ensureFiniteJsonFloat(value: Float64): Float64 {
+    if (value.isNaN() || value.isInf()) {
+        throw JsonException("Invalid float dectected.")
+    }
+    return value
+}
+
 func skipWhiteSpace(parser: JsonParser): Unit {
     var tmp = parser.data[parser.offset]
     while (tmp == b' ' || tmp == b'\t' || tmp == b'\n' || tmp == b'\r') {
@@ -337,7 +344,7 @@ func parseJsonNumber(parser: JsonParser): JsonValue {
     rightIndex = parser.offset
     let numStr = unsafe { String.fromUtf8Unchecked(parser.data[leftIndex..rightIndex]) }
     if (isFloat) {
-        return JsonFloat(Float64.parse(numStr))
+        return JsonFloat(ensureFiniteJsonFloat(Float64.parse(numStr)))
     }
     return JsonInt(Int64.parse(numStr))
 }
