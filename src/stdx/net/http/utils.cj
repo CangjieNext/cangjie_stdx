@@ -551,10 +551,9 @@ private func isValidContentLengthFormat(s: String): Bool {
         return true
     }
     
-    // 不允许前导零
-    if (s[0] < b'1') {
-        return false
-    }
+    return true
+}
+<<<<<<< HEAD
     
     // 必须全是数字
     for (i in 0..s.size) {
@@ -564,6 +563,8 @@ private func isValidContentLengthFormat(s: String): Bool {
         }
     }
     
+=======
+>>>>>>> 43f287c (Content-Length Allows Leading Zeros)
     return true
 }
 
