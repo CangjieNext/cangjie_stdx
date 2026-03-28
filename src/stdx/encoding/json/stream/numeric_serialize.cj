@@ -10,6 +10,7 @@ package stdx.encoding.json.stream
 
 import std.math.numeric.*
 
+const MAX_JSON_BIGINT_LENGTH: Int64 = 16384
 
 extend BigInt <: JsonSerializable {
     public func toJson(w: JsonWriter): Unit {
@@ -19,7 +20,11 @@ extend BigInt <: JsonSerializable {
 
 extend BigInt <: JsonDeserializable<BigInt> {
     public static func fromJson(r: JsonReader): BigInt {
-        return BigInt.parse(r.readString(), radix: 10)
+        let value = r.readString()
+        if (value.size > MAX_JSON_BIGINT_LENGTH) {
+            throw IllegalStateException("BigInt length exceeds ${MAX_JSON_BIGINT_LENGTH}.")
+        }
+        return BigInt.parse(value, radix: 10)
     }
 }
 
