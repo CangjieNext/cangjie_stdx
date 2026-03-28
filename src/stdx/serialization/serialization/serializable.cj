@@ -565,7 +565,7 @@ extend<T> Array<T> <: Serializable<Array<T>> where T <: Serializable<T> {
      * @throws DataModelException if data is not DataModelSeq
      */
     public static func deserialize(dm: DataModel): Array<T> {
-        var data: ArrayList<DataModel> = match (dm) {
+        let data: ArrayList<DataModel> = match (dm) {
             case dms: DataModelSeq => dms.getItems()
             case _ => throw DataModelException("This data is not DataModelSeq.")
         }
