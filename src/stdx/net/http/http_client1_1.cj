@@ -424,7 +424,9 @@ class HttpEngine1 {
     func getTunnelConnector(request: HttpRequest): StreamingSocket {
         let headers = HttpHeaders()
         headers.add("Host", request.url.hostName + ":" + request.url.port)
-        httpLogDebug(logger, "[HttpEngine1#getTunnelConnector] Client1_1 getTunnelConnector,https proxy:" + client.httpsProxy.toString())
+        let proxyUrl = URL.parse(client.httpsProxy)
+        let safeProxyUrl = "${proxyUrl.scheme}://${proxyUrl.hostName}:${proxyUrl.port}"
+        httpLogDebug(logger, "[HttpEngine1#getTunnelConnector] Client1_1 getTunnelConnector,https proxy:${safeProxyUrl}")
         let req = HttpRequestBuilder().connect().url(client.httpsProxy).version(HTTP1_1).setHeaders(headers).build()
         let (resp, conn) = httpClient1.connect(req)
         return conn.getOrThrow()
