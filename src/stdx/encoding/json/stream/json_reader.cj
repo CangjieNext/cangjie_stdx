@@ -28,6 +28,14 @@ func ensureFiniteJsonFloat(value: Float64): Float64 {
     return value
 }
 
+func isHighSurrogate(num: UInt32): Bool {
+    return num >= 0xD800u32 && num <= 0xDBFFu32
+}
+
+func isLowSurrogate(num: UInt32): Bool {
+    return num >= 0xDC00u32 && num <= 0xDFFFu32
+}
+
 public class JsonReader {
     let inputStream: InputStream // the input stream
     let buffer: Array<Byte> = Array<Byte>(1024, repeat: 0)
@@ -432,10 +440,15 @@ public class JsonReader {
                     let byte6 = readNextHexNum()
                     let byte7 = readNextHexNum()
                     let byte8 = readNextHexNum()
-                    let num1 = ((byteToUint(byte1) << 12) + (byteToUint(byte2) << 8) + (byteToUint(byte3) << 4) +
-                        byteToUint(byte4)) & 0b0000001111111111
-                    let num2 = ((byteToUint(byte5) << 12) + (byteToUint(byte6) << 8) + (byteToUint(byte7) << 4) +
-                        byteToUint(byte8)) & 0b0000001111111111
+                    let rawNum1 = (byteToUint(byte1) << 12) + (byteToUint(byte2) << 8) + (byteToUint(byte3) << 4) +
+                        byteToUint(byte4)
+                    let rawNum2 = (byteToUint(byte5) << 12) + (byteToUint(byte6) << 8) + (byteToUint(byte7) << 4) +
+                        byteToUint(byte8)
+                    if (!isHighSurrogate(rawNum1) || !isLowSurrogate(rawNum2)) {
+                        throw IllegalStateException("Illegal escape character.")
+                    }
+                    let num1 = rawNum1 & 0b0000001111111111
+                    let num2 = rawNum2 & 0b0000001111111111
                     let ch = Rune(((num1 << 10) | num2) + 0x10000)
                     charToByteArr(UInt32(ch))
                 }
