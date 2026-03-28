@@ -217,6 +217,7 @@ make_cangjie_lib(
         std-collection
         std-sort
         std-math
+        std-convert
     OBJECTS ${output_cj_object_dir}/stdx/encoding.url.o)
 
 add_library(stdx.encoding.url STATIC ${output_cj_object_dir}/stdx/encoding.url.o)
