@@ -426,11 +426,22 @@ extern int CJ_TLS_DYN_SetKeylessPrivateKey(SSL_CTX* ctx, ExceptionData* exceptio
     NOT_NULL_OR_RETURN(exception, ctx, 0, dynMsg);
 
     X509* leaf = DYN_SSL_CTX_get0_certificate(ctx, dynMsg);
+    if (!leaf) {
+        HandleError(exception, "Failed to get certificate from SSL_CTX", dynMsg);
+        return 0;
+    }
+
     const size_t hexLength = 65; // 64 hexadecimal characters + a null terminator for a SHA-256 hash of the Subject Public Key Info.
     char* spki_hex = calloc(hexLength, sizeof(char)); 
+    if (!spki_hex) {
+        HandleError(exception, "Failed to allocate memory for SPKI hex", dynMsg);
+        return 0;
+    }
+
     CertIssuerSerialSha256Hex(leaf, spki_hex, hexLength);
 
     EVP_PKEY* key = CreateKeylessKeyFromCtx(ctx, spki_hex, dynMsg);
+    free(spki_hex);
     if (!key) {
         HandleError(exception, "Failed to create private key: CreateKeylessKeyFromCtx failed", dynMsg);
         return 0;
