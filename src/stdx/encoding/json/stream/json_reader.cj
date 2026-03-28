@@ -19,6 +19,7 @@ const HIGH_3_UInt8: UInt8 = 0b11100000 // 0xe0
 const HIGH_4_UInt8: UInt8 = 0b11110000 // 0xf0
 const HIGH_5_UInt8: UInt8 = 0b11111000 // 0xf8
 const HIGH_6_UInt8: UInt8 = 0b11111100 // 0xfc
+const MAX_JSON_STREAM_STRING_BUFFER_SIZE: Int64 = 32 * 1024 * 1024
 
 func ensureFiniteJsonFloat(value: Float64): Float64 {
     if (value.isNaN() || value.isInf()) {
@@ -1147,6 +1148,9 @@ class StringBuffer {
     var size = 0
 
     func grow(minCapacity: Int64): Unit {
+        if (minCapacity > MAX_JSON_STREAM_STRING_BUFFER_SIZE) {
+            throw IllegalStateException("Json string length exceeds ${MAX_JSON_STREAM_STRING_BUFFER_SIZE}.")
+        }
         let oldCapacity: Int64 = data.size
         var newCapacity: Int64 = oldCapacity << 1
         if (newCapacity < minCapacity) {
@@ -1161,6 +1165,9 @@ class StringBuffer {
     func appendAll(elements: Array<Byte>) {
         let cSize: Int64 = elements.size
 
+        if (cSize > MAX_JSON_STREAM_STRING_BUFFER_SIZE - size) {
+            throw IllegalStateException("Json string length exceeds ${MAX_JSON_STREAM_STRING_BUFFER_SIZE}.")
+        }
         if (size + cSize > data.size) {
             grow(size + cSize)
         }
@@ -1171,6 +1178,9 @@ class StringBuffer {
 
     @OverflowWrapping
     func append(element: Byte) {
+        if (size >= MAX_JSON_STREAM_STRING_BUFFER_SIZE) {
+            throw IllegalStateException("Json string length exceeds ${MAX_JSON_STREAM_STRING_BUFFER_SIZE}.")
+        }
         if (size == data.size) {
             grow(size + 1)
         }
