@@ -83,23 +83,9 @@ class HttpClient2 <: HttpClient {
         if (req.url.scheme != "https") {
             throw HttpException("Must use https scheme for HTTP/2 request.")
         }
-        let (targetAddrPort, proxyAddrPort, authority, isToProxy) = parseHostAndPort(req.url)
-        if (let Some(auth) <- authority) {
-            // a client must not generate fields in a TRACE request containing
-            // sensitive data that might be disclosed by the response.
-            // such as Cookie
-            // RFC 9110 9.3.8. TRACE
-            if (req.method != "TRACE") {
-                req.headers.set("proxy-authorization", auth)
-            }
-        }
+        let (targetAddrPort, proxyAddrPort, isToProxy) = parseHostAndPort(req.url)
         if (req.headers.get("host").isEmpty()) {
-            match (isToProxy) {
-                case false => req.headers.set("host", "${targetAddrPort.addr}:${targetAddrPort.port}")
-                case true => req
-                    .headers
-                    .set("host", "${proxyAddrPort.getOrThrow().addr}:${proxyAddrPort.getOrThrow().port}")
-            }
+            req.headers.set("host", "${targetAddrPort.addr}:${targetAddrPort.port}")
         }
         let connnectKey: ConnectMapKey = match ((isToProxy)) {
             case false => ConnectMapKey(targetAddrPort, None<AddrPort>)
@@ -208,17 +194,20 @@ class HttpClient2 <: HttpClient {
     func getTunnelConnector(addrPort: AddrPort): StreamingSocket {
         let headers = HttpHeaders()
         headers.add("Host", addrPort.addr + ":" + addrPort.port.toString())
+        let proxyUrl = URL.parse(proxy)
+        if (let Some(auth) <- parseProxyAuth(proxyUrl)) {
+            headers.add("proxy-authorization", auth)
+        }
         httpLogDebug(logger, "[HttpClient2#getTunnelConnector] Client2_0 getTunnelConnector,host=${addrPort.addr}:${addrPort.port}")
         let (resp, conn) = client.connect(proxy, header: headers)
         return conn.getOrThrow()
     }
 
-    func parseHostAndPort(url: URL): (AddrPort, ?AddrPort, ?String, Bool) {
+    func parseHostAndPort(url: URL): (AddrPort, ?AddrPort, Bool) {
         var proxyAddrPort: Option<AddrPort> = None<AddrPort>
         let targetAddr: String = url.hostName
         var targetport: String = url.port.ifEmpty("443")
         let targetAddrPort: AddrPort = AddrPort(targetAddr, targetport)
-        var auth = None<String>
         var isToProxy: Bool = false
         let hostInNoProxy = matchNoProxy(url.hostName, url.port)
         if (!proxy.isEmpty() && !hostInNoProxy) {
@@ -227,11 +216,10 @@ class HttpClient2 <: HttpClient {
             let proxyUrl = URL.parse(proxy)
             let proxyAddr = proxyUrl.hostName
             let proxyPort = proxyUrl.port.ifEmpty("443")
-            auth = parseProxyAuth(proxyUrl)
             proxyAddrPort = AddrPort(proxyAddr, proxyPort)
             isToProxy = true
         }
-        return (targetAddrPort, proxyAddrPort, auth, isToProxy)
+        return (targetAddrPort, proxyAddrPort, isToProxy)
     }
 }
 

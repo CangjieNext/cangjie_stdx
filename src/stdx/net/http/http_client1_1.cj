@@ -95,7 +95,7 @@ class HttpClient1 <: HttpClient {
         }
 
         if (request.headers.get("host").isEmpty()) {
-            request.headers.set("host", "${httpEngine.addrport.addr}:${httpEngine.addrport.port}")
+            request.headers.set("host", "${targetAddrPort.addr}:${targetAddrPort.port}")
         }
 
         return httpEngine.sendRequest(request, isToProxy, isToHttpsProxy)
@@ -105,15 +105,21 @@ class HttpClient1 <: HttpClient {
         // check port
         // IPv6 is not considered yet
         if (proxy.isEmpty()) {
-            return (AddrPort(request.url.hostName, request.url.port.ifEmpty(targetPort)), None, false, false)
+            return (AddrPort(request.url.hostName, request.url.port.ifEmpty(targetPort)), None<AddrPort>, false, false)
         } else {
-            let proxyUrl = URL.parse(proxy)
+            let proxyUrl = URL.parse(proxy)            
+            
+            // check if caller already tries to establish proxying for this request manually, so skip proxying 
+            if (!request.headers.get("host").isEmpty() && request.method == "CONNECT") {
+                return (AddrPort(request.url.hostName, request.url.port.ifEmpty(targetPort)), None<AddrPort>, false, false)
+            }
+            
             if (let Some(auth) <- parseProxyAuth(proxyUrl)) {
                 // a client must not generate fields in a TRACE request containing
-                // sensitive data that might be disclosed by the response.
-                // such as Cookie
+                // sensitive data that might be disclosed by the response. such as Cookie
                 // RFC 9110 9.3.8. TRACE
-                if (request.method != "TRACE") {
+                // And https proxy will handle authorization in a different way
+                if (request.method != "TRACE" && request.url.scheme != "https") {
                     request.headers.set("proxy-authorization", auth)
                 }
             }
@@ -419,7 +425,12 @@ class HttpEngine1 {
 
     func getTunnelConnector(request: HttpRequest): StreamingSocket {
         let headers = HttpHeaders()
-        headers.add("Host", request.url.hostName + ":" + request.url.port)
+        let host = request.headers.getFirst("Host") ?? (request.url.hostName + ":" + request.url.port.ifEmpty("443"))
+        headers.add("Host", host)
+        let proxyUrl = URL.parse(client.httpsProxy)
+        if (let Some(auth) <- parseProxyAuth(proxyUrl)) {
+            headers.add("proxy-authorization", auth)
+        }
         httpLogDebug(logger, "[HttpEngine1#getTunnelConnector] Client1_1 getTunnelConnector,https proxy:" + client.httpsProxy.toString())
         let req = HttpRequestBuilder().connect().url(client.httpsProxy).version(HTTP1_1).setHeaders(headers).build()
         let (resp, conn) = httpClient1.connect(req)
