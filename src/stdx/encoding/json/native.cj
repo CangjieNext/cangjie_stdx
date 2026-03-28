@@ -148,7 +148,7 @@ func isLowSurrogate(num: UInt32): Bool {
 
 func ensureFiniteJsonFloat(value: Float64): Float64 {
     if (value.isNaN() || value.isInf()) {
-        throw JsonException("Invalid float dectected.")
+        throw JsonException("Invalid float detected.")
     }
     return value
 }

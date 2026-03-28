@@ -23,7 +23,7 @@ const MAX_JSON_STREAM_STRING_BUFFER_SIZE: Int64 = 32 * 1024 * 1024
 
 func ensureFiniteJsonFloat(value: Float64): Float64 {
     if (value.isNaN() || value.isInf()) {
-        throw IllegalStateException("Invalid float dectected.")
+        throw IllegalStateException("Invalid float detected.")
     }
     return value
 }
