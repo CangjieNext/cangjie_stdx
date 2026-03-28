@@ -90,7 +90,7 @@ func processDataBeforeDecode(data: Array<UInt8>): Array<UInt8> {
             temp[index] = ch
             index++
         } else if (ch == b'\0') {
-            break
+            return Array<UInt8>()
         } else if (ch == b'\r' || ch == b'\n' || ch == b' ' || ch == b'\t') {
             continue
         } else {
