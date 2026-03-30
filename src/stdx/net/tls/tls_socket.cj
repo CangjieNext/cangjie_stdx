@@ -462,6 +462,10 @@ public class TlsSocket <: StreamingSocket & ToString & Equatable<TlsSocket> & Ha
                 if (let Some(hostname) <- cfg.domain) {
                     if (!hostname.isEmpty()) {
                         stream.setRequestedHostName(hostname)
+                        match (cfg.verifyMode) {
+                            case TrustAll => ()
+                            case _ => stream.setHostNameForVerify(hostname)
+                        }
                     }
                 }
 
