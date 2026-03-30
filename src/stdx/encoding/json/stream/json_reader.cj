@@ -477,21 +477,8 @@ public class JsonReader {
             stringBuffer.append(UInt8(((ch >> SHIFT_6) & LOW_6_MASK) | HIGH_1_MASK))
             stringBuffer.append(UInt8((ch & LOW_6_MASK) | HIGH_1_MASK))
             return 0
-        } else if (ch <= UTF8_5_MAX) {
-            stringBuffer.append(UInt8(((ch >> SHIFT_24) & LOW_2_MASK) | HIGH_5_MASK))
-            stringBuffer.append(UInt8(((ch >> SHIFT_18) & LOW_6_MASK) | HIGH_1_MASK))
-            stringBuffer.append(UInt8(((ch >> SHIFT_12) & LOW_6_MASK) | HIGH_1_MASK))
-            stringBuffer.append(UInt8(((ch >> SHIFT_6) & LOW_6_MASK) | HIGH_1_MASK))
-            stringBuffer.append(UInt8((ch & LOW_6_MASK) | HIGH_1_MASK))
-            return 0
         } else {
-            stringBuffer.append(UInt8(((ch >> SHIFT_30) & LOW_1_MASK) | HIGH_6_MASK))
-            stringBuffer.append(UInt8(((ch >> SHIFT_24) & LOW_6_MASK) | HIGH_1_MASK))
-            stringBuffer.append(UInt8(((ch >> SHIFT_18) & LOW_6_MASK) | HIGH_1_MASK))
-            stringBuffer.append(UInt8(((ch >> SHIFT_12) & LOW_6_MASK) | HIGH_1_MASK))
-            stringBuffer.append(UInt8(((ch >> SHIFT_6) & LOW_6_MASK) | HIGH_1_MASK))
-            stringBuffer.append(UInt8((ch & LOW_6_MASK) | HIGH_1_MASK))
-            return 0
+            throw IllegalStateException("Maximum of 4 bytes allowed for UTF-8.")
         }
     }
 
