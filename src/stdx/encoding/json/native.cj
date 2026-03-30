@@ -131,7 +131,7 @@ func ensureCacheCapacity(parser: JsonParser, addition: Int64): Unit {
     }
     var newCapacity = parser.cache.size
     while (newCapacity < minCapacity) {
-        newCapacity = newCapacity << 1
+        newCapacity = newCapacity << 1 // Enlarge the capacity to 2x
     }
     let newCache = Array<JsonValue>(newCapacity, repeat: JsonNull())
     parser.cache.copyTo(newCache, 0, 0, parser.cacheSize)
@@ -139,11 +139,11 @@ func ensureCacheCapacity(parser: JsonParser, addition: Int64): Unit {
 }
 
 func isHighSurrogate(num: UInt32): Bool {
-    return num >= 0xD800u32 && num <= 0xDBFFu32
+    return num >= 0xD800u32 && num <= 0xDBFFu32 // UTF-16 high-surrogate range: D800..DBFF.
 }
 
 func isLowSurrogate(num: UInt32): Bool {
-    return num >= 0xDC00u32 && num <= 0xDFFFu32
+    return num >= 0xDC00u32 && num <= 0xDFFFu32 // UTF-16 low-surrogate range: DC00..DFFF.
 }
 
 func ensureFiniteJsonFloat(value: Float64): Float64 {
