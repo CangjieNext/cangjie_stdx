@@ -802,45 +802,13 @@ public class JsonReader {
 
     @OverflowWrapping
     func readString(): String {
-        if (nextNonJsonWhitespace() != b'\"') {
-            return readStringUnquoted()
+        let nextByte = nextNonJsonWhitespace()
+        if (nextByte != b'\"') {
+            throw IllegalStateException("The next Token is not JSON String.")
         }
         index++
         availLen--
         return readStringQuoted()
-    }
-
-    @OverflowWrapping
-    func readStringUnquoted(): String {
-        checkBuffer()
-        var byte = buffer[index]
-        if (byte == b'{' || byte == b'[' || byte == b']' || byte == b'}') {
-            throw IllegalStateException(
-                "Expect a JsonBool, JsonNull, JsonNumber or a JsonString, but peeked '${Rune(byte)}'.")
-        }
-        var sb = StringBuilder()
-        while (true) {
-            for (i in index..index + availLen) {
-                byte = buffer[i]
-                if (byte > 128u8) {
-                    throw IllegalStateException("Expect an ascii byte sequence, but peeked '${byte}'.")
-                }
-                if (byte == b']' || byte == b',' || byte == b'}' || byte == b'\t' || byte == b'\f' || byte == b'\r' ||
-                    byte == b'\n' || byte == b' ') {
-                    unsafe { sb.appendFromUtf8Unchecked(buffer[index..i]) }
-                    availLen -= (i - index)
-                    index = i
-                    return sb.toString()
-                }
-            }
-            unsafe { sb.appendFromUtf8Unchecked(buffer[index..index + availLen]) }
-            availLen = 0
-            fillInBuf()
-            if (availLen <= 0) {
-                return sb.toString()
-            }
-        }
-        throw IllegalStateException() // unreachable
     }
 
     @OverflowWrapping

@@ -139,6 +139,26 @@ extend String <: JsonSerializable {
 
 extend String <: JsonDeserializable<String> {
     public static func fromJson(r: JsonReader): String {
-        return r.readString()
+        const TRUE = "true"
+        const FALSE = "false"
+        const NULL = "null"
+        match (r.peek()) {
+            case Some(JsonToken.JsonString) => return r.readString()
+            case Some(JsonToken.JsonBool) =>
+                return if (r.readBool()) {
+                    TRUE
+                } else {
+                    FALSE
+                }
+            case Some(JsonToken.JsonNull) =>
+                r.readNull()
+                return NULL
+            case Some(JsonToken.JsonNumber) =>
+                r.nextValue(r.stringBuffer)
+                let value = unsafe { String.fromUtf8Unchecked(r.stringBuffer.data[0..r.stringBuffer.size]) }
+                r.stringBuffer.clear()
+                return value
+            case _ => throw IllegalStateException("The next Token is not JSON String.")
+        }
     }
 }
