@@ -194,14 +194,15 @@ class CookieJarImpl <: CookieJar {
 
         let cononicalizeHost = cononicalizeHostName(url.hostName)
         let defaultPath = computeDefaultPath(url)
+        let isSecureScheme = (url.scheme == "https" || url.scheme == "wss")
         synchronized(cookieEntriesLock) {
             for (cookie in cookies) {
-                doStoreCookie(cookie, cononicalizeHost, defaultPath)
+                doStoreCookie(cookie, cononicalizeHost, defaultPath, isSecureScheme)
             }
         }
     }
 
-    private func doStoreCookie(cookie: Cookie, cononicalizeHost: String, defaultPath: String): Unit {
+    private func doStoreCookie(cookie: Cookie, cononicalizeHost: String, defaultPath: String, isSecureScheme: Bool): Unit {
         // cookie name and cookie value
         let name = cookie.cookieName
         let value = cookie.cookieValue
@@ -238,9 +239,15 @@ class CookieJarImpl <: CookieJar {
         // path
         let path = getCookiePath(cookie) ?? defaultPath
         // if the cookie was received from a "non-HTTP" API and the
-        // cookie’s http-only-flag is set,
+        // cookie's http-only-flag is set,
         // abort these steps and ignore the cookie entirely
         if (cookie.httpOnly && !isHttp) {
+            return
+        }
+        // if the cookie's secure-only-flag is true and the scheme is not secure,
+        // abort these steps and ignore the cookie entirely
+        // RFC 6265bis Section 5.4
+        if (cookie.secure && !isSecureScheme) {
             return
         }
 
