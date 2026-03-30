@@ -3593,6 +3593,7 @@ The `read` function returns a [WebSocketFrame](http_package_classes.md#class-web
 > - If an unrecognized frame type is received (only Continuation, Text, Binary, Close, Ping, Pong are supported), the underlying connection is closed, and an exception is thrown.
 > - If a fragmented or payload length exceeds 125 bytes for control frames (Close, Ping, Pong), the underlying connection is closed, and an exception is thrown.
 > - If a payload length exceeds 20MB, the underlying connection is closed, and an exception is thrown.
+> - For fragmented data frames (messages composed of multiple continuation frames), there is no limit on the total size of the complete message after assembling all fragments.
 > - If `read` is called after `closeConn` closes the connection, an exception is thrown.
 
 Return Value:
