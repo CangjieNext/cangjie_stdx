@@ -8860,6 +8860,7 @@ read 函数返回一个 [WebSocketFrame](http_package_classes.md#class-websocket
 > - 收到无法理解的帧类型（只支持 Continuation，Text，Binary，Close，Ping，Pong），断开底层连接并抛出异常；
 > - 收到分段或 payload 长度大于 125 bytes 的控制帧（Close，Ping，Pong），断开底层连接并抛出异常；
 > - 收到 payload 长度大于 20M 的帧，断开底层连接并抛出异常；
+> - WebSocket 没有跨续帧聚合消息大小限制，即由多个分段帧组成的完整消息的总大小没有限制；
 > - closeConn 关闭连接后继续调用读，抛出异常。
 
 返回值：
