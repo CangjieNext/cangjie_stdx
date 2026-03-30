@@ -430,7 +430,7 @@ make_cangjie_lib(
     crypto.crypto IS_SHARED
     DEPENDS cangjie${BACKEND_TYPE}Crypto cangjie-dynamicLoader-opensslFFI-shared
     CANGJIE_STDX_LIB_DEPENDS crypto.digest crypto.common
-    CANGJIE_STD_LIB_LINK  std-core std-math std-sync std-crypto.cipher std-io
+    CANGJIE_STD_LIB_LINK  std-core std-math std-sync std-crypto.cipher std-io std-collection
     OBJECTS ${output_cj_object_dir}/stdx/crypto.crypto.o
     FLAGS ${openssl_flags} $<$<BOOL:${MINGW}>:-lws2_32>
     $<$<NOT:$<BOOL:${WIN32}>>:-ldl>)

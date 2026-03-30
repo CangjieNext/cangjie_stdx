@@ -10,6 +10,7 @@ package stdx.crypto.crypto
 
 import std.crypto.cipher.*
 import std.io.{InputStream, OutputStream, ByteBuffer}
+import std.collection.ArrayList
 import stdx.crypto.digest.*
 import stdx.crypto.common.CryptoException
 
@@ -322,6 +323,7 @@ public class SM4 <: BlockCipher {
                     var tag = Array<Byte>(tagSize, repeat: 0)
                     var readbuffNext = Array<Byte>(SM4_BUFFER_SIZE, repeat: 0)
                     var inLenNext = input.read(readbuffNext)
+                    let decryptedData = ArrayList<Byte>()
                     do {
                         if (inLenNext >= tagSize) {
                             var inBlockDe: CPointerHandle<Byte> = acquireArrayRawData(readbuff)
@@ -334,7 +336,7 @@ public class SM4 <: BlockCipher {
                                 releaseArrayRawData(inBlockDe)
                             }
                             if (outlenPtr.value.read() > 0) {
-                                output.write(writebuff[..outlenPtr.value.read()])
+                                decryptedData.add(all: writebuff[..outlenPtr.value.read()])
                             }
                         } else {
                             var readbuffTemp = Array<Byte>()
@@ -353,7 +355,7 @@ public class SM4 <: BlockCipher {
                                     releaseArrayRawData(inBlockTemp)
                                 }
                                 if (outlenPtr.value.read() > 0) {
-                                    output.write(writebuff[..outlenPtr.value.read()])
+                                    decryptedData.add(all: writebuff[..outlenPtr.value.read()])
                                 }
                             }
                             tag = readbuffNext.clone()
@@ -371,6 +373,14 @@ public class SM4 <: BlockCipher {
                     } finally {
                         releaseArrayRawData(tagM)
                     }
+                    outlen2Ptr.value.write(0)
+                    if (decryptFinalEx(ctx, outBlock.pointer, outlen2Ptr.value) != 1) {
+                        throw CryptoException("Decrypt failed: GCM tag verification failed.")
+                    }
+                    if (outlen2Ptr.value.read() > 0) {
+                        decryptedData.add(all: writebuff[..outlen2Ptr.value.read()])
+                    }
+                    output.write(unsafe { decryptedData.getRawArray() })
                 } else {
                     do {
                         outlenPtr.value.write(0)
@@ -382,13 +392,13 @@ public class SM4 <: BlockCipher {
                         }
                         inLen = input.read(readbuff)
                     } while (inLen > 0)
-                }
-                outlen2Ptr.value.write(0)
-                if (decryptFinalEx(ctx, outBlock.pointer, outlen2Ptr.value) != 1) {
-                    throw CryptoException("Decrypt failed.")
-                }
-                if (outlen2Ptr.value.read() > 0) {
-                    output.write(writebuff[..outlen2Ptr.value.read()])
+                    outlen2Ptr.value.write(0)
+                    if (decryptFinalEx(ctx, outBlock.pointer, outlen2Ptr.value) != 1) {
+                        throw CryptoException("Decrypt failed.")
+                    }
+                    if (outlen2Ptr.value.read() > 0) {
+                        output.write(writebuff[..outlen2Ptr.value.read()])
+                    }
                 }
             } finally {
                 releaseArrayRawData(inBlock)
