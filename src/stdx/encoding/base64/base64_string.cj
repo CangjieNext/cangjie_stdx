@@ -137,13 +137,13 @@ func verifyBase64(value: Array<UInt8>): Bool {
     }
     let last = value.size - 1
     if (value[last] == b'=' && value[last - 1] == b'=') {
-        let second = ArrayBASE64[Int64(UInt32(value[last - 2]))]
-        if ((second & 0x0F) != 0) {
+        let second = ArrayBASE64[Int64(UInt32(value[last - 2]))] // End with "=="
+        if ((second & 0x0F) != 0) { // 0b00001111: If lower 4 bits of the 2st character are not 0, then it's not valid
             return false
         }
     } else if (value[last] == b'=') {
-        let third = ArrayBASE64[Int64(UInt32(value[last - 1]))]
-        if ((third & 0x03) != 0) {
+        let third = ArrayBASE64[Int64(UInt32(value[last - 1]))] // End with "="
+        if ((third & 0x03) != 0) { // 0b00000011: If lower 2 bits of the 3rd character are not 0, then it's not valid
             return false
         }
     }

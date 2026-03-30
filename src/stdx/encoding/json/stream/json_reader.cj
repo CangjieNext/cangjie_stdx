@@ -29,11 +29,11 @@ func ensureFiniteJsonFloat(value: Float64): Float64 {
 }
 
 func isHighSurrogate(num: UInt32): Bool {
-    return num >= 0xD800u32 && num <= 0xDBFFu32
+    return num >= 0xD800u32 && num <= 0xDBFFu32 // UTF-16 high-surrogate range: D800..DBFF.
 }
 
 func isLowSurrogate(num: UInt32): Bool {
-    return num >= 0xDC00u32 && num <= 0xDFFFu32
+    return num >= 0xDC00u32 && num <= 0xDFFFu32 // UTF-16 low-surrogate range: DC00..DFFF.
 }
 
 public class JsonReader {
