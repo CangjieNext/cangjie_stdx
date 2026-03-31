@@ -246,6 +246,16 @@ class HttpEngine1 {
         logger = client.logger
     }
 
+    private func isIdempotentMethod(method: String): Bool {
+        let idempotentMethods = ["GET", "HEAD", "OPTIONS", "PUT", "DELETE", "TRACE"]
+        for (idempotentMethod in idempotentMethods) {
+            if (method == idempotentMethod) {
+                return true
+            }
+        }
+        return false 
+    }
+
     /**
      * @throws HttpException if too many connections to the same server.
      * @throws HttpException if too many 1xx responses.
@@ -264,11 +274,17 @@ class HttpEngine1 {
             closeConnInUse(connNode)
             // prevent connection in the pool is disconnected.
             // reconnect and resend the request
+            if (isIdempotentMethod(request.method)) {
+                httpLogDebug(logger, "[HttpEngine1#sendRequest] Client1_1 connection failed, reconnect and resend request")
+                reconnectSendRequest(request, isToProxy)
+            } else {
+                throw e
+            }
             httpLogDebug(logger, "[HttpEngine1#sendRequest] Client1_1 connection failed, reconnect and resend request")
             reconnectSendRequest(request, isToProxy)
         } catch (e: SocketException | TlsException) {
             closeConnInUse(connNode)
-            if (isFromPool) {
+            if (isFromPool && isIdempotentMethod(request.method)) {
                 httpLogDebug(logger,
                     "[HttpEngine1#sendRequest] Client1_1 connection failed, reconnect and resend request")
                 reconnectSendRequest(request, isToProxy)
