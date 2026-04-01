@@ -36,7 +36,12 @@ public class SequentialDispatcher {
                 }
 
                 match (mailbox.remove(timeout: Duration.second * 100)) {
-                    case Some((_, f)) => f()
+                    case Some((_, f)) =>
+                        try {
+                            f()
+                        } catch (e: Exception) {
+                            e.printStackTrace()
+                        }
                     case None => ()
                 }
             }
@@ -50,8 +55,6 @@ public class SequentialDispatcher {
     }
 
     ~init() {
-        while (!threadHandle.thread.hasPendingCancellation) {
-            threadHandle.cancel()
-        }
+        threadHandle.cancel()
     }
 }

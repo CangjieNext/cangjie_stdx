@@ -42,7 +42,9 @@ class ConcurrentPriorityQueue<T> {
     }
 
     func remove(timeout: Duration): Option<T> {
-        semaphore.wait(timeout)
+        if (!semaphore.wait(timeout)) {
+            return None
+        }
 
         var index: Int64 = -1
         for (i in 0..numOfPriorities) {
