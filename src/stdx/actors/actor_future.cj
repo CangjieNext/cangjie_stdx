@@ -25,7 +25,7 @@ public class ActorFuture<T> {
     /* The closure to be executed. */
     private let closure: () -> T
     /* The result of the closure. */
-    private var result: FutureResult<T> = unsafe { zeroValue<FutureResult<T>>() }
+    private var result: FutureResult<T> = Pending
     /* A flag indicating if the result is ready. */
     private let isReady = AtomicBool(false)
     /* A mutex that is used to synchronize access to the result. */
@@ -101,12 +101,14 @@ public class ActorFuture<T> {
 }
 
 private enum FutureResult<T> {
-    Okay(T)
+    Pending
+    | Okay(T)
     | Exc(Exception)
     | Err(Error)
 
     func getOrThrow(): T {
         match (this) {
+            case Pending => throw IllegalArgumentException("Future is not ready.")
             case Okay(res) => return res
             case Exc(e) => throw e
             case Err(e) => throw e

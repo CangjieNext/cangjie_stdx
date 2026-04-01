@@ -15,22 +15,22 @@
 
 package stdx.actors
 
-import std.collection.concurrent.LinkedBlockingQueue
+import std.collection.concurrent.ArrayBlockingQueue
 
 private const DEFAULT_NUM_OF_PRIORITIES = 10
 
 class ConcurrentPriorityQueue<T> {
     private let numOfPriorities: Int64
-    private let queuePool: Array<LinkedBlockingQueue<T>>
+    private let queuePool: Array<ArrayBlockingQueue<T>>
     private let semaphore = SingleConsumerSemaphore()
 
-    init() {
-        this(DEFAULT_NUM_OF_PRIORITIES)
+    init(capacity: Int64) {
+        this(DEFAULT_NUM_OF_PRIORITIES, capacity)
     }
 
-    init(numOfPriorities: Int64) {
+    init(numOfPriorities: Int64, capacity: Int64) {
         this.numOfPriorities = numOfPriorities
-        this.queuePool = Array<LinkedBlockingQueue<T>>(numOfPriorities, { _ => LinkedBlockingQueue<T>() })
+        this.queuePool = Array<ArrayBlockingQueue<T>>(numOfPriorities, { _ => ArrayBlockingQueue<T>(capacity) })
     }
 
     func add(item: T, priority: Int64): Unit {
@@ -42,7 +42,9 @@ class ConcurrentPriorityQueue<T> {
     }
 
     func remove(timeout: Duration): Option<T> {
-        semaphore.wait(timeout)
+        if (!semaphore.wait(timeout)) {
+            return None
+        }
 
         var index: Int64 = -1
         for (i in 0..numOfPriorities) {
