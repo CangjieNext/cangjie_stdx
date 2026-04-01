@@ -439,7 +439,8 @@ class HttpEngine1 {
         if (let Some(auth) <- parseProxyAuth(proxyUrl)) {
             headers.add("proxy-authorization", auth)
         }
-        httpLogDebug(logger, "[HttpEngine1#getTunnelConnector] Client1_1 getTunnelConnector,https proxy:" + client.httpsProxy.toString())
+        let safeProxyUrl = "${proxyUrl.scheme}://${proxyUrl.hostName}:${proxyUrl.port}"
+        httpLogDebug(logger, "[HttpEngine1#getTunnelConnector] Client1_1 getTunnelConnector,https proxy:${safeProxyUrl}")
         let req = HttpRequestBuilder().connect().url(client.httpsProxy).version(HTTP1_1).setHeaders(headers).build()
         let (resp, conn) = httpClient1.connect(req)
         return conn.getOrThrow()
