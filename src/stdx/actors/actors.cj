@@ -21,9 +21,9 @@ public class SequentialDispatcher {
 
     public init(enableReceiverPriority!: Bool = false) {
         this.mailbox = if (enableReceiverPriority) {
-            UnboundedPriorityMailbox()
+            BoundedPriorityMailbox()
         } else {
-            UnboundedMailbox()
+            BoundedMailbox()
         }
         this.threadHandle = startActorLoop(mailbox)
     }
@@ -35,8 +35,13 @@ public class SequentialDispatcher {
                     return
                 }
 
-                match (mailbox.remove(timeout: Duration.second * 100)) {
-                    case Some((_, f)) => f()
+                match (mailbox.remove(timeout: Duration.second)) {
+                    case Some((_, f)) =>
+                        try {
+                            f()
+                        } catch (e: Exception) {
+                            e.printStackTrace()
+                        }
                     case None => ()
                 }
             }
@@ -50,8 +55,6 @@ public class SequentialDispatcher {
     }
 
     ~init() {
-        while (!threadHandle.thread.hasPendingCancellation) {
-            threadHandle.cancel()
-        }
+        threadHandle.cancel()
     }
 }

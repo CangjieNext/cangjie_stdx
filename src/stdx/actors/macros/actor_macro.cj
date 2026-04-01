@@ -114,7 +114,7 @@ private class ReceiverModification {
     private let receiverOptions: MacroOptionSet
     private let errors: MacroErrors
     private let headDecl: Decl
-    private var fd: FuncDecl = unsafe { zeroValue<FuncDecl>() }
+    private var fdOpt: Option<FuncDecl> = None
 
     static func run(input: Tokens, actorOpts: MacroOptionSet, receiverOptions: MacroOptionSet, errors: MacroErrors): Decl {
         let rModify = ReceiverModification(input, actorOpts, receiverOptions, errors)
@@ -139,8 +139,8 @@ private class ReceiverModification {
     }
 
     private func checkDecl(): Unit {
-        this.fd = match (findDeclUnderMacro<FuncDecl>(headDecl)) {
-            case Some(fd) => fd
+        this.fdOpt = match (findDeclUnderMacro<FuncDecl>(headDecl)) {
+            case Some(fd) => Some(fd)
             case None =>
                 errors.add(MacroError.ReceiverMacroInvalidDecl)
                 errors.doThrow()
@@ -161,6 +161,7 @@ private class ReceiverModification {
     }
 
     private func checkReceiver(): Unit {
+        let fd = fdOpt.getOrThrow()
         if (actorOpts.hasEnabledReceiverPriority()) {
             for (param in fd.funcParams) {
                 // a named parameter named "priority"
@@ -173,6 +174,7 @@ private class ReceiverModification {
     }
 
     private func modifyReceiver(): Unit {
+        let fd = fdOpt.getOrThrow()
         if (actorOpts.hasEnabledReceiverPriority()) {
             modifyReceiverWithPriority()
             return
@@ -207,6 +209,7 @@ private class ReceiverModification {
                 actorInstance.post<RetTy>({ => body })
             }
          */
+        let fd = fdOpt.getOrThrow()
         let defaultPriority = receiverOptions.getPriority()
 
         let retTy = fd.declType

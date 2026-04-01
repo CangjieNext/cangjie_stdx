@@ -40,20 +40,26 @@ class SingleConsumerSemaphore {
         }
     }
 
-    func wait(timeout: Duration): Unit {
+    func wait(timeout: Duration): Bool {
         let n = cnt.load()
         if (n == 0) {
+            // From the look of it, this might have a problem with signal() when
+            // n == 0 and cnt.fetchAdd(1) is called and goes into the synchronized block
+            // after we got here but before we got into the synchronized block.
+            // However, it is still safe because wait() always has a timeout which will
+            // eventually break out of the loop.
             let startTime = DateTime.now()
             synchronized(mtx) {
                 while (cnt.load() == 0) {
                     let timeElapsed = DateTime.now() - startTime
                     if (timeElapsed >= timeout) {
-                        return
+                        return false
                     }
                     cond.wait(timeout: timeout - timeElapsed)
                 }
             }
         }
         cnt.fetchSub(1)
+        true
     }
 }

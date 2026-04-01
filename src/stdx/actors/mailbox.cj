@@ -15,17 +15,23 @@
 
 package stdx.actors
 
-import std.collection.concurrent.LinkedBlockingQueue
+import std.collection.concurrent.ArrayBlockingQueue
 
 private type Item = (SequentialDispatcher, () -> Unit)
+
+private const DEFAULT_MAILBOX_CAPACITY = 1000
 
 interface Mailbox {
     func add(item: Item, priority: Int64): Unit
     func remove(timeout!: Duration): Option<Item>
 }
 
-class UnboundedMailbox <: Mailbox {
-    private let queue = LinkedBlockingQueue<Item>()
+class BoundedMailbox <: Mailbox {
+    private let queue: ArrayBlockingQueue<Item>
+
+    init(capacity!: Int64 = DEFAULT_MAILBOX_CAPACITY) {
+        this.queue = ArrayBlockingQueue<Item>(capacity)
+    }
 
     public func add(item: Item, _: Int64): Unit {
         queue.add(item)
@@ -36,8 +42,12 @@ class UnboundedMailbox <: Mailbox {
     }
 }
 
-class UnboundedPriorityMailbox <: Mailbox {
-    private let queue = ConcurrentPriorityQueue<Item>()
+class BoundedPriorityMailbox <: Mailbox {
+    private let queue: ConcurrentPriorityQueue<Item>
+
+    init(capacity!: Int64 = DEFAULT_MAILBOX_CAPACITY) {
+        this.queue = ConcurrentPriorityQueue<Item>(capacity)
+    }
 
     public func add(item: Item, priority: Int64): Unit {
         queue.add(item, priority)
