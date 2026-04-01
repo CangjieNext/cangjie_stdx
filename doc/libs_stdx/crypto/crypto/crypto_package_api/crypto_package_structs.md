@@ -116,6 +116,10 @@ public static let ECB: OperationMode
 
 功能：Electronic CodeBook（单子密码本）工作模式， ECB 初始值是 [OperationMode](crypto_package_structs.md#struct-operationmode)("ECB")。
 
+> **注意：**
+>
+> 对块密码来说 ECB 是已知不安全的模式。请谨慎使用。
+
 类型：[OperationMode](crypto_package_structs.md#struct-operationmode)
 
 示例：

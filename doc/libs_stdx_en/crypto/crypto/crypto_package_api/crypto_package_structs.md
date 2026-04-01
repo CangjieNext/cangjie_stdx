@@ -29,6 +29,10 @@ public static let ECB: OperationMode
 
 Function: Electronic CodeBook working mode. The initial value of ECB is [OperationMode](crypto_package_structs.md#struct-operationmode)("ECB").
 
+> **Note:**
+>
+> For block ciphers, ECB is known to be insecure. Use with caution.
+
 Type: [OperationMode](crypto_package_structs.md#struct-operationmode)
 
 ### static let CBC
