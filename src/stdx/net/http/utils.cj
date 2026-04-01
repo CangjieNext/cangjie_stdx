@@ -730,7 +730,7 @@ func sanitizeForLog(data: Array<UInt8>, maxLen!: Int64 = DEFAULT_LOG_LENTH): Str
     let len = min(data.size, maxLen)
     for (i in 0..len) {
         let b = data[i]
-        if (b >= 0x20 && b != 0x7F) {
+        if (b >= 0x20 && b != 0x7F) { // 0x20=SPACE (space character), 0x7F=DEL (delete character)
             result.append(Rune(b))
         } else {
             result.append('.')
