@@ -709,6 +709,16 @@ func domainMatch(hostString: String, domain: String): Bool {
     if (hostLower == domainLower) {
         return true
     }
+    // the domain string is a suffix of the string,
+    // and the last character of the string that is not 
+    // included in the domain string is "." 
+    // and the string is a host name (not an IP address) 
+    // for example: 
+    // bar.example.com       domain-matches   example.com 
+    // bar.example.com   not domain-matches   le.com 
+    // 127.0.0.1         not domain-matches   0.0.1 
+    // 127.0.0.1             domain-matches   127.0.0.1
+    // api.server1           domain-matches   server1
     if (hostLower.endsWith("." + domainLower) && !isIPAddress(hostLower)) {
         return true
     }
