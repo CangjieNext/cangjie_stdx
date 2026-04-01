@@ -615,7 +615,11 @@ class MultipartParser {
         }
 
         let fullPath = concatPath(fileName)
-        let file = File.create(fullPath)
+        let file = try {
+            File.create(fullPath)
+        } catch (e: Exception) {
+            throw FSException("File `${fileName}` already exist.") /*cjlint-ignore !G.ERR.01 !G.ERR.02*/
+        }
         var parseEnd = false
         try {
             parseEnd = writeFile(file)
