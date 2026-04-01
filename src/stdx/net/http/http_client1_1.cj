@@ -247,7 +247,7 @@ class HttpEngine1 {
     }
 
     private func isIdempotentMethod(method: String): Bool {
-        return ["GET", "HEAD", "OPTIONS", "PUT", "DELETE", "TRACE"].contains(method) 
+        return ["GET", "HEAD", "OPTIONS", "PUT", "DELETE", "TRACE"].contains(method.toUpper()) 
     }
 
     /**
