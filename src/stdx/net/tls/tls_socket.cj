@@ -500,6 +500,10 @@ public class TlsSocket <: TlsConnection & Equatable<TlsSocket> & Hashable {
                 if (let Some(hostname) <- cfg.serverName) {
                     if (!hostname.isEmpty()) {
                         stream.setRequestedHostName(hostname)
+                        match (cfg.verifyMode) {
+                            case TrustAll => ()
+                            case _ => stream.setHostNameForVerify(hostname)
+                        }
                     }
                 }
 
