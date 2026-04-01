@@ -615,7 +615,7 @@ class MultipartParser {
         }
 
         let fullPath = concatPath(fileName)
-        let file = File.create(fullPath)
+        File.create(fullPath)
         var parseEnd = false
         try {
             parseEnd = writeFile(file)
