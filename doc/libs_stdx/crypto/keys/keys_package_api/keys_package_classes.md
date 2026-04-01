@@ -1645,6 +1645,10 @@ public class RSAPrivateKey <: PrivateKey{
 
 功能：RSA 私钥类，提供生成 RSA 私钥能力，RSA 私钥支持签名和解密操作，支持 PEM 和 DER 格式的编码解码，符合 PKCS1 标准。使用示例见 [RSA 密钥示例](../keys_samples/sample_keys.md#rsa-密钥示例)。
 
+> **注意：**
+>
+> 推荐使用的密钥长度不小于 3072 位，小于这个值的密钥长度可能是不安全的。
+
 父类型：
 
 - [PrivateKey](../../common/crypto_common_package_api/crypto_common_package_interfaces.md#interface-privatekey)

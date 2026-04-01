@@ -554,7 +554,9 @@ For usage examples, see [SM4 Usage](../crypto_samples/sample_crypto.md).
 
 > **Note:**
 >
-> GCM mode requires OpenSSL 3.2 or higher.
+> - GCM mode requires OpenSSL 3.2 or higher.
+>
+> - For block ciphers, ECB is known to be insecure. Use with caution.
 
 Parent Type:
 
