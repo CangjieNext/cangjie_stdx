@@ -286,7 +286,7 @@ public class DataModelStruct <: DataModel {
                 return fie.getData()
             }
         }
-        throw DataModelException("This key is not Exist.")
+        return DataModelNull()
     }
 }
 
