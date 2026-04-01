@@ -13,6 +13,7 @@
 package stdx.encoding.url
 
 import std.collection.*
+import std.convert.Parsable
 
 /**
  * URL objects can be obtained through parsing functions or constructors.
@@ -208,6 +209,15 @@ public class URL <: ToString {
      */
     private func parseURL(rawUrl: String): URL {
         _rawUrl = rawUrl
+        // Reject backslashes in URL to prevent path traversal attacks.
+        // Many HTTP servers and browsers treat \ as equivalent to /.
+        // A URL like http://example.com/allowed\..\secret would be parsed
+        // literally but the server might resolve .. traversals through backslashes.
+        // Per WHATWG URL Standard, backslashes should be normalized to /,
+        // but we choose to reject them for security.
+        if (_rawUrl.contains("\\")) {
+            throw UrlSyntaxException(_rawUrl, "Backslash is not allowed in URL")
+        }
         var i = 0
         while (i < _rawUrl.size) {
             match (_rawUrl[i]) {
@@ -490,6 +500,27 @@ public class URL <: ToString {
         if (_host.hostname.contains(":")) {
             throw UrlSyntaxException(_host.hostname, "Invalid URL: IPv6 address literals must within square brackets (\"[\" and \"]\")")
         }
+        // Validate hostname does not contain control characters (0x00-0x1F, 0x7F)
+        // to prevent CRLF injection and other header injection attacks.
+        // Similar to Go CVE-2023-29406.
+        validateNoControlChars(_host.hostname, "hostname")
+    }
+
+    /**
+     * Validate that a string does not contain control characters (bytes 0x00-0x1F, 0x7F).
+     * Control characters can enable injection attacks like CRLF injection when used
+     * in HTTP headers.
+     *
+     * @param str The string to validate
+     * @param context The context for error message (e.g., "hostname")
+     * @throws UrlSyntaxException if control characters are found
+     */
+    private static func validateNoControlChars(str: String, context: String): Unit {
+        for (b in str) {
+            if ((b >= 0 && b <= 0x1F) || b == 0x7F) {
+                throw UrlSyntaxException(str, "Invalid ${context}: contains control characters")
+            }
+        }
     }
 
     /*
@@ -497,18 +528,60 @@ public class URL <: ToString {
      * @throws IllegalArgumentException if there is an invalid utf8 leading code
      */
     private func parsePath(start: Int64, end: Int64): Unit {
-        _path = checkAndDecode(PATH, _rawUrl[start..end])
-        _rawPath = _rawUrl[start..end]
+        let rawPath = _rawUrl[start..end]
+        // Normalize dot-segments for absolute URIs (RFC 3986 Section 5.2.4)
+        // Only normalize if we have a scheme and the path is absolute (starts with /)
+        if (!_scheme.isEmpty() && !rawPath.isEmpty() && rawPath[0] == b'/') {
+            _rawPath = normalizePath(rawPath)
+        } else {
+            _rawPath = rawPath
+        }
+        _path = checkAndDecode(PATH, _rawPath)
+    }
+
+    /**
+     * Normalize path by removing dot-segments (. and ..) according to RFC 3986 Section 5.2.4.
+     *
+     * @param path The path to normalize
+     * @return The normalized path
+     */
+    private static func normalizePath(path: String): String {
+        let resultPath = StringBuilder()
+        let variablePaths = ArrayList<String>()
+        var theEndNeedSlashForced = false
+        if (!path.isEmpty()) {
+            let paths = path.lazySplit("/")
+            theEndNeedSlashForced = isEndSlashNeeded(paths, variablePaths)
+            // If the path starts with a slash (/), the result still starts with a slash (/).
+            if (path[0] == b'/') {
+                resultPath.append("/")
+            }
+        }
+        resultPath.append(String.join(variablePaths.toArray(), delimiter: "/"))
+        // If path ends with /, the result still ends with /.
+        if ((variablePaths.size != 0 && (path[path.size - 1] == b'/' || theEndNeedSlashForced))) {
+            resultPath.append("/")
+        }
+        return resultPath.toString()
     }
 
     private func parsePort(start: Int64, end: Int64): Unit {
         _port = _rawUrl[start..end]
+        if (_port.isEmpty()) {
+            throw UrlSyntaxException(_rawUrl[start..end], "Port cannot be empty.")
+        }
         for (b in _port) {
             if (!isByteInSet(b, DIGIT)) {
-                _portEnd = end
-                _port = ""
-                return
+                throw UrlSyntaxException(_rawUrl[start..end], "Port must contain digits only.")
             }
+        }
+        try {
+            let port = Int64.parse(_port)
+            if (port <= 0 || port > 65535) {
+                throw UrlSyntaxException(_rawUrl[start..end], "Port out of range.")
+            }
+        } catch (_: Exception) {
+            throw UrlSyntaxException(_rawUrl[start..end], "Port out of range.")
         }
     }
 
@@ -539,8 +612,14 @@ public class URL <: ToString {
     private func parseUserInfo(nameStart: Int64, nameEnd: Int64, passwordStart: Int64, passwordEnd: Int64): Unit {
         try {
             let name = checkAndDecode(USERINFO, _rawUrl[nameStart..nameEnd])
+            if (name.contains("@")) {
+                throw UrlSyntaxException("The userinfo contains an encoded '@' character which is not allowed.")
+            }
             if (passwordStart != -1) {
                 let password = checkAndDecode(USERINFO, _rawUrl[passwordStart..passwordEnd]) // cjlint-ignore !G.OTH.02
+                if (password.contains("@")) {
+                    throw UrlSyntaxException("The userinfo contains an encoded '@' character which is not allowed.")
+                }
                 _userInfo = UserInfo(name, password)
                 _rawUserInfo = UserInfo(_rawUrl[nameStart..nameEnd], _rawUrl[passwordStart..passwordEnd])
             } else {
@@ -568,6 +647,13 @@ public class URL <: ToString {
                     if (!b1.isAsciiHex() || !b2.isAsciiHex()) {
                         throw UrlSyntaxException(raw, "Invalid URL escape.")
                     }
+                    let decodedByte = hexToDec(b1) << 4 | hexToDec(b2)
+                    // Reject null bytes (%00) to prevent null byte injection attacks
+                    // In C-style strings, null bytes can truncate strings, causing
+                    // parsed values to differ from actual network requests.
+                    if (decodedByte == 0) {
+                        throw UrlSyntaxException(raw, "Null byte is not allowed in URL.")
+                    }
                     let decoded = match (decodedArr) {
                         case Some(v) => v
                         case None =>
@@ -576,7 +662,7 @@ public class URL <: ToString {
                             decodedArr = arr
                             arr
                     }
-                    decoded.add(hexToDec(b1) << 4 | hexToDec(b2))
+                    decoded.add(decodedByte)
                     i += 3
                 case _ =>
                     if (let Some(v) <- decodedArr) {

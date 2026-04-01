@@ -87,7 +87,7 @@ int64_t CJ_JSON_ReplaceEscapeChar(const uint8_t* input, int64_t inputlen, uint8_
 int64_t CJ_JSON_WriteBufferAppendInt(uint8_t* buffer, const int64_t num)
 {
     if (num < 0) {
-        uint64_t unum = (uint64_t)-num;
+        uint64_t unum = (uint64_t)(-(num + 1)) + 1;
         buffer[0] = '-';
         buffer++;
         return CJ_JSON_WriteBufferAppendUint(buffer, unum) + 1;

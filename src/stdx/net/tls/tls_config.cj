@@ -9,6 +9,7 @@
 package stdx.net.tls
 
 import stdx.crypto.x509.*
+import stdx.net.tls.common.*
 
 /**
  * Whether client need to identify (send certificate).
@@ -38,6 +39,24 @@ extend TlsRawSocket {
             }
             if (result == 0) {
                 exception.read().throwException(fallback: "Cannot set hostname on client.")
+            }
+        }
+    }
+
+    func setHostNameForVerify(hostname: String): Unit {
+        otherNonIO<Unit> {
+            nativeStream, _ => setHostNameForVerify(nativeStream, hostname)
+        }
+    }
+
+    private func setHostNameForVerify(stream: CPointer<Ssl>, name: String): Unit {
+        unsafe {
+            var result: Int32 = 0
+            try (cstring = LibC.mallocCString(name).asResource()) {
+                result = CJ_TLS_SetHostNameForVerify(stream, cstring.value)
+            }
+            if (result == 0) {
+                throw TlsException("Cannot set hostname for verification.")
             }
         }
     }

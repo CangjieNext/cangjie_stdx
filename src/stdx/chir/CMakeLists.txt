@@ -5,4 +5,6 @@
 #
 # See https://cangjie-lang.cn/pages/LICENSE for license information.
 
-set(CHIR_SRCS "*.cj" CACHE INTERNAL "")
+set(CHIR_SRCS
+    "*.cj"
+    CACHE INTERNAL "")

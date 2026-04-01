@@ -114,17 +114,4 @@ struct TarHeaderBuffer {
         calaulateChecksum().encodeChecksumTo(this[FieldLocation.CHECKSUM])
         stream.write(buffer)
     }
-
-    static func createPaxTemplate(): TarHeaderBuffer {
-        let buffer = TarHeaderBuffer()
-
-        "./PaxHeaders".encodeTo(buffer[FieldLocation.NAME])
-        "0000644".encodeTo(buffer[FieldLocation.MODE])
-        "17777777770".encodeTo(buffer[FieldLocation.NAME])
-        buffer[FieldLocation.TYPE_FLAG][0] = TarEntryType.ExtendedHeader.flag
-        USTAR_MAGIC.encodeTo(buffer[FieldLocation.MAGIC])
-        USTAR_VERSION.encodeTo(buffer[FieldLocation.VERSION])
-
-        return buffer
-    }
 }

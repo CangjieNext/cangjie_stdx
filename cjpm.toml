@@ -28,6 +28,9 @@
 [package.package-configuration."stdx.compress.tar"]
   compile-option = "-lstdx.compress.tarFFI"
 
+[package.package-configuration."stdx"]
+  compile-option = "-lcangjie-dynamicLoader-opensslFFI"
+
 [package.package-configuration."stdx.crypto.keys"]
   compile-option = "-lstdx.crypto.keysFFI -lcangjie-dynamicLoader-opensslFFI"
 

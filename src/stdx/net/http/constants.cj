@@ -12,7 +12,8 @@ import stdx.encoding.url.URL
 
 const TLS_CTX_SESSION_NAME = "CANGJIE-SERVER"
 const MAX_METHOD_SIZE = 100
-const MAX_LINE_SIZE = 8 * 1000 * 1024
+const MAX_LINE_SIZE = 32 * 1024
+const MAX_TRAILER_LINE_COUNT = 64
 const NULL_BYTE = "\0"
 const CHUNK_SIZE = 8 * 1024
 const DEFAULT_HEADER_CAPACITY = 8
@@ -78,6 +79,8 @@ const INITIAL_MAX_CONCURRENT_STREAMS = 100u32
 const DEFAULT_MAX_CONCURRENT_STREAMS = 1000u32
 // default header list size
 const DEFAULT_MAX_HEADER_LIST_SIZE = 8192u32
+// default max header count (security: prevent header count attack)
+const DEFAULT_MAX_HEADER_COUNT = 100
 // default body size limit is 2M
 const DEFAULT_MAX_BODY_SIZE = 2 ** 21
 

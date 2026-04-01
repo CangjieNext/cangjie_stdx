@@ -515,9 +515,12 @@ func innerParseIPv6(s: String, src: String, begin: Int64, e: ?Int64) {
 
 func readHextet(buffer: String): (Int64, UInt32) {
     var count = 0
-    let digits = Array<Byte>(8, repeat: 0)
+    let digits = Array<Byte>(4, repeat: 0)
     for (b in buffer) {
         if (b.isAsciiHex()) {
+            if (count >= digits.size) {
+                throw UrlSyntaxException(buffer, "IPv6 hextet is too long.")
+            }
             digits[count] = hexToDec(b)
             count++
         } else {
@@ -543,7 +546,7 @@ func readHextet(buffer: String): (Int64, UInt32) {
 
 extend String {
     func ensureAsciiLower(): String {
-        for (i in 0..this.size where this[i] < b'a' || this[i] > b'z') {
+        for (i in 0..this.size where this[i] >= b'A' && this[i] <= b'Z') {
             return this.toAsciiLower()
         }
         return this

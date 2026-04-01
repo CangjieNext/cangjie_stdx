@@ -237,6 +237,7 @@ class HttpEngineConn1 <: HttpEngineConn & BodyProviderConn {
         }
         set(v) {
             _logger = v
+            conn.logger = v
         }
     }
 
@@ -354,6 +355,7 @@ class HttpEngineConn1 <: HttpEngineConn & BodyProviderConn {
         // The header rule meets the HTTP header rule. For details, see HttpHeaders.
         let headers = HttpHeaders()
         var headerSize = 0
+        var headerCount = 0
         var headerline = Str.empty
 
         try {
@@ -378,6 +380,14 @@ class HttpEngineConn1 <: HttpEngineConn & BodyProviderConn {
                     throw HttpStatusException(HttpStatusCode.STATUS_REQUEST_HEADER_FIELDS_TOO_LARGE,
                         "Header size out of limit ${maxRequestHeaderSize}.")
                 }
+            }
+
+            // Security: Check header count limit to prevent header count attacks
+            // where an attacker sends many small headers to consume memory and CPU
+            headerCount++
+            if (headerCount > DEFAULT_MAX_HEADER_COUNT) {
+                throw HttpStatusException(HttpStatusCode.STATUS_REQUEST_HEADER_FIELDS_TOO_LARGE,
+                    "Header count out of limit ${DEFAULT_MAX_HEADER_COUNT}.")
             }
 
             headers.add(name, value)

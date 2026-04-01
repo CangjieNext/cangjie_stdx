@@ -328,10 +328,19 @@ class HttpChunkedBodyProvider <: InputStream & Resource {
      * RFC 9110 6.6.2.
      */
     private func readTrailer(): Unit {
+        var trailerLineCount = 0
         while (true) {
             let trailerLine = readLine()
             if (trailerLine.isEmpty()) {
                 break
+            }
+            trailerLineCount++
+            if (trailerLineCount > MAX_TRAILER_LINE_COUNT) {
+                if (isReq) {
+                    throw HttpStatusException(HttpStatusCode.STATUS_BAD_REQUEST, "Too many trailer fields.")
+                } else {
+                    throw HttpException("Too many trailer fields.")
+                }
             }
 
             let (name, value) = parseAndCheckHeaderLine(trailerLine, isReq)

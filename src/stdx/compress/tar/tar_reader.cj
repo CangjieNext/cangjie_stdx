@@ -44,6 +44,8 @@ public class TarReader<T> <: Iterable<TarEntry> where T <: InputStream {
     // Tracks the current entry stream so we can drain unread bytes before parsing the next header.
     private var activeDataStream: ?TarDataInputStream = None
 
+    private var paxGlobalDataBytes: Int64 = 0
+
     public init(stream: T) {
         this.stream = stream
         this.archiveSize = getArchiveSize(stream)
@@ -63,7 +65,7 @@ public class TarReader<T> <: Iterable<TarEntry> where T <: InputStream {
             match (header.entryType) {
                 case TarEntryType.GlobalExtendedHeader =>
                     validatePaxHeaderSize(header.size, header.entryType)
-                    paxGlobalData.add(all: readPaxData(header.size))
+                    mergePaxGlobalData(readPaxData(header.size))
                 case TarEntryType.ExtendedHeader =>
                     validatePaxHeaderSize(header.size, header.entryType)
                     paxData.add(all: readPaxData(header.size))
@@ -126,6 +128,25 @@ public class TarReader<T> <: Iterable<TarEntry> where T <: InputStream {
         paxGlobalData |> concat(paxData) |> forEach(header.addPaxData)
         paxData.clear()
         return hasPaxData
+    }
+
+    private func mergePaxGlobalData(newData: HashMap<String, String>): Unit {
+        var nextPaxGlobalDataBytes = paxGlobalDataBytes
+        for ((key, value) in newData) {
+            nextPaxGlobalDataBytes += key.size
+            if (let Some(oldValue) <- paxGlobalData.get(key)) {
+                nextPaxGlobalDataBytes -= oldValue.size
+            }
+            nextPaxGlobalDataBytes += value.size
+        }
+
+        const MAX_PAX_GLOBAL_DATA_BYTES = 32 * 1024 * 1024
+        if (nextPaxGlobalDataBytes > MAX_PAX_GLOBAL_DATA_BYTES) {
+            throw TarException("Global pax metadata exceeds supported maximum ${MAX_PAX_GLOBAL_DATA_BYTES} bytes.")
+        }
+
+        paxGlobalData.add(all: newData)
+        paxGlobalDataBytes = nextPaxGlobalDataBytes
     }
 
     private func readPaxData(size: Int64): HashMap<String, String> {

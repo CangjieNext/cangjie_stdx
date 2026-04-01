@@ -46,3 +46,17 @@ extern int CJ_TLS_DYN_SetHostName(SSL* stream, const char* name, DynMsg* dynMsg)
 
     return (int)DYN_SSL_set_tlsext_host_name(stream, name, dynMsg);
 }
+
+extern int CJ_TLS_DYN_SetHostNameForVerify(SSL* stream, const char* name, DynMsg* dynMsg)
+{
+    if (stream == NULL || name == NULL) {
+        return 0;
+    }
+
+    X509_VERIFY_PARAM* param = DYN_SSL_get0_param(stream, dynMsg);
+    if (param == NULL) {
+        return 0;
+    }
+
+    return DYN_X509_VERIFY_PARAM_set1_host(param, name, 0, dynMsg);
+}

@@ -5,8 +5,8 @@
  *
  * See https://cangjie-lang.cn/pages/LICENSE for license information.
  */
-
 #include <securec.h>
+#include <stdatomic.h>
 #include <stddef.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -24,14 +24,17 @@
 #define OPENSSLPATH "libcrypto-3-x64.dll"
 #define OPENSSLPATHSSL "libssl-3-x64.dll"
 #elif defined(__APPLE__)
+#include <pthread.h>
 #include <dlfcn.h>
 #define OPENSSLPATH "libcrypto.3.dylib"
 #define OPENSSLPATHSSL "libssl.3.dylib"
 #elif defined(__ohos__)
+#include <pthread.h>
 #include <dlfcn.h>
 #define OPENSSLPATH "libcrypto_openssl.z.so"
 #define OPENSSLPATHSSL "libssl_openssl.z.so"
 #else
+#include <pthread.h>
 #include <dlfcn.h>
 #define OPENSSLPATH "libcrypto.so.3"
 #define OPENSSLPATHSSL "libssl.so.3"
@@ -39,6 +42,107 @@
 #include "opensslSymbols.h"
 void* g_singletonHandle = NULL;
 void* g_singletonHandleSsl = NULL;
+#ifndef CANGJIE_OPENSSL_RESOLVE_STRONG
+static bool g_singletonHandleOwned = false;
+static bool g_singletonHandleSslOwned = false;
+#endif
+
+#ifndef CANGJIE_OPENSSL_RESOLVE_STRONG
+typedef enum OpenSslBackendMode {
+    OPENSSL_BACKEND_UNINITIALIZED = 0,
+    OPENSSL_BACKEND_MAIN_IMAGE,
+    OPENSSL_BACKEND_DLOPEN,
+    OPENSSL_BACKEND_UNAVAILABLE,
+} OpenSslBackendMode;
+
+#ifndef _WIN32
+static OpenSslBackendMode g_backendMode = OPENSSL_BACKEND_UNINITIALIZED;
+#endif
+#endif
+
+typedef struct OpenSslBackendCandidate {
+    const char* cryptoPath;
+    const char* sslPath;
+} OpenSslBackendCandidate;
+
+#define STDX_OPENSSL_CRYPTO_FILE_ENV "STDX_OPENSSL_CRYPTO_FILE"
+#define STDX_OPENSSL_SSL_FILE_ENV "STDX_OPENSSL_SSL_FILE"
+
+#ifndef CANGJIE_OPENSSL_RESOLVE_STRONG
+static char* g_configuredCryptoPath = NULL;
+static char* g_configuredSslPath = NULL;
+static bool g_hasConfiguredOpenSslPath = false;
+static bool g_hasStartedOpenSslLoad = false;
+#ifdef _WIN32
+static SRWLOCK g_openSslConfigLock = SRWLOCK_INIT;
+#else
+static pthread_mutex_t g_openSslConfigLock = PTHREAD_MUTEX_INITIALIZER;
+#endif
+#endif
+
+#ifdef _WIN32
+static INIT_ONCE g_opensslLoadOnce = INIT_ONCE_STATIC_INIT;
+#elif !defined(CANGJIE_OPENSSL_RESOLVE_STRONG)
+static pthread_once_t g_backendSelectOnce = PTHREAD_ONCE_INIT;
+#endif
+
+#ifndef CANGJIE_OPENSSL_RESOLVE_STRONG
+static void LockOpenSslConfig(void)
+{
+#ifdef _WIN32
+    AcquireSRWLockExclusive(&g_openSslConfigLock);
+#else
+    (void)pthread_mutex_lock(&g_openSslConfigLock);
+#endif
+}
+
+static void UnlockOpenSslConfig(void)
+{
+#ifdef _WIN32
+    ReleaseSRWLockExclusive(&g_openSslConfigLock);
+#else
+    (void)pthread_mutex_unlock(&g_openSslConfigLock);
+#endif
+}
+
+static bool GetConfiguredOpenSslPaths(const char** cryptoPath, const char** sslPath)
+{
+    const char* envCryptoPath = NULL;
+    const char* envSslPath = NULL;
+
+    *cryptoPath = NULL;
+    *sslPath = NULL;
+
+    LockOpenSslConfig();
+    envCryptoPath = getenv(STDX_OPENSSL_CRYPTO_FILE_ENV);
+    envSslPath = getenv(STDX_OPENSSL_SSL_FILE_ENV);
+    if (envCryptoPath == NULL || envSslPath == NULL) {
+        if (g_configuredCryptoPath != NULL && g_configuredSslPath != NULL) {
+            *cryptoPath = g_configuredCryptoPath;
+            *sslPath = g_configuredSslPath;
+            UnlockOpenSslConfig();
+            return true;
+        }
+        UnlockOpenSslConfig();
+        return false;
+    }
+    if (envCryptoPath[0] == '\0' || envSslPath[0] == '\0') {
+        if (g_configuredCryptoPath != NULL && g_configuredSslPath != NULL) {
+            *cryptoPath = g_configuredCryptoPath;
+            *sslPath = g_configuredSslPath;
+            UnlockOpenSslConfig();
+            return true;
+        }
+        UnlockOpenSslConfig();
+        return false;
+    }
+
+    UnlockOpenSslConfig();
+    *cryptoPath = envCryptoPath;
+    *sslPath = envSslPath;
+    return true;
+}
+#endif
 
 DynMsg* MallocDynMsg(void)
 {
@@ -59,23 +163,94 @@ void FreeDynMsg(DynMsg* dynMsgPtr)
     free((void*)dynMsgPtr);
 }
 
+#ifndef CANGJIE_OPENSSL_RESOLVE_STRONG
+static char* DupCString(const char* src)
+{
+    if (src == NULL) {
+        return NULL;
+    }
+    size_t len = strlen(src) + 1;
+    char* copy = (char*)malloc(len);
+    if (copy == NULL) {
+        return NULL;
+    }
+    if (memcpy_s(copy, len, src, len) != EOK) {
+        free(copy);
+        return NULL;
+    }
+    return copy;
+}
+
+int CJ_OpenSSL_SetPath(const char* cryptoPath, const char* sslPath)
+{
+    char* cryptoCopy = NULL;
+    char* sslCopy = NULL;
+    const char* envCryptoPath = NULL;
+    const char* envSslPath = NULL;
+    int ret = 0;
+
+    if (cryptoPath == NULL || sslPath == NULL || cryptoPath[0] == '\0' || sslPath[0] == '\0') {
+        return 0;
+    }
+
+    cryptoCopy = DupCString(cryptoPath);
+    sslCopy = DupCString(sslPath);
+    if (cryptoCopy == NULL || sslCopy == NULL) {
+        free(cryptoCopy);
+        free(sslCopy);
+        return 0;
+    }
+
+    LockOpenSslConfig();
+    envCryptoPath = getenv(STDX_OPENSSL_CRYPTO_FILE_ENV);
+    envSslPath = getenv(STDX_OPENSSL_SSL_FILE_ENV);
+    if (envCryptoPath != NULL && envSslPath != NULL && envCryptoPath[0] != '\0' && envSslPath[0] != '\0') {
+        goto EXIT;
+    }
+    if (g_hasConfiguredOpenSslPath || g_hasStartedOpenSslLoad || g_singletonHandle != NULL || g_singletonHandleSsl != NULL) {
+        goto EXIT;
+    }
+#ifndef _WIN32
+    if (g_backendMode != OPENSSL_BACKEND_UNINITIALIZED) {
+        goto EXIT;
+    }
+#endif
+
+    g_configuredCryptoPath = cryptoCopy;
+    g_configuredSslPath = sslCopy;
+    g_hasConfiguredOpenSslPath = true;
+    cryptoCopy = NULL;
+    sslCopy = NULL;
+    ret = 1;
+
+EXIT:
+    UnlockOpenSslConfig();
+    free(cryptoCopy);
+    free(sslCopy);
+    return ret;
+}
+#else
+int CJ_OpenSSL_SetPath(const char* cryptoPath, const char* sslPath)
+{
+    (void)cryptoPath;
+    (void)sslPath;
+    return 0;
+}
+#endif
+
 /*
- * "auto" resolver uses weak references (when supported by the toolchain) so static stdx can:
- *   - prefer direct symbol calls when OpenSSL symbols are available (openssl.a/openssl.so),
- *   - still link successfully when OpenSSL is NOT linked (weak resolves to 0),
- *   - then fallback to dlopen/dlsym at runtime.
- *
- * Notes:
- * - `_Pragma` is used because `#pragma` cannot be generated by macros directly.
- * - When weak is unavailable, CANGJIE_PRAGMA_WEAK(sym) becomes a no-op and the code relies on
- *   the runtime loader path only.
+ * "auto" resolver supports two discovery modes:
+ *   - On ELF toolchains that support pragma-weak, prefer already linked symbols and fall back to
+ *     dlopen/dlsym when they are absent.
+ *   - On Apple, probe the main executable image with dlsym(RTLD_MAIN_ONLY, ...) and otherwise
+ *     fall back to dlopen/dlsym.
  */
 #if defined(CANGJIE_OPENSSL_RESOLVE_AUTO) && (defined(__GNUC__) || defined(__clang__)) && !defined(__APPLE__)
 #define CANGJIE_OPENSSL_AUTO_WEAK_AVAILABLE 1
 #define CANGJIE_DO_PRAGMA(x) _Pragma(#x)
 #define CANGJIE_PRAGMA_WEAK(sym) CANGJIE_DO_PRAGMA(weak sym)
 #else
-/* On Apple + lld, weak imports can still error at link time; rely on dlsym instead. */
+/* On Apple + lld, direct weak-import of OpenSSL symbols is not reliable; use dlsym instead. */
 #define CANGJIE_OPENSSL_AUTO_WEAK_AVAILABLE 0
 #define CANGJIE_PRAGMA_WEAK(sym)
 #endif
@@ -144,41 +319,194 @@ CANGJIE_PRAGMA_WEAK(X509_EXTENSION_free)
 #undef DEFINEFUNCTIONCB2
 #undef DEFINEFUNCTIONCB3
 #undef DEFINEFUNCTION
+
 #endif
 
+#ifndef CANGJIE_OPENSSL_RESOLVE_STRONG
 #ifndef _WIN32
-static void* TryDlopen(const char* const* candidates, size_t count)
+static void EnsureLoadedImpl(void);
+
+static void* TryDlopenOne(const char* path)
 {
     if (&dlopen == NULL) {
         return NULL;
     }
+    return dlopen(path, RTLD_LAZY | RTLD_LOCAL);
+}
+
+static void* TryDlopen(const char* const* candidates, size_t count)
+{
     for (size_t i = 0; i < count; i++) {
-        void* handle = dlopen(candidates[i], RTLD_LAZY | RTLD_GLOBAL);
+        void* handle = TryDlopenOne(candidates[i]);
         if (handle != NULL) {
             return handle;
         }
     }
     return NULL;
 }
+
+static void CloseHandle(void* handle)
+{
+    if (&dlclose != NULL && handle != NULL) {
+        (void)dlclose(handle);
+    }
+}
+
+static bool TryLoadBackendPair(const OpenSslBackendCandidate* candidates, size_t count)
+{
+    for (size_t i = 0; i < count; i++) {
+        void* cryptoHandle = TryDlopenOne(candidates[i].cryptoPath);
+        void* sslHandle = TryDlopenOne(candidates[i].sslPath);
+        if (cryptoHandle != NULL && sslHandle != NULL) {
+            g_singletonHandle = cryptoHandle;
+            g_singletonHandleSsl = sslHandle;
+            g_singletonHandleOwned = true;
+            g_singletonHandleSslOwned = true;
+            return true;
+        }
+        CloseHandle(cryptoHandle);
+        CloseHandle(sslHandle);
+    }
+    return false;
+}
+
+static bool IsSslSymbol(const char* name)
+{
+    return strncmp(name, "SSL_", strlen("SSL_")) == 0 ||
+           strncmp(name, "TLS_", strlen("TLS_")) == 0 ||
+           strncmp(name, "DTLS_", strlen("DTLS_")) == 0 ||
+           strncmp(name, "i2d_SSL_", strlen("i2d_SSL_")) == 0 ||
+           strncmp(name, "d2i_SSL_", strlen("d2i_SSL_")) == 0 ||
+           strcmp(name, "OPENSSL_cipher_name") == 0 ||
+           strncmp(name, "OPENSSL_init_ssl", strlen("OPENSSL_init_ssl")) == 0;
+}
+
+#if defined(__APPLE__) && defined(CANGJIE_OPENSSL_RESOLVE_AUTO)
+static const char * const g_mainImageAnchorSymbols[] = {
+        "TLS_client_method",
+        "SSL_CTX_new",
+        "SSL_CTX_free",
+        "SSL_new",
+        "SSL_free",
+        "CRYPTO_free",
+        "BIO_new",
+        "BIO_s_mem",
+        "OPENSSL_init",
+};
+
+/*
+ * Apple main-image mode is intentionally conservative: only select it when the main executable
+ * already exports a coherent set of core TLS/OpenSSL entry points. Once selected, symbol lookups
+ * stay in RTLD_MAIN_ONLY and never fall back to dlopen, so we do not mix host-provided OpenSSL
+ * with a separately loaded backend.
+ */
+static bool MainImageBackendAvailable(void)
+{
+    if (&dlsym == NULL) {
+        return false;
+    }
+
+    for (size_t i = 0; i < sizeof(g_mainImageAnchorSymbols) / sizeof(g_mainImageAnchorSymbols[0]); i++) {
+        if (dlsym(RTLD_MAIN_ONLY, g_mainImageAnchorSymbols[i]) == NULL) {
+            return false;
+        }
+    }
+    return true;
+}
 #endif
 
-static void EnsureLoaded(void)
+static void SelectBackendOnce(void)
 {
+#if defined(__APPLE__) && defined(CANGJIE_OPENSSL_RESOLVE_AUTO)
+    if (MainImageBackendAvailable()) {
+        g_backendMode = OPENSSL_BACKEND_MAIN_IMAGE;
+        return;
+    }
+#endif
+
+    EnsureLoadedImpl();
+    if (g_singletonHandle != NULL || g_singletonHandleSsl != NULL) {
+        g_backendMode = OPENSSL_BACKEND_DLOPEN;
+    } else {
+        g_backendMode = OPENSSL_BACKEND_UNAVAILABLE;
+    }
+}
+
+static void EnsureBackendSelected(void)
+{
+    (void)pthread_once(&g_backendSelectOnce, SelectBackendOnce);
+}
+
+static void* FindDlopenedFunction(const char* name)
+{
+    void* func = NULL;
+    if (&dlsym == NULL) {
+        return NULL;
+    }
+#if defined(CANGJIE_OPENSSL_RESOLVE_AUTO) && defined(RTLD_DEFAULT) && !defined(__APPLE__)
+    /*
+     * On ELF platforms, static OpenSSL can be linked into the main binary.
+     * Try the default symbol scope first so static links resolve without dlopen.
+     */
+    func = dlsym(RTLD_DEFAULT, name);
+    if (func != NULL) {
+        return func;
+    }
+#endif
+    if (g_singletonHandle == NULL && g_singletonHandleSsl == NULL) {
+        return NULL;
+    }
+    if (IsSslSymbol(name)) {
+        if (g_singletonHandleSsl != NULL) {
+            func = dlsym(g_singletonHandleSsl, name);
+        }
+        if (func == NULL && g_singletonHandleSsl == g_singletonHandle && g_singletonHandle != NULL) {
+            func = dlsym(g_singletonHandle, name);
+        }
+    } else {
+        if (g_singletonHandle != NULL) {
+            func = dlsym(g_singletonHandle, name);
+        }
+        if (func == NULL && g_singletonHandle == g_singletonHandleSsl && g_singletonHandleSsl != NULL) {
+            func = dlsym(g_singletonHandleSsl, name);
+        }
+    }
+    return func;
+}
+
+#endif
+
+#ifndef _WIN32
+static void EnsureLoadedImpl(void)
+{
+    const char* configuredCryptoPath = NULL;
+    const char* configuredSslPath = NULL;
+
     if (g_singletonHandle != NULL || g_singletonHandleSsl != NULL) {
         return;
     }
-#ifdef _WIN32
-    g_singletonHandle = LoadLibraryA(OPENSSLPATH);
-    g_singletonHandleSsl = LoadLibraryA(OPENSSLPATHSSL);
+
+    LockOpenSslConfig();
+    g_hasStartedOpenSslLoad = true;
+    UnlockOpenSslConfig();
+
+    if (GetConfiguredOpenSslPaths(&configuredCryptoPath, &configuredSslPath)) {
+        const OpenSslBackendCandidate configuredCandidate[] = {
+                { configuredCryptoPath, configuredSslPath },
+        };
+        (void)TryLoadBackendPair(configuredCandidate, sizeof(configuredCandidate) / sizeof(configuredCandidate[0]));
+        return;
+    }
+#if defined(__APPLE__)
+    const OpenSslBackendCandidate backendCandidates[] = {
+            { "libcrypto.3.dylib", "libssl.3.dylib" },
+            { "libcrypto.dylib", "libssl.dylib" },
+    };
 #else
-    /*
-     * Load libcrypto + libssl separately (instead of relying on libssl's dependency on libcrypto).
-     *
-     * On some platforms/configurations, `dlsym(handle, ...)` is not guaranteed to resolve symbols
-     * from DT_NEEDED dependencies of `handle`, so resolving `CRYPTO_*` via a libssl handle can fail.
-     * Also, some stdx users may only need crypto-related symbols at runtime (libcrypto present but
-     * libssl absent). Trying both improves robustness and keeps symbol resolution deterministic.
-     */
+    const OpenSslBackendCandidate backendCandidates[] = {
+            { OPENSSLPATH, OPENSSLPATHSSL },
+    };
+#endif
     const char* const cryptoCandidates[] = {
             OPENSSLPATH,
 #if defined(__APPLE__)
@@ -200,43 +528,71 @@ static void EnsureLoaded(void)
 #endif
     };
 
-    g_singletonHandle = TryDlopen(cryptoCandidates, sizeof(cryptoCandidates) / sizeof(cryptoCandidates[0]));
-    g_singletonHandleSsl = TryDlopen(sslCandidates, sizeof(sslCandidates) / sizeof(sslCandidates[0]));
-
-    /* If only one library loads successfully, keep both handles usable for the unified lookup path. */
-    if (g_singletonHandle == NULL) {
-        g_singletonHandle = g_singletonHandleSsl;
-    } else if (g_singletonHandleSsl == NULL) {
-        g_singletonHandleSsl = g_singletonHandle;
+    if (TryLoadBackendPair(backendCandidates, sizeof(backendCandidates) / sizeof(backendCandidates[0]))) {
+        return;
     }
-#endif
+
+    /*
+     * Fallback for crypto-only consumers. Keep the single-handle case intact, but do not stitch
+     * together two independently chosen backends: that can mix incompatible SSL implementations.
+     */
+    g_singletonHandle = TryDlopen(cryptoCandidates, sizeof(cryptoCandidates) / sizeof(cryptoCandidates[0]));
+    if (g_singletonHandle != NULL) {
+        g_singletonHandleSsl = g_singletonHandle;
+        g_singletonHandleOwned = true;
+        g_singletonHandleSslOwned = false;
+        return;
+    }
+
+    g_singletonHandleSsl = TryDlopen(sslCandidates, sizeof(sslCandidates) / sizeof(sslCandidates[0]));
+    if (g_singletonHandleSsl != NULL) {
+        g_singletonHandle = g_singletonHandleSsl;
+        g_singletonHandleOwned = false;
+        g_singletonHandleSslOwned = true;
+    }
 }
+
+#else
+static BOOL CALLBACK EnsureLoadedOnceCallback(PINIT_ONCE initOnce, PVOID parameter, PVOID* context)
+{
+    const char* configuredCryptoPath = NULL;
+    const char* configuredSslPath = NULL;
+
+    (void)initOnce;
+    (void)parameter;
+    (void)context;
+
+    LockOpenSslConfig();
+    g_hasStartedOpenSslLoad = true;
+    UnlockOpenSslConfig();
+
+    if (GetConfiguredOpenSslPaths(&configuredCryptoPath, &configuredSslPath)) {
+        g_singletonHandle = LoadLibraryA(configuredCryptoPath);
+        g_singletonHandleSsl = LoadLibraryA(configuredSslPath);
+        g_singletonHandleOwned = (g_singletonHandle != NULL);
+        g_singletonHandleSslOwned = (g_singletonHandleSsl != NULL);
+        return TRUE;
+    }
+    g_singletonHandle = LoadLibraryA(OPENSSLPATH);
+    g_singletonHandleSsl = LoadLibraryA(OPENSSLPATHSSL);
+    g_singletonHandleOwned = (g_singletonHandle != NULL);
+    g_singletonHandleSslOwned = (g_singletonHandleSsl != NULL);
+    return TRUE;
+}
+
+static void EnsureLoaded(void)
+{
+    (void)InitOnceExecuteOnce(&g_opensslLoadOnce, EnsureLoadedOnceCallback, NULL, NULL);
+}
+#endif
 
 static void* FindFunction(const char* name)
 {
     void* func = NULL;
-#ifndef _WIN32
-    if (&dlsym == NULL) {
-        return NULL;
-    }
-#if defined(CANGJIE_OPENSSL_RESOLVE_AUTO) && defined(RTLD_DEFAULT)
-    /*
-     * On platforms like macOS, static OpenSSL can be linked into the main binary.
-     * Try the default symbol scope first so static links resolve without dlopen.
-     */
-    func = dlsym(RTLD_DEFAULT, name);
-    if (func != NULL) {
-        return func;
-    }
-#endif
-#endif
+#ifdef _WIN32
     if (g_singletonHandle == NULL && g_singletonHandleSsl == NULL) {
         EnsureLoaded();
     }
-    if (g_singletonHandle == NULL && g_singletonHandleSsl == NULL) {
-        return NULL;
-    }
-#ifdef _WIN32
     if (g_singletonHandle != NULL) {
         func = GetProcAddress(g_singletonHandle, name);
     }
@@ -247,80 +603,150 @@ static void* FindFunction(const char* name)
         return NULL;
     }
 #else
-    if (g_singletonHandle != NULL) {
-        func = dlsym(g_singletonHandle, name);
+    EnsureBackendSelected();
+    if (g_backendMode == OPENSSL_BACKEND_UNAVAILABLE) {
+        return NULL;
     }
-    if (func == NULL && g_singletonHandleSsl != NULL) {
-        func = dlsym(g_singletonHandleSsl, name);
+#if defined(__APPLE__) && defined(CANGJIE_OPENSSL_RESOLVE_AUTO)
+    if (g_backendMode == OPENSSL_BACKEND_MAIN_IMAGE) {
+        if (&dlsym == NULL) {
+            return NULL;
+        }
+        /* Keep all lookups inside the main executable once that backend has been selected. */
+        return dlsym(RTLD_MAIN_ONLY, name);
     }
+#endif
+    func = FindDlopenedFunction(name);
     if (func == NULL) {
         return NULL;
     }
 #endif
     return func;
 }
+#endif
 
-/* In non-auto mode, pre-load OpenSSL libraries at load time. */
+/* Resolve/load OpenSSL lazily on first symbol use. */
+#ifndef CANGJIE_OPENSSL_RESOLVE_STRONG
 __attribute__((constructor)) void Singleton(void)
 {
-#ifndef CANGJIE_OPENSSL_RESOLVE_AUTO
-    EnsureLoaded();
-#endif
+    (void)0;
 }
 
-/* Auto free or close OpenSSL libraries when the library is unloaded. */
+/* Close runtime-loaded OpenSSL libraries when the library is unloaded. */
 __attribute__((destructor)) void CloseSymbolTable(void)
 {
 #ifdef _WIN32
-    if (g_singletonHandle != NULL) {
+    if (g_singletonHandleOwned && g_singletonHandle != NULL) {
         (void)FreeLibrary(g_singletonHandle);
     }
-    if (g_singletonHandleSsl != NULL) {
+    if (g_singletonHandleSslOwned && g_singletonHandleSsl != NULL) {
         (void)FreeLibrary(g_singletonHandleSsl);
     }
 #else
-    if (&dlclose != NULL && g_singletonHandle != NULL) {
+    if (g_singletonHandleOwned && &dlclose != NULL && g_singletonHandle != NULL) {
         (void)dlclose(g_singletonHandle);
     }
-    if (&dlclose != NULL && g_singletonHandleSsl != NULL && g_singletonHandleSsl != g_singletonHandle) {
+    if (g_singletonHandleSslOwned && &dlclose != NULL && g_singletonHandleSsl != NULL) {
         (void)dlclose(g_singletonHandleSsl);
     }
 #endif
+    g_singletonHandle = NULL;
+    g_singletonHandleSsl = NULL;
+    g_singletonHandleOwned = false;
+    g_singletonHandleSslOwned = false;
+    free(g_configuredCryptoPath);
+    free(g_configuredSslPath);
+    g_configuredCryptoPath = NULL;
+    g_configuredSslPath = NULL;
 }
+#endif
 
 /**============= Api =============*/
 
 #define CHECKFUNCTION(dynMsg, index, name, errCode)                                                                                                                                \
     if (func##index == NULL) {                                                                                                                                                     \
-        (dynMsg)->found = false;                                                                                                                                                   \
-        (dynMsg)->funcName = name;                                                                                                                                                 \
+        if ((dynMsg) != NULL) {                                                                                                                                                    \
+            (dynMsg)->found = false;                                                                                                                                               \
+            (dynMsg)->funcName = (char*)(name);                                                                                                                                    \
+        }                                                                                                                                                                          \
         return errCode;                                                                                                                                                            \
     }
 
-#if defined(CANGJIE_OPENSSL_RESOLVE_AUTO)
+static inline uintptr_t LoadCachedFunctionBits(_Atomic(uintptr_t)* cache)
+{
+    return atomic_load_explicit(cache, memory_order_acquire);
+}
+
+static inline void PublishCachedFunctionBits(_Atomic(uintptr_t)* cache, uintptr_t desired)
+{
+    uintptr_t expected = 0;
+    if (desired == 0) {
+        return;
+    }
+    (void)atomic_compare_exchange_strong_explicit(
+        cache, &expected, desired, memory_order_release, memory_order_acquire);
+}
+
+#if defined(CANGJIE_OPENSSL_RESOLVE_STRONG) || defined(CANGJIE_OPENSSL_RESOLVE_AUTO)
+static void* ResolveDynPopFreeFunction(const char* funcName)
+{
+    /*
+     * DynPopFree() is only used for X509-owned stack element destructors. Keep the allowlist
+     * explicit so strong mode does not silently reintroduce runtime symbol lookup fallback.
+     */
+    if (strcmp(funcName, "GENERAL_NAME_free") == 0) {
+        return (void*)GENERAL_NAME_free;
+    }
+    if (strcmp(funcName, "X509_EXTENSION_free") == 0) {
+        return (void*)X509_EXTENSION_free;
+    }
+    return NULL;
+}
+#endif
+
+#if defined(CANGJIE_OPENSSL_RESOLVE_STRONG)
+#define FINDFUNCTIONI(dynMsg, index, name, errCode)                                                                                                                                \
+    static _Atomic(uintptr_t) funcBits##index = 0;                                                                                                                                 \
+    SSLFunc##index func##index = (SSLFunc##index)LoadCachedFunctionBits(&funcBits##index);                                                                                       \
+    if (func##index == NULL) {                                                                                                                                                     \
+        func##index = (SSLFunc##index)(name);                                                                                                                                      \
+        PublishCachedFunctionBits(&funcBits##index, (uintptr_t)func##index);                                                                                                      \
+        func##index = (SSLFunc##index)LoadCachedFunctionBits(&funcBits##index);                                                                                                   \
+    }                                                                                                                                                                              \
+    CHECKFUNCTION(dynMsg, index, #name, errCode)
+#elif defined(CANGJIE_OPENSSL_RESOLVE_AUTO)
 #if CANGJIE_OPENSSL_AUTO_WEAK_AVAILABLE
 #define FINDFUNCTIONI(dynMsg, index, name, errCode)                                                                                                                                \
-    static SSLFunc##index func##index = NULL;                                                                                                                                      \
+    static _Atomic(uintptr_t) funcBits##index = 0;                                                                                                                                 \
+    SSLFunc##index func##index = (SSLFunc##index)LoadCachedFunctionBits(&funcBits##index);                                                                                       \
     if (func##index == NULL) {                                                                                                                                                     \
         func##index = (SSLFunc##index)(name);                                                                                                                                      \
         if (func##index == NULL) {                                                                                                                                                 \
             func##index = (SSLFunc##index)(FindFunction(#name));                                                                                                                   \
         }                                                                                                                                                                          \
+        PublishCachedFunctionBits(&funcBits##index, (uintptr_t)func##index);                                                                                                      \
+        func##index = (SSLFunc##index)LoadCachedFunctionBits(&funcBits##index);                                                                                                   \
     }                                                                                                                                                                              \
     CHECKFUNCTION(dynMsg, index, #name, errCode)
 #else
 #define FINDFUNCTIONI(dynMsg, index, name, errCode)                                                                                                                                \
-    static SSLFunc##index func##index = NULL;                                                                                                                                      \
+    static _Atomic(uintptr_t) funcBits##index = 0;                                                                                                                                 \
+    SSLFunc##index func##index = (SSLFunc##index)LoadCachedFunctionBits(&funcBits##index);                                                                                       \
     if (func##index == NULL) {                                                                                                                                                     \
         func##index = (SSLFunc##index)(FindFunction(#name));                                                                                                                       \
+        PublishCachedFunctionBits(&funcBits##index, (uintptr_t)func##index);                                                                                                      \
+        func##index = (SSLFunc##index)LoadCachedFunctionBits(&funcBits##index);                                                                                                   \
     }                                                                                                                                                                              \
     CHECKFUNCTION(dynMsg, index, #name, errCode)
 #endif
 #else
 #define FINDFUNCTIONI(dynMsg, index, name, errCode)                                                                                                                                \
-    static SSLFunc##index func##index = NULL;                                                                                                                                      \
+    static _Atomic(uintptr_t) funcBits##index = 0;                                                                                                                                 \
+    SSLFunc##index func##index = (SSLFunc##index)LoadCachedFunctionBits(&funcBits##index);                                                                                       \
     if (func##index == NULL) {                                                                                                                                                     \
         func##index = (SSLFunc##index)(FindFunction(#name));                                                                                                                       \
+        PublishCachedFunctionBits(&funcBits##index, (uintptr_t)func##index);                                                                                                      \
+        func##index = (SSLFunc##index)LoadCachedFunctionBits(&funcBits##index);                                                                                                   \
     }                                                                                                                                                                              \
     CHECKFUNCTION(dynMsg, index, #name, errCode)
 #endif
@@ -702,13 +1128,12 @@ void DynPopFree(void* extlist, char* funcName, DynMsg* dynMsg)
 {
     typedef void (*SSLFunc0)(void*);
     SSLFunc0 func0 = NULL;
-#if defined(CANGJIE_OPENSSL_RESOLVE_AUTO)
+#if defined(CANGJIE_OPENSSL_RESOLVE_STRONG)
+    func0 = (SSLFunc0)ResolveDynPopFreeFunction(funcName);
+    CHECKFUNCTION(dynMsg, 0, funcName, )
+#elif defined(CANGJIE_OPENSSL_RESOLVE_AUTO)
     if (CANGJIE_OPENSSL_AUTO_WEAK_AVAILABLE) {
-        if (strcmp(funcName, "GENERAL_NAME_free") == 0 && &GENERAL_NAME_free != NULL) {
-            func0 = (SSLFunc0)GENERAL_NAME_free;
-        } else if (strcmp(funcName, "X509_EXTENSION_free") == 0 && &X509_EXTENSION_free != NULL) {
-            func0 = (SSLFunc0)X509_EXTENSION_free;
-        }
+        func0 = (SSLFunc0)ResolveDynPopFreeFunction(funcName);
     }
     if (func0 == NULL) {
         func0 = (SSLFunc0)(FindFunction(funcName));

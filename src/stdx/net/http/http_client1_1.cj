@@ -95,7 +95,7 @@ class HttpClient1 <: HttpClient {
         }
 
         if (request.headers.get("host").isEmpty()) {
-            request.headers.set("host", "${httpEngine.addrport.addr}:${httpEngine.addrport.port}")
+            request.headers.set("host", "${targetAddrPort.addr}:${targetAddrPort.port}")
         }
 
         return httpEngine.sendRequest(request, isToProxy, isToHttpsProxy)
@@ -108,12 +108,18 @@ class HttpClient1 <: HttpClient {
             return (AddrPort(request.url.hostName, request.url.port.ifEmpty(targetPort)), None, false, false)
         } else {
             let proxyUrl = URL.parse(proxy)
+            
+            // check if caller already tries to establish proxying for this request manually, so skip proxying 
+            if (!request.headers.get("host").isEmpty() && request.method == "CONNECT") {
+                return (AddrPort(request.url.hostName, request.url.port.ifEmpty(targetPort)), None, false, false)
+            }
+            
             if (let Some(auth) <- parseProxyAuth(proxyUrl)) {
                 // a client must not generate fields in a TRACE request containing
-                // sensitive data that might be disclosed by the response.
-                // such as Cookie
+                // sensitive data that might be disclosed by the response. such as Cookie
                 // RFC 9110 9.3.8. TRACE
-                if (request.method != "TRACE") {
+                // And https proxy will handle authorization in a different way
+                if (request.method != "TRACE" && request.url.scheme != "https") {
                     request.headers.set("proxy-authorization", auth)
                 }
             }
@@ -140,6 +146,9 @@ class HttpClient1 <: HttpClient {
     }
 
     func close() {
+        if (client.logger.enabled(LogLevel.TRACE)) {
+            httpLogTrace(client.logger, "[HttpClient1#close] start to close")
+        }
         synchronized(mapMtx) {
             isClosed = true
             for ((_, engine) in h1EngineMap) {
@@ -416,7 +425,12 @@ class HttpEngine1 {
 
     func getTunnelConnector(request: HttpRequest): StreamingSocket {
         let headers = HttpHeaders()
-        headers.add("Host", request.url.hostName + ":" + request.url.port)
+        let host = request.headers.getFirst("Host") ?? (request.url.hostName + ":" + request.url.port.ifEmpty("443"))
+        headers.add("Host", host)
+        let proxyUrl = URL.parse(client.httpsProxy)
+        if (let Some(auth) <- parseProxyAuth(proxyUrl)) {
+            headers.add("proxy-authorization", auth)
+        }
         httpLogDebug(logger, "[HttpEngine1#getTunnelConnector] Client1_1 getTunnelConnector,https proxy:" + client.httpsProxy.toString())
         let req = HttpRequestBuilder().connect().url(client.httpsProxy).version(HTTP1_1).setHeaders(headers).build()
         let (resp, conn) = httpClient1.connect(req)
@@ -459,6 +473,9 @@ class HttpEngine1 {
 
     private func closeConn(connNode: ConnNode): Unit {
         // close
+        if (logger.enabled(LogLevel.TRACE)) {
+            httpLogTrace(logger, "[HttpEngine1#closeConn] prepare to close connNode")
+        }
         connNode.close()
         connNum.fetchAdd(-1)
     }
@@ -552,6 +569,7 @@ class ConnNode <: BodyProviderConn {
         let isToHttpsProxy: Bool
     ) {
         conn = BufferedConn(h1Engine.connect(request, isTls, isToHttpsProxy: isToHttpsProxy))
+        conn.logger = client.logger
         logger = client.logger
         readTimeout = client.readTimeout
         writeTimeout = client.writeTimeout
@@ -591,6 +609,9 @@ class ConnNode <: BodyProviderConn {
         try {
             sendRequestTimeout(request)
         } catch (e: Exception) {
+            if (logger.enabled(LogLevel.TRACE)) {
+                httpLogTrace(logger, "[ConnNode#sendRequest] catch exception on sendRequestTimeout: ${e}")
+            }
             writeTimer.cancel()
             readTimer.cancel()
             throw match {
@@ -905,7 +926,10 @@ class ConnNode <: BodyProviderConn {
         // HTTP does not place a predefined limit on the length of each field line,
         // field value, or on the length of a header or trailer section as a whole
         // RFC 9112 5.4.
+        // However, we apply limits to protect against malicious servers.
         let header = HttpHeaders()
+        var headerSize = 0
+        var headerCount = 0
 
         // although the line terminator for the start-line and fields is the sequence CRLF,
         // a recipient may recognize a single LF as a line terminator and ignore any preceding CR
@@ -924,6 +948,21 @@ class ConnNode <: BodyProviderConn {
             // obs-text         = %x80-FF
             // RFC 9110 5.5.
             let (name, value) = parseAndCheckHeaderLine(line, false)
+
+            // Security: Check header size limit
+            if (Int64(DEFAULT_MAX_HEADER_LIST_SIZE) != 0) {
+                headerSize += name.size + value.size + 1
+                if (headerSize >= Int64(DEFAULT_MAX_HEADER_LIST_SIZE)) {
+                    throw HttpException("Response header size out of limit ${DEFAULT_MAX_HEADER_LIST_SIZE}.")
+                }
+            }
+
+            // Security: Check header count limit
+            headerCount++
+            if (headerCount > Int64(DEFAULT_MAX_HEADER_COUNT)) {
+                throw HttpException("Response header count out of limit ${DEFAULT_MAX_HEADER_COUNT}.")
+            }
+
             header.add(name, value)
             line = readLine()
         }
@@ -1107,6 +1146,9 @@ class ConnNode <: BodyProviderConn {
      * close the connection
      */
     func close(): Unit {
+        if (logger.enabled(LogLevel.TRACE)) {
+            httpLogTrace(logger, "[ConnNode#close] start to close")
+        }
         if (!isClosed.swap(true)) {
             conn.close()
         }
@@ -1128,6 +1170,7 @@ func toHeaderString(httpHeaders: HttpHeaders): StringBuilder {
 }
 
 class ResponseBodyProviderUtilConnectionClose <: InputStream & Resource {
+    var bytesRead: Int64 = 0
     ResponseBodyProviderUtilConnectionClose(let connNode: ConnNode, let timer: HttpTimer) {}
     // if there is data in the cache,
     // the value is returned immediately
@@ -1137,7 +1180,17 @@ class ResponseBodyProviderUtilConnectionClose <: InputStream & Resource {
         }
 
         try {
-            return connNode.conn.read(buf)
+            let n = connNode.conn.read(buf)
+            if (n > 0) {
+                // Security: Check body size limit for responses without Content-Length
+                // This prevents malicious servers from sending unlimited data
+                bytesRead += n
+                if (bytesRead > DEFAULT_MAX_BODY_SIZE) {
+                    connNode.h1Engine.closeConnInUse(connNode)
+                    throw HttpException("Response body size out of limit ${DEFAULT_MAX_BODY_SIZE}.")
+                }
+            }
+            return n
         } catch (e: Exception) {
             connNode.h1Engine.closeConnInUse(connNode)
             if (e is ConnectionException) { // socket is closed

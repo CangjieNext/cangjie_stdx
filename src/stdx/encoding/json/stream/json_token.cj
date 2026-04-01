@@ -70,6 +70,7 @@ const PEEK_STATE_VALUE = 10 // next token must be a value, can not be a endArray
 const PEEK_STATE_NONE = 11
 let PEEKSTATE2TOKEN: Array<JsonToken> = [JsonNull, JsonBool, JsonBool, JsonNumber, JsonString, BeginArray, EndArray,
     BeginObject, EndObject, Name]
+const MAX_JSON_STREAM_DEPTH = 100
 
 class JsonStateStack {
     static const JSON_UNDEFINE = 0
@@ -82,6 +83,9 @@ class JsonStateStack {
     init() {}
 
     func put(v: Int64) {
+        if (stacksize >= MAX_JSON_STREAM_DEPTH) {
+            throw IllegalStateException("Json nested depth exceeds ${MAX_JSON_STREAM_DEPTH}.")
+        }
         if (stacksize >= stack.size) {
             var newstack = Array<Int64>(stack.size * 2, repeat: 0)
             stack.copyTo(newstack, 0, 0, stack.size)

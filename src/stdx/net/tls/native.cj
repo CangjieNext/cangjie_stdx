@@ -116,6 +116,12 @@ foreign {
         dynMsgPtr: CPointer<DynMsg>
     ): Int32
 
+    func CJ_TLS_DYN_SetHostNameForVerify(
+        stream: CPointer<Ssl>,
+        name: CString,
+        dynMsgPtr: CPointer<DynMsg>
+    ): Int32
+
     func CJ_TLS_DYN_ServerEnableSNI(context: CPointer<Ctx>, dynMsgPtr: CPointer<DynMsg>): Int32
 }
 
@@ -136,6 +142,15 @@ func CJ_TLS_SetHostName(
     unsafe {
         var dynMsg = DynMsg()
         let res = CJ_TLS_DYN_SetHostName(stream, name, exception, inout dynMsg)
+        checkDynMsg(dynMsg)
+        return res
+    }
+}
+
+func CJ_TLS_SetHostNameForVerify(stream: CPointer<Ssl>, name: CString): Int32 {
+    unsafe {
+        var dynMsg = DynMsg()
+        let res = CJ_TLS_DYN_SetHostNameForVerify(stream, name, inout dynMsg)
         checkDynMsg(dynMsg)
         return res
     }

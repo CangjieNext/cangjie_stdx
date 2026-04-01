@@ -207,6 +207,9 @@ public class JsonWriter {
     }
 
     func put(scope: JsonWriterState) {
+        if (stack.size >= MAX_JSON_STREAM_DEPTH) {
+            throw IllegalStateException("Json nested depth exceeds ${MAX_JSON_STREAM_DEPTH}.")
+        }
         stack.add(scope)
     }
 

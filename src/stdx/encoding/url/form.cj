@@ -13,6 +13,8 @@ package stdx.encoding.url
 
 import std.collection.*
 
+const MAX_URL_FORM_ITEMS: Int64 = 4096
+
 /**
  * Form stores the key-value pair of the query part of the URL.
  *
@@ -20,6 +22,20 @@ import std.collection.*
  */
 public class Form {
     private var data: HashMap<String, ArrayList<String>>
+
+    private func itemCount(): Int64 {
+        var count = 0
+        for ((_, values) in data) {
+            count += values.size
+        }
+        return count
+    }
+
+    private func ensureCanAddItem(addition: Int64): Unit {
+        if (itemCount() + addition > MAX_URL_FORM_ITEMS) {
+            throw IllegalStateException("Form item count exceeds ${MAX_URL_FORM_ITEMS}.")
+        }
+    }
 
     public init() {
         this.data = HashMap<String, ArrayList<String>>()
@@ -45,6 +61,7 @@ public class Form {
             } else {
                 decode(kv[1], isQuery: true)
             }
+            ensureCanAddItem(1)
             if (data.contains(key)) {
                 data[key].add(value)
             } else {
@@ -115,6 +132,9 @@ public class Form {
      * @since 0.18.6
      */
     public func set(key: String, value: String): Unit {
+        if (!data.contains(key)) {
+            ensureCanAddItem(1)
+        }
         data.add(key, ArrayList([value]))
     }
 
@@ -128,6 +148,7 @@ public class Form {
      * @since 0.18.6
      */
     public func add(key: String, value: String): Unit {
+        ensureCanAddItem(1)
         if (data.contains(key)) {
             data[key].add(value)
         } else {
