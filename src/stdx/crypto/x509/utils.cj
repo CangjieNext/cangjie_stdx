@@ -322,14 +322,14 @@ foreign {
     func DYN_CJGetX509DnsNames(
         derBlob: CPointer<Byte>,
         length: UIntNative,
-        result: CPointer<StringArrayResult>,
+        result: CPointer<ByteArrayResult>,
         msg: CPointer<DynMsg>
     ): Unit
 
     func DYN_CJGetX509EmailAddresses(
         derBlob: CPointer<Byte>,
         length: UIntNative,
-        result: CPointer<StringArrayResult>,
+        result: CPointer<ByteArrayResult>,
         msg: CPointer<DynMsg>
     ): Unit
 
@@ -383,14 +383,14 @@ foreign {
     func DYN_CJGetX509CsrDnsNames(
         derBlob: CPointer<Byte>,
         length: UIntNative,
-        result: CPointer<StringArrayResult>,
+        result: CPointer<ByteArrayResult>,
         msg: CPointer<DynMsg>
     ): Unit
 
     func DYN_CJGetX509CsrEmailAddresses(
         derBlob: CPointer<Byte>,
         length: UIntNative,
-        result: CPointer<StringArrayResult>,
+        result: CPointer<ByteArrayResult>,
         msg: CPointer<DynMsg>
     ): Unit
 
@@ -574,13 +574,13 @@ func nameStackFree(nameStack: CPointer<Unit>): Unit {
     checkError(dynMsgPtr)
 }
 
-func getX509CsrDnsNames(derBlob: CPointer<Byte>, length: UIntNative, result: CPointer<StringArrayResult>): Unit {
+func getX509CsrDnsNames(derBlob: CPointer<Byte>, length: UIntNative, result: CPointer<ByteArrayResult>): Unit {
     let dynMsgPtr = generateDynMsg()
     unsafe { DYN_CJGetX509CsrDnsNames(derBlob, length, result, dynMsgPtr) }
     checkError(dynMsgPtr)
 }
 
-func getX509CsrEmailAddresses(derBlob: CPointer<Byte>, length: UIntNative, result: CPointer<StringArrayResult>): Unit {
+func getX509CsrEmailAddresses(derBlob: CPointer<Byte>, length: UIntNative, result: CPointer<ByteArrayResult>): Unit {
     let dynMsgPtr = generateDynMsg()
     unsafe { DYN_CJGetX509CsrEmailAddresses(derBlob, length, result, dynMsgPtr) }
     checkError(dynMsgPtr)
@@ -643,13 +643,13 @@ func getX509IpAddresses(derBlob: CPointer<Byte>, length: UIntNative, result: CPo
     checkError(dynMsgPtr)
 }
 
-func getX509EmailAddresses(derBlob: CPointer<Byte>, length: UIntNative, result: CPointer<StringArrayResult>): Unit {
+func getX509EmailAddresses(derBlob: CPointer<Byte>, length: UIntNative, result: CPointer<ByteArrayResult>): Unit {
     let dynMsgPtr = generateDynMsg()
     unsafe { DYN_CJGetX509EmailAddresses(derBlob, length, result, dynMsgPtr) }
     checkError(dynMsgPtr)
 }
 
-func getX509DnsNames(derBlob: CPointer<Byte>, length: UIntNative, result: CPointer<StringArrayResult>): Unit {
+func getX509DnsNames(derBlob: CPointer<Byte>, length: UIntNative, result: CPointer<ByteArrayResult>): Unit {
     let dynMsgPtr = generateDynMsg()
     unsafe { DYN_CJGetX509DnsNames(derBlob, length, result, dynMsgPtr) }
     checkError(dynMsgPtr)

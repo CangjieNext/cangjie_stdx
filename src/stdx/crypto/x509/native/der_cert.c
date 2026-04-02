@@ -40,7 +40,7 @@ struct X509CertInfo {
 // Clone the parse result from X509 cert.
 static void* DataClone(const uint8_t* source, size_t size)
 {
-    void* temp = (void*)malloc((uint32_t)sizeof(char) * size);
+    void* temp = (void*)malloc(sizeof(char) * size);
     if (temp == NULL) {
         return NULL;
     }
@@ -82,6 +82,7 @@ extern void* DYN_CJCreateCert(void* pubKey, void* priKey, void* issuer, void* su
         return NULL;
     }
     if (DYN_X509_set_version(cert, CJ_VERSION_TYPE, dynMsg) <= 0) {
+        DYN_X509_free(cert, dynMsg);
         return NULL;
     }
 
@@ -91,12 +92,14 @@ extern void* DYN_CJCreateCert(void* pubKey, void* priKey, void* issuer, void* su
     if (DYN_BN_hex2bn(&bn, certInfo->serialNumber, dynMsg) <= 0) {
         DYN_BN_free(bn, dynMsg);
         DYN_ASN1_INTEGER_free(serial, dynMsg);
+        DYN_X509_free(cert, dynMsg);
         return NULL;
     }
     serial = DYN_BN_to_ASN1_INTEGER(bn, serial, dynMsg);
     if (DYN_X509_set_serialNumber(cert, serial, dynMsg) <= 0) {
         DYN_BN_free(bn, dynMsg);
         DYN_ASN1_INTEGER_free(serial, dynMsg);
+        DYN_X509_free(cert, dynMsg);
         return NULL;
     }
     DYN_BN_free(bn, dynMsg);
@@ -106,48 +109,59 @@ extern void* DYN_CJCreateCert(void* pubKey, void* priKey, void* issuer, void* su
     ASN1_TIME* tm = DYN_ASN1_TIME_new(dynMsg);
     if (DYN_ASN1_TIME_set_string(tm, certInfo->notBefore, dynMsg) <= 0) {
         DYN_ASN1_TIME_free(tm, dynMsg);
+        DYN_X509_free(cert, dynMsg);
         return NULL;
     }
     if (DYN_X509_set1_notBefore(cert, tm, dynMsg) <= 0) {
         DYN_ASN1_TIME_free(tm, dynMsg);
+        DYN_X509_free(cert, dynMsg);
         return NULL;
     }
     if (DYN_ASN1_TIME_set_string(tm, certInfo->notAfter, dynMsg) <= 0) {
         DYN_ASN1_TIME_free(tm, dynMsg);
+        DYN_X509_free(cert, dynMsg);
         return NULL;
     }
     if (DYN_X509_set1_notAfter(cert, tm, dynMsg) <= 0) {
         DYN_ASN1_TIME_free(tm, dynMsg);
+        DYN_X509_free(cert, dynMsg);
         return NULL;
     }
     DYN_ASN1_TIME_free(tm, dynMsg);
 
     // set x509_name
     if (subject != NULL && DYN_X509_set_subject_name(cert, subject, dynMsg) <= 0) {
+        DYN_X509_free(cert, dynMsg);
         return NULL;
     }
     if (DYN_X509_set_issuer_name(cert, issuer, dynMsg) <= 0) {
+        DYN_X509_free(cert, dynMsg);
         return NULL;
     }
 
     // set public key
     if (DYN_X509_set_pubkey(cert, pubKey, dynMsg) <= 0) {
+        DYN_X509_free(cert, dynMsg);
         return NULL;
     }
 
     // set extensions// set extensions
     if (AddExt(cert, NID_subject_alt_name, certInfo->altNames, dynMsg) <= 0) {
+        DYN_X509_free(cert, dynMsg);
         return NULL;
     }
     if (AddExt(cert, NID_key_usage, certInfo->keyUsage, dynMsg) <= 0) {
+        DYN_X509_free(cert, dynMsg);
         return NULL;
     }
     if (AddExt(cert, NID_ext_key_usage, certInfo->extKeyUsage, dynMsg) <= 0) {
+        DYN_X509_free(cert, dynMsg);
         return NULL;
     }
 
     // sign certificate with digest
     if (DYN_X509_sign(cert, priKey, digest, dynMsg) <= 0) {
+        DYN_X509_free(cert, dynMsg);
         return NULL;
     }
 
@@ -193,7 +207,7 @@ static size_t GetSizeInGeneralNamesByType(GENERAL_NAMES* subjectAltNames, int cn
 }
 
 static void StoreResultByType(
-    GENERAL_NAMES* subjectAltNames, int type, struct StringArrayResult* result, DynMsg* dynMsg)
+    GENERAL_NAMES* subjectAltNames, int type, struct ByteArrayResult* result, DynMsg* dynMsg)
 {
     if (subjectAltNames == NULL) {
         return;
@@ -203,7 +217,7 @@ static void StoreResultByType(
     if (validCnt == 0) {
         return;
     }
-    result->buffer = (char**)malloc(sizeof(char*) * validCnt);
+    result->buffer = (struct ByteResult*)malloc(sizeof(struct ByteResult) * validCnt);
     if (result->buffer == NULL) {
         return;
     }
@@ -213,8 +227,10 @@ static void StoreResultByType(
     for (int i = 0; i < cnt; i++) {
         GENERAL_NAME* name = DYN_OPENSSL_sk_value((void*)subjectAltNames, i, dynMsg);
         if (name->type == type) {
-            size_t len = (size_t)(unsigned int)(DYN_ASN1_STRING_length(name->d.dNSName, dynMsg) + 1);
-            result->buffer[index++] = (char*)DataClone(DYN_ASN1_STRING_get0_data(name->d.dNSName, dynMsg), len);
+            size_t len = (size_t)(unsigned int)DYN_ASN1_STRING_length(name->d.dNSName, dynMsg);
+            result->buffer[index].size = len;
+            result->buffer[index++].buffer =
+                (uint8_t*)DataClone(DYN_ASN1_STRING_get0_data(name->d.dNSName, dynMsg), len);
         }
     }
 }
@@ -252,7 +268,7 @@ static void GetExtensionResultFromName(GENERAL_NAMES* subjectAltNames, int type,
     switch (type) {
         case GEN_EMAIL:
         case GEN_DNS:
-            StoreResultByType(subjectAltNames, type, (struct StringArrayResult*)result, dynMsg);
+            StoreResultByType(subjectAltNames, type, (struct ByteArrayResult*)result, dynMsg);
             break;
         case GEN_IPADD:
             StoreIPResult(subjectAltNames, (struct ByteArrayResult*)result, dynMsg);
@@ -276,6 +292,7 @@ static void GetX509ExtensionByNameType(
     GENERAL_NAMES* subjectAltNames =
         (GENERAL_NAMES*)DYN_X509_get_ext_d2i(cert, NID_subject_alt_name, NULL, NULL, dynMsg);
     if (dynMsg && dynMsg->found == false) {
+        DYN_X509_free(cert, dynMsg);
         return;
     }
     GetExtensionResultFromName(subjectAltNames, type, result, dynMsg);
@@ -287,14 +304,14 @@ static void GetX509ExtensionByNameType(
 
 // Get DNS names in X509 extension.
 extern void DYN_CJGetX509DnsNames(
-    const unsigned char* derBlob, size_t length, struct StringArrayResult* result, DynMsg* dynMsg)
+    const unsigned char* derBlob, size_t length, struct ByteArrayResult* result, DynMsg* dynMsg)
 {
     GetX509ExtensionByNameType(derBlob, length, result, GEN_DNS, dynMsg);
 }
 
 // Get email addresses in X509 extension.
 extern void DYN_CJGetX509EmailAddresses(
-    const unsigned char* derBlob, size_t length, struct StringArrayResult* result, DynMsg* dynMsg)
+    const unsigned char* derBlob, size_t length, struct ByteArrayResult* result, DynMsg* dynMsg)
 {
     GetX509ExtensionByNameType(derBlob, length, result, GEN_EMAIL, dynMsg);
 }
@@ -398,6 +415,7 @@ extern void DYN_CJGetX509ExtKeyUsage(
     EXTENDED_KEY_USAGE* extusage = NULL;
     extusage = DYN_X509_get_ext_d2i(cert, NID_ext_key_usage, NULL, NULL, dynMsg);
     if (dynMsg && dynMsg->found == false) {
+        DYN_X509_free(cert, dynMsg);
         return;
     }
     StoreExtKeyUsageResult(extusage, result, dynMsg);
@@ -521,14 +539,14 @@ static void GetX509ReqExtensionByNameType(
 
 // Get DNS names in X509_REQ extension.
 extern void DYN_CJGetX509CsrDnsNames(
-    const unsigned char* derBlob, size_t length, struct StringArrayResult* result, DynMsg* dynMsg)
+    const unsigned char* derBlob, size_t length, struct ByteArrayResult* result, DynMsg* dynMsg)
 {
     GetX509ReqExtensionByNameType(derBlob, length, result, GEN_DNS, dynMsg);
 }
 
 // Get email addresses in X509_REQ extension.
 extern void DYN_CJGetX509CsrEmailAddresses(
-    const unsigned char* derBlob, size_t length, struct StringArrayResult* result, DynMsg* dynMsg)
+    const unsigned char* derBlob, size_t length, struct ByteArrayResult* result, DynMsg* dynMsg)
 {
     GetX509ReqExtensionByNameType(derBlob, length, result, GEN_EMAIL, dynMsg);
 }
