@@ -47,6 +47,10 @@ public class Package <: ToString {
 
     private let _accessLevel: AccessLevel
 
+    internal var _globalVars = ArrayList<GlobalVar>()
+
+    internal var _functions = ArrayList<Function>()
+
     internal var _importedClassDefs = ArrayList<ClassLikeDef>()
 
     internal var _importedEnumDefs = ArrayList<EnumDef>()
@@ -237,7 +241,42 @@ public class Package <: ToString {
         }
     }
 
-    // ----------------------- create custom type def -----------------------
+    // ----------------------- create global symbol -----------------------
+    public func addGlobalVar(ty: Type, identifier: String, srcCodeName: String, packageName: String): GlobalVar {
+        let temp = GlobalVar(ty, GLOBAL_SYMBOL_PREFIX + identifier, srcCodeName, packageName)
+        _globalVars.add(temp)
+        return temp
+    }
+
+    public func addFunction(ty: FuncType, identifier: String, srcCodeName: String, packageName: String): Function {
+        let temp = Function(ty, GLOBAL_SYMBOL_PREFIX + identifier, srcCodeName, packageName)
+        _functions.add(temp)
+        return temp
+    }
+
+    public func createBoolLiteral(value: Bool): BoolLiteral {
+        return BoolLiteral(BoolType.get(), value)
+    }
+    public func createRuneLiteral(value: Rune): RuneLiteral {
+        return RuneLiteral(RuneType.get(), value)
+    }
+    public func createIntLiteral(ty: IntType, value: UInt64): IntLiteral {
+        return IntLiteral(ty, value)
+    }
+    public func createFloatLiteral(ty: FloatType, value: Float64): FloatLiteral {
+        return FloatLiteral(ty, value)
+    }
+    public func createStringLiteral(value: String): StringLiteral {
+        let stringType = getSpecifiedStructDef("std.core", "String").getOrThrow().structType
+        return StringLiteral(stringType, value)
+    }
+    public func createUnitLiteral(): UnitLiteral {
+        return UnitLiteral(UnitType.get())
+    }
+    public func createNullLiteral(ty: Type): NullLiteral {
+        return NullLiteral(ty)
+    }
+    
     /**
      * Adds a new class or interface definition to this package.
      * @param identifier Globally unique name.
