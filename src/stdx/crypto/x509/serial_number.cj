@@ -29,6 +29,13 @@ public struct SerialNumber <: Equatable<SerialNumber> & Hashable & ToString {
     }
 
     init(serialNumber: Array<Byte>) {
+        if (serialNumber.size == 0) {
+            throw X509Exception("X509SerialNumber init failed: Certificate serial number must contain at least 1 byte.")
+        }
+
+        if (serialNumber.size > 20) {
+            throw X509Exception("X509SerialNumber init failed: Certificate serial number should not exceed 20 bytes.")
+        }
         this.serialNumber_ = serialNumber.clone()
     }
 
