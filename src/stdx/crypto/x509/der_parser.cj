@@ -37,7 +37,7 @@ struct DerParser {
         }
     }
 
-    mut func parseNextDerField(): DerField {
+    mut func parseNextDerField(depth: Int64): DerField {
         let ty = parseDerType()
         let length = Int64(parseDerLength())
         let content: Array<Byte> = if (length > 0) {
@@ -50,12 +50,15 @@ struct DerParser {
         }
         offset += length
 
-        return DerField(ty, length, content)
+        return DerField(ty, length, content, depth)
     }
 
     mut func skipDerField(): DerType {
         let ty = parseDerType()
         let length = Int64(parseDerLength())
+        if (offset + length > body.size) {
+            throw X509Exception("X509 parse derfield failed: Failed to parse DER.")
+        }
         offset += length
 
         return ty
@@ -88,7 +91,12 @@ struct DerParser {
 
     mut func parseDerIntU64(): UInt64 {
         var result = 0u64
+        var iterations = 0
+        const maxIterations = 10
         while (true) {
+            if (iterations >= maxIterations) {
+                throw X509Exception("X509 parse derfield failed: Base-128 integer overflow.")
+            }
             checkOutOfIndex()
             let next = body[offset]
             offset++
@@ -96,6 +104,7 @@ struct DerParser {
             if ((next & 0x80u8) == 0) { // leading bit of 0 means the last octet
                 break
             }
+            iterations++
         }
         return result
     }
@@ -110,6 +119,9 @@ struct DerParser {
             return Int64(first)
         }
         let count = Int64(first & 0x7f)
+        if (count == 0) {
+            throw X509Exception("X509 parse derfield failed: indefinite length encoding not allowed in DER.")
+        }
         let maxDerLength = 7
         if (count > maxDerLength) {
             throw X509Exception("X509 parse derfield failed: unsupport derlength.")
@@ -121,6 +133,15 @@ struct DerParser {
             result = (result << 8) | Int64(body[offset])
             offset++
         }
+        if (result > body.size) {
+            throw X509Exception("X509 parse derfield failed: Failed to parse DER.")
+        }
+        if (result < 128) {
+            throw X509Exception("X509 parse derfield failed: length must use shortest form in DER.")
+        }
+        if (result < (1 << (8 * (count - 1)))) {
+            throw X509Exception("X509 parse derfield failed: length must use shortest form in DER.")
+        }
         return result
     }
 
@@ -128,8 +149,16 @@ struct DerParser {
         let builder = ArrayList<UInt64>()
         let firstPair = parseDerIntU64()
 
-        builder.add(firstPair / 40) // T-REC-X.690-202102 8.19.4
-        builder.add(firstPair % 40)
+        if (firstPair < 40) {
+            builder.add(0u64)
+            builder.add(firstPair)
+        } else if (firstPair < 80) {
+            builder.add(1u64)
+            builder.add(firstPair - 40)
+        } else {
+            builder.add(2u64)
+            builder.add(firstPair - 80)
+        }
 
         while (hasRemaining) {
             builder.add(parseDerIntU64())

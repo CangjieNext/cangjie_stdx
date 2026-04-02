@@ -287,7 +287,7 @@ public class X509Name <: ToString {
             setName(name, "emailAddress", nameString: email)
 
             var parser = DerParser(getNameBody(name))
-            var field = parser.parseNextDerField()
+            var field = parser.parseNextDerField(0)
             this.blob = X500Principal(field)
         } finally {
             nameFree(name)
