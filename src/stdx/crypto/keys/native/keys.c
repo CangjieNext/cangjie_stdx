@@ -80,7 +80,7 @@ static int DYN_CjPemPasswordCb(char* buf, int size, int rwflag, void* userdata)
     }
     size_t len = strlen((const char*)userdata) + 1;
     if (memcpy_s(buf, (size_t)(unsigned int)(size), userdata, len) == EOK) {
-        return (int)len;
+        return (int)len - 1;
     }
     return 0;
 }
@@ -118,8 +118,14 @@ static int DecryptKeyImpl(const void* keyBody, size_t keyLength, const EVP_CIPHE
         X509HandleError(exception, "No key body provided", dynMsg);
         return 0;
     }
-    if (keyLength > (size_t)INT_MAX) {
-        X509HandleError(exception, "Encrypted key is too long", dynMsg);
+    int blockSize = DYN_EVP_CIPHER_get_block_size(cipher, dynMsg);
+    if (blockSize <= 0) {
+        X509HandleError(exception, "Invalid cipher block size", dynMsg);
+        return 0;
+    }
+
+    if (keyLength + (size_t)blockSize > (size_t)bufferLength) {
+        X509HandleError(exception, "Encrypted key is too long for buffer", dynMsg);
         return 0;
     }
 
@@ -226,6 +232,7 @@ static EVP_PKEY* DecryptKey(
         pkey = DecodePrivateKey(decryptedKeyBuffer, bytesDecrypted, exception, dynMsg);
     }
     DYN_OPENSSL_cleanse(decryptKey, sizeof(decryptKey), dynMsg);
+    DYN_OPENSSL_cleanse(ivCopy, sizeof(ivCopy), dynMsg);
     DYN_OPENSSL_secure_free(decryptedKeyBuffer, dynMsg);
     return pkey;
 }
@@ -246,7 +253,7 @@ static EVP_PKEY* LoadEncryptedKey(
     }
 
     if (params == NULL) {
-        return 0;
+        return NULL;
     }
 
     if (params->iv != NULL && params->ivLength > 0 && params->cipherName != NULL) {
@@ -255,9 +262,14 @@ static EVP_PKEY* LoadEncryptedKey(
 
     BIO* mem = InitBioWithPem(keyBody, length, exception, dynMsg);
     if (mem == NULL) {
-        return 0;
+        return NULL;
     }
 
+    if (params->password == NULL) {
+        X509HandleError(exception, "No password specified for decryption", dynMsg);
+        DYN_BIO_vfree(mem, dynMsg);
+        return NULL;
+    }
     size_t passwordLength = strlen(params->password);
     EVP_PKEY* pkey = DYN_d2i_PKCS8PrivateKey_bio(mem, NULL, DYN_CjPemPasswordCb, (void*)params->password, dynMsg);
     if (pkey == NULL) {
@@ -351,16 +363,20 @@ static int32_t EncryptPrivateKey(EVP_PKEY* key, const char* password, char** res
     X509_ALGOR* algorithm = DYN_PKCS5_pbe2_set_iv(cipher, PKCS5_DEFAULT_ITER, NULL, 0, NULL, -1, dynMsg);
     if (algorithm == NULL) {
         X509HandleError(exception, "Failed to configure encyption for PKCS8 encryption", dynMsg);
+        DYN_PKCS8_PRIV_KEY_INFO_free(p8info, dynMsg);
         return CJ_FAIL;
     }
     X509_SIG* p8 = DYN_PKCS8_set0_pbe(password, (int)passwordLength, p8info, algorithm, dynMsg);
     if (p8 == NULL) {
         X509HandleError(exception, "Failed to configure encyption for PKCS8 encryption", dynMsg);
+        DYN_PKCS8_PRIV_KEY_INFO_free(p8info, dynMsg);
         return CJ_FAIL;
     }
     BIO* mem = DYN_BIO_new_mem(dynMsg);
     if (!mem) {
         X509HandleError(exception, "Failed to create BIO for PEM", dynMsg);
+        DYN_PKCS8_PRIV_KEY_INFO_free(p8info, dynMsg);
+        DYN_X509_SIG_free(p8, dynMsg);
         return CJ_FAIL;
     }
     int result = DYN_i2d_PKCS8_bio(mem, p8, dynMsg);
@@ -368,6 +384,13 @@ static int32_t EncryptPrivateKey(EVP_PKEY* key, const char* password, char** res
     long getMemResult = DYN_BIO_get_mem_ptr(mem, &ptr, dynMsg);
     if (result == 1 && getMemResult == 1 && ptr != NULL && ptr->data != NULL && ptr->length > 0) {
         *resultBody = DYN_OPENSSL_memdup(ptr->data, ptr->length, dynMsg);
+        if (*resultBody == NULL) {
+            X509HandleError(exception, "Failed to allocate memory for encrypted private key", dynMsg);
+            DYN_BIO_vfree(mem, dynMsg);
+            DYN_PKCS8_PRIV_KEY_INFO_free(p8info, dynMsg);
+            DYN_X509_SIG_free(p8, dynMsg);
+            return CJ_FAIL;
+        }
         *resultSize = ptr->length;
     }
     DYN_BIO_vfree(mem, dynMsg);

@@ -73,7 +73,7 @@ func sha256Update(c: SHA256CTX, data: Array<Byte>): Unit {
         let dynMsgPtr = generateDynMsg()
         let p: CPointerHandle<Byte> = acquireArrayRawData(data)
         let res = try {
-            DYN_SHA256_Update(c.ptr, p.pointer, data.size, dynMsgPtr)
+            DYN_SHA256_Update(c.ptr, p.pointer, UIntNative(data.size), dynMsgPtr)
         } finally {
             releaseArrayRawData(p)
         }
