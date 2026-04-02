@@ -345,6 +345,31 @@ func cloneAndFreeX509Result(data: CPointer<ByteArrayResult>): Array<Array<Byte>>
 /**
  * Clone the result from C side and free memory.
  */
+func cloneStrAndFreeX509Result(data: CPointer<ByteArrayResult>): Array<String> {
+    if (data.isNull()) {
+        throw X509Exception("Null pointer check failed.")
+    }
+
+    let result: ByteArrayResult = unsafe { data.read() }
+    let size = Int64(result.size)
+    let res = if (size > 0) {
+        let buffer = result.buffer
+        Array<String>(size) {
+            i =>
+            let byteRes = unsafe { buffer.read(i) }
+            let byteBuf = byteRes.buffer
+            String.fromUtf8(Array<Byte>(Int64(byteRes.size)) {j => unsafe { byteBuf.read(j) }})
+        }
+    } else {
+        Array<String>()
+    }
+    freeX509Result(data)
+    res
+}
+
+/**
+ * Clone the result from C side and free memory.
+ */
 func cloneAndFreeX509Result(data: CPointer<UInt16Result>): Array<UInt16> {
     if (data.isNull()) {
         throw X509Exception("Null pointer check failed.")
@@ -366,22 +391,22 @@ func cloneAndFreeX509Result(data: CPointer<UInt16Result>): Array<UInt16> {
  * Get the DNS names by calling C interface.
  */
 func getX509DnsNames(content: DerBlob): Array<String> {
-    let result = x509MallocOrThrow<StringArrayResult>()
+    let result = x509MallocOrThrow<ByteArrayResult>()
     runOnRawPtr(content.content) {
         rawPtr: CPointer<Byte>, size: UIntNative => getX509DnsNames(rawPtr, size, result)
     }
-    cloneAndFreeX509Result(result)
+    cloneStrAndFreeX509Result(result)
 }
 
 /**
  * Get the Email addresses by calling C interface.
  */
 func getX509EmailAddresses(content: DerBlob): Array<String> {
-    let result = x509MallocOrThrow<StringArrayResult>()
+    let result = x509MallocOrThrow<ByteArrayResult>()
     runOnRawPtr(content.content) {
         rawPtr: CPointer<Byte>, size: UIntNative => getX509EmailAddresses(rawPtr, size, result)
     }
-    cloneAndFreeX509Result(result)
+    cloneStrAndFreeX509Result(result)
 }
 
 /**

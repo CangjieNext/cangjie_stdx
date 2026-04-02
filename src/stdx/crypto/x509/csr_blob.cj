@@ -107,22 +107,22 @@ func checkCsrDerType(inDerType: DerType, defaultDerType: DerType) {
  * Get the DNS names by calling C interface.
  */
 func getX509CsrDnsNames(content: DerBlob): Array<String> {
-    let result = x509MallocOrThrow<StringArrayResult>()
+    let result = x509MallocOrThrow<ByteArrayResult>()
     runOnRawPtr(content.content) {
         rawPtr: CPointer<Byte>, size: UIntNative => getX509CsrDnsNames(rawPtr, size, result)
     }
-    cloneAndFreeX509Result(result)
+    cloneStrAndFreeX509Result(result)
 }
 
 /**
  * Get the Email addresses by calling C interface.
  */
 func getX509CsrEmailAddresses(content: DerBlob): Array<String> {
-    let result = x509MallocOrThrow<StringArrayResult>()
+    let result = x509MallocOrThrow<ByteArrayResult>()
     runOnRawPtr(content.content) {
         rawPtr: CPointer<Byte>, size: UIntNative => getX509CsrEmailAddresses(rawPtr, size, result)
     }
-    cloneAndFreeX509Result(result)
+    cloneStrAndFreeX509Result(result)
 }
 
 /**
