@@ -719,7 +719,7 @@ sealed abstract class Type <: ToString & Hashable & Equatable<Type> {
         return this._kind == other._kind
     }
 
-    private func calculateGeneric2InstTypeMapImpl(instType: Type, result: HashMap<GenericType, Type>): Bool {
+    internal func calculateGeneric2InstTypeMapImpl(instType: Type, result: HashMap<GenericType, Type>): Bool {
         if (this == instType) {
             return true
         }
