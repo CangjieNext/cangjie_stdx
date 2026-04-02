@@ -133,14 +133,17 @@ void X509HandleError(ExceptionData* exception, const char* fallback, DynMsg* dyn
     DYN_BIO_puts(buffer, fallback, dynMsg);
     DYN_BIO_puts(buffer, ": ", dynMsg);
     if (dynMsg && dynMsg->found == false) {
+        DYN_BIO_free(buffer, dynMsg);
         return;
     }
     X509HandleErrorPutFromStack(buffer, dynMsg);
     if (dynMsg && dynMsg->found == false) {
+        DYN_BIO_free(buffer, dynMsg);
         return;
     }
     AppendErrorMessage(exception, buffer, dynMsg);
     if (dynMsg && dynMsg->found == false) {
+        DYN_BIO_free(buffer, dynMsg);
         return;
     }
     if (exception->message == NULL) {
