@@ -20,7 +20,9 @@ public struct PemEntry <: ToString {
         public let label: String,
         public let headers: Array<(String, String)>,
         public let body: ?DerBlob
-    ) {}
+    ) {
+        validateLabel(unsafe { label.rawData() })
+    }
 
     public init(label: String, body: DerBlob) {
         this(label, [], body)

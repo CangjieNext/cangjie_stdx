@@ -30,9 +30,9 @@ func formatEntry(entry: PemEntry, result: StringBuilder) {
 
     if (!entry.headers.isEmpty()) {
         for ((name, value) in entry.headers) {
-            result.append(name)
+            result.append(name.replace("\n", "\\n").replace("\r", "\\r"))
             result.append(": ")
-            result.append(value)
+            result.append(value.replace("\n", "\\n").replace("\r", "\\r"))
             result.append(LINE_FEED)
         }
         result.append(LINE_FEED)
