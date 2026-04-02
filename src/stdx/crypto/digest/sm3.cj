@@ -120,7 +120,7 @@ func sm3Update(c: CPointer<Unit>, data: Array<Byte>): Unit {
 }
 
 func sm3Final(c: CPointer<Unit>, md: Array<Byte>): Unit {
-    var md_len: UIntNative = 0
+    var md_len: UInt32 = 0
     let dynMsgPtr = generateDynMsg()
     unsafe {
         let p: CPointerHandle<Byte> = acquireArrayRawData(md)

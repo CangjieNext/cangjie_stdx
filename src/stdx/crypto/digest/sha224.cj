@@ -73,7 +73,7 @@ func sha224Update(c: SHA224CTX, data: Array<Byte>): Unit {
         let dynMsgPtr = generateDynMsg()
         let p: CPointerHandle<Byte> = acquireArrayRawData(data)
         let res = try {
-            DYN_SHA224_Update(c.ptr, p.pointer, data.size, dynMsgPtr)
+            DYN_SHA224_Update(c.ptr, p.pointer, UIntNative(data.size), dynMsgPtr)
         } finally {
             releaseArrayRawData(p)
         }

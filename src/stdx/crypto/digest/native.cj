@@ -23,7 +23,7 @@ foreign func DYN_EVP_DigestInit_ex(ctx: CPointer<Unit>, mdType: CPointer<UInt64>
 
 foreign func DYN_EVP_DigestUpdate(ctx: CPointer<Unit>, d: CPointer<Byte>, len: Int64, msg: CPointer<DynMsg>): Int32
 
-foreign func DYN_EVP_DigestFinal_ex(ctx: CPointer<Unit>, md: CPointer<Byte>, len: CPointer<UIntNative>,
+foreign func DYN_EVP_DigestFinal_ex(ctx: CPointer<Unit>, md: CPointer<Byte>, len: CPointer<UInt32>,
     msg: CPointer<DynMsg>): Int32
 
 foreign func DYN_EVP_MD_CTX_free(ctx: CPointer<Unit>, msg: CPointer<DynMsg>): Unit
@@ -90,7 +90,7 @@ class MD5CTX {
 
 foreign func DYN_MD5_Init(c: CPointer<Byte>, msg: CPointer<DynMsg>): Int32
 
-foreign func DYN_MD5_Update(c: CPointer<Byte>, data: CPointer<Byte>, len: Int64, msg: CPointer<DynMsg>): Int32
+foreign func DYN_MD5_Update(c: CPointer<Byte>, data: CPointer<Byte>, len: UIntNative, msg: CPointer<DynMsg>): Int32
 
 foreign func DYN_MD5_Final(md: CPointer<Byte>, c: CPointer<Byte>, msg: CPointer<DynMsg>): Int32
 
@@ -129,7 +129,7 @@ class SHACTX {
 
 foreign func DYN_SHA1_Init(c: CPointer<Byte>, msg: CPointer<DynMsg>): Int32
 
-foreign func DYN_SHA1_Update(c: CPointer<Byte>, data: CPointer<Byte>, len: Int64, msg: CPointer<DynMsg>): Int32
+foreign func DYN_SHA1_Update(c: CPointer<Byte>, data: CPointer<Byte>, len: UIntNative, msg: CPointer<DynMsg>): Int32
 
 foreign func DYN_SHA1_Final(md: CPointer<Byte>, c: CPointer<Byte>, msg: CPointer<DynMsg>): Int32
 
@@ -200,13 +200,13 @@ class SHA256CTX {
 
 foreign func DYN_SHA224_Init(c: CPointer<Byte>, msg: CPointer<DynMsg>): Int32
 
-foreign func DYN_SHA224_Update(c: CPointer<Byte>, data: CPointer<Byte>, len: Int64, msg: CPointer<DynMsg>): Int32
+foreign func DYN_SHA224_Update(c: CPointer<Byte>, data: CPointer<Byte>, len: UIntNative, msg: CPointer<DynMsg>): Int32
 
 foreign func DYN_SHA224_Final(md: CPointer<Byte>, c: CPointer<Byte>, msg: CPointer<DynMsg>): Int32
 
 foreign func DYN_SHA256_Init(c: CPointer<Byte>, msg: CPointer<DynMsg>): Int32
 
-foreign func DYN_SHA256_Update(c: CPointer<Byte>, data: CPointer<Byte>, len: Int64, msg: CPointer<DynMsg>): Int32
+foreign func DYN_SHA256_Update(c: CPointer<Byte>, data: CPointer<Byte>, len: UIntNative, msg: CPointer<DynMsg>): Int32
 
 foreign func DYN_SHA256_Final(md: CPointer<Byte>, c: CPointer<Byte>, msg: CPointer<DynMsg>): Int32
 
@@ -277,47 +277,47 @@ class SHA512CTX {
 
 foreign func DYN_SHA384_Init(c: CPointer<Byte>, msg: CPointer<DynMsg>): Int32
 
-foreign func DYN_SHA384_Update(c: CPointer<Byte>, data: CPointer<Byte>, len: Int64, msg: CPointer<DynMsg>): Int32
+foreign func DYN_SHA384_Update(c: CPointer<Byte>, data: CPointer<Byte>, len: UIntNative, msg: CPointer<DynMsg>): Int32
 
 foreign func DYN_SHA384_Final(md: CPointer<Byte>, c: CPointer<Byte>, msg: CPointer<DynMsg>): Int32
 
 foreign func DYN_SHA512_Init(c: CPointer<Byte>, msg: CPointer<DynMsg>): Int32
 
-foreign func DYN_SHA512_Update(c: CPointer<Byte>, data: CPointer<Byte>, len: Int64, msg: CPointer<DynMsg>): Int32
+foreign func DYN_SHA512_Update(c: CPointer<Byte>, data: CPointer<Byte>, len: UIntNative, msg: CPointer<DynMsg>): Int32
 
 foreign func DYN_SHA512_Final(md: CPointer<Byte>, c: CPointer<Byte>, msg: CPointer<DynMsg>): Int32
 
-foreign func DYN_HMAC_CTX_new(msg: CPointer<DynMsg>): UInt64
+foreign func DYN_HMAC_CTX_new(msg: CPointer<DynMsg>): CPointer<Unit>
 
 foreign func DYN_HMAC_Init_ex(
-    ctx: UInt64,
+    ctx: CPointer<Unit>,
     key: CPointer<UInt8>,
     len: Int32,
-    md: UInt64,
-    impl: UInt64,
+    md: CPointer<Unit>,
+    impl: CPointer<Unit>,
     msg: CPointer<DynMsg>
 ): Int32
 
-foreign func DYN_HMAC_Update(ctx: UInt64, data: CPointer<UInt8>, len: Int32, msg: CPointer<DynMsg>): Int32
+foreign func DYN_HMAC_Update(ctx: CPointer<Unit>, data: CPointer<UInt8>, len: UIntNative, msg: CPointer<DynMsg>): Int32
 
-foreign func DYN_HMAC_Final(ctx: UInt64, md: CPointer<UInt8>, len: UInt32, msg: CPointer<DynMsg>): Int32
+foreign func DYN_HMAC_Final(ctx: CPointer<Unit>, md: CPointer<UInt8>, len: CPointer<UInt32>, msg: CPointer<DynMsg>): Int32
 
-foreign func DYN_HMAC_CTX_free(ctx: UInt64, msg: CPointer<DynMsg>): Int32
+foreign func DYN_HMAC_CTX_free(ctx: CPointer<Unit>, msg: CPointer<DynMsg>): Unit
 
-foreign func DYN_EVP_get_digestbyname(name: CString, msg: CPointer<DynMsg>): UInt64
+foreign func DYN_EVP_get_digestbyname(name: CString, msg: CPointer<DynMsg>): CPointer<Unit>
 
 foreign func MallocDynMsg(): CPointer<DynMsg>
 
 foreign func FreeDynMsg(dynMsgPtr: CPointer<DynMsg>): Unit
 
-func hmacCtxNew(): UInt64 {
+func hmacCtxNew(): CPointer<Unit> {
     let dynMsgPtr = generateDynMsg()
     let res = unsafe { DYN_HMAC_CTX_new(dynMsgPtr) }
     checkError(dynMsgPtr)
     return res
 }
 
-func getDigestbyname(name: CString): UInt64 {
+func getDigestbyname(name: CString): CPointer<Unit> {
     let dynMsgPtr = generateDynMsg()
     let res = unsafe { DYN_EVP_get_digestbyname(name, dynMsgPtr) }
     checkError(dynMsgPtr)
@@ -366,11 +366,10 @@ func sha512Init(c: CPointer<Byte>): Int32 {
     return res
 }
 
-func hmacCtxFree(ctx: UInt64): Int32 {
+func hmacCtxFree(ctx: CPointer<Unit>): Unit {
     let dynMsgPtr = generateDynMsg()
-    let res = unsafe { DYN_HMAC_CTX_free(ctx, dynMsgPtr) }
+    unsafe { DYN_HMAC_CTX_free(ctx, dynMsgPtr) }
     checkError(dynMsgPtr)
-    return res
 }
 
 func generateDynMsg(): CPointer<DynMsg> {
@@ -403,4 +402,13 @@ func checkError(dynMsgPtr: CPointer<DynMsg>): Unit {
 struct DynMsg {
     var found = true
     var funcName = CPointer<UInt8>()
+}
+
+foreign func DYN_CRYPTO_memcmp(a: CPointer<UInt8>, b: CPointer<UInt8>, len: UIntNative, msg: CPointer<DynMsg>): Int32
+
+func cryptoMemcmp(a: CPointer<UInt8>, b: CPointer<UInt8>, len: UIntNative): Int32 {
+    let dynMsgPtr = generateDynMsg()
+    let res = unsafe { DYN_CRYPTO_memcmp(a, b, len, dynMsgPtr) }
+    checkError(dynMsgPtr)
+    return res
 }

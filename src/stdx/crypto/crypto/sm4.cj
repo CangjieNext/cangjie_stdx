@@ -20,9 +20,9 @@ const SM4_BUFFER_SIZE: Int64 = 1024
 const SM4_GCM_TAG_SIZE: Int64 = SM4_BLOCK_SIZE
 const SM4_GCM_TAG_MIN_SIZE: Int64 = 12
 const SM4_DIGEST_ALGORITHM_NAME = "SM4"
-const AEAD_SET_IVLEN: Int64 = 9
-const AEAD_GET_TAG: Int64 = 10
-const AEAD_SET_TAG: Int64 = 11
+const AEAD_SET_IVLEN: Int32 = 9
+const AEAD_GET_TAG: Int32 = 10
+const AEAD_SET_TAG: Int32 = 11
 
 public struct OperationMode <: ToString & Equatable<OperationMode> {
     public static let ECB: OperationMode = OperationMode("ECB")
@@ -88,14 +88,14 @@ public class SM4 <: BlockCipher {
                 if (iv.size <= 0) {
                     throw CryptoException("Invalid iv size.")
                 }
+                if (tagSize < SM4_GCM_TAG_MIN_SIZE || tagSize > SM4_BLOCK_SIZE) {
+                    throw CryptoException("Invalid tag size.")
+                }
             case "ECB" => ()
             case _ =>
                 if (iv.size != SM4_IV_SIZE) {
                     throw CryptoException("Invalid iv size.")
                 }
-        }
-        if (tagSize < SM4_GCM_TAG_MIN_SIZE || tagSize > SM4_BLOCK_SIZE) {
-            throw CryptoException("Invalid tag size.")
         }
 
         unsafe {
@@ -118,6 +118,8 @@ public class SM4 <: BlockCipher {
     }
 
     ~init() {
+        _key.fill(0)
+        _iv.fill(0)
         if (!this.cipherPtr.isNull()) {
             unsafe { cipherFree(this.cipherPtr) }
         }
@@ -227,7 +229,7 @@ public class SM4 <: BlockCipher {
 
     public func encrypt(input: InputStream, output: OutputStream): Unit {
         unsafe {
-            var tag: Array<Byte> = Array<Byte>(Int64(tagSize), repeat: 0)
+            var tag: Array<Byte> = Array<Byte>(tagSize, repeat: 0)
             var readbuff = Array<Byte>(SM4_BUFFER_SIZE, repeat: 0)
             var writebuff = Array<Byte>(SM4_BUFFER_SIZE, repeat: 0)
             var inBlock: CPointerHandle<Byte> = acquireArrayRawData(readbuff)
@@ -237,7 +239,7 @@ public class SM4 <: BlockCipher {
             var keyM: CPointerHandle<Byte> = acquireArrayRawData(key.clone())
             var ivM: CPointerHandle<Byte> = acquireArrayRawData(iv.clone())
             var ctx = CPointer<UInt64>()
-            try (outlenPtr = LibC.malloc<Int64>().asResource(), outlen2Ptr = LibC.malloc<Int64>().asResource()) {
+            try (outlenPtr = LibC.malloc<Int32>().asResource(), outlen2Ptr = LibC.malloc<Int32>().asResource()) {
                 if (outlenPtr.value.isNull() || outlen2Ptr.value.isNull()) {
                     throw CryptoException("Encrypt failed due to memory error.")
                 }
@@ -260,18 +262,19 @@ public class SM4 <: BlockCipher {
                     if (encryptUpdate(ctx, outBlock.pointer, outlenPtr.value, inBlock.pointer, inLen) != 1) {
                         throw CryptoException("Encrypt failed due to update error.")
                     }
-                    if (outlenPtr.value.read() > 0) {
-                        output.write(writebuff[..outlenPtr.value.read()])
+                    let ptrValue = Int64(outlenPtr.value.read())
+                    if (ptrValue > 0) {
+                        output.write(writebuff[..ptrValue])
                     }
                     inLen = input.read(readbuff)
                 } while (inLen > 0)
                 if (encryptFinalEx(ctx, outBlock.pointer, outlen2Ptr.value) != 1) {
                     throw CryptoException("Encrypt failed.")
                 }
-                output.write(writebuff[..outlen2Ptr.value.read()])
+                output.write(writebuff[..Int64(outlen2Ptr.value.read())])
 
                 if (optMode == OperationMode.GCM) {
-                    if (cipherCtx(ctx, AEAD_GET_TAG, tagSize, tagM.pointer) != 1) {
+                    if (cipherCtx(ctx, AEAD_GET_TAG, Int32(tagSize), tagM.pointer) != 1) {
                         throw CryptoException("Encrypt failed due to create tag error.")
                     }
                     output.write(tag)
@@ -362,7 +365,7 @@ public class SM4 <: BlockCipher {
                     } while (inLenNext >= 0)
                     var tagM: CPointerHandle<Byte> = acquireArrayRawData(tag)
                     try {
-                        if (cipherCtx(ctx, AEAD_SET_TAG, tagSize, tagM.pointer) != 1) {
+                        if (cipherCtx(ctx, AEAD_SET_TAG, Int32(tagSize), tagM.pointer) != 1) {
                             throw CryptoException("Decrypt failed due to set tag error.")
                         }
                     } finally {
@@ -403,7 +406,7 @@ public class SM4 <: BlockCipher {
             throw CryptoException("Encrypt failed due to init error.")
         }
         if (optMode == OperationMode.GCM) {
-            if (cipherCtx(ctx, AEAD_SET_IVLEN, ivSize, CPointer<Byte>()) != 1) {
+            if (cipherCtx(ctx, AEAD_SET_IVLEN, Int32(ivSize), CPointer<Byte>()) != 1) {
                 throw CryptoException("Encrypt failed due to set iv size error.")
             }
         }
@@ -416,7 +419,7 @@ public class SM4 <: BlockCipher {
             throw CryptoException("Decrypt failed due to init error.")
         }
         if (optMode == OperationMode.GCM) {
-            if (cipherCtx(ctx, AEAD_SET_IVLEN, ivSize, CPointer<Byte>()) != 1) {
+            if (cipherCtx(ctx, AEAD_SET_IVLEN, Int32(ivSize), CPointer<Byte>()) != 1) {
                 throw CryptoException("Decrypt failed due to set iv size error.")
             }
         }
@@ -425,8 +428,6 @@ public class SM4 <: BlockCipher {
         }
     }
 }
-
-foreign func DYN_EVP_CIPHER_get_block_size(cipher: CPointer<UInt64>, msg: CPointer<DynMsg>): Int64
 
 foreign func DYN_EVP_CIPHER_CTX_set_padding(ctx: CPointer<UInt64>, padding: Int64, msg: CPointer<DynMsg>): Int32
 
@@ -449,10 +450,10 @@ foreign func DYN_EVP_CIPHER_CTX_new(msg: CPointer<DynMsg>): CPointer<UInt64>
 foreign func DYN_EVP_EncryptInit_ex(ctx: CPointer<UInt64>, mType: CPointer<UInt64>, impl: CPointer<UInt64>,
     key: CPointer<Byte>, iv: CPointer<Byte>, msg: CPointer<DynMsg>): Int32
 
-foreign func DYN_EVP_EncryptUpdate(ctx: CPointer<UInt64>, outPut: CPointer<Byte>, outLen: CPointer<Int64>,
+foreign func DYN_EVP_EncryptUpdate(ctx: CPointer<UInt64>, outPut: CPointer<Byte>, outLen: CPointer<Int32>,
     intPut: CPointer<Byte>, intLen: Int64, msg: CPointer<DynMsg>): Int32
 
-foreign func DYN_EVP_EncryptFinal_ex(ctx: CPointer<UInt64>, outPut: CPointer<Byte>, outLen: CPointer<Int64>,
+foreign func DYN_EVP_EncryptFinal_ex(ctx: CPointer<UInt64>, outPut: CPointer<Byte>, outLen: CPointer<Int32>,
     msg: CPointer<DynMsg>): Int32
 
 foreign func DYN_EVP_DecryptInit_ex(ctx: CPointer<UInt64>, mType: CPointer<UInt64>, impl: CPointer<UInt64>,
@@ -467,10 +468,10 @@ foreign func DYN_EVP_DecryptFinal_ex(ctx: CPointer<UInt64>, outPut: CPointer<Byt
 foreign func DYN_EVP_CIPHER_fetch(ctx: CPointer<UInt64>, algorithm: CString, properties: CPointer<Byte>,
     msg: CPointer<DynMsg>): CPointer<UInt64>
 
-foreign func DYN_EVP_CIPHER_CTX_ctrl(ctx: CPointer<UInt64>, paramsType: Int64, arg: Int64, ptr: CPointer<Byte>,
+foreign func DYN_EVP_CIPHER_CTX_ctrl(ctx: CPointer<UInt64>, paramsType: Int32, arg: Int32, ptr: CPointer<Byte>,
     msg: CPointer<DynMsg>): Int32
 
-func cipherCtx(ctx: CPointer<UInt64>, paramsType: Int64, arg: Int64, ptr: CPointer<Byte>): Int32 {
+func cipherCtx(ctx: CPointer<UInt64>, paramsType: Int32, arg: Int32, ptr: CPointer<Byte>): Int32 {
     let dynMsgPtr = generateDynMsg()
     let res = unsafe { DYN_EVP_CIPHER_CTX_ctrl(ctx, paramsType, arg, ptr, dynMsgPtr) }
     checkError(dynMsgPtr)
@@ -518,7 +519,7 @@ func encryptInitEx(ctx: CPointer<UInt64>, mType: CPointer<UInt64>, impl: CPointe
     return res
 }
 
-func encryptUpdate(ctx: CPointer<UInt64>, outPut: CPointer<Byte>, outLen: CPointer<Int64>, intPut: CPointer<Byte>,
+func encryptUpdate(ctx: CPointer<UInt64>, outPut: CPointer<Byte>, outLen: CPointer<Int32>, intPut: CPointer<Byte>,
     intLen: Int64): Int32 {
     let dynMsgPtr = generateDynMsg()
     let res = unsafe { DYN_EVP_EncryptUpdate(ctx, outPut, outLen, intPut, intLen, dynMsgPtr) }
@@ -526,7 +527,7 @@ func encryptUpdate(ctx: CPointer<UInt64>, outPut: CPointer<Byte>, outLen: CPoint
     return res
 }
 
-func encryptFinalEx(ctx: CPointer<UInt64>, outPut: CPointer<Byte>, outLen: CPointer<Int64>): Int32 {
+func encryptFinalEx(ctx: CPointer<UInt64>, outPut: CPointer<Byte>, outLen: CPointer<Int32>): Int32 {
     let dynMsgPtr = generateDynMsg()
     let res = unsafe { DYN_EVP_EncryptFinal_ex(ctx, outPut, outLen, dynMsgPtr) }
     checkError(dynMsgPtr)

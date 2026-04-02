@@ -291,7 +291,7 @@ func encryptSM2(pkey: CPointer<UInt64>, input: Array<Byte>) {
         var inputBlock: CPointerHandle<Byte> = acquireArrayRawData(input)
         var outputBlock: CPointerHandle<Byte> = acquireArrayRawData(output)
         var outlenSize = 0
-        try (outlenPtr = LibC.malloc<Int64>().asResource()) {
+        try (outlenPtr = LibC.malloc<UIntNative>().asResource()) {
             if (outlenPtr.value.isNull()) {
                 throw CryptoException("Encrypt failed, encrypt init error, malloc failed.")
             }
@@ -299,13 +299,13 @@ func encryptSM2(pkey: CPointer<UInt64>, input: Array<Byte>) {
             if (encryInit(ctx) != 1) {
                 throw CryptoException("Encrypt failed, encrypt init error.")
             }
-            if (encrypt(ctx, CPointer<Byte>(), outlenPtr.value, inputBlock.pointer, input.size) != 1) {
+            if (encrypt(ctx, CPointer<Byte>(), outlenPtr.value, inputBlock.pointer, UIntNative(input.size)) != 1) {
                 throw CryptoException("Encrypt prepare failed.")
             }
-            if (encrypt(ctx, outputBlock.pointer, outlenPtr.value, inputBlock.pointer, input.size) != 1) {
+            if (encrypt(ctx, outputBlock.pointer, outlenPtr.value, inputBlock.pointer, UIntNative(input.size)) != 1) {
                 throw CryptoException("Encrypt failed.")
             }
-            outlenSize = outlenPtr.value.read()
+            outlenSize = Int64(outlenPtr.value.read())
         } finally {
             releaseArrayRawData(inputBlock)
             releaseArrayRawData(outputBlock)
@@ -328,7 +328,7 @@ func decryptSM2(pkey: CPointer<UInt64>, input: Array<Byte>) {
         var inputBlock: CPointerHandle<Byte> = acquireArrayRawData(input)
         var outputBlock: CPointerHandle<Byte> = acquireArrayRawData(output)
         var reSize = 0
-        try (outlenPtr = LibC.malloc<Int64>().asResource()) {
+        try (outlenPtr = LibC.malloc<UIntNative>().asResource()) {
             if (outlenPtr.value.isNull()) {
                 throw CryptoException("Decrypt failed, decrypt init error, malloc failed.")
             }
@@ -336,13 +336,13 @@ func decryptSM2(pkey: CPointer<UInt64>, input: Array<Byte>) {
             if (decryptInit(ctx) != 1) {
                 throw CryptoException("Decrypt failed, decrypt init error.")
             }
-            if (decrypt(ctx, CPointer<Byte>(), outlenPtr.value, inputBlock.pointer, input.size) != 1) {
+            if (decrypt(ctx, CPointer<Byte>(), outlenPtr.value, inputBlock.pointer, UIntNative(input.size)) != 1) {
                 throw CryptoException("Decrypt prepare failed.")
             }
-            if (decrypt(ctx, outputBlock.pointer, outlenPtr.value, inputBlock.pointer, input.size) != 1) {
+            if (decrypt(ctx, outputBlock.pointer, outlenPtr.value, inputBlock.pointer, UIntNative(input.size)) != 1) {
                 throw CryptoException("Decrypt failed.")
             }
-            reSize = outlenPtr.value.read()
+            reSize = Int64(outlenPtr.value.read())
         } finally {
             releaseArrayRawData(inputBlock)
             releaseArrayRawData(outputBlock)
@@ -371,7 +371,7 @@ func signSM2(pkey: CPointer<UInt64>, data: Array<Byte>, uid: Array<Byte>) {
             if (digestSignInit(mdctx, CPointer<UInt64>(), sm3(), CPointer<UInt64>(), pkey) != 1) {
                 throw CryptoException("Sign failed, digest sign init error.")
             }
-            if (digestSignUpdate(mdctx, pData.pointer, data.size) != 1) {
+            if (digestSignUpdate(mdctx, pData.pointer, UIntNative(data.size)) != 1) {
                 throw CryptoException("Sign failed, digest sign update error.")
             }
             if (digestSignFinal(mdctx, CPointer<Byte>(), sizePtr.value) != 1) {
@@ -394,7 +394,7 @@ func verifySM2(pkey: CPointer<UInt64>, data: Array<Byte>, sig: Array<Byte>, uid:
     unsafe {
         let pData: CPointerHandle<Byte> = acquireArrayRawData(data)
         let sigData: CPointerHandle<Byte> = acquireArrayRawData(sig)
-        var resFinal = 0
+        var resFinal: Int32 = 0
         var ctx = CPointer<UInt64>()
         var mdctx = CPointer<UInt64>()
         try {
@@ -404,10 +404,10 @@ func verifySM2(pkey: CPointer<UInt64>, data: Array<Byte>, sig: Array<Byte>, uid:
             if (digestVerifyInit(mdctx, CPointer<UInt64>(), sm3(), CPointer<UInt64>(), pkey) != 1) {
                 throw CryptoException("Verify failed, digest verify init error.")
             }
-            if (digestVerifyUpdate(mdctx, pData.pointer, data.size) != 1) {
+            if (digestVerifyUpdate(mdctx, pData.pointer, UIntNative(data.size)) != 1) {
                 throw CryptoException("Verify failed, digest verify update error.")
             }
-            resFinal = digestVerifyFinal(mdctx, sigData.pointer, sig.size)
+            resFinal = digestVerifyFinal(mdctx, sigData.pointer, UIntNative(sig.size))
             if (resFinal != 1 && resFinal != 0) {
                 throw CryptoException("Verify failed.")
             }
