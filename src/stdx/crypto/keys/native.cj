@@ -40,23 +40,23 @@ foreign func DYN_EVP_PKEY_CTX_set1_id(ctx: CPointer<UInt64>, id: CPointer<Byte>,
 foreign func DYN_EVP_DigestVerifyInit(ctx: CPointer<UInt64>, pctx: CPointer<UInt64>, md: CPointer<UInt64>,
     e: CPointer<UInt64>, pkey: CPointer<UInt64>, msg: CPointer<DynMsg>): Int32
 
-foreign func DYN_EVP_DigestVerifyUpdate(ctx: CPointer<UInt64>, data: CPointer<Byte>, len: Int64, msg: CPointer<DynMsg>): Int32
+foreign func DYN_EVP_DigestVerifyUpdate(ctx: CPointer<UInt64>, data: CPointer<Byte>, len: UIntNative, msg: CPointer<DynMsg>): Int32
 
-foreign func DYN_EVP_DigestVerifyFinal(ctx: CPointer<UInt64>, sig: CPointer<Byte>, len: Int64, msg: CPointer<DynMsg>): Int64
+foreign func DYN_EVP_DigestVerifyFinal(ctx: CPointer<UInt64>, sig: CPointer<Byte>, len: UIntNative, msg: CPointer<DynMsg>): Int32
 
 foreign func DYN_EVP_MD_CTX_new(msg: CPointer<DynMsg>): CPointer<UInt64>
 
 foreign func DYN_EVP_MD_CTX_free(ctx: CPointer<UInt64>, msg: CPointer<DynMsg>): Unit
 
-foreign func DYN_EVP_MD_CTX_set_pkey_ctx(ctx: CPointer<UInt64>, pctx: CPointer<UInt64>, msg: CPointer<DynMsg>): CPointer<UInt64>
+foreign func DYN_EVP_MD_CTX_set_pkey_ctx(ctx: CPointer<UInt64>, pctx: CPointer<UInt64>, msg: CPointer<DynMsg>): Unit
 
 foreign func DYN_EVP_DigestSignInit(ctx: CPointer<UInt64>, pctx: CPointer<UInt64>, md: CPointer<UInt64>,
     e: CPointer<UInt64>, pkey: CPointer<UInt64>, msg: CPointer<DynMsg>): Int32
 
-foreign func DYN_EVP_DigestSignUpdate(ctx: CPointer<UInt64>, data: CPointer<Byte>, len: Int64, msg: CPointer<DynMsg>): Int32
+foreign func DYN_EVP_DigestSignUpdate(ctx: CPointer<UInt64>, data: CPointer<Byte>, len: UIntNative, msg: CPointer<DynMsg>): Int32
 
 foreign func DYN_EVP_DigestSignFinal(ctx: CPointer<UInt64>, sig: CPointer<Byte>, len: CPointer<Int64>,
-    msg: CPointer<DynMsg>): Int64
+    msg: CPointer<DynMsg>): Int32
 
 foreign func DYN_EVP_PKEY_keygen(ctx: CPointer<UInt64>, ppkey: CPointer<CPointer<UInt64>>, msg: CPointer<DynMsg>): Int32
 
@@ -78,7 +78,7 @@ foreign func DYN_EVP_PKEY_generate(ctx: CPointer<UInt64>, ppkey: CPointer<CPoint
 // keys type setting
 foreign func DYN_BN_free(bn: CPointer<BIGNUM>, msg: CPointer<DynMsg>): Unit
 
-foreign func DYN_BN_bin2bn(bn: CPointer<Byte>, len: Int64, ret: CPointer<BIGNUM>, msg: CPointer<DynMsg>): CPointer<BIGNUM>
+foreign func DYN_BN_bin2bn(bn: CPointer<Byte>, len: Int32, ret: CPointer<BIGNUM>, msg: CPointer<DynMsg>): CPointer<BIGNUM>
 
 foreign func DYN_EVP_PKEY_CTX_set1_rsa_keygen_pubexp(ctx: CPointer<UInt64>, exp: CPointer<BIGNUM>, msg: CPointer<DynMsg>): Int32
 
@@ -94,9 +94,9 @@ foreign func DYN_EVP_PKEY_encrypt_init(ctx: CPointer<UInt64>, msg: CPointer<DynM
 foreign func DYN_EVP_PKEY_encrypt(
     ctx: CPointer<UInt64>,
     out: CPointer<Byte>,
-    outlen: CPointer<Int64>,
+    outlen: CPointer<UIntNative>,
     indata: CPointer<Byte>,
-    inlen: Int64,
+    inlen: UIntNative,
     msg: CPointer<DynMsg>
 ): Int32
 
@@ -105,9 +105,9 @@ foreign func DYN_EVP_PKEY_decrypt_init(ctx: CPointer<UInt64>, msg: CPointer<DynM
 foreign func DYN_EVP_PKEY_decrypt(
     ctx: CPointer<UInt64>,
     out: CPointer<Byte>,
-    outlen: CPointer<Int64>,
+    outlen: CPointer<UIntNative>,
     indata: CPointer<Byte>,
-    inlen: Int64,
+    inlen: UIntNative,
     msg: CPointer<DynMsg>
 ): Int32
 
@@ -117,9 +117,9 @@ foreign func DYN_EVP_PKEY_sign_init(ctx: CPointer<UInt64>, msg: CPointer<DynMsg>
 foreign func DYN_EVP_PKEY_sign(
     ctx: CPointer<UInt64>,
     sig: CPointer<Byte>,
-    siglen: CPointer<Int64>,
+    siglen: CPointer<UIntNative>,
     tbs: CPointer<Byte>,
-    tbslen: Int64,
+    tbslen: UIntNative,
     msg: CPointer<DynMsg>
 ): Int32
 
@@ -128,9 +128,9 @@ foreign func DYN_EVP_PKEY_verify_init(ctx: CPointer<UInt64>, msg: CPointer<DynMs
 foreign func DYN_EVP_PKEY_verify(
     ctx: CPointer<UInt64>,
     sig: CPointer<Byte>,
-    siglen: Int64,
+    siglen: UIntNative,
     tbs: CPointer<Byte>,
-    tbslen: Int64,
+    tbslen: UIntNative,
     msg: CPointer<DynMsg>
 ): Int32
 
@@ -258,7 +258,7 @@ func bnFree(bn: CPointer<BIGNUM>): Unit {
     checkError(dynMsgPtr)
 }
 
-func bin2bn(bn: CPointer<Byte>, len: Int64, ret: CPointer<BIGNUM>): CPointer<BIGNUM> {
+func bin2bn(bn: CPointer<Byte>, len: Int32, ret: CPointer<BIGNUM>): CPointer<BIGNUM> {
     let dynMsgPtr = generateDynMsg()
     let res = unsafe { DYN_BN_bin2bn(bn, len, ret, dynMsgPtr) }
     checkError(dynMsgPtr)
@@ -303,9 +303,9 @@ func encryInit(ctx: CPointer<UInt64>): Int32 {
 func encrypt(
     ctx: CPointer<UInt64>,
     out: CPointer<Byte>,
-    outlen: CPointer<Int64>,
+    outlen: CPointer<UIntNative>,
     indata: CPointer<Byte>,
-    inlen: Int64
+    inlen: UIntNative
 ): Int32 {
     let dynMsgPtr = generateDynMsg()
     let res = unsafe { DYN_EVP_PKEY_encrypt(ctx, out, outlen, indata, inlen, dynMsgPtr) }
@@ -323,9 +323,9 @@ func decryptInit(ctx: CPointer<UInt64>): Int32 {
 func decrypt(
     ctx: CPointer<UInt64>,
     out: CPointer<Byte>,
-    outlen: CPointer<Int64>,
+    outlen: CPointer<UIntNative>,
     indata: CPointer<Byte>,
-    inlen: Int64
+    inlen: UIntNative
 ): Int32 {
     let dynMsgPtr = generateDynMsg()
     let res = unsafe { DYN_EVP_PKEY_decrypt(ctx, out, outlen, indata, inlen, dynMsgPtr) }
@@ -343,9 +343,9 @@ func signInit(ctx: CPointer<UInt64>): Int32 {
 func sign(
     ctx: CPointer<UInt64>,
     sig: CPointer<Byte>,
-    siglen: CPointer<Int64>,
+    siglen: CPointer<UIntNative>,
     tbs: CPointer<Byte>,
-    tbslen: Int64
+    tbslen: UIntNative
 ): Int32 {
     let dynMsgPtr = generateDynMsg()
     let res = unsafe { DYN_EVP_PKEY_sign(ctx, sig, siglen, tbs, tbslen, dynMsgPtr) }
@@ -363,9 +363,9 @@ func verifyInit(ctx: CPointer<UInt64>): Int32 {
 func verify(
     ctx: CPointer<UInt64>,
     sig: CPointer<Byte>,
-    siglen: Int64,
+    siglen: UIntNative,
     tbs: CPointer<Byte>,
-    tbslen: Int64
+    tbslen: UIntNative
 ): Int32 {
     let dynMsgPtr = generateDynMsg()
     let res = unsafe { DYN_EVP_PKEY_verify(ctx, sig, siglen, tbs, tbslen, dynMsgPtr) }
@@ -493,14 +493,14 @@ func digestVerifyInit(ctx: CPointer<UInt64>, pctx: CPointer<UInt64>, md: CPointe
     return res
 }
 
-func digestVerifyUpdate(ctx: CPointer<UInt64>, data: CPointer<Byte>, len: Int64): Int32 {
+func digestVerifyUpdate(ctx: CPointer<UInt64>, data: CPointer<Byte>, len: UIntNative): Int32 {
     let dynMsgPtr = generateDynMsg()
     let res = unsafe { DYN_EVP_DigestVerifyUpdate(ctx, data, len, dynMsgPtr) }
     checkError(dynMsgPtr)
     return res
 }
 
-func digestVerifyFinal(ctx: CPointer<UInt64>, sig: CPointer<Byte>, len: Int64): Int64 {
+func digestVerifyFinal(ctx: CPointer<UInt64>, sig: CPointer<Byte>, len: UIntNative): Int32 {
     let dynMsgPtr = generateDynMsg()
     let res = unsafe { DYN_EVP_DigestVerifyFinal(ctx, sig, len, dynMsgPtr) }
     checkError(dynMsgPtr)
@@ -520,11 +520,10 @@ func mdCtxFree(ctx: CPointer<UInt64>): Unit {
     checkError(dynMsgPtr)
 }
 
-func setKeyCtx(ctx: CPointer<UInt64>, pctx: CPointer<UInt64>): CPointer<UInt64> {
+func setKeyCtx(ctx: CPointer<UInt64>, pctx: CPointer<UInt64>): Unit {
     let dynMsgPtr = generateDynMsg()
-    let res = unsafe { DYN_EVP_MD_CTX_set_pkey_ctx(ctx, pctx, dynMsgPtr) }
+    unsafe { DYN_EVP_MD_CTX_set_pkey_ctx(ctx, pctx, dynMsgPtr) }
     checkError(dynMsgPtr)
-    return res
 }
 
 func digestSignInit(ctx: CPointer<UInt64>, pctx: CPointer<UInt64>, md: CPointer<UInt64>, e: CPointer<UInt64>,
@@ -535,14 +534,14 @@ func digestSignInit(ctx: CPointer<UInt64>, pctx: CPointer<UInt64>, md: CPointer<
     return res
 }
 
-func digestSignUpdate(ctx: CPointer<UInt64>, data: CPointer<Byte>, len: Int64): Int32 {
+func digestSignUpdate(ctx: CPointer<UInt64>, data: CPointer<Byte>, len: UIntNative): Int32 {
     let dynMsgPtr = generateDynMsg()
     let res = unsafe { DYN_EVP_DigestSignUpdate(ctx, data, len, dynMsgPtr) }
     checkError(dynMsgPtr)
     return res
 }
 
-func digestSignFinal(ctx: CPointer<UInt64>, sig: CPointer<Byte>, len: CPointer<Int64>): Int64 {
+func digestSignFinal(ctx: CPointer<UInt64>, sig: CPointer<Byte>, len: CPointer<Int64>): Int32 {
     let dynMsgPtr = generateDynMsg()
     let res = unsafe { DYN_EVP_DigestSignFinal(ctx, sig, len, dynMsgPtr) }
     checkError(dynMsgPtr)

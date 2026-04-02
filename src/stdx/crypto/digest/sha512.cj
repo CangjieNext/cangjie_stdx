@@ -73,7 +73,7 @@ func sha512Update(c: SHA512CTX, data: Array<Byte>): Unit {
         let dynMsgPtr = generateDynMsg()
         let p: CPointerHandle<Byte> = acquireArrayRawData(data)
         let res = try {
-            DYN_SHA512_Update(c.ptr, p.pointer, data.size, dynMsgPtr)
+            DYN_SHA512_Update(c.ptr, p.pointer, UIntNative(data.size), dynMsgPtr)
         } finally {
             releaseArrayRawData(p)
         }
