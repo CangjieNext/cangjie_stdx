@@ -58,7 +58,6 @@ const char* X509DescribePrivateKey(EVP_PKEY* key, DynMsg* dynMsg)
 {
     BIO* buffer = DYN_BIO_new_mem(dynMsg);
     if (buffer == NULL) {
-        DYN_EVP_PKEY_free(key, dynMsg);
         return NULL;
     }
     int bits = 0;
@@ -83,6 +82,7 @@ const char* X509DescribePrivateKey(EVP_PKEY* key, DynMsg* dynMsg)
     }
     bits = DYN_EVP_PKEY_get_bits(key, dynMsg);
     if (dynMsg && dynMsg->found == false) {
+        DYN_BIO_vfree(buffer, dynMsg);
         return NULL;
     }
     FormatDescription(buffer, typeName, bits, dynMsg);
