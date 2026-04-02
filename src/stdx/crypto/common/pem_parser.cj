@@ -45,7 +45,7 @@ func parsePem(content: Array<Byte>): Array<PemEntry> {
         checkIndex(content, current, bodyEnd)
         let body = String.fromUtf8(trimInnerSpaces(content[current..bodyEnd]))
         let bodyBytes = fromBase64String(body) ?? throw CryptoException( // cjlint-ignore !G.EXP.03
-            "Failed to parse PEM: Failed to parse base64 encoded PEM body: ${body}.")
+            "Failed to parse PEM: Failed to parse base64 encoded PEM body.")
 
         current = afterEnd
         result.append(PemEntry(label, headers, DerBlob(bodyBytes)))
@@ -63,6 +63,22 @@ func checkIndex(content: Array<Byte>, begin: Int64, end: Int64) {
     }
 }
 
+func validateLabel(label: Array<Byte>): Unit {
+    var prevIsSpaceOrHyphen = false
+    for (i in 0..label.size) {
+        if (label[i] == b'-' || label[i] == b' ') {
+            if (i == 0 || i == label.size - 1 || prevIsSpaceOrHyphen) {
+                throw CryptoException("Failed to parse PEM: Invalid label format '${label}'.")
+            }
+            prevIsSpaceOrHyphen = true
+        } else if (label[i] >= b'!' && label[i] <= b',' || label[i] >= b'.' && label[i] <= b'~') {
+            prevIsSpaceOrHyphen = false
+        } else {
+            throw CryptoException("Failed to parse PEM: Invalid label format '${label}'.")
+        }
+    }
+}
+
 func parsePreeb(start: Int64, content: Array<Byte>): ?(String, Int64) {
     let startIndex = indexOf(content, start, OPEN_ARRAY) ?? return None
     let labelStart = startIndex + OPEN_ARRAY.size
@@ -70,7 +86,8 @@ func parsePreeb(start: Int64, content: Array<Byte>): ?(String, Int64) {
     var afterIndex = endIndex + END_ARRAY.size
     afterIndex = skipSpaces(afterIndex, content)
     checkIndex(content, labelStart, endIndex)
-    let label = String.fromUtf8(content[labelStart..endIndex]).trimAscii()
+    validateLabel(content[labelStart..endIndex])
+    let label = unsafe { String.fromUtf8Unchecked(content[labelStart..endIndex]).trimAscii() }
     return (label, afterIndex)
 }
 
@@ -117,7 +134,7 @@ func parseHeader(index: Int64, content: Array<Byte>, builder: ArrayBuilder<(Stri
         match (content[tempIndex]) {
             case ':' => delimiterIndex = tempIndex
             case '\n' =>
-                lineEnd = if (tempIndex > 0 && content[tempIndex - 1] == b'\r') {
+                lineEnd = if (tempIndex > start && content[tempIndex - 1] == b'\r') {
                     tempIndex - 1
                 } else {
                     tempIndex
@@ -140,7 +157,28 @@ func parseHeader(index: Int64, content: Array<Byte>, builder: ArrayBuilder<(Stri
         throw CryptoException("Failed to parse PEM: Unexpected line in PEM header, line ${line.trimAscii()}.")
     }
     let headerName = String.fromUtf8(content[start..delimiterIndex]).trimAsciiEnd()
-    let headerValue = String.fromUtf8(content[delimiterIndex + 1..lineEnd]).trimAsciiStart()
+    var headerValue = String.fromUtf8(content[delimiterIndex + 1..lineEnd]).trimAsciiStart()
+    while (tempIndex < content.size) {
+        if (content[tempIndex] != b' ' && content[tempIndex] != b'\t') {
+            break
+        }
+        let lineStart = tempIndex
+        var nextLineEnd = content.size
+        while (tempIndex < content.size) {
+            if (content[tempIndex] == b'\n') {
+                nextLineEnd = if (tempIndex > lineStart && content[tempIndex - 1] == b'\r') {
+                    tempIndex - 1
+                } else {
+                    tempIndex
+                }
+                tempIndex++
+                break
+            }
+            tempIndex++
+        }
+        let continuation = String.fromUtf8(content[lineStart..nextLineEnd]).trimAscii()
+        headerValue = headerValue + " " + continuation
+    }
     builder.append((headerName, headerValue))
     return (tempIndex, true)
 }
