@@ -40,9 +40,9 @@ extern const char* DYN_CJ_SystemRootCerts(DynMsg* dynMsg)
         DYN_PEM_write_bio_X509(bio, x509, dynMsg);
         DYN_X509_free(x509, dynMsg);
     }
-    certStr = (char*)malloc(DYN_BIO_pending(bio, dynMsg) + 1);
+    size_t length = DYN_BIO_pending(bio, dynMsg);
+    certStr = (char*)malloc(length + 1);
     if (certStr != NULL) {
-        size_t length = DYN_BIO_pending(bio, dynMsg);
         DYN_BIO_read(bio, certStr, length, dynMsg);
         certStr[length] = 0;
     }
