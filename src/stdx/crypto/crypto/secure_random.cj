@@ -268,7 +268,13 @@ public class SecureRandom <: RandomGenerator {
         if (max == 0) {
             throw IllegalArgumentException("Invalid argument.")
         }
-        return nextUInt8() % max
+        const range: UInt16 = 256 // UInt8.Max + 1
+        let threshold: UInt16 = range - range % UInt16(max)
+        var value: UInt8
+        do {
+            value = nextUInt8()
+        } while (UInt16(value) >= threshold)
+        return value % max
     }
 
     /**
@@ -281,7 +287,13 @@ public class SecureRandom <: RandomGenerator {
         if (max == 0) {
             throw IllegalArgumentException("Invalid argument.")
         }
-        return nextUInt16() % max
+        const range: UInt32 = 65536 // UInt16.Max + 1
+        let threshold: UInt32 = range - range % UInt32(max)
+        var value: UInt16
+        do {
+            value = nextUInt16()
+        } while (UInt32(value) >= threshold)
+        return value % max
     }
 
     /**
@@ -294,7 +306,13 @@ public class SecureRandom <: RandomGenerator {
         if (max == 0) {
             throw IllegalArgumentException("Invalid argument.")
         }
-        return nextUInt32() % max
+        const range: UInt64 = 4294967296 // UInt32.Max + 1
+        let threshold: UInt64 = range - range % UInt64(max)
+        var value: UInt32
+        do {
+            value = nextUInt32()
+        } while (UInt64(value) >= threshold)
+        return value % max
     }
 
     /**
@@ -307,7 +325,12 @@ public class SecureRandom <: RandomGenerator {
         if (max == 0) {
             throw IllegalArgumentException("Invalid argument.")
         }
-        return nextUInt64() % max
+        let limit: UInt64 = UInt64.Max - UInt64.Max % max
+        var value: UInt64
+        do {
+            value = nextUInt64()
+        } while (value >= limit)
+        return value % max
     }
 
     /**
@@ -320,11 +343,13 @@ public class SecureRandom <: RandomGenerator {
         if (max <= 0) {
             throw IllegalArgumentException("Invalid argument.")
         }
-        var next = nextInt8()
-        while (next < 0) {
-            next = nextInt8()
-        }
-        return next % max
+        const range: Int16 = 128 // Int8.Max + 1
+        let threshold: Int16 = range - range % Int16(max)
+        var value: Int8
+        do {
+            value = nextInt8()
+        } while (value < 0 || Int16(value) >= threshold)
+        return value % max
     }
 
     /**
@@ -337,11 +362,13 @@ public class SecureRandom <: RandomGenerator {
         if (max <= 0) {
             throw IllegalArgumentException("Invalid argument.")
         }
-        var next = nextInt16()
-        while (next < 0) {
-            next = nextInt16()
-        }
-        return next % max
+        const range: Int32 = 32768 // Int16.Max + 1
+        let threshold: Int32 = range - range % Int32(max)
+        var value: Int16
+        do {
+            value = nextInt16()
+        } while (value < 0 || Int32(value) >= threshold)
+        return value % max
     }
 
     /**
@@ -354,11 +381,13 @@ public class SecureRandom <: RandomGenerator {
         if (max <= 0) {
             throw IllegalArgumentException("Invalid argument.")
         }
-        var next = nextInt32()
-        while (next < 0) {
-            next = nextInt32()
-        }
-        return next % max
+        const range: Int64 = 2147483648 // Int32.Max + 1
+        let threshold: Int64 = range - range % Int64(max)
+        var value: Int32
+        do {
+            value = nextInt32()
+        } while (value < 0 || Int64(value) >= threshold)
+        return value % max
     }
 
     /**
@@ -371,11 +400,12 @@ public class SecureRandom <: RandomGenerator {
         if (max <= 0) {
             throw IllegalArgumentException("Invalid argument.")
         }
-        var next = nextInt64()
-        while (next < 0) {
-            next = nextInt64()
-        }
-        return next % max
+        let limit: Int64 = Int64.Max - Int64.Max % max
+        var value: Int64
+        do {
+            value = nextInt64()
+        } while (value < 0 || value >= limit)
+        return value % max
     }
 
     /**
@@ -460,7 +490,10 @@ public class SecureRandom <: RandomGenerator {
                     nextGaussian = Option<Float64>.None
                     return v
                 case None =>
-                    let v1: Float64 = nextFloat64()
+                    var v1: Float64 = nextFloat64()
+                    while (v1 == 0.0) {
+                        v1 = nextFloat64()
+                    }
                     let v2: Float64 = nextFloat64()
                     let r = sqrt(-2.0 * log(v1))
                     let st = 2.0 * Float64.getPI() * v2
