@@ -56,13 +56,13 @@ class X500Principal <: ToString {
     }
 
     func fields(): Iterator<(Oid, () -> DerField)> {
-        var body = DerSequence(content.body)
+        let body = DerSequence(content.body, depth: content.depth)
         body |> filter<DerField> {it => it.fieldType == DerType.ISSUER_COMPONENT} |>
             map<DerField, ?(Oid, () -> DerField)> {
             item =>
             var parser = DerParser(item.body)
-            parser = DerParser(parser.parseNextDerField().body)
-            let idField = parser.parseNextDerField()
+            parser = DerParser(parser.parseNextDerField(body.depth).body)
+            let idField = parser.parseNextDerField(body.depth)
 
             if (idField.fieldType != DerType.ASN_OBJECT_IDENTIFIER) {
                 return None
@@ -75,7 +75,7 @@ class X500Principal <: ToString {
             (id, {
                     =>
                     var parser = memo
-                    parser.parseNextDerField()
+                    parser.parseNextDerField(body.depth)
                 })
         } |> filterNotNone
     }
