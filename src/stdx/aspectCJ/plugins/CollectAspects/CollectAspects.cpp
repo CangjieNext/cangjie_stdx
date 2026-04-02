@@ -11,6 +11,7 @@
 #include "cangjie/CHIR/IR/Type/CustomTypeDef.h"
 #include "cangjie/Mangle/CHIRTypeManglingUtils.h"
 #include "cangjie/MetaTransformation/MetaTransform.h"
+#include "cangjie/Utils/Macros.h"
 
 #include <fstream>
 
@@ -84,7 +85,9 @@ public:
     template <typename... Args> void Emit(const char* fmt, Args&&... args)
     {
         ++errorCnt;
+        SUPPRESS_WARNING("-Wformat-security")
         Errorf(fmt, args...);
+        UNSUPPRESS_WARNING()
     }
     ~MyError()
     {
