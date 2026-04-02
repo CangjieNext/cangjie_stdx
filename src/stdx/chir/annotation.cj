@@ -17,23 +17,7 @@ package stdx.chir
  */
 public class Annotation <: ToString {
     internal let _classSrcCodeName: String
-
     internal var _fields = HashMap<String, String>()
-
-    /**
-     * Renders this annotation as `@ClassName[k1=v1, k2=v2, ...]`.
-     * @return Text form suitable for debugging and dumps.
-     */
-    public func toString(): String {
-        let result = StringBuilder()
-        result.append("@")
-        result.append(_classSrcCodeName)
-        result.append("[")
-        result.append(String.join(
-            _fields.toArray().map<String>({ pair => pair[0] + "=" + pair[1] }), delimiter: ", "))
-        result.append("]")
-        return result.toString()
-    }
 
     /**
      * Source-level name of the annotation class (e.g. `MyAnno`).
@@ -43,6 +27,14 @@ public class Annotation <: ToString {
         get() {
             return _classSrcCodeName
         }
+    }
+
+    /**
+     * Creates an annotation with the given class name and an empty parameter map.
+     * @param classSrcCodeName Annotation class name as written in source.
+     */
+    public init(classSrcCodeName: String) {
+        this._classSrcCodeName = classSrcCodeName
     }
 
     /**
@@ -64,11 +56,18 @@ public class Annotation <: ToString {
     }
 
     /**
-     * Creates an annotation with the given class name and an empty parameter map.
-     * @param classSrcCodeName Annotation class name as written in source.
+     * Renders this annotation as `@ClassName[k1=v1, k2=v2, ...]`.
+     * @return Text form suitable for debugging and dumps.
      */
-    public init(classSrcCodeName: String) {
-        this._classSrcCodeName = classSrcCodeName
+    public func toString(): String {
+        let result = StringBuilder()
+        result.append("@")
+        result.append(_classSrcCodeName)
+        result.append("[")
+        result.append(String.join(
+            _fields.toArray().map<String>({ pair => pair[0] + "=" + pair[1] }), delimiter: ", "))
+        result.append("]")
+        return result.toString()
     }
 }
 
@@ -80,24 +79,12 @@ public class Annotation <: ToString {
  * internal compiler APIs inside `stdx.chir`.
  */
 internal class AnnoInfo <: ToString {
-    // annotation factory function mangled name
-    internal var _identifier: String = "none"
-
     // @class1Name[field1=value1, field2=value2]
     // @class2Name[field1=value1, field2=value2]
     // func foo() { ... }
     internal var _annoClasses = ArrayList<Annotation>()
-
-    /**
-     * Concatenates each annotation's `toString()` on its own line.
-     * @return Multi-line debug text; may end with a trailing newline when non-empty.
-     */
-    public func toString(): String {
-        let result = StringBuilder()
-        result.append(String.join(
-            _annoClasses.toArray().map<String>({ anno => anno.toString() }), delimiter: "\n"))
-        return result.toString()
-    }
+    // annotation factory function mangled name
+    internal var _identifier: String = "none"
 
     internal init() {
         this._identifier = "none"
@@ -112,5 +99,13 @@ internal class AnnoInfo <: ToString {
     internal init(identifier: String, annoClasses: Array<Annotation>) {
         this._identifier = identifier
         this._annoClasses = ArrayList<Annotation>.of(annoClasses)
+    }
+
+    /**
+     * Concatenates each annotation's `toString()` on its own line.
+     * @return Multi-line debug text; may end with a trailing newline when non-empty.
+     */
+    public func toString(): String {
+        return annoInfoToString(this, 0)
     }
 }
