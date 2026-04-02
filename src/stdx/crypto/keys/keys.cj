@@ -149,6 +149,10 @@ public class GeneralPrivateKey <: PrivateKey {
         this(blob, describe(blob))
     }
 
+    ~init() {
+        blob.content.fill(0)
+    }
+
     public func encodeToDer(): DerBlob {
         blob
     }
