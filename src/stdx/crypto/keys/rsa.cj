@@ -291,7 +291,7 @@ unsafe func generateRSA(bits: Int32, e: BigInt) {
         if (ret != 1) {
             throw CryptoException("Set RSA bits error.")
         }
-        exp = bin2bn(binPtr.pointer, e.toBytes().size, exp)
+        exp = bin2bn(binPtr.pointer, Int32(e.toBytes().size), exp)
         if (exp.isNull()) {
             throw CryptoException("Set RSA public exponent error.")
         }
@@ -443,12 +443,12 @@ func signPKCS1(ctx: EVPKEYCTX, pkey: CPointer<UInt64>, hash: Digest, data: Array
         var sig: Array<UInt8> = Array<UInt8>(Int64(rsaSize), repeat: 0)
         let sigHandle: CPointerHandle<Byte> = acquireArrayRawData(sig)
         let dataHandle: CPointerHandle<Byte> = acquireArrayRawData(data)
-        try (sizePtr = LibC.malloc<Int64>().asResource()) {
+        try (sizePtr = LibC.malloc<UIntNative>().asResource()) {
             if (sizePtr.value.isNull()) {
                 throw CryptoException("Sign init error, malloc failed.")
             }
 
-            sizePtr.value.write(rsaSize)
+            sizePtr.value.write(UIntNative(rsaSize))
             var ret = signInit(ctx.ptr)
             if (ret <= 0) {
                 throw CryptoException("Sign init error.")
@@ -461,11 +461,11 @@ func signPKCS1(ctx: EVPKEYCTX, pkey: CPointer<UInt64>, hash: Digest, data: Array
             if (ret <= 0) {
                 throw CryptoException("Set signature md error.")
             }
-            ret = sign(ctx.ptr, sigHandle.pointer, sizePtr.value, dataHandle.pointer, data.size)
-            if (ret != 1 || sizePtr.value.read() > rsaSize) {
+            ret = sign(ctx.ptr, sigHandle.pointer, sizePtr.value, dataHandle.pointer, UIntNative(data.size))
+            if (ret != 1 || sizePtr.value.read() > UIntNative(rsaSize)) {
                 throw CryptoException("Sign error.")
             }
-            rsaSize = sizePtr.value.read()
+            rsaSize = Int64(sizePtr.value.read())
         } finally {
             releaseArrayRawData(sigHandle)
             releaseArrayRawData(dataHandle)
@@ -477,15 +477,15 @@ func signPKCS1(ctx: EVPKEYCTX, pkey: CPointer<UInt64>, hash: Digest, data: Array
 func signPSS(ctx: EVPKEYCTX, pkey: CPointer<UInt64>, hash: Digest, data: Array<Byte>, saltLen: Int32) {
     unsafe {
         var rsaSize = Int64(getSize(pkey))
-        var sig: Array<UInt8> = Array<UInt8>(Int64(rsaSize), repeat: 0)
+        var sig: Array<UInt8> = Array<UInt8>(rsaSize, repeat: 0)
         let sigHandle: CPointerHandle<Byte> = acquireArrayRawData(sig)
         let dataHandle: CPointerHandle<Byte> = acquireArrayRawData(data)
-        try (sizePtr = LibC.malloc<Int64>().asResource()) {
+        try (sizePtr = LibC.malloc<UIntNative>().asResource()) {
             if (sizePtr.value.isNull()) {
                 throw CryptoException("Sign init error, malloc failed.")
             }
 
-            sizePtr.value.write(rsaSize)
+            sizePtr.value.write(UIntNative(rsaSize))
             var ret = signInit(ctx.ptr)
             if (ret <= 0) {
                 throw CryptoException("Sign init error.")
@@ -502,11 +502,11 @@ func signPSS(ctx: EVPKEYCTX, pkey: CPointer<UInt64>, hash: Digest, data: Array<B
             if (ret <= 0) {
                 throw CryptoException("Set rsa pss saltlen error.")
             }
-            ret = sign(ctx.ptr, sigHandle.pointer, sizePtr.value, dataHandle.pointer, data.size)
-            if (ret != 1 || sizePtr.value.read() > rsaSize) {
+            ret = sign(ctx.ptr, sigHandle.pointer, sizePtr.value, dataHandle.pointer, UIntNative(data.size))
+            if (ret != 1 || sizePtr.value.read() > UIntNative(rsaSize)) {
                 throw CryptoException("Sign error.")
             }
-            rsaSize = sizePtr.value.read()
+            rsaSize = Int64(sizePtr.value.read())
         } finally {
             releaseArrayRawData(sigHandle)
             releaseArrayRawData(dataHandle)
@@ -533,7 +533,7 @@ func verifyPKCS1(ctx: EVPKEYCTX, hash: Digest, data: Array<Byte>, sig: Array<Byt
             if (ret <= 0) {
                 throw CryptoException("Set signature md error.")
             }
-            result = verify(ctx.ptr, sigHandle.pointer, sig.size, dataHandle.pointer, data.size)
+            result = verify(ctx.ptr, sigHandle.pointer, UIntNative(sig.size), dataHandle.pointer, UIntNative(data.size))
         } finally {
             releaseArrayRawData(sigHandle)
             releaseArrayRawData(dataHandle)
@@ -574,7 +574,7 @@ func verifyPSS(
             if (ret <= 0) {
                 throw CryptoException("Set rsa pss saltlen error.")
             }
-            result = verify(ctx.ptr, sigHandle.pointer, sig.size, dataHandle.pointer, data.size)
+            result = verify(ctx.ptr, sigHandle.pointer, UIntNative(sig.size), dataHandle.pointer, UIntNative(data.size))
         } finally {
             releaseArrayRawData(sigHandle)
             releaseArrayRawData(dataHandle)
@@ -597,7 +597,7 @@ unsafe func encryptPKCS1(ctx: EVPKEYCTX, pkey: CPointer<UInt64>, input: InputStr
     var writebuff = Array<Byte>(Int64(keySize), repeat: 0)
     var inBlock: CPointerHandle<Byte> = acquireArrayRawData(readbuff)
     var outBlock: CPointerHandle<Byte> = acquireArrayRawData(writebuff)
-    try (outlenPtr = LibC.malloc<Int64>().asResource()) {
+    try (outlenPtr = LibC.malloc<UIntNative>().asResource()) {
         if (outlenPtr.value.isNull()) {
             throw CryptoException("Encrypt init error, malloc failed.")
         }
@@ -610,15 +610,15 @@ unsafe func encryptPKCS1(ctx: EVPKEYCTX, pkey: CPointer<UInt64>, input: InputStr
         if (ret <= 0) {
             throw CryptoException("Set rsa padding type error.")
         }
-        var inLen = input.read(readbuff)
+        var inLen = UIntNative(input.read(readbuff))
         do {
-            outlenPtr.value.write(Int64(keySize))
+            outlenPtr.value.write(UIntNative(keySize))
             ret = encrypt(ctx.ptr, outBlock.pointer, outlenPtr.value, inBlock.pointer, inLen)
-            if (ret != 1 || outlenPtr.value.read() > Int64(keySize)) {
+            if (ret != 1 || outlenPtr.value.read() > UIntNative(keySize)) {
                 throw CryptoException("Encrypt error.")
             }
-            output.write(writebuff[..outlenPtr.value.read()])
-            inLen = input.read(readbuff)
+            output.write(writebuff[..Int64(outlenPtr.value.read())])
+            inLen = UIntNative(input.read(readbuff))
         } while (inLen > 0)
     } finally {
         releaseArrayRawData(inBlock)
@@ -644,7 +644,7 @@ unsafe func encryptOAEP(
     var writebuff = Array<Byte>(Int64(keySize), repeat: 0)
     var inBlock: CPointerHandle<Byte> = acquireArrayRawData(readbuff)
     var outBlock: CPointerHandle<Byte> = acquireArrayRawData(writebuff)
-    try (outlenPtr = LibC.malloc<Int64>().asResource(), lablePtr = LibC.mallocCString(label).asResource()) {
+    try (outlenPtr = LibC.malloc<UIntNative>().asResource(), lablePtr = LibC.mallocCString(label).asResource()) {
         if (outlenPtr.value.isNull() || lablePtr.value.isNull()) {
             throw CryptoException("Encrypt init error, malloc failed.")
         }
@@ -661,15 +661,15 @@ unsafe func encryptOAEP(
         if (ret == -1) {
             throw CryptoException("Set rsa OAEP option error.")
         }
-        var inLen = input.read(readbuff)
+        var inLen = UIntNative(input.read(readbuff))
         do {
-            outlenPtr.value.write(Int64(keySize))
+            outlenPtr.value.write(UIntNative(keySize))
             ret = encrypt(ctx.ptr, outBlock.pointer, outlenPtr.value, inBlock.pointer, inLen)
-            if (ret != 1 || outlenPtr.value.read() > Int64(keySize)) {
+            if (ret != 1 || outlenPtr.value.read() > UIntNative(keySize)) {
                 throw CryptoException("Encrypt error.")
             }
-            output.write(writebuff[..outlenPtr.value.read()])
-            inLen = input.read(readbuff)
+            output.write(writebuff[..Int64(outlenPtr.value.read())])
+            inLen = UIntNative(input.read(readbuff))
         } while (inLen > 0)
     } finally {
         releaseArrayRawData(inBlock)
@@ -684,7 +684,7 @@ unsafe func decryptPKCS1(ctx: EVPKEYCTX, pkey: CPointer<UInt64>, input: InputStr
     var writebuff = Array<Byte>(Int64(keySize), repeat: 0)
     var inBlock: CPointerHandle<Byte> = acquireArrayRawData(readbuff)
     var outBlock: CPointerHandle<Byte> = acquireArrayRawData(writebuff)
-    try (outlenPtr = LibC.malloc<Int64>().asResource()) {
+    try (outlenPtr = LibC.malloc<UIntNative>().asResource()) {
         if (outlenPtr.value.isNull()) {
             throw CryptoException("Decrypt init error, malloc failed.")
         }
@@ -698,15 +698,15 @@ unsafe func decryptPKCS1(ctx: EVPKEYCTX, pkey: CPointer<UInt64>, input: InputStr
             throw CryptoException("Set rsa padding error.")
         }
 
-        var inLen = input.read(readbuff)
+        var inLen = UIntNative(input.read(readbuff))
         while (inLen > 0) {
-            outlenPtr.value.write(Int64(keySize))
+            outlenPtr.value.write(UIntNative(keySize))
             ret = decrypt(ctx.ptr, outBlock.pointer, outlenPtr.value, inBlock.pointer, inLen)
-            if (ret != 1 || outlenPtr.value.read() > Int64(keySize)) {
+            if (ret != 1 || outlenPtr.value.read() > UIntNative(keySize)) {
                 throw CryptoException("Decrypt error.")
             }
-            output.write(writebuff[..outlenPtr.value.read()])
-            inLen = input.read(readbuff)
+            output.write(writebuff[..Int64(outlenPtr.value.read())])
+            inLen = UIntNative(input.read(readbuff))
         }
     } finally {
         releaseArrayRawData(inBlock)
@@ -729,7 +729,7 @@ unsafe func decryptOAEP(
     var writebuff = Array<Byte>(Int64(keySize), repeat: 0)
     var inBlock: CPointerHandle<Byte> = acquireArrayRawData(readbuff)
     var outBlock: CPointerHandle<Byte> = acquireArrayRawData(writebuff)
-    try (outlenPtr = LibC.malloc<Int64>().asResource(), lablePtr = LibC.mallocCString(label).asResource()) {
+    try (outlenPtr = LibC.malloc<UIntNative>().asResource(), lablePtr = LibC.mallocCString(label).asResource()) {
         if (outlenPtr.value.isNull() || lablePtr.value.isNull()) {
             throw CryptoException("Decrypt init error, malloc failed.")
         }
@@ -746,15 +746,15 @@ unsafe func decryptOAEP(
         if (ret == -1) {
             throw CryptoException("Set rsa OAEP option error.")
         }
-        var inLen = input.read(readbuff)
+        var inLen = UIntNative(input.read(readbuff))
         while (inLen > 0) {
-            outlenPtr.value.write(Int64(keySize))
+            outlenPtr.value.write(UIntNative(keySize))
             ret = decrypt(ctx.ptr, outBlock.pointer, outlenPtr.value, inBlock.pointer, inLen)
-            if (ret != 1 || outlenPtr.value.read() > Int64(keySize)) {
+            if (ret != 1 || outlenPtr.value.read() > UIntNative(keySize)) {
                 throw CryptoException("Decrypt error.")
             }
-            output.write(writebuff[..outlenPtr.value.read()])
-            inLen = input.read(readbuff)
+            output.write(writebuff[..Int64(outlenPtr.value.read())])
+            inLen = UIntNative(input.read(readbuff))
         }
     } finally {
         releaseArrayRawData(inBlock)
