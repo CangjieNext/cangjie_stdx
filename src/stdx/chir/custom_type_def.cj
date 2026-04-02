@@ -240,6 +240,10 @@ sealed abstract class CustomTypeDef <: Base & Equatable<CustomTypeDef> & Hashabl
 
     internal var _instanceVars = ArrayList<MemberVar>()
 
+    internal var _staticVars = ArrayList<GlobalVar>()
+
+    internal var _methods = ArrayList<Function>()
+
     internal var _extends = ArrayList<ExtendDef>()
 
     internal var _implementedInterfaceTypes = ArrayList<ClassLikeType>()
@@ -389,11 +393,15 @@ sealed abstract class CustomTypeDef <: Base & Equatable<CustomTypeDef> & Hashabl
         result.append(" {")
         result.append(printComment())
         result.append(printMemberVars(INDENT_SPACE))
+        for (method in _methods) {
+            result.append("\n" + indentToString(INDENT_SPACE))
+            result.append(method._attributes.toString() + "func " + method._identifier + ": " + method._type.toString())
+        }
         for (exDef in _extends) {
             result.append("\n")
             result.append(indentToString(INDENT_SPACE))
             result.append("extend ")
-            result.append(exDef.identifier)
+            result.append(exDef._identifier)
         }
         result.append("\n}")
         return result.toString()
@@ -667,12 +675,41 @@ sealed abstract class CustomTypeDef <: Base & Equatable<CustomTypeDef> & Hashabl
         let result = StringBuilder()
         var index = 0
         while (index < _instanceVars.size) {
-            result.append("\n")
-            result.append(indentToString(indent))
+            result.append("\n" + indentToString(indent))
             result.append(_instanceVars[index].toString())
             index += 1
         }
+        index = 0
+        while (index < _staticVars.size) {
+            result.append("\n" + indentToString(indent))
+            let staticVar = _staticVars[index]
+            result.append("[static] " + staticVar._identifier + ": " + staticVar._type.toString())
+            index += 1
+        }
         return result.toString()
+    }
+
+    public prop methods: Array<Function> {
+        get() {
+            return _methods.toArray()
+        }
+    }
+
+    public func appendMethod(method: Function): Unit {
+        _methods.add(method)
+        method._declaredParent = this
+    }
+
+    public prop staticVars: Array<GlobalVar> {
+        get() {
+            return _staticVars.toArray()
+        }
+    }
+
+    public func appendStaticVar(staticVar: GlobalVar): Unit {
+        staticVar.setStatic(true)
+        _staticVars.add(staticVar)
+        staticVar._declaredParent = this
     }
 
     /**
