@@ -87,6 +87,8 @@ class X509Blob <: Equatable<X509Blob> & Hashable {
         certInfo = wholeCert[CERT_INFO_OFFSET].asSequence()
         if (certInfo[0].fieldType != DerType.VERSION_TYPE) {
             versionOffset = 1
+        } else {
+            certInfo[0].checkVersion()
         }
 
         algorithmSeq = wholeCert[ALGORITHM_INFO_OFFSET].asSequence()
