@@ -64,6 +64,22 @@ struct DerField <: ToString {
         String.fromUtf8(body)
     }
 
+    func checkVersion(): Unit {
+        // version type body size should be 3 bytes
+        // first byte 0x02 denotes integer
+        // second byte 0x01 denotes length
+        // third byte is version value {0x01, 0x02}, 0x00 is usually omitted
+        if (body.size != 3) {
+            throw X509Exception("Invalid version: empty value.")
+        }
+        if (body[0] != 0x02 || body[1] != 0x01) {
+            throw X509Exception("Invalid version field value.")
+        }
+        if (body[2] != 0 && body[2] != 1 && body[2] != 2) {
+            throw X509Exception("X509Cert init failed: Invalid version value: ${body[2]}. Must be 0, 1, or 2.")
+        }
+    }
+
     public override func toString(): String {
         "DER(type = ${fieldType}, length: ${length})"
     }
