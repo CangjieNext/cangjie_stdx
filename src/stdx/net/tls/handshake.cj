@@ -497,5 +497,5 @@ func customVerifyCallback(context: CPointer<Ctx>, chain: CPointer<CertChainItem>
             return if (passed) { 1 } else { 0 }
         }
     }
-    return 1
+    return 0
 }
