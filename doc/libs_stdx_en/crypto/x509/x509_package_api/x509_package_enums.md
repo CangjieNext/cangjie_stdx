@@ -105,6 +105,10 @@ Function: The certificate signature algorithm ([Signature](x509_package_structs.
 
 Currently supported signature algorithms include: MD2WithRSA, MD5WithRSA, SHA1WithRSA, SHA256WithRSA, SHA384WithRSA, SHA512WithRSA, DSAWithSHA1, DSAWithSHA256, ECDSAWithSHA1, ECDSAWithSHA256, ECDSAWithSHA384, and ECDSAWithSHA512.
 
+> **Note:**
+>
+> MD5WithRSA, SHA1WithRSA have been proven to be insecure. Use with caution.
+
 Parent types:
 
 - Equatable\<[SignatureAlgorithm](#enum-signaturealgorithm)>

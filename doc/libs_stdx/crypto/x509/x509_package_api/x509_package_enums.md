@@ -183,6 +183,10 @@ public enum SignatureAlgorithm <: Equatable<SignatureAlgorithm> & ToString {
 
 目前支持签名算法的种类包括：MD2WithRSA 、MD5WithRSA 、SHA1WithRSA 、SHA256WithRSA 、SHA384WithRSA、SHA512WithRSA、DSAWithSHA1、DSAWithSHA256、ECDSAWithSHA1、ECDSAWithSHA256、ECDSAWithSHA384 和 ECDSAWithSHA512。
 
+> **注意：**
+>
+> MD5WithRSA、SHA1WithRSA 已被证明存在安全漏洞，请谨慎使用。
+
 父类型：
 
 - Equatable\<[SignatureAlgorithm](#enum-signaturealgorithm)>
