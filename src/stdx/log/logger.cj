@@ -11,8 +11,10 @@ package stdx.log
 import std.time.DateTime
 
 public func setGlobalLogger(logger: Logger): Unit {
-    for (h in loggerHolderList) {
-        h.setLogger(logger)
+    synchronized(globalMtx) {
+        for (h in loggerHolderList) {
+            h.setLogger(logger)
+        }
     }
 }
 
