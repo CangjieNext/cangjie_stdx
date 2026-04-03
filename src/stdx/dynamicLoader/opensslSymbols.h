@@ -82,6 +82,7 @@ void DYN_BIO_clear_retry_flags(BIO* b, DynMsg* dynMsg);
 long DYN_BIO_get_mem_ptr(BIO* b, BUF_MEM** pp, DynMsg* dynMsg);
 
 int DYN_SSL_set_tlsext_host_name(SSL* ssl, const char* name, DynMsg* dynMsg);
+int DYN_SSL_set1_host(SSL* ssl, const char* hostname, DynMsg* dynMsg);
 long DYN_SSL_CTX_set_tlsext_servername_callback(SSL_CTX* ctx, int (*cb)(void* s, int* al, void* arg), DynMsg* dynMsg);
 
 void DYN_BIO_set_retry_read(BIO* a, DynMsg* dynMsg);

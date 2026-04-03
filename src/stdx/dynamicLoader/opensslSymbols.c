@@ -898,6 +898,13 @@ int DYN_SSL_set_tlsext_host_name(SSL* ssl, const char* name, DynMsg* dynMsg)
     return func(ssl, SSL_CTRL_SET_TLSEXT_HOSTNAME, TLSEXT_NAMETYPE_host_name, (void*)name);
 }
 
+int DYN_SSL_set1_host(SSL* ssl, const char* hostname, DynMsg* dynMsg)
+{
+    typedef int (*SSLFunc)(SSL*, const char*);
+    FINDFUNCTION(dynMsg, SSL_set1_host, 0)
+    return func(ssl, hostname);
+}
+
 long DYN_SSL_CTX_set_tlsext_servername_callback(SSL_CTX* ctx, int (*cb)(void* s, int* al, void* arg), DynMsg* dynMsg)
 {
     typedef long (*SSLFunc)(SSL_CTX*, int, void(*fp));

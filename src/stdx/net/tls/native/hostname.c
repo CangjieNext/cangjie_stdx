@@ -44,7 +44,15 @@ extern int CJ_TLS_DYN_SetHostName(SSL* stream, const char* name, DynMsg* dynMsg)
         return 0;
     }
 
-    return (int)DYN_SSL_set_tlsext_host_name(stream, name, dynMsg);
+    if (!DYN_SSL_set_tlsext_host_name(stream, name, dynMsg)) {
+        return 0;
+    }
+
+    if (!DYN_SSL_set1_host(stream, name, dynMsg)) {
+        return 0;
+    }
+
+    return 1;
 }
 
 extern int CJ_TLS_DYN_SetHostNameForVerify(SSL* stream, const char* name, DynMsg* dynMsg)
