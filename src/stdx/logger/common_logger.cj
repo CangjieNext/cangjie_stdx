@@ -53,7 +53,7 @@ class CommonLogger <: Logger {
     public func log(record: LogRecord): Unit {
         let _as = this._attrs.clone()
         _as.add(all: record.attrs)
-        record.attrs = unsafe { _as.getRawArray() }
+        record.attrs = _as.toArray()
         match (_mode) {
             case LogStyle.SIMPLE => logSimple(record, o)
             case LogStyle.TEXT => logText(record, o)
