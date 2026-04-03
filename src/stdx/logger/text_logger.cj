@@ -65,7 +65,7 @@ class TextLogWriter <: LogWriter {
         bo = BufferedOutputStream(out)
     }
     func writeMessage(v: String): Unit {
-        bo.write(unsafe { v.rawData() })
+        bo.write(v.toString().toArray())
     }
     public func writeNone(): Unit {
         beforeValue()
@@ -91,7 +91,7 @@ class TextLogWriter <: LogWriter {
     }
     public func writeDateTime(v: DateTime): Unit {
         beforeValue()
-        bo.write(unsafe { v.toString().rawData() })
+        bo.write(v.toString().toArray())
     }
     public func writeDuration(v: Duration): Unit {
         beforeValue()
