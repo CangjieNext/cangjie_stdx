@@ -42,7 +42,7 @@ func quotedReplace(w: OutputStream, s: String): Unit {
             if (JsonUtils.escapeTable[codePoint] != 0) {
                 w.write([b'\\', JsonUtils.escapeTable[codePoint]])
             } else {
-                w.write([b'\\', b'u', b'{', b'0', b'0', hex[codePoint >> 4], hex[codePoint & 0xF], b'}'])
+                w.write([b'\\', b'u', b'0', b'0', hex[codePoint >> 4], hex[codePoint & 0xF]])
             }
         } else {
             w.write([b])
