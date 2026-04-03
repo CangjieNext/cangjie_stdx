@@ -65,7 +65,7 @@ class TextLogWriter <: LogWriter {
         bo = BufferedOutputStream(out)
     }
     func writeMessage(v: String): Unit {
-        bo.write(v.toString().toArray())
+        quotedReplace(bo, v)
     }
     public func writeNone(): Unit {
         beforeValue()
