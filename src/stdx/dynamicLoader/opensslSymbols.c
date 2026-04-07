@@ -1129,7 +1129,7 @@ void DYN_BIO_set_retry_write(BIO* a, DynMsg* dynMsg)
     DYN_BIO_set_flags(a, (BIO_FLAGS_WRITE | BIO_FLAGS_SHOULD_RETRY), dynMsg);
 }
 
-void DynPopFree(void* extlist, char* funcName, DynMsg* dynMsg)
+void DynPopFree(void* extlist, const char* funcName, DynMsg* dynMsg)
 {
     typedef void (*SSLFunc0)(void*);
     SSLFunc0 func0 = NULL;
