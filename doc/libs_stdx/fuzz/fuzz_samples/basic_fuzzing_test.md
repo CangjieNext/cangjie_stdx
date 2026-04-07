@@ -47,7 +47,7 @@ macOS 的编译命令是：`cjc fuzz_main.cj -L $CANGJIE_STDX_PATH -lstdx.fuzz.f
 
 与 `libfuzzer` 体验类似，可以直接运行，数秒后（取决于 CPU 性能）可获得 crash，且输入的数据是 "Cangjie!"
 
-运行结果如下：
+运行结果：
 
 ```text
 $ ./main

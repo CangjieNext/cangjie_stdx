@@ -28,7 +28,7 @@ main() {
 }
 ```
 
-运行结果如下：
+运行结果：
 
 ```text
 ./main crash-d7ece8e77ff25769a5d55eb8d3093d4bace78e1b
