@@ -90,7 +90,7 @@ public class ToStringWrapper <: ToString & LogValue {
 }
 ```
 
-运行结果如下：
+可能的运行结果：
 
 ```text
 {"time":"2024-07-18T07:57:45Z","level":"INFO","msg":"abc","name":"main","age":2}
@@ -193,7 +193,7 @@ public class ToStringWrapper <: ToString & LogValue {
 }
 ```
 
-运行结果如下：
+可能的运行结果：
 
 ```text
 2025-04-15T15:06:54.7371418+08:00 INFO abc name="main" age=2
@@ -296,7 +296,7 @@ public class ToStringWrapper <: ToString & LogValue {
 }
 ```
 
-运行结果如下：
+可能的运行结果：
 
 ```text
 time=2025-04-15T15:18:09.2186361+08:00 level="INFO" msg="abc" name="main" age=2

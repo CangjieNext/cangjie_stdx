@@ -234,7 +234,7 @@ ContinuationWebFrame
 PingWebFrame
 ```
 
-功能：定义 websocket 协议中的心跳帧。
+功能：定义 WebSocket 协议中的 Ping 帧（心跳请求）。心跳检测（确认对方是否在线 / 连接是否正常）。
 
 ### PongWebFrame
 
@@ -242,7 +242,7 @@ PingWebFrame
 PongWebFrame
 ```
 
-功能：定义 websocket 协议中的心跳帧。
+功能：定义 WebSocket 协议中的 Pong 帧（心跳响应）。对 PingWebFrame 的强制响应帧。
 
 ### TextWebFrame
 

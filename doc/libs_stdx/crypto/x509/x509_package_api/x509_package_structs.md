@@ -895,7 +895,7 @@ main() {
         }
     }
 
-    // 核心演示：获得证书签名的二进制
+    // 获得证书签名的二进制
     let signatureValue = signatureOpt?.signatureValue
     println("Signature DerBlob size: ${signatureValue?.size ?? 0}")
 }
@@ -1201,14 +1201,14 @@ main() {
 
     // 创建验证选项
     var verifyOpt = VerifyOption()
-    // 核心演示：设置信任根证书集合，不设置默认为系统根证书链
+    // 设置信任根证书集合，不设置默认为系统根证书链
     verifyOpt.roots = [cert1, cert2]
     // 验证证书，因为cert1在信任根证书集合中，所以有效
     let isValid = cert1.verify(verifyOpt)
 
     println("证书cert1是否有效: ${isValid}")
 
-    // 核心演示：设置信任根证书集合，不设置默认为系统根证书链
+    // 设置信任根证书集合，不设置默认为系统根证书链
     var verifyOpt2 = VerifyOption()
     verifyOpt2.roots = [cert2]
     // 验证证书，因为cert1不在信任根证书集合中，所以无效
@@ -1254,14 +1254,14 @@ main() {
     }
     // 创建验证选项
     var verifyOpt = VerifyOption()
-    // 核心演示：设置验证时间
+    // 设置验证时间
     verifyOpt.time = DateTime.of(year: 2036, month: 1, dayOfMonth: 1)
     // 验证证书
     let isValid = certOpt?.verify(verifyOpt)
 
     println("证书是否有效: ${isValid ?? false}")
 
-    // 核心演示：创建另一个验证时间
+    // 创建另一个验证时间
     var verifyOpt2 = VerifyOption()
     verifyOpt2.time = DateTime.of(year: 2026, month: 1, dayOfMonth: 1)
     // 验证证书

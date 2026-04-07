@@ -46,7 +46,7 @@ MyAnno
 public init(classSrcCodeName: String)
 ```
 
-功能：构造一个 `Annotation` 对象，指定注解类名且**参数表初始为空**；可通过 [`setFieldValue`](#func-setfieldvalue-string-string) 写入键值。
+功能：构造一个 `Annotation` 对象，指定注解类名且**参数表初始为空**；可通过 [`setFieldValue`](#func-setfieldvaluestring-string) 写入键值。
 
 参数：
 

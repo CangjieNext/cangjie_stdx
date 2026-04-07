@@ -1,6 +1,8 @@
 # class 序列化和反序列化
-<!-- verify -->
 
+示例：
+
+<!-- verify -->
 ```cangjie
 import stdx.serialization.serialization.*
 import std.math.*
@@ -82,7 +84,7 @@ main(): Unit {
 }
 ```
 
-运行结果如下：
+运行结果：
 
 ```text
 Abcde
