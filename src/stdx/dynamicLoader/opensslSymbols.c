@@ -352,12 +352,51 @@ static void CloseHandle(void* handle)
     }
 }
 
+static bool VerifyOpenSslVersion(void* cryptoHandle)
+{
+    if (cryptoHandle == NULL) {
+        return false;
+    }
+
+#ifdef _WIN32
+    typedef unsigned long (*VersionFunc)(void);
+    VersionFunc vfn = (VersionFunc)GetProcAddress((HMODULE)cryptoHandle, "OpenSSL_version_num");
+#else
+    if (&dlsym == NULL) {
+        return false;
+    }
+    typedef unsigned long (*VersionFunc)(void);
+    VersionFunc vfn = (VersionFunc)dlsym(cryptoHandle, "OpenSSL_version_num");
+#endif
+
+    if (vfn == NULL) {
+        fprintf(stderr, "[STDX Security Warning] OpenSSL_version_num not found - incompatible or too old version\n");
+        return false;
+    }
+
+    unsigned long ver = vfn();
+    unsigned long major = (ver >> 28) & 0xF;
+
+    if (major < 3) {
+        fprintf(stderr, "[STDX Security Warning] OpenSSL version %lu.%lu.%lu is not supported (requires 3.x or later)\n",
+                major, (ver >> 20) & 0xFF, (ver >> 4) & 0xFF);
+        return false;
+    }
+
+    return true;
+}
+
 static bool TryLoadBackendPair(const OpenSslBackendCandidate* candidates, size_t count)
 {
     for (size_t i = 0; i < count; i++) {
         void* cryptoHandle = TryDlopenOne(candidates[i].cryptoPath);
         void* sslHandle = TryDlopenOne(candidates[i].sslPath);
         if (cryptoHandle != NULL && sslHandle != NULL) {
+            if (!VerifyOpenSslVersion(cryptoHandle)) {
+                CloseHandle(cryptoHandle);
+                CloseHandle(sslHandle);
+                continue;
+            }
             g_singletonHandle = cryptoHandle;
             g_singletonHandleSsl = sslHandle;
             g_singletonHandleOwned = true;
@@ -538,17 +577,26 @@ static void EnsureLoadedImpl(void)
      */
     g_singletonHandle = TryDlopen(cryptoCandidates, sizeof(cryptoCandidates) / sizeof(cryptoCandidates[0]));
     if (g_singletonHandle != NULL) {
-        g_singletonHandleSsl = g_singletonHandle;
-        g_singletonHandleOwned = true;
-        g_singletonHandleSslOwned = false;
-        return;
+        if (VerifyOpenSslVersion(g_singletonHandle)) {
+            g_singletonHandleSsl = g_singletonHandle;
+            g_singletonHandleOwned = true;
+            g_singletonHandleSslOwned = false;
+            return;
+        }
+        CloseHandle(g_singletonHandle);
+        g_singletonHandle = NULL;
     }
 
     g_singletonHandleSsl = TryDlopen(sslCandidates, sizeof(sslCandidates) / sizeof(sslCandidates[0]));
     if (g_singletonHandleSsl != NULL) {
-        g_singletonHandle = g_singletonHandleSsl;
-        g_singletonHandleOwned = false;
-        g_singletonHandleSslOwned = true;
+        if (VerifyOpenSslVersion(g_singletonHandleSsl)) {
+            g_singletonHandle = g_singletonHandleSsl;
+            g_singletonHandleOwned = false;
+            g_singletonHandleSslOwned = true;
+        } else {
+            CloseHandle(g_singletonHandleSsl);
+            g_singletonHandleSsl = NULL;
+        }
     }
 }
 
@@ -569,12 +617,36 @@ static BOOL CALLBACK EnsureLoadedOnceCallback(PINIT_ONCE initOnce, PVOID paramet
     if (GetConfiguredOpenSslPaths(&configuredCryptoPath, &configuredSslPath)) {
         g_singletonHandle = LoadLibraryA(configuredCryptoPath);
         g_singletonHandleSsl = LoadLibraryA(configuredSslPath);
+        if (g_singletonHandle != NULL) {
+            if (!VerifyOpenSslVersion(g_singletonHandle)) {
+                FreeLibrary(g_singletonHandle);
+                g_singletonHandle = NULL;
+            }
+        }
+        if (g_singletonHandleSsl != NULL && g_singletonHandle == NULL) {
+            if (!VerifyOpenSslVersion(g_singletonHandleSsl)) {
+                FreeLibrary(g_singletonHandleSsl);
+                g_singletonHandleSsl = NULL;
+            }
+        }
         g_singletonHandleOwned = (g_singletonHandle != NULL);
         g_singletonHandleSslOwned = (g_singletonHandleSsl != NULL);
         return TRUE;
     }
     g_singletonHandle = LoadLibraryA(OPENSSLPATH);
     g_singletonHandleSsl = LoadLibraryA(OPENSSLPATHSSL);
+    if (g_singletonHandle != NULL) {
+        if (!VerifyOpenSslVersion(g_singletonHandle)) {
+            FreeLibrary(g_singletonHandle);
+            g_singletonHandle = NULL;
+        }
+    }
+    if (g_singletonHandleSsl != NULL && g_singletonHandle == NULL) {
+        if (!VerifyOpenSslVersion(g_singletonHandleSsl)) {
+            FreeLibrary(g_singletonHandleSsl);
+            g_singletonHandleSsl = NULL;
+        }
+    }
     g_singletonHandleOwned = (g_singletonHandle != NULL);
     g_singletonHandleSslOwned = (g_singletonHandleSsl != NULL);
     return TRUE;
