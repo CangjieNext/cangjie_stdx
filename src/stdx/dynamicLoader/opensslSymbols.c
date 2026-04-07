@@ -823,7 +823,12 @@ static void* ResolveDynPopFreeFunction(const char* funcName)
     CHECKFUNCTION(dynMsg, index, #name, errCode)
 #endif
 
-#define FINDFUNCTION(dynMsg, name, errCode) FINDFUNCTIONI(dynMsg, , name, errCode)
+#define FINDFUNCTION(dynMsg, name, errCode)                                   \
+    if ((dynMsg) != NULL) {                                                   \
+        (dynMsg)->found = true;                                               \
+        (dynMsg)->funcName = NULL;                                            \
+    }                                                                          \
+    FINDFUNCTIONI(dynMsg, , name, errCode)
 
 char* DYN_OPENSSL_strdup(const char* str, DynMsg* dynMsg)
 {
