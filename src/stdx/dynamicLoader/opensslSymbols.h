@@ -50,9 +50,17 @@
 #endif
 #endif
 
+/**
+ * Dynamic message structure for tracking function resolution status.
+ *
+ * Lifecycle:
+ * - Callers must allocate using MallocDynMsg() before use.
+ * - Callers must free using FreeDynMsg() after use.
+ * - The funcName pointer is managed internally and valid for the struct's lifetime.
+ */
 typedef struct DynMsg {
     bool found;
-    char* funcName;
+    const char* funcName;
 } DynMsg;
 
 DynMsg* MallocDynMsg(void);
@@ -95,7 +103,17 @@ bool LoadDynFuncCertVerifyCallback(DynMsg* dynMsg);
 bool LoadDynFuncForCustomVerifyCallback(DynMsg* dynMsg);
 bool LoadDynForInfoCallback(DynMsg* dynMsg);
 
-void DynPopFree(void* extlist, char* funcName, DynMsg* dynMsg);
+/**
+ * Free a stack of OpenSSL objects using a named destructor function.
+ *
+ * @param extlist The stack to free
+ * @param funcName Name of the destructor function (e.g., "GENERAL_NAME_free").
+ *                 MUST be a string literal or have static storage duration.
+ *                 The pointer is stored in dynMsg and must remain valid
+ *                 for the lifetime of the DynMsg structure.
+ * @param dynMsg Dynamic message for error reporting
+ */
+void DynPopFree(void* extlist, const char* funcName, DynMsg* dynMsg);
 
 #define DECLAREFUNCTION0(name, type0) type0 DYN_##name(DynMsg* dynMsg);
 #define DECLAREFUNCTION1(name, type0, type1) type0 DYN_##name(type1 arg1, DynMsg* dynMsg);
