@@ -431,10 +431,10 @@ import stdx.net.tls.*
 main() {
     // 创建一个TlsClientConfig实例
     var config = TlsClientConfig()
-    
+
     // 设置安全级别
     config.securityLevel = 3
-    
+
     println("安全级别设置为: ${config.securityLevel}")
 }
 ```
@@ -624,7 +624,7 @@ main(): Unit {
         config.supportedAlpnProtocols = ["h2", "http/1.1"]
 
         // 启动 TCP 服务器
-        try (server = TcpServerSocket(bindAt: 8443)) {
+        try (server = TcpServerSocket(bindAt: 8445)) {
             // 绑定并监听
             server.bind()
             // 接受客户端连接，如果需要多次连接，可以使用循环，参考模块下示例教程
@@ -649,7 +649,7 @@ main(): Unit {
     config.supportedAlpnProtocols = ["h2", "http/1.1"]
 
     // 连接服务器
-    try (socket = TcpSocket("127.0.0.1", 8443)) {
+    try (socket = TcpSocket("127.0.0.1", 8445)) {
         // 首先进行 TCP 连接
         socket.connect()
         // 创建 TLS 套接字并进行握手
@@ -722,7 +722,7 @@ main(): Unit {
         config.supportedVersions = [V1_3]
 
         // 启动 TCP 服务器
-        try (server = TcpServerSocket(bindAt: 8443)) {
+        try (server = TcpServerSocket(bindAt: 8448)) {
             // 绑定并监听
             server.bind()
             // 接受客户端连接，如果需要多次连接，可以使用循环，参考模块下示例教程
@@ -749,7 +749,7 @@ main(): Unit {
     config.supportedCipherSuites[V1_3] = ["TLS_AES_256_GCM_SHA384"]
 
     // 连接服务器
-    try (socket = TcpSocket("127.0.0.1", 8443)) {
+    try (socket = TcpSocket("127.0.0.1", 8448)) {
         // 首先进行 TCP 连接
         socket.connect()
         // 创建 TLS 套接字并进行握手
@@ -867,7 +867,7 @@ main(): Unit {
 
     // 客户端配置 
     var config = TlsClientConfig()
-    
+
     // 设置认证模式：根据提供的 CA 列表与系统 CA 验证服务端的证书
     config.verifyMode = CustomCA(X509Certificate.decodeFromPem(pem).map({c => c}))
 
@@ -1290,7 +1290,7 @@ main(): Unit {
         println("服务端支持的 TLS 1.3 密码套件: ${config.supportedCipherSuites[TlsVersion.V1_3]}")
 
         // 启动 TCP 服务器
-        try (server = TcpServerSocket(bindAt: 8443)) {
+        try (server = TcpServerSocket(bindAt: 8449)) {
             // 绑定并监听
             server.bind()
             // 接受客户端连接
@@ -1310,14 +1310,14 @@ main(): Unit {
     // 客户端配置
     var config = TlsClientConfig()
     config.verifyMode = TrustAll
-    
+
     // 设置支持的密码套件
     config.supportedVersions = [TlsVersion.V1_2, TlsVersion.V1_3]
     config.supportedCipherSuites[TlsVersion.V1_2] = ["ECDHE-RSA-AES128-GCM-SHA256"]
     config.supportedCipherSuites[TlsVersion.V1_3] = ["TLS_AES_256_GCM_SHA384"]
 
     // 连接服务器
-    try (socket = TcpSocket("127.0.0.1", 8443)) {
+    try (socket = TcpSocket("127.0.0.1", 8449)) {
         // 首先进行 TCP 连接
         socket.connect()
         // 创建 TLS 套接字并进行握手

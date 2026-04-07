@@ -226,7 +226,7 @@ CloseWebFrame
 ContinuationWebFrame
 ```
 
-功能：定义 websocket 协议中的未结束的分片帧。
+功能：定义 websocket 协议中的未结束的分段帧。
 
 ### PingWebFrame
 

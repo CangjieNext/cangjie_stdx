@@ -1432,7 +1432,7 @@ main() {
         let config = TlsServerConfig(certificate, privateKey)
 
         // 启动 TCP 服务器
-        try (server = TcpServerSocket(bindAt: 8443)) {
+        try (server = TcpServerSocket(bindAt: 8446)) {
             // 绑定并监听
             server.bind()
             // 接受客户端连接，如果需要多次连接，可以使用循环，参考模块下示例教程
@@ -1456,7 +1456,7 @@ main() {
     config.verifyMode = TrustAll
 
     // 连接服务器
-    try (socket = TcpSocket("127.0.0.1", 8443)) {
+    try (socket = TcpSocket("127.0.0.1", 8446)) {
         // 首先进行 TCP 连接
         socket.connect()
         // 创建 TLS 套接字并进行握手
@@ -1972,7 +1972,7 @@ main() {
         let config = TlsServerConfig(certificate, privateKey)
 
         // 启动 TCP 服务器
-        try (server = TcpServerSocket(bindAt: 8443)) {
+        try (server = TcpServerSocket(bindAt: 8444)) {
             // 绑定并监听
             server.bind()
             // 接受客户端连接，如果需要多次连接，可以使用循环，参考模块下示例教程
@@ -1998,7 +1998,7 @@ main() {
     config.verifyMode = TrustAll
 
     // 连接服务器
-    try (socket = TcpSocket("127.0.0.1", 8443)) {
+    try (socket = TcpSocket("127.0.0.1", 8444)) {
         // 首先进行 TCP 连接
         socket.connect()
         // 创建 TLS 套接字并进行握手
