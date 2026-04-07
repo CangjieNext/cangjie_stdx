@@ -115,13 +115,14 @@ class HttpNormalBody <: SeekableInputStream {
     HttpNormalBody(let body: HttpNormalBodyProvider) {
         contentLength = body.length
         remainingLength = contentLength
-        data = Array<Byte>(contentLength, repeat: 0)
-        var len = 0
-        var readLen = 0
-        do {
-            len = body.read(data[readLen..])
-            readLen += len
-        } while (len != 0)
+        let buf = Array<Byte>(4096, repeat: 0)
+        let chunks = ArrayList<Byte>()
+        var len = body.read(buf)
+        while (len != 0) {
+            chunks.add(all: buf[..len])
+            len = body.read(buf)
+        }
+        data = chunks.toArray()
     }
 
     public prop length: Int64 {
