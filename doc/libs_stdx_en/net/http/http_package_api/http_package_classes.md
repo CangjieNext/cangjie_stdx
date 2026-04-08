@@ -945,7 +945,7 @@ Parameters:
 - name: String - The cookie-name attribute.
 
     ```cangjie
-    name         = token 
+    name         = token
     token        = 1*tchar
     tchar        = "!" / "#" / "$" / "%" / "&" / "'" / "*"
                    / "+" / "-" / "." / "^" / "_" / "`" / "|" / "~"
@@ -1087,7 +1087,7 @@ Parameters:
 - path: String - The file or directory path string for [FileHandler](http_package_classes.md#class-filehandler) construction. In upload mode, only existing directory paths are allowed. If the path contains "../", ensure the normalized absolute path matches the intended input.
 - handlerType!: [FileHandlerType](http_package_enums.md#enum-filehandlertype) - Specifies the working mode of [FileHandler](http_package_classes.md#class-filehandler). Default is DownLoad mode.
 - bufferSize!: Int64 - Internal buffer size for network read/write operations. Default is 64*1024 (64k). If less than 4096, 4096 is used.
-- validator!: (String) -> Bool - The user-defined file name validation function(only effective in upload mode). It takes the filename of the uploaded file as the parameter from the multipart request, and returns the validation result from the user-defined function. If the result is false, the upload request is interrupted, a '400 Bad Request' response is returned, and any files already uploaded to the path directory are deleted. 
+- validator!: (String) -> Bool - The user-defined file name validation function(only effective in upload mode). It takes the filename of the uploaded file as the parameter from the multipart request, and returns the validation result from the user-defined function. If the result is false, the upload request is interrupted, a '400 Bad Request' response is returned, and any files already uploaded to the path directory are deleted.
 
 Exceptions:
 
@@ -2792,7 +2792,7 @@ Type: Duration
 public prop readTimeout: Duration
 ```
 
-Functionality: Gets the server-set timeout for reading the entire request.
+Functionality: Gets the server-set timeout for reading the entire request. It is recommended to configure this explicitly in production. If left unlimited by default, slow requests may hold server connections and resources for a long time, increasing the risk of slow-request attacks.
 
 Type: Duration
 
@@ -2822,7 +2822,7 @@ Type: [TransportConfig](http_package_structs.md#struct-transportconfig)
 public prop writeTimeout: Duration
 ```
 
-Function: Get the server's configured write response timeout duration.
+Function: Get the server's configured write response timeout duration. It is recommended to configure this explicitly in production. If left unlimited by default, slow reads or writes may hold server connections and resources for a long time, increasing the risk of slow-connection attacks.
 
 Type: Duration
 
@@ -3390,7 +3390,7 @@ Return Value:
 public func readTimeout(timeout: Duration): ServerBuilder
 ```
 
-Function: Sets the maximum duration for reading a complete request. Closes connection if exceeded. Default is unlimited.
+Function: Sets the maximum duration for reading a complete request. Closes connection if exceeded. Default is unlimited. It is recommended to set this explicitly in production. Otherwise, slow requests may keep connections and server resources occupied for too long, increasing the risk of slow-request attacks.
 
 Parameters:
 
@@ -3454,7 +3454,7 @@ Return Value:
 public func writeTimeout(timeout: Duration): ServerBuilder
 ```
 
-Function: Set the maximum duration for the server to send a response. Exceeding this duration will stop writing and close the connection. By default, there is no limit.
+Function: Set the maximum duration for the server to send a response. Exceeding this duration will stop writing and close the connection. By default, there is no limit. It is recommended to set this explicitly in production. Otherwise, slow reads or writes may keep connections and server resources occupied for too long, increasing the risk of slow-connection attacks.
 
 Parameters:
 
@@ -3502,7 +3502,7 @@ Type: String
 ```cangjie
 public static func upgradeFromClient(client: Client, url: URL,
  version!: Protocol = HTTP1_1,
- subProtocols!: ArrayList<String> = ArrayList<String>(), 
+ subProtocols!: ArrayList<String> = ArrayList<String>(),
  headers!: HttpHeaders = HttpHeaders()): (WebSocket, HttpHeaders)
 ```
 
@@ -3533,8 +3533,8 @@ Exceptions:
 ### static func upgradeFromServer(HttpContext, ArrayList\<String>, ArrayList\<String>, (HttpRequest) -> HttpHeaders)
 
 ```cangjie
-public static func upgradeFromServer(ctx: HttpContext, subProtocols!: ArrayList<String> = ArrayList<String>(), 
-                                        origins!: ArrayList<String> = ArrayList<String>(), 
+public static func upgradeFromServer(ctx: HttpContext, subProtocols!: ArrayList<String> = ArrayList<String>(),
+                                        origins!: ArrayList<String> = ArrayList<String>(),
                                         userFunc!:(HttpRequest) -> HttpHeaders = {_: HttpRequest => HttpHeaders()}): WebSocket
 ```
 
