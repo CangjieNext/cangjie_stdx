@@ -76,15 +76,15 @@ void* DYN_OPENSSL_secure_malloc(size_t num, DynMsg* dynMsg);
 void DYN_OPENSSL_secure_free(void* ptr, DynMsg* dynMsg);
 void* DYN_OPENSSL_zalloc(size_t num, DynMsg* dynMsg);
 
-int DYN_SSL_CTX_set_min_proto_version(SSL_CTX* ctx, int version, DynMsg* dynMsg);
-int DYN_SSL_CTX_set_max_proto_version(SSL_CTX* ctx, int version, DynMsg* dynMsg);
+long DYN_SSL_CTX_set_min_proto_version(SSL_CTX* ctx, int version, DynMsg* dynMsg);
+long DYN_SSL_CTX_set_max_proto_version(SSL_CTX* ctx, int version, DynMsg* dynMsg);
 long DYN_SSL_CTX_set_dh_auto(SSL_CTX* ctx, int onoff, DynMsg* dynMsg);
-int DYN_SSL_CTX_add0_chain_cert(SSL_CTX* ctx, X509* x509, DynMsg* dynMsg);
+long DYN_SSL_CTX_add0_chain_cert(SSL_CTX* ctx, X509* x509, DynMsg* dynMsg);
 long DYN_SSL_CTX_set_mode(SSL_CTX* ctx, long mode, DynMsg* dynMsg);
 long DYN_SSL_CTX_set1_sigalgs_list(SSL_CTX* ctx, const char* str, DynMsg* dynMsg);
 long DYN_SSL_CTX_set_session_cache_mode(SSL_CTX* ctx, long mode, DynMsg* dynMsg);
 
-size_t DYN_BIO_pending(BIO* b, DynMsg* dynMsg);
+long DYN_BIO_pending(BIO* b, DynMsg* dynMsg);
 int DYN_BIO_eof(BIO* b, DynMsg* dynMsg);
 void DYN_BIO_clear_retry_flags(BIO* b, DynMsg* dynMsg);
 long DYN_BIO_get_mem_ptr(BIO* b, BUF_MEM** pp, DynMsg* dynMsg);
