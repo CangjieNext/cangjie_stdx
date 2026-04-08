@@ -370,6 +370,21 @@ static bool TryLoadBackendPair(const OpenSslBackendCandidate* candidates, size_t
     return false;
 }
 
+/*
+ * Classify whether a symbol belongs to libssl or libcrypto.
+ *
+ * This classification is used to optimize symbol lookup by choosing the most likely handle first.
+ * The classification may not be exhaustive (e.g., PEM_read_bio_SSL_SESSION or future OpenSSL
+ * SSL-only symbols may be missed), but this is safe because:
+ *
+ * 1. Fallback mechanism: When a symbol is not found in the preferred handle, the lookup logic
+ *    (see GetSymbolAddressImpl) will try the other handle, provided the two handles are different.
+ * 2. Single-handle case: When g_singletonHandle == g_singletonHandleSsl (e.g., in fallback mode
+ *    where both point to the same library), the classification has no effect at all.
+ *
+ * Worst case: An extra dlsym call is made, which has negligible performance impact.
+ * The fallback ensures correctness even with incomplete classification.
+ */
 static bool IsSslSymbol(const char* name)
 {
     return strncmp(name, "SSL_", strlen("SSL_")) == 0 ||
