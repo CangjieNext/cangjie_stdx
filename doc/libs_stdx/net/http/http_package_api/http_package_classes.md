@@ -32,11 +32,11 @@ main() {
     // 创建启用自动重定向的Client
     let client = ClientBuilder().build()
     println("默认自动重定向设置: ${client.autoRedirect}")
-    
+
     // 创建禁用自动重定向的Client
     let noRedirectClient = ClientBuilder().autoRedirect(false).build()
     println("禁用自动重定向设置: ${noRedirectClient.autoRedirect}")
-    
+
     client.close()
     noRedirectClient.close()
 }
@@ -108,20 +108,20 @@ import stdx.net.http.*
 main() {
     // 创建Client实例
     let client = ClientBuilder().build()
-    
+
     // 检查默认的cookieJar设置
     match (client.cookieJar) {
         case Some(jar) => println("默认启用了CookieJar")
         case None => println("默认未启用CookieJar")
     }
-    
+
     // 创建禁用Cookie的Client
     let noCookieClient = ClientBuilder().cookieJar(None).build()
     match (noCookieClient.cookieJar) {
         case Some(_) => println("CookieJar仍然启用")
         case None => println("已禁用CookieJar")
     }
-    
+
     client.close()
     noCookieClient.close()
 }
@@ -153,14 +153,14 @@ import stdx.net.http.*
 main() {
     // 创建Client实例
     let client = ClientBuilder().build()
-    
+
     // 检查默认的HTTP/2推送设置
     println("默认HTTP/2推送设置: ${client.enablePush}")
-    
+
     // 创建禁用HTTP/2推送的Client
     let noPushClient = ClientBuilder().enablePush(false).build()
     println("禁用HTTP/2推送设置: ${noPushClient.enablePush}")
-    
+
     client.close()
     noPushClient.close()
 }
@@ -192,14 +192,14 @@ import stdx.net.http.*
 main() {
     // 创建Client实例
     let client = ClientBuilder().build()
-    
+
     // 获取默认的HTTP/2头部表大小
     println("默认HTTP/2头部表大小: ${client.headerTableSize}")
-    
+
     // 创建自定义头部表大小的Client
     let customClient = ClientBuilder().headerTableSize(8192).build()
     println("自定义HTTP/2头部表大小: ${customClient.headerTableSize}")
-    
+
     client.close()
     customClient.close()
 }
@@ -256,7 +256,7 @@ main() {
 运行结果：
 
 ```text
-默认HTTP代理: 
+默认HTTP代理:
 拥有环境变量的HTTP代理: http://192.168.1.1:8080
 自定义HTTP代理: http://192.168.1.1:8081
 ```
@@ -305,7 +305,7 @@ main() {
 运行结果：
 
 ```text
-默认HTTPS代理: 
+默认HTTPS代理:
 拥有环境变量的HTTPS代理: http://192.168.1.1:8080
 自定义HTTPS代理: http://192.168.1.1:8080
 ```
@@ -329,14 +329,14 @@ import stdx.net.http.*
 main() {
     // 创建Client实例
     let client = ClientBuilder().build()
-    
+
     // 获取默认的HTTP/2初始窗口大小
     println("默认HTTP/2初始窗口大小: ${client.initialWindowSize}")
-    
+
     // 创建自定义窗口大小的Client
     let customClient = ClientBuilder().initialWindowSize(131072).build()
     println("自定义HTTP/2初始窗口大小: ${customClient.initialWindowSize}")
-    
+
     client.close()
     customClient.close()
 }
@@ -376,7 +376,7 @@ main() {
     // 获取当前日志记录器等级
     let defaultLogger = client.logger
     println("当前日志记录器等级: ${defaultLogger.level}")
-    
+
     client.close()
 }
 ```
@@ -406,14 +406,14 @@ import stdx.net.http.*
 main() {
     // 创建Client实例
     let client = ClientBuilder().build()
-    
+
     // 获取默认的HTTP/2最大并发流数
     println("默认HTTP/2最大并发流数: ${client.maxConcurrentStreams}")
-    
+
     // 创建自定义并发流数的Client
     let customClient = ClientBuilder().maxConcurrentStreams(100).build()
     println("自定义HTTP/2最大并发流数: ${customClient.maxConcurrentStreams}")
-    
+
     client.close()
     customClient.close()
 }
@@ -445,14 +445,14 @@ import stdx.net.http.*
 main() {
     // 创建Client实例
     let client = ClientBuilder().build()
-    
+
     // 获取默认的HTTP/2最大帧大小
     println("默认HTTP/2最大帧大小: ${client.maxFrameSize}")
-    
+
     // 创建自定义帧大小的Client
     let customClient = ClientBuilder().maxFrameSize(32768).build()
     println("自定义HTTP/2最大帧大小: ${customClient.maxFrameSize}")
-    
+
     client.close()
     customClient.close()
 }
@@ -484,14 +484,14 @@ import stdx.net.http.*
 main() {
     // 创建Client实例
     let client = ClientBuilder().build()
-    
+
     // 获取默认的HTTP/2最大头部列表大小
     println("默认HTTP/2最大头部列表大小: ${client.maxHeaderListSize}")
-    
+
     // 创建自定义头部列表大小的Client
     let customClient = ClientBuilder().maxHeaderListSize(65536).build()
     println("自定义HTTP/2最大头部列表大小: ${customClient.maxHeaderListSize}")
-    
+
     client.close()
     customClient.close()
 }
@@ -523,14 +523,14 @@ import stdx.net.http.*
 main() {
     // 创建Client实例
     let client = ClientBuilder().build()
-    
+
     // 获取默认的连接池大小
     println("默认连接池大小: ${client.poolSize}")
-    
+
     // 创建自定义连接池大小的Client
     let customClient = ClientBuilder().poolSize(20).build()
     println("自定义连接池大小: ${customClient.poolSize}")
-    
+
     client.close()
     customClient.close()
 }
@@ -562,14 +562,14 @@ import stdx.net.http.*
 main() {
     // 创建Client实例
     let client = ClientBuilder().build()
-    
+
     // 获取默认的读取超时时间
     println("默认读取超时时间: ${client.readTimeout}")
-    
+
     // 创建自定义读取超时时间的Client
     let customClient = ClientBuilder().readTimeout(Duration.second * 30).build()
     println("自定义读取超时时间: ${customClient.readTimeout}")
-    
+
     client.close()
     customClient.close()
 }
@@ -601,14 +601,14 @@ import stdx.net.http.*
 main() {
     // 创建Client实例
     let client = ClientBuilder().build()
-    
+
     // 获取默认的写入超时时间
     println("默认写入超时时间: ${client.writeTimeout}")
-    
+
     // 创建自定义写入超时时间的Client
     let customClient = ClientBuilder().writeTimeout(Duration.second * 30).build()
     println("自定义写入超时时间: ${customClient.writeTimeout}")
-    
+
     client.close()
     customClient.close()
 }
@@ -638,7 +638,7 @@ import stdx.net.http.*
 main() {
     // 创建Client实例
     let client = ClientBuilder().build()
-    
+
     // 关闭Client
     client.close()
 }
@@ -859,13 +859,13 @@ import stdx.net.http.*
 main() {
     // 创建普通Client实例
     let client = ClientBuilder().build()
-    
+
     // 检查默认的TLS配置
     match (client.getTlsConfig()) {
         case Some(config) => println("找到了TLS配置")
         case None => println("未设置TLS配置")
     }
-    
+
     client.close()
 }
 ```
@@ -1122,7 +1122,7 @@ main() {
                     let bodyBuf = Array<UInt8>(1024, repeat: 0)
                     let readLength = httpContext.request.body.read(bodyBuf)
                     println("服务端收到请求体: ${String.fromUtf8(bodyBuf[..readLength])}")
-                    
+
                     httpContext.responseBuilder.status(200).body("收到${readLength}字节的流式POST请求")
                 } else {
                     httpContext.responseBuilder.status(405).body("Method Not Allowed")
@@ -1203,7 +1203,7 @@ main() {
                     let readLength = httpContext.request.body.read(bodyBuf)
                     let requestBody = String.fromUtf8(bodyBuf[..readLength])
                     println("服务端收到请求体: ${requestBody}")
-                    
+
                     httpContext.responseBuilder.status(200).body("收到POST请求，内容长度: ${readLength}")
                 } else {
                     httpContext.responseBuilder.status(405).body("Method Not Allowed")
@@ -1359,7 +1359,7 @@ main() {
                     let readLength = httpContext.request.body.read(bodyBuf)
                     let requestBody = String.fromUtf8(bodyBuf[..readLength])
                     println("服务端收到请求体: ${requestBody}")
-                    
+
                     httpContext.responseBuilder.status(200).body("收到${readLength}字节的流式PUT请求")
                 } else {
                     httpContext.responseBuilder.status(405).body("Method Not Allowed")
@@ -2021,7 +2021,7 @@ main() {
 运行结果：
 
 ```text
-即使有代理设置，客户端也不会使用代理: 
+即使有代理设置，客户端也不会使用代理:
 ```
 
 ### func poolSize(Int64)
@@ -2286,7 +2286,7 @@ public init(name: String, value: String, expires!: ?DateTime = None, maxAge!: ?I
 - name: String - cookie-name 属性。
 
     ```text
-    name         = token 
+    name         = token
     token        = 1*tchar
     tchar        = "!" / "#" / "$" / "%" / "&" / "'" / "*"
                    / "+" / "-" / "." / "^" / "_" / "`" / "|" / "~"
@@ -2833,7 +2833,7 @@ main(): Unit {
     let rootCmd = "openssl req -x509 -newkey rsa:4096 -nodes -keyout ${rootKey} -out ${rootCrt} -days 3650 -subj \"/C=CN/ST=Beijing/L=Beijing/O=MyCA/OU=CA/CN=MyRootCA\""
     executeWithOutput("sh", ["-c", rootCmd])
 
-    // 生成服务器私钥+证书请求（CSR） 
+    // 生成服务器私钥+证书请求（CSR）
     let csrCmd = "openssl req -newkey rsa:2048 -nodes -keyout ${serverKey} -out ${serverCsr} -subj \"/C=CN/ST=Beijing/L=Beijing/O=MyServer/OU=Server/CN=localhost\""
     executeWithOutput("sh", ["-c", csrCmd])
 
@@ -2855,7 +2855,7 @@ main(): Unit {
     // 启动服务器
     spawn {
         =>
-            // 对服务器证书以及私钥进行解析 
+            // 对服务器证书以及私钥进行解析
             let pemString = String.fromUtf8(readToEnd(File(serverCrt, OpenMode.Read)))
             let keyString = String.fromUtf8(readToEnd(File(serverKey, OpenMode.Read)))
 
@@ -2956,7 +2956,7 @@ main() {
 
     // 创建 Client
     let client = ClientBuilder().build()
-    
+
     // 发送GET请求
     let resp = client.get("http://127.0.0.1:8080/index")
 
@@ -6225,7 +6225,7 @@ protected prop readHeaderTimeout: Duration
 protected prop readTimeout: Duration
 ```
 
-功能：获取服务器设定的读取整个请求的超时时间。
+功能：获取服务器设定的读取整个请求的超时时间。建议在生产环境中显式配置该项。如果保持默认不超时，服务端连接和资源可能被慢速请求长期占用，增加遭受慢请求类攻击的风险。
 
 类型：Duration
 
@@ -6245,7 +6245,7 @@ protected open mut prop server: Server
 protected prop writeTimeout: Duration
 ```
 
-功能：获取服务器设定的写响应的超时时间。
+功能：获取服务器设定的写响应的超时时间。建议在生产环境中显式配置该项。如果保持默认不超时，服务端连接和资源可能被慢速读写长期占用，增加遭受慢连接类攻击的风险。
 
 类型：Duration
 
@@ -9059,7 +9059,7 @@ httpKeepAliveTimeout = 3s
 public func readTimeout(timeout: Duration): ServerBuilder
 ```
 
-功能：设定服务端读取一个请求的最大时长，超过该时长将不再进行读取并关闭连接，默认不进行限制。
+功能：设定服务端读取一个请求的最大时长，超过该时长将不再进行读取并关闭连接，默认不进行限制。建议在生产环境中显式设置该值；若不配置，服务端可能因慢速请求长期占用连接和资源，增加遭受慢请求类攻击的风险。
 
 参数：
 
@@ -9236,7 +9236,7 @@ transport.readBufferSize = 8192
 public func writeTimeout(timeout: Duration): ServerBuilder
 ```
 
-功能：设定服务端发送一个响应的最大时长，超过该时长将不再进行写入并关闭连接，默认不进行限制。
+功能：设定服务端发送一个响应的最大时长，超过该时长将不再进行写入并关闭连接，默认不进行限制。建议在生产环境中显式设置该值；若不配置，服务端可能因慢速读写长期占用连接和资源，增加遭受慢连接类攻击的风险。
 
 参数：
 
@@ -9404,8 +9404,8 @@ ws.logger.level = ERROR
 ### static func upgradeFromServer(HttpContext, ArrayList\<String>, ArrayList\<String>, (HttpRequest) -> HttpHeaders)
 
 ```cangjie
-public static func upgradeFromServer(ctx: HttpContext, subProtocols!: ArrayList<String> = ArrayList<String>(), 
-                                        origins!: ArrayList<String> = ArrayList<String>(), 
+public static func upgradeFromServer(ctx: HttpContext, subProtocols!: ArrayList<String> = ArrayList<String>(),
+                                        origins!: ArrayList<String> = ArrayList<String>(),
                                         userFunc!:(HttpRequest) -> HttpHeaders = {_: HttpRequest => HttpHeaders()}): WebSocket
 ```
 
