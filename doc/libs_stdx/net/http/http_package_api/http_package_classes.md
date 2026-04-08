@@ -6225,7 +6225,7 @@ protected prop readHeaderTimeout: Duration
 protected prop readTimeout: Duration
 ```
 
-功能：获取服务器设定的读取整个请求的超时时间。
+功能：获取服务器设定的读取整个请求的超时时间。建议在生产环境中显式配置该项；如果保持默认不超时，服务端连接和资源可能被慢速请求长期占用，增加遭受慢请求类攻击的风险。
 
 类型：Duration
 
@@ -6245,7 +6245,7 @@ protected open mut prop server: Server
 protected prop writeTimeout: Duration
 ```
 
-功能：获取服务器设定的写响应的超时时间。
+功能：获取服务器设定的写响应的超时时间。建议在生产环境中显式配置该项；如果保持默认不超时，服务端连接和资源可能被慢速读写长期占用，增加遭受慢连接类攻击的风险。
 
 类型：Duration
 
@@ -9059,7 +9059,7 @@ httpKeepAliveTimeout = 3s
 public func readTimeout(timeout: Duration): ServerBuilder
 ```
 
-功能：设定服务端读取一个请求的最大时长，超过该时长将不再进行读取并关闭连接，默认不进行限制。
+功能：设定服务端读取一个请求的最大时长，超过该时长将不再进行读取并关闭连接，默认不进行限制。建议在生产环境中显式设置该值；若不配置，服务端可能因慢速请求长期占用连接和资源，增加遭受慢请求类攻击的风险。
 
 参数：
 
@@ -9236,7 +9236,7 @@ transport.readBufferSize = 8192
 public func writeTimeout(timeout: Duration): ServerBuilder
 ```
 
-功能：设定服务端发送一个响应的最大时长，超过该时长将不再进行写入并关闭连接，默认不进行限制。
+功能：设定服务端发送一个响应的最大时长，超过该时长将不再进行写入并关闭连接，默认不进行限制。建议在生产环境中显式设置该值；若不配置，服务端可能因慢速读写长期占用连接和资源，增加遭受慢连接类攻击的风险。
 
 参数：
 
