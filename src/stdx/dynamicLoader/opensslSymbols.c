@@ -834,58 +834,58 @@ void DYN_OPENSSL_secure_free(void* ptr, DynMsg* dynMsg)
     return func(ptr, OPENSSL_FILE, OPENSSL_LINE);
 }
 
-int DYN_SSL_CTX_set_min_proto_version(SSL_CTX* ctx, int version, DynMsg* dynMsg)
+long DYN_SSL_CTX_set_min_proto_version(SSL_CTX* ctx, int version, DynMsg* dynMsg)
 {
-    typedef int (*SSLFunc)(SSL_CTX*, int, long, void*);
+    typedef long (*SSLFunc)(SSL_CTX*, int, long, void*);
     FINDFUNCTION(dynMsg, SSL_CTX_ctrl, -1)
-    return func(ctx, SSL_CTRL_SET_MIN_PROTO_VERSION, version, NULL);
+    return func(ctx, SSL_CTRL_SET_MIN_PROTO_VERSION, (long)version, NULL);
 }
 
-int DYN_SSL_CTX_set_max_proto_version(SSL_CTX* ctx, int version, DynMsg* dynMsg)
+long DYN_SSL_CTX_set_max_proto_version(SSL_CTX* ctx, int version, DynMsg* dynMsg)
 {
-    typedef int (*SSLFunc)(SSL_CTX*, int, long, void*);
+    typedef long (*SSLFunc)(SSL_CTX*, int, long, void*);
     FINDFUNCTION(dynMsg, SSL_CTX_ctrl, -1)
-    return func(ctx, SSL_CTRL_SET_MAX_PROTO_VERSION, version, NULL);
+    return func(ctx, SSL_CTRL_SET_MAX_PROTO_VERSION, (long)version, NULL);
 }
 
 long DYN_SSL_CTX_set_dh_auto(SSL_CTX* ctx, int onoff, DynMsg* dynMsg)
 {
-    typedef int (*SSLFunc)(SSL_CTX*, int, long, void*);
+    typedef long (*SSLFunc)(SSL_CTX*, int, long, void*);
     FINDFUNCTION(dynMsg, SSL_CTX_ctrl, 0)
-    return func(ctx, SSL_CTRL_SET_DH_AUTO, onoff, NULL);
+    return func(ctx, SSL_CTRL_SET_DH_AUTO, (long)onoff, NULL);
 }
 
-int DYN_SSL_CTX_add0_chain_cert(SSL_CTX* ctx, X509* x509, DynMsg* dynMsg)
+long DYN_SSL_CTX_add0_chain_cert(SSL_CTX* ctx, X509* x509, DynMsg* dynMsg)
 {
-    typedef int (*SSLFunc)(SSL_CTX*, int, long, void*);
+    typedef long (*SSLFunc)(SSL_CTX*, int, long, void*);
     FINDFUNCTION(dynMsg, SSL_CTX_ctrl, 0)
-    return func(ctx, SSL_CTRL_CHAIN_CERT, 0, (char*)(x509));
+    return func(ctx, SSL_CTRL_CHAIN_CERT, 0, (void*)(x509));
 }
 
 long DYN_SSL_CTX_set_mode(SSL_CTX* ctx, long mode, DynMsg* dynMsg)
 {
-    typedef int (*SSLFunc)(SSL_CTX*, int, long, void*);
+    typedef long (*SSLFunc)(SSL_CTX*, int, long, void*);
     FINDFUNCTION(dynMsg, SSL_CTX_ctrl, 0)
     return func((ctx), SSL_CTRL_MODE, (mode), NULL);
 }
 
 long DYN_SSL_CTX_set1_sigalgs_list(SSL_CTX* ctx, const char* str, DynMsg* dynMsg)
 {
-    typedef int (*SSLFunc)(SSL_CTX*, int, long, void*);
+    typedef long (*SSLFunc)(SSL_CTX*, int, long, void*);
     FINDFUNCTION(dynMsg, SSL_CTX_ctrl, 0)
-    return func(ctx, SSL_CTRL_SET_SIGALGS_LIST, 0, (char*)(str));
+    return func(ctx, SSL_CTRL_SET_SIGALGS_LIST, 0, (void*)(str));
 }
 
 long DYN_SSL_CTX_set_session_cache_mode(SSL_CTX* ctx, long mode, DynMsg* dynMsg)
 {
-    typedef int (*SSLFunc)(SSL_CTX*, int, long, void*);
+    typedef long (*SSLFunc)(SSL_CTX*, int, long, void*);
     FINDFUNCTION(dynMsg, SSL_CTX_ctrl, -1)
     return func(ctx, SSL_CTRL_SET_SESS_CACHE_MODE, mode, NULL);
 }
 
-size_t DYN_BIO_pending(BIO* b, DynMsg* dynMsg)
+long DYN_BIO_pending(BIO* b, DynMsg* dynMsg)
 {
-    typedef size_t (*SSLFunc)(BIO*, int, long, void*);
+    typedef long (*SSLFunc)(BIO*, int, long, void*);
     FINDFUNCTION(dynMsg, BIO_ctrl, 0)
     return func(b, BIO_CTRL_PENDING, 0, NULL);
 }
