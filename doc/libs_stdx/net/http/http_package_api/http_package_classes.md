@@ -1,42 +1,42 @@
 # 类
-
+    
 ## class Client
-
+    
 ```cangjie
 public class Client
 ```
-
+    
 功能：发送 Http request、随时关闭等。用户可以通过 Client 实例发送 HTTP/1.1 或 HTTP/2 请求。
-
+    
 > **说明：**
 >
 > [Client](http_package_classes.md#class-client) 文档中未明确说明支持版本的配置，在 HTTP/1.1 与 HTTP/2 都会生效。
-
+    
 ### prop autoRedirect
-
+    
 ```cangjie
 public prop autoRedirect: Bool
 ```
-
+    
 功能：客户端是否会自动进行重定向，304 状态码默认不重定向。
-
+    
 类型：Bool
-
+    
 示例：
-
+    
 <!-- verify -->
 ```cangjie
 import stdx.net.http.*
-
+    
 main() {
     // 创建启用自动重定向的Client
     let client = ClientBuilder().build()
     println("默认自动重定向设置: ${client.autoRedirect}")
-    
+
     // 创建禁用自动重定向的Client
     let noRedirectClient = ClientBuilder().autoRedirect(false).build()
     println("禁用自动重定向设置: ${noRedirectClient.autoRedirect}")
-    
+
     client.close()
     noRedirectClient.close()
 }
@@ -108,20 +108,20 @@ import stdx.net.http.*
 main() {
     // 创建Client实例
     let client = ClientBuilder().build()
-    
+
     // 检查默认的cookieJar设置
     match (client.cookieJar) {
         case Some(jar) => println("默认启用了CookieJar")
         case None => println("默认未启用CookieJar")
     }
-    
+
     // 创建禁用Cookie的Client
     let noCookieClient = ClientBuilder().cookieJar(None).build()
     match (noCookieClient.cookieJar) {
         case Some(_) => println("CookieJar仍然启用")
         case None => println("已禁用CookieJar")
     }
-    
+
     client.close()
     noCookieClient.close()
 }
@@ -153,14 +153,14 @@ import stdx.net.http.*
 main() {
     // 创建Client实例
     let client = ClientBuilder().build()
-    
+
     // 检查默认的HTTP/2推送设置
     println("默认HTTP/2推送设置: ${client.enablePush}")
-    
+
     // 创建禁用HTTP/2推送的Client
     let noPushClient = ClientBuilder().enablePush(false).build()
     println("禁用HTTP/2推送设置: ${noPushClient.enablePush}")
-    
+
     client.close()
     noPushClient.close()
 }
@@ -192,14 +192,14 @@ import stdx.net.http.*
 main() {
     // 创建Client实例
     let client = ClientBuilder().build()
-    
+
     // 获取默认的HTTP/2头部表大小
     println("默认HTTP/2头部表大小: ${client.headerTableSize}")
-    
+
     // 创建自定义头部表大小的Client
     let customClient = ClientBuilder().headerTableSize(8192).build()
     println("自定义HTTP/2头部表大小: ${customClient.headerTableSize}")
-    
+
     client.close()
     customClient.close()
 }
@@ -309,23 +309,23 @@ main() {
 拥有环境变量的HTTPS代理: http://192.168.1.1:8080
 自定义HTTPS代理: http://192.168.1.1:8080
 ```
-
+    
 ### prop initialWindowSize
-
+    
 ```cangjie
 public prop initialWindowSize: UInt32
 ```
-
+    
 功能：获取客户端 HTTP/2 流控窗口初始值，默认值为 65535 ，取值范围为 0 至 2^31 - 1。
-
+    
 类型：UInt32
-
+    
 示例：
-
+    
 <!-- verify -->
 ```cangjie
 import stdx.net.http.*
-
+    
 main() {
     // 创建Client实例
     let client = ClientBuilder().build()
@@ -341,38 +341,38 @@ main() {
     customClient.close()
 }
 ```
-
+    
 运行结果：
-
+    
 ```text
 默认HTTP/2初始窗口大小: 65535
 自定义HTTP/2初始窗口大小: 131072
 ```
-
+    
 ### prop logger
-
+    
 ```cangjie
 public prop logger: Logger
 ```
-
+    
 功能：获取客户端日志记录器，设置 logger.level 将立即生效，记录器应该是线程安全的。
-
+    
 类型：[Logger](../../../log/log_package_api/log_package_classes.md#class-logger)
-
+    
 示例：
-
+    
 <!-- verify -->
 ```cangjie
 import stdx.log.*
 import stdx.net.http.*
-
+    
 main() {
     // 创建Client实例
     let client = ClientBuilder().build()
-
+    
     // 只要设置就会生效
     client.logger.level = LogLevel.WARN
-
+    
     // 获取当前日志记录器等级
     let defaultLogger = client.logger
     println("当前日志记录器等级: ${defaultLogger.level}")
@@ -380,13 +380,13 @@ main() {
     client.close()
 }
 ```
-
+                    
 运行结果：
-
+                    
 ```text
 当前日志记录器等级: WARN
 ```
-
+                    
 ### prop maxConcurrentStreams
 
 ```cangjie
@@ -406,14 +406,14 @@ import stdx.net.http.*
 main() {
     // 创建Client实例
     let client = ClientBuilder().build()
-    
+
     // 获取默认的HTTP/2最大并发流数
     println("默认HTTP/2最大并发流数: ${client.maxConcurrentStreams}")
-    
+
     // 创建自定义并发流数的Client
     let customClient = ClientBuilder().maxConcurrentStreams(100).build()
     println("自定义HTTP/2最大并发流数: ${customClient.maxConcurrentStreams}")
-    
+
     client.close()
     customClient.close()
 }
@@ -445,14 +445,14 @@ import stdx.net.http.*
 main() {
     // 创建Client实例
     let client = ClientBuilder().build()
-    
+
     // 获取默认的HTTP/2最大帧大小
     println("默认HTTP/2最大帧大小: ${client.maxFrameSize}")
-    
+
     // 创建自定义帧大小的Client
     let customClient = ClientBuilder().maxFrameSize(32768).build()
     println("自定义HTTP/2最大帧大小: ${customClient.maxFrameSize}")
-    
+
     client.close()
     customClient.close()
 }
@@ -484,14 +484,14 @@ import stdx.net.http.*
 main() {
     // 创建Client实例
     let client = ClientBuilder().build()
-    
+
     // 获取默认的HTTP/2最大头部列表大小
     println("默认HTTP/2最大头部列表大小: ${client.maxHeaderListSize}")
-    
+
     // 创建自定义头部列表大小的Client
     let customClient = ClientBuilder().maxHeaderListSize(65536).build()
     println("自定义HTTP/2最大头部列表大小: ${customClient.maxHeaderListSize}")
-    
+
     client.close()
     customClient.close()
 }
@@ -523,14 +523,14 @@ import stdx.net.http.*
 main() {
     // 创建Client实例
     let client = ClientBuilder().build()
-    
+
     // 获取默认的连接池大小
     println("默认连接池大小: ${client.poolSize}")
-    
+
     // 创建自定义连接池大小的Client
     let customClient = ClientBuilder().poolSize(20).build()
     println("自定义连接池大小: ${customClient.poolSize}")
-    
+
     client.close()
     customClient.close()
 }
@@ -562,14 +562,14 @@ import stdx.net.http.*
 main() {
     // 创建Client实例
     let client = ClientBuilder().build()
-    
+
     // 获取默认的读取超时时间
     println("默认读取超时时间: ${client.readTimeout}")
-    
+
     // 创建自定义读取超时时间的Client
     let customClient = ClientBuilder().readTimeout(Duration.second * 30).build()
     println("自定义读取超时时间: ${customClient.readTimeout}")
-    
+
     client.close()
     customClient.close()
 }
@@ -601,14 +601,14 @@ import stdx.net.http.*
 main() {
     // 创建Client实例
     let client = ClientBuilder().build()
-    
+
     // 获取默认的写入超时时间
     println("默认写入超时时间: ${client.writeTimeout}")
-    
+
     // 创建自定义写入超时时间的Client
     let customClient = ClientBuilder().writeTimeout(Duration.second * 30).build()
     println("自定义写入超时时间: ${customClient.writeTimeout}")
-    
+
     client.close()
     customClient.close()
 }
@@ -638,7 +638,7 @@ import stdx.net.http.*
 main() {
     // 创建Client实例
     let client = ClientBuilder().build()
-    
+
     // 关闭Client
     client.close()
 }
@@ -859,13 +859,13 @@ import stdx.net.http.*
 main() {
     // 创建普通Client实例
     let client = ClientBuilder().build()
-    
+
     // 检查默认的TLS配置
     match (client.getTlsConfig()) {
         case Some(config) => println("找到了TLS配置")
         case None => println("未设置TLS配置")
     }
-    
+
     client.close()
 }
 ```
@@ -1122,7 +1122,7 @@ main() {
                     let bodyBuf = Array<UInt8>(1024, repeat: 0)
                     let readLength = httpContext.request.body.read(bodyBuf)
                     println("服务端收到请求体: ${String.fromUtf8(bodyBuf[..readLength])}")
-                    
+
                     httpContext.responseBuilder.status(200).body("收到${readLength}字节的流式POST请求")
                 } else {
                     httpContext.responseBuilder.status(405).body("Method Not Allowed")
@@ -1203,7 +1203,7 @@ main() {
                     let readLength = httpContext.request.body.read(bodyBuf)
                     let requestBody = String.fromUtf8(bodyBuf[..readLength])
                     println("服务端收到请求体: ${requestBody}")
-                    
+
                     httpContext.responseBuilder.status(200).body("收到POST请求，内容长度: ${readLength}")
                 } else {
                     httpContext.responseBuilder.status(405).body("Method Not Allowed")
@@ -1359,7 +1359,7 @@ main() {
                     let readLength = httpContext.request.body.read(bodyBuf)
                     let requestBody = String.fromUtf8(bodyBuf[..readLength])
                     println("服务端收到请求体: ${requestBody}")
-                    
+
                     httpContext.responseBuilder.status(200).body("收到${readLength}字节的流式PUT请求")
                 } else {
                     httpContext.responseBuilder.status(405).body("Method Not Allowed")
@@ -2858,7 +2858,7 @@ main(): Unit {
             // 对服务器证书以及私钥进行解析 
             let pemString = String.fromUtf8(readToEnd(File(serverCrt, OpenMode.Read)))
             let keyString = String.fromUtf8(readToEnd(File(serverKey, OpenMode.Read)))
-
+    
             let certificate = X509Certificate.decodeFromPem(pemString)
             let privateKey = GeneralPrivateKey.decodeFromPem(keyString)
 
@@ -2956,7 +2956,7 @@ main() {
 
     // 创建 Client
     let client = ClientBuilder().build()
-    
+
     // 发送GET请求
     let resp = client.get("http://127.0.0.1:8080/index")
 
@@ -6225,7 +6225,7 @@ protected prop readHeaderTimeout: Duration
 protected prop readTimeout: Duration
 ```
 
-功能：获取服务器设定的读取整个请求的超时时间。
+功能：获取服务器设定的读取整个请求的超时时间。建议在生产环境中显式配置该项。如果保持默认不超时，服务端连接和资源可能被慢速请求长期占用，增加遭受慢请求类攻击的风险。
 
 类型：Duration
 
@@ -6245,7 +6245,7 @@ protected open mut prop server: Server
 protected prop writeTimeout: Duration
 ```
 
-功能：获取服务器设定的写响应的超时时间。
+功能：获取服务器设定的写响应的超时时间。建议在生产环境中显式配置该项。如果保持默认不超时，服务端连接和资源可能被慢速读写长期占用，增加遭受慢连接类攻击的风险。
 
 类型：Duration
 
@@ -9059,7 +9059,7 @@ httpKeepAliveTimeout = 3s
 public func readTimeout(timeout: Duration): ServerBuilder
 ```
 
-功能：设定服务端读取一个请求的最大时长，超过该时长将不再进行读取并关闭连接，默认不进行限制。
+功能：设定服务端读取一个请求的最大时长，超过该时长将不再进行读取并关闭连接，默认不进行限制。建议在生产环境中显式设置该值。若不配置，服务端可能因慢速请求长期占用连接和资源，增加遭受慢请求类攻击的风险。
 
 参数：
 
@@ -9236,7 +9236,7 @@ transport.readBufferSize = 8192
 public func writeTimeout(timeout: Duration): ServerBuilder
 ```
 
-功能：设定服务端发送一个响应的最大时长，超过该时长将不再进行写入并关闭连接，默认不进行限制。
+功能：设定服务端发送一个响应的最大时长，超过该时长将不再进行写入并关闭连接，默认不进行限制。建议在生产环境中显式设置该值。若不配置，服务端可能因慢速读写长期占用连接和资源，增加遭受慢连接类攻击的风险。
 
 参数：
 

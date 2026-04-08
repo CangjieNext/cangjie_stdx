@@ -2792,7 +2792,7 @@ Type: Duration
 public prop readTimeout: Duration
 ```
 
-Functionality: Gets the server-set timeout for reading the entire request.
+Functionality: Gets the server-set timeout for reading the entire request. It is recommended to configure this explicitly in production. If left unlimited by default, slow requests may hold server connections and resources for a long time, increasing the risk of slow-request attacks.
 
 Type: Duration
 
@@ -2822,7 +2822,7 @@ Type: [TransportConfig](http_package_structs.md#struct-transportconfig)
 public prop writeTimeout: Duration
 ```
 
-Function: Get the server's configured write response timeout duration.
+Function: Get the server's configured write response timeout duration. It is recommended to configure this explicitly in production. If left unlimited by default, slow reads or writes may hold server connections and resources for a long time, increasing the risk of slow-connection attacks.
 
 Type: Duration
 
@@ -3390,7 +3390,7 @@ Return Value:
 public func readTimeout(timeout: Duration): ServerBuilder
 ```
 
-Function: Sets the maximum duration for reading a complete request. Closes connection if exceeded. Default is unlimited.
+Function: Sets the maximum duration for reading a complete request. Closes connection if exceeded. Default is unlimited. It is recommended to set this explicitly in production. Otherwise, slow requests may keep connections and server resources occupied for too long, increasing the risk of slow-request attacks.
 
 Parameters:
 
@@ -3454,7 +3454,7 @@ Return Value:
 public func writeTimeout(timeout: Duration): ServerBuilder
 ```
 
-Function: Set the maximum duration for the server to send a response. Exceeding this duration will stop writing and close the connection. By default, there is no limit.
+Function: Set the maximum duration for the server to send a response. Exceeding this duration will stop writing and close the connection. By default, there is no limit. It is recommended to set this explicitly in production. Otherwise, slow reads or writes may keep connections and server resources occupied for too long, increasing the risk of slow-connection attacks.
 
 Parameters:
 
