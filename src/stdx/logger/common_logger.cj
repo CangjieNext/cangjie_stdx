@@ -112,7 +112,7 @@ func logSimple(record: LogRecord, output: OutputStream): Unit {
     tw.writeMessage(record.level.toString())
     tw.writeMessage(' ')
     // write message
-    tw.writeMessage(record.message)
+    quotedReplace(tw.bo, record.message)
     tw.writeMessage(' ')
     // write source
 
