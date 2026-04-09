@@ -9,10 +9,10 @@
 package stdx.log
 
 import std.collection.ArrayList
-import std.sync.{AtomicUInt64, AtomicReference, Mutex, ReentrantMutex}
+import std.sync.{AtomicUInt64, AtomicReference, Mutex}
 
 let loggerHolderList = ArrayList<LoggerHolder>()
-let globalMtx = ReentrantMutex()
+let globalMtx = Mutex()
 
 class LoggerHolder <: Logger {
     static let id = AtomicUInt64(0)
@@ -60,9 +60,9 @@ class LoggerHolder <: Logger {
                     let nh = this.clone()
                     synchronized(globalMtx) {
                         loggerHolderList.add(nh)
+                        nh.level = this.level
+                        nh._attrs.add(all: attrs)
                     }
-                    nh.level = this.level
-                    nh._attrs.add(all: attrs)
                     return nh
                 }
                 return this
