@@ -51,13 +51,14 @@ class CommonLogger <: Logger {
     }
 
     public func log(record: LogRecord): Unit {
+        let localRecord = record.clone()
         let _as = this._attrs.clone()
-        _as.add(all: record.attrs)
-        record.attrs = unsafe { _as.getRawArray() }
+        _as.add(all: localRecord.attrs)
+        localRecord.attrs = _as.toArray()
         match (_mode) {
-            case LogStyle.SIMPLE => logSimple(record, o)
-            case LogStyle.TEXT => logText(record, o)
-            case LogStyle.JSON => logJson(record, o)
+            case LogStyle.SIMPLE => logSimple(localRecord, o)
+            case LogStyle.TEXT => logText(localRecord, o)
+            case LogStyle.JSON => logJson(localRecord, o)
         }
     }
 
