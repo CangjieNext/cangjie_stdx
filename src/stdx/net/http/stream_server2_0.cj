@@ -1213,10 +1213,13 @@ class WebSocketConn2 <: WebSocketConn {
     }
 
     public func readRaw(byteArray: Array<UInt8>): Int64 {
-        var len = streamingSocket.read(byteArray)
-        // websocket need to read until the buffer is full
-        if (len != 0 && len < byteArray.size) {
-            len += readRaw(byteArray[len..])
+        var len: Int64 = 0
+        while (len < byteArray.size) {
+            let singleReadLen = streamingSocket.read(byteArray[len..])
+            if (singleReadLen == 0) {
+                break
+            }
+            len += singleReadLen
         }
         return len
     }

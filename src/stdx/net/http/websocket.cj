@@ -96,7 +96,7 @@ public class WebSocket {
         synchronized(readMutex) {
             // read 16 bits
             let bytes = Array<UInt8>(2, repeat: 0)
-            conn.readRaw(bytes)
+            readExact(bytes, "frame header")
             frame = toWebSocketFrameFromFirstTwoBytes(bytes)
 
             // client --> server  must      mask
@@ -128,7 +128,7 @@ public class WebSocket {
 
             // read masking-key
             if (frame.mask) {
-                conn.readRaw(frame.maskingKey)
+                readExact(frame.maskingKey, "masking key")
             }
 
             // control frames cannot be fragmented and must have
@@ -150,6 +150,13 @@ public class WebSocket {
         return frame
     }
 
+    private func readExact(byteArray: Array<UInt8>, fieldName: String): Unit {
+        let len = conn.readRaw(byteArray)
+        if (len != byteArray.size) {
+            throw ConnectionException("Connection closed while reading websocket ${fieldName}.")
+        }
+    }
+
     private func updatePayloadLen(frame: WebSocketFrame): Unit {
         // read extended payload length.
         // match 7 bit payload len
@@ -159,14 +166,14 @@ public class WebSocket {
             // RFC 6455 5.2.
             case 126 =>
                 let extendedPayloadLength = Array<UInt8>(2, repeat: 0)
-                conn.readRaw(extendedPayloadLength)
+                readExact(extendedPayloadLength, "extended payload length")
                 frame.payloadLength = toInt64(extendedPayloadLength)
             // if 127, the following 8 bytes interpreted as a
             // 64-bit unsigned integer are the payload length.
             // RFC 6455 5.2.
             case 127 =>
                 let extendedPayloadLength = Array<UInt8>(8, repeat: 0)
-                conn.readRaw(extendedPayloadLength)
+                readExact(extendedPayloadLength, "extended payload length")
                 frame.payloadLength = toInt64(extendedPayloadLength)
             case _ => frame.payloadLength = Int64(frame.payloadLen)
         }
@@ -176,7 +183,7 @@ public class WebSocket {
         if (frame.payloadLength != 0) {
             checkFramePayloadLimit(frame.payloadLength)
             let payloadData = Array<UInt8>(frame.payloadLength, repeat: 0)
-            conn.readRaw(payloadData)
+            readExact(payloadData, "payload")
             // server must remove masking for data frames received from a client.
             frame._payload = if (!isClient) {
                 maskOrUnmask(frame.maskingKey, payloadData)

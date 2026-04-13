@@ -856,16 +856,19 @@ class Http2ClientBodyProvider <: InputStream & WebSocketConn & Resource {
         if (!isConnect) {
             throw HttpException("Not Connect response, call read.")
         }
-        var len: Int64
         try {
-            len = conn.read(byteArray)
-            if (len != 0 && len < byteArray.size) {
-                len += conn.read(byteArray[len..])
+            var len: Int64 = 0
+            while (len < byteArray.size) {
+                let singleReadLen = conn.read(byteArray[len..])
+                if (singleReadLen == 0) {
+                    break
+                }
+                len += singleReadLen
             }
+            return len
         } catch (e: Exception) {
             throw ConnectionException("Connection closed.")
         }
-        return len
     }
 
     public func writeRaw(byteArray: Array<UInt8>): Unit {
