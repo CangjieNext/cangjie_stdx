@@ -140,7 +140,7 @@ public class HMAC <: Digest {
         if (key.size <= 0) {
             throw CryptoException("The key cannot be empty.")
         }
-        this.key = key
+        this.key = key.clone()
         var ctxPtr = hmacCtxNew()
         if (ctxPtr.isNull()) {
             throw CryptoException("HMAC init failed, malloc failed.")
@@ -165,7 +165,7 @@ public class HMAC <: Digest {
             throw CryptoException("The key cannot be empty.")
         }
         this.hashName = algorithm.toString()
-        this.key = key
+        this.key = key.clone()
         this.hash = digest()
         var ctxPtr = hmacCtxNew()
         if (ctxPtr.isNull()) {

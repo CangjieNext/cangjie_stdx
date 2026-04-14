@@ -221,7 +221,7 @@ public class X509Certificate <: Certificate & Equatable<X509Certificate> & Hasha
         }
         // 2. Verify dnsName in dnsNames, optional.  dnsName String 一个DNS extensions
         if (verifyOption.dnsName != "") {
-            if (!(dnsNames |> contains<String>(verifyOption.dnsName))) {
+            if (!matchDnsName(verifyOption.dnsName)) {
                 return false
             }
         }
@@ -254,6 +254,40 @@ public class X509Certificate <: Certificate & Equatable<X509Certificate> & Hasha
 
     public override func hashCode(): Int64 {
         blob.hashCode()
+    }
+
+    private func matchDnsName(dnsName: String): Bool {
+        let lowerDnsName = dnsName.toAsciiLower()
+        for (pattern in dnsNames) {
+            let lowerPattern = pattern.toAsciiLower()
+            if (lowerPattern == lowerDnsName) {
+                return true
+            }
+            if (matchWildcard(lowerPattern, lowerDnsName)) {
+                return true
+            }
+        }
+        return false
+    }
+
+    private static func matchWildcard(pattern: String, dnsName: String): Bool {
+        let patternLabels = pattern.split(".")
+        let dnsLabels = dnsName.split(".")
+        if (patternLabels.size != dnsLabels.size) {
+            return false
+        }
+        if (patternLabels.size < 2) {
+            return false
+        }
+        if (patternLabels[0] != "*") {
+            return false
+        }
+        for (i in 1..patternLabels.size) {
+            if (patternLabels[i] != dnsLabels[i]) {
+                return false
+            }
+        }
+        return true
     }
 }
 

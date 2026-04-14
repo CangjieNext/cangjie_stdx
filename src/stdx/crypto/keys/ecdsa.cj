@@ -35,11 +35,17 @@ public class ECDSAPrivateKey <: PrivateKey {
 
     init(blob: DerBlob) {
         pkey = loadPrivateKey(EC_id, blob.body)
+        if (pkey.isNull()) {
+            throw CryptoException("Init ECDSA PrivateKey failed.")
+        }
         evpKeyCtx = EVPKEYCTX(pkey)
     }
 
     public init(curve: Curve) {
         pkey = unsafe { generateECDSA(curve) }
+        if (pkey.isNull()) {
+            throw CryptoException("Init ECDSA PrivateKey failed.")
+        }
         evpKeyCtx = EVPKEYCTX(pkey)
     }
 
@@ -132,6 +138,9 @@ public class ECDSAPublicKey <: PublicKey {
 
     init(blob: DerBlob) {
         pkey = loadPublicKey(EC_id, blob.body)
+        if (pkey.isNull()) {
+            throw CryptoException("Init ECDSA PublicKey failed.")
+        }
         evpKeyCtx = EVPKEYCTX(pkey)
     }
 

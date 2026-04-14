@@ -111,16 +111,17 @@ public class SM4 <: BlockCipher {
             }
         }
         this._optMode = optMode
-        this._key = key
-        this._iv = iv
+        this._key = key.clone()
+        this._iv = iv.clone()
         this._paddingMode = paddingMode
-        this._aad = aad
+        this._aad = aad.clone()
         this._tagSize = tagSize
     }
 
     ~init() {
         _key.fill(0)
         _iv.fill(0)
+        _aad.fill(0)
         if (!this.cipherPtr.isNull()) {
             unsafe { cipherFree(this.cipherPtr) }
         }
@@ -302,9 +303,9 @@ public class SM4 <: BlockCipher {
             var ivM: CPointerHandle<Byte> = acquireArrayRawData(iv.clone())
             var aadM: CPointerHandle<Byte> = acquireArrayRawData(aad.clone())
             var ctx = CPointer<UInt64>()
-            try (outlenPtr = LibC.malloc<Int64>().asResource(), outlen2Ptr = LibC.malloc<Int64>().asResource()) {
+            try (outlenPtr = LibC.malloc<Int32>().asResource(), outlen2Ptr = LibC.malloc<Int32>().asResource()) {
                 if (outlenPtr.value.isNull() || outlen2Ptr.value.isNull()) {
-                    throw CryptoException("Encrypt failed due to memory error.")
+                    throw CryptoException("Decrypt failed due to memory error.")
                 }
                 ctx = cipherCtxNew()
                 if (ctx.isNull()) {
@@ -336,7 +337,7 @@ public class SM4 <: BlockCipher {
                                 releaseArrayRawData(inBlockDe)
                             }
                             if (outlenPtr.value.read() > 0) {
-                                decryptedData.add(all: writebuff[..outlenPtr.value.read()])
+                                decryptedData.add(all: writebuff[..Int64(outlenPtr.value.read())])
                             }
                         } else {
                             var readbuffTemp = Array<Byte>()
@@ -355,7 +356,7 @@ public class SM4 <: BlockCipher {
                                     releaseArrayRawData(inBlockTemp)
                                 }
                                 if (outlenPtr.value.read() > 0) {
-                                    decryptedData.add(all: writebuff[..outlenPtr.value.read()])
+                                    decryptedData.add(all: writebuff[..Int64(outlenPtr.value.read())])
                                 }
                             }
                             tag = readbuffNext.clone()
@@ -378,7 +379,7 @@ public class SM4 <: BlockCipher {
                         throw CryptoException("Decrypt failed: GCM tag verification failed.")
                     }
                     if (outlen2Ptr.value.read() > 0) {
-                        decryptedData.add(all: writebuff[..outlen2Ptr.value.read()])
+                        decryptedData.add(all: writebuff[..Int64(outlen2Ptr.value.read())])
                     }
                     output.write(unsafe { decryptedData.getRawArray() })
                 } else {
@@ -388,7 +389,7 @@ public class SM4 <: BlockCipher {
                             throw CryptoException("Decrypt failed due to update error.")
                         }
                         if (outlenPtr.value.read() > 0) {
-                            output.write(writebuff[..outlenPtr.value.read()])
+                            output.write(writebuff[..Int64(outlenPtr.value.read())])
                         }
                         inLen = input.read(readbuff)
                     } while (inLen > 0)
@@ -397,7 +398,7 @@ public class SM4 <: BlockCipher {
                         throw CryptoException("Decrypt failed.")
                     }
                     if (outlen2Ptr.value.read() > 0) {
-                        output.write(writebuff[..outlen2Ptr.value.read()])
+                        output.write(writebuff[..Int64(outlen2Ptr.value.read())])
                     }
                 }
             } finally {
@@ -469,10 +470,10 @@ foreign func DYN_EVP_EncryptFinal_ex(ctx: CPointer<UInt64>, outPut: CPointer<Byt
 foreign func DYN_EVP_DecryptInit_ex(ctx: CPointer<UInt64>, mType: CPointer<UInt64>, impl: CPointer<UInt64>,
     key: CPointer<Byte>, iv: CPointer<Byte>, msg: CPointer<DynMsg>): Int32
 
-foreign func DYN_EVP_DecryptUpdate(ctx: CPointer<UInt64>, outPut: CPointer<Byte>, outLen: CPointer<Int64>,
+foreign func DYN_EVP_DecryptUpdate(ctx: CPointer<UInt64>, outPut: CPointer<Byte>, outLen: CPointer<Int32>,
     intPut: CPointer<Byte>, intLen: Int64, msg: CPointer<DynMsg>): Int32
 
-foreign func DYN_EVP_DecryptFinal_ex(ctx: CPointer<UInt64>, outPut: CPointer<Byte>, outLen: CPointer<Int64>,
+foreign func DYN_EVP_DecryptFinal_ex(ctx: CPointer<UInt64>, outPut: CPointer<Byte>, outLen: CPointer<Int32>,
     msg: CPointer<DynMsg>): Int32
 
 foreign func DYN_EVP_CIPHER_fetch(ctx: CPointer<UInt64>, algorithm: CString, properties: CPointer<Byte>,
@@ -552,7 +553,7 @@ func decryptInitEx(ctx: CPointer<UInt64>, mType: CPointer<UInt64>, impl: CPointe
     return res
 }
 
-func decryptUpdate(ctx: CPointer<UInt64>, outPut: CPointer<Byte>, outLen: CPointer<Int64>, intPut: CPointer<Byte>,
+func decryptUpdate(ctx: CPointer<UInt64>, outPut: CPointer<Byte>, outLen: CPointer<Int32>, intPut: CPointer<Byte>,
     intLen: Int64): Int32 {
     let dynMsgPtr = generateDynMsg()
     let res = unsafe { DYN_EVP_DecryptUpdate(ctx, outPut, outLen, intPut, intLen, dynMsgPtr) }
@@ -560,7 +561,7 @@ func decryptUpdate(ctx: CPointer<UInt64>, outPut: CPointer<Byte>, outLen: CPoint
     return res
 }
 
-func decryptFinalEx(ctx: CPointer<UInt64>, outPut: CPointer<Byte>, outLen: CPointer<Int64>): Int32 {
+func decryptFinalEx(ctx: CPointer<UInt64>, outPut: CPointer<Byte>, outLen: CPointer<Int32>): Int32 {
     let dynMsgPtr = generateDynMsg()
     let res = unsafe { DYN_EVP_DecryptFinal_ex(ctx, outPut, outLen, dynMsgPtr) }
     checkError(dynMsgPtr)

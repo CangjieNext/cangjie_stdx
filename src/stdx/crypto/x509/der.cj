@@ -70,7 +70,7 @@ struct DerField <: ToString {
         // second byte 0x01 denotes length
         // third byte is version value {0x01, 0x02}, 0x00 is usually omitted
         if (body.size != 3) {
-            throw X509Exception("Invalid version: empty value.")
+            throw X509Exception("Invalid version: Invalid version field length.")
         }
         if (body[0] != 0x02 || body[1] != 0x01) {
             throw X509Exception("Invalid version field value.")
