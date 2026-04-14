@@ -53,7 +53,7 @@ x509 包提供处理数字证书功能，提供包括解析和序列化 X509 证
 
 | 枚举名                                                                                 | 功能                       |
 | -------------------------------------------------------------------------------------- | -------------------------- |
-| [PublicKeyAlgorithm](./x509_package_api/x509_package_enums.md#enum-publickeyalgorithm) | 数字证书中包含的公钥信息。 |
+| [PublicKeyAlgorithm](./x509_package_api/x509_package_enums.md#enum-publickeyalgorithm) | 数字证书中包含的公钥算法。 |
 | [SignatureAlgorithm](./x509_package_api/x509_package_enums.md#enum-signaturealgorithm) | 证书签名算法。             |
 
 ### 结构体

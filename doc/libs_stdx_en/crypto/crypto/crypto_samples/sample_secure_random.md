@@ -1,6 +1,6 @@
 # SecureRandom Usage
 
-Random creates random number objects.
+SecureRandom creates random number objects.
 
 Example:
 

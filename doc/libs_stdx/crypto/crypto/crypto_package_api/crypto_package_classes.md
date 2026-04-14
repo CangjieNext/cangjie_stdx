@@ -17,7 +17,7 @@ public class SecureRandom <: RandomGenerator {
 和 Random 相比，主要有三个方面不同：
 
 - 随机数种子： Random 使用系统时钟作为默认的种子，时间戳一样，结果就相同；[SecureRandom](crypto_package_classes.md#class-securerandom) 使用操作系统或者硬件提供的随机数种子，生成的是真随机数。
-- 随机数生成： Random 使用了梅森旋转伪随机生成器；[SecureRandom](crypto_package_classes.md#class-securerandom) 则使用了 openssl 库提供的 [MD5](../../digest/digest_package_api/digest_package_classes.md#class-md5) 等随机算法，使用熵源生成真随机数；如果硬件支持，还可以使用硬件随机数生成器来生成安全性更强的随机数。
+- 随机数生成： Random 使用了梅森旋转伪随机生成器；[SecureRandom](crypto_package_classes.md#class-securerandom) 则使用了 OpenSSL 库提供的 `RAND_bytes` / `RAND_priv_bytes` 密码学安全伪随机数生成接口（内部基于 AES-256-CTR DRBG 等算法，并使用操作系统提供的熵源作为种子）；如果硬件支持，OpenSSL 还可以利用硬件随机数生成器来增强随机数的安全性。
 - 安全性： Random 不能用于加密安全的应用或者隐私数据的保护，可以使用 [SecureRandom](crypto_package_classes.md#class-securerandom)。
 
 使用示例见 [SecureRandom 使用](../crypto_samples/sample_secure_random.md)。

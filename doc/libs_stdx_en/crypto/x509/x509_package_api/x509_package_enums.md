@@ -107,7 +107,7 @@ Currently supported signature algorithms include: MD2WithRSA, MD5WithRSA, SHA1Wi
 
 > **Note:**
 >
-> MD5WithRSA, SHA1WithRSA have been proven to be insecure. Use with caution.
+> MD2WithRSA, MD5WithRSA, SHA1WithRSA, DSAWithSHA1, ECDSAWithSHA1 have been proven to be insecure. Use with caution.
 
 Parent types:
 
