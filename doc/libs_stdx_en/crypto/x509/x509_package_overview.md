@@ -61,7 +61,7 @@ This package requires external dependencies on OpenSSL 3's crypto dynamic librar
 
 | Enum Name                                                                                     | Functionality                     |
 | ------------------------------------------------------------------------------------------- | -------------------------------- |
-| [PublicKeyAlgorithm](./x509_package_api/x509_package_enums.md#enum-publickeyalgorithm)       | Public key information contained in digital certificates. |
+| [PublicKeyAlgorithm](./x509_package_api/x509_package_enums.md#enum-publickeyalgorithm)       | Public key algorithms contained in digital certificates. |
 | [SignatureAlgorithm](./x509_package_api/x509_package_enums.md#enum-signaturealgorithm)       | Certificate signature algorithms. |
 
 ### Structs

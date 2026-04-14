@@ -13,9 +13,7 @@ Function: Used to generate cryptographically secure pseudo-random numbers.
 Compared with Random, there are three main differences:
 
 - Random seed: Random uses the system clock as the default seed, resulting in identical outputs when timestamps are the same; [SecureRandom](crypto_package_classes.md#class-securerandom) utilizes random seeds provided by the operating system or hardware to generate true random numbers.
-
-- Random number generation: Random employs the Mersenne Twister pseudo-random number generator; [SecureRandom](crypto_package_classes.md#class-securerandom) uses random algorithms like [MD5](../../digest/digest_package_api/digest_package_classes.md#class-md5) provided by the OpenSSL library, generating true random numbers using entropy sources. If hardware supports it, hardware random number generators can be used to produce even more secure random numbers.
-
+- Random number generation: Random employs the Mersenne Twister pseudo-random number generator; [SecureRandom](crypto_package_classes.md#class-securerandom) utilizes the `RAND_bytes` / `RAND_priv_bytes` cryptographically secure pseudo-random number generation interfaces provided by the OpenSSL library (internally based on algorithms such as AES-256-CTR DRBG, using entropy sources provided by the operating system as seeds); if hardware supports it, OpenSSL can also leverage hardware random number generators to enhance the security of random numbers.
 - Security: Random should not be used for cryptographic security applications or privacy data protection, whereas [SecureRandom](crypto_package_classes.md#class-securerandom) can be used for such purposes.
 
 For usage examples, see [SecureRandom Usage](../crypto_samples/sample_secure_random.md).

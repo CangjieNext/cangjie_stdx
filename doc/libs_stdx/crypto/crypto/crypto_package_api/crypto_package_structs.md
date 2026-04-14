@@ -205,7 +205,7 @@ main() {
 public let mode: String
 ```
 
-功能：operation 分组加解密的工作模式，目前支持 ECB、CBC CFB OFB CTR GCM。
+功能：operation 分组加解密的工作模式，目前支持 ECB、CBC、CFB、OFB、CTR、GCM。
 
 类型：String
 

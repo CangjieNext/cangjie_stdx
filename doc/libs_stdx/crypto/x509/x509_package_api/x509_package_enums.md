@@ -185,7 +185,7 @@ public enum SignatureAlgorithm <: Equatable<SignatureAlgorithm> & ToString {
 
 > **注意：**
 >
-> MD5WithRSA、SHA1WithRSA 已被证明存在安全漏洞，请谨慎使用。
+> MD2WithRSA、MD5WithRSA、SHA1WithRSA、DSAWithSHA1、ECDSAWithSHA1 已被证明存在安全漏洞，请谨慎使用。
 
 父类型：
 

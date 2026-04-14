@@ -1,6 +1,6 @@
 # SecureRandom 使用
 
-Random 创建随机数对象。
+SecureRandom 创建随机数对象。
 
 示例：
 
