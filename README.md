@@ -227,6 +227,7 @@ explain:
 > - On `Linux`, the default static `stdx` libraries use an OpenSSL resolver in `auto` mode: they prefer directly linked OpenSSL symbols, and fall back to `dlopen/dlsym` only when needed. If the fallback may be used, add `-ldl`.
 > - When linking OpenSSL statically for the default `auto` static libraries, you may need `--whole-archive` to ensure `libssl.a` and `libcrypto.a` are actually pulled in; otherwise the fallback path may still try to load system `libssl/libcrypto`.
 > - When linking OpenSSL statically, place `-lssl -lcrypto` after `stdx` libraries that reference them to avoid “undefined reference” due to static link order.
+> - In cross-compilation scenarios, if there is a need to develop custom macro packages and their business logic must rely on stdx for implementation, the stdx path for the local development platform must also be configured in addition to that for the target runtime platform.
 
 **Static OpenSSL linking example**: Assuming the directory that stores OpenSSL static libraries is `STATIC_OPENSSL_DIR`, the command is as follows.
 
