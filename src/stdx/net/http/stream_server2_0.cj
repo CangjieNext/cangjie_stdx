@@ -733,6 +733,10 @@ class HttpEngineConn2 <: HttpEngineConn & InputStream {
                             "Pseudo header field \":protocol\" should be single valued and the value should be \"HTTP\", \"TLS\", \"WebSocket\", \"Websocket\", \"h2c\", \"connect-udp\" or \"connect-ip\"."
                         )
                     }
+                    if (!stream.server.enableConnectProtocol) {
+                        throw HttpStreamException(ProtocolError,
+                            "Malformed request, server doesn`t allow extended CONNECT.")
+                    }
                     upgrade = value
                 case _ => throw HttpStreamException(ProtocolError,
                     "Malformed request, invalid pseudo header name ${name}.")
