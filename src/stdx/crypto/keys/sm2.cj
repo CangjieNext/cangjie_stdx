@@ -270,6 +270,12 @@ func loadPublicKeySM2(der: Array<Byte>) {
             if (pkey.isNull()) {
                 throw CryptoException("Load public key failed.")
             }
+            // EVP_PKEY_get_id may return -1 when key is SM2
+            // use EVP_PKEY_get0_type_name instead
+            if (getPkeyTypeName(pkey) != "SM2") {
+                keyFree(pkey)
+                throw CryptoException("Public SM2 key type error.")
+            }
         } finally {
             LibC.free(readPtr)
             releaseArrayRawData(derHandle)
