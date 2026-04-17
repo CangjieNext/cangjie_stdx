@@ -672,6 +672,8 @@ class HttpEngineConn2 <: HttpEngineConn & InputStream {
         checkAndSetPseudoHeaders(fields[..pseudoHeadersNum])
         if (pseudoHeadersNum < fields.size) {
             checkAndSetRequestHeaders(fields[pseudoHeadersNum..])
+        } else {
+            headerSyncCounter.dec()
         }
 
         if (request._headers.isSome() && expected100Continue(request.headers)) { // cjlint-ignore !G.EXP.03
