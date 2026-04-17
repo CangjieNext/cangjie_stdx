@@ -10,7 +10,7 @@ package stdx.logger
 
 import std.collection.ArrayList
 import std.io.OutputStream
-import std.sync.AtomicBool
+import std.sync.{AtomicBool, Mutex}
 import stdx.log.*
 
 enum LogStyle {
@@ -19,17 +19,31 @@ enum LogStyle {
     | JSON
 }
 
+class CommonLoggerState {
+    let mode: LogStyle
+    let output: OutputStream
+    let closed = AtomicBool(false)
+    let ioLock = Mutex()
+
+    init(output: OutputStream, mode: LogStyle) {
+        this.output = output
+        this.mode = mode
+    }
+}
+
 class CommonLogger <: Logger {
     let _attrs = ArrayList<Attr>()
     var _level = LogLevel.INFO
-    let _mode: LogStyle
-    let o: OutputStream
-
-    let _closed = AtomicBool(false)
+    let _state: CommonLoggerState
 
     init(output: OutputStream, mode: LogStyle) {
-        o = output
-        _mode = mode
+        _state = CommonLoggerState(output, mode)
+    }
+
+    private init(state: CommonLoggerState, level: LogLevel, attrs: Array<Attr>) {
+        _state = state
+        _level = level
+        _attrs.add(all: attrs)
     }
 
     public mut prop level: LogLevel {
@@ -55,31 +69,32 @@ class CommonLogger <: Logger {
         let _as = this._attrs.clone()
         _as.add(all: localRecord.attrs)
         localRecord.attrs = _as.toArray()
-        match (_mode) {
-            case LogStyle.SIMPLE => logSimple(localRecord, o)
-            case LogStyle.TEXT => logText(localRecord, o)
-            case LogStyle.JSON => logJson(localRecord, o)
+        synchronized(_state.ioLock) {
+            match (_state.mode) {
+                case LogStyle.SIMPLE => logSimple(localRecord, _state.output)
+                case LogStyle.TEXT => logText(localRecord, _state.output)
+                case LogStyle.JSON => logJson(localRecord, _state.output)
+            }
         }
     }
 
     public func isClosed(): Bool {
-        _closed.load()
+        _state.closed.load()
     }
 
     public func close(): Unit {
         if (isClosed()) {
             return
         }
-        if (_closed.compareAndSwap(false, true)) {
-            o.flush()
+        synchronized(_state.ioLock) {
+            if (_state.closed.compareAndSwap(false, true)) {
+                _state.output.flush()
+            }
         }
     }
-    
+
     func clone(): CommonLogger {
-        let cl = CommonLogger(o, _mode)
-        cl.level = this.level
-        cl._attrs.add(all: this._attrs)
-        return cl
+        CommonLogger(_state, _level, _attrs.toArray())
     }
 }
 
