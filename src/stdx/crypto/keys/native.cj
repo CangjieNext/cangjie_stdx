@@ -86,7 +86,9 @@ foreign func DYN_EVP_PKEY_CTX_set_rsa_keygen_bits(ctx: CPointer<UInt64>, bit: In
 
 foreign func DYN_EVP_PKEY_CTX_set_ec_paramgen_curve_nid(ctx: CPointer<UInt64>, nid: Int32, msg: CPointer<DynMsg>): Int32
 
-foreign func DYN_EVP_PKEY_get_base_id(pkey: CPointer<UInt64>, msg: CPointer<DynMsg>): Int32
+foreign func DYN_EVP_PKEY_get_id(pkey: CPointer<UInt64>, msg: CPointer<DynMsg>): Int32
+
+foreign func DYN_EVP_PKEY_get0_type_name(pkey: CPointer<UInt64>, msg: CPointer<DynMsg>): CString
 
 // encrypt & decrypt
 foreign func DYN_EVP_PKEY_encrypt_init(ctx: CPointer<UInt64>, msg: CPointer<DynMsg>): Int32
@@ -286,11 +288,18 @@ func setCurveNid(ctx: CPointer<UInt64>, nid: Int32): Int32 {
     return res
 }
 
-func getBaseId(pkey: CPointer<UInt64>): Int32 {
+func getPkeyId(pkey: CPointer<UInt64>): Int32 {
     let dynMsgPtr = generateDynMsg()
-    let res = unsafe { DYN_EVP_PKEY_get_base_id(pkey, dynMsgPtr) }
+    let res = unsafe { DYN_EVP_PKEY_get_id(pkey, dynMsgPtr) }
     checkError(dynMsgPtr)
     return res
+}
+
+func getPkeyTypeName(pkey: CPointer<UInt64>): String {
+    let dynMsgPtr = generateDynMsg()
+    let name = unsafe { DYN_EVP_PKEY_get0_type_name(pkey, dynMsgPtr) } // no need to free
+    checkError(dynMsgPtr)
+    return name.toString()
 }
 
 func encryInit(ctx: CPointer<UInt64>): Int32 {

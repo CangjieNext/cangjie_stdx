@@ -228,6 +228,7 @@ DEFINEFUNCTION1(EVP_MD_get_size, 0, int, const EVP_MD*)
 DEFINEFUNCTION1(X509_get_pubkey, NULL, EVP_PKEY*, X509*)
 DEFINEFUNCTION5(EVP_PKEY_get_octet_string_param, 0, int, EVP_PKEY*, const char*, unsigned char*, size_t, size_t*)
 DEFINEFUNCTION1(EVP_PKEY_get_id, 0, int, const EVP_PKEY*)
+DEFINEFUNCTION1(EVP_PKEY_get0_type_name, 0, const char*, const EVP_PKEY*)
 DEFINEFUNCTION5(EVP_PKEY_get_utf8_string_param, 0, int, EVP_PKEY*, const char*, char*, size_t, size_t*)
 
 /*----------------------------------------------------------------------------*/
