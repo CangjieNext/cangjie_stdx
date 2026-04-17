@@ -464,6 +464,10 @@ public class WebSocket {
                 // server2_0
                 case httpConn: HttpEngineConn2 =>
                     // reading the Client's Opening Handshake
+                    if (!httpConn.enableConnectProtocol) {
+                        responseAndThrows(ctx, HttpStatusCode.STATUS_BAD_REQUEST,
+                            "the extended CONNECT protocol on http/2.0 is disabled")
+                    }
                     if (httpConn.upgrade != "websocket") {
                         responseAndThrows(ctx, HttpStatusCode.STATUS_BAD_REQUEST,
                             "the upgrade request to websocket on http/2.0 must be a CONNECT request")
