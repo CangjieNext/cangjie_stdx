@@ -54,7 +54,7 @@ cjc -L $STATIC_OPENSSL_DIR --link-option "-force_load" --link-option "$STATIC_OP
 | import stdx.log.* | stdx.log |
 | import stdx.logger.* | stdx.logger |
 | import stdx.serialization.serialization.* | stdx.serialization.serialization |
-| import stdx.fuzz.fuzz.* | stdx.fuzz.fuzz |
+| import stdx.fuzz.* | stdx.fuzz |
 | import stdx.net.http .* | stdx.net.http、stdx.net.tls、stdx.logger、stdx.log、stdx.encoding.url、stdx.encoding.json.stream、stdx.crypto.x509 、stdx.encoding.hex、stdx.encoding.base64、stdx.crypto.crypto、stdx.crypto.digest |
 | import stdx.net.tls.* | stdx.net.tls、stdx.crypto.x509、stdx.encoding.hex、stdx.encoding.base64、stdx.crypto.crypto、stdx.crypto.digest |
 | import stdx.net.tls.common.* | stdx.net.tls.common、stdx.crypto.x509、stdx.encoding.hex、stdx.crypto.crypto、stdx.crypto.digest、stdx.crypto.common、stdx.encoding.base64 |

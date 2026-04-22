@@ -18,7 +18,7 @@ In DataProvider mode, it's not straightforward to determine the return values of
 For instance, after the above code triggers an exception, recompiling with `enableDebugDataProvider` added produces the following effect:
 
 ```cangjie
-import stdx.fuzz.fuzz.*
+import stdx.fuzz.*
 
 main() {
     let fuzzer = Fuzzer(api2)

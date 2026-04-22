@@ -56,16 +56,16 @@
   compile-option = "-lcangjie-dynamicLoader-opensslFFI"
 
 [target.x86_64-unknown-linux-gnu]
-  link-option = "-L target/linux_ohos_aarch64_cjnative/static/stdx -L target/linux_x86_64_cjnative/static/stdx -L target/mock/linux_x86_64_cjnative/static/stdx -lstdx.fuzz.fuzzFFI"
+  link-option = "-L target/linux_ohos_aarch64_cjnative/static/stdx -L target/linux_x86_64_cjnative/static/stdx -L target/mock/linux_x86_64_cjnative/static/stdx -lstdx.fuzzFFI"
 
 [target.aarch64-unknown-linux-gnu]
-  link-option = "-L target/linux_ohos_aarch64_cjnative/static/stdx -L target/linux_aarch64_cjnative/static/stdx -L target/mock/linux_aarch64_cjnative/static/stdx -lstdx.fuzz.fuzzFFI"
+  link-option = "-L target/linux_ohos_aarch64_cjnative/static/stdx -L target/linux_aarch64_cjnative/static/stdx -L target/mock/linux_aarch64_cjnative/static/stdx -lstdx.fuzzFFI"
 
 [target.aarch64-apple-darwin]
-  link-option = "-L target/darwin_aarch64_cjnative/static/stdx -L /tmp/stdx/target/release/stdx -L target/mock/darwin_aarch64_cjnative/static/stdx -undefined suppress -flat_namespace -lstdx.fuzz.fuzzFFI"
+  link-option = "-L target/darwin_aarch64_cjnative/static/stdx -L /tmp/stdx/target/release/stdx -L target/mock/darwin_aarch64_cjnative/static/stdx -undefined suppress -flat_namespace -lstdx.fuzzFFI"
 
 [target.x86_64-apple-darwin]
-  link-option = "-L target/darwin_x86_64_cjnative/static/stdx -L /tmp/stdx/target/release/stdx -L target/mock/darwin_x86_64_cjnative/static/stdx -undefined suppress -flat_namespace -lstdx.fuzz.fuzzFFI"
+  link-option = "-L target/darwin_x86_64_cjnative/static/stdx -L /tmp/stdx/target/release/stdx -L target/mock/darwin_x86_64_cjnative/static/stdx -undefined suppress -flat_namespace -lstdx.fuzzFFI"
 
 [target.x86_64-w64-mingw32]
   link-option = "-L target/windows_x86_64_cjnative/static/stdx -L target/mock/windows_x86_64_cjnative/static/stdx -lpthread -lws2_32 -lcrypt32"

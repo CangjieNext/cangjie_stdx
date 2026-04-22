@@ -6,7 +6,7 @@
  * See https://cangjie-lang.cn/pages/LICENSE for license information.
  */
 
-package stdx.fuzz.fuzz
+package stdx.fuzz
 
 /**
  * extern "C" int LLVMFuzzerRunDriver(int *argc, char ***argv,

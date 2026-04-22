@@ -12,7 +12,7 @@
  * This file implements the Fuzzer class and FuzzerBuilder class.
  */
 
-package stdx.fuzz.fuzz
+package stdx.fuzz
 
 import std.collection.ArrayList
 import std.convert.Parsable

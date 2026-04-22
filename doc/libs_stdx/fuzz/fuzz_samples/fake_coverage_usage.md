@@ -18,7 +18,7 @@ ERROR: no interesting inputs were found. Is the code instrumented for coverage? 
 
 ```cangjie
 // main.cj
-import stdx.fuzz.fuzz.*
+import stdx.fuzz.*
 
 main() {
     let f = Fuzzer(api)
@@ -52,7 +52,7 @@ ERROR: no interesting inputs were found. Is the code instrumented for coverage? 
 
 ```cangjie
 // main.cj
-import stdx.fuzz.fuzz.*
+import stdx.fuzz.*
 
 main() {
     let f = Fuzzer(api)
