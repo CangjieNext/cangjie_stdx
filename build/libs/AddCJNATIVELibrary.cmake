@@ -156,32 +156,22 @@ install(TARGETS stdx.encoding.json.stream DESTINATION ${output_triple_name}_${CJ
 if(NOT WIN32)
     make_cangjie_lib(
         fuzz IS_SHARED ALLOW_UNDEFINED
-        DEPENDS cangjie${BACKEND_TYPE}StdxFuzz
-        CANGJIE_STD_LIB_LINK std-core
-        OBJECTS ${output_cj_object_dir}/stdx/fuzz.o)
-
-    add_library(stdx.fuzz STATIC ${output_cj_object_dir}/stdx/fuzz.o)
-    set_target_properties(stdx.fuzz PROPERTIES LINKER_LANGUAGE C)
-    install(TARGETS stdx.fuzz DESTINATION ${output_triple_name}_${CJNATIVE_BACKEND}${SANITIZER_SUBPATH}/static/stdx)
-
-    make_cangjie_lib(
-        fuzz.fuzz IS_SHARED ALLOW_UNDEFINED
         DEPENDS
             cangjie${BACKEND_TYPE}Fuzz
-            stdx.fuzz.fuzzFFI
+            stdx.fuzzFFI
         CANGJIE_STD_LIB_LINK
             std-core
             std-collection
             std-process
             std-convert
-        OBJECTS ${output_cj_object_dir}/stdx/fuzz.fuzz.o
-        FORCE_LINK_ARCHIVES stdx.fuzz.fuzzFFI
-        FLAGS -lstdx.fuzz.fuzzFFI)
-    get_target_property(FUZZFFI_OBJS stdx.fuzz.fuzzFFI SOURCES)
+        OBJECTS ${output_cj_object_dir}/stdx/fuzz.o
+        FORCE_LINK_ARCHIVES stdx.fuzzFFI
+        FLAGS -lstdx.fuzzFFI)
+    get_target_property(FUZZFFI_OBJS stdx.fuzzFFI SOURCES)
 
-    add_library(stdx.fuzz.fuzz STATIC ${FUZZFFI_OBJS} ${output_cj_object_dir}/stdx/fuzz.fuzz.o)
-    set_target_properties(stdx.fuzz.fuzz PROPERTIES LINKER_LANGUAGE C)
-    install(TARGETS stdx.fuzz.fuzz DESTINATION ${output_triple_name}_${CJNATIVE_BACKEND}${SANITIZER_SUBPATH}/static/stdx)
+    add_library(stdx.fuzz STATIC ${FUZZFFI_OBJS} ${output_cj_object_dir}/stdx/fuzz.o)
+    set_target_properties(stdx.fuzz PROPERTIES LINKER_LANGUAGE C)
+    install(TARGETS stdx.fuzz DESTINATION ${output_triple_name}_${CJNATIVE_BACKEND}${SANITIZER_SUBPATH}/static/stdx)
 endif()
 
 make_cangjie_lib(
@@ -814,25 +804,14 @@ if(NOT WIN32)
     # effecient.
 
     add_cangjie_library(
-        cangjie${BACKEND_TYPE}StdxFuzz
-        NO_SUB_PKG
-        IS_STDXLIB
-        IS_PACKAGE
-        IS_CJNATIVE_BACKEND
-        PACKAGE_NAME "fuzz"
-        MODULE_NAME "stdx"
-        SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/stdx/fuzz
-        DEPENDS ${FUZZBASE_DEPENDENCIES})
-
-    add_cangjie_library(
         cangjie${BACKEND_TYPE}Fuzz
         NO_SUB_PKG
         IS_STDXLIB IS_PACKAGE
         IS_CJNATIVE_BACKEND
-        PACKAGE_NAME "fuzz.fuzz"
+        PACKAGE_NAME "fuzz"
         MODULE_NAME "stdx"
         SOURCES ${FUZZ_SRCS}
-        SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/stdx/fuzz/fuzz
+        SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/stdx/fuzz
         DEPENDS ${FUZZ_FUZZ_DEPENDENCIES})
 endif()
 

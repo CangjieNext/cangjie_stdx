@@ -12,7 +12,7 @@
  * This file implements the report method of fuzz.
  */
 
-package stdx.fuzz.fuzz
+package stdx.fuzz
 
 interface IReportable {
     func report(): Unit

@@ -97,7 +97,7 @@
     - [Tutorial Examples]()
         - [Form Construction and Usage](libs_stdx_en/encoding/url/url_samples/form.md)
         - [URL Parsing Function parse Usage](libs_stdx_en/encoding/url/url_samples/url_parse.md)
-- [stdx.fuzz.fuzz](libs_stdx_en/fuzz/fuzz_package_overview.md)
+- [stdx.fuzz](libs_stdx_en/fuzz/fuzz_package_overview.md)
     - [Constants & Variables](libs_stdx_en/fuzz/fuzz_package_api/fuzz_package_constants_vars.md)
     - [Classes](libs_stdx_en/fuzz/fuzz_package_api/fuzz_package_classes.md)
     - [Exception Classes](libs_stdx_en/fuzz/fuzz_package_api/fuzz_package_exceptions.md)

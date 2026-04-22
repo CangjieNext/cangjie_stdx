@@ -6,7 +6,7 @@
  * See https://cangjie-lang.cn/pages/LICENSE for license information.
  */
 
-package stdx.fuzz.fuzz
+package stdx.fuzz
 
 const oomInformation = ###"OutOfMemoryError throws during fuzz.
 It happens everywhere in the program, no stacktrace for OutOfMemoryError"###

@@ -12,7 +12,7 @@
  * This file implements libfuzzer callback method.
  */
 
-package stdx.fuzz.fuzz
+package stdx.fuzz
 
 
 /**

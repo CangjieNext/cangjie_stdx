@@ -12,7 +12,7 @@
  * This file implements the DataProvider class.
  */
 
-package stdx.fuzz.fuzz
+package stdx.fuzz
 
 
 /**

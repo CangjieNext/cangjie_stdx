@@ -97,7 +97,7 @@
     - [示例教程]()
         - [Form 的构造使用](libs_stdx/encoding/url/url_samples/form.md)
         - [URL 解析函数 parse 的使用](libs_stdx/encoding/url/url_samples/url_parse.md)
-- [stdx.fuzz.fuzz](libs_stdx/fuzz/fuzz_package_overview.md)
+- [stdx.fuzz](libs_stdx/fuzz/fuzz_package_overview.md)
     - [常量&变量](libs_stdx/fuzz/fuzz_package_api/fuzz_package_constants_vars.md)
     - [类](libs_stdx/fuzz/fuzz_package_api/fuzz_package_classes.md)
     - [异常类](libs_stdx/fuzz/fuzz_package_api/fuzz_package_exceptions.md)

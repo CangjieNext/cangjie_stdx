@@ -5,8 +5,8 @@
 #
 # See https://cangjie-lang.cn/pages/LICENSE for license information.
 
-# The fuzzing engine depends on fuzz/fuzz.
-# fuzz/fuzz compiled with -fsanitize-coverage may cause incorrectly coverage feedback.
+# The fuzzing engine depends on fuzz.
+# fuzz compiled with -fsanitize-coverage may cause incorrectly coverage feedback.
 
 string(REGEX REPLACE "-fsanitize-coverage=[^ ]+" "" CMAKE_C_FLAGS_NO_COVERAGE "${CMAKE_C_FLAGS}" )
 string(REGEX REPLACE "-fsanitize-coverage=[^ ]+" "" CMAKE_CXX_FLAGS_NO_COVERAGE "${CMAKE_CXX_FLAGS}" )
@@ -20,7 +20,7 @@ FILE(GLOB fuzz_ffi_src
     ./utf8_fix.c
     ./utf8_fix.h
     ./cjnative_sanitizer_coverage.h)
-set(libname stdx.fuzz.fuzzFFI)
+set(libname stdx.fuzzFFI)
 
 add_library(${libname}-objs OBJECT ${fuzz_ffi_src})
 
