@@ -10,8 +10,6 @@ The standard library offers the most commonly used APIs for developers, while th
 
 ## Usage Guide
 
-The Cangjie programming language extension library stdx binary package includes both static and dynamic components. Please reference them as needed.
-
 ### Package Dependencies
 
 | Import Library Name                                                            |  Dependent Packages |
