@@ -225,18 +225,40 @@ explain:
 > - If you import the static library of `stdx` and use the crypto and net packages, you need to add `-lcrypt32` to `compile-option` on `Windows`.
 > - When using dynamic `stdx` binaries (`.so`/`.dll`), OpenSSL is resolved at runtime via `dlopen/dlsym` (Unix-like) or `LoadLibrary/GetProcAddress` (Windows); linking OpenSSL statically (`.a`/`.lib`) into the application will not be used by this runtime resolver.
 > - On `Linux`, the default static `stdx` libraries use an OpenSSL resolver in `auto` mode: they prefer directly linked OpenSSL symbols, and fall back to `dlopen/dlsym` only when needed. If the fallback may be used, add `-ldl`.
-> - When linking OpenSSL statically for the default `auto` static libraries, you may need `--whole-archive` to ensure `libssl.a` and `libcrypto.a` are actually pulled in; otherwise the fallback path may still try to load system `libssl/libcrypto`.
-> - When linking OpenSSL statically, place `-lssl -lcrypto` after `stdx` libraries that reference them to avoid “undefined reference” due to static link order.
+> - When linking OpenSSL statically for the default `auto` static libraries, `--whole-archive` is only needed if you want to force `libssl.a` and `libcrypto.a` into the final executable; otherwise the fallback path may still try to load system `libssl/libcrypto`.
+> - For `static-static-link-extern/stdx`, do not use `--whole-archive` or `-force_load` as the default. Place the OpenSSL archive inputs (`libssl.a` and `libcrypto.a`) after `stdx` libraries that reference them so the linker pulls only the required objects.
 > - In cross-compilation scenarios, if there is a need to develop custom macro packages and their business logic must rely on stdx for implementation, the stdx path for the local development platform must also be configured in addition to that for the target runtime platform.
 
-**Static OpenSSL linking example**: Assuming the directory that stores OpenSSL static libraries is `STATIC_OPENSSL_DIR`, the command is as follows.
+**Default `static/stdx` auto resolver example**: after configuring the `stdx` static library path, set `STATIC_OPENSSL_DIR` to the directory that stores OpenSSL static libraries. The following command forces the OpenSSL archives into the final executable.
 
 ```bash
+export STATIC_OPENSSL_DIR=/path/to/openssl/lib
+
 # GNU ld
-cjc -L $STATIC_OPENSSL_DIR --link-option "-Bstatic" --link-option "--whole-archive" -lssl -lcrypto --link-option "--no-whole-archive" --link-option "-Bdynamic" main.cj
+cjc main.cj \
+    --link-option "-Bstatic" \
+    --link-option "--whole-archive" \
+    --link-option "${STATIC_OPENSSL_DIR}/libssl.a" \
+    --link-option "${STATIC_OPENSSL_DIR}/libcrypto.a" \
+    --link-option "--no-whole-archive" \
+    --link-option "-Bdynamic"
 
 # Apple ld64
-cjc -L $STATIC_OPENSSL_DIR --link-option "-force_load" --link-option "$STATIC_OPENSSL_DIR/libssl.a" --link-option "-force_load" --link-option "$STATIC_OPENSSL_DIR/libcrypto.a" main.cj
+cjc main.cj \
+    --link-option "-force_load" \
+    --link-option "${STATIC_OPENSSL_DIR}/libssl.a" \
+    --link-option "-force_load" \
+    --link-option "${STATIC_OPENSSL_DIR}/libcrypto.a"
+```
+
+For `static-static-link-extern/stdx`, after configuring the `stdx` static library path, provide the OpenSSL archives normally:
+
+```bash
+export STATIC_OPENSSL_DIR=/path/to/openssl/lib
+
+cjc main.cj \
+    --link-option "${STATIC_OPENSSL_DIR}/libssl.a" \
+    --link-option "${STATIC_OPENSSL_DIR}/libcrypto.a"
 ```
 
 ### Installed Binary Layout

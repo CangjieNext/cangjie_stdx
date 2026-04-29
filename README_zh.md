@@ -221,18 +221,40 @@ cjpm 的详细使用可以参考 [cjpm 文档](https://gitcode.com/Cangjie/cangj
 > - 如果导入 `stdx` 的静态库并使用 crypto、net 包：`Windows` 需要在 `compile-option` 里额外添加 `-lcrypt32`。
 > - 使用 `stdx` 动态二进制（`.so`/`.dll`）时，OpenSSL 会通过运行时加载方式解析：类 Unix 使用 `dlopen/dlsym`，Windows 使用 `LoadLibrary/GetProcAddress`；此时即使应用侧以静态方式链接 OpenSSL（`.a`/`.lib`），也不会被该运行时解析路径直接使用。
 > - `Linux` 下默认静态 `stdx` 使用 OpenSSL 解析 `auto` 模式：优先直连 OpenSSL 符号，必要时才回退到 `dlopen/dlsym`；如果可能走回退路径，需要额外添加 `-ldl`。
-> - 对默认 `auto` 静态库以静态方式链接 OpenSSL（`.a`）时，可能需要使用 `--whole-archive` 确保 `libssl.a` 和 `libcrypto.a` 被真正拉入产物；否则回退路径仍可能尝试加载系统的 `libssl/libcrypto`。
-> - 以静态方式链接 OpenSSL 时，请将 `-lssl -lcrypto` 放在引用它们的 `stdx` 静态库之后，避免因静态链接顺序导致 “undefined reference”。
+> - 对默认 `auto` 静态库以静态方式链接 OpenSSL（`.a`）时，只有在需要强制把 `libssl.a` 和 `libcrypto.a` 拉入最终可执行文件时才需要使用 `--whole-archive`；否则回退路径仍可能尝试加载系统的 `libssl/libcrypto`。
+> - 对 `static-static-link-extern/stdx`，不应默认使用 `--whole-archive` 或 `-force_load`。请将 OpenSSL 静态归档输入（`libssl.a` 和 `libcrypto.a`）放在引用它们的 `stdx` 静态库之后，由链接器按需拉入对象。
 > - 在交叉编译的场景下，如果有自行开发宏包的需求，且需要依赖 stdx 实现宏包中的业务逻辑，那么除了目标运行平台以外，还需要配置本地开发平台的 stdx 路径。
 
-**静态 Openssl 链接命令行示例**: 假设存放 Openssl 静态库的目录为 `STATIC_OPENSSL_DIR`，则命令如下。
+**默认 `static/stdx` auto 解析示例**: 配置好 `stdx` 静态库路径后，将 `STATIC_OPENSSL_DIR` 设置为 Openssl 静态库所在目录。以下命令会强制将 OpenSSL 静态归档拉入最终可执行文件。
 
 ```bash
-# GNU ld64
-cjc -L $STATIC_OPENSSL_DIR --link-option "-Bstatic" --link-option "--whole-archive" -lssl -lcrypto --link-option "--no-whole-archive" --link-option "-Bdynamic" main.cj
+export STATIC_OPENSSL_DIR=/path/to/openssl/lib
+
+# GNU ld
+cjc main.cj \
+    --link-option "-Bstatic" \
+    --link-option "--whole-archive" \
+    --link-option "${STATIC_OPENSSL_DIR}/libssl.a" \
+    --link-option "${STATIC_OPENSSL_DIR}/libcrypto.a" \
+    --link-option "--no-whole-archive" \
+    --link-option "-Bdynamic"
 
 # Apple ld64
-cjc -L $STATIC_OPENSSL_DIR --link-option "-force_load" --link-option "$STATIC_OPENSSL_DIR/libssl.a" --link-option "-force_load" --link-option "$STATIC_OPENSSL_DIR/libcrypto.a" main.cj
+cjc main.cj \
+    --link-option "-force_load" \
+    --link-option "${STATIC_OPENSSL_DIR}/libssl.a" \
+    --link-option "-force_load" \
+    --link-option "${STATIC_OPENSSL_DIR}/libcrypto.a"
+```
+
+对 `static-static-link-extern/stdx`，配置好 `stdx` 静态库路径后，正常提供 OpenSSL 静态归档即可：
+
+```bash
+export STATIC_OPENSSL_DIR=/path/to/openssl/lib
+
+cjc main.cj \
+    --link-option "${STATIC_OPENSSL_DIR}/libssl.a" \
+    --link-option "${STATIC_OPENSSL_DIR}/libcrypto.a"
 ```
 
 ### 已安装二进制目录
