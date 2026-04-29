@@ -225,7 +225,7 @@ cjpm 的详细使用可以参考 [cjpm 文档](https://gitcode.com/Cangjie/cangj
 > - 对 `static-static-link-extern/stdx`，不应默认使用 `--whole-archive` 或 `-force_load`。请将 OpenSSL 静态归档输入（`libssl.a` 和 `libcrypto.a`）放在引用它们的 `stdx` 静态库之后，由链接器按需拉入对象。
 > - 在交叉编译的场景下，如果有自行开发宏包的需求，且需要依赖 stdx 实现宏包中的业务逻辑，那么除了目标运行平台以外，还需要配置本地开发平台的 stdx 路径。
 
-**默认 `static/stdx` auto 解析示例**: 配置好 `stdx` 静态库路径后，将 `STATIC_OPENSSL_DIR` 设置为 Openssl 静态库所在目录。以下命令会强制将 OpenSSL 静态归档拉入最终可执行文件。
+**默认 `static/stdx` auto 解析示例**: 通过 `cjpm.toml` 或实际构建命令配置好 `stdx` 静态库路径后，将 `STATIC_OPENSSL_DIR` 设置为 OpenSSL 静态库所在目录。以下命令只展示 OpenSSL 静态归档链接参数，并会强制将 OpenSSL 静态归档拉入最终可执行文件。
 
 ```bash
 export STATIC_OPENSSL_DIR=/path/to/openssl/lib
@@ -247,7 +247,7 @@ cjc main.cj \
     --link-option "${STATIC_OPENSSL_DIR}/libcrypto.a"
 ```
 
-对 `static-static-link-extern/stdx`，配置好 `stdx` 静态库路径后，正常提供 OpenSSL 静态归档即可：
+对 `static-static-link-extern/stdx`，通过 `cjpm.toml` 或实际构建命令配置好 `stdx` 静态库路径后，正常提供 OpenSSL 静态归档即可。以下命令只展示 OpenSSL 静态归档链接参数：
 
 ```bash
 export STATIC_OPENSSL_DIR=/path/to/openssl/lib

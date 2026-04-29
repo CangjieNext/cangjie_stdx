@@ -229,7 +229,7 @@ explain:
 > - For `static-static-link-extern/stdx`, do not use `--whole-archive` or `-force_load` as the default. Place the OpenSSL archive inputs (`libssl.a` and `libcrypto.a`) after `stdx` libraries that reference them so the linker pulls only the required objects.
 > - In cross-compilation scenarios, if there is a need to develop custom macro packages and their business logic must rely on stdx for implementation, the stdx path for the local development platform must also be configured in addition to that for the target runtime platform.
 
-**Default `static/stdx` auto resolver example**: after configuring the `stdx` static library path, set `STATIC_OPENSSL_DIR` to the directory that stores OpenSSL static libraries. The following command forces the OpenSSL archives into the final executable.
+**Default `static/stdx` auto resolver example**: after configuring the `stdx` static library path through `cjpm.toml` or your existing build command, set `STATIC_OPENSSL_DIR` to the directory that stores OpenSSL static libraries. The following command shows only the OpenSSL archive link options and forces the OpenSSL archives into the final executable.
 
 ```bash
 export STATIC_OPENSSL_DIR=/path/to/openssl/lib
@@ -251,7 +251,7 @@ cjc main.cj \
     --link-option "${STATIC_OPENSSL_DIR}/libcrypto.a"
 ```
 
-For `static-static-link-extern/stdx`, after configuring the `stdx` static library path, provide the OpenSSL archives normally:
+For `static-static-link-extern/stdx`, after configuring the `stdx` static library path through `cjpm.toml` or your existing build command, provide the OpenSSL archives normally. The following command shows only the OpenSSL archive link options:
 
 ```bash
 export STATIC_OPENSSL_DIR=/path/to/openssl/lib
