@@ -92,16 +92,16 @@ irm https://raw.gitcode.com/Cangjie/cangjie_stdx/raw/dev/downloader.ps1 -OutFile
 ```text
 /stdx
 ├─ build                        # 工程构建目录，编译构建工具、脚本等
-├─ doc                          # STDX 库资料目录
+├─ doc                          # stdx 库资料目录
 ├─ figures                      # 存放readme中的架构图
-├─ src                          # STDX 各个包代码目录                        
+├─ src                          # stdx 各个包代码目录
 │   └─ stdx
 │       ├── actors              # 提供 Actors 功能                     
 │       ├── aspectCJ            # 提供 AOP 功能
 │       ├── compress            # 提供压缩和解压缩功能
 │       ├── crypto              # 提供安全相关能力
 │       ├── effect              # 提供用于处理 Effect Handler 特性的用户级 API。这是一个实验性功能，需要使用支持该机制的 Cangjie 编译器。
-│       ├── dynamicLoader       # Openssl 动态加载模块
+│       ├── dynamicLoader       # OpenSSL 动态加载模块
 │       ├── encoding            # 提供 JSON 和字符串编码相关能力。
 │       ├── fuzz                # 提供基于覆盖率反馈的仓颉 fuzz 引擎及对应的接口
 │       ├── log                 # 提供了日志记录相关的能力
@@ -118,7 +118,7 @@ irm https://raw.gitcode.com/Cangjie/cangjie_stdx/raw/dev/downloader.ps1 -OutFile
 
 ## 约束
 
-支持在 Ubuntu/MacOS(x86_64, aarch64)、Cangjie SDK 1.0.0 及以上版本中对 `stdx` 构建。更详细的环境及工具依赖请参阅 [构建依赖工具](https://gitcode.com/Cangjie/cangjie_build/blob/dev/docs/env_zh.md)。
+支持在 Ubuntu/macOS(x86_64, aarch64)、Cangjie SDK 1.0.0 及以上版本中对 `stdx` 构建。更详细的环境及工具依赖请参阅 [构建依赖工具](https://gitcode.com/Cangjie/cangjie_build/blob/dev/docs/env_zh.md)。
 
 注意：本拓展库后续版本可能存在不兼容变更，不承诺跨版本 API/ABI 兼容性，使用前请充分评估版本适配风险。
 
@@ -216,8 +216,8 @@ cjpm 的详细使用可以参考 [cjpm 文档](https://gitcode.com/Cangjie/cangj
 > **说明：**
 >
 > - `cjpm.toml` 是仓颉包管理工具 CJPM 的配置文件，详情请参见《仓颉编程语言工具使用指南》。
-> - Windows、Linux、MacOS 的配置方式相同。
-> - MacOS 使用 stdx 可能弹出未知来源或者无法检测是否包含恶意软件等弹框，可以在解压 stdx 后，终端执行 `xattr -dr com.apple.quarantine <stdx 解压路径> &> /dev/null || true` 来移除隔离属性。例如：`xattr -dr com.apple.quarantine ~/Downloads/darwin_x86_64_cjnative/ &> /dev/null || true`
+> - Windows、Linux、macOS 的配置方式相同。
+> - macOS 使用 stdx 可能弹出未知来源或者无法检测是否包含恶意软件等弹框，可以在解压 stdx 后，终端执行 `xattr -dr com.apple.quarantine <stdx 解压路径> &> /dev/null || true` 来移除隔离属性。例如：`xattr -dr com.apple.quarantine ~/Downloads/darwin_x86_64_cjnative/ &> /dev/null || true`
 > - 如果导入 `stdx` 的静态库并使用 crypto、net 包：`Windows` 需要在 `compile-option` 里额外添加 `-lcrypt32`。
 > - 使用 `stdx` 动态二进制（`.so`/`.dll`）时，OpenSSL 会通过运行时加载方式解析：类 Unix 使用 `dlopen/dlsym`，Windows 使用 `LoadLibrary/GetProcAddress`；此时即使应用侧以静态方式链接 OpenSSL（`.a`/`.lib`），也不会被该运行时解析路径直接使用。
 > - `Linux` 下默认静态 `stdx` 使用 OpenSSL 解析 `auto` 模式：优先直连 OpenSSL 符号，必要时才回退到 `dlopen/dlsym`；如果可能走回退路径，需要额外添加 `-ldl`。
@@ -259,7 +259,7 @@ cjc main.cj \
 
 ### 已安装二进制目录
 
-以下以 Linux/CJNATIVE 平台下已安装的 `stdx` 为例，说明其产物目录结构。
+以下以 Linux/cjnative 平台下已安装的 `stdx` 为例，说明其产物目录结构。
 
 - `dynamic/stdx`：动态库及相关运行时产物
 - `static/stdx`：默认静态库和 FFI 归档

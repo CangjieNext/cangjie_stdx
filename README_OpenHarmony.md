@@ -33,16 +33,16 @@
 ```text
 /stdx
 ├─ build                        # 工程构建目录，编译构建工具、脚本等
-├─ doc                          # STDX 库资料目录
+├─ doc                          # stdx 库资料目录
 ├─ figures                      # 存放readme中的架构图
-├─ src                          # STDX 各个包代码目录                        
+├─ src                          # stdx 各个包代码目录
 │   └─ stdx
 │       ├── actors              # 提供 Actors 功能                     
 │       ├── aspectCJ            # 提供 AOP 功能
 │       ├── compress            # 提供压缩和解压缩功能
 │       ├── crypto              # 提供安全相关能力
 │       ├── effect              # 提供用于处理 Effect Handler 特性的用户级 API。这是一个实验性功能，需要使用支持该机制的 Cangjie 编译器。
-│       ├── dynamicLoader       # Openssl 动态加载模块
+│       ├── dynamicLoader       # OpenSSL 动态加载模块
 │       ├── encoding            # 提供 JSON 和字符串编码相关能力。
 │       ├── fuzz                # 提供基于覆盖率反馈的仓颉 fuzz 引擎及对应的接口
 │       ├── log                 # 提供了日志记录相关的能力
