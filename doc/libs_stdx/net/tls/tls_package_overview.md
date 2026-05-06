@@ -26,8 +26,8 @@ tls 包用于进行安全加密的网络通信，提供创建 TLS 服务器、�
     - 由于 `Android` 系统默认自带的 `OpenSSL` 是裁剪版本，部分接口可能找不到符号而抛出异常，因此需要用户自行编译安装完整的 `OpenSSL 3.x.x` 版本；
     - 可自行下载 `OpenSSL 3.x.x` 源码，使用 Android NDK 交叉编译生成对应架构（当前只支持 `arm64-v8a`）的动态库文件，确保编译产物中含有 `libssl.so`、`libssl.so.3`、`libcrypto.so` 和 `libcrypto.so.3` 这些动态库文件；
     - 将这些文件所在目录设置到环境变量 `LD_LIBRARY_PATH` 中。
-- 对于 `HarmonyOS` 6.0 及以上版本操作系统，可参考以下方式：
-    - 由于系统限制，`stdx` 在 `HarmonyOS` 场景下无法直接调用系统内置的 `OpenSSL`，需要用户自行编译 `HarmonyOS` 的 `OpenSSL` 动态库并打包到应用中；
+- 对于 `HarmonyOS` 操作系统，可参考以下方式：
+    - 由于 `HarmonyOS` 6.0 及以上版本系统限制，`stdx` 无法直接调用系统内置的 `OpenSSL`，需要用户自行编译 `HarmonyOS` 的 `OpenSSL` 动态库并打包到应用中；
     - 编译 `HarmonyOS` 的 `OpenSSL` 可参考 [OHOS 仓颉 SDK 构建指导书](https://gitcode.com/Cangjie/cangjie_build/blob/dev/docs/linux_ohos_toolchain.md)；
     - 将编译好的动态库文件`libcrypto_openssl.z.so`和`libssl_openssl.z.so`打包到应用中，并确保应用运行时能够正确加载这些库文件。
 
