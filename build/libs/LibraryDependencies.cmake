@@ -65,7 +65,7 @@ set(NET_HTTP_DEPENDENCIES
 set(UNITTEST_DATA_DEPENDENCIES
     cangjie${BACKEND_TYPE}Serialization
     cangjie${BACKEND_TYPE}Json)
-    
+
 set(COMPRESS_DEPENDENCIES
     cangjie${BACKEND_TYPE}ZLIB
     cangjie${BACKEND_TYPE}Tar)

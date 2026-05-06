@@ -38,7 +38,7 @@ func isLowSurrogate(num: UInt32): Bool {
 
 public class JsonReader {
     let inputStream: InputStream // the input stream
-    let buffer: Array<Byte> = Array<Byte>(1024, repeat: 0)
+    let buffer: Array<Byte> = Array<Byte>(8192, repeat: 0)
     let stacks = JsonStateStack() // a stack of json types(object/array)
     let stringBuffer: StringBuffer = StringBuffer() // a buffer for readed string
 
@@ -74,15 +74,19 @@ public class JsonReader {
                 case 2 => peeked = PEEK_STATE_VALUE /* JsonStateStack.JSON_ARRAY */
                 case _ => ()
             }
+        } else if (nextByte == b']' && stacks.top == JsonStateStack.JSON_ARRAY) {
+            peeked = PEEK_STATE_ARRAY_END
+        } else if (nextByte == b'}' && stacks.top == JsonStateStack.JSON_OBJECT) {
+            peeked = PEEK_STATE_OBJECT_END
         } else {
-            if( nextByte != b']' && nextByte != b'}'){
-                 match (stacks.top) {
+            if (nextByte != b']' && nextByte != b'}') {
+                match (stacks.top) {
                     case 1 where peeked != PEEK_STATE_NAME => throw IllegalStateException("Commas are required to separate values in arrays and object members.")// json object
                     case 2 where peeked != PEEK_STATE_VALUE => throw IllegalStateException("Commas are required to separate values in arrays and object members.") // json array
                     case _ => () // top level value
                 }
             }
-            peeked = PEEK_STATE_NONE           
+            peeked = PEEK_STATE_NONE
         }
 
         return res
@@ -321,7 +325,8 @@ public class JsonReader {
      */
     func afterRead(): Unit {
         // if next character is a comma, it means it's not a end of object/array
-        if (tryNextNonJsonWhitespace() == b',') {
+        let nextByte = tryNextNonJsonWhitespace()
+        if (nextByte == b',') {
             index++
             availLen--
             match (stacks.top) {
@@ -329,6 +334,12 @@ public class JsonReader {
                 case 2 => return peeked = PEEK_STATE_VALUE /* JsonStateStack.JSON_ARRAY */
                 case _ => ()
             }
+        } else if (nextByte == b']' && stacks.top == JsonStateStack.JSON_ARRAY) {
+            peeked = PEEK_STATE_ARRAY_END
+            return
+        } else if (nextByte == b'}' && stacks.top == JsonStateStack.JSON_OBJECT) {
+            peeked = PEEK_STATE_OBJECT_END
+            return
         }
         peeked = PEEK_STATE_NONE
     }
@@ -925,8 +936,67 @@ public class JsonReader {
             throw IllegalStateException("The next Token is not UInt64.")
         }
 
-        let (numSys, multmin): (UInt64, UInt64) = handleNumberSystem()
+        if (nextByte != b'0') {
+            return readUIntDecimal()
+        }
 
+        index++
+        availLen--
+        if (let Some(prefix) <- peekNext()) {
+            match (prefix) {
+                case b'b' | b'B' =>
+                    index++
+                    availLen--
+                    return readUIntRadix(2, BINARY_OVERFLOW_LIMIT_UI64)
+                case b'o' | b'O' =>
+                    index++
+                    availLen--
+                    return readUIntRadix(8, OCTAL_OVERFLOW_LIMIT_UI64)
+                case b'x' | b'X' =>
+                    index++
+                    availLen--
+                    return readUIntRadix(16, HEXADECIMAL_OVERFLOW_LIMIT_UI64)
+                case b'd' | b'D' =>
+                    index++
+                    availLen--
+                    return readUIntDecimal()
+                case _ => ()
+            }
+        }
+        return readUIntDecimal(result: 0)
+    }
+
+    @OverflowWrapping
+    private func readUIntDecimal(result!: UInt64 = 0): (UInt64, Bool) {
+        var res = result
+        while (true) {
+            if (availLen <= 0) {
+                fillInBuf()
+                if (availLen <= 0) {
+                    break
+                }
+            }
+            let nextByte = buffer[index]
+            if (!isDecimalDigit(nextByte)) {
+                break
+            }
+            let digit = UInt64(nextByte - b'0')
+            if (res > DECIMAL_OVERFLOW_LIMIT_UI64) {
+                return (0, true)
+            }
+            res = res * 10
+            if (MAXVAL_UI64 - res < digit) {
+                return (0, true)
+            }
+            res += digit
+            index++
+            availLen--
+        }
+        return (res, false)
+    }
+
+    @OverflowWrapping
+    private func readUIntRadix(numSys: UInt64, multmin: UInt64): (UInt64, Bool) {
         var result: UInt64 = 0
         while (true) {
             if (availLen <= 0) {
@@ -935,8 +1005,7 @@ public class JsonReader {
                     break
                 }
             }
-            nextByte = buffer[index]
-
+            let nextByte = buffer[index]
             let digit = DIGITS_UI64[Int64(nextByte)]
             if (digit >= numSys) { // digit cannot equal or bigger then number system
                 break
@@ -944,11 +1013,11 @@ public class JsonReader {
             if (result > multmin) {
                 return (0, true)
             }
-
+            result = result * numSys
             if (MAXVAL_UI64 - result < digit) {
                 return (0, true)
             }
-            result = result * numSys + digit
+            result += digit
             index++
             availLen--
         }
@@ -1021,34 +1090,6 @@ public class JsonReader {
             }
         }
         return result
-    }
-
-    @OverflowWrapping
-    private func handleNumberSystem(): (UInt64, UInt64) {
-        if (peekNext() != b'0') {
-            return (10, DECIMAL_OVERFLOW_LIMIT_UI64)
-        }
-        index++
-        availLen--
-        match (peekNext()) {
-            case Some(b'b') | Some(b'B') =>
-                index++
-                availLen--
-                return (2, BINARY_OVERFLOW_LIMIT_UI64)
-            case Some(b'o') | Some(b'O') =>
-                index++
-                availLen--
-                return (8, OCTAL_OVERFLOW_LIMIT_UI64)
-            case Some(b'x') | Some(b'X') =>
-                index++
-                availLen--
-                return (16, HEXADECIMAL_OVERFLOW_LIMIT_UI64)
-            case Some(b'd') | Some(b'D') =>
-                index++
-                availLen--
-                return (10, DECIMAL_OVERFLOW_LIMIT_UI64)
-            case _ => return (10, DECIMAL_OVERFLOW_LIMIT_UI64)
-        }
     }
 
     func readBool(): Bool {

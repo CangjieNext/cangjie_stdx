@@ -46,7 +46,7 @@ if(CMAKE_BUILD_STAGE STREQUAL "postBuild")
     else()
         set(stdxo_path ${CANGJIE_CJPM_DIR}/${target_dir}/${lowercase_build_type}/stdx)
     endif()
-    
+
 else()
     set(stdxo_path ${output_cj_object_dir})
 endif()
@@ -129,6 +129,7 @@ make_cangjie_lib(
         std-convert
         std-sort
         std-math
+        std-sync
     OBJECTS ${output_cj_object_dir}/stdx/encoding.json.o
     FLAGS -lstdx.encoding.jsonFFI)
 get_target_property(JSONFFI_OBJS stdx.encoding.jsonFFI SOURCES)
@@ -509,7 +510,7 @@ make_cangjie_lib(
     DEPENDS cangjie${BACKEND_TYPE}Effect
     CANGJIE_STD_LIB_LINK std-core std-collection std-sync
     OBJECTS ${output_cj_object_dir}/stdx/effect.o)
- 
+
 add_library(stdx.effect STATIC ${output_cj_object_dir}/stdx/effect.o)
 set_target_properties(stdx.effect PROPERTIES LINKER_LANGUAGE C)
 install(TARGETS stdx.effect DESTINATION ${output_triple_name}_${CJNATIVE_BACKEND}${SANITIZER_SUBPATH}/static/stdx)
