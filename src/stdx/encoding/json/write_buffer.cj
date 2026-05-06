@@ -11,11 +11,16 @@ package stdx.encoding.json
 @FastNative
 foreign func memcpy_s(dest: CPointer<UInt8>, destMax: UIntNative, src: CPointer<UInt8>, count: UIntNative): Int32
 
+@FastNative
+foreign func CJ_JSON_AppendEscapedString(input: CPointer<UInt8>, inputLen: Int64, buffer: CPointer<UInt8>,
+                                          bufferOffset: Int64, bufferCapacity: Int64, htmlSafe: Bool): Int64
+
 let BOOL_TRUE_STRING = "true".toArray()
 let BOOL_FALSE_STRING = "false".toArray()
 let NULL_STRING = "null".toArray()
 const MIN_CAPACITY = 16
 const BLANK: Byte = ' '
+const MAX_JSON_WRITE_DEPTH = 100
 
 /*
  * This is a stringbuilder customized for json serialization.
@@ -73,15 +78,10 @@ class WriteBuffer {
     func append(arr: Array<Byte>): WriteBuffer {
         checkAndExpend(arr.size)
 
-        if (arr.size < 32) {
-            for (index in 0..arr.size) {
-                _buffer[_size] = arr[index]
-                _size++
-            }
-        } else {
-            arr.copyTo(_buffer, 0, _size, arr.size)
-            _size += arr.size
-        }
+        // Optimized: Always use copyTo for better performance
+        // Modern copyTo implementations are optimized even for small arrays
+        arr.copyTo(_buffer, 0, _size, arr.size)
+        _size += arr.size
         return this
     }
 
@@ -156,27 +156,30 @@ class WriteBuffer {
     }
 
     func appendEscape(str: String, htmlSafe!: Bool = true) {
-        var escapenum = 0
+        // Optimized: Single-pass escape with worst-case capacity pre-allocation
+        // Worst case: every character becomes \uXXXX (6 bytes)
+        let maxNeeded = str.size * 6
+        checkAndExpend(maxNeeded)
+
         unsafe {
             let input = acquireArrayRawData(str.rawData())
-            escapenum = CJ_JSON_StringEscapeCharNumGet(input.pointer, str.size, htmlSafe)
+            let buff = acquireArrayRawData<Byte>(_buffer)
+            let written = CJ_JSON_AppendEscapedString(
+                input.pointer,
+                str.size,
+                buff.pointer,
+                _size,
+                _buffer.size - _size,
+                htmlSafe
+            )
             releaseArrayRawData(input)
-        }
+            releaseArrayRawData(buff)
 
-        if (escapenum == 0) {
-            append(str)
-            return this
-        } else {
-            checkAndExpend(str.size + escapenum)
-            unsafe {
-                let input = acquireArrayRawData(str.rawData())
-                let buff = acquireArrayRawData<Byte>(_buffer)
-                let len = CJ_JSON_ReplaceEscapeChar(input.pointer, str.size, buff.pointer + _size, htmlSafe)
-                releaseArrayRawData(input)
-                releaseArrayRawData(buff)
-                _size += len
-                return this
+            if (written < 0) {
+                throw JsonException("Buffer overflow in appendEscape")
             }
+            _size += written
+            return this
         }
     }
 
@@ -188,7 +191,18 @@ class WriteBuffer {
     }
 }
 
+func checkJsonWriteDepth(depth: Int64): Unit {
+    if (depth > MAX_JSON_WRITE_DEPTH) {
+        throw JsonException("Json nested depth exceeds ${MAX_JSON_WRITE_DEPTH}.")
+    }
+}
+
 func jsonWriteWithoutFormat(json: JsonValue, buff: WriteBuffer, htmlSafe!: Bool = true): Unit {
+    jsonWriteWithoutFormat(json, buff, 0, htmlSafe: htmlSafe)
+}
+
+func jsonWriteWithoutFormat(json: JsonValue, buff: WriteBuffer, depth: Int64, htmlSafe!: Bool = true): Unit {
+    checkJsonWriteDepth(depth)
     match (json) {
         case jo: JsonObject =>
             if (jo.size() == 0) {
@@ -198,7 +212,7 @@ func jsonWriteWithoutFormat(json: JsonValue, buff: WriteBuffer, htmlSafe!: Bool 
             buff.append(b'{')
             for ((strKey, jv) in jo.getFields()) {
                 buff.append(b'\"').appendEscape(strKey).append("\":".toArray())
-                jsonWriteWithoutFormat(jv, buff, htmlSafe: htmlSafe)
+                jsonWriteWithoutFormat(jv, buff, depth + 1, htmlSafe: htmlSafe)
                 buff.append(b',')
             }
             buff.removetail()
@@ -210,7 +224,7 @@ func jsonWriteWithoutFormat(json: JsonValue, buff: WriteBuffer, htmlSafe!: Bool 
             }
             buff.append(b'[')
             for (item in ja.getItems()) {
-                jsonWriteWithoutFormat(item, buff, htmlSafe: htmlSafe)
+                jsonWriteWithoutFormat(item, buff, depth + 1, htmlSafe: htmlSafe)
                 buff.append(b',')
             }
             buff.removetail()
@@ -224,6 +238,7 @@ func jsonWriteWithoutFormat(json: JsonValue, buff: WriteBuffer, htmlSafe!: Bool 
 }
 
 func jsonWriteObject(json: JsonObject, buff: WriteBuffer, depth: Int64, bracketInNewLine: Bool, indent: String, htmlSafe!: Bool = true): Unit {
+    checkJsonWriteDepth(depth)
     if (bracketInNewLine) {
         for (_ in 0..depth) {
             buff.append(indent)
@@ -246,7 +261,7 @@ func jsonWriteObject(json: JsonObject, buff: WriteBuffer, depth: Int64, bracketI
         match (jv) {
             case jo: JsonObject => jsonWriteObject(jo, buff, new_depth, false, indent, htmlSafe: htmlSafe)
             case ja: JsonArray => jsonWriteArray(ja, buff, new_depth, false, indent, htmlSafe: htmlSafe)
-            case _ => jsonWriteWithoutFormat(jv, buff, htmlSafe: htmlSafe)
+            case _ => jsonWriteWithoutFormat(jv, buff, new_depth, htmlSafe: htmlSafe)
         }
         buff.append(b',')
     }
@@ -259,6 +274,7 @@ func jsonWriteObject(json: JsonObject, buff: WriteBuffer, depth: Int64, bracketI
 }
 
 func jsonWriteArray(json: JsonArray, buff: WriteBuffer, depth: Int64, bracketInNewLine: Bool, indent: String, htmlSafe!: Bool = true): Unit {
+    checkJsonWriteDepth(depth)
     if (bracketInNewLine) {
         for (_ in 0..depth) {
             buff.append(indent)
@@ -280,7 +296,7 @@ func jsonWriteArray(json: JsonArray, buff: WriteBuffer, depth: Int64, bracketInN
         match (v) {
             case jo: JsonObject => jsonWriteObject(jo, buff, new_depth, false, indent, htmlSafe: htmlSafe)
             case ja: JsonArray => jsonWriteArray(ja, buff, new_depth, false, indent, htmlSafe: htmlSafe)
-            case _ => jsonWriteWithoutFormat(v, buff, htmlSafe: htmlSafe)
+            case _ => jsonWriteWithoutFormat(v, buff, new_depth, htmlSafe: htmlSafe)
         }
         buff.append(b',')
     }
@@ -292,25 +308,30 @@ func jsonWriteArray(json: JsonArray, buff: WriteBuffer, depth: Int64, bracketInN
     buff.append(b']')
 }
 
-func asumecapacity(json: JsonValue): Int64 {
+func estimateCapacityWithDepth(json: JsonValue, depth: Int64): Int64 {
+    checkJsonWriteDepth(depth)
     match (json) {
         case jo: JsonObject =>
-            var sum = 2
+            var sum: Int64 = 2  // {}
             for ((k, v) in jo.getFields()) {
-                sum = sum + k.size + 4 // + "key": value,
-                sum += asumecapacity(v)
+                sum += k.size + 4  // "key": ,
+                sum += estimateCapacityWithDepth(v, depth + 1)
             }
             return sum
         case ja: JsonArray =>
-            var sum = 2
+            var sum: Int64 = 2  // []
             for (v in ja.getItems()) {
-                sum = sum + asumecapacity(v) + 1
+                sum += estimateCapacityWithDepth(v, depth + 1) + 1  // value + comma
             }
             return sum
-        case js: JsonString => return js.value.size + 2 // "value"
-        case _: JsonBool => return 5 // max of "false" and "true" 
-        case _: JsonInt => return 22 // max len is 22
-        case _: JsonFloat => return 200 // not precision 
-        case _ => return 4 // len of "null" is 4
+        case _ => return json.estimateCapacity()
     }
+}
+
+func asumecapacity(json: JsonValue): Int64 {
+    return estimateCapacityWithDepth(json, 0)
+}
+
+func asumecapacity(json: JsonValue, depth: Int64): Int64 {
+    return estimateCapacityWithDepth(json, depth)
 }
