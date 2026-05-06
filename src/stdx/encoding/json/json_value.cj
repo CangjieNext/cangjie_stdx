@@ -25,7 +25,6 @@ public enum JsonKind {
  * JsonValue abstract class used for JSON manipulations.
  */
 sealed abstract class JsonValue <: ToString {
-
     /**
      * Convert JsonValue to String.
      *
@@ -89,6 +88,22 @@ sealed abstract class JsonValue <: ToString {
      * @since 0.17.4
      */
     public func kind(): JsonKind
+
+    public func estimateCapacity(): Int64 {
+        return calculateCapacity()
+    }
+
+    /**
+     * Calculate capacity (to be overridden by subclasses)
+     */
+    protected func calculateCapacity(): Int64
+
+    /**
+     * Invalidate cached capacity when structure changes
+     */
+    protected func invalidateCapacity(): Unit {
+        return
+    }
 
     /**
      * Convert JsonValue to JsonNull. If the failure occurs, Exception will be throwed.
