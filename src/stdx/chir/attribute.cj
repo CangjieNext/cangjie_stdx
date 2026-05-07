@@ -322,4 +322,8 @@ internal struct AttributeInfo <: ToString {
         setAttr(Attribute.Private, false)
         setAttr(Attribute.Internal, false)
     }
+
+    internal func isImported(): Bool {
+        return testAttr(Attribute.Imported)
+    }
 }

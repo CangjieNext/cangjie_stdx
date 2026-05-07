@@ -10,140 +10,31 @@ package stdx.chir
 
 import std.collection.*
 
-internal func updateLocalVarIdAndHashCode(v: LocalVar): Unit {
-    if (v._identifier.isEmpty()) {
-        let id = LOCAL_VAR_PREFIX + v.topLevelFunc.generateLocalId().toString()
-        v._identifier = id
-        v._hashCode = v.calculateHashCode()
+internal func assert(condition: Bool, message: String): Unit {
+    if (!condition) {
+        throw CHIRException(message)
     }
 }
 
-internal func getFieldOfType(baseTy: Type, path: ArrayList<Int64>): Type {
-    var resType = baseTy
-    for (i in path) {
-        resType = getFieldOfTypeImpl(resType, i)
-    }
-    return resType
-}
-
-internal func isOptionLike(def: EnumDef): Bool {
-    if (!def.isExhaustive) {
-        return false
-    }
-    let ctors = def.constructors
-    if (ctors.size != 2) {
-        return false
-    }
-    // `enum EA { A(xxx) | B }` or `enum EA { A | B(xxx) }`
-    return ctors[0].funcType.paramTypes.size + ctors[1].funcType.paramTypes.size == 1
-}
-
-internal func getEnumSelectorType(def: EnumDef): TypeKind {
-    if (isOptionLike(def)) {
-        return TypeKind.`Bool`
-    }
-    return TypeKind.`UInt32`
-}
-
-private func getFieldOfTypeImpl(baseTy: Type, index: Int64): Type {
-    if (baseTy.isRefType()) {
-        return getFieldOfTypeImpl(baseTy.stripAllRefs(), index)
-    } else if (let Some(tt) <- (baseTy as TupleType)) {
-        return tt.elementTypes[index]
-    } else if (let Some(et) <- (baseTy as EnumType)) {
-        assert(index == 0, "Enum type can only have one element")
-        if (getEnumSelectorType(et.enumDef) == TypeKind.`Bool`) {
-            return BoolType.get()
+internal func calculateFunctionInstType(f: Function, instantiateTypes: ArrayList<Type>): Type {
+    var replaceTable = HashMap<GenericType, Type>()
+    var index: Int64 = 0
+    if (let Some(parentDef) <- f.declaredParent) {
+        let tmpTypeArgs = parentDef.ty.typeArgs
+        while (index < tmpTypeArgs.size) {
+            let ty = tmpTypeArgs[index]
+            if (ty.isGenericRelated()) {
+                assert(ty.calculateGeneric2InstTypeMapImpl(instantiateTypes[index], replaceTable), "Failed to calculate generic type to inst type")
+            }
+            index++
         }
-        return IntType.getUInt32()
-    } else if (let Some(ct) <- (baseTy as CustomType)) {
-        // only struct type and class type have member variables
-        let memberVarTypes = ct.getInstantiatedMemberVarTypes()
-        assert(memberVarTypes.size > index, "Member variable size mismatch, ${memberVarTypes.size} vs ${index}")
-        return memberVarTypes[index]
-    } else if (let Some(rat) <- (baseTy as RawArrayType)) {
-        return rat.elementType
     }
-    throw CHIRException("Invalid type: " + baseTy.toString())
-}
-
-internal func getFieldOfType(baseTy: Type, fieldNames: ArrayList<String>): Type {
-    var resType = baseTy
-    for (name in fieldNames) {
-        resType = getFieldOfTypeImpl(resType, name)
+    let funcGenericTypeParams = f.genericTypeParams
+    for (i in 0..funcGenericTypeParams.size) {
+        let ty = funcGenericTypeParams[i]
+        replaceTable.add(ty, instantiateTypes[i + index])
     }
-    return resType
-}
-
-private func getFieldOfTypeImpl(baseTy: Type, name: String): Type {
-    if (baseTy.isRefType()) {
-        return getFieldOfTypeImpl(baseTy.stripAllRefs(), name)
-    } else if (let Some(ct) <- (baseTy as CustomType)) {
-        // only struct type and class type have member variables
-        return ct.getMemberVarInstantiatedType(name)
-    }
-    throw CHIRException("Invalid type: " + baseTy.toString())
-}
-
-internal func getInstMapFromCurDefAndExDefToCurType(curType: CustomType): HashMap<GenericType, Type> {
-    let (res, instMap) = curType.def.ty.calculateGeneric2InstTypeMap(curType)
-    assert(res, "Failed to calculate generic 2 inst type map")
-    for (exDef in curType.def.extends) {
-        // maybe we can meet `extend<T> A<B<T>> {}`, and `curType` is A<Int32>, then ignore this def,
-        // so not need to check `res`
-        let (_, tempTable) = exDef.extendedType.calculateGeneric2InstTypeMap(curType)
-        instMap.add(all: tempTable)
-    }
-    return instMap
-}
-
-internal func getInstType(genericType: Type, f: Value, funcCallCtx: FuncCallContext): Type {
-    if (!genericType.isGenericRelated()) {
-        return genericType
-    }
-    let genericTypeParams: Array<GenericType>
-    if (let Some(lv) <- (f as LocalVar)) {
-        let e = lv.expr as Lambda
-        genericTypeParams = e.getOrThrow().genericTypeParams
-    } else if (let Some(tempFunc) <- (f as Function)) {
-        genericTypeParams = tempFunc.genericTypeParams
-    } else {
-        // maybe parameter or something else
-        return genericType
-    }
-
-    if (genericTypeParams.size != funcCallCtx.instTypeArgs.size) {
-        throw CHIRException("getInstType: genericTypeParams.size != instArgs.size")
-    }
-    var replaceTable: HashMap<GenericType, Type> = HashMap<GenericType, Type>()
-    let instParentType = getInstParentCustomTypeOfCallee(f, funcCallCtx)
-    if (let Some(ct) <- (instParentType as CustomType)) {
-        replaceTable = getInstMapFromCurDefAndExDefToCurType(ct)
-    }
-    for (i in 0..genericTypeParams.size) {
-        let genericTypeParam = genericTypeParams[i]
-        let instType = funcCallCtx.instTypeArgs[i]
-        replaceTable.add(genericTypeParam, instType)
-    }
-    return getInstType(genericType, replaceTable)
-}
-
-internal func getInstType(genericType: Type, replaceTable: HashMap<GenericType, Type>): Type {
-    if (!genericType.isGenericRelated()) {
-        return genericType
-    }
-    if (genericType.isGenericType()) {
-        let res = replaceTable.get((genericType as GenericType).getOrThrow())
-        if (let Some(r) <- res) {
-            return r
-        }
-        return genericType
-    }
-    var newTypeArgs: ArrayList<Type> = ArrayList<Type>()
-    for (arg in genericType.typeArgs) {
-        newTypeArgs.add(getInstType(arg, replaceTable))
-    }
-    return createNewTypeWithArgs(genericType, newTypeArgs)
+    return getInstType(f.ty, replaceTable)
 }
 
 internal func createNewTypeWithArgs(oldType: Type, newTypeArgs: ArrayList<Type>): Type {
@@ -200,31 +91,71 @@ internal func getAllInstantiatedParentTypes(cur: ClassLikeType, parentTypes: Arr
     }
 }
 
-internal func assert(condition: Bool, message: String): Unit {
-    if (!condition) {
-        throw CHIRException(message)
+internal func getEnumSelectorType(def: EnumDef): TypeKind {
+    if (isOptionLike(def)) {
+        return TypeKind.`Bool`
     }
+    return TypeKind.`UInt32`
 }
 
-internal func calculateFunctionInstType(f: Function, instantiateTypes: ArrayList<Type>): Type {
-    var replaceTable = HashMap<GenericType, Type>()
-    var index: Int64 = 0
-    if (let Some(parentDef) <- f.declaredParent) {
-        let tmpTypeArgs = parentDef.ty.typeArgs
-        while (index < tmpTypeArgs.size) {
-            let ty = tmpTypeArgs[index]
-            if (ty.isGenericRelated()) {
-                assert(ty.calculateGeneric2InstTypeMapImpl(instantiateTypes[index], replaceTable), "Failed to calculate generic type to inst type")
-            }
-            index++
+internal func getFieldOfType(baseTy: Type, path: ArrayList<Int64>): Type {
+    var resType = baseTy
+    for (i in path) {
+        resType = getFieldOfTypeImpl(resType, i)
+    }
+    return resType
+}
+
+internal func getFieldOfType(baseTy: Type, fieldNames: ArrayList<String>): Type {
+    var resType = baseTy
+    for (name in fieldNames) {
+        resType = getFieldOfTypeImpl(resType, name)
+    }
+    return resType
+}
+
+private func getFieldOfTypeImpl(baseTy: Type, index: Int64): Type {
+    if (baseTy.isRefType()) {
+        return getFieldOfTypeImpl(baseTy.stripAllRefs(), index)
+    } else if (let Some(tt) <- (baseTy as TupleType)) {
+        return tt.elementTypes[index]
+    } else if (let Some(et) <- (baseTy as EnumType)) {
+        assert(index == 0, "Enum type can only have one element")
+        if (getEnumSelectorType(et.enumDef) == TypeKind.`Bool`) {
+            return BoolType.get()
         }
+        return IntType.getUInt32()
+    } else if (let Some(ct) <- (baseTy as CustomType)) {
+        // only struct type and class type have member variables
+        let memberVarTypes = ct.getInstantiatedMemberVarTypes()
+        assert(memberVarTypes.size > index, "Member variable size mismatch, ${memberVarTypes.size} vs ${index}")
+        return memberVarTypes[index]
+    } else if (let Some(rat) <- (baseTy as RawArrayType)) {
+        return rat.elementType
     }
-    let funcGenericTypeParams = f.genericTypeParams
-    for (i in 0..funcGenericTypeParams.size) {
-        let ty = funcGenericTypeParams[i]
-        replaceTable.add(ty, instantiateTypes[i + index])
+    throw CHIRException("Invalid type: " + baseTy.toString())
+}
+
+private func getFieldOfTypeImpl(baseTy: Type, name: String): Type {
+    if (baseTy.isRefType()) {
+        return getFieldOfTypeImpl(baseTy.stripAllRefs(), name)
+    } else if (let Some(ct) <- (baseTy as CustomType)) {
+        // only struct type and class type have member variables
+        return ct.getMemberVarInstantiatedType(name)
     }
-    return getInstType(f.ty, replaceTable)
+    throw CHIRException("Invalid type: " + baseTy.toString())
+}
+
+internal func getInstMapFromCurDefAndExDefToCurType(curType: CustomType): HashMap<GenericType, Type> {
+    let (res, instMap) = curType.def.ty.calculateGeneric2InstTypeMap(curType)
+    assert(res, "Failed to calculate generic 2 inst type map")
+    for (exDef in curType.def.extends) {
+        // maybe we can meet `extend<T> A<B<T>> {}`, and `curType` is A<Int32>, then ignore this def,
+        // so not need to check `res`
+        let (_, tempTable) = exDef.extendedType.calculateGeneric2InstTypeMap(curType)
+        instMap.add(all: tempTable)
+    }
+    return instMap
 }
 
 internal func getInstParentCustomTypeOfCallee(v: Value, funcCallCtx: FuncCallContext): ?Type {
@@ -344,6 +275,72 @@ internal func getInstParentType(candidate: Array<ClassLikeType>, f: Function, ar
     throw CHIRException("No matched parent type found")
 }
 
+internal func getInstType(genericType: Type, f: Value, funcCallCtx: FuncCallContext): Type {
+    if (!genericType.isGenericRelated()) {
+        return genericType
+    }
+    let genericTypeParams: Array<GenericType>
+    if (let Some(lv) <- (f as LocalVar)) {
+        let e = lv.expr as Lambda
+        genericTypeParams = e.getOrThrow().genericTypeParams
+    } else if (let Some(tempFunc) <- (f as Function)) {
+        genericTypeParams = tempFunc.genericTypeParams
+    } else {
+        // maybe parameter or something else
+        return genericType
+    }
+
+    if (genericTypeParams.size != funcCallCtx.instTypeArgs.size) {
+        throw CHIRException("getInstType: genericTypeParams.size != instArgs.size")
+    }
+    var replaceTable: HashMap<GenericType, Type> = HashMap<GenericType, Type>()
+    let instParentType = getInstParentCustomTypeOfCallee(f, funcCallCtx)
+    if (let Some(ct) <- (instParentType as CustomType)) {
+        replaceTable = getInstMapFromCurDefAndExDefToCurType(ct)
+    }
+    for (i in 0..genericTypeParams.size) {
+        let genericTypeParam = genericTypeParams[i]
+        let instType = funcCallCtx.instTypeArgs[i]
+        replaceTable.add(genericTypeParam, instType)
+    }
+    return getInstType(genericType, replaceTable)
+}
+
+internal func getInstType(genericType: Type, replaceTable: HashMap<GenericType, Type>): Type {
+    if (!genericType.isGenericRelated()) {
+        return genericType
+    }
+    if (genericType.isGenericType()) {
+        let res = replaceTable.get((genericType as GenericType).getOrThrow())
+        if (let Some(r) <- res) {
+            return r
+        }
+        return genericType
+    }
+    var newTypeArgs: ArrayList<Type> = ArrayList<Type>()
+    for (arg in genericType.typeArgs) {
+        newTypeArgs.add(getInstType(arg, replaceTable))
+    }
+    return createNewTypeWithArgs(genericType, newTypeArgs)
+}
+
+internal func isOptionLike(def: EnumDef): Bool {
+    if (!def.isExhaustive) {
+        return false
+    }
+    let ctors = def.constructors
+    if (ctors.size != 2) {
+        return false
+    }
+    // `enum EA { A(xxx) | B }` or `enum EA { A | B(xxx) }`
+    return ctors[0].funcType.paramTypes.size + ctors[1].funcType.paramTypes.size == 1
+}
+
+internal func meetClosureType(subType: Type, parentType: Type): Bool {
+    return subType.isClosureInstBaseType() && parentType.isClosureGenericBaseType() &&
+        (subType as ClassLikeType).getOrThrow().classLikeDef.superClass.getOrThrow() == parentType
+}
+
 internal func paramTypeIsEquivalent(paramType: Type, argType: Type): Bool {
     if (paramType == argType) {
         return true
@@ -358,7 +355,30 @@ internal func paramTypeIsEquivalent(paramType: Type, argType: Type): Bool {
     return meetClosureType(argType.stripAllRefs(), paramType.stripAllRefs())
 }
 
-internal func meetClosureType(subType: Type, parentType: Type): Bool {
-    return subType.isClosureInstBaseType() && parentType.isClosureGenericBaseType() &&
-        (subType as ClassLikeType).getOrThrow().classLikeDef.superClass.getOrThrow() == parentType
+internal func updateLocalVarIdAndHashCode(v: LocalVar): Unit {
+    if (v._identifier.isEmpty()) {
+        let id = LOCAL_VAR_PREFIX + v.topLevelFunc.generateLocalId().toString()
+        v._identifier = id
+        v._hashCode = v.calculateHashCode()
+    }
+}
+
+extend<T> Array<T> {
+    internal func mapTo<R>(f: (T) -> R): Array<R> {
+        var result = ArrayList<R>()
+        for (i in this) {
+            result.add(f(i))
+        }
+        return result.toArray()
+    }
+}
+
+extend<T> ArrayList<T> {
+    internal func mapTo<R>(f: (T) -> R): ArrayList<R> {
+        var result = ArrayList<R>()
+        for (i in this) {
+            result.add(f(i))
+        }
+        return result
+    }
 }

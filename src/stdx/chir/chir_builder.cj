@@ -361,6 +361,30 @@ public class CHIRBuilder {
     }
 
     /**
+     * Performs the public behavior of `createCastToConcrete`.
+     * @param srcVal The `srcVal` parameter.
+     * @param targetType The `targetType` parameter.
+     * @return The `CastToConcrete` result.
+     */
+    public func createCastToConcrete(srcVal: Value, targetType: Type): CastToConcrete {
+        let expr = CastToConcrete.create(srcVal, targetType)
+        insertAndAdvance(expr)
+        return expr
+    }
+
+    /**
+     * Performs the public behavior of `createCastToGeneric`.
+     * @param srcVal The `srcVal` parameter.
+     * @param targetType The `targetType` parameter.
+     * @return The `CastToGeneric` result.
+     */
+    public func createCastToGeneric(srcVal: Value, targetType: Type): CastToGeneric {
+        let expr = CastToGeneric.create(srcVal, targetType)
+        insertAndAdvance(expr)
+        return expr
+    }
+
+    /**
      * Performs the public behavior of `createConstant`.
      * @param val The `val` parameter.
      * @return The `Constant` result.
@@ -425,6 +449,12 @@ public class CHIRBuilder {
      */
     public func createGetElementByName(location: Value, fieldNames: ArrayList<String>): GetElementByName {
         let expr = GetElementByName.create(location, fieldNames)
+        insertAndAdvance(expr)
+        return expr
+    }
+
+    public func createGetElementRef(location: Value, path: ArrayList<UInt64>): GetElementRef {
+        let expr = GetElementRef.create(location, path)
         insertAndAdvance(expr)
         return expr
     }
@@ -687,6 +717,12 @@ public class CHIRBuilder {
      */
     public func createStoreElementByName(val: Value, location: Value, fieldNames: ArrayList<String>): StoreElementByName {
         let expr = StoreElementByName.create(val, location, fieldNames)
+        insertAndAdvance(expr)
+        return expr
+    }
+
+    public func createStoreElementRef(val: Value, location: Value, path: ArrayList<UInt64>): StoreElementRef {
+        let expr = StoreElementRef.create(val, location, path)
         insertAndAdvance(expr)
         return expr
     }

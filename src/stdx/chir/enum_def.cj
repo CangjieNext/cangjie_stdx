@@ -14,7 +14,7 @@ package stdx.chir
  * An enum constructor is a variant of an enum type with optional parameters.
  */
 public class EnumCtorInfo <: ToString {
-    internal var _annotations = AnnoInfo()
+    internal var _annoInfo = AnnoInfo()
     internal let _funcType: FuncType
     internal let _identifier: String
     internal let _outerDef: EnumDef
@@ -27,10 +27,10 @@ public class EnumCtorInfo <: ToString {
      */
     public mut prop annotations: Array<Annotation> {
         get() {
-            return _annotations._annoClasses.toArray()
+            return _annoInfo._annoInstances.toArray()
         }
         set(v) {
-            _annotations._annoClasses = ArrayList<Annotation>.of(v)
+            _annoInfo._annoInstances = ArrayList<Annotation>.of(v)
         }
     }
 
@@ -165,6 +165,6 @@ public class EnumDef <: CustomTypeDef & Equatable<EnumDef> {
      * @return true if the definitions are equal, false otherwise.
      */
     public operator func==(other: EnumDef): Bool {
-        return isSameDef(other)
+        return refEq(this, other)
     }
 }
