@@ -362,3 +362,23 @@ internal func meetClosureType(subType: Type, parentType: Type): Bool {
     return subType.isClosureInstBaseType() && parentType.isClosureGenericBaseType() &&
         (subType as ClassLikeType).getOrThrow().classLikeDef.superClass.getOrThrow() == parentType
 }
+
+extend<T> ArrayList<T> {
+    internal func mapTo<R>(f: (T) -> R): ArrayList<R> {
+        var result = ArrayList<R>()
+        for (i in this) {
+            result.add(f(i))
+        }
+        return result
+    }
+}
+
+extend<T> Array<T> {
+    internal func mapTo<R>(f: (T) -> R): Array<R> {
+        var result = ArrayList<R>()
+        for (i in this) {
+            result.add(f(i))
+        }
+        return result.toArray()
+    }
+}

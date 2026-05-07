@@ -128,16 +128,19 @@ internal func functionToString(obj: Function, indent: UInt64): String {
         result += "[CFFIWrapper]"
     }
     // function identifier
-    result += "Func " + obj.identifier + typeVecToString("<", obj.genericTypeParams, ">")
+    result += "Func " + obj.identifier + typeVecToString("<", obj.genericTypeParams, ">") + "("
     // parameters
     var params = ArrayList<String>()
     for (param in obj.parameters) {
-        parameterToString(param, indent + INDENT_SPACE)
+        params.add(parameterToString(param, indent + INDENT_SPACE))
     }
-    result += "(" + String.join(params.toArray(), delimiter: ",\n")
-    result += "\n" + indentToString(indent) + ")"
+    if (!params.isEmpty()) {
+        result += "\n"
+        result += String.join(params.toArray(), delimiter: ",\n")
+        result += "\n" + indentToString(indent)
+    }
     // return type
-    result += ": " + (obj.ty as FuncType).getOrThrow().returnType.toString()
+    result += "): " + (obj.ty as FuncType).getOrThrow().returnType.toString()
     // generic constraints
     result += genericTypeParamsConstraintToString(obj.genericTypeParams)
     var comment = ArrayList<String>()
@@ -159,11 +162,8 @@ internal func functionToString(obj: Function, indent: UInt64): String {
     if (obj._paramDftValHostFunc.isSome()) {
         comment.add("paramDftValHostFunc: " + obj._paramDftValHostFunc.getOrThrow().identifier)
     }
-    if (obj._oriLambdaFuncTy.isSome()) {
-        comment.add("oriLambdaFuncTy: " + obj._oriLambdaFuncTy.getOrThrow().toString())
-    }
-    if (obj._oriLambdaGenericTypeParams.isSome()) {
-        comment.add("oriLambdaGenericTypeParams: " + typeVecToString("<", obj._oriLambdaGenericTypeParams.getOrThrow().toArray(), ">"))
+    if (let Some(v) <- obj._originalLambdaInfo) {
+        comment.add("originalLambdaInfo: " + v.toString())
     }
     if (!comment.isEmpty()) {
         result += " // " + String.join(comment.toArray(), delimiter: ", ")
@@ -190,7 +190,11 @@ internal func expressionToString(expr: Expression, indent: UInt64): String {
 internal func lambdaToString(expr: Lambda, indent: UInt64): String {
     var result = ""
     result += indentToString(indent)
-    result += expr.result.identifier + ": " + expr.result.ty.toString() + " = "
+    if (let Some(v) <- expr._result) {
+        result += v.identifier + ": " + v.ty.toString() + " = "
+    } else {
+        throw CHIRException("Lambda: result is not set")
+    }
     if (expr.isCompileTimeValue) {
         result += "[compileTimeVal]"
     }
@@ -220,6 +224,7 @@ internal func parameterToString(obj: Parameter, indent: UInt64): String {
         result.append("\n")
     }
     result.append(indentToString(indent))
+    result.append(obj._attributes.toString())
     result.append(obj.identifier + ": " + obj.ty.toString())
     if (let str <- obj.baseCommentToString() && !str.isEmpty()) {
         result.append(" // ")
@@ -228,16 +233,29 @@ internal func parameterToString(obj: Parameter, indent: UInt64): String {
     return result.toString()
 }
 
-internal func annoInfoToString(obj: AnnoInfo, indent: UInt64): String {
+internal func annoInstanceToString(obj: Annotation, indent: UInt64): String {
     let result = StringBuilder()
     result.append(indentToString(indent))
-    result.append(String.join(obj._annoClasses.toArray().map({ anno => anno.toString() }), delimiter: "\n"))
+    result.append("@")
+    result.append(obj._classSrcCodeName)
+    result.append("[")
+    result.append(String.join(obj._argValues.toArray(), delimiter: ", "))
+    result.append("]")
+    return result.toString()
+}
+
+internal func annoInfoToString(obj: AnnoInfo, indent: UInt64): String {
+    let result = StringBuilder()
+    if (!obj._annoInstances.isEmpty()) {
+        result.append(indentToString(indent))
+        result.append(String.join(obj._annoInstances.toArray().map({ anno => annoInstanceToString(anno, indent) }), delimiter: "\n"))
+    }
     return result.toString()
 }
 
 internal func enumCtorInfoToString(obj: EnumCtorInfo, indent: UInt64): String {
     let result = StringBuilder()
-    if (let str <- annoInfoToString(obj._annotations, indent) && !str.isEmpty()) {
+    if (let str <- annoInfoToString(obj._annoInfo, indent) && !str.isEmpty()) {
         result.append(str)
         result.append("\n")
     }

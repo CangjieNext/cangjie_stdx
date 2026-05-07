@@ -61,6 +61,6 @@ public class StructDef <: CustomTypeDef & Equatable<StructDef> {
      * @return true if the definitions are equal, false otherwise.
      */
     public operator func==(other: StructDef): Bool {
-        return isSameDef(other)
+        return refEq(this, other)
     }
 }
