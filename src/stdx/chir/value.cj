@@ -13,19 +13,6 @@ import stdx.chir.to_string_macro.*
 
 @Derive[Equatable]
 @CHIREnumToString
-internal enum ValueKind {
-    | Invalid
-    | GlobalVar
-    | LocalVar
-    | Parameter
-    | Func
-    | Block
-    | BlockGroup
-    | Literal
-}
-
-@Derive[Equatable]
-@CHIREnumToString
 internal enum FuncKind {
     | Default
     | Getter
@@ -56,6 +43,22 @@ internal enum LiteralKind {
     | NullLit
 }
 
+@Derive[Equatable]
+@CHIREnumToString
+internal enum ValueKind {
+    | Invalid
+    | GlobalVar
+    | LocalVar
+    | Parameter
+    | Func
+    | Block
+    | BlockGroup
+    | Literal
+}
+
+/**
+ * Abstract base for all CHIR values (identifiers, blocks, literals, globals).
+ */
 sealed abstract class Value <: Base & ToString & Hashable & Equatable<Value> {
     internal var _hashCode: Int64 = 0
     internal var _identifier: String
@@ -300,7 +303,9 @@ public class Block <: Value & Equatable<Block> {
     public func appendExpr(expr: Expression): Unit {
         _exprs.add(expr)
         expr._owner = this
-        updateLocalVarIdAndHashCode(expr._result)
+        if (let Some(v) <- expr._result) {
+            updateLocalVarIdAndHashCode(v)
+        }
     }
 
     /**
@@ -333,7 +338,9 @@ public class Block <: Value & Equatable<Block> {
             _exprs.add(expr, at: at)
         }
         expr._owner = this
-        updateLocalVarIdAndHashCode(expr._result)
+        if (let Some(v) <- expr._result) {
+            updateLocalVarIdAndHashCode(v)
+        }
     }
 
     /**
@@ -430,6 +437,7 @@ public class BlockGroup <: Value & Equatable<BlockGroup> {
     public func appendBlock(): Block {
         let identifier = BLOCK_PREFIX + topLevelFunc.generateBlockId().toString()
         let bb = Block(identifier, this)
+        bb._attributes.setAttr(Attribute.PluginAdded, true)
         _blocks.add(bb)
         return bb
     }
@@ -488,12 +496,16 @@ public class BlockGroup <: Value & Equatable<BlockGroup> {
     }
 }
 
+/**
+ * Base for package-level values: functions and global variables.
+ */
 sealed abstract class GlobalValue <: Value & Equatable<GlobalValue> {
     internal var _annoInfo: AnnoInfo = AnnoInfo()
     internal var _declaredParent: ?CustomTypeDef = None
     internal let _packageName: String
     internal var _rawMangledName: String = ""
     internal let _srcCodeName: String
+    internal var _features = ArrayList<String>()
 
     /**
      * Gets the `annotations` property.
@@ -501,10 +513,10 @@ sealed abstract class GlobalValue <: Value & Equatable<GlobalValue> {
      */
     public mut prop annotations: Array<Annotation> {
         get() {
-            return _annoInfo._annoClasses.toArray()
+            return _annoInfo._annoInstances.toArray()
         }
         set(v) {
-            _annoInfo._annoClasses = ArrayList<Annotation>.of(v)
+            _annoInfo._annoInstances = ArrayList<Annotation>.of(v)
         }
     }
 
@@ -515,6 +527,16 @@ sealed abstract class GlobalValue <: Value & Equatable<GlobalValue> {
     public prop declaredParent: ?CustomTypeDef {
         get() {
             return _declaredParent
+        }
+    }
+
+    /**
+     * Gets the `features` property.
+     * @type { Array<String> }
+     */
+    public prop features: Array<String> {
+        get() {
+            _features.toArray()
         }
     }
 
@@ -709,103 +731,6 @@ sealed abstract class GlobalValue <: Value & Equatable<GlobalValue> {
 }
 
 /**
- * Public definition of GlobalVar.
- */
-public class GlobalVar <: GlobalValue & Equatable<GlobalVar> {
-    internal var _initializer: ?Value = None
-
-    /**
-     * Gets the `initializer` property.
-     * @type { ?Value }
-     */
-    public prop initializer: ?Value {
-        get() {
-            return _initializer
-        }
-    }
-
-    internal init(ty: Type, identifier: String, srcName: String, pkgName: String) {
-        super(ValueKind.GlobalVar, ty, identifier, srcName, pkgName)
-        this._hashCode = calculateHashCode()
-    }
-
-    /**
-     * Performs the public behavior of `isReadOnly`.
-     * @return The `Bool` result.
-     */
-    public func isReadOnly(): Bool {
-        return _attributes.testAttr(Attribute.ReadOnly)
-    }
-
-    /**
-     * Performs the public behavior of `isSrcCodeImported`.
-     * @return The `Bool` result.
-     */
-    public func isSrcCodeImported(): Bool {
-        return isImported() && !_initializer.isNone()
-    }
-
-    /**
-     * Performs the public behavior of `setInitializer`.
-     * @param initializer The `initializer` parameter.
-     * @return The `Unit` result.
-     */
-    public func setInitializer(initializer: Value): Unit {
-        _initializer = initializer
-    }
-
-    /**
-     * Performs the public behavior of `setReadOnly`.
-     * @param enable The `enable` parameter.
-     * @return The `Unit` result.
-     */
-    public func setReadOnly(enable: Bool): Unit {
-        _attributes.setAttr(Attribute.ReadOnly, enable)
-    }
-
-    /**
-     * Performs the public behavior of `toString`.
-     * @return The `String` result.
-     */
-    public func toString(): String {
-        let result = StringBuilder()
-        if (let str <- _annoInfo.toString() && !str.isEmpty()) {
-            result.append(str)
-            result.append("\n")
-        }
-        result.append(_attributes.toString())
-        if (isReadOnly()) {
-            result.append("let ")
-        } else {
-            result.append("var ")
-        }
-        result.append(identifier + ": " + ty.toString())
-        if (let Some(v) <- initializer) {
-            if (v.isLiteral()) {
-                result.append(" = " + v.toString())
-            } else {
-                // must be init function
-                result.append(" = " + v.identifier + "()")
-            }
-        }
-        if (let str <- globalValueToString() && !str.isEmpty()) {
-            result.append(" // ")
-            result.append(str)
-        }
-        return result.toString()
-    }
-
-    /**
-     * Performs the public behavior of `func`.
-     * @param other The `other` parameter.
-     * @return The `Bool` result.
-     */
-    public operator func==(other: GlobalVar): Bool {
-        return refEq(this, other)
-    }
-}
-
-/**
  * Public definition of Function.
  */
 public class Function <: GlobalValue & Equatable<Function> {
@@ -818,8 +743,7 @@ public class Function <: GlobalValue & Equatable<Function> {
     internal var _isCFFIWrapper: Bool = false
     internal var _isFastNative: Bool = false
     internal var _localId: UInt64 = 0
-    internal var _oriLambdaFuncTy: ?Type = None
-    internal var _oriLambdaGenericTypeParams: ?ArrayList<GenericType> = None
+    internal var _originalLambdaInfo: ?FuncSigInfo = None
     internal var _paramDftValHostFunc: ?Function = None
     internal var _parameters = ArrayList<Parameter>()
     internal var _propLocation: DebugLocation = DebugLocation.invalid()
@@ -893,9 +817,18 @@ public class Function <: GlobalValue & Equatable<Function> {
      * Gets the `returnValue` property.
      * @type { ?LocalVar }
      */
-    public prop returnValue: ?LocalVar {
+    public mut prop returnValue: ?LocalVar {
         get() {
             return _retValue
+        }
+        set(v) {
+            if (let Some(r) <- _retValue) {
+                r._isRetValue = false
+            }
+            _retValue = v
+            if (let Some(r) <- v) {
+                r._isRetValue = true
+            }
         }
     }
 
@@ -1050,13 +983,16 @@ public class Function <: GlobalValue & Equatable<Function> {
             throw CHIRException("Function body already set")
         }
         let identifier = generateBlockGroupId().toString()
-        _body = BlockGroup(identifier, this)
-        return _body.getOrThrow()
+        let b = BlockGroup(identifier, this)
+        b._attributes.setAttr(Attribute.PluginAdded, true)
+        _body = b
+        return b
     }
 
     internal func appendParameter(ty: Type): Parameter {
         let identifier = LOCAL_VAR_PREFIX + generateLocalId().toString()
         let result = Parameter(ty, identifier, this)
+        result._attributes.setAttr(Attribute.PluginAdded, true)
         _parameters.add(result)
         return result
     }
@@ -1089,6 +1025,106 @@ public class Function <: GlobalValue & Equatable<Function> {
     }
 }
 
+/**
+ * Public definition of GlobalVar.
+ */
+public class GlobalVar <: GlobalValue & Equatable<GlobalVar> {
+    internal var _initializer: ?Value = None
+
+    /**
+     * Gets the `initializer` property.
+     * @type { ?Value }
+     */
+    public prop initializer: ?Value {
+        get() {
+            return _initializer
+        }
+    }
+
+    internal init(ty: Type, identifier: String, srcName: String, pkgName: String) {
+        super(ValueKind.GlobalVar, ty, identifier, srcName, pkgName)
+        this._hashCode = calculateHashCode()
+    }
+
+    /**
+     * Performs the public behavior of `isReadOnly`.
+     * @return The `Bool` result.
+     */
+    public func isReadOnly(): Bool {
+        return _attributes.testAttr(Attribute.ReadOnly)
+    }
+
+    /**
+     * Performs the public behavior of `isSrcCodeImported`.
+     * @return The `Bool` result.
+     */
+    public func isSrcCodeImported(): Bool {
+        return isImported() && !_initializer.isNone()
+    }
+
+    /**
+     * Performs the public behavior of `setInitializer`.
+     * @param initializer The `initializer` parameter.
+     * @return The `Unit` result.
+     */
+    public func setInitializer(initializer: Value): Unit {
+        _initializer = initializer
+    }
+
+    /**
+     * Performs the public behavior of `setReadOnly`.
+     * @param enable The `enable` parameter.
+     * @return The `Unit` result.
+     */
+    public func setReadOnly(enable: Bool): Unit {
+        _attributes.setAttr(Attribute.ReadOnly, enable)
+    }
+
+    /**
+     * Performs the public behavior of `toString`.
+     * @return The `String` result.
+     */
+    public func toString(): String {
+        let result = StringBuilder()
+        if (let str <- _annoInfo.toString() && !str.isEmpty()) {
+            result.append(str)
+            result.append("\n")
+        }
+        result.append(_attributes.toString())
+        if (isReadOnly()) {
+            result.append("let ")
+        } else {
+            result.append("var ")
+        }
+        result.append(identifier + ": " + ty.toString())
+        if (let Some(v) <- initializer) {
+            if (v.isLiteral()) {
+                result.append(" = " + v.toString())
+            } else {
+                // must be init function
+                result.append(" = " + v.identifier + "()")
+            }
+        }
+        if (let str <- globalValueToString() && !str.isEmpty()) {
+            result.append(" // ")
+            result.append(str)
+        }
+        return result.toString()
+    }
+
+    /**
+     * Performs the public behavior of `func`.
+     * @param other The `other` parameter.
+     * @return The `Bool` result.
+     */
+    public operator func==(other: GlobalVar): Bool {
+        return refEq(this, other)
+    }
+}
+
+/**
+ * Base for compile-time literal values embedded in CHIR.
+ */
 sealed abstract class LiteralValue <: Value & Equatable<LiteralValue> {
     internal let literalKind: LiteralKind
 
@@ -1171,39 +1207,46 @@ public class BoolLiteral <: LiteralValue & Equatable<BoolLiteral> {
 }
 
 /**
- * Public definition of RuneLiteral.
+ * Public definition of FloatLiteral.
  */
-public class RuneLiteral <: LiteralValue & Equatable<RuneLiteral> {
-    private static var CACHE = HashMap<Rune, RuneLiteral>()
-    internal let _value: Rune
+public class FloatLiteral <: LiteralValue & Equatable<FloatLiteral> {
+    private static var CACHE = HashMap<FloatType, HashMap<Float64, FloatLiteral>>()
+    internal let _value: Float64
 
     /**
      * Gets the `value` property.
-     * @type { Rune }
+     * @type { Float64 }
      */
-    public prop value: Rune {
+    public prop value: Float64 {
         get() {
             return _value
         }
     }
 
-    private init(ty: RuneType, value: Rune) {
-        super(ty, LiteralKind.RuneLit)
+    private init(ty: FloatType, value: Float64) {
+        super(ty, LiteralKind.FloatLit)
         this._value = value
         this._hashCode = calculateHashCode()
     }
 
     /**
      * Performs the public behavior of `get`.
+     * @param ty The `ty` parameter.
      * @param value The `value` parameter.
-     * @return The `RuneLiteral` result.
+     * @return The `FloatLiteral` result.
      */
-    public static func get(value: Rune): RuneLiteral {
-        if (let Some(literal) <- CACHE.get(value)) {
-            return literal
+    public static func get(ty: FloatType, value: Float64): FloatLiteral {
+        if (let Some(floatTypes) <- CACHE.get(ty)) {
+            if (let Some(literal) <- floatTypes.get(value)) {
+                return literal
+            } else {
+                let newLiteral = FloatLiteral(ty, value)
+                floatTypes[value] = newLiteral
+                return newLiteral
+            }
         }
-        let newLiteral = RuneLiteral(RuneType.get(), value)
-        CACHE[value] = newLiteral
+        let newLiteral = FloatLiteral(ty, value)
+        CACHE[ty] = HashMap<Float64, FloatLiteral>((value, newLiteral))
         return newLiteral
     }
 
@@ -1212,11 +1255,11 @@ public class RuneLiteral <: LiteralValue & Equatable<RuneLiteral> {
      * @return The `String` result.
      */
     public func toString(): String {
-        return "\'" + value.toString() + "\'"
+        return value.toString() + "f"
     }
 
     protected override func calculateHashCode(): Int64 {
-        return ("RuneLiteral_" + _value.toString()).hashCode()
+        return (ty.toString() + "_" + _value.toString()).hashCode()
     }
 
     /**
@@ -1224,7 +1267,7 @@ public class RuneLiteral <: LiteralValue & Equatable<RuneLiteral> {
      * @param other The `other` parameter.
      * @return The `Bool` result.
      */
-    public operator func==(other: RuneLiteral): Bool {
+    public operator func==(other: FloatLiteral): Bool {
         return refEq(this, other)
     }
 }
@@ -1315,46 +1358,27 @@ public class IntLiteral <: LiteralValue & Equatable<IntLiteral> {
 }
 
 /**
- * Public definition of FloatLiteral.
+ * Public definition of NullLiteral.
  */
-public class FloatLiteral <: LiteralValue & Equatable<FloatLiteral> {
-    private static var CACHE = HashMap<FloatType, HashMap<Float64, FloatLiteral>>()
-    internal let _value: Float64
+public class NullLiteral <: LiteralValue & Equatable<NullLiteral> {
+    private static var CACHE = HashMap<Type, NullLiteral>()
 
-    /**
-     * Gets the `value` property.
-     * @type { Float64 }
-     */
-    public prop value: Float64 {
-        get() {
-            return _value
-        }
-    }
-
-    private init(ty: FloatType, value: Float64) {
-        super(ty, LiteralKind.FloatLit)
-        this._value = value
+    private init(ty: Type) {
+        super(ty, LiteralKind.NullLit)
         this._hashCode = calculateHashCode()
     }
 
     /**
      * Performs the public behavior of `get`.
      * @param ty The `ty` parameter.
-     * @param value The `value` parameter.
-     * @return The `FloatLiteral` result.
+     * @return The `NullLiteral` result.
      */
-    public static func get(ty: FloatType, value: Float64): FloatLiteral {
-        if (let Some(floatTypes) <- CACHE.get(ty)) {
-            if (let Some(literal) <- floatTypes.get(value)) {
-                return literal
-            } else {
-                let newLiteral = FloatLiteral(ty, value)
-                floatTypes[value] = newLiteral
-                return newLiteral
-            }
+    public static func get(ty: Type): NullLiteral {
+        if (let Some(literal) <- CACHE.get(ty)) {
+            return literal
         }
-        let newLiteral = FloatLiteral(ty, value)
-        CACHE[ty] = HashMap<Float64, FloatLiteral>((value, newLiteral))
+        let newLiteral = NullLiteral(ty)
+        CACHE[ty] = newLiteral
         return newLiteral
     }
 
@@ -1363,11 +1387,11 @@ public class FloatLiteral <: LiteralValue & Equatable<FloatLiteral> {
      * @return The `String` result.
      */
     public func toString(): String {
-        return value.toString() + "f"
+        return "Null"
     }
 
     protected override func calculateHashCode(): Int64 {
-        return (ty.toString() + "_" + _value.toString()).hashCode()
+        return ty.toString().hashCode()
     }
 
     /**
@@ -1375,7 +1399,66 @@ public class FloatLiteral <: LiteralValue & Equatable<FloatLiteral> {
      * @param other The `other` parameter.
      * @return The `Bool` result.
      */
-    public operator func==(other: FloatLiteral): Bool {
+    public operator func==(other: NullLiteral): Bool {
+        return refEq(this, other)
+    }
+}
+
+/**
+ * Public definition of RuneLiteral.
+ */
+public class RuneLiteral <: LiteralValue & Equatable<RuneLiteral> {
+    private static var CACHE = HashMap<Rune, RuneLiteral>()
+    internal let _value: Rune
+
+    /**
+     * Gets the `value` property.
+     * @type { Rune }
+     */
+    public prop value: Rune {
+        get() {
+            return _value
+        }
+    }
+
+    private init(ty: RuneType, value: Rune) {
+        super(ty, LiteralKind.RuneLit)
+        this._value = value
+        this._hashCode = calculateHashCode()
+    }
+
+    /**
+     * Performs the public behavior of `get`.
+     * @param value The `value` parameter.
+     * @return The `RuneLiteral` result.
+     */
+    public static func get(value: Rune): RuneLiteral {
+        if (let Some(literal) <- CACHE.get(value)) {
+            return literal
+        }
+        let newLiteral = RuneLiteral(RuneType.get(), value)
+        CACHE[value] = newLiteral
+        return newLiteral
+    }
+
+    /**
+     * Performs the public behavior of `toString`.
+     * @return The `String` result.
+     */
+    public func toString(): String {
+        return "\'" + value.toString() + "\'"
+    }
+
+    protected override func calculateHashCode(): Int64 {
+        return ("RuneLiteral_" + _value.toString()).hashCode()
+    }
+
+    /**
+     * Performs the public behavior of `func`.
+     * @param other The `other` parameter.
+     * @return The `Bool` result.
+     */
+    public operator func==(other: RuneLiteral): Bool {
         return refEq(this, other)
     }
 }
@@ -1482,58 +1565,12 @@ public class UnitLiteral <: LiteralValue & Equatable<UnitLiteral> {
 }
 
 /**
- * Public definition of NullLiteral.
- */
-public class NullLiteral <: LiteralValue & Equatable<NullLiteral> {
-    private static var CACHE = HashMap<Type, NullLiteral>()
-
-    private init(ty: Type) {
-        super(ty, LiteralKind.NullLit)
-        this._hashCode = calculateHashCode()
-    }
-
-    /**
-     * Performs the public behavior of `get`.
-     * @param ty The `ty` parameter.
-     * @return The `NullLiteral` result.
-     */
-    public static func get(ty: Type): NullLiteral {
-        if (let Some(literal) <- CACHE.get(ty)) {
-            return literal
-        }
-        let newLiteral = NullLiteral(ty)
-        CACHE[ty] = newLiteral
-        return newLiteral
-    }
-
-    /**
-     * Performs the public behavior of `toString`.
-     * @return The `String` result.
-     */
-    public func toString(): String {
-        return "Null"
-    }
-
-    protected override func calculateHashCode(): Int64 {
-        return ty.toString().hashCode()
-    }
-
-    /**
-     * Performs the public behavior of `func`.
-     * @param other The `other` parameter.
-     * @return The `Bool` result.
-     */
-    public operator func==(other: NullLiteral): Bool {
-        return refEq(this, other)
-    }
-}
-
-/**
  * Public definition of LocalVar.
  */
 public class LocalVar <: Value & Equatable<LocalVar> {
-    internal var _expr: ?Expression = None
+    internal var _expr: Expression
     internal var _isRetValue = false
+    internal var _srcCodeName: String = ""
 
     /**
      * Gets the `expr` property.
@@ -1541,11 +1578,20 @@ public class LocalVar <: Value & Equatable<LocalVar> {
      */
     public prop expr: Expression {
         get() {
-            if (let Some(e) <- _expr) {
-                return e
-            } else {
-                throw CHIRException("Expression is not set")
-            }
+            return _expr
+        }
+    }
+
+    /**
+     * Gets the `srcCodeName` property.
+     * @type { String }
+     */
+    public mut prop srcCodeName: String {
+        get() {
+            return _srcCodeName
+        }
+        set(v) {
+            _srcCodeName = v
         }
     }
 
@@ -1559,9 +1605,10 @@ public class LocalVar <: Value & Equatable<LocalVar> {
         }
     }
 
-    internal init(ty: Type) {
+    internal init(ty: Type, expr: Expression) {
         super(ValueKind.LocalVar, ty, String.empty)
         this._hashCode = 0
+        this._expr = expr
     }
 
     /**
@@ -1592,6 +1639,7 @@ public class LocalVar <: Value & Equatable<LocalVar> {
 public class Parameter <: Value & Equatable<Parameter> {
     internal var _annoInfo: AnnoInfo = AnnoInfo()
     internal var _owner: Value
+    internal var _srcCodeName: String = ""
 
     /**
      * Gets the `annotations` property.
@@ -1599,10 +1647,23 @@ public class Parameter <: Value & Equatable<Parameter> {
      */
     public mut prop annotations: Array<Annotation> {
         get() {
-            return _annoInfo._annoClasses.toArray()
+            return _annoInfo._annoInstances.toArray()
         }
         set(v) {
-            _annoInfo._annoClasses = ArrayList<Annotation>.of(v)
+            _annoInfo._annoInstances = ArrayList<Annotation>.of(v)
+        }
+    }
+
+    /**
+     * Gets the `srcCodeName` property.
+     * @type { String }
+     */
+    public mut prop srcCodeName: String {
+        get() {
+            return _srcCodeName
+        }
+        set(v) {
+            _srcCodeName = v
         }
     }
 
@@ -1631,7 +1692,7 @@ public class Parameter <: Value & Equatable<Parameter> {
 
     internal init(ty: Type, identifier: String, owner: Lambda) {
         super(ValueKind.Parameter, ty, identifier)
-        this._owner = owner.result
+        this._owner = owner._result.getOrThrow()
         this._hashCode = calculateHashCode()
         _attributes.setAttr(Attribute.ReadOnly, true)
     }

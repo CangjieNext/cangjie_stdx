@@ -16,8 +16,22 @@ package stdx.chir
  * also builds these when lowering source annotations.
  */
 public class Annotation <: ToString {
+    internal var _argValues = ArrayList<String>()
     internal let _classSrcCodeName: String
-    internal var _fields = ArrayList<String>()
+    internal let _loc: DebugLocation
+
+    /**
+     * Gets the `argValues` property.
+     * @type { Array<String> }
+     */
+    public mut prop argValues: Array<String> {
+        get() {
+            _argValues.toArray()
+        }
+        set(v) {
+            _argValues = ArrayList<String>.of(v)
+        }
+    }
 
     /**
      * Source-level name of the annotation class (e.g. `MyAnno`).
@@ -30,24 +44,32 @@ public class Annotation <: ToString {
     }
 
     /**
-     * Gets the `fields` property.
-     * @type { Array<String> }
+     * Source span where this annotation appeared, when known.
+     * @type { DebugLocation }
      */
-    public mut prop fields: Array<String> {
+    public prop location: DebugLocation {
         get() {
-            _fields.toArray()
-        }
-        set(v) {
-            _fields = ArrayList<String>.of(v)
+            return _loc
         }
     }
 
     /**
-     * Creates an annotation with the given class name and an empty parameter map.
+     * Creates an annotation with the given class name and an invalid (empty) location.
      * @param classSrcCodeName Annotation class name as written in source.
      */
     public init(classSrcCodeName: String) {
         this._classSrcCodeName = classSrcCodeName
+        this._loc = DebugLocation.invalid()
+    }
+
+    /**
+     * Creates an annotation with the given class name and source location.
+     * @param classSrcCodeName Annotation class name as written in source.
+     * @param loc Span in source for this annotation occurrence.
+     */
+    public init(classSrcCodeName: String, loc: DebugLocation) {
+        this._classSrcCodeName = classSrcCodeName
+        this._loc = loc
     }
 
     /**
@@ -55,13 +77,7 @@ public class Annotation <: ToString {
      * @return Text form suitable for debugging and dumps.
      */
     public func toString(): String {
-        let result = StringBuilder()
-        result.append("@")
-        result.append(_classSrcCodeName)
-        result.append("[")
-        result.append(String.join(_fields.toArray(), delimiter: ", "))
-        result.append("]")
-        return result.toString()
+        return annoInstanceToString(this, 0)
     }
 }
 
@@ -76,23 +92,18 @@ internal class AnnoInfo <: ToString {
     // @class1Name[v1, v2, ...]
     // @class2Name[v1, v2, ...]
     // func foo() { ... }
-    internal var _annoClasses = ArrayList<Annotation>()
+    internal var _annoInstances = ArrayList<Annotation>()
     // annotation factory function mangled name
     internal var _identifier: String = "none"
 
     internal init() {
         this._identifier = "none"
-        this._annoClasses = ArrayList<Annotation>()
+        this._annoInstances = ArrayList<Annotation>()
     }
 
     internal init(identifier: String) {
         this._identifier = identifier
-        this._annoClasses = ArrayList<Annotation>()
-    }
-
-    internal init(identifier: String, annoClasses: Array<Annotation>) {
-        this._identifier = identifier
-        this._annoClasses = ArrayList<Annotation>.of(annoClasses)
+        this._annoInstances = ArrayList<Annotation>()
     }
 
     /**

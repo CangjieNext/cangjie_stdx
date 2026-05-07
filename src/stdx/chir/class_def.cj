@@ -15,7 +15,7 @@ package stdx.chir
  * and provides methods to access class-specific information such as the super class.
  */
 public class ClassLikeDef <: CustomTypeDef & Equatable<ClassLikeDef> {
-    internal var _isAnnotation: Bool = false
+    internal var _annotationTargets: ?ArrayList<GlobalVar> = None
     internal var _isClass: Bool
     internal var _superClass: ?ClassLikeType = None
 
@@ -33,12 +33,9 @@ public class ClassLikeDef <: CustomTypeDef & Equatable<ClassLikeDef> {
      * Gets or sets whether this class-like definition represents an annotation class.
      * @type { Bool }
      */
-    public mut prop isAnnotation: Bool {
+    public prop isAnnotation: Bool {
         get() {
-            return _isAnnotation
-        }
-        set(v) {
-            _isAnnotation = v
+            return _annotationTargets.isSome()
         }
     }
 
@@ -87,6 +84,15 @@ public class ClassLikeDef <: CustomTypeDef & Equatable<ClassLikeDef> {
         _attributes.setAttr(Attribute.Sealed, enable)
     }
 
+    /**
+     * Checks if this ClassLikeDef is equal to another ClassLikeDef.
+     * @param other The ClassLikeDef to compare with.
+     * @return true if the definitions are equal, false otherwise.
+     */
+    public operator func==(other: ClassLikeDef): Bool {
+        return refEq(this, other)
+    }
+
     protected override func printTitle(): String {
         let superClassStr = StringBuilder()
         if (let Some(superClass) <- _superClass) {
@@ -94,14 +100,5 @@ public class ClassLikeDef <: CustomTypeDef & Equatable<ClassLikeDef> {
             superClassStr.append(if (implementedInterfaceTypes.isEmpty()) { " <: " } else { " & " })
         }
         return super.printTitle() + superClassStr.toString()
-    }
-
-    /**
-     * Checks if this ClassLikeDef is equal to another ClassLikeDef.
-     * @param other The ClassLikeDef to compare with.
-     * @return true if the definitions are equal, false otherwise.
-     */
-    public operator func==(other: ClassLikeDef): Bool {
-        return isSameDef(other)
     }
 }

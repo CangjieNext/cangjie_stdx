@@ -9,19 +9,19 @@
 package stdx.chir
 
 /**
- * Public definition of CHIRException.
+ * Checked exception for invalid CHIR construction or inconsistent IR state.
  */
 public class CHIRException <: Exception {
     /**
-     * Performs the public behavior of `func`.
+     * Creates an exception with no detail message.
      */
     public init() {
         super()
     }
 
     /**
-     * Performs the public behavior of `func`.
-     * @param message The `message` parameter.
+     * Creates an exception with the given detail message.
+     * @param message Human-readable error text.
      */
     public init(message: String) {
         super(message)
