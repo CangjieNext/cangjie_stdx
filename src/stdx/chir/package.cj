@@ -56,6 +56,8 @@ public class Package <: ToString {
     internal var _importedExtendDefs = ArrayList<ExtendDef>()
     internal var _importedStructDefs = ArrayList<StructDef>()
     internal var _structDefs = ArrayList<StructDef>()
+    internal var _packageInitFunc: ?Function = None
+    internal var _packageLiteralInitFunc: ?Function = None
     private let _accessLevel: AccessLevel
     private let _name: String
 
@@ -66,6 +68,31 @@ public class Package <: ToString {
     public prop accessLevel: AccessLevel {
         get() {
             return _accessLevel
+        }
+    }
+
+    public prop allCustomTypeDefs: Array<CustomTypeDef> {
+        get() {
+            return _classDefs.toArray().map<CustomTypeDef>({ d => d })
+                .concat(_enumDefs.toArray().map<CustomTypeDef>({ d => d }))
+                .concat(_extendDefs.toArray().map<CustomTypeDef>({ d => d }))
+                .concat(_structDefs.toArray().map<CustomTypeDef>({ d => d }))
+                .concat(_importedClassDefs.toArray().map<CustomTypeDef>({ d => d }))
+                .concat(_importedEnumDefs.toArray().map<CustomTypeDef>({ d => d }))
+                .concat(_importedExtendDefs.toArray().map<CustomTypeDef>({ d => d }))
+                .concat(_importedStructDefs.toArray().map<CustomTypeDef>({ d => d }))
+        }
+    }
+
+    public prop globalVars: Array<GlobalVar> {
+        get() {
+            return _globalVars.toArray()
+        }
+    }
+
+    public prop functions: Array<Function> {
+        get() {
+            return _functions.toArray()
         }
     }
 
@@ -221,6 +248,7 @@ public class Package <: ToString {
      */
     public func addFunction(ty: FuncType, identifier: String, srcCodeName: String, packageName: String): Function {
         let temp = Function(ty, GLOBAL_SYMBOL_PREFIX + identifier, srcCodeName, packageName)
+        temp._attributes.setAttr(Attribute.PluginAdded, true)
         _functions.add(temp)
         for (paramTy in ty.paramTypes) {
             temp.appendParameter(paramTy)
@@ -239,6 +267,7 @@ public class Package <: ToString {
      */
     public func addGlobalVar(ty: Type, identifier: String, srcCodeName: String, packageName: String): GlobalVar {
         let temp = GlobalVar(ty, GLOBAL_SYMBOL_PREFIX + identifier, srcCodeName, packageName)
+        temp._attributes.setAttr(Attribute.PluginAdded, true)
         _globalVars.add(temp)
         return temp
     }
@@ -406,31 +435,29 @@ public class Package <: ToString {
         result.append("\n")
         result.append("\n")
 
-        result.append("==========================imports===============================\n\n")
-        for (d in importedClassDefs) {
+        for (d in _importedClassDefs) {
             result.append(d.toString())
             result.append("\n")
         }
-        for (d in importedStructDefs) {
+        for (d in _importedStructDefs) {
             result.append(d.toString())
             result.append("\n")
         }
-        for (d in importedEnumDefs) {
+        for (d in _importedEnumDefs) {
             result.append(d.toString())
             result.append("\n")
         }
-        for (d in importedExtendDefs) {
+        for (d in _importedExtendDefs) {
             result.append(d.toString())
             result.append("\n")
         }
         result.append("\n")
 
-        result.append("==========================types=================================\n\n")
-        for (d in classDefs) {
+        for (d in _classDefs) {
             result.append(d.toString())
             result.append("\n\n")
         }
-        for (d in structDefs) {
+        for (d in _structDefs) {
             result.append(d.toString())
             result.append("\n\n")
         }
@@ -438,8 +465,20 @@ public class Package <: ToString {
             result.append(d.toString())
             result.append("\n\n")
         }
-        for (d in extendDefs) {
+        for (d in _extendDefs) {
             result.append(d.toString())
+            result.append("\n\n")
+        }
+        result.append("\n")
+
+        for (gv in _globalVars) {
+            result.append(gv.toString())
+            result.append("\n\n")
+        }
+        result.append("\n")
+
+        for (f in _functions) {
+            result.append(f.toString())
             result.append("\n\n")
         }
         result.append("\n")
@@ -474,6 +513,11 @@ public class Package <: ToString {
             temp._attributes.setAttr(Attribute.Generic, true)
         }
         temp._attributes.setAttr(Attribute.PluginAdded, true)
+        if (let Some(v) <- (extendedType as BuiltinType)) {
+            v._extends.add(temp)
+        } else if (let Some(v) <- (extendedType as CustomType)) {
+            v._def._extends.add(temp)
+        }
         return temp
     }
 
