@@ -300,7 +300,9 @@ public class Block <: Value & Equatable<Block> {
     public func appendExpr(expr: Expression): Unit {
         _exprs.add(expr)
         expr._owner = this
-        updateLocalVarIdAndHashCode(expr._result)
+        if (let Some(v) <- expr._result) {
+            updateLocalVarIdAndHashCode(v)
+        }
     }
 
     /**
@@ -333,7 +335,9 @@ public class Block <: Value & Equatable<Block> {
             _exprs.add(expr, at: at)
         }
         expr._owner = this
-        updateLocalVarIdAndHashCode(expr._result)
+        if (let Some(v) <- expr._result) {
+            updateLocalVarIdAndHashCode(v)
+        }
     }
 
     /**
@@ -430,6 +434,7 @@ public class BlockGroup <: Value & Equatable<BlockGroup> {
     public func appendBlock(): Block {
         let identifier = BLOCK_PREFIX + topLevelFunc.generateBlockId().toString()
         let bb = Block(identifier, this)
+        bb._attributes.setAttr(Attribute.PluginAdded, true)
         _blocks.add(bb)
         return bb
     }
@@ -494,6 +499,7 @@ sealed abstract class GlobalValue <: Value & Equatable<GlobalValue> {
     internal let _packageName: String
     internal var _rawMangledName: String = ""
     internal let _srcCodeName: String
+    internal var _features = ArrayList<String>()
 
     /**
      * Gets the `annotations` property.
@@ -501,10 +507,10 @@ sealed abstract class GlobalValue <: Value & Equatable<GlobalValue> {
      */
     public mut prop annotations: Array<Annotation> {
         get() {
-            return _annoInfo._annoClasses.toArray()
+            return _annoInfo._annoInstances.toArray()
         }
         set(v) {
-            _annoInfo._annoClasses = ArrayList<Annotation>.of(v)
+            _annoInfo._annoInstances = ArrayList<Annotation>.of(v)
         }
     }
 
@@ -515,6 +521,15 @@ sealed abstract class GlobalValue <: Value & Equatable<GlobalValue> {
     public prop declaredParent: ?CustomTypeDef {
         get() {
             return _declaredParent
+        }
+    }
+
+    public mut prop features: Array<String> {
+        get() {
+            return _features.toArray()
+        }
+        set(v) {
+            _features = ArrayList<String>.of(v)
         }
     }
 
@@ -818,8 +833,7 @@ public class Function <: GlobalValue & Equatable<Function> {
     internal var _isCFFIWrapper: Bool = false
     internal var _isFastNative: Bool = false
     internal var _localId: UInt64 = 0
-    internal var _oriLambdaFuncTy: ?Type = None
-    internal var _oriLambdaGenericTypeParams: ?ArrayList<GenericType> = None
+    internal var _originalLambdaInfo: ?FuncSigInfo = None
     internal var _paramDftValHostFunc: ?Function = None
     internal var _parameters = ArrayList<Parameter>()
     internal var _propLocation: DebugLocation = DebugLocation.invalid()
@@ -893,9 +907,18 @@ public class Function <: GlobalValue & Equatable<Function> {
      * Gets the `returnValue` property.
      * @type { ?LocalVar }
      */
-    public prop returnValue: ?LocalVar {
+    public mut prop returnValue: ?LocalVar {
         get() {
             return _retValue
+        }
+        set(v) {
+            if (let Some(r) <- _retValue) {
+                r._isRetValue = false
+            }
+            _retValue = v
+            if (let Some(r) <- v) {
+                r._isRetValue = true
+            }
         }
     }
 
@@ -1050,13 +1073,16 @@ public class Function <: GlobalValue & Equatable<Function> {
             throw CHIRException("Function body already set")
         }
         let identifier = generateBlockGroupId().toString()
-        _body = BlockGroup(identifier, this)
-        return _body.getOrThrow()
+        let b = BlockGroup(identifier, this)
+        b._attributes.setAttr(Attribute.PluginAdded, true)
+        _body = b
+        return b
     }
 
     internal func appendParameter(ty: Type): Parameter {
         let identifier = LOCAL_VAR_PREFIX + generateLocalId().toString()
         let result = Parameter(ty, identifier, this)
+        result._attributes.setAttr(Attribute.PluginAdded, true)
         _parameters.add(result)
         return result
     }
@@ -1532,8 +1558,9 @@ public class NullLiteral <: LiteralValue & Equatable<NullLiteral> {
  * Public definition of LocalVar.
  */
 public class LocalVar <: Value & Equatable<LocalVar> {
-    internal var _expr: ?Expression = None
+    internal var _expr: Expression
     internal var _isRetValue = false
+    internal var _srcCodeName: String = ""
 
     /**
      * Gets the `expr` property.
@@ -1541,11 +1568,16 @@ public class LocalVar <: Value & Equatable<LocalVar> {
      */
     public prop expr: Expression {
         get() {
-            if (let Some(e) <- _expr) {
-                return e
-            } else {
-                throw CHIRException("Expression is not set")
-            }
+            return _expr
+        }
+    }
+
+    public mut prop srcCodeName: String {
+        get() {
+            return _srcCodeName
+        }
+        set(v) {
+            _srcCodeName = v
         }
     }
 
@@ -1559,9 +1591,10 @@ public class LocalVar <: Value & Equatable<LocalVar> {
         }
     }
 
-    internal init(ty: Type) {
+    internal init(ty: Type, expr: Expression) {
         super(ValueKind.LocalVar, ty, String.empty)
         this._hashCode = 0
+        this._expr = expr
     }
 
     /**
@@ -1592,6 +1625,7 @@ public class LocalVar <: Value & Equatable<LocalVar> {
 public class Parameter <: Value & Equatable<Parameter> {
     internal var _annoInfo: AnnoInfo = AnnoInfo()
     internal var _owner: Value
+    internal var _srcCodeName: String = ""
 
     /**
      * Gets the `annotations` property.
@@ -1599,10 +1633,19 @@ public class Parameter <: Value & Equatable<Parameter> {
      */
     public mut prop annotations: Array<Annotation> {
         get() {
-            return _annoInfo._annoClasses.toArray()
+            return _annoInfo._annoInstances.toArray()
         }
         set(v) {
-            _annoInfo._annoClasses = ArrayList<Annotation>.of(v)
+            _annoInfo._annoInstances = ArrayList<Annotation>.of(v)
+        }
+    }
+
+    public mut prop srcCodeName: String {
+        get() {
+            return _srcCodeName
+        }
+        set(v) {
+            _srcCodeName = v
         }
     }
 
@@ -1631,7 +1674,7 @@ public class Parameter <: Value & Equatable<Parameter> {
 
     internal init(ty: Type, identifier: String, owner: Lambda) {
         super(ValueKind.Parameter, ty, identifier)
-        this._owner = owner.result
+        this._owner = owner._result.getOrThrow()
         this._hashCode = calculateHashCode()
         _attributes.setAttr(Attribute.ReadOnly, true)
     }
