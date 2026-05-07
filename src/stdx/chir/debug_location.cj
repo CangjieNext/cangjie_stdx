@@ -42,6 +42,7 @@ public struct Position <: ToString {
 
     /**
      * Whether this position holds a real source location (line and column both greater than 0).
+     * @return true when line and column are both positive.
      */
     public func isValid(): Bool {
         return line > 0 && column > 0
@@ -49,6 +50,7 @@ public struct Position <: ToString {
 
     /**
      * Compact string form "-line-column" for debugging.
+     * @return Text starting with `-` followed by line and column.
      */
     public func toString(): String {
         let result = StringBuilder()
@@ -128,6 +130,7 @@ public class DebugLocation <: ToString {
 
     /**
      * Whether start, end, and file path are all set meaningfully.
+     * @return true when `start`, `end`, and `filePath` are all usable.
      */
     public func isValid(): Bool {
         return start.isValid() && end.isValid() && !filePath.isEmpty()
@@ -135,6 +138,7 @@ public class DebugLocation <: ToString {
 
     /**
      * Human-readable location: file name, line/column range, optional scope chain.
+     * @return Debug string, or empty when `isValid()` is false.
      */
     public func toString(): String {
         if (!isValid()) {

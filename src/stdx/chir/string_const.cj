@@ -8,11 +8,11 @@
 
 package stdx.chir
 
-internal const CORE_PACKAGE_NAME: String = "std.core"
-
 internal const ANY_NAME_IN_STD: String = "Any"
 internal const CTYPE_NAME_IN_STD: String = "CType"
 
+internal const CORE_PACKAGE_NAME: String = "std.core"
+
 internal const GLOBAL_SYMBOL_PREFIX = "@"
-internal const LOCAL_VAR_PREFIX = "%"
 internal const BLOCK_PREFIX = "#"
+internal const LOCAL_VAR_PREFIX = "%"

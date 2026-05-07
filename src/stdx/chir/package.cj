@@ -13,13 +13,8 @@ import std.deriving.*
 
 /**
  * Represents the access level of a package or declaration.
- *
- * Access levels control the visibility of declarations across package boundaries.
  */
 @Derive[Equatable]
-/**
- * Public enum definition of AccessLevel.
- */
 public enum AccessLevel <: ToString {
     Internal
     | Protected
@@ -56,6 +51,8 @@ public class Package <: ToString {
     internal var _importedExtendDefs = ArrayList<ExtendDef>()
     internal var _importedStructDefs = ArrayList<StructDef>()
     internal var _structDefs = ArrayList<StructDef>()
+    internal var _packageInitFunc: ?Function = None
+    internal var _packageLiteralInitFunc: ?Function = None
     private let _accessLevel: AccessLevel
     private let _name: String
 
@@ -66,6 +63,43 @@ public class Package <: ToString {
     public prop accessLevel: AccessLevel {
         get() {
             return _accessLevel
+        }
+    }
+
+    /**
+     * Gets all custom type definitions (classes, enums, extends, structs) in this package, including imported ones.
+     * @type { Array<CustomTypeDef> }
+     */
+    public prop allCustomTypeDefs: Array<CustomTypeDef> {
+        get() {
+            return _importedClassDefs.toArray().mapTo<CustomTypeDef>({ d => d })
+                .concat(_importedEnumDefs.toArray().mapTo<CustomTypeDef>({ d => d }))
+                .concat(_importedExtendDefs.toArray().mapTo<CustomTypeDef>({ d => d }))
+                .concat(_importedStructDefs.toArray().mapTo<CustomTypeDef>({ d => d }))
+                .concat(_classDefs.toArray().mapTo<CustomTypeDef>({ d => d }))
+                .concat(_enumDefs.toArray().mapTo<CustomTypeDef>({ d => d }))
+                .concat(_extendDefs.toArray().mapTo<CustomTypeDef>({ d => d }))
+                .concat(_structDefs.toArray().mapTo<CustomTypeDef>({ d => d }))
+        }
+    }
+
+    /**
+     * Gets global variable definitions in this package.
+     * @type { Array<GlobalVar> }
+     */
+    public prop globalVars: Array<GlobalVar> {
+        get() {
+            return _globalVars.toArray()
+        }
+    }
+
+    /**
+     * Gets function definitions in this package.
+     * @type { Array<Function> }
+     */
+    public prop functions: Array<Function> {
+        get() {
+            return _functions.toArray()
         }
     }
 
@@ -169,7 +203,6 @@ public class Package <: ToString {
         this._accessLevel = accessLevel
     }
 
-    
     /**
      * Adds a new class or interface definition to this package.
      * @param identifier Globally unique name.
@@ -212,15 +245,16 @@ public class Package <: ToString {
     }
 
     /**
-     * Performs the public behavior of `addFunction`.
-     * @param ty The `ty` parameter.
-     * @param identifier The `identifier` parameter.
-     * @param srcCodeName The `srcCodeName` parameter.
-     * @param packageName The `packageName` parameter.
-     * @return The `Function` result.
+     * Adds a new function definition to this package.
+     * @param ty The function type (parameter types and return type).
+     * @param identifier Globally unique name.
+     * @param srcCodeName Name as written in source.
+     * @param packageName Declaring package name.
+     * @return The created Function with parameters pre-populated from ty.
      */
     public func addFunction(ty: FuncType, identifier: String, srcCodeName: String, packageName: String): Function {
         let temp = Function(ty, GLOBAL_SYMBOL_PREFIX + identifier, srcCodeName, packageName)
+        temp._attributes.setAttr(Attribute.PluginAdded, true)
         _functions.add(temp)
         for (paramTy in ty.paramTypes) {
             temp.appendParameter(paramTy)
@@ -228,17 +262,17 @@ public class Package <: ToString {
         return temp
     }
 
-    // ----------------------- create global symbol -----------------------
     /**
-     * Performs the public behavior of `addGlobalVar`.
-     * @param ty The `ty` parameter.
-     * @param identifier The `identifier` parameter.
-     * @param srcCodeName The `srcCodeName` parameter.
-     * @param packageName The `packageName` parameter.
-     * @return The `GlobalVar` result.
+     * Adds a new global variable definition to this package.
+     * @param ty The type of the global variable.
+     * @param identifier Globally unique name.
+     * @param srcCodeName Name as written in source.
+     * @param packageName Declaring package name.
+     * @return The created GlobalVar.
      */
     public func addGlobalVar(ty: Type, identifier: String, srcCodeName: String, packageName: String): GlobalVar {
         let temp = GlobalVar(ty, GLOBAL_SYMBOL_PREFIX + identifier, srcCodeName, packageName)
+        temp._attributes.setAttr(Attribute.PluginAdded, true)
         _globalVars.add(temp)
         return temp
     }
@@ -398,51 +432,22 @@ public class Package <: ToString {
      */
     public func toString(): String {
         let result = StringBuilder()
-        result.append("package: ")
-        result.append(name)
-        result.append("\n")
-        result.append("packageAccessLevel: ")
-        result.append(accessLevel.toString())
-        result.append("\n")
+        result.append("package: ${name}\n")
+        result.append("packageAccessLevel: ${accessLevel}\n")
         result.append("\n")
 
-        result.append("==========================imports===============================\n\n")
-        for (d in importedClassDefs) {
-            result.append(d.toString())
-            result.append("\n")
-        }
-        for (d in importedStructDefs) {
-            result.append(d.toString())
-            result.append("\n")
-        }
-        for (d in importedEnumDefs) {
-            result.append(d.toString())
-            result.append("\n")
-        }
-        for (d in importedExtendDefs) {
-            result.append(d.toString())
-            result.append("\n")
-        }
-        result.append("\n")
-
-        result.append("==========================types=================================\n\n")
-        for (d in classDefs) {
+        for (d in allCustomTypeDefs) {
             result.append(d.toString())
             result.append("\n\n")
         }
-        for (d in structDefs) {
-            result.append(d.toString())
+        for (gv in _globalVars) {
+            result.append(gv.toString())
             result.append("\n\n")
         }
-        for (d in enumDefs) {
-            result.append(d.toString())
+        for (f in _functions) {
+            result.append(f.toString())
             result.append("\n\n")
         }
-        for (d in extendDefs) {
-            result.append(d.toString())
-            result.append("\n\n")
-        }
-        result.append("\n")
         return result.toString()
     }
 
@@ -474,6 +479,11 @@ public class Package <: ToString {
             temp._attributes.setAttr(Attribute.Generic, true)
         }
         temp._attributes.setAttr(Attribute.PluginAdded, true)
+        if (let Some(v) <- (extendedType as BuiltinType)) {
+            v._extends.add(temp)
+        } else if (let Some(v) <- (extendedType as CustomType)) {
+            v._def._extends.add(temp)
+        }
         return temp
     }
 

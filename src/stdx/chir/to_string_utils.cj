@@ -9,40 +9,46 @@
 package stdx.chir
 
 internal const INDENT_SPACE: UInt64 = 2
-internal func indentToString(indent: UInt64): String {
-    return StringBuilder(r' ', Int64(indent)).toString()
-}
 
-internal func typeVecToString<T>(start: String, types: Array<T>, end: String): String where T <: Type {
-    if (types.isEmpty()) {
-        return String.empty
-    }
+internal func annoInfoToString(obj: AnnoInfo, indent: UInt64): String {
     let result = StringBuilder()
-    result.append(start)
-    result.append(String.join(types.map({ ty => ty.toString() }), delimiter: ", "))
-    result.append(end)
+    if (!obj._annoInstances.isEmpty()) {
+        result.append(indentToString(indent))
+        result.append(String.join(obj._annoInstances.toArray().mapTo({ anno => annoInstanceToString(anno, indent) }), delimiter: "\n"))
+    }
     return result.toString()
 }
 
-internal func valueIdVecToString<T>(prefix: String, values: ArrayList<T>, suffix: String, hasExceptionBranch: Bool): String where T <: Value {
-    if (values.isEmpty()) {
-        return ""
+internal func annoInstanceToString(obj: Annotation, indent: UInt64): String {
+    let result = StringBuilder()
+    result.append(indentToString(indent))
+    result.append("@")
+    result.append(obj._classSrcCodeName)
+    result.append("[")
+    result.append(String.join(obj._argValues.toArray(), delimiter: ", "))
+    result.append("]")
+    return result.toString()
+}
+
+internal func blockGroupToString(obj: BlockGroup, indent: UInt64): String {
+    var result = ""
+    result += indentToString(indent)
+    result += obj._attributes.toString()
+    result += "{"
+    var comment = ArrayList<String>()
+    comment.add("Block Group: " + obj.identifier)
+    if (let str <- obj.baseCommentToString() && !str.isEmpty()) {
+        comment.add(str)
     }
-    var result = ArrayList<String>()
-    for (value in values) {
-        if (value.isLiteral()) {
-            result.add(value.toString())
-        } else {
-            result.add(value.identifier)
-        }
+    if (!comment.isEmpty()) {
+        result += " // " + String.join(comment.toArray(), delimiter: ", ")
     }
-    if (hasExceptionBranch) {
-        let size = result.size
-        assert(size >= 2, "Wrong value size")
-        result[size - 2] = "normal: " + result[size - 2]
-        result[size - 1] = "exception: " + result[size - 1]
+    for (block in obj.blocks) {
+        result += "\n"
+        result += blockToString(block, indent)
     }
-    return prefix + String.join(result.toArray(), delimiter: ", ") + suffix
+    result += "\n" + indentToString(indent) + "}"
+    return result
 }
 
 internal func blockToString(obj: Block, indent: UInt64): String {
@@ -75,24 +81,92 @@ internal func blockToString(obj: Block, indent: UInt64): String {
     return result
 }
 
-internal func blockGroupToString(obj: BlockGroup, indent: UInt64): String {
+internal func enumCtorInfoToString(obj: EnumCtorInfo, indent: UInt64): String {
+    let result = StringBuilder()
+    if (let str <- annoInfoToString(obj._annoInfo, indent) && !str.isEmpty()) {
+        result.append(str)
+        result.append("\n")
+    }
+    result.append(indentToString(indent))
+    result.append(obj.srcCodeName)
+    result.append(typeVecToString("(", obj.funcType.paramTypes, ")"))
+    return result.toString()
+}
+
+internal func expressionToString(expr: Expression, indent: UInt64): String {
+    var result = ""
+    if (expr._kind == ExprKind.Lambda) {
+        result += lambdaToString((expr as Lambda).getOrThrow(), indent)
+    } else {
+        result += indentToString(indent)
+        result += expr.toString()
+    }
+    return result
+}
+
+internal func functionToString(obj: Function, indent: UInt64): String {
     var result = ""
     result += indentToString(indent)
     result += obj._attributes.toString()
-    result += "{"
+    if (obj._isFastNative) {
+        result += "[fastNative]"
+    }
+    if (obj._isCFFIWrapper) {
+        result += "[CFFIWrapper]"
+    }
+
+    // function identifier
+    result += "Func " + obj.identifier + typeVecToString("<", obj.genericTypeParams, ">") + "("
+
+    // parameters
+    var params = ArrayList<String>()
+    for (param in obj.parameters) {
+        params.add(parameterToString(param, indent + INDENT_SPACE))
+    }
+    if (!params.isEmpty()) {
+        result += "\n"
+        result += String.join(params.toArray(), delimiter: ",\n")
+        result += "\n" + indentToString(indent)
+    }
+
+    // return type
+    result += "): " + (obj.ty as FuncType).getOrThrow().returnType.toString()
+
+    // generic constraints
+    result += genericTypeParamsConstraintToString(obj.genericTypeParams)
+
+    // comments
     var comment = ArrayList<String>()
-    comment.add("Block Group: " + obj.identifier)
     if (let str <- obj.baseCommentToString() && !str.isEmpty()) {
         comment.add(str)
+    }
+    if (obj._funcKind != FuncKind.Default) {
+        comment.add("funcKind: " + obj._funcKind.toString())
+    }
+    if (obj._genericDecl.isSome()) {
+        comment.add("genericDecl: " + obj._genericDecl.getOrThrow().identifier)
+    }
+    if (let str <- obj.globalValueToString() && !str.isEmpty()) {
+        comment.add(str)
+    }
+    if (obj._propLocation.isValid()) {
+        comment.add("propLocation: " + obj._propLocation.toString())
+    }
+    if (obj._paramDftValHostFunc.isSome()) {
+        comment.add("paramDftValHostFunc: " + obj._paramDftValHostFunc.getOrThrow().identifier)
+    }
+    if (let Some(v) <- obj._originalLambdaInfo) {
+        comment.add("originalLambdaInfo: " + v.toString())
     }
     if (!comment.isEmpty()) {
         result += " // " + String.join(comment.toArray(), delimiter: ", ")
     }
-    for (block in obj.blocks) {
+
+    // body
+    if (let Some(body) <- obj._body) {
         result += "\n"
-        result += blockToString(block, indent)
+        result += blockGroupToString(body, indent)
     }
-    result += "\n" + indentToString(indent) + "}"
     return result
 }
 
@@ -117,80 +191,18 @@ internal func genericTypeParamsConstraintToString(obj: Array<GenericType>): Stri
     return " where " + String.join(result.toArray(), delimiter: ", ")
 }
 
-internal func functionToString(obj: Function, indent: UInt64): String {
-    var result = ""
-    result += indentToString(indent)
-    result += obj._attributes.toString()
-    if (obj._isFastNative) {
-        result += "[fastNative]"
-    }
-    if (obj._isCFFIWrapper) {
-        result += "[CFFIWrapper]"
-    }
-    // function identifier
-    result += "Func " + obj.identifier + typeVecToString("<", obj.genericTypeParams, ">")
-    // parameters
-    var params = ArrayList<String>()
-    for (param in obj.parameters) {
-        parameterToString(param, indent + INDENT_SPACE)
-    }
-    result += "(" + String.join(params.toArray(), delimiter: ",\n")
-    result += "\n" + indentToString(indent) + ")"
-    // return type
-    result += ": " + (obj.ty as FuncType).getOrThrow().returnType.toString()
-    // generic constraints
-    result += genericTypeParamsConstraintToString(obj.genericTypeParams)
-    var comment = ArrayList<String>()
-    if (let str <- obj.baseCommentToString() && !str.isEmpty()) {
-        comment.add(str)
-    }
-    if (obj._funcKind != FuncKind.Default) {
-        comment.add("funcKind: " + obj._funcKind.toString())
-    }
-    if (obj._genericDecl.isSome()) {
-        comment.add("genericDecl: " + obj._genericDecl.getOrThrow().identifier)
-    }
-    if (let str <- obj.globalValueToString() && !str.isEmpty()) {
-        comment.add(str)
-    }
-    if (obj._propLocation.isValid()) {
-        comment.add("propLocation: " + obj._propLocation.toString())
-    }
-    if (obj._paramDftValHostFunc.isSome()) {
-        comment.add("paramDftValHostFunc: " + obj._paramDftValHostFunc.getOrThrow().identifier)
-    }
-    if (obj._oriLambdaFuncTy.isSome()) {
-        comment.add("oriLambdaFuncTy: " + obj._oriLambdaFuncTy.getOrThrow().toString())
-    }
-    if (obj._oriLambdaGenericTypeParams.isSome()) {
-        comment.add("oriLambdaGenericTypeParams: " + typeVecToString("<", obj._oriLambdaGenericTypeParams.getOrThrow().toArray(), ">"))
-    }
-    if (!comment.isEmpty()) {
-        result += " // " + String.join(comment.toArray(), delimiter: ", ")
-    }
-    // body
-    if (let Some(body) <- obj._body) {
-        result += "\n"
-        result += blockGroupToString(body, indent)
-    }
-    return result
-}
-
-internal func expressionToString(expr: Expression, indent: UInt64): String {
-    var result = ""
-    if (expr._kind == ExprKind.Lambda) {
-        result += lambdaToString((expr as Lambda).getOrThrow(), indent)
-    } else {
-        result += indentToString(indent)
-        result += expr.toString()
-    }
-    return result
+internal func indentToString(indent: UInt64): String {
+    return StringBuilder(r' ', Int64(indent)).toString()
 }
 
 internal func lambdaToString(expr: Lambda, indent: UInt64): String {
     var result = ""
     result += indentToString(indent)
-    result += expr.result.identifier + ": " + expr.result.ty.toString() + " = "
+    if (let Some(v) <- expr._result) {
+        result += v.identifier + ": " + v.ty.toString() + " = "
+    } else {
+        throw CHIRException("Lambda: result is not set")
+    }
     if (expr.isCompileTimeValue) {
         result += "[compileTimeVal]"
     }
@@ -198,6 +210,7 @@ internal func lambdaToString(expr: Lambda, indent: UInt64): String {
         result += "[localFunc]"
     }
     result += expr._kind.toString() + " " + expr.identifier + typeVecToString("<", expr.genericTypeParams, ">")
+
     // parameters
     var params = ArrayList<String>()
     for (param in expr.parameters) {
@@ -220,6 +233,7 @@ internal func parameterToString(obj: Parameter, indent: UInt64): String {
         result.append("\n")
     }
     result.append(indentToString(indent))
+    result.append(obj._attributes.toString())
     result.append(obj.identifier + ": " + obj.ty.toString())
     if (let str <- obj.baseCommentToString() && !str.isEmpty()) {
         result.append(" // ")
@@ -228,21 +242,34 @@ internal func parameterToString(obj: Parameter, indent: UInt64): String {
     return result.toString()
 }
 
-internal func annoInfoToString(obj: AnnoInfo, indent: UInt64): String {
+internal func typeVecToString<T>(start: String, types: Array<T>, end: String): String where T <: Type {
+    if (types.isEmpty()) {
+        return String.empty
+    }
     let result = StringBuilder()
-    result.append(indentToString(indent))
-    result.append(String.join(obj._annoClasses.toArray().map({ anno => anno.toString() }), delimiter: "\n"))
+    result.append(start)
+    result.append(String.join(types.mapTo({ ty => ty.toString() }), delimiter: ", "))
+    result.append(end)
     return result.toString()
 }
 
-internal func enumCtorInfoToString(obj: EnumCtorInfo, indent: UInt64): String {
-    let result = StringBuilder()
-    if (let str <- annoInfoToString(obj._annotations, indent) && !str.isEmpty()) {
-        result.append(str)
-        result.append("\n")
+internal func valueIdVecToString<T>(prefix: String, values: ArrayList<T>, suffix: String, hasExceptionBranch: Bool): String where T <: Value {
+    if (values.isEmpty()) {
+        return ""
     }
-    result.append(indentToString(indent))
-    result.append(obj.srcCodeName)
-    result.append(typeVecToString("(", obj.funcType.paramTypes, ")"))
-    return result.toString()
+    var result = ArrayList<String>()
+    for (value in values) {
+        if (value.isLiteral()) {
+            result.add(value.toString())
+        } else {
+            result.add(value.identifier)
+        }
+    }
+    if (hasExceptionBranch) {
+        let size = result.size
+        assert(size >= 2, "Wrong value size")
+        result[size - 2] = "normal: " + result[size - 2]
+        result[size - 1] = "exception: " + result[size - 1]
+    }
+    return prefix + String.join(result.toArray(), delimiter: ", ") + suffix
 }

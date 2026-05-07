@@ -703,9 +703,10 @@ add_cangjie_library(
     IS_CJNATIVE_BACKEND
     PACKAGE_NAME "chir"
     MODULE_NAME "stdx"
-    SOURCES ${CHIR_SRCS}
+    SOURCES ${CHIR_SRCS} ${CHIR_GENERATED_SOURCE_NAMES}
     SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/stdx/chir
     DEPENDS ${CHIR_DEPENDENCIES})
+add_dependencies(cangjie${BACKEND_TYPE}Chir CHIR_FLATC_OUTPUTS)
 
 make_cangjie_lib(
     chir IS_SHARED

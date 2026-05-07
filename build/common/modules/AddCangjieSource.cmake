@@ -160,6 +160,9 @@ function(add_cangjie_library target_name
     else()
         file(GLOB source_files CONFIGURE_DEPENDS ${CANGJIELIB_SOURCE_DIR}/*.cj)
     endif()
+    if(source_files)
+        list(REMOVE_DUPLICATES source_files)
+    endif()
 
     set(BACKEND)
     if(CANGJIELIB_IS_CJNATIVE_BACKEND)
