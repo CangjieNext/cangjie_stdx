@@ -46,10 +46,10 @@ internal enum ExprKind {
     And | Or |
 
     // type cast
-    StaticCast | Box | UnboxToValue | UnboxToRef | NumericCast |
+    StaticCast | Box | UnboxToValue | UnboxToRef | NumericCast | CastToConcrete | CastToGeneric |
 
     // memory expr
-    Allocate | Load | Store | GetElementByName | StoreElementByName | Field | FieldByName |
+    Allocate | Load | Store | GetElementByName | GetElementRef | StoreElementByName | StoreElementRef | Field | FieldByName |
 
     // array
     RawArrayAllocate | RawArrayLiteralInit | RawArrayInitByValue |
@@ -362,10 +362,6 @@ internal enum IntrinsicKind {
     GetStaticFieldName |
     GetStaticFieldType |
     GetStaticFieldAnnotations |
-    GetFieldName |
-    GetFieldType |
-    GetFieldAnnotations |
-    GetFieldModifier |
     GetStaticFieldModifier |
     GetFieldValue |
     SetFieldValue |
@@ -719,6 +715,10 @@ sealed abstract class Expression <: Base & ToString & Hashable & Equatable<Expre
         return _kind.isTerminator()
     }
 
+    public func isLambda(): Bool {
+        return _kind == ExprKind.Lambda
+    }
+
     /**
      * Moves this expression right after another expression.
      * @param other Anchor expression.
@@ -819,6 +819,11 @@ sealed abstract class Expression <: Base & ToString & Hashable & Equatable<Expre
         }
     }
 
+    internal func addBlockGroup(v: BlockGroup) {
+        _blockGroups.add(v)
+        v._users.add(this)
+    }
+
     internal func baseOpsToString(): String {
         return valueIdVecToString("", _operands, "", hasExceptionBranch())
     }
@@ -894,7 +899,7 @@ sealed abstract class AllocateBase <: Expression & Equatable<AllocateBase> {
  * Allocate expression without exception branch.
  */
 public class Allocate <: AllocateBase & Equatable<Allocate> {
-    private init(allocatedType: Type) {
+    internal init(allocatedType: Type) {
         super(ExprKind.Allocate, allocatedType)
         addOperandUsers()
     }
@@ -953,7 +958,7 @@ public class TryAllocate <: AllocateBase & Equatable<TryAllocate> {
         }
     }
 
-    private init(allocatedType: Type, normal: Block, err: Block) {
+    internal init(allocatedType: Type, normal: Block, err: Block) {
         super(ExprKind.TryAllocate, allocatedType)
         _operands.add(normal)
         _operands.add(err)
@@ -1026,7 +1031,7 @@ sealed abstract class BinaryExpressionBase <: Expression & Equatable<BinaryExpre
  * Regular binary expression.
  */
 public class BinaryExpression <: BinaryExpressionBase & Equatable<BinaryExpression> {
-    private init(kind: ExprKind, leftOp: Value, rightOp: Value) {
+    internal init(kind: ExprKind, leftOp: Value, rightOp: Value) {
         super(kind, leftOp, rightOp)
         addOperandUsers()
     }
@@ -1092,7 +1097,7 @@ public class TryBinaryExpression <: BinaryExpressionBase & Equatable<TryBinaryEx
         }
     }
 
-    private init(kind: ExprKind, leftOp: Value, rightOp: Value, normal: Block, err: Block) {
+    internal init(kind: ExprKind, leftOp: Value, rightOp: Value, normal: Block, err: Block) {
         super(kind, leftOp, rightOp)
         _operands.add(normal)
         _operands.add(err)
@@ -1171,7 +1176,7 @@ public class Branch <: Expression & Equatable<Branch> {
         }
     }
 
-    private init(condition: Value, trueTarget: Block, falseTarget: Block) {
+    internal init(condition: Value, trueTarget: Block, falseTarget: Block) {
         super(ExprKind.Branch, ArrayList<Value>([condition]))
         _operands.add(trueTarget)
         _operands.add(falseTarget)
@@ -1210,7 +1215,7 @@ public class Branch <: Expression & Equatable<Branch> {
  * Literal constant expression.
  */
 public class Constant <: Expression & Equatable<Constant> {
-    private init(val: LiteralValue) {
+    internal init(val: LiteralValue) {
         super(ExprKind.Constant, ArrayList<Value>([val]))
         addOperandUsers()
     }
@@ -1241,7 +1246,7 @@ public class Constant <: Expression & Equatable<Constant> {
  * Debug marker expression that keeps source mapping info.
  */
 public class Debug <: Expression & Equatable<Debug> {
-    private let _srcCodeName: String
+    internal let _srcCodeName: String
 
     /**
      * Source-level debug name.
@@ -1253,7 +1258,7 @@ public class Debug <: Expression & Equatable<Debug> {
         }
     }
 
-    private init(location: Value, srcName: String) {
+    internal init(location: Value, srcName: String) {
         super(ExprKind.Debug, ArrayList<Value>([location]))
         this._srcCodeName = srcName
         addOperandUsers()
@@ -1290,7 +1295,7 @@ public class Debug <: Expression & Equatable<Debug> {
  * Function exit terminator.
  */
 public class Exit <: Expression & Equatable<Exit> {
-    private init() {
+    internal init() {
         super(ExprKind.Exit)
         addOperandUsers()
     }
@@ -1332,7 +1337,7 @@ public class Field <: Expression & Equatable<Field> {
         }
     }
 
-    private init(location: Value, path: ArrayList<UInt64>) {
+    internal init(location: Value, path: ArrayList<UInt64>) {
         super(ExprKind.Field, ArrayList<Value>([location]))
         this._path = path.clone()
         addOperandUsers()
@@ -1384,7 +1389,7 @@ public class FieldByName <: Expression & Equatable<FieldByName> {
         }
     }
 
-    private init(location: Value, fieldNames: ArrayList<String>) {
+    internal init(location: Value, fieldNames: ArrayList<String>) {
         super(ExprKind.FieldByName, ArrayList<Value>([location]))
         this._fieldNames = fieldNames.clone()
         addOperandUsers()
@@ -1530,7 +1535,7 @@ sealed abstract class ApplyBase <: FuncCall & Equatable<ApplyBase> {
  * Public definition of Apply.
  */
 public class Apply <: ApplyBase & Equatable<Apply> {
-    private init(callee: Value, funcCallCtx: FuncCallContext) {
+    internal init(callee: Value, funcCallCtx: FuncCallContext) {
         super(ExprKind.Apply, callee, funcCallCtx)
         addOperandUsers()
     }
@@ -1598,7 +1603,7 @@ public class TryApply <: ApplyBase & Equatable<TryApply> {
         }
     }
 
-    private init(callee: Value, funcCallCtx: FuncCallContext, normal: Block, err: Block) {
+    internal init(callee: Value, funcCallCtx: FuncCallContext, normal: Block, err: Block) {
         super(ExprKind.TryApply, callee, funcCallCtx)
         _operands.add(normal)
         _operands.add(err)
@@ -1660,7 +1665,7 @@ sealed abstract class IntrinsicBase <: FuncCall & Equatable<IntrinsicBase> {
  * Public definition of Intrinsic.
  */
 public class Intrinsic <: IntrinsicBase & Equatable<Intrinsic> {
-    private init(calleeKind: IntrinsicKind, funcCallCtx: FuncCallContext) {
+    internal init(calleeKind: IntrinsicKind, funcCallCtx: FuncCallContext) {
         super(ExprKind.Intrinsic, calleeKind, funcCallCtx)
         addOperandUsers()
     }
@@ -1722,7 +1727,7 @@ public class TryIntrinsic <: IntrinsicBase & Equatable<TryIntrinsic> {
         }
     }
 
-    private init(calleeKind: IntrinsicKind, funcCallCtx: FuncCallContext, normal: Block, err: Block) {
+    internal init(calleeKind: IntrinsicKind, funcCallCtx: FuncCallContext, normal: Block, err: Block) {
         super(ExprKind.TryIntrinsic, calleeKind, funcCallCtx)
         _operands.add(normal)
         _operands.add(err)
@@ -1756,7 +1761,7 @@ public class TryIntrinsic <: IntrinsicBase & Equatable<TryIntrinsic> {
 }
 
 sealed abstract class InvokeBase <: FuncCall & Equatable<InvokeBase> {
-    internal let _virMethodCtx: VirMethodContext
+    internal let _virMethodCtx: FuncSigInfo
 
     /**
      * Gets the `methodGenericTypeParams` property.
@@ -1764,7 +1769,7 @@ sealed abstract class InvokeBase <: FuncCall & Equatable<InvokeBase> {
      */
     public prop methodGenericTypeParams: Array<GenericType> {
         get() {
-            return _virMethodCtx.genericTypeParams.toArray()
+            return _virMethodCtx._genericTypeParams.toArray()
         }
     }
 
@@ -1774,7 +1779,7 @@ sealed abstract class InvokeBase <: FuncCall & Equatable<InvokeBase> {
      */
     public prop methodName: String {
         get() {
-            return _virMethodCtx.srcCodeName
+            return _virMethodCtx._name
         }
     }
 
@@ -1784,7 +1789,7 @@ sealed abstract class InvokeBase <: FuncCall & Equatable<InvokeBase> {
      */
     public prop methodType: FuncType {
         get() {
-            return _virMethodCtx.originalFuncType
+            return _virMethodCtx._type
         }
     }
 
@@ -1830,7 +1835,7 @@ sealed abstract class InvokeBase <: FuncCall & Equatable<InvokeBase> {
  * Public definition of Invoke.
  */
 public class Invoke <: InvokeBase & Equatable<Invoke> {
-    private init(callContext: InvokeCallContext) {
+    internal init(callContext: InvokeCallContext) {
         super(ExprKind.Invoke, callContext)
         addOperandUsers()
     }
@@ -1903,7 +1908,7 @@ public class TryInvoke <: InvokeBase & Equatable<TryInvoke> {
         }
     }
 
-    private init(callContext: InvokeCallContext, normal: Block, err: Block) {
+    internal init(callContext: InvokeCallContext, normal: Block, err: Block) {
         super(ExprKind.TryInvoke, callContext)
         _operands.add(normal)
         _operands.add(err)
@@ -1964,7 +1969,7 @@ public class GetElementByName <: Expression & Equatable<GetElementByName> {
         }
     }
 
-    private init(location: Value, fieldNames: ArrayList<String>) {
+    internal init(location: Value, fieldNames: ArrayList<String>) {
         super(ExprKind.GetElementByName, ArrayList<Value>([location]))
         this._fieldNames = fieldNames.clone()
         addOperandUsers()
@@ -1999,11 +2004,45 @@ public class GetElementByName <: Expression & Equatable<GetElementByName> {
     }
 }
 
+public class GetElementRef <: Expression & Equatable<GetElementRef> {
+    internal let _path: ArrayList<UInt64>
+
+    public prop path: Array<UInt64> {
+        get() {
+            return _path.toArray()
+        }
+    }
+
+    internal init(location: Value, path: ArrayList<UInt64>) {
+        super(ExprKind.GetElementRef, ArrayList<Value>([location]))
+        this._path = path.clone()
+        addOperandUsers()
+    }
+
+    public static func create(location: Value, path: ArrayList<UInt64>): GetElementRef {
+        let expr = GetElementRef(location, path)
+        let retTy = getFieldOfType(location.ty, path.map({ i => Int64(i) }))
+        expr._result._type = RefType.get(retTy)
+        expr._result._expr = expr
+        return expr
+    }
+
+    protected override func operandsToString(): String {
+        let strArray = ArrayList<String>(_path.size, { i => _path[i].toString() })
+        let pathStr = "[" + String.join(strArray.toArray(), delimiter: ", ") + "]"
+        return baseOpsToString() + ", path: " + pathStr
+    }
+
+    public operator func==(other: GetElementRef): Bool {
+        return refEq(this, other)
+    }
+}
+
 /**
  * Public definition of GetException.
  */
 public class GetException <: Expression & Equatable<GetException> {
-    private init() {
+    internal init() {
         super(ExprKind.GetException)
         addOperandUsers()
     }
@@ -2046,7 +2085,7 @@ public class GetInstantiateValue <: Expression & Equatable<GetInstantiateValue> 
         }
     }
 
-    private init(val: Function, instantiateTypes: ArrayList<Type>) {
+    internal init(val: Function, instantiateTypes: ArrayList<Type>) {
         super(ExprKind.GetInstantiateValue, ArrayList<Value>([val]))
         this._instantiateTypes = instantiateTypes.clone()
         addOperandUsers()
@@ -2079,7 +2118,7 @@ public class GetInstantiateValue <: Expression & Equatable<GetInstantiateValue> 
  * Public definition of GetRTTI.
  */
 public class GetRTTI <: Expression & Equatable<GetRTTI> {
-    private init(val: Value) {
+    internal init(val: Value) {
         super(ExprKind.GetRtti, ArrayList<Value>([val]))
         addOperandUsers()
     }
@@ -2122,7 +2161,7 @@ public class GetRTTIStatic <: Expression & Equatable<GetRTTIStatic> {
         }
     }
 
-    private init(ty: Type) {
+    internal init(ty: Type) {
         super(ExprKind.GetRttiStatic)
         this._ty = ty
         addOperandUsers()
@@ -2158,7 +2197,7 @@ public class GetRTTIStatic <: Expression & Equatable<GetRTTIStatic> {
  * Public definition of GoTo.
  */
 public class GoTo <: Expression & Equatable<GoTo> {
-    private init(target: Block) {
+    internal init(target: Block) {
         super(ExprKind.Goto)
         _operands.add(target)
         addOperandUsers()
@@ -2202,7 +2241,7 @@ public class InstanceOf <: Expression & Equatable<InstanceOf> {
         }
     }
 
-    private init(srcVal: Value, targetTy: Type) {
+    internal init(srcVal: Value, targetTy: Type) {
         super(ExprKind.InstanceOf, ArrayList<Value>([srcVal]))
         this._targetType = targetTy
         addOperandUsers()
@@ -2355,7 +2394,7 @@ public class Lambda <: Expression & Equatable<Lambda> {
         }
     }
 
-    private init(ty: FuncType, identifier: String, srcName: String, genericTypeParams: ArrayList<GenericType>) {
+    internal init(ty: FuncType, identifier: String, srcName: String, genericTypeParams: ArrayList<GenericType>) {
         super(ExprKind.Lambda)
         this._identifier = identifier
         this._srcCodeName = srcName
@@ -2387,8 +2426,8 @@ public class Lambda <: Expression & Equatable<Lambda> {
     public func initBody(): Unit {
         let bodyId = topLevelFunc.generateBlockGroupId().toString()
         let body = BlockGroup(bodyId, _result)
-        _blockGroups.add(body)
-        body._users.add(this)
+        body._attributes.setAttr(Attribute.PluginAdded, true)
+        addBlockGroup(body)
         let bb = body.appendBlock()
         body.setEntryBlock(bb)
     }
@@ -2425,10 +2464,11 @@ public class Lambda <: Expression & Equatable<Lambda> {
         return String.join(comments.toArray(), delimiter: ", ")
     }
 
-    internal func appendParameter(ty: Type): Unit {
+    internal func appendParameter(ty: Type): Parameter {
         let identifier = LOCAL_VAR_PREFIX + topLevelFunc.generateLocalId().toString()
         let result = Parameter(ty, identifier, this)
         _parameters.add(result)
+        return result
     }
 
     /**
@@ -2456,7 +2496,7 @@ public class Load <: Expression & Equatable<Load> {
         }
     }
 
-    private init(location: Value) {
+    internal init(location: Value) {
         super(ExprKind.Load, ArrayList<Value>([location]))
         addOperandUsers()
     }
@@ -2540,7 +2580,7 @@ public class MultiBranch <: Expression & Equatable<MultiBranch> {
         }
     }
 
-    private init(condition: Value, default: Block, targets: ArrayList<Block>, caseValues: ArrayList<UInt64>) {
+    internal init(condition: Value, default: Block, targets: ArrayList<Block>, caseValues: ArrayList<UInt64>) {
         super(ExprKind.MultiBranch, ArrayList<Value>([condition]))
         _operands.add(default)
         _operands.add(all: ArrayList<Value>(targets.size, { i => targets[i] }))
@@ -2625,7 +2665,7 @@ sealed abstract class NumericCastBase <: Expression & Equatable<NumericCastBase>
  * Public definition of NumericCast.
  */
 public class NumericCast <: NumericCastBase & Equatable<NumericCast> {
-    private init(srcVal: Value, overflow: OverflowStrategy) {
+    internal init(srcVal: Value, overflow: OverflowStrategy) {
         super(ExprKind.NumericCast, srcVal, overflow)
         addOperandUsers()
     }
@@ -2686,7 +2726,7 @@ public class TryNumericCast <: NumericCastBase & Equatable<TryNumericCast> {
         }
     }
 
-    private init(srcVal: Value, normal: Block, err: Block) {
+    internal init(srcVal: Value, normal: Block, err: Block) {
         super(ExprKind.TryNumericCast, srcVal, OverflowStrategy.Throwing)
         _operands.add(normal)
         _operands.add(err)
@@ -2722,12 +2762,12 @@ public class TryNumericCast <: NumericCastBase & Equatable<TryNumericCast> {
  * Public definition of RaiseException.
  */
 public class RaiseException <: Expression & Equatable<RaiseException> {
-    private init(value: Value) {
+    internal init(value: Value) {
         super(ExprKind.RaiseException, ArrayList<Value>([value]))
         addOperandUsers()
     }
 
-    private init(value: Value, successor: Block) {
+    internal init(value: Value, successor: Block) {
         super(ExprKind.RaiseException, ArrayList<Value>([value]))
         _operands.add(successor)
         addOperandUsers()
@@ -2804,7 +2844,7 @@ sealed abstract class RawArrayAllocateBase <: Expression & Equatable<RawArrayAll
  * Public definition of RawArrayAllocate.
  */
 public class RawArrayAllocate <: RawArrayAllocateBase & Equatable<RawArrayAllocate> {
-    private init(elementType: Type, size: Value) {
+    internal init(elementType: Type, size: Value) {
         super(ExprKind.RawArrayAllocate, elementType, size)
         addOperandUsers()
     }
@@ -2864,7 +2904,7 @@ public class TryRawArrayAllocate <: RawArrayAllocateBase & Equatable<TryRawArray
         }
     }
 
-    private init(elementType: Type, size: Value, normal: Block, err: Block) {
+    internal init(elementType: Type, size: Value, normal: Block, err: Block) {
         super(ExprKind.TryRawArrayAllocate, elementType, size)
         _operands.add(normal)
         _operands.add(err)
@@ -2900,7 +2940,7 @@ public class TryRawArrayAllocate <: RawArrayAllocateBase & Equatable<TryRawArray
  * Public definition of RawArrayInitByValue.
  */
 public class RawArrayInitByValue <: Expression & Equatable<RawArrayInitByValue> {
-    private init(memory: Value, size: Value, initVal: Value) {
+    internal init(memory: Value, size: Value, initVal: Value) {
         super(ExprKind.RawArrayInitByValue, ArrayList<Value>([memory, size, initVal]))
         addOperandUsers()
     }
@@ -2933,7 +2973,7 @@ public class RawArrayInitByValue <: Expression & Equatable<RawArrayInitByValue> 
  * Public definition of RawArrayLiteralInit.
  */
 public class RawArrayLiteralInit <: Expression & Equatable<RawArrayLiteralInit> {
-    private init(memory: Value, elements: ArrayList<Value>) {
+    internal init(memory: Value, elements: ArrayList<Value>) {
         super(ExprKind.RawArrayLiteralInit, elements)
         _operands.add(memory, at: 0)
         addOperandUsers()
@@ -2963,7 +3003,7 @@ public class RawArrayLiteralInit <: Expression & Equatable<RawArrayLiteralInit> 
 }
 
 sealed abstract class SpawnBase <: Expression & Equatable<SpawnBase> {
-    private var _executeClosure: ?Function = None
+    internal var _executeClosure: ?Function = None
 
     // serializer may query executeClosure; keep it settable
     /**
@@ -3012,12 +3052,12 @@ sealed abstract class SpawnBase <: Expression & Equatable<SpawnBase> {
  * Public definition of Spawn.
  */
 public class Spawn <: SpawnBase & Equatable<Spawn> {
-    private init(lambda: Value) {
+    internal init(lambda: Value) {
         super(ExprKind.Spawn, ArrayList<Value>([lambda]))
         addOperandUsers()
     }
 
-    private init(lambda: Value, arg: Value) {
+    internal init(lambda: Value, arg: Value) {
         super(ExprKind.Spawn, ArrayList<Value>([lambda, arg]))
         addOperandUsers()
     }
@@ -3083,14 +3123,14 @@ public class TrySpawn <: SpawnBase & Equatable<TrySpawn> {
         }
     }
 
-    private init(lambda: Value, arg: Value, normal: Block, err: Block) {
+    internal init(lambda: Value, arg: Value, normal: Block, err: Block) {
         super(ExprKind.TrySpawn, ArrayList<Value>([lambda, arg]))
         _operands.add(normal)
         _operands.add(err)
         addOperandUsers()
     }
 
-    private init(lambda: Value, normal: Block, err: Block) {
+    internal init(lambda: Value, normal: Block, err: Block) {
         super(ExprKind.TrySpawn, ArrayList<Value>([lambda]))
         _operands.add(normal)
         _operands.add(err)
@@ -3164,7 +3204,7 @@ public class Store <: Expression & Equatable<Store> {
         }
     }
 
-    private init(val: Value, location: Value) {
+    internal init(val: Value, location: Value) {
         super(ExprKind.Store, ArrayList<Value>([val, location]))
         addOperandUsers()
     }
@@ -3196,7 +3236,7 @@ public class Store <: Expression & Equatable<Store> {
  * Public definition of StoreElementByName.
  */
 public class StoreElementByName <: Expression & Equatable<StoreElementByName> {
-    private let _fieldNames: ArrayList<String>
+    internal let _fieldNames: ArrayList<String>
 
     /**
      * Gets the `fieldNames` property.
@@ -3208,7 +3248,7 @@ public class StoreElementByName <: Expression & Equatable<StoreElementByName> {
         }
     }
 
-    private init(val: Value, location: Value, fieldNames: ArrayList<String>) {
+    internal init(val: Value, location: Value, fieldNames: ArrayList<String>) {
         super(ExprKind.StoreElementByName, ArrayList<Value>([val, location]))
         this._fieldNames = fieldNames.clone()
         addOperandUsers()
@@ -3243,6 +3283,39 @@ public class StoreElementByName <: Expression & Equatable<StoreElementByName> {
     }
 }
 
+public class StoreElementRef <: Expression & Equatable<StoreElementRef> {
+    internal let _path: ArrayList<UInt64>
+
+    public prop path: Array<UInt64> {
+        get() {
+            return _path.toArray()
+        }
+    }
+
+    internal init(val: Value, location: Value, path: ArrayList<UInt64>) {
+        super(ExprKind.StoreElementRef, ArrayList<Value>([val, location]))
+        this._path = path.clone()
+        addOperandUsers()
+    }
+
+    public static func create(val: Value, location: Value, path: ArrayList<UInt64>): StoreElementRef {
+        let expr = StoreElementRef(val, location, path)
+        expr._result._type = UnitType.get()
+        expr._result._expr = expr
+        return expr
+    }
+
+    protected override func operandsToString(): String {
+        let strArray = ArrayList<String>(_path.size, { i => _path[i].toString() })
+        let pathStr = "[" + String.join(strArray.toArray(), delimiter: ", ") + "]"
+        return baseOpsToString() + ", path: " + pathStr
+    }
+
+    public operator func==(other: StoreElementRef): Bool {
+        return refEq(this, other)
+    }
+}
+
 /**
  * Public definition of Tuple.
  */
@@ -3257,7 +3330,7 @@ public class Tuple <: Expression & Equatable<Tuple> {
         }
     }
 
-    private init(elements: ArrayList<Value>) {
+    internal init(elements: ArrayList<Value>) {
         super(ExprKind.Tuple, elements)
         addOperandUsers()
     }
@@ -3336,7 +3409,7 @@ sealed abstract class TypeCast <: Expression & Equatable<TypeCast> {
  * Public definition of Box.
  */
 public class Box <: TypeCast & Equatable<Box> {
-    private init(srcVal: Value) {
+    internal init(srcVal: Value) {
         super(ExprKind.Box, srcVal)
         addOperandUsers()
     }
@@ -3368,7 +3441,7 @@ public class Box <: TypeCast & Equatable<Box> {
  * Public definition of StaticCast.
  */
 public class StaticCast <: TypeCast & Equatable<StaticCast> {
-    private init(srcVal: Value) {
+    internal init(srcVal: Value) {
         super(ExprKind.StaticCast, srcVal)
         addOperandUsers()
     }
@@ -3396,11 +3469,69 @@ public class StaticCast <: TypeCast & Equatable<StaticCast> {
     }
 }
 
+public class CastToConcrete <: TypeCast & Equatable<CastToConcrete> {
+    internal init(srcVal: Value) {
+        super(ExprKind.CastToConcrete, srcVal)
+        addOperandUsers()
+    }
+
+    /**
+     * Performs the public behavior of `create`.
+     * @param srcVal The `srcVal` parameter.
+     * @param targetType The `targetType` parameter.
+     * @return The `CastToConcrete` result.
+     */
+    public static func create(srcVal: Value, targetType: Type): CastToConcrete {
+        let expr = CastToConcrete(srcVal)
+        expr._result._type = targetType
+        expr._result._expr = expr
+        return expr
+    }
+
+    /**
+     * Performs the public behavior of `func`.
+     * @param other The `other` parameter.
+     * @return The `Bool` result.
+     */
+    public operator func==(other: CastToConcrete): Bool {
+        return refEq(this, other)
+    }
+}
+
+public class CastToGeneric <: TypeCast & Equatable<CastToGeneric> {
+    internal init(srcVal: Value) {
+        super(ExprKind.CastToGeneric, srcVal)
+        addOperandUsers()
+    }
+
+    /**
+     * Performs the public behavior of `create`.
+     * @param srcVal The `srcVal` parameter.
+     * @param targetType The `targetType` parameter.
+     * @return The `CastToGeneric` result.
+     */
+    public static func create(srcVal: Value, targetType: Type): CastToGeneric {
+        let expr = CastToGeneric(srcVal)
+        expr._result._type = targetType
+        expr._result._expr = expr
+        return expr
+    }
+
+    /**
+     * Performs the public behavior of `func`.
+     * @param other The `other` parameter.
+     * @return The `Bool` result.
+     */
+    public operator func==(other: CastToGeneric): Bool {
+        return refEq(this, other)
+    }
+}
+
 /**
  * Public definition of UnboxToRef.
  */
 public class UnboxToRef <: TypeCast & Equatable<UnboxToRef> {
-    private init(srcVal: Value) {
+    internal init(srcVal: Value) {
         super(ExprKind.UnboxToRef, srcVal)
         addOperandUsers()
     }
@@ -3432,7 +3563,7 @@ public class UnboxToRef <: TypeCast & Equatable<UnboxToRef> {
  * Public definition of UnboxToValue.
  */
 public class UnboxToValue <: TypeCast & Equatable<UnboxToValue> {
-    private init(srcVal: Value) {
+    internal init(srcVal: Value) {
         super(ExprKind.UnboxToValue, srcVal)
         addOperandUsers()
     }
@@ -3530,7 +3661,7 @@ public class TryUnaryExpression <: UnaryExpressionBase & Equatable<TryUnaryExpre
         }
     }
 
-    private init(kind: ExprKind, op: Value, normal: Block, err: Block) {
+    internal init(kind: ExprKind, op: Value, normal: Block, err: Block) {
         super(kind, op)
         _operands.add(normal)
         _operands.add(err)
@@ -3566,7 +3697,7 @@ public class TryUnaryExpression <: UnaryExpressionBase & Equatable<TryUnaryExpre
  * Public definition of UnaryExpression.
  */
 public class UnaryExpression <: UnaryExpressionBase & Equatable<UnaryExpression> {
-    private init(kind: ExprKind, op: Value) {
+    internal init(kind: ExprKind, op: Value) {
         super(kind, op)
         addOperandUsers()
     }
@@ -3603,7 +3734,7 @@ public class UnaryExpression <: UnaryExpressionBase & Equatable<UnaryExpression>
  * Public definition of VArrayBuilder.
  */
 public class VArrayBuilder <: Expression & Equatable<VArrayBuilder> {
-    private init(size: Value, initVal: Value, initFunc: Value) {
+    internal init(size: Value, initVal: Value, initFunc: Value) {
         super(ExprKind.VArrayBuilder, ArrayList<Value>([size, initVal, initFunc]))
         addOperandUsers()
     }
@@ -3637,7 +3768,7 @@ public class VArrayBuilder <: Expression & Equatable<VArrayBuilder> {
  * Public definition of VArrayExpr.
  */
 public class VArrayExpr <: Expression & Equatable<VArrayExpr> {
-    private init(elements: ArrayList<Value>) {
+    internal init(elements: ArrayList<Value>) {
         super(ExprKind.VArrayExpr, elements)
         addOperandUsers()
     }
@@ -3663,57 +3794,6 @@ public class VArrayExpr <: Expression & Equatable<VArrayExpr> {
      */
     public operator func==(other: VArrayExpr): Bool {
         return refEq(this, other)
-    }
-}
-
-/**
- * Public definition of VirMethodContext.
- */
-public class VirMethodContext {
-    internal let _genericTypeParams: ArrayList<GenericType>
-    internal let _originalFuncType: FuncType
-    internal let _srcCodeName: String
-
-    /**
-     * Gets the `genericTypeParams` property.
-     * @type { Array<GenericType> }
-     */
-    public prop genericTypeParams: Array<GenericType> {
-        get() {
-            return _genericTypeParams.toArray()
-        }
-    }
-
-    /**
-     * Gets the `originalFuncType` property.
-     * @type { FuncType }
-     */
-    public prop originalFuncType: FuncType {
-        get() {
-            return _originalFuncType
-        }
-    }
-
-    /**
-     * Gets the `srcCodeName` property.
-     * @type { String }
-     */
-    public prop srcCodeName: String {
-        get() {
-            return _srcCodeName
-        }
-    }
-
-    /**
-     * Performs the public behavior of `func`.
-     * @param srcCodeName The `srcCodeName` parameter.
-     * @param originalFuncType The `originalFuncType` parameter.
-     * @param genericTypeParams The `genericTypeParams` parameter.
-     */
-    public init(srcCodeName: String, originalFuncType: FuncType, genericTypeParams: Array<GenericType>) {
-        this._srcCodeName = srcCodeName
-        this._originalFuncType = originalFuncType
-        this._genericTypeParams = ArrayList<GenericType>.of(genericTypeParams)
     }
 }
 
@@ -3774,7 +3854,7 @@ public class FuncCallContext {
 public class InvokeCallContext {
     internal let _caller: Value
     internal let _funcCallCtx: FuncCallContext
-    internal let _virMethodCtx: VirMethodContext
+    internal let _virMethodCtx: FuncSigInfo
 
     /**
      * Gets the `caller` property.
@@ -3798,9 +3878,9 @@ public class InvokeCallContext {
 
     /**
      * Gets the `virMethodCtx` property.
-     * @type { VirMethodContext }
+     * @type { FuncSigInfo }
      */
-    public prop virMethodCtx: VirMethodContext {
+    public prop virMethodCtx: FuncSigInfo {
         get() {
             return _virMethodCtx
         }
@@ -3812,7 +3892,7 @@ public class InvokeCallContext {
      * @param virMethodCtx The `virMethodCtx` parameter.
      * @param funcCallCtx The `funcCallCtx` parameter.
      */
-    public init(caller: Value, virMethodCtx: VirMethodContext, funcCallCtx: FuncCallContext) {
+    public init(caller: Value, virMethodCtx: FuncSigInfo, funcCallCtx: FuncCallContext) {
         this._caller = caller
         this._virMethodCtx = virMethodCtx
         this._funcCallCtx = funcCallCtx

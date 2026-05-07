@@ -69,6 +69,19 @@ public class Package <: ToString {
         }
     }
 
+    public prop allCustomTypeDefs: Array<CustomTypeDef> {
+        get() {
+            return _classDefs.toArray().map<CustomTypeDef>({ d => d })
+                .concat(_enumDefs.toArray().map<CustomTypeDef>({ d => d }))
+                .concat(_extendDefs.toArray().map<CustomTypeDef>({ d => d }))
+                .concat(_structDefs.toArray().map<CustomTypeDef>({ d => d }))
+                .concat(_importedClassDefs.toArray().map<CustomTypeDef>({ d => d }))
+                .concat(_importedEnumDefs.toArray().map<CustomTypeDef>({ d => d }))
+                .concat(_importedExtendDefs.toArray().map<CustomTypeDef>({ d => d }))
+                .concat(_importedStructDefs.toArray().map<CustomTypeDef>({ d => d }))
+        }
+    }
+
     /**
      * Gets class and interface definitions defined in this package.
      * @type { Array<ClassLikeDef> }
@@ -221,6 +234,7 @@ public class Package <: ToString {
      */
     public func addFunction(ty: FuncType, identifier: String, srcCodeName: String, packageName: String): Function {
         let temp = Function(ty, GLOBAL_SYMBOL_PREFIX + identifier, srcCodeName, packageName)
+        temp._attributes.setAttr(Attribute.PluginAdded, true)
         _functions.add(temp)
         for (paramTy in ty.paramTypes) {
             temp.appendParameter(paramTy)
@@ -239,6 +253,7 @@ public class Package <: ToString {
      */
     public func addGlobalVar(ty: Type, identifier: String, srcCodeName: String, packageName: String): GlobalVar {
         let temp = GlobalVar(ty, GLOBAL_SYMBOL_PREFIX + identifier, srcCodeName, packageName)
+        temp._attributes.setAttr(Attribute.PluginAdded, true)
         _globalVars.add(temp)
         return temp
     }
