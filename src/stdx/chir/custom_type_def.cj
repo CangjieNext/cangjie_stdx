@@ -41,6 +41,7 @@ public class MemberVar <: ToString {
     internal var _annoInfo: AnnoInfo = AnnoInfo()
     internal var _attributes: AttributeInfo = AttributeInfo()
     internal var _debugLocation: DebugLocation = DebugLocation.invalid()
+    internal var _initializerFunc: ?Function = None
     internal let _name: String
     internal let _outerDef: CustomTypeDef
     internal var _rawMangledName: String = String.empty
@@ -53,10 +54,10 @@ public class MemberVar <: ToString {
      */
     public mut prop annotations: Array<Annotation> {
         get() {
-            return _annoInfo._annoClasses.toArray()
+            return _annoInfo._annoInstances.toArray()
         }
         set(v) {
-            _annoInfo._annoClasses = ArrayList<Annotation>.of(v)
+            _annoInfo._annoInstances = ArrayList<Annotation>.of(v)
         }
     }
 
@@ -219,18 +220,33 @@ public class MemberVar <: ToString {
  * generic type parameters, instance variables, implemented interfaces, and extends.
  */
 sealed abstract class CustomTypeDef <: Base & Equatable<CustomTypeDef> & Hashable {
+    internal var _annoInfo: AnnoInfo = AnnoInfo()
     internal var _extends = ArrayList<ExtendDef>()
     internal var _genericDecl : ?CustomTypeDef = None
     internal var _hashCode: Int64 = 0
     internal let _identifier: String
     internal var _implementedInterfaceTypes = ArrayList<ClassLikeType>()
+    internal var _instanceVarInitFunc: ?Function = None
     internal var _instanceVars = ArrayList<MemberVar>()
     internal let _kind: CustomDefKind
     internal var _methods = ArrayList<Function>()
     internal var _packageName: String
     internal let _srcCodeName: String
     internal var _staticVars = ArrayList<GlobalVar>()
-    internal var _type : ?CustomType = None
+    internal var _type: ?CustomType = None
+
+    /**
+     * Gets the `annotations` property.
+     * @type { Array<Annotation> }
+     */
+    public mut prop annotations: Array<Annotation> {
+        get() {
+            return _annoInfo._annoInstances.toArray()
+        }
+        set(v) {
+            _annoInfo._annoInstances = ArrayList<Annotation>.of(v)
+        }
+    }
 
     /**
      * Gets or sets the extend definitions nested under this type (e.g. inner extend blocks).
@@ -403,6 +419,7 @@ sealed abstract class CustomTypeDef <: Base & Equatable<CustomTypeDef> & Hashabl
      */
     public func appendInstanceMemberVar(name: String, ty: Type): MemberVar {
         let v = MemberVar(name, ty, this)
+        v._attributes.setAttr(Attribute.PluginAdded, true)
         _instanceVars.add(v)
         return v
     }
@@ -740,16 +757,12 @@ sealed abstract class CustomTypeDef <: Base & Equatable<CustomTypeDef> & Hashabl
         return this.packageName == packageName && this.srcCodeName == srcCodeName
     }
 
-    internal func isSameDef(other: CustomTypeDef): Bool {
-        return this.identifier == other.identifier
-    }
-
     /**
      * Checks if this CustomTypeDef is equal to another CustomTypeDef.
      * @param other The CustomTypeDef to compare with.
      * @return true if the definitions are equal (same kind, identifier, source code identifier, and package name), false otherwise.
      */
     public operator func==(other: CustomTypeDef): Bool {
-        return isSameDef(other)
+        return refEq(this, other)
     }
 }
