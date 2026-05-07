@@ -1,3 +1,4 @@
+.claude
 .idea
 .VSCodeCounter
 .vscode
@@ -23,3 +24,11 @@ src/stdx/syntax/constants.cj
 src/stdx/syntax/exception.cj
 build-script-cache
 cjpm.lock
+
+src/stdx/chir/PackageFormat_generated.cj
+src/stdx/chir/table.cj
+src/stdx/chir/flatbuffer_object.cj
+src/stdx/chir/decode.cj
+src/stdx/chir/builder.cj
+src/stdx/chir/constants.cj
+src/stdx/chir/exception.cj

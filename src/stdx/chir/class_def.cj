@@ -15,7 +15,7 @@ package stdx.chir
  * and provides methods to access class-specific information such as the super class.
  */
 public class ClassLikeDef <: CustomTypeDef & Equatable<ClassLikeDef> {
-    internal var _isAnnotation: Bool = false
+    internal var _annotationTargets: ?ArrayList<GlobalVar> = None
     internal var _isClass: Bool
     internal var _superClass: ?ClassLikeType = None
 
@@ -33,12 +33,9 @@ public class ClassLikeDef <: CustomTypeDef & Equatable<ClassLikeDef> {
      * Gets or sets whether this class-like definition represents an annotation class.
      * @type { Bool }
      */
-    public mut prop isAnnotation: Bool {
+    public prop isAnnotation: Bool {
         get() {
-            return _isAnnotation
-        }
-        set(v) {
-            _isAnnotation = v
+            return _annotationTargets.isSome()
         }
     }
 
@@ -102,6 +99,6 @@ public class ClassLikeDef <: CustomTypeDef & Equatable<ClassLikeDef> {
      * @return true if the definitions are equal, false otherwise.
      */
     public operator func==(other: ClassLikeDef): Bool {
-        return isSameDef(other)
+        return refEq(this, other)
     }
 }
