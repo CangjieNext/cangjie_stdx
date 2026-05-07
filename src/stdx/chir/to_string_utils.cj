@@ -159,11 +159,8 @@ internal func functionToString(obj: Function, indent: UInt64): String {
     if (obj._paramDftValHostFunc.isSome()) {
         comment.add("paramDftValHostFunc: " + obj._paramDftValHostFunc.getOrThrow().identifier)
     }
-    if (obj._oriLambdaFuncTy.isSome()) {
-        comment.add("oriLambdaFuncTy: " + obj._oriLambdaFuncTy.getOrThrow().toString())
-    }
-    if (obj._oriLambdaGenericTypeParams.isSome()) {
-        comment.add("oriLambdaGenericTypeParams: " + typeVecToString("<", obj._oriLambdaGenericTypeParams.getOrThrow().toArray(), ">"))
+    if (let Some(v) <- obj._originalLambdaInfo) {
+        comment.add("originalLambdaInfo: " + v.toString())
     }
     if (!comment.isEmpty()) {
         result += " // " + String.join(comment.toArray(), delimiter: ", ")
@@ -231,13 +228,13 @@ internal func parameterToString(obj: Parameter, indent: UInt64): String {
 internal func annoInfoToString(obj: AnnoInfo, indent: UInt64): String {
     let result = StringBuilder()
     result.append(indentToString(indent))
-    result.append(String.join(obj._annoClasses.toArray().map({ anno => anno.toString() }), delimiter: "\n"))
+    result.append(String.join(obj._annoInstances.toArray().map({ anno => anno.toString() }), delimiter: "\n"))
     return result.toString()
 }
 
 internal func enumCtorInfoToString(obj: EnumCtorInfo, indent: UInt64): String {
     let result = StringBuilder()
-    if (let str <- annoInfoToString(obj._annotations, indent) && !str.isEmpty()) {
+    if (let str <- annoInfoToString(obj._annoInfo, indent) && !str.isEmpty()) {
         result.append(str)
         result.append("\n")
     }

@@ -17,7 +17,21 @@ package stdx.chir
  */
 public class Annotation <: ToString {
     internal let _classSrcCodeName: String
-    internal var _fields = ArrayList<String>()
+    internal var _argValues = ArrayList<String>()
+    internal let _loc: DebugLocation
+
+    /**
+     * Gets the `argValues` property.
+     * @type { Array<String> }
+     */
+    public mut prop argValues: Array<String> {
+        get() {
+            _argValues.toArray()
+        }
+        set(v) {
+            _argValues = ArrayList<String>.of(v)
+        }
+    }
 
     /**
      * Source-level name of the annotation class (e.g. `MyAnno`).
@@ -29,16 +43,9 @@ public class Annotation <: ToString {
         }
     }
 
-    /**
-     * Gets the `fields` property.
-     * @type { Array<String> }
-     */
-    public mut prop fields: Array<String> {
+    public prop location: DebugLocation {
         get() {
-            _fields.toArray()
-        }
-        set(v) {
-            _fields = ArrayList<String>.of(v)
+            return _loc
         }
     }
 
@@ -48,6 +55,12 @@ public class Annotation <: ToString {
      */
     public init(classSrcCodeName: String) {
         this._classSrcCodeName = classSrcCodeName
+        this._loc = DebugLocation.invalid()
+    }
+
+    public init(classSrcCodeName: String, loc: DebugLocation) {
+        this._classSrcCodeName = classSrcCodeName
+        this._loc = loc
     }
 
     /**
@@ -59,7 +72,7 @@ public class Annotation <: ToString {
         result.append("@")
         result.append(_classSrcCodeName)
         result.append("[")
-        result.append(String.join(_fields.toArray(), delimiter: ", "))
+        result.append(String.join(_argValues.toArray(), delimiter: ", "))
         result.append("]")
         return result.toString()
     }
@@ -76,23 +89,23 @@ internal class AnnoInfo <: ToString {
     // @class1Name[v1, v2, ...]
     // @class2Name[v1, v2, ...]
     // func foo() { ... }
-    internal var _annoClasses = ArrayList<Annotation>()
+    internal var _annoInstances = ArrayList<Annotation>()
     // annotation factory function mangled name
     internal var _identifier: String = "none"
 
     internal init() {
         this._identifier = "none"
-        this._annoClasses = ArrayList<Annotation>()
+        this._annoInstances = ArrayList<Annotation>()
     }
 
     internal init(identifier: String) {
         this._identifier = identifier
-        this._annoClasses = ArrayList<Annotation>()
+        this._annoInstances = ArrayList<Annotation>()
     }
 
     internal init(identifier: String, annoClasses: Array<Annotation>) {
         this._identifier = identifier
-        this._annoClasses = ArrayList<Annotation>.of(annoClasses)
+        this._annoInstances = ArrayList<Annotation>.of(annoClasses)
     }
 
     /**
