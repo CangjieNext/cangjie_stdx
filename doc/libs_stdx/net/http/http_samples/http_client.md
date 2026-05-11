@@ -49,9 +49,9 @@ main() {
     // TCP 建连配置
     let TcpSocketConnector = {
         sa: SocketAddress =>
-        let socket = TcpSocket(sa)
-        socket.connect()
-        return socket
+            let socket = TcpSocket(sa)
+            socket.connect()
+            return socket
     }
     // 2. 构建 client 实例
     let client = ClientBuilder().tlsConfig(tlsConfig).enablePush(false).connector(TcpSocketConnector).build()

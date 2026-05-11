@@ -20,22 +20,24 @@ main() {
     config.supportedAlpnProtocols = ["h2"]
 
     // 自定义校验逻辑
-    config.verifyMode = CustomVerify({
-        certificates =>
-            if (certificates.size == 0) {
-                return false
-            }
-            for (certificate in certificates) {
-                match (certificate as X509Certificate) {
-                    case Some(c) =>
-                        if (c.issuer.organizationName != "example") {
-                            return false
-                        }
-                    case None => return false
+    config.verifyMode = CustomVerify(
+        {
+            certificates =>
+                if (certificates.size == 0) {
+                    return false
                 }
-            }
-            return true
-    })
+                for (certificate in certificates) {
+                    match (certificate as X509Certificate) {
+                        case Some(c) =>
+                            if (c.issuer.organizationName != "example") {
+                                return false
+                            }
+                        case None => return false
+                    }
+                }
+                return true
+        }
+    )
 
     try (socket = TcpSocket("127.0.0.1", 8443)) {
         socket.connect()

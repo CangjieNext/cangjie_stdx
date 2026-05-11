@@ -173,9 +173,19 @@ RSA == RSA: true
 
 ```cangjie
 public enum SignatureAlgorithm <: Equatable<SignatureAlgorithm> & ToString {
-    | MD2WithRSA | MD5WithRSA | SHA1WithRSA | SHA256WithRSA | SHA384WithRSA
-    | SHA512WithRSA | DSAWithSHA1 | DSAWithSHA256 | ECDSAWithSHA1 | ECDSAWithSHA256
-    | ECDSAWithSHA384 | ECDSAWithSHA512 | UnknownSignatureAlgorithm
+    | MD2WithRSA
+    | MD5WithRSA
+    | SHA1WithRSA
+    | SHA256WithRSA
+    | SHA384WithRSA
+    | SHA512WithRSA
+    | DSAWithSHA1
+    | DSAWithSHA256
+    | ECDSAWithSHA1
+    | ECDSAWithSHA256
+    | ECDSAWithSHA384
+    | ECDSAWithSHA512
+    | UnknownSignatureAlgorithm
 }
 ```
 

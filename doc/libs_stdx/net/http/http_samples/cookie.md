@@ -124,16 +124,14 @@ func serverSetCookie(serverOn: SyncCounter): Unit {
     let server = ServerBuilder().addr("127.0.0.1").port(8080).build()
     server.afterBind({=> serverOn.dec()})
     // 2. 注册 HttpRequestHandler
-    server
-        .distributor
-        .register(
-            "/index",
-            {
-                httpContext =>
+    server.distributor.register(
+        "/index",
+        {
+            httpContext =>
                 let cookie = Cookie("name", "value")
                 httpContext.responseBuilder.header("Set-Cookie", cookie.toSetCookieString()).body("Hello 仓颉!")
-            }
-        )
+        }
+    )
     // 3. 启动服务
     server.serve()
 }

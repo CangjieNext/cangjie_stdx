@@ -62,6 +62,7 @@ public func json<T>(fileName: String): JsonStrategy<T> where T <: Serializable<T
 <!-- code_no_check -->
 ```cangjie
 import stdx.unittest.data.*
+
 @Test[user in json("users.json")]
 func test_user_age(user: User): Unit {
     @Expect(user.age, 100)
@@ -112,6 +113,7 @@ class User <: Serializable<User> {
 <!-- compile -->
 ```cangjie
 import stdx.unittest.data.*
+
 @Test[value in json("numbers.json")]
 func test(value: Int64) {
     @Expect(value, 1)
@@ -121,6 +123,7 @@ func test(value: Int64) {
 <!-- compile -->
 ```cangjie
 import stdx.unittest.data.*
+
 @Test[name in json("names.json")]
 func test(name: String) {
     @Expect(name, "")
@@ -232,7 +235,7 @@ Donald Sweet,28
 
     @Test[user in csv("testdata.csv")]
     func testUser(user: User) {
-    @Assert(user.name == "Alex Great" || user.name == "Donald Sweet")
-    @Assert(user.age == 21 || user.age == 28)
+        @Assert(user.name == "Alex Great" || user.name == "Donald Sweet")
+        @Assert(user.age == 21 || user.age == 28)
     }
     ```
