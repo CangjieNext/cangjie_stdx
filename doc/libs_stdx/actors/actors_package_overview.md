@@ -381,7 +381,6 @@ class MyActor {
 package actorDemo
 
 import std.collection.ArrayList
-
 import stdx.actors.*
 import stdx.actors.macros.*
 

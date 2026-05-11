@@ -3,7 +3,7 @@
 ## type KeylessDecryptFunc
 
 ```cangjie
-public type KeylessDecryptFunc = (cipherText: Array<Byte>) -> Array<Byte> 
+public type KeylessDecryptFunc = (cipherText: Array<Byte>) -> Array<Byte>
 ```
 
 功能：供无私钥握手使用的解密回调函数类型。

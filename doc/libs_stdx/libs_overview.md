@@ -89,6 +89,7 @@ import stdx.log.*
 import stdx.logger.*
 import stdx.syntax.*
 import stdx.serialization.serialization.*
+
 main() {
     0
 }

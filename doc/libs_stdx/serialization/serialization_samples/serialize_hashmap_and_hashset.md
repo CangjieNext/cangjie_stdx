@@ -31,7 +31,6 @@ class Values <: Hashable & Equatable<Values> & Serializable<Values> {
 
     public operator func ==(right: Values): Bool {
         return this.m_data == right.m_data
-        
     }
 
     public operator func !=(right: Values): Bool {

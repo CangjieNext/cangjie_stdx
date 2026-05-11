@@ -194,10 +194,10 @@ public func post<T>(task: () -> T, priority!: Int64 = 5): ActorFuture<T>
 import stdx.actors.*
 
 main() {
-  let seqDispatcher = SequentialDispatcher()
-  let fut: ActorFuture<Int64> = seqDispatcher.post<Int64>({ => 40 + 2 })
-  let res: Int64 = fut.get()
-  println(res)
+    let seqDispatcher = SequentialDispatcher()
+    let fut: ActorFuture<Int64> = seqDispatcher.post<Int64>({=> 40 + 2})
+    let res: Int64 = fut.get()
+    println(res)
 }
 ```
 
@@ -214,10 +214,10 @@ main() {
 import stdx.actors.*
 
 main() {
-  let seqDispatcher = SequentialDispatcher(enableReceiverPriority: true)
-  let fut: ActorFuture<Int64> = seqDispatcher.post<Int64>({ => 40 + 2 }, priority: 5)
-  let res: Int64 = fut.get()
-  println(res)
+    let seqDispatcher = SequentialDispatcher(enableReceiverPriority: true)
+    let fut: ActorFuture<Int64> = seqDispatcher.post<Int64>({=> 40 + 2}, priority: 5)
+    let res: Int64 = fut.get()
+    println(res)
 }
 ```
 

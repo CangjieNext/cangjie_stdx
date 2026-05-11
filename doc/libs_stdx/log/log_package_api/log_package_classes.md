@@ -3,8 +3,7 @@
 ## class Logger
 
 ```cangjie
-public abstract class Logger <: Resource {
-}
+public abstract class Logger <: Resource {}
 ```
 
 功能：此抽象类提供基础的日志打印和管理功能。
@@ -970,8 +969,7 @@ main() {
 ## class LogWriter
 
 ```cangjie
-public abstract class LogWriter {
-}
+public abstract class LogWriter {}
 ```
 
 功能：[LogWriter](log_package_classes.md#class-logwriter) 提供了将仓颉对象序列化成日志输出目标的能力。

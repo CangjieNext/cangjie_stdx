@@ -26,32 +26,33 @@ main() {
     for (_ in 0..1) {
         let f = spawn {
             =>
-            logger.info("abc", ("age", 2))
-            let user = User()
-            // 记录诊断日志，如果 DEBUG 级别未开启，直接返回，几乎无cost
-            logger.debug("Logging in user ${user.name} with birthday ${user.birthdayCalendar}")
-            // 普通记录信息日志
-            logger.info("Hello, World!", ("k1", [[1, 4], [2, 5], [3]]), ("password", "v22222"))
+                logger.info("abc", ("age", 2))
+                let user = User()
+                // 记录诊断日志，如果 DEBUG 级别未开启，直接返回，几乎无cost
+                logger.debug("Logging in user ${user.name} with birthday ${user.birthdayCalendar}")
+                // 普通记录信息日志
+                logger.info("Hello, World!", ("k1", [[1, 4], [2, 5], [3]]), ("password", "v22222"))
 
-            // lazy 方式记录耗时日志数据
-            logger.log(LogLevel.ERROR, "long-running operation msg", ("k1", 100), ("k2", user.birthdayCalendar),
-                ("oper", ToStringWrapper({=> "Some long-running operation returned"})))
+                // lazy 方式记录耗时日志数据
+                logger.log(LogLevel.ERROR, "long-running operation msg", ("k1", 100), ("k2", user.birthdayCalendar),
+                    ("oper", ToStringWrapper({=> "Some long-running operation returned"})))
 
-            logger.log(LogLevel.ERROR, "long-running operation msg", ("sourcePackage", @sourcePackage()),
-                ("sourceFile", @sourceFile()), ("sourceLine", @sourceLine()), ("birthdayCalendar", user.birthdayCalendar),
-                ("oper", ToStringWrapper({=> "Some long-running operation returned"})))
+                logger.log(LogLevel.ERROR, "long-running operation msg", ("sourcePackage", @sourcePackage()),
+                    ("sourceFile", @sourceFile()), ("sourceLine", @sourceLine()),
+                    ("birthdayCalendar", user.birthdayCalendar),
+                    ("oper", ToStringWrapper({=> "Some long-running operation returned"})))
 
-            let m = HashMap<String, String>()
-            m.add("k1", "1\n")
-            m.add("k2", "2")
-            m.add("k3", "3")
-            logger.trace({=> "Some long-running operation returned"}, ("m1", m))
-            let m2 = HashMap<String, LogValue>()
-            m2.add("g1", m)
-            m2.add("k1", [["1", "4 s"], ["2", "5"], ["3"]])
+                let m = HashMap<String, String>()
+                m.add("k1", "1\n")
+                m.add("k2", "2")
+                m.add("k3", "3")
+                logger.trace({=> "Some long-running operation returned"}, ("m1", m))
+                let m2 = HashMap<String, LogValue>()
+                m2.add("g1", m)
+                m2.add("k1", [["1", "4 s"], ["2", "5"], ["3"]])
 
-            // 如果TRACE 级别没有开启，那么lambda表达式不会被执行
-            logger.trace({=> "Some long-running operation returned"}, ("m2", m2))
+                // 如果TRACE 级别没有开启，那么lambda表达式不会被执行
+                logger.trace({=> "Some long-running operation returned"}, ("m2", m2))
         }
         futs.add(f)
     }
@@ -129,32 +130,33 @@ main() {
     for (_ in 0..1) {
         let f = spawn {
             =>
-            logger.info("abc", ("age", 2))
-            let user = User()
-            // 记录诊断日志，如果 DEBUG 级别未开启，直接返回，几乎无cost
-            logger.debug("Logging in user ${user.name} with birthday ${user.birthdayCalendar}")
-            // 普通记录信息日志
-            logger.info("Hello, World!", ("k1", [[1, 4], [2, 5], [3]]), ("password", "v22222"))
+                logger.info("abc", ("age", 2))
+                let user = User()
+                // 记录诊断日志，如果 DEBUG 级别未开启，直接返回，几乎无cost
+                logger.debug("Logging in user ${user.name} with birthday ${user.birthdayCalendar}")
+                // 普通记录信息日志
+                logger.info("Hello, World!", ("k1", [[1, 4], [2, 5], [3]]), ("password", "v22222"))
 
-            // lazy 方式记录耗时日志数据
-            logger.log(LogLevel.ERROR, "long-running operation msg", ("k1", 100), ("k2", user.birthdayCalendar),
-                ("oper", ToStringWrapper({=> "Some long-running operation returned"})))
+                // lazy 方式记录耗时日志数据
+                logger.log(LogLevel.ERROR, "long-running operation msg", ("k1", 100), ("k2", user.birthdayCalendar),
+                    ("oper", ToStringWrapper({=> "Some long-running operation returned"})))
 
-            logger.log(LogLevel.ERROR, "long-running operation msg", ("sourcePackage", @sourcePackage()),
-                ("sourceFile", @sourceFile()), ("sourceLine", @sourceLine()), ("birthdayCalendar", user.birthdayCalendar),
-                ("oper", ToStringWrapper({=> "Some long-running operation returned"})))
+                logger.log(LogLevel.ERROR, "long-running operation msg", ("sourcePackage", @sourcePackage()),
+                    ("sourceFile", @sourceFile()), ("sourceLine", @sourceLine()),
+                    ("birthdayCalendar", user.birthdayCalendar),
+                    ("oper", ToStringWrapper({=> "Some long-running operation returned"})))
 
-            let m = HashMap<String, String>()
-            m.add("k1", "1\n")
-            m.add("k2", "2")
-            m.add("k3", "3")
-            logger.trace({=> "Some long-running operation returned"}, ("m1", m))
-            let m2 = HashMap<String, LogValue>()
-            m2.add("g1", m)
-            m2.add("k1", [["1", "4 s"], ["2", "5"], ["3"]])
+                let m = HashMap<String, String>()
+                m.add("k1", "1\n")
+                m.add("k2", "2")
+                m.add("k3", "3")
+                logger.trace({=> "Some long-running operation returned"}, ("m1", m))
+                let m2 = HashMap<String, LogValue>()
+                m2.add("g1", m)
+                m2.add("k1", [["1", "4 s"], ["2", "5"], ["3"]])
 
-            // 如果TRACE 级别没有开启，那么lambda表达式不会被执行
-            logger.trace({=> "Some long-running operation returned"}, ("m2", m2))
+                // 如果TRACE 级别没有开启，那么lambda表达式不会被执行
+                logger.trace({=> "Some long-running operation returned"}, ("m2", m2))
         }
         futs.add(f)
     }
@@ -232,32 +234,33 @@ main() {
     for (_ in 0..1) {
         let f = spawn {
             =>
-            logger.info("abc", ("age", 2))
-            let user = User()
-            // 记录诊断日志，如果 DEBUG 级别未开启，直接返回，几乎无cost
-            logger.debug("Logging in user ${user.name} with birthday ${user.birthdayCalendar}")
-            // 普通记录信息日志
-            logger.info("Hello, World!", ("k1", [[1, 4], [2, 5], [3]]), ("password", "v22222"))
+                logger.info("abc", ("age", 2))
+                let user = User()
+                // 记录诊断日志，如果 DEBUG 级别未开启，直接返回，几乎无cost
+                logger.debug("Logging in user ${user.name} with birthday ${user.birthdayCalendar}")
+                // 普通记录信息日志
+                logger.info("Hello, World!", ("k1", [[1, 4], [2, 5], [3]]), ("password", "v22222"))
 
-            // lazy 方式记录耗时日志数据
-            logger.log(LogLevel.ERROR, "long-running operation msg", ("k1", 100), ("k2", user.birthdayCalendar),
-                ("oper", ToStringWrapper({=> "Some long-running operation returned"})))
+                // lazy 方式记录耗时日志数据
+                logger.log(LogLevel.ERROR, "long-running operation msg", ("k1", 100), ("k2", user.birthdayCalendar),
+                    ("oper", ToStringWrapper({=> "Some long-running operation returned"})))
 
-            logger.log(LogLevel.ERROR, "long-running operation msg", ("sourcePackage", @sourcePackage()),
-                ("sourceFile", @sourceFile()), ("sourceLine", @sourceLine()), ("birthdayCalendar", user.birthdayCalendar),
-                ("oper", ToStringWrapper({=> "Some long-running operation returned"})))
+                logger.log(LogLevel.ERROR, "long-running operation msg", ("sourcePackage", @sourcePackage()),
+                    ("sourceFile", @sourceFile()), ("sourceLine", @sourceLine()),
+                    ("birthdayCalendar", user.birthdayCalendar),
+                    ("oper", ToStringWrapper({=> "Some long-running operation returned"})))
 
-            let m = HashMap<String, String>()
-            m.add("k1", "1\n")
-            m.add("k2", "2")
-            m.add("k3", "3")
-            logger.trace({=> "Some long-running operation returned"}, ("m1", m))
-            let m2 = HashMap<String, LogValue>()
-            m2.add("g1", m)
-            m2.add("k1", [["1", "4 s"], ["2", "5"], ["3"]])
+                let m = HashMap<String, String>()
+                m.add("k1", "1\n")
+                m.add("k2", "2")
+                m.add("k3", "3")
+                logger.trace({=> "Some long-running operation returned"}, ("m1", m))
+                let m2 = HashMap<String, LogValue>()
+                m2.add("g1", m)
+                m2.add("k1", [["1", "4 s"], ["2", "5"], ["3"]])
 
-            // 如果TRACE 级别没有开启，那么lambda表达式不会被执行
-            logger.trace({=> "Some long-running operation returned"}, ("m2", m2))
+                // 如果TRACE 级别没有开启，那么lambda表达式不会被执行
+                logger.trace({=> "Some long-running operation returned"}, ("m2", m2))
         }
         futs.add(f)
     }

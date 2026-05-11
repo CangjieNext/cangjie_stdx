@@ -854,8 +854,7 @@ Serial Numbers Equal: false
 ## struct Signature
 
 ```cangjie
-public struct Signature <: Equatable<Signature> & Hashable {
-}
+public struct Signature <: Equatable<Signature> & Hashable {}
 ```
 
 功能：数字证书的签名，用来验证身份的正确性。
