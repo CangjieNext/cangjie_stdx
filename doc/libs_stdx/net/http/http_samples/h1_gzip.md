@@ -37,10 +37,8 @@ main() {
 
 func startServer(): UInt16 {
     let server = ServerBuilder().addr("127.0.0.1").port(0).build()
-    server
-        .distributor
-        .register("/hello") {
-            ctx =>
+    server.distributor.register("/hello") {
+        ctx =>
             // 1. 设置响应头
             ctx.responseBuilder.header("Transfer-Encoding", "chunked")
             ctx.responseBuilder.header("Content-Encoding", "gzip")
@@ -52,7 +50,7 @@ func startServer(): UInt16 {
             // 3. 使用 gzip 压缩输入流
             let body = CompressInputStream(rawBody, wrap: GzipFormat)
             ctx.responseBuilder.body(body)
-        }
+    }
     let serverOn = SyncCounter(1)
     server.afterBind({=> serverOn.dec()})
 
