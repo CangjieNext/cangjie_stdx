@@ -97,10 +97,10 @@ func handler1(ctx: HttpContext): Unit {
         subProtocols: ArrayList<String>(["foo", "bar", "foo1"]),
         userFunc: {
             request: HttpRequest =>
-            let value = request.headers.getFirst("test") ?? ""
-            let headers = HttpHeaders()
-            headers.add("rsp", value)
-            headers
+                let value = request.headers.getFirst("test") ?? ""
+                let headers = HttpHeaders()
+                headers.add("rsp", value)
+                headers
         }
     )
     // 3 消息收发

@@ -8,7 +8,7 @@ public struct HttpStatusCode {
     public static const STATUS_SWITCHING_PROTOCOLS: UInt16 =             101
     public static const STATUS_PROCESSING: UInt16 =                      102
     public static const STATUS_EARLY_HINTS: UInt16 =                     103
- 
+
     public static const STATUS_OK: UInt16 =                              200
     public static const STATUS_CREATED: UInt16 =                         201
     public static const STATUS_ACCEPTED: UInt16 =                        202
@@ -19,7 +19,7 @@ public struct HttpStatusCode {
     public static const STATUS_MULTI_STATUS: UInt16 =                    207
     public static const STATUS_ALREADY_REPORTED: UInt16 =                208
     public static const STATUS_IM_USED: UInt16 =                         226
- 
+
     public static const STATUS_MULTIPLE_CHOICES: UInt16 =                300
     public static const STATUS_MOVED_PERMANENTLY: UInt16 =               301
     public static const STATUS_FOUND: UInt16 =                           302
@@ -28,7 +28,7 @@ public struct HttpStatusCode {
     public static const STATUS_USE_PROXY: UInt16 =                       305
     public static const STATUS_TEMPORARY_REDIRECT: UInt16 =              307
     public static const STATUS_PERMANENT_REDIRECT: UInt16 =              308
- 
+
     public static const STATUS_BAD_REQUEST: UInt16 =                     400
     public static const STATUS_UNAUTHORIZED: UInt16 =                    401
     public static const STATUS_PAYMENT_REQUIRED: UInt16 =                402
@@ -58,7 +58,7 @@ public struct HttpStatusCode {
     public static const STATUS_TOO_MANY_REQUESTS: UInt16 =               429
     public static const STATUS_REQUEST_HEADER_FIELDS_TOO_LARGE: UInt16 = 431
     public static const STATUS_UNAVAILABLE_FOR_LEGAL_REASONS: UInt16 =   451
- 
+
     public static const STATUS_INTERNAL_SERVER_ERROR: UInt16 =           500
     public static const STATUS_NOT_IMPLEMENTED: UInt16 =                 501
     public static const STATUS_BAD_GATEWAY: UInt16 =                     502

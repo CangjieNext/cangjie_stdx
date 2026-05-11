@@ -158,12 +158,10 @@ main() {
     // 1. 构建 Server 实例
     let server = ServerBuilder().addr("127.0.0.1").port(8080).build()
     // 2. 注册 HttpRequestHandler
-    server
-        .distributor
-        .register(
-            "/index",
-            {
-                httpContext =>
+    server.distributor.register(
+        "/index",
+        {
+            httpContext =>
                 let responseBuilder = httpContext.responseBuilder
                 // 设置响应头 transfer-encoding 和 trailer
                 responseBuilder.header("transfer-encoding", "chunked")
@@ -178,8 +176,8 @@ main() {
                 }
                 // 发送响应 trailer，trailer 部分在响应体之后发送
                 responseBuilder.trailer("checkSum", "${sum}")
-            }
-        )
+        }
+    )
     // 3. 启动服务
     server.serve()
 }
@@ -296,19 +294,17 @@ main() {
     // 2. 构建 Server 实例
     let server = ServerBuilder().addr("127.0.0.1").port(8080).tlsConfig(tlsConfig).build()
     // 3. 注册原 request 的 handler
-    server
-        .distributor
-        .register(
-            "/index.html",
-            {
-                httpContext =>
+    server.distributor.register(
+        "/index.html",
+        {
+            httpContext =>
                 let pusher = HttpResponsePusher.getPusher(httpContext)
                 match (pusher) {
                     case Some(pusher) => pusher.push("/picture.png", "GET", httpContext.request.headers)
                     case None => ()
                 }
-            }
-        )
+        }
+    )
     // 4. 注册服务端推送请求对应的 handler
     server.distributor.register("/picture.png", {
         httpContext => httpContext.responseBuilder.body("picture.png")

@@ -2454,15 +2454,15 @@ Province Name: Some(Beijing)
 ### init(?String, ?String, ?String, ?String, ?String, ?String, ?String)
 
 ```cangjie
-    public init(
-        countryName!: ?String = None,
-        provinceName!: ?String = None,
-        localityName!: ?String = None,
-        organizationName!: ?String = None,
-        organizationalUnitName!: ?String = None,
-        commonName!: ?String = None,
-        email!: ?String = None
-    )
+public init(
+    countryName!: ?String = None,
+    provinceName!: ?String = None,
+    localityName!: ?String = None,
+    organizationName!: ?String = None,
+    organizationalUnitName!: ?String = None,
+    commonName!: ?String = None,
+    email!: ?String = None
+)
 ```
 
 功能：构造 [X509Name](x509_package_classes.md#class-x509name) 对象。
