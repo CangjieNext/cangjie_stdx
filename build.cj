@@ -29,6 +29,12 @@ func getPythonCommand(): String {
         "Could not find 'python3' or 'python' in your system's PATH. Please ensure Python is installed and added to your environment variables!")
 }
 
+@When[os == "Windows"]
+let isWin = true
+
+@When[os != "Windows"]
+let isWin = false
+
 func getPythonCommandFromEnv(): ?String {
     let commands = ["python3", "python"];
     for (command in commands) {
@@ -47,7 +53,11 @@ func ensurePsutilInstalled(pyCommand: String): Unit {
     try {
         if (execute(pyCommand, "-c", "import psutil") != 0) {
             println("psutil library not found, installing...")
-            execute(pyCommand, "-m", "pip", "install", "psutil")
+            if (isWin) {
+                execute(pyCommand, "-m", "pip", "install", "psutil", "--timeout", "3", "retries", "0")
+            } else {
+                execute("timeout", "-k", "0s", "15s", pyCommand, "-m", "pip", "install", "psutil", "--timeout", "3", "retries", "0")
+            }
             println("psutil installed successfully")
         }
     } catch (e: Exception) {}
@@ -98,9 +108,10 @@ main(): Int64 {
     checkBuildTools()
     
     let pyCommand: String = getPythonCommand()
-    ensurePsutilInstalled(pyCommand)
     match (getCommandLine()[1]) {
-        case "pre-build" => stagePreBuild(pyCommand)              
+        case "pre-build" =>
+            ensurePsutilInstalled(pyCommand)
+            stagePreBuild(pyCommand)              
         case "post-build" => stagePostBuild(pyCommand)
         case "pre-clean" => stagePreClean(pyCommand)
         case _ => 0
