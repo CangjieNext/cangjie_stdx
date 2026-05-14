@@ -959,11 +959,9 @@ class ConnNode <: BodyProviderConn {
             let (name, value) = parseAndCheckHeaderLine(line, false)
 
             // Security: Check header size limit
-            if (Int64(DEFAULT_MAX_HEADER_LIST_SIZE) != 0) {
-                headerSize += name.size + value.size + 1
-                if (headerSize >= Int64(DEFAULT_MAX_HEADER_LIST_SIZE)) {
-                    throw HttpException("Response header size out of limit ${DEFAULT_MAX_HEADER_LIST_SIZE}.")
-                }
+            headerSize += name.size + value.size + 1
+            if (headerSize >= Int64(DEFAULT_MAX_HEADER_LIST_SIZE)) {
+                throw HttpException("Response header size out of limit ${DEFAULT_MAX_HEADER_LIST_SIZE}.")
             }
 
             // Security: Check header count limit
