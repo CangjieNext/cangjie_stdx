@@ -321,9 +321,6 @@ public class MacroExpandExpr <: Expr {
 /**
  * @brief Enumerates the possible input forms for macro expansions.
  */
-/**
- * @brief Enumerates the possible input forms for macro expansions.
- */
 public enum MacroExpandInput {
     | WithoutParens(Decl)
     | WithParens(Tokens)
@@ -359,10 +356,6 @@ class MacroExpandParamPosInfos {
     }
 }
 
-/**
- * @brief Represents a function parameter that involves macro expansion.
- *        Used for parameters that are processed by macros during compilation.
- */
 /**
  * @brief Represents a function parameter that involves macro expansion.
  *        Used for parameters that are processed by macros during compilation.
