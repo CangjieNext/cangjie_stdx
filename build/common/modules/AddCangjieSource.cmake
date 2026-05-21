@@ -53,7 +53,7 @@ function(add_cangjie_macro_library_in_local target_name)
         PACKAGE_NAME
         MODULE_NAME
         SOURCE_DIR)
-    set(multi_value_args SOURCES DEPENDS FFI)
+    set(multi_value_args SOURCES DEPENDS FFI LINK_LIBS)
     cmake_parse_arguments(
         CANGJIELIB
         "${options}"
@@ -71,6 +71,10 @@ function(add_cangjie_macro_library_in_local target_name)
     endif()
 
     list(APPEND cangjie_compile_flags "--compile-macro")
+
+    set(BACKEND "cjnative")
+    string(TOLOWER "${TARGET_TRIPLE_DIRECTORY_PREFIX}_${BACKEND}" output_cj_lib_dir)
+    set(_stdx_dylib_dir "${CMAKE_BINARY_DIR}/lib/${output_cj_lib_dir}${SANITIZER_SUBPATH}")
 
     if(NOT ("${CANGJIELIB_MODULE_NAME}" STREQUAL ""))
         set(output_dir "${CANGJIE_LIB_DIR}/${TARGET_TRIPLE_DIRECTORY_PREFIX}_${BACKEND}/${CANGJIELIB_MODULE_NAME}")
@@ -92,6 +96,9 @@ function(add_cangjie_macro_library_in_local target_name)
         ${no_sub_pkg}
         ${cangjie_compile_flags}
         -p ${CANGJIELIB_SOURCE_DIR})
+    if(CANGJIELIB_LINK_LIBS)
+        list(APPEND COMPILE_CMD -L "${_stdx_dylib_dir}" ${CANGJIELIB_LINK_LIBS})
+    endif()
 
     cj_resolve_depends(resolved_depends ${CANGJIELIB_DEPENDS})
 
@@ -111,17 +118,21 @@ function(add_cangjie_macro_library_in_local target_name)
         file(GLOB source_files CONFIGURE_DEPENDS ${CANGJIELIB_SOURCE_DIR}/*.cj)
     endif()
 
+    set(_macro_so "${CMAKE_CURRENT_BINARY_DIR}/lib-macro_${CANGJIELIB_MODULE_NAME}.${CANGJIELIB_PACKAGE_NAME}.so")
+
     add_custom_command(
         OUTPUT ${output_full_name}
         COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_BINARY_DIR}/${output_dir}
         COMMAND ${CMAKE_COMMAND} -E env "CANGJIE_PATH=${CMAKE_BINARY_DIR}/modules/${output_cj_lib_dir}"  "LIBRARY_PATH=${CMAKE_BINARY_DIR}/lib"
                 ${COMPILE_CMD}
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different ${_macro_so} ${output_full_name}
         DEPENDS ${resolved_depends} ${source_files} ${CANGJIELIB_SOURCE_DIR}
         COMMENT "Generating ${target_name}")
 
     add_custom_target(
         ${target_name} ALL
         DEPENDS ${output_full_name} ${CANGJIELIB_DEPENDS})
+    set_target_properties(${target_name} PROPERTIES CJ_OUTPUT_FILE ${output_full_name})
 endfunction()
 
 function(add_cangjie_library target_name

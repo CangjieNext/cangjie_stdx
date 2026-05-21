@@ -15,7 +15,7 @@ package stdx.chir
  * string values. Callers may construct instances for tests or plugins; the compiler pipeline
  * also builds these when lowering source annotations.
  */
-public class Annotation <: ToString {
+public class CustomAnnoInstance <: ToString {
     internal var _argValues = ArrayList<String>()
     internal let _classSrcCodeName: String
     internal let _loc: DebugLocation
@@ -92,18 +92,18 @@ internal class AnnoInfo <: ToString {
     // @class1Name[v1, v2, ...]
     // @class2Name[v1, v2, ...]
     // func foo() { ... }
-    internal var _annoInstances = ArrayList<Annotation>()
+    internal var _annoInstances = ArrayList<CustomAnnoInstance>()
     // annotation factory function mangled name
     internal var _identifier: String = "none"
 
     internal init() {
         this._identifier = "none"
-        this._annoInstances = ArrayList<Annotation>()
+        this._annoInstances = ArrayList<CustomAnnoInstance>()
     }
 
     internal init(identifier: String) {
         this._identifier = identifier
-        this._annoInstances = ArrayList<Annotation>()
+        this._annoInstances = ArrayList<CustomAnnoInstance>()
     }
 
     /**

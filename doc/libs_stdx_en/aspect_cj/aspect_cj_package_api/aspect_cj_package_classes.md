@@ -8,11 +8,11 @@ public class InsertAtEntry {
 }
 ```
 
-Function: Weaves a call to the annotated function at the entry point of the method specified by the annotation. Both the annotated method and the target function must comply with the [Specification Constraints](../aspectCJ_package_overview.md#specifications-and-usage).
+Function: Weaves a call to the annotated function at the entry point of the method specified by the annotation. Both the annotated method and the target function must comply with the [Specification Constraints](../aspect_cj_package_overview.md#specifications-and-usage).
 
 Example: 
 
-See the [InsertAtEntry example tutorial](../aspectCJ_samples/aspectCJ_sample.md#insertatentry-entry-instrumentation-example) for the end-to-end workflow.
+See the [InsertAtEntry example tutorial](../aspect_cj_samples/aspect_cj_sample.md#insertatentry-entry-instrumentation-example) for the end-to-end workflow.
 
 ### const init(String, String, String, Bool, String, Bool)
 
@@ -20,11 +20,11 @@ See the [InsertAtEntry example tutorial](../aspectCJ_samples/aspectCJ_sample.md#
 public const init(packageName!: String, className!: String, methodName!: String, isStatic!: Bool, funcTypeStr!: String, recursive!: Bool)
 ```
 
-Function: Creates an [InsertAtEntry](aspectCJ_package_classes.md#class-insertatentry) object.
+Function: Creates an [InsertAtEntry](aspect_cj_package_classes.md#class-insertatentry) object.
 
 Example: 
 
-See the [InsertAtEntry example tutorial](../aspectCJ_samples/aspectCJ_sample.md#insertatentry-entry-instrumentation-example) for the end-to-end workflow.
+See the [InsertAtEntry example tutorial](../aspect_cj_samples/aspect_cj_sample.md#insertatentry-entry-instrumentation-example) for the end-to-end workflow.
 
 Parameters:
 
@@ -43,11 +43,11 @@ public class InsertAtExit {
 }
 ```
 
-Function: Weaves a call to the annotated function at the exit point of the method specified by the annotation. Both the annotated method and the target function must comply with the [Specification Constraints](../aspectCJ_package_overview.md#specifications-and-usage).
+Function: Weaves a call to the annotated function at the exit point of the method specified by the annotation. Both the annotated method and the target function must comply with the [Specification Constraints](../aspect_cj_package_overview.md#specifications-and-usage).
 
 Example: 
 
-See the [InsertAtExit example tutorial](../aspectCJ_samples/aspectCJ_sample.md#insertatexit-exit-instrumentation-example) for the end-to-end workflow.
+See the [InsertAtExit example tutorial](../aspect_cj_samples/aspect_cj_sample.md#insertatexit-exit-instrumentation-example) for the end-to-end workflow.
 
 ### const init(String, String, String, Bool, String, Bool)
 
@@ -55,11 +55,11 @@ See the [InsertAtExit example tutorial](../aspectCJ_samples/aspectCJ_sample.md#i
 public const init(packageName!: String, className!: String, methodName!: String, isStatic!: Bool, funcTypeStr!: String, recursive!: Bool)
 ```
 
-Function: Creates an [InsertAtExit](aspectCJ_package_classes.md#class-insertatexit) object.
+Function: Creates an [InsertAtExit](aspect_cj_package_classes.md#class-insertatexit) object.
 
 Example: 
 
-See the [InsertAtExit example tutorial](../aspectCJ_samples/aspectCJ_sample.md#insertatexit-exit-instrumentation-example) for the end-to-end workflow.
+See the [InsertAtExit example tutorial](../aspect_cj_samples/aspect_cj_sample.md#insertatexit-exit-instrumentation-example) for the end-to-end workflow.
 
 Parameters:
 
@@ -78,11 +78,11 @@ public class ReplaceFuncBody {
 }
 ```
 
-Function: Replaces the method body specified by the annotation with a call to the annotated function. Both the annotated method and the target function must comply with the [Specification Constraints](../aspectCJ_package_overview.md#specifications-and-usage).
+Function: Replaces the method body specified by the annotation with a call to the annotated function. Both the annotated method and the target function must comply with the [Specification Constraints](../aspect_cj_package_overview.md#specifications-and-usage).
 
 Example: 
 
-See the [ReplaceFuncBody example tutorial](../aspectCJ_samples/aspectCJ_sample.md#replacefuncbody-function-body-replacement-example) for the end-to-end workflow.
+See the [ReplaceFuncBody example tutorial](../aspect_cj_samples/aspect_cj_sample.md#replacefuncbody-function-body-replacement-example) for the end-to-end workflow.
 
 ### const init(String, String, String, Bool, Bool)
 
@@ -90,11 +90,11 @@ See the [ReplaceFuncBody example tutorial](../aspectCJ_samples/aspectCJ_sample.m
 public const init(packageName!: String, className!: String, methodName!: String, isStatic!: Bool, recursive!: Bool)
 ```
 
-Function: Creates a [ReplaceFuncBody](aspectCJ_package_classes.md#class-replacefuncbody) object.
+Function: Creates a [ReplaceFuncBody](aspect_cj_package_classes.md#class-replacefuncbody) object.
 
 Example: 
 
-See the [ReplaceFuncBody example tutorial](../aspectCJ_samples/aspectCJ_sample.md#replacefuncbody-function-body-replacement-example) for the end-to-end workflow.
+See the [ReplaceFuncBody example tutorial](../aspect_cj_samples/aspect_cj_sample.md#replacefuncbody-function-body-replacement-example) for the end-to-end workflow.
 
 Parameters:
 
