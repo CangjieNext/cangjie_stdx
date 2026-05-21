@@ -636,18 +636,6 @@ add_library(stdx.logger STATIC ${output_cj_object_dir}/stdx/logger.o)
 set_target_properties(stdx.logger PROPERTIES LINKER_LANGUAGE C)
 install(TARGETS stdx.logger DESTINATION ${output_triple_name}_${CJNATIVE_BACKEND}${SANITIZER_SUBPATH}/static/stdx)
 
-if(NOT CANGJIE_CJPM_BUILD_TYPE)
-    make_cangjie_lib(
-        aspectCJ IS_SHARED
-        DEPENDS cangjie${BACKEND_TYPE}AspectCJ
-        CANGJIE_STD_LIB_LINK std-core
-        OBJECTS ${output_cj_object_dir}/stdx/aspectCJ.o)
-
-    add_library(stdx.aspectCJ STATIC ${output_cj_object_dir}/stdx/aspectCJ.o)
-    set_target_properties(stdx.aspectCJ PROPERTIES LINKER_LANGUAGE C)
-    install(TARGETS stdx.aspectCJ DESTINATION ${output_triple_name}_${CJNATIVE_BACKEND}/static/stdx)
-endif()
-
 make_cangjie_lib(
     string_intern IS_SHARED
     DEPENDS cangjie${BACKEND_TYPE}StringIntern
@@ -722,6 +710,42 @@ add_library(stdx.chir STATIC ${output_cj_object_dir}/stdx/chir.o)
 set_target_properties(stdx.chir PROPERTIES LINKER_LANGUAGE C)
 install(TARGETS stdx.chir DESTINATION ${output_triple_name}_${CJNATIVE_BACKEND}${SANITIZER_SUBPATH}/static/stdx)
 
+if(NOT CANGJIE_CJPM_BUILD_TYPE)
+    add_cangjie_library(
+        cangjie${BACKEND_TYPE}PluginManager
+        NO_SUB_PKG
+        IS_STDXLIB
+        IS_PACKAGE
+        IS_CJNATIVE_BACKEND
+        PACKAGE_NAME "plugin.manager"
+        MODULE_NAME "stdx"
+        SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/stdx/plugin/manager
+        DEPENDS ${PLUGIN_MANAGER_DEPENDENCIES})
+
+    make_cangjie_lib(
+        plugin.manager IS_SHARED
+        DEPENDS cangjie${BACKEND_TYPE}PluginManager
+        CANGJIE_STDX_LIB_DEPENDS chir
+        CANGJIE_STD_LIB_LINK std-core std-collection
+        OBJECTS ${output_cj_object_dir}/stdx/plugin.manager.o)
+
+    if(NOT CMAKE_BUILD_STAGE STREQUAL "postBuild")
+        if(DARWIN)
+            set(_plugin_manager_link -lstdx.plugin.manager)
+        else()
+            set(_plugin_manager_link -l:libstdx.plugin.manager${CMAKE_SHARED_LIBRARY_SUFFIX})
+        endif()
+        add_cangjie_macro_library_in_local(
+            cangjie${BACKEND_TYPE}PluginMacro
+            NO_SUB_PKG
+            PACKAGE_NAME "plugin"
+            MODULE_NAME "stdx"
+            SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/stdx/plugin
+            DEPENDS cangjie${BACKEND_TYPE}PluginManager plugin.manager
+            LINK_LIBS ${_plugin_manager_link})
+    endif()
+endif()
+
 add_cangjie_library(
     cangjie${BACKEND_TYPE}Encoding
     NO_SUB_PKG
@@ -773,16 +797,27 @@ add_cangjie_library(
 
 if(NOT CANGJIE_CJPM_BUILD_TYPE)
     add_cangjie_library(
-        cangjie${BACKEND_TYPE}AspectCJ
+        cangjie${BACKEND_TYPE}AspectCj
         NO_SUB_PKG
         IS_STDXLIB
         IS_PACKAGE
         IS_CJNATIVE_BACKEND
-        PACKAGE_NAME "aspectCJ"
+        PACKAGE_NAME "aspect_cj"
         MODULE_NAME "stdx"
-        SOURCES ${ASPECTCJ_SRCS}
-        SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/stdx/aspectCJ
-        DEPENDS ${ASPECTCJ_DEPENDENCIES})
+        SOURCES ${ASPECT_CJ_SRCS}
+        SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/stdx/aspect_cj
+        DEPENDS ${ASPECT_CJ_DEPENDENCIES})
+
+    make_cangjie_lib(
+        aspect_cj IS_SHARED
+        DEPENDS cangjie${BACKEND_TYPE}AspectCj
+        CANGJIE_STDX_LIB_DEPENDS chir
+        CANGJIE_STD_LIB_LINK std-core std-collection
+        OBJECTS ${output_cj_object_dir}/stdx/aspect_cj.o)
+
+    add_library(stdx.aspect_cj STATIC ${output_cj_object_dir}/stdx/aspect_cj.o)
+    set_target_properties(stdx.aspect_cj PROPERTIES LINKER_LANGUAGE C)
+    install(TARGETS stdx.aspect_cj DESTINATION ${output_triple_name}_${CJNATIVE_BACKEND}${SANITIZER_SUBPATH}/static/stdx)
 endif()
 
 add_cangjie_library(
