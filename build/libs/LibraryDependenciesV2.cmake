@@ -70,7 +70,23 @@ set(COMPRESS_DEPENDENCIES
     cangjie${BACKEND_TYPE}ZLIB_bc
     cangjie${BACKEND_TYPE}Tar_bc)
 
-set(ASPECTCJ_DEPENDENCIES)
+set(ASPECT_CJ_DEPENDENCIES cangjie${BACKEND_TYPE}Chir)
+
+set(COLLECT_ASPECTS_DEPENDENCIES
+    cangjie${BACKEND_TYPE}Chir
+    cangjie${BACKEND_TYPE}AspectCj
+    cangjie${BACKEND_TYPE}PluginMacro
+    cangjie${BACKEND_TYPE}PluginManager)
+
+set(WAVE_ASPECTS_DEPENDENCIES
+    cangjie${BACKEND_TYPE}Chir
+    cangjie${BACKEND_TYPE}AspectCj
+    cangjie${BACKEND_TYPE}PluginMacro
+    cangjie${BACKEND_TYPE}PluginManager)
+
+set(PLUGIN_MACRO_DEPENDENCIES cangjie${BACKEND_TYPE}PluginManager)
+
+set(PLUGIN_MANAGER_DEPENDENCIES cangjie${BACKEND_TYPE}Chir)
 
 set(CHIR_TOSTRING_MACRO_DEPENDENCIES)
 

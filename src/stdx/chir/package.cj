@@ -184,6 +184,16 @@ public class Package <: ToString {
     }
 
     /**
+     * Gets the package initialization function, when present.
+     * @type { ?Function }
+     */
+    public prop packageInitFunc: ?Function {
+        get() {
+            return _packageInitFunc
+        }
+    }
+
+    /**
      * Gets struct definitions defined in this package.
      * @type { Array<StructDef> }
      */
@@ -398,6 +408,15 @@ public class Package <: ToString {
         for (def in _enumDefs) {
             if (def.packageName == packageName && def.srcCodeName == srcCodeName) {
                 return def
+            }
+        }
+        return None
+    }
+
+    public func getSpecifiedFunction(mangledName: String): ?Function {
+        for (f in _functions) {
+            if (f.identifierWithoutPrefix == mangledName) {
+                return f
             }
         }
         return None
