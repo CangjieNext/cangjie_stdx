@@ -11,10 +11,6 @@ package stdx.encoding.json
 @FastNative
 foreign func memcpy_s(dest: CPointer<UInt8>, destMax: UIntNative, src: CPointer<UInt8>, count: UIntNative): Int32
 
-@FastNative
-foreign func CJ_JSON_AppendEscapedString(input: CPointer<UInt8>, inputLen: Int64, buffer: CPointer<UInt8>,
-                                          bufferOffset: Int64, bufferCapacity: Int64, htmlSafe: Bool): Int64
-
 let BOOL_TRUE_STRING = "true".toArray()
 let BOOL_FALSE_STRING = "false".toArray()
 let NULL_STRING = "null".toArray()
@@ -78,10 +74,15 @@ class WriteBuffer {
     func append(arr: Array<Byte>): WriteBuffer {
         checkAndExpend(arr.size)
 
-        // Optimized: Always use copyTo for better performance
-        // Modern copyTo implementations are optimized even for small arrays
-        arr.copyTo(_buffer, 0, _size, arr.size)
-        _size += arr.size
+        if (arr.size < 32) {
+            for (index in 0..arr.size) {
+                _buffer[_size] = arr[index]
+                _size++
+            }
+        } else {
+            arr.copyTo(_buffer, 0, _size, arr.size)
+            _size += arr.size
+        }
         return this
     }
 
@@ -156,30 +157,28 @@ class WriteBuffer {
     }
 
     func appendEscape(str: String, htmlSafe!: Bool = true) {
-        // Optimized: Single-pass escape with worst-case capacity pre-allocation
-        // Worst case: every character becomes \uXXXX (6 bytes)
-        let maxNeeded = str.size * 6
-        checkAndExpend(maxNeeded)
+        var escapenum = 0
 
         unsafe {
             let input = acquireArrayRawData(str.rawData())
-            let buff = acquireArrayRawData<Byte>(_buffer)
-            let written = CJ_JSON_AppendEscapedString(
-                input.pointer,
-                str.size,
-                buff.pointer,
-                _size,
-                _buffer.size - _size,
-                htmlSafe
-            )
+            escapenum = CJ_JSON_StringEscapeCharNumGet(input.pointer, str.size, htmlSafe)
             releaseArrayRawData(input)
-            releaseArrayRawData(buff)
+        }
 
-            if (written < 0) {
-                throw JsonException("Buffer overflow in appendEscape")
-            }
-            _size += written
+        if (escapenum == 0) {
+            append(str)
             return this
+        } else {
+            checkAndExpend(str.size + escapenum)
+            unsafe {
+                let input = acquireArrayRawData(str.rawData())
+                let buff = acquireArrayRawData<Byte>(_buffer)
+                let len = CJ_JSON_ReplaceEscapeChar(input.pointer, str.size, buff.pointer + _size, htmlSafe)
+                releaseArrayRawData(input)
+                releaseArrayRawData(buff)
+                _size += len
+                return this
+            }
         }
     }
 
