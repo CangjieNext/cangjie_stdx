@@ -83,7 +83,7 @@ Since stdx needs to pull and compile external open-source C libraries, and there
 
 ## Notes
 
-- If the configured stdx compilation output type is dynamic, and the user's cjpm project output is an executable file, before manually running the executable, you need to add the target/release/stdx directory under the project directory to the environment variables: LD_LIBRARY_PATH (Linux), DYLD_LIBRARY_PATH (macOS), or PATH (Windows).
+- If the configured stdx compilation output type is dynamic, and the user's cjpm project output is an executable file, before manually running the executable, you need to add the target/release/stdx directory under the project directory to the environment variables: LD_LIBRARY_PATH (Linux), DYLD_FALLBACK_LIBRARY_PATH (macOS), or PATH (Windows).
 - If the configured stdx compilation output type is static, and the user has used libraries with FFI calls, you need to manually add linking options to the `compile-option` in the project's cjpm.toml file. The corresponding relationships are shown in the following table:
 
 | Library Name | Linking Options |

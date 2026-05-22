@@ -21,7 +21,7 @@ This package requires the crypto dynamic library files from OpenSSL 3 as externa
     - Use `brew install openssl@3` to install, and ensure the system installation directory contains both `libcrypto.dylib` and `libcrypto.3.dylib` dynamic library files;
     - If installation via the above method is not possible, manually download the OpenSSL 3.x.x source code, compile, and install the package. Ensure the installation directory contains both `libcrypto.dylib` and `libcrypto.3.dylib` dynamic library files. Then, choose one of the following methods to ensure the system linker can locate these files:
         - For systems without OpenSSL installed, select the system path for installation;
-        - For custom installation directories, add the directory containing these files to the environment variables `DYLD_LIBRARY_PATH` and `LIBRARY_PATH`.
+        - For custom installation directories, add the directory containing these files to the environment variables `DYLD_FALLBACK_LIBRARY_PATH` and `LIBRARY_PATH`.
 
 - For Android operating systems:
     - Since Android ships with a stripped-down version of OpenSSL by default, some interfaces may throw exceptions due to missing symbols. Therefore, users need to compile and install a complete `OpenSSL 3.x.x` version themselves.

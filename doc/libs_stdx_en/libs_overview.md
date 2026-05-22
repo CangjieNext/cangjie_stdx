@@ -95,7 +95,7 @@ Before running, ensure the extension library path is set:
 
 - On Linux: Set in `LD_LIBRARY_PATH`
 - On Windows: Set in `PATH`
-- On macOS: Set in `DYLD_LIBRARY_PATH`
+- On macOS: Set in `DYLD_FALLBACK_LIBRARY_PATH`
 
 ### cjpm Usage Example
 

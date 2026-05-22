@@ -83,7 +83,7 @@ DevEco Studio 自带 OpenHarmony 交叉编译工具链，无需设置上面的�
 
 ## 注意事项
 
-- 如果配置的 stdx 编译产物类型为 dynamic，且用户 cjpm 项目的产物为可执行文件，在手动运行可执行文件前，需要将工程目录下的 target/release/stdx 目录添加到 LD_LIBRARY_PATH（Linux）、DYLD_LIBRARY_PATH（macOS）、PATH（Windows） 环境变量中。
+- 如果配置的 stdx 编译产物类型为 dynamic，且用户 cjpm 项目的产物为可执行文件，在手动运行可执行文件前，需要将工程目录下的 target/release/stdx 目录添加到 LD_LIBRARY_PATH（Linux）、DYLD_FALLBACK_LIBRARY_PATH（macOS）、PATH（Windows） 环境变量中。
 - 如果配置的 stdx 编译产物类型为 static，且用户使用了有 FFI 调用的库，则需要在项目的 cjpm.toml 文件的 `compile-option` 中手动添加链接选项。其对应关系如下表：
 
 |  库名  | 链接选项 |
