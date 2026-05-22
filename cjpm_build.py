@@ -295,6 +295,7 @@ CJPM_DIR = find_ancestor_and_cwd("cjpm")
 STDX_DIR = os.path.dirname(os.path.abspath(__file__))
 BUILD_DIR = os.path.join(STDX_DIR, "build_temp")
 SYNTAX_DIR = os.path.join(STDX_DIR, "src/stdx/syntax")
+CHIR_DIR = os.path.join(STDX_DIR, "src/stdx/chir")
 FUZZ_DIR = os.path.join(STDX_DIR, "src/stdx/fuzz")
 ASPECTCJ_DIR = os.path.join(STDX_DIR, "src/stdx/aspectCJ")
 CMAKE_BUILD_DIR = os.path.join(BUILD_DIR, "build")
@@ -927,6 +928,7 @@ def cleanLibs():
     output_dirs = []
     output_dirs.append(ASPECTCJ_DIR)
     output_dirs.append(SYNTAX_DIR)
+    output_dirs.append(CHIR_DIR)
     if IS_WINDOWS and not DEVECO_OH_NATIVE_HOME:
         output_dirs.append(FUZZ_DIR)
     for file_path in output_dirs:

@@ -686,7 +686,7 @@ add_cangjie_library(
     SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/stdx
     DEPENDS ${STDX_DEPENDENCIES})
 
-if(NOT CMAKE_BUILD_STAGE STREQUAL "postBuild")
+if(NOT CANGJIE_CJPM_BUILD_TYPE)
     add_cangjie_macro_library_in_local(
         cangjie${BACKEND_TYPE}ChirToStringMacro
         NO_SUB_PKG
@@ -694,33 +694,33 @@ if(NOT CMAKE_BUILD_STAGE STREQUAL "postBuild")
         MODULE_NAME "stdx"
         SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/stdx/chir/to_string_macro
         DEPENDS ${CHIR_TOSTRING_MACRO_DEPENDENCIES})
-endif()
 
-add_cangjie_library(
-    cangjie${BACKEND_TYPE}Chir
-    NO_SUB_PKG
-    IS_STDXLIB
-    IS_CJNATIVE_BACKEND
-    PACKAGE_NAME "chir"
-    MODULE_NAME "stdx"
-    SOURCES ${CHIR_SRCS}
-    SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/stdx/chir
-    DEPENDS ${CHIR_DEPENDENCIES})
-if(TARGET CHIR_FLATC_OUTPUTS)
-    add_dependencies(cangjie${BACKEND_TYPE}Chir CHIR_FLATC_OUTPUTS)
-endif()
+    add_cangjie_library(
+        cangjie${BACKEND_TYPE}Chir
+        NO_SUB_PKG
+        IS_STDXLIB
+        IS_CJNATIVE_BACKEND
+        PACKAGE_NAME "chir"
+        MODULE_NAME "stdx"
+        SOURCES ${CHIR_SRCS}
+        SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/stdx/chir
+        DEPENDS ${CHIR_DEPENDENCIES})
+    if(TARGET CHIR_FLATC_OUTPUTS)
+        add_dependencies(cangjie${BACKEND_TYPE}Chir CHIR_FLATC_OUTPUTS)
+    endif()
 
-make_cangjie_lib(
-    chir IS_SHARED
-    DEPENDS cangjie${BACKEND_TYPE}Chir
-    CANGJIE_STD_LIB_LINK
-        std-core
-        std-collection
-        std-fs
-    OBJECTS ${output_cj_object_dir}/stdx/chir.o)
-add_library(stdx.chir STATIC ${output_cj_object_dir}/stdx/chir.o)
-set_target_properties(stdx.chir PROPERTIES LINKER_LANGUAGE C)
-install(TARGETS stdx.chir DESTINATION ${output_triple_name}_${CJNATIVE_BACKEND}${SANITIZER_SUBPATH}/static/stdx)
+    make_cangjie_lib(
+        chir IS_SHARED
+        DEPENDS cangjie${BACKEND_TYPE}Chir
+        CANGJIE_STD_LIB_LINK
+            std-core
+            std-collection
+            std-fs
+        OBJECTS ${output_cj_object_dir}/stdx/chir.o)
+    add_library(stdx.chir STATIC ${output_cj_object_dir}/stdx/chir.o)
+    set_target_properties(stdx.chir PROPERTIES LINKER_LANGUAGE C)
+    install(TARGETS stdx.chir DESTINATION ${output_triple_name}_${CJNATIVE_BACKEND}${SANITIZER_SUBPATH}/static/stdx)
+endif()
 
 add_cangjie_library(
     cangjie${BACKEND_TYPE}Encoding
