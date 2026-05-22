@@ -20,10 +20,6 @@ int64_t CJ_JSON_StringEscapeCharNumGet(const uint8_t* input, int64_t strlen, boo
 
 int64_t CJ_JSON_WriteBufferAppendUint(uint8_t* buffer, const uint64_t num);
 
-// Optimized: Single-pass escape with capacity check
-int64_t CJ_JSON_AppendEscapedString(const uint8_t* input, int64_t inputLen, uint8_t* buffer,
-                                     int64_t bufferOffset, int64_t bufferCapacity, bool htmlSafe);
-
 // Optimized: Parse Int64 directly from byte array without creating temporary string
 int64_t CJ_JSON_ParseInt64(const uint8_t* data, int64_t start, int64_t end);
 
