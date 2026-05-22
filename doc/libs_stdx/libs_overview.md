@@ -115,7 +115,7 @@ CANGJIE_STDX_PATH 是设置的 stdx 路径。
 export CANGJIE_STDX_PATH=/target/linux_x86_64_cjnative/dynamic/stdx
 ```
 
-运行前 Linux 操作系统需要在 LD_LIBRARY_PATH 中设置扩展库的路径，Windows 操作系统需要在 PATH 中设置扩展库的路径，macOS 操作系统需要在 DYLD_LIBRARY_PATH 中设置扩展库的路径。
+运行前 Linux 操作系统需要在 LD_LIBRARY_PATH 中设置扩展库的路径，Windows 操作系统需要在 PATH 中设置扩展库的路径，macOS 操作系统需要在 DYLD_FALLBACK_LIBRARY_PATH 中设置扩展库的路径。
 
 例如在 linux 系统中设置：
 
