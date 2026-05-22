@@ -1,4 +1,4 @@
-# Enums
+﻿# Enums
 
 ## enum AccessLevel
 
