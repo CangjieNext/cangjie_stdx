@@ -11,7 +11,9 @@ Example:
 import std.io.*
 import std.{fs.*, collection.*}
 import stdx.net.tls.*
-import stdx.crypto.x509.{X509Certificate, PrivateKey, Pem, PemEntry, DerBlob}
+import stdx.crypto.x509.X509Certificate
+import stdx.crypto.common.{PrivateKey, Pem, PemEntry, DerBlob}
+import stdx.crypto.keys.GeneralPrivateKey
 
 let certificatePath = "/etc/myserver/cert-and-key.pem"
 
@@ -21,7 +23,7 @@ func parsePem(text: String): (Array<X509Certificate>, PrivateKey) {
         map<PemEntry, X509Certificate> {entry => X509Certificate.decodeFromDer(entry.body ?? DerBlob())} |> collectArray
 
     let key = (pem |> filter<PemEntry> {entry => entry.label == PemEntry.LABEL_PRIVATE_KEY} |>
-        map<PemEntry, PrivateKey> {entry => PrivateKey.decodeDer(entry.body ?? DerBlob())} |> first) ?? throw Exception(
+        map<PemEntry, PrivateKey> {entry => GeneralPrivateKey.decodeDer(entry.body ?? DerBlob())} |> first) ?? throw Exception(
         "No private key found in the PEM file")
 
     if (chain.isEmpty()) {

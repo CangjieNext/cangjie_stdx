@@ -2,24 +2,25 @@
 
 ## 简介
 
-拓展库 `stdx` 是仓颉编程语言提供的拓展模块（即非核心的标准库，但官方提供的附加功能集），是该语言生态中的重要组成部分，为仓颉补充了更多实用能力，涵盖面向切面编程、压缩和解压缩、安全（安全加密能力/消息摘要算法/非对称加解密和签名算法/数字证书处理功能）、编解码（base64/hex/json/url）、网络（http/tls）、日志、单元测试拓展、序列化、并发编程模型、非局部控制操作等多个领域。
+拓展库 `stdx` 是仓颉编程语言提供的拓展模块（即非核心的标准库，但官方提供的附加功能集），是该语言生态中的重要组成部分，为仓颉补充了更多实用能力，涵盖面向切面编程、压缩和解压缩、安全（安全加密能力/消息摘要算法/非对称加解密和签名算法/数字证书处理功能）、编解码（base64/hex/json/url）、网络（http/tls）、日志、语法解析、单元测试拓展、序列化、并发编程模型、非局部控制操作等多个领域。
 
 架构图：
 
 ![](figures/stdx_Architecture_Diagram_zh.png)
 
+- actors: 提供了一种并发编程模型，旨在简化并发任务的处理。
 - aspectCJ: 提供了 Cangjie 中面向切面编程的相关注解。
 - compress: 提供了压缩解压功能。
 - crypto: 提供了密码学操作的工具库。
+- effect: 提供了一种强大的非局部控制操作。
 - encoding: 提供了数据编码与解码的基础工具库。
 - fuzz: 提供了一种自动化软件测试方法。
 - log: 提供了一个单一的日志 API。
 - logger: 提供了文本格式和 JSON 格式日志打印功能。
 - net: 提供了网络通信和安全传输功能。
 - serialization: 提供了序列化和反序列化的能力。
+- syntax：提供了对仓颉源码进行语法解析的功能。
 - unittest: 提供了在编写仓颉项目单元测试代码时输入序列化格式的测试数据的能力。
-- actors: 提供了一种并发编程模型，旨在简化并发任务的处理。
-- effect: 提供了一种强大的非局部控制操作。
 
 ## 使用说明
 
@@ -91,16 +92,16 @@ irm https://raw.gitcode.com/Cangjie/cangjie_stdx/raw/dev/downloader.ps1 -OutFile
 ```text
 /stdx
 ├─ build                        # 工程构建目录，编译构建工具、脚本等
-├─ doc                          # STDX 库资料目录
+├─ doc                          # stdx 库资料目录
 ├─ figures                      # 存放readme中的架构图
-├─ src                          # STDX 各个包代码目录
+├─ src                          # stdx 各个包代码目录
 │   └─ stdx
-│       ├── actors              # 提供 Actors 功能
+│       ├── actors              # 提供 Actors 功能                     
 │       ├── aspectCJ            # 提供 AOP 功能
 │       ├── compress            # 提供压缩和解压缩功能
 │       ├── crypto              # 提供安全相关能力
-|       ├── effect              # 提供用于处理 Effect Handler 特性的用户级 API。这是一个实验性功能，需要使用支持该机制的 Cangjie 编译器。
-│       ├── dynamicLoader       # Openssl 动态加载模块
+│       ├── effect              # 提供用于处理 Effect Handler 特性的用户级 API。这是一个实验性功能，需要使用支持该机制的 Cangjie 编译器。
+│       ├── dynamicLoader       # OpenSSL 动态加载模块
 │       ├── encoding            # 提供 JSON 和字符串编码相关能力。
 │       ├── fuzz                # 提供基于覆盖率反馈的仓颉 fuzz 引擎及对应的接口
 │       ├── log                 # 提供了日志记录相关的能力
@@ -108,7 +109,8 @@ irm https://raw.gitcode.com/Cangjie/cangjie_stdx/raw/dev/downloader.ps1 -OutFile
 │       ├── net                 # 提供网络通信等能力
 │       ├── serialization       # 提供序列化和反序列化能力
 │       ├── string_intern       # 提供string对象的池化缓存能力
-│       └─  unittest            # 提供单元测试扩展能力
+│       ├── syntax              # 提供语法解析能力
+│       └── unittest            # 提供单元测试扩展能力
 │
 ├─ third_party                  # 第三方组件目录
 └─ target                       # 编译构建产物目录
@@ -116,7 +118,7 @@ irm https://raw.gitcode.com/Cangjie/cangjie_stdx/raw/dev/downloader.ps1 -OutFile
 
 ## 约束
 
-支持在 Ubuntu/MacOS(x86_64, aarch64)、Cangjie SDK 1.0.0 及以上版本中对 `stdx` 构建。更详细的环境及工具依赖请参阅 [构建依赖工具](https://gitcode.com/Cangjie/cangjie_build/blob/main/docs/env_zh.md)。
+支持在 Ubuntu/macOS(x86_64, aarch64)、Cangjie SDK 1.0.0 及以上版本中对 `stdx` 构建。更详细的环境及工具依赖请参阅 [构建依赖工具](https://gitcode.com/Cangjie/cangjie_build/blob/dev/docs/env_zh.md)。
 
 注意：本拓展库后续版本可能存在不兼容变更，不承诺跨版本 API/ABI 兼容性，使用前请充分评估版本适配风险。
 
@@ -160,9 +162,9 @@ python3 build.py install
 2. `build.py build` 命令开始执行编译：
    - `-t` 即 `--build-type`，指定编译产物类型，可以是 `release` 或 `debug`
    - `--target-lib` 指定 openssl lib 目录
-3. `build.py install` 命令将编译产物安装到 `target` 目录下。
+3. `build.py install` 命令默认将编译产物安装到仓库 `target` 目录下。
 
-编译成功会在工程目录中得到默认名称为 target 产物目录。
+编译成功后，会在工程目录中生成默认名称为 target 的产物目录。
 
 更多构建选项请参阅 [build.py](build.py) 或通过 `--help` 选项了解。
 
@@ -182,7 +184,7 @@ cjpm 的详细使用可以参考 [cjpm 文档](https://gitcode.com/Cangjie/cangj
 
 ### 集成构建指导
 
-集成构建请参阅 [仓颉 SDK 集成构建指导书](https://gitcode.com/Cangjie/cangjie_build/blob/main/README_zh.md)。
+集成构建请参阅 [仓颉 SDK 集成构建指导书](https://gitcode.com/Cangjie/cangjie_build/blob/dev/README_zh.md)。
 
 ## 使用指导
 
@@ -214,28 +216,50 @@ cjpm 的详细使用可以参考 [cjpm 文档](https://gitcode.com/Cangjie/cangj
 > **说明：**
 >
 > - `cjpm.toml` 是仓颉包管理工具 CJPM 的配置文件，详情请参见《仓颉编程语言工具使用指南》。
-> - Windows、Linux、MacOS 的配置方式相同。
-> - MacOS 使用 stdx 可能弹出未知来源或者无法检测是否包含恶意软件等弹框，可以在解压 stdx 后，终端执行 `xattr -dr com.apple.quarantine <stdx 解压路径> &> /dev/null || true` 来移除隔离属性。例如：`xattr -dr com.apple.quarantine ~/Downloads/darwin_x86_64_cjnative/ &> /dev/null || true`
+> - Windows、Linux、macOS 的配置方式相同。
+> - macOS 使用 stdx 可能弹出未知来源或者无法检测是否包含恶意软件等弹框，可以在解压 stdx 后，终端执行 `xattr -dr com.apple.quarantine <stdx 解压路径> &> /dev/null || true` 来移除隔离属性。例如：`xattr -dr com.apple.quarantine ~/Downloads/darwin_x86_64_cjnative/ &> /dev/null || true`
 > - 如果导入 `stdx` 的静态库并使用 crypto、net 包：`Windows` 需要在 `compile-option` 里额外添加 `-lcrypt32`。
 > - 使用 `stdx` 动态二进制（`.so`/`.dll`）时，OpenSSL 会通过运行时加载方式解析：类 Unix 使用 `dlopen/dlsym`，Windows 使用 `LoadLibrary/GetProcAddress`；此时即使应用侧以静态方式链接 OpenSSL（`.a`/`.lib`），也不会被该运行时解析路径直接使用。
 > - `Linux` 下默认静态 `stdx` 使用 OpenSSL 解析 `auto` 模式：优先直连 OpenSSL 符号，必要时才回退到 `dlopen/dlsym`；如果可能走回退路径，需要额外添加 `-ldl`。
-> - 对默认 `auto` 静态库以静态方式链接 OpenSSL（`.a`）时，可能需要使用 `--whole-archive` 确保 `libssl.a` 和 `libcrypto.a` 被真正拉入产物；否则回退路径仍可能尝试加载系统的 `libssl/libcrypto`。
-> - 以静态方式链接 OpenSSL 时，请将 `-lssl -lcrypto` 放在引用它们的 `stdx` 静态库之后，避免因静态链接顺序导致 “undefined reference”。
+> - 对默认 `auto` 静态库以静态方式链接 OpenSSL（`.a`）时，只有在需要强制把 `libssl.a` 和 `libcrypto.a` 拉入最终可执行文件时才需要使用 `--whole-archive`；否则回退路径仍可能尝试加载系统的 `libssl/libcrypto`。
+> - 对 `static-static-link-extern/stdx`，不应默认使用 `--whole-archive` 或 `-force_load`。请将 OpenSSL 静态归档输入（`libssl.a` 和 `libcrypto.a`）放在引用它们的 `stdx` 静态库之后，由链接器按需拉入对象。
 > - 在交叉编译的场景下，如果有自行开发宏包的需求，且需要依赖 stdx 实现宏包中的业务逻辑，那么除了目标运行平台以外，还需要配置本地开发平台的 stdx 路径。
 
-**静态 Openssl 链接命令行示例**: 假设存放 Openssl 静态库的目录为 `STATIC_OPENSSL_DIR`，则命令如下。
+**默认 `static/stdx` auto 解析示例**: 通过 `cjpm.toml` 或实际构建命令配置好 `stdx` 静态库路径后，将 `STATIC_OPENSSL_DIR` 设置为 OpenSSL 静态库所在目录。以下命令只展示 OpenSSL 静态归档链接参数，并会强制将 OpenSSL 静态归档拉入最终可执行文件。
 
 ```bash
-# GNU ld64
-cjc -L $STATIC_OPENSSL_DIR --link-option "-Bstatic" --link-option "--whole-archive" -lssl -lcrypto --link-option "--no-whole-archive" --link-option "-Bdynamic" main.cj
+export STATIC_OPENSSL_DIR=/path/to/openssl/lib
+
+# GNU ld
+cjc main.cj \
+    --link-option "-Bstatic" \
+    --link-option "--whole-archive" \
+    --link-option "${STATIC_OPENSSL_DIR}/libssl.a" \
+    --link-option "${STATIC_OPENSSL_DIR}/libcrypto.a" \
+    --link-option "--no-whole-archive" \
+    --link-option "-Bdynamic"
 
 # Apple ld64
-cjc -L $STATIC_OPENSSL_DIR --link-option "-force_load" --link-option "$STATIC_OPENSSL_DIR/libssl.a" --link-option "-force_load" --link-option "$STATIC_OPENSSL_DIR/libcrypto.a" main.cj
+cjc main.cj \
+    --link-option "-force_load" \
+    --link-option "${STATIC_OPENSSL_DIR}/libssl.a" \
+    --link-option "-force_load" \
+    --link-option "${STATIC_OPENSSL_DIR}/libcrypto.a"
+```
+
+对 `static-static-link-extern/stdx`，通过 `cjpm.toml` 或实际构建命令配置好 `stdx` 静态库路径后，正常提供 OpenSSL 静态归档即可。以下命令只展示 OpenSSL 静态归档链接参数：
+
+```bash
+export STATIC_OPENSSL_DIR=/path/to/openssl/lib
+
+cjc main.cj \
+    --link-option "${STATIC_OPENSSL_DIR}/libssl.a" \
+    --link-option "${STATIC_OPENSSL_DIR}/libcrypto.a"
 ```
 
 ### 已安装二进制目录
 
-在 Linux/CJNATIVE 的已安装 SDK 产物中，`stdx` 主要包含以下目录：
+以下以 Linux/cjnative 平台下已安装的 `stdx` 为例，说明其产物目录结构。
 
 - `dynamic/stdx`：动态库及相关运行时产物
 - `static/stdx`：默认静态库和 FFI 归档

@@ -7,6 +7,123 @@
 
 set(CANGJIE_LIB_DIR "modules")
 string(TOLOWER "${CMAKE_BUILD_TYPE}" lowercase_build_type)
+
+# Resolve a list of CMake target names / plain file paths to the actual output
+# files those targets produce, so that add_custom_command(OUTPUT) DEPENDS can
+# track them via file timestamps.
+#
+# Targets created by add_cangjie_library store their primary output path in the
+# CJ_OUTPUT_FILE property.  Targets created by make_cangjie_lib store theirs in
+# CJ_LIB_OUTPUT_FILE.  For any other CMake target the property is absent and we
+# fall back to the raw name (which covers plain-file dependencies and native
+# add_library / add_executable targets whose output CMake tracks automatically).
+#
+# Usage:
+#   cj_resolve_depends(out_var dep1 dep2 ...)
+function(cj_resolve_depends out_var)
+    set(resolved)
+    foreach(dep ${ARGN})
+        if(TARGET ${dep})
+            get_target_property(dep_file ${dep} CJ_OUTPUT_FILE)
+            if(NOT dep_file)
+                get_target_property(dep_file ${dep} CJ_LIB_OUTPUT_FILE)
+            endif()
+            if(dep_file)
+                list(APPEND resolved ${dep_file})
+            else()
+                # Native target (add_library/add_executable) or custom target
+                # without a tracked output – keep the name so CMake can at
+                # least enforce ordering.
+                list(APPEND resolved ${dep})
+            endif()
+        else()
+            # Plain file path.
+            list(APPEND resolved ${dep})
+        endif()
+    endforeach()
+    set(${out_var} ${resolved} PARENT_SCOPE)
+endfunction()
+
+function(add_cangjie_macro_library_in_local target_name)
+    set(options
+        NO_SUB_PKG)
+    set(one_value_args
+        OUTPUT_NAME
+        OUTPUT_DIR
+        PACKAGE_NAME
+        MODULE_NAME
+        SOURCE_DIR)
+    set(multi_value_args SOURCES DEPENDS FFI)
+    cmake_parse_arguments(
+        CANGJIELIB
+        "${options}"
+        "${one_value_args}"
+        "${multi_value_args}"
+        ${ARGN})
+
+    # Do not use ${CMAKE_EXECUTABLE_SUFFIX} here, because its value is determined by the target platform, not the host.
+    # Determine the suffix according to the host instead.
+    set(cangjie_compiler_tool "cjc$<$<BOOL:${CMAKE_HOST_WIN32}>:.exe>")
+
+    # Set no-sub-pkg
+    if(CANGJIELIB_NO_SUB_PKG)
+        set(no_sub_pkg "--no-sub-pkg")
+    endif()
+
+    list(APPEND cangjie_compile_flags "--compile-macro")
+
+    if(NOT ("${CANGJIELIB_MODULE_NAME}" STREQUAL ""))
+        set(output_dir "${CANGJIE_LIB_DIR}/${TARGET_TRIPLE_DIRECTORY_PREFIX}_${BACKEND}/${CANGJIELIB_MODULE_NAME}")
+    else()
+        set(output_dir "${CANGJIE_LIB_DIR}/${TARGET_TRIPLE_DIRECTORY_PREFIX}_${BACKEND}")
+    endif()
+    if(NOT ("${CANGJIELIB_OUTPUT_DIR}" STREQUAL ""))
+        set(output_dir "${output_dir}/${CANGJIELIB_OUTPUT_DIR}")
+    endif()
+
+    if(NOT ("${CANGJIELIB_MODULE_NAME}" STREQUAL ""))
+        set(output_full_name "${CMAKE_BINARY_DIR}/${output_dir}/lib-macro_${CANGJIELIB_MODULE_NAME}.${CANGJIELIB_PACKAGE_NAME}")
+    else()
+        set(output_full_name "${CMAKE_BINARY_DIR}/${output_dir}/lib-macro_${CANGJIELIB_PACKAGE_NAME}")
+    endif()
+
+    set(COMPILE_CMD
+        ${cangjie_compiler_tool}
+        ${no_sub_pkg}
+        ${cangjie_compile_flags}
+        -p ${CANGJIELIB_SOURCE_DIR})
+
+    cj_resolve_depends(resolved_depends ${CANGJIELIB_DEPENDS})
+
+    # pre-process source files: optional explicit SOURCES (globs or paths relative to
+    # SOURCE_DIR); otherwise only top-level *.cj (subdirectories are not included).
+    if(CANGJIELIB_SOURCES)
+        set(source_files)
+        foreach(pattern IN LISTS CANGJIELIB_SOURCES)
+            if(pattern MATCHES "[*?]")
+                file(GLOB _cj CONFIGURE_DEPENDS ${CANGJIELIB_SOURCE_DIR}/${pattern})
+                list(APPEND source_files ${_cj})
+            else()
+                list(APPEND source_files ${CANGJIELIB_SOURCE_DIR}/${pattern})
+            endif()
+        endforeach()
+    else()
+        file(GLOB source_files CONFIGURE_DEPENDS ${CANGJIELIB_SOURCE_DIR}/*.cj)
+    endif()
+
+    add_custom_command(
+        OUTPUT ${output_full_name}
+        COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_BINARY_DIR}/${output_dir}
+        COMMAND ${CMAKE_COMMAND} -E env "CANGJIE_PATH=${CMAKE_BINARY_DIR}/modules/${output_cj_lib_dir}"  "LIBRARY_PATH=${CMAKE_BINARY_DIR}/lib"
+                ${COMPILE_CMD}
+        DEPENDS ${resolved_depends} ${source_files} ${CANGJIELIB_SOURCE_DIR}
+        COMMENT "Generating ${target_name}")
+
+    add_custom_target(
+        ${target_name} ALL
+        DEPENDS ${output_full_name} ${CANGJIELIB_DEPENDS})
+endfunction()
+
 function(add_cangjie_library target_name
 )
     set(options
@@ -28,16 +145,21 @@ function(add_cangjie_library target_name
         "${multi_value_args}"
         ${ARGN})
 
-    # The pre-process source files
-    set(source_files)
-    foreach(file ${CANGJIELIB_SOURCES})
-        get_filename_component(file_path ${file} PATH)
-        if(IS_ABSOLUTE "${file_path}")
-            list(APPEND source_files "${file}")
-        else()
-            list(APPEND source_files "${CANGJIELIB_SOURCE_DIR}/${file}")
-        endif()
-    endforeach()
+    # pre-process source files: optional explicit SOURCES (globs or paths relative to
+    # SOURCE_DIR); otherwise only top-level *.cj (subdirectories are not included).
+    if(CANGJIELIB_SOURCES)
+        set(source_files)
+        foreach(pattern IN LISTS CANGJIELIB_SOURCES)
+            if(pattern MATCHES "[*?]")
+                file(GLOB _cj CONFIGURE_DEPENDS ${CANGJIELIB_SOURCE_DIR}/${pattern})
+                list(APPEND source_files ${_cj})
+            else()
+                list(APPEND source_files ${CANGJIELIB_SOURCE_DIR}/${pattern})
+            endif()
+        endforeach()
+    else()
+        file(GLOB source_files CONFIGURE_DEPENDS ${CANGJIELIB_SOURCE_DIR}/*.cj)
+    endif()
 
     set(BACKEND)
     if(CANGJIELIB_IS_CJNATIVE_BACKEND)
@@ -176,22 +298,30 @@ function(add_cangjie_library target_name
 
     set(ENV{LD_LIBRARY_PATH} $ENV{LD_LIBRARY_PATH}:${CMAKE_BINARY_DIR}/lib)
     string(TOLOWER ${TARGET_TRIPLE_DIRECTORY_PREFIX}_${BACKEND} output_cj_lib_dir)
+    
+    cj_resolve_depends(resolved_depends ${CANGJIELIB_DEPENDS})
+    
     if(NOT CMAKE_BUILD_STAGE STREQUAL "postBuild")
-        add_custom_target(
-            ${target_name} ALL
+        add_custom_command(
+            OUTPUT ${output_full_name}
             COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_BINARY_DIR}/${output_dir}
             COMMAND ${CMAKE_COMMAND} -E env "CANGJIE_PATH=${CMAKE_BINARY_DIR}/modules/${output_cj_lib_dir}"  "LIBRARY_PATH=${CMAKE_BINARY_DIR}/lib"
                     ${COMPILE_CMD}
-            BYPRODUCTS ${output_full_name}
-            DEPENDS ${CANGJIELIB_DEPENDS} ${CANGJIELIB_SOURCE_DIR}
+            DEPENDS ${resolved_depends} ${source_files} ${CANGJIELIB_SOURCE_DIR}
             COMMENT "Generating ${target_name}")
+
+        add_custom_target(
+            ${target_name} ALL
+            DEPENDS ${output_full_name} ${CANGJIELIB_DEPENDS})
+        
+        set_target_properties(${target_name} PROPERTIES CJ_OUTPUT_FILE ${output_full_name})
     endif()
     if(CMAKE_BUILD_STAGE STREQUAL "postBuild")
         set(bc_depends ${CANGJIELIB_DEPENDS} ${CANGJIELIB_SOURCE_DIR})
         if(CMAKE_CROSSCOMPILING)
-            set(bc_cangjie_path ${CMAKE_SOURCE_DIR}/target/${TRIPLE}/${lowercase_build_type}/stdx)
+            set(bc_cangjie_path ${CMAKE_SOURCE_DIR}/${target_dir}/${TRIPLE}/${lowercase_build_type}/stdx)
         else()
-            set(bc_cangjie_path ${CMAKE_SOURCE_DIR}/target/${lowercase_build_type}/stdx)
+            set(bc_cangjie_path ${CMAKE_SOURCE_DIR}/${target_dir}/${lowercase_build_type}/stdx)
         endif()
     else()
         set(bc_depends ${CANGJIELIB_DEPENDS} ${CANGJIELIB_SOURCE_DIR} ${target_name})
@@ -200,17 +330,34 @@ function(add_cangjie_library target_name
     if(CANGJIE_CODEGEN_CJNATIVE_BACKEND
        AND NOT WIN32
        AND NOT DARWIN)
-        add_custom_target(
-            ${target_name}_bc ALL
-            COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_BINARY_DIR}/${output_bc_dir}
-            COMMAND ${CMAKE_COMMAND} -E env "CANGJIE_PATH=${bc_cangjie_path}" "LIBRARY_PATH=${CMAKE_BINARY_DIR}/lib"
-                     ${COMPILE_BC_CMD}
-            BYPRODUCTS ${output_lto_bc_full_name}
-            # The ${target_name}_bc depends on ${target_name} so they will not run simultaneously. <target> and <target>_bc
-            # compile the same package, which means they may write the same bc cache file. Running simultaneously
-            # may cause IO error on windows in some cases.
-            DEPENDS ${bc_depends}
-            COMMENT "Generating ${target_name}_bc")
+        if(CMAKE_BUILD_STAGE STREQUAL "postBuild")
+            add_custom_target(	 
+                ${target_name}_bc ALL	 
+                COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_BINARY_DIR}/${output_bc_dir}	 
+                COMMAND ${CMAKE_COMMAND} -E env "CANGJIE_PATH=${bc_cangjie_path}" "LIBRARY_PATH=${CMAKE_BINARY_DIR}/lib"	 
+                        ${COMPILE_BC_CMD}	 
+                BYPRODUCTS ${output_lto_bc_full_name}	 
+                # The ${target_name}_bc depends on ${target_name} so they will not run simultaneously. <target> and <target>_bc 
+                # compile the same package, which means they may write the same bc cache file. Running simultaneously	 
+                # may cause IO error on windows in some cases.	 
+                DEPENDS ${bc_depends}	 
+                COMMENT "Generating ${target_name}_bc")
+        else()
+            add_custom_command(
+                OUTPUT ${output_lto_bc_full_name}
+                COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_BINARY_DIR}/${output_bc_dir}
+                COMMAND ${CMAKE_COMMAND} -E env "CANGJIE_PATH=${bc_cangjie_path}" "LIBRARY_PATH=${CMAKE_BINARY_DIR}/lib"
+                        ${COMPILE_BC_CMD}
+                # ${target_name}_bc depends on ${target_name} so they will not run simultaneously. <target> and <target>_bc
+                # compile the same package, which means they may write the same bc cache file. Running simultaneously
+                # may cause IO error on windows in some cases.
+                DEPENDS ${target_name} ${bc_depends}
+                COMMENT "Generating ${target_name}_bc")
+
+            add_custom_target(
+                ${target_name}_bc ALL
+                DEPENDS ${output_lto_bc_full_name})
+        endif()
     endif()
 
     if(NOT CMAKE_BUILD_STAGE STREQUAL "postBuild")
@@ -253,12 +400,12 @@ function(add_cangjie_library target_name
     if(CMAKE_BUILD_STAGE STREQUAL "postBuild")
         if(CMAKE_CROSSCOMPILING)
             if(${CANGJIELIB_PACKAGE_NAME} STREQUAL "actors.macros")
-                set(install_files "${CANGJIE_CJPM_DIR}/target/${lowercase_build_type}/stdx/${file_name}.cjo")
+                set(install_files "${CANGJIE_CJPM_DIR}/${target_dir}/${lowercase_build_type}/stdx/${file_name}.cjo")
             else()
-                set(install_files "${CANGJIE_CJPM_DIR}/target/${TRIPLE}/${lowercase_build_type}/stdx/${file_name}.cjo")
+                set(install_files "${CANGJIE_CJPM_DIR}/${target_dir}/${TRIPLE}/${lowercase_build_type}/stdx/${file_name}.cjo")
             endif()
         else()
-            set(install_files "${CANGJIE_CJPM_DIR}/target/${lowercase_build_type}/stdx/${file_name}.cjo")
+            set(install_files "${CANGJIE_CJPM_DIR}/${target_dir}/${lowercase_build_type}/stdx/${file_name}.cjo")
         endif()
     else()
         set(install_files "${CMAKE_BINARY_DIR}/${output_dir}/${file_name}.cjo")

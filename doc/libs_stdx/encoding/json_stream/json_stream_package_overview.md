@@ -10,7 +10,7 @@ json.stream 包主要用于仓颉对象和 JSON 数据流之间的互相转换�
 
 - 基础数据类型：String、Int8、Int16、Int32、Int64、Float16、Float32、Float64、UInt8、UInt16、UInt32、UInt64。
 
-- 集合类型：Array\<T>、ArrayList\<T>、HashMap\<String, T>。
+- 集合类型：Array\<T>、ArrayList\<T>、HashMap\<String, T>、HashSet\<T>、LinkedList\<T>、ArrayQueue\<T>、ArrayDeque\<T>、ArrayStack\<T>、TreeSet\<T>、TreeMap\<String, T>、ConcurrentHashMap\<String, T>。
 
 - 其它类型：Option\<T>、BigInt、Decimal。
 

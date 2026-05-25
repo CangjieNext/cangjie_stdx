@@ -226,7 +226,7 @@ func register(path: String, handler: (HttpContext) -> Unit): Unit
 参数：
 
 - path: String - 请求路径。
-- handler: ([HttpContext](http_package_classes.md#class-httpcontext)) ->Unit - 请求处理函数。
+- handler: ([HttpContext](http_package_classes.md#class-httpcontext)) -> Unit - 请求处理函数。
 
 异常：
 
@@ -301,7 +301,7 @@ func create(protocol: Protocol, socket: StreamingSocket): ProtocolService
 
 参数：
 
-- protocol: [Protocol](http_package_enums.md#enum-protocol) - 协议版本，如  [HTTP1_0](./http_package_enums.md#enum-protocol)、 [HTTP1_1](./http_package_enums.md#enum-protocol)、 [HTTP2_0](./http_package_enums.md#enum-protocol)。
+- protocol: [Protocol](http_package_enums.md#enum-protocol) - 协议类型，如 [HTTP1_0](./http_package_enums.md#enum-protocol)、[HTTP1_1](./http_package_enums.md#enum-protocol)、[HTTP2_0](./http_package_enums.md#enum-protocol)。
 - socket: StreamingSocket - 来自客户端的套接字。
 
 返回值：

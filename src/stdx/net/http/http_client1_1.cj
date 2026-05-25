@@ -95,7 +95,7 @@ class HttpClient1 <: HttpClient {
         }
 
         if (request.headers.get("host").isEmpty()) {
-            request.headers.set("host", "${httpEngine.addrport.addr}:${httpEngine.addrport.port}")
+            request.headers.set("host", "${targetAddrPort.addr}:${targetAddrPort.port}")
         }
 
         return httpEngine.sendRequest(request, isToProxy, isToHttpsProxy)
@@ -108,12 +108,18 @@ class HttpClient1 <: HttpClient {
             return (AddrPort(request.url.hostName, request.url.port.ifEmpty(targetPort)), None, false, false)
         } else {
             let proxyUrl = URL.parse(proxy)
+            
+            // check if caller already tries to establish proxying for this request manually, so skip proxying 
+            if (!request.headers.get("host").isEmpty() && request.method == "CONNECT") {
+                return (AddrPort(request.url.hostName, request.url.port.ifEmpty(targetPort)), None, false, false)
+            }
+            
             if (let Some(auth) <- parseProxyAuth(proxyUrl)) {
                 // a client must not generate fields in a TRACE request containing
-                // sensitive data that might be disclosed by the response.
-                // such as Cookie
+                // sensitive data that might be disclosed by the response. such as Cookie
                 // RFC 9110 9.3.8. TRACE
-                if (request.method != "TRACE") {
+                // And https proxy will handle authorization in a different way
+                if (request.method != "TRACE" && request.url.scheme != "https") {
                     request.headers.set("proxy-authorization", auth)
                 }
             }

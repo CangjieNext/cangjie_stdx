@@ -28,6 +28,11 @@ This package requires external dependencies on OpenSSL 3's crypto dynamic librar
     - Download the `OpenSSL 3.x.x` source code and use Android NDK to cross-compile dynamic library files for the target architectures (currently only `arm64-v8a` is supported). Ensure the build artifacts include `libcrypto.so` and `libcrypto.so.3`.
     - Add the directory containing these files to the environment variables `LD_LIBRARY_PATH`.
 
+- For HarmonyOS operating systems:
+    - Due to system restrictions in `HarmonyOS` 6.0 and above, `stdx` cannot directly access the system's built-in `OpenSSL`, users need to compile `OpenSSL` dynamic libraries for `HarmonyOS` and package them into the application.
+    - For compiling `OpenSSL` for `HarmonyOS`, refer to [OHOS Cangjie SDK Build Guide](https://gitcode.com/Cangjie/cangjie_build/blob/dev/docs/linux_ohos_toolchain.md).
+    - Package the compiled dynamic library files `libcrypto_openssl.z.so` and `libssl_openssl.z.so` into the application and ensure they can be correctly loaded at runtime.
+
 > **Note:**
 >
 > If the OpenSSL 3 package is not installed or a lower version is installed, the program may fail to function and throw the exception `X509Exception: Can not load openssl library or function xxx`.
@@ -40,19 +45,11 @@ This package requires external dependencies on OpenSSL 3's crypto dynamic librar
 | ------------------------------------------------------------- | -------------------------------- |
 | [IP](./x509_package_api/x509_package_type.md#type-ip) | x509 uses `Array<Byte>` to represent IP addresses. |
 
-### Interfaces
-
-| Interface Name                                                  | Functionality                     |
-| ------------------------------------------------------------- | -------------------------------- |
-| [DHParameters](./x509_package_api/x509_package_interfaces.md#interface-dhparameters) | Provides the DH key interface. |
-| [Key](./x509_package_api/x509_package_interfaces.md#interface-key) | Provides the key interface. |
-| [PrivateKey](./x509_package_api/x509_package_interfaces.md#interface-privatekey) | Provides the private key interface. |
-| [PublicKey](./x509_package_api/x509_package_interfaces.md#interface-publickey) | Provides the public key interface. |
-
 ### Classes
 
 | Class Name                                                   | Functionality                     |
 | ---------------------------------------------------------- | -------------------------------- |
+| [GeneralDHParameters](./x509_package_api/x509_package_classes.md#class-generaldhparameters)       | Implementation of generic DH key parameter encryption/decryption functionality.          |
 | [X509Certificate](./x509_package_api/x509_package_classes.md#class-x509certificate) | X509 digital certificates are used for encrypted communications. |
 | [X509CertificateRequest](./x509_package_api/x509_package_classes.md#class-x509certificaterequest) | Certificate signing requests. |
 | [X509Name](./x509_package_api/x509_package_classes.md#class-x509name) | Distinguished names for certificate entities. |
@@ -68,11 +65,8 @@ This package requires external dependencies on OpenSSL 3's crypto dynamic librar
 
 | Struct Name                                                                               | Functionality                     |
 | --------------------------------------------------------------------------------------- | -------------------------------- |
-| [DerBlob](./x509_package_api/x509_package_structs.md#struct-derblob)                     | Supports configuring binary certificate streams in Crypto. |
 | [ExtKeyUsage](./x509_package_api/x509_package_structs.md#struct-extkeyusage)             | Extended fields in digital certificates. |
 | [KeyUsage](./x509_package_api/x509_package_structs.md#struct-keyusage)                   | Extended fields in digital certificates typically include usage descriptions for public keys. |
-| [Pem](./x509_package_api/x509_package_structs.md#struct-pem)                            | Pem struct. |
-| [PemEntry](./x509_package_api/x509_package_structs.md#struct-pementry)                   | PEM text format. |
 | [SerialNumber](./x509_package_api/x509_package_structs.md#struct-serialnumber)          | Serial numbers for digital certificates. |
 | [Signature](./x509_package_api/x509_package_structs.md#struct-signature)                | Signatures for digital certificates. |
 | [VerifyOption](./x509_package_api/x509_package_structs.md#struct-verifyoption)          | Verification options. |

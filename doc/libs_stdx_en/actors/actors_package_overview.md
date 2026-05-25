@@ -15,6 +15,7 @@ In this model, an *actor* is the basic unit of concurrency with the following ch
 - Once there are no references pointing to the actor and all receivers have been executed, the actor can be reclaimed by the system.
 
 > **Note:**
+>
 > The third characteristic of the Actor model has not yet been enforced by the language, so the member variables of an *actor* do not yet provide full concurrency safety. In the future, a new type system may address this issue, ensuring the concurrency safety of member variables.
 
 The Actor model is primarily used for concurrent access and modification of the same object in multi-threaded environments. For example, a bank account object may be accessed simultaneously by multiple threads for operations like deposits or withdrawals, potentially leading to data races without proper synchronization.
@@ -57,13 +58,11 @@ spawn {
 
 Correctly using the Actor model can make concurrent programming simpler and more efficient.
 
-
 ### Actor Declaration
 
 Using the bank account example above, to avoid thread safety issues, we can design an *actor* specifically for handling account operations using the Actor model.
 
 First, we can annotate the `Account` class with the [@Actor](./macros/macros_package_api/macros_package_macros.md#actor-macro) macro to mark it as an actor. Then, we use the [@Receiver](./macros/macros_package_api/macros_package_macros.md#receiver-macro) macro to mark the deposit, withdraw, and getBalance functions:
-
 
 ```cangjie
 @Actor
@@ -134,23 +133,25 @@ spawn {
 ```
 
 > **Note:**
+>
 > Currently, the member variables of an actor do not provide full concurrency safety. For example, in the following case, the public member variables can still be accessed and modified directly from outside:
-> ```cangjie
-> @Actor
-> public class MyActor {
->     public var x: Int64 = 0
-> }
->
-> let myActor = MyActor()
-> spawn {
->     myActor.x = 2
-> }
-> spawn {
->     myActor.x = 3
-> }
-> ```
->
-> In the future, a new type system could address this issue, ensuring the concurrency safety of member variables.
+
+```cangjie
+@Actor
+public class MyActor {
+    public var x: Int64 = 0
+}
+
+let myActor = MyActor()
+spawn {
+    myActor.x = 2
+}
+spawn {
+    myActor.x = 3
+}
+```
+
+In the future, a new type system could address this issue, ensuring the concurrency safety of member variables.
 
 ### Execution Order of Receivers
 
@@ -290,7 +291,6 @@ func bar() {
 ```
 
 After the `test()` function returns, since there are no remaining references to the account and no pending receivers (because we awaited the result of `account.deposit(5.0)` inside `test()`), the actor referenced by account and its dedicated execution thread will be reclaimed by the system.
-
 
 ### Priority between Receivers
 
@@ -440,7 +440,6 @@ main() {
     println("Balance: ${account.getBalance().get()}")
 }
 ```
-
 
 ## API List
 

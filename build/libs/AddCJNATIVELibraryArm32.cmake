@@ -29,6 +29,18 @@ set_target_properties(stdx PROPERTIES LINKER_LANGUAGE C)
 install(TARGETS stdx DESTINATION ${output_triple_name}_${CJNATIVE_BACKEND}${SANITIZER_SUBPATH}/static/stdx)
 
 make_cangjie_lib(
+    chir IS_SHARED
+    DEPENDS cangjie${BACKEND_TYPE}Chir
+    CANGJIE_STD_LIB_LINK
+        std-core
+        std-collection
+        std-fs
+    OBJECTS ${output_cj_object_dir}/stdx/chir.o)
+add_library(stdx.chir STATIC ${output_cj_object_dir}/stdx/chir.o)
+set_target_properties(stdx.chir PROPERTIES LINKER_LANGUAGE C)
+install(TARGETS stdx.chir DESTINATION ${output_triple_name}_${CJNATIVE_BACKEND}${SANITIZER_SUBPATH}/static/stdx)
+
+make_cangjie_lib(
     encoding IS_SHARED
     DEPENDS cangjie${BACKEND_TYPE}Encoding
     CANGJIE_STD_LIB_LINK std-core

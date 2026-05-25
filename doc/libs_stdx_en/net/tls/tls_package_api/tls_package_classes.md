@@ -1,9 +1,21 @@
 # Classes
 
-## class TlsSessionContext
+## class DefaultTlsKit
 
 ```cangjie
-public class TlsSessionContext <: Equatable<TlsSessionContext> & ToString
+public class DefaultTlsKit <: TlsKit
+```
+
+Function: Default implementation of [TlsKit](../common/tls_common_package_api/tls_common_package_interfaces.md#interface-tlskit). Used to obtain TLS server/client connections and server sessions.
+
+Parent Types:
+
+- [TlsKit](../common/tls_common_package_api/tls_common_package_interfaces.md#interface-tlskit)
+
+### func getTlsClient(StreamingSocket, TlsConfig, ?TlsSession)
+
+```cangjie
+public func getTlsClient(socket: StreamingSocket, config: TlsConfig, session!: ?TlsSession): TlsConnection
 ```
 
 Function: Creates a client TLS connection based on the provided StreamingSocket instance, which can be used for TLS handshake.
@@ -67,7 +79,7 @@ Function: Provides server configuration for keyless handshake.
 
 > **Note:**
 >
-> When a client attempts to resume a session, both parties must ensure they are resuming the session with a legitimate counterpart.
+> Currently only supports ECDHE-RSA-AES256-GCM-SHA384, TLS_AES_256_GCM_SHA384, TLS_CHACHA20_POLY1305_SHA256 cipher suites. Other cipher suites are not guaranteed to be available.
 
 Parent Types:
 
@@ -295,12 +307,12 @@ Parent Types:
 ### static func fromName(String)
 
 ```cangjie
-public static func fromName(name: String): TlsSessionContext
+public static func fromName(name: String): TlsServerSession
 ```
 
-Function: Creates a [TlsSessionContext](tls_package_classes.md#class-tlssessioncontext) instance by name.
+Function: Creates a [TlsServerSession](tls_package_classes.md#class-tlsserversession) instance by name.
 
-Retrieves a [TlsSessionContext](tls_package_classes.md#class-tlssessioncontext) object based on the name stored in [TlsSessionContext](tls_package_classes.md#class-tlssessioncontext). This name is used to distinguish TLS servers, so clients rely on it to avoid accidentally attempting to resume connections with the wrong server. The name does not necessarily need to be cryptographically secure, as the underlying implementation handles this. Two TlsSessionContext instances returned from this function with the same name may not be equal and are not guaranteed to be interchangeable. Although they are created from the same name, the server instance should create a single TlsSessionContext throughout its lifecycle and use it in every [TlsSocket](tls_package_classes.md#class-tlssocket).server() call.
+Retrieves a [TlsServerSession](tls_package_classes.md#class-tlsserversession) object using the name stored in [TlsServerSession](tls_package_classes.md#class-tlsserversession). This name is used to distinguish TLS servers, so clients rely on this name to avoid accidentally attempting to resume connections with the wrong server. The name does not necessarily need to be cryptographically secure, as the underlying implementation can handle this. Two TlsServerSession instances returned from this function with the same name may not be equal and are not guaranteed to be interchangeable. Although they are created from the same name, the server instance should create a single TlsServerSession throughout its lifecycle and use it in every [TlsSocket](tls_package_classes.md#class-tlssocket).[server](tls_package_classes.md#static-func-serverstreamingsocket-tlsserversession-tlsserverconfig)() call.
 
 Parameters:
 
@@ -308,7 +320,7 @@ Parameters:
 
 Return Value:
 
-- [TlsSessionContext](tls_package_classes.md#class-tlssessioncontext) - The session context.
+- [TlsServerSession](tls_package_classes.md#class-tlsserversession) - The session context.
 
 ### func toString()
 
@@ -316,120 +328,81 @@ Return Value:
 public override func toString(): String
 ```
 
-Function: Generates a session context name string.
+Function: Generates a string representation of the session context name.
 
 Return Value:
 
-- String - [TlsSessionContext](tls_package_classes.md#class-tlssessioncontext) (the session context name string).
+- String - [TlsServerSession](tls_package_classes.md#class-tlsserversession)(session context name string).
 
-### operator func !=(TlsSessionContext)
+### operator func !=(TlsServerSession)
 
 ```cangjie
-public override operator func !=(other: TlsSessionContext): Bool
+public override operator func !=(other: TlsServerSession): Bool
 ```
 
-Function: Determines whether two [TlsSessionContext](tls_package_classes.md#class-tlssessioncontext) instance names are different.
+Function: Determines whether the names of two [TlsServerSession](tls_package_classes.md#class-tlsserversession) instances are different.
 
 Parameters:
 
-- other: [TlsSessionContext](tls_package_classes.md#class-tlssessioncontext) - The session context object to compare.
+- other: [TlsServerSession](tls_package_classes.md#class-tlsserversession) - The session context object to compare.
 
 Return Value:
 
-- Bool - Returns `true` if the [TlsSessionContext](tls_package_classes.md#class-tlssessioncontext) objects are different; otherwise, returns `false`.
+- Bool - Returns `true` if the [TlsServerSession](tls_package_classes.md#class-tlsserversession) objects are different; otherwise, returns `false`.
 
-### operator func ==(TlsSessionContext)
+### operator func ==(TlsServerSession)
 
 ```cangjie
-public override operator func ==(other: TlsSessionContext): Bool
+public override operator func ==(other: TlsServerSession): Bool
 ```
 
-Function: Determines whether two [TlsSessionContext](tls_package_classes.md#class-tlssessioncontext) instance names are the same.
+Function: Determines whether the names of two [TlsServerSession](tls_package_classes.md#class-tlsserversession) instances are the same.
 
 Parameters:
 
-- other: [TlsSessionContext](tls_package_classes.md#class-tlssessioncontext) - The session context object to compare.
+- other: [TlsServerSession](tls_package_classes.md#class-tlsserversession) - The session context object to compare.
 
 Return Value:
 
-- Bool - Returns `true` if the [TlsSessionContext](tls_package_classes.md#class-tlssessioncontext) objects are the same; otherwise, returns `false`.
+- Bool - Returns `true` if the [TlsServerSession](tls_package_classes.md#class-tlsserversession) objects are the same; otherwise, returns `false`.
 
 ## class TlsSocket
 
 ```cangjie
-public class TlsSocket <: StreamingSocket & Equatable<TlsSocket> & Hashable
+public class TlsSocket <: TlsConnection & Equatable<TlsSocket> & Hashable
 ```
 
-Function: [TlsSocket](tls_package_classes.md#class-tlssocket) is used to create an encrypted transmission channel between client and server.
+Function: [TlsSocket](tls_package_classes.md#class-tlssocket) is used to create an encrypted transmission channel between clients and servers.
 
 Parent Types:
 
-- StreamingSocket
+- [TlsConnection](../common/tls_common_package_api/tls_common_package_interfaces.md#interface-tlsconnection)
 - Equatable\<[TlsSocket](#class-tlssocket)>
 - Hashable
 
-### prop alpnProtocolName
+### prop certificate
 
 ```cangjie
-public prop alpnProtocolName: ?String
+public prop certificate: Array<X509Certificate>
 ```
 
-Function: Reads the negotiated application-layer protocol name.
-
-Type: ?String
-
-Exceptions:
-
-- [TlsException](tls_package_exceptions.md#class-tlsexception) - Thrown when the socket has not completed TLS handshake or the local TLS socket is closed.
-- IllegalMemoryException - Thrown when memory allocation fails.
-
-### prop cipherSuite
-
-```cangjie
-public prop cipherSuite: CipherSuite
-```
-
-Function: The negotiated cipher suite after handshake.
-
-> **Note:**
->
-> The cipher suite includes encryption algorithms, hash functions for message authentication, and key exchange algorithms.
-
-Type: [CipherSuite](tls_package_structs.md#struct-ciphersuite)
-
-Exceptions:
-
-- [TlsException](tls_package_exceptions.md#class-tlsexception) - Thrown when the socket has not completed TLS handshake or the local TLS socket is closed.
-
-### prop clientCertificate
-
-```cangjie
-public prop clientCertificate: ?Array<X509Certificate>
-```
-
-Function: The client certificate provided by the client. On the client side, this refers to the local certificate; on the server side, it refers to the peer certificate.
-
-> **Note:**
->
-> When retrieving the peer certificate, if the peer did not send a certificate, this interface may fail and return None. See [peerCertificate](./tls_package_classes.md#prop-peercertificate).
+Function: Gets the local certificate.
 
 Type: ?Array\<[X509Certificate](../../../crypto/x509/x509_package_api/x509_package_classes.md#class-x509certificate)>
 
 Exceptions:
 
-- [TlsException](tls_package_exceptions.md#class-tlsexception) - Thrown when the socket has not completed TLS handshake or the local TLS socket is closed.
+- [TlsException](../common/tls_common_package_api/tls_common_package_exceptions.md#class-tlsexception) - Thrown when the socket has not completed TLS handshake or the local TLS socket is closed.
 
-### prop domain
+### prop handshakeResult
 
 ```cangjie
-public prop domain: ?String
+public prop handshakeResult: ?TlsHandshakeResult
 ```
 
-Function: Reads the negotiated server hostname.
+Function: Gets the TLS handshake result.
 
-- [TlsException](tls_package_exceptions.md#class-tlsexception) - Thrown when the socket has not completed TLS handshake or the local TLS socket is closed.
-
-Type: ?String
+Type: [TlsHandshakeResult](../common/tls_common_package_api/tls_common_package_interfaces.md#interface-tlshandshakeresult)
 
 ### prop localAddress
 
@@ -437,37 +410,14 @@ Type: ?String
 public override prop localAddress: SocketAddress
 ```
 
-Function: Reads the local address of the [TlsSocket](tls_package_classes.md#class-tlssocket).
+Function: Reads the local address of [TlsSocket](tls_package_classes.md#class-tlssocket).
 
 Type: SocketAddress
 
 Exceptions:
 
 - SocketException - Thrown when the underlying TCP socket for local connection is closed.
-- [TlsException](tls_package_exceptions.md#class-tlsexception) - Thrown when the local TLS-configured socket is closed.
-
-### prop peerCertificate
-
-```cangjie
-public prop peerCertificate: ?Array<X509Certificate>
-```
-
-Function: Retrieves the peer certificate. On the client side, this is the same as [serverCertificate](./tls_package_classes.md#prop-servercertificate); on the server side, it is the same as [clientCertificate](./tls_package_classes.md#prop-clientcertificate).
-
-> **Note:**
->
-> - If the peer did not send a certificate during handshake, this interface will fail to retrieve the peer certificate and return None.
->
-> - When resuming a connection via session mechanism, neither party sends certificates. The interface behaves as follows:
->
->     - On the server side, if the peer certificate was obtained during the original connection establishment, the server caches the peer certificate and retrieves it here;
->     - On the client side, the original connection's peer certificate is not cached, and this interface will fail to retrieve the peer certificate, returning None.
-
-Type: ?Array\<[X509Certificate](../../../crypto/x509/x509_package_api/x509_package_classes.md#class-x509certificate)>
-
-Exceptions:
-
-- [TlsException](tls_package_exceptions.md#class-tlsexception) - Thrown when the socket has not completed TLS handshake or the local TLS socket is closed.
+- [TlsException](../common/tls_common_package_api/tls_common_package_exceptions.md#class-tlsexception) - Thrown when the local TLS socket is closed.
 
 ### prop readTimeout
 
@@ -475,14 +425,14 @@ Exceptions:
 public override mut prop readTimeout: ?Duration
 ```
 
-Function: Reads/writes the read timeout of the [TlsSocket](tls_package_classes.md#class-tlssocket).
+Function: Reads/writes the read timeout of [TlsSocket](tls_package_classes.md#class-tlssocket).
 
 Type: ?Duration
 
 Exceptions:
 
 - SocketException - Thrown when the underlying TCP socket for local connection is closed.
-- [TlsException](tls_package_exceptions.md#class-tlsexception) - Thrown when the local TLS-configured socket is closed.
+- [TlsException](../common/tls_common_package_api/tls_common_package_exceptions.md#class-tlsexception) - Thrown when the local TLS socket is closed.
 - IllegalArgumentException - Thrown when the set read timeout is negative.
 
 ### prop remoteAddress
@@ -491,50 +441,14 @@ Exceptions:
 public override prop remoteAddress: SocketAddress
 ```
 
-Function: Reads the remote address of the [TlsSocket](tls_package_classes.md#class-tlssocket).
+Function: Reads the remote address of [TlsSocket](tls_package_classes.md#class-tlssocket).
 
 Type: SocketAddress
 
 Exceptions:
 
 - SocketException - Thrown when the underlying TCP socket for local connection is closed.
-- [TlsException](tls_package_exceptions.md#class-tlsexception) - Thrown when the local TLS-configured socket is closed.
-
-### prop serverCertificate
-
-```cangjie
-public prop serverCertificate: Array<X509Certificate>
-```
-
-Function: The server certificate chain is provided by the server or pre-configured in the server configuration. On the server side, this refers to the local certificate; on the client side, it refers to the peer certificate.
-
-> **Note:**
->
-> When retrieving the peer certificate, if the peer did not send a certificate, this interface may fail and return None. See [peerCertificate](./tls_package_classes.md#prop-peercertificate).
-
-Type: Array\<[X509Certificate](../../../crypto/x509/x509_package_api/x509_package_classes.md#class-x509certificate)>
-
-Exceptions:
-
-- [TlsException](tls_package_exceptions.md#class-tlsexception) - Thrown when the socket has not completed TLS handshake or the local TLS socket is closed.
-
-### prop session
-
-```cangjie
-public prop session: ?TlsSession
-```
-
-Function: Reads the TLS session ID. The client captures the current session ID after successful handshake, which can be used to reuse the session and save TLS connection establishment time. Returns `None` if the connection establishment fails.
-
-> **Note:**
->
-> The server does not capture this and thus always returns None.
-
-Type: ?[TlsSession](tls_package_structs.md#struct-tlssession)
-
-Exceptions:
-
-- [TlsException](tls_package_exceptions.md#class-tlsexception) - Thrown when the socket has not completed TLS handshake.
+- [TlsException](../common/tls_common_package_api/tls_common_package_exceptions.md#class-tlsexception) - Thrown when the local TLS socket is closed.
 
 ### prop socket
 
@@ -542,27 +456,13 @@ Exceptions:
 public prop socket: StreamingSocket
 ```
 
-Function: The StreamingSocket used to create the [TlsSocket](tls_package_classes.md#class-tlssocket).
+Function: The StreamingSocket used to create [TlsSocket](tls_package_classes.md#class-tlssocket).
 
 Type: StreamingSocket
 
 Exceptions:
 
-- [TlsException](tls_package_exceptions.md#class-tlsexception) - Thrown when the local TLS-configured socket is closed.
-
-### prop tlsVersion
-
-```cangjie
-public prop tlsVersion: TlsVersion
-```
-
-Function: Reads the negotiated TLS version.
-
-Type: [TlsVersion](tls_package_enums.md#enum-tlsversion)
-
-Exceptions:
-
-- [TlsException](tls_package_exceptions.md#class-tlsexception) - Thrown when the socket has not completed TLS handshake or the local TLS socket is closed.
+- [TlsException](../common/tls_common_package_api/tls_common_package_exceptions.md#class-tlsexception) - Thrown when the local TLS socket is closed.
 
 ### prop writeTimeout
 
@@ -570,52 +470,76 @@ Exceptions:
 public override mut prop writeTimeout: ?Duration
 ```
 
-Function: Reads/writes the write timeout of the [TlsSocket](tls_package_classes.md#class-tlssocket).
+Function: Reads/writes the write timeout of [TlsSocket](tls_package_classes.md#class-tlssocket).
 
-Type: ?DurationExceptions:
+Type: ?Duration
 
-- SocketException - Thrown when the underlying TCP socket of the local connection is closed.
-- [TlsException](tls_package_exceptions.md#class-tlsexception) - Thrown when a socket configured for TLS on the local end is closed.
-- IllegalArgumentException - Thrown when the specified write timeout value is negative.
+Exceptions:
 
-### static func client(StreamingSocket, ?TlsSession, TlsClientConfig)
+- SocketException - Thrown when the underlying TCP socket for local connection is closed.
+- [TlsException](../common/tls_common_package_api/tls_common_package_exceptions.md#class-tlsexception) - Thrown when the local TLS socket is closed.
+- IllegalArgumentException - Thrown when the set write timeout is negative.
+
+### static func client(StreamingSocket, ?TlsClientSession, TlsClientConfig)
 
 ```cangjie
 public static func client(
     socket: StreamingSocket,
-    session!: ?TlsSession = None,
+    session!: ?TlsClientSession = None,
     clientConfig!: TlsClientConfig = TlsClientConfig()
 ): TlsSocket
 ```
 
-Function: Creates a client TLS socket for the specified address using the provided StreamingSocket instance. This socket can be used for client TLS handshake and session.
+Function: Creates a client TLS socket for the specified address based on the provided StreamingSocket instance, which can be used for client TLS handshake and session.
 
 Parameters:
 
-- socket: StreamingSocket - A client TCP socket already connected to the server.
-- session!: ?[TlsSession](tls_package_structs.md#struct-tlssession) - TLS session ID. If an available TLS session exists, this ID can be used to resume a historical TLS session, saving TLS connection establishment time. However, session negotiation may still fail. Defaults to `None`.
+- socket: StreamingSocket - The client TCP socket connected to the server.
+- session!: ?[TlsClientSession](tls_package_classes.md#class-tlsclientsession) - TLS session ID. If an available TLS session exists, it can be used to resume the historical TLS session, saving TLS connection establishment time, although the negotiation may still fail. Defaults to `None`.
 - clientConfig!: [TlsClientConfig](tls_package_structs.md#struct-tlsclientconfig) - Client configuration. Defaults to [TlsClientConfig](tls_package_structs.md#struct-tlsclientconfig)().
 
 Return Value:
 
 - [TlsSocket](tls_package_classes.md#class-tlssocket) - The constructed [TlsSocket](tls_package_classes.md#class-tlssocket) instance.
 
-### static func server(StreamingSocket, ?TlsSessionContext, TlsServerConfig)
+### static func server(StreamingSocket, ?TlsServerSession, KeylessTlsServerConfig)
 
 ```cangjie
 public static func server(
     socket: StreamingSocket,
-    sessionContext!: ?TlsSessionContext = None,
+    session!: ?TlsServerSession = None,
+    serverConfig!: KeylessTlsServerConfig
+): TlsSocket
+```
+
+Function: Creates a server TLS socket for the specified address based on the provided StreamingSocket instance, which can be used for server TLS handshake and session in keyless scenarios.
+
+Parameters:
+
+- socket: StreamingSocket - The socket accepted after TCP connection establishment.
+- session!: ?[TlsServerSession](tls_package_classes.md#class-tlsserversession) - TLS session ID. If an available TLS session exists, it can be used to resume the historical TLS session, saving TLS connection establishment time, although the negotiation may still fail. Defaults to None.
+- serverConfig!: [KeylessTlsServerConfig](./tls_package_classes.md#class-keylesstlsserverconfig) - Server configuration.
+
+Return Value:
+
+- [TlsSocket](tls_package_classes.md#class-tlssocket) - The constructed [TlsSocket](tls_package_classes.md#class-tlssocket) instance.
+
+### static func server(StreamingSocket, ?TlsServerSession, TlsServerConfig)
+
+```cangjie
+public static func server(
+    socket: StreamingSocket,
+    session!: ?TlsServerSession = None,
     serverConfig!: TlsServerConfig
 ): TlsSocket
 ```
 
-Function: Creates a server TLS socket for the specified address using the provided StreamingSocket instance. This socket can be used for server TLS handshake and session.
+Function: Creates a server TLS socket for the specified address based on the provided StreamingSocket instance, which can be used for server TLS handshake and session.
 
 Parameters:
 
-- socket: StreamingSocket - The accepted socket after TCP connection establishment.
-- sessionContext!: ?[TlsSessionContext](tls_package_classes.md#class-tlssessioncontext) - TLS session ID. If an available TLS session exists, this ID can be used to resume a historical TLS session, saving TLS connection establishment time. However, session negotiation may still fail. Defaults to None.
+- socket: StreamingSocket - The socket accepted after TCP connection establishment.
+- session!: ?[TlsServerSession](tls_package_classes.md#class-tlsserversession) - TLS session ID. If an available TLS session exists, it can be used to resume the historical TLS session, saving TLS connection establishment time, although the negotiation may still fail. Defaults to None.
 - serverConfig!: [TlsServerConfig](tls_package_structs.md#struct-tlsserverconfig) - Server configuration. Defaults to [TlsServerConfig](tls_package_structs.md#struct-tlsserverconfig)().
 
 Return Value:
@@ -637,21 +561,25 @@ Exceptions:
 ### func handshake(?Duration)
 
 ```cangjie
-public func handshake(timeout!: ?Duration = None): Unit
+public func handshake(timeout!: ?Duration = None): TlsHandshakeResult
 ```
 
-Function: Performs TLS handshake. Does not support renegotiation and can only be called once. Can be called on either client or server [TlsSocket](tls_package_classes.md#class-tlssocket).
+Function: Performs TLS handshake. Does not support renegotiation and can only be called once. The calling object can be either a client or server [TlsSocket](tls_package_classes.md#class-tlssocket).
 
 Parameters:
 
-- timeout!: ?Duration - Handshake timeout duration. Defaults to None, which uses the default 30-second timeout.
+- timeout!: ?Duration - Handshake timeout. Defaults to None, meaning no timeout is set, and the default 30s timeout is used.
+
+Return Value:
+
+- [TlsHandshakeResult](../common/tls_common_package_api/tls_common_package_interfaces.md#interface-tlshandshakeresult) - The handshake result.
 
 Exceptions:
 
-- SocketException - Thrown when the underlying TCP socket of the local connection is closed.
+- SocketException - Thrown when the underlying TCP socket for local connection is closed.
 - SocketTimeoutException - Thrown when the underlying TCP socket connection times out.
-- [TlsException](tls_package_exceptions.md#class-tlsexception) - Thrown when the handshake has already started or completed, or when a system error occurs during the handshake phase.
-- IllegalArgumentException - Thrown when the specified handshake timeout value is negative.
+- [TlsException](../common/tls_common_package_api/tls_common_package_exceptions.md#class-tlsexception) - Thrown when the handshake has already started or completed, or when a system error occurs during the handshake phase.
+- IllegalArgumentException - Thrown when the set handshake timeout is negative.
 
 ### func hashCode()
 
@@ -663,7 +591,7 @@ Function: Returns the hash value of the TLS socket object.
 
 Return Value:
 
-- Int64 - The result of the hash computation on the TLS socket object.
+- Int64 - The result obtained after hashing the TLS socket object.
 
 ### func isClosed()
 
@@ -675,7 +603,7 @@ Function: Returns the closed state of the socket.
 
 Return Value:
 
-- Bool - Returns true if the connection is closed; otherwise, returns false.
+- Bool - Returns `true` if the connection is closed; otherwise, returns `false`.
 
 ### func read(Array\<Byte>)
 
@@ -683,20 +611,20 @@ Return Value:
 public override func read(buffer: Array<Byte>): Int64
 ```
 
-Function: Reads data from [TlsSocket](tls_package_classes.md#class-tlssocket).
+Function: [TlsSocket](tls_package_classes.md#class-tlssocket) reads data.
 
 Parameters:
 
-- buffer: Array\<Byte> - Array to store the read data.
+- buffer: Array\<Byte> - The array storing the read data content.
 
 Return Value:
 
-- Int64 - The number of bytes read.
+- Int64 - The number of bytes of the read data content.
 
 Exceptions:
 
-- SocketException - Thrown when the underlying TCP socket of the local connection is closed.
-- [TlsException](tls_package_exceptions.md#class-tlsexception) - Thrown when `buffer` is empty, [TlsSocket](tls_package_classes.md#class-tlssocket) is not connected, or a system error occurs during data reading.
+- SocketException - Throws an exception if the underlying TCP socket of the local connection is closed.
+- [TlsException](../common/tls_common_package_api/tls_common_package_exceptions.md#class-tlsexception) - Throws an exception if `buffer` is empty, or if [TlsSocket](tls_package_classes.md#class-tlssocket) is not connected, or if a system error occurs during data reading.
 
 ### func toString()
 
@@ -704,15 +632,15 @@ Exceptions:
 public func toString(): String
 ```
 
-Function: String representation of the socket, indicating its current state.
+Function: String representation of the socket, where the string content reflects the current socket state.
 
 > **Note:**
 >
-> For example: When the socket is ready to start a handshake, this method returns the string "[TlsSocket](tls_package_classes.md#class-tlssocket)(TcpSocket(\${local address} -> \${remote address}), ready for handshake)"
+> For example: When the socket is ready to start a handshake, this interface will return the string "[TlsSocket](tls_package_classes.md#class-tlssocket)(TcpSocket(\${local address} -> \${remote address}), ready for handshake)".
 
 Return Value:
 
-- String - The TLS connection string.
+- String - The string representation of this TLS connection.
 
 ### func write(Array\<Byte>)
 
@@ -720,16 +648,16 @@ Return Value:
 public func write(buffer: Array<Byte>): Unit
 ```
 
-Function: Writes data to [TlsSocket](tls_package_classes.md#class-tlssocket).
+Function: [TlsSocket](tls_package_classes.md#class-tlssocket) sends data.
 
 Parameters:
 
-- buffer: Array\<Byte> - Array containing the data to be sent.
+- buffer: Array\<Byte> - The array storing the data content to be sent.
 
 Exceptions:
 
-- SocketException - Thrown when the underlying TCP socket of the local connection is closed.
-- [TlsException](tls_package_exceptions.md#class-tlsexception) - Thrown when the socket is closed, [TlsSocket](tls_package_classes.md#class-tlssocket) is not connected, or a system error occurs during data writing.
+- SocketException - Throws an exception if the underlying TCP socket of the local connection is closed.
+- [TlsException](../common/tls_common_package_api/tls_common_package_exceptions.md#class-tlsexception) - Throws an exception if the socket is closed, or if [TlsSocket](tls_package_classes.md#class-tlssocket) is not connected, or if a system error occurs during data writing.
 
 ### operator func !=(TlsSocket)
 
