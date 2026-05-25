@@ -5,7 +5,7 @@
 
 ```cangjie
 // 导入依赖的类
-import stdx.fuzz.fuzz.Fuzzer
+import stdx.fuzz.Fuzzer
 
 main() {
     // 创建 Fuzzer 并启动 fuzz 流程
@@ -25,9 +25,9 @@ public func api(data: Array<UInt8>): Int32 {
 
 > 下方的命令中的 CANGJIE_STDX_PATH 指向存放 stdx 系列的路径，例如 "./static/stdx"
 
-Linux 的编译命令是：`cjc fuzz_main.cj -L $CANGJIE_STDX_PATH -lstdx.fuzz.fuzz --import-path $CANGJIE_STDX_PATH --link-options="--whole-archive $CANGJIE_HOME/lib/linux_x86_64_cjnative/libclang_rt.fuzzer_no_main.a -no-whole-archive -lstdc++" --sanitizer-coverage-inline-8bit-counters -lpthread`
+Linux 的编译命令是：`cjc fuzz_main.cj -L $CANGJIE_STDX_PATH -lstdx.fuzz --import-path $CANGJIE_STDX_PATH --link-options="--whole-archive $CANGJIE_HOME/lib/linux_x86_64_cjnative/libclang_rt.fuzzer_no_main.a -no-whole-archive -lstdc++" --sanitizer-coverage-inline-8bit-counters -lpthread`
 
-macOS 的编译命令是：`cjc fuzz_main.cj -L $CANGJIE_STDX_PATH -lstdx.fuzz.fuzz --import-path $CANGJIE_STDX_PATH --link-options="$CANGJIE_HOME/lib/linux_x86_64_cjnative/libclang_rt.fuzzer_no_main.a -lc++" --sanitizer-coverage-inline-8bit-counters -lpthread`
+macOS 的编译命令是：`cjc fuzz_main.cj -L $CANGJIE_STDX_PATH -lstdx.fuzz --import-path $CANGJIE_STDX_PATH --link-options="$CANGJIE_HOME/lib/linux_x86_64_cjnative/libclang_rt.fuzzer_no_main.a -lc++" --sanitizer-coverage-inline-8bit-counters -lpthread`
 
 释义：
 
@@ -47,7 +47,7 @@ macOS 的编译命令是：`cjc fuzz_main.cj -L $CANGJIE_STDX_PATH -lstdx.fuzz.f
 
 与 `libfuzzer` 体验类似，可以直接运行，数秒后（取决于 CPU 性能）可获得 crash，且输入的数据是 "Cangjie!"
 
-运行结果如下：
+运行结果：
 
 ```text
 $ ./main

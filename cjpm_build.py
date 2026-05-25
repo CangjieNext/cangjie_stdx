@@ -31,11 +31,14 @@ from logging.handlers import TimedRotatingFileHandler
 from pathlib import Path
 from subprocess import DEVNULL, PIPE
 
+DEVECO_CUR_DIR = ""
+BUILD_TARGET_DIR = ""
 BUILD_TARGET = ""
 DEVECO_OH_NATIVE_HOME = None
 HAS_DEBUG_FLAG = False
 BUILD_TYPE_CJPM = "release"
 WMIC_PATH = "C:/Windows/System32/wbem/wmic.exe"
+IS_MOCK = False
 
 def get_platform():
     if sys.platform.startswith("linux"):
@@ -89,7 +92,7 @@ def get_cmdline_windows(pid):
 
             val = line.strip().split("=", 1)[1]
             # Windows command lines can be tricky. shlex might not be perfect for cmd/powershell but is better than space split.
-            return shlex.split(val)
+            return val.split()
     return []
 
 
@@ -103,6 +106,15 @@ def extract_target_value(args):
             return arg.split("=", 1)[1]
     return None
 
+def extract_target_dir_value(args):
+    # Args is a list of strings
+    for i, arg in enumerate(args):
+        if arg == "--target-dir":
+            if i + 1 < len(args):
+                return args[i + 1]
+        elif arg.startswith("--target-dir="):
+            return arg.split("=", 1)[1]
+    return None
 
 def check_debug_flag(args):
     """
@@ -144,17 +156,35 @@ def get_cwd_macos(pid):
 
 def get_cwd_windows(pid, debug=False):
     """
-    Returns the user's local application data directory on Windows.
-    This is typically C:\\Users\\<username>\\AppData\\Local
+    Get the current working directory of a process on Windows.
+    
+    Args:
+        pid (int): Process ID
+        debug (bool): Debug flag
+        
+    Returns:
+        str: Current working directory of the process or None if failed
     """
-    return os.path.join(os.getenv("LOCALAPPDATA"), "stdx")
-
+    # Try using psutil if available (most reliable)
+    try:
+        import psutil
+        process = psutil.Process(pid)
+        return process.cwd()
+    except ImportError:
+        return None
+    except (psutil.NoSuchProcess, psutil.AccessDenied):
+        if debug:
+            print(f"Failed to get cwd for pid {pid} using psutil")
+        return None
 
 def find_ancestor_and_cwd(target_name="cjpm"):
     global BUILD_TARGET
+    global BUILD_TARGET_DIR
+    global DEVECO_OH_NATIVE_HOME
+    global DEVECO_CUR_DIR
     current_pid = os.getpid()
     plat = get_platform()
-
+    win_cwd = None
     # We start checking from the current process logic (which covers self-renamed usage)
     # and then move up to parents.
 
@@ -186,7 +216,7 @@ def find_ancestor_and_cwd(target_name="cjpm"):
                 name = os.path.basename(name_str.strip())
 
         elif plat == "windows":
-            cmd = "{} process where processid={} get ParentProcessId,Name /value".format(WMIC_PATH, current_pid)
+            cmd = "{} process where processid={} get ParentProcessId,Name,ExecutablePath /value".format(WMIC_PATH, current_pid)
             out = run_command(cmd)
             if out:
                 info = {}
@@ -198,6 +228,17 @@ def find_ancestor_and_cwd(target_name="cjpm"):
                     ppid = int(info["ParentProcessId"])
                 if "Name" in info:
                     name = info["Name"]
+                # Try to get working directory using our new function
+                temp_cwd = get_cwd_windows(current_pid)
+                if temp_cwd:
+                    win_cwd = temp_cwd
+                # Fallback to the original logic if needed
+                elif "ExecutablePath" in info and "build-script" in info["ExecutablePath"]:
+                    win_cwd = info["ExecutablePath"].split("build-script-cache")[0]
+                    print("Using fallback cwd from executable path: " + win_cwd)
+                if DEVECO_OH_NATIVE_HOME != "" and win_cwd:
+                    DEVECO_CUR_DIR = win_cwd
+                    print("DEVECO_CUR_DIR:", DEVECO_CUR_DIR)
 
         if not ppid or not name:
             break
@@ -211,7 +252,7 @@ def find_ancestor_and_cwd(target_name="cjpm"):
             elif plat == "macos":
                 cwd = get_cwd_macos(current_pid)
             elif plat == "windows":
-                cwd = get_cwd_windows(current_pid)
+                cwd = win_cwd
 
             cmdline = []
             if plat == "linux":
@@ -223,10 +264,15 @@ def find_ancestor_and_cwd(target_name="cjpm"):
 
             target_val = extract_target_value(cmdline)
             BUILD_TARGET = target_val
+            target_dir_val = extract_target_dir_value(cmdline)
+            BUILD_TARGET_DIR = target_dir_val
 
             global HAS_DEBUG_FLAG
             global BUILD_TYPE_CJPM
+            global IS_MOCK
             HAS_DEBUG_FLAG = check_debug_flag(cmdline)
+            if "--mock" in cmdline:
+                IS_MOCK = True
             if(HAS_DEBUG_FLAG):
                 BUILD_TYPE_CJPM = "debug"
             else:
@@ -403,13 +449,17 @@ def generate_cmake_defs(args):
 
     if args.target:
         fields = args.target.split("-")
-
+    global IS_MOCK
+    target_dir = "target"
+    if IS_MOCK:
+        target_dir = "target/mock"
     if CJPM_DIR == STDX_DIR:
-        install_prefix = os.path.join(CJPM_DIR, "target")
+        install_prefix = os.path.join(CJPM_DIR, target_dir)
     else:
-        install_prefix = os.path.join(CJPM_DIR, "target/" + BUILD_TYPE_CJPM)
+        install_prefix = os.path.join(CJPM_DIR, target_dir + "/" + BUILD_TYPE_CJPM)
     result = [
         "-DCMAKE_BUILD_TYPE=" + args.build_type.value,
+        "-DCMAKE_IS_MOCK=" + bool_to_opt(IS_MOCK),
         "-DCMAKE_BUILD_STAGE=" + args.build_stage.value,
         "-DCMAKE_TOOLCHAIN_FILE=../../build/common/" + toolchain_file,
         "-DCMAKE_INSTALL_PREFIX=" + install_prefix,
@@ -472,6 +522,7 @@ def run_cmake_and_build(args):
 
 def build(args):
     global CJPM_DIR
+    global IS_MOCK
     global DEVECO_OH_NATIVE_HOME
     
     if not HAS_DEBUG_FLAG:
@@ -524,16 +575,19 @@ def build(args):
     
     LOG.info("begin build py----")
     if args.build_stage.value == "postBuild":
+        target_dir = "target"
+        if IS_MOCK:
+            target_dir = "target/mock"
         if not IS_WINDOWS:
             if CJPM_DIR != STDX_DIR:
                 return 0
-            parts = [CJPM_DIR, "target", args.target, BUILD_TYPE_CJPM, "stdx"]
+            parts = [CJPM_DIR, target_dir, args.target, BUILD_TYPE_CJPM, "stdx"]
             target_dir = os.path.join(*(p for p in parts if p is not None))
             if not extract_libstdx(target_dir, args):
                 LOG.info("skip to extract libstdx")
                 return 0
         else:
-            parts = [STDX_DIR, "target", args.target, BUILD_TYPE_CJPM, "stdx"]
+            parts = [STDX_DIR, target_dir, args.target, BUILD_TYPE_CJPM, "stdx"]
             target_dir = os.path.join(*(p for p in parts if p is not None))
             if not extract_libstdx(target_dir, args):
                 LOG.info("skip to extract libstdx")
@@ -756,6 +810,11 @@ def install(args):
     """install targets"""
     LOG.info("begin install targets...")
 
+    global CJPM_DIR
+    global DEVECO_CUR_DIR
+    global BUILD_TARGET_DIR
+    global BUILD_TYPE_CJPM
+
     if args.host:
         args.host = TARGET_DICTIONARY[args.host]
 
@@ -822,6 +881,12 @@ def install(args):
                     os.remove(bin_path)
     LOG.info("end install targets...")
 
+    if type(DEVECO_CUR_DIR) == str and DEVECO_CUR_DIR != "" and type(BUILD_TARGET_DIR) == str and BUILD_TARGET_DIR != "":
+        src_dir = os.path.join(CJPM_DIR, "target/" + BUILD_TYPE_CJPM + "/stdx")
+        dst_dir = os.path.join(DEVECO_CUR_DIR, BUILD_TARGET_DIR + "/aarch64-linux-ohos/release/stdx")
+        if not os.path.exists(dst_dir):
+            os.makedirs(dst_dir)
+        shutil.copytree(src_dir, dst_dir, dirs_exist_ok=True)
 
 def redo_with_write(redo_func, path, err):
 

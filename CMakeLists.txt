@@ -9,6 +9,11 @@ cmake_minimum_required(VERSION 3.16.5)
 project(stdx)
 # Add path for custom CMake modules and add cmake modules
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/build/common/modules")
+if(CMAKE_IS_MOCK)
+    set(target_dir "target/mock")
+else()
+    set(target_dir "target")
+endif()
 include(AddCangjieSource)
 
 set(CMAKE_CXX_STANDARD 17)
@@ -216,3 +221,5 @@ if(CANGJIE_CODEGEN_CJNATIVE_BACKEND)
 endif()
 
 add_subdirectory(src)
+
+add_subdirectory(third_party)

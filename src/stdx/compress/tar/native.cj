@@ -149,6 +149,8 @@ class Native {
             case (false, false) => 0o444
         }
     }
+
+    // cjlint-ignore -start !G.FUN.02
     @When[os == "Windows"]
     static func getUid(path: Path): Int32 { 0 }
     @When[os == "Windows"]
@@ -206,6 +208,7 @@ class Native {
     static func setUserName(path: Path, userName: String): Unit { }
     @When[os == "Windows"]
     static func setGroupName(path: Path, groupName: String): Unit { }
+    // cjlint-ignore -end
 
     static func setModificationTime(path: Path, timestamp: Int64): Unit {
         callNativeSetFunc(CJ_TAR_SetModificationTime, "CJ_TAR_SetModificationTime", path, timestamp)
@@ -215,7 +218,7 @@ class Native {
     }
 
     @When[os != "Windows"]
-    static func setChangeTime(path: Path, timestamp: Int64): Unit {
+    static func setChangeTime(path: Path, timestamp: Int64): Unit { // cjlint-ignore !G.FUN.02
         // Can not modify change time on unix
     }
 

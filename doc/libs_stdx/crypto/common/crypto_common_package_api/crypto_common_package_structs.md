@@ -32,11 +32,11 @@ public prop body: Array<Byte>
 import stdx.crypto.common.*
 
 main(): Unit {
-    // 创建一个DerBlob对象（仅演示二进制容器能力，数据无ASN.1/DER加密规范格式）
+    // 创建一个 DerBlob 对象（仅演示二进制容器能力，数据无 ASN.1/DER 加密规范格式）
     let content = "Hello, DerBlob!".toArray()
     let derBlob = DerBlob(content)
 
-    // 访问body属性
+    // 访问 body 属性
     let body = derBlob.body
     println("DerBlob body UTF-8: ${String.fromUtf8(body)}")
     println("DerBlob body: ${body}")
@@ -67,11 +67,11 @@ public prop size: Int64
 import stdx.crypto.common.*
 
 main(): Unit {
-    // 创建一个DerBlob对象（仅演示二进制容器能力，数据无ASN.1/DER加密规范格式）
+    // 创建一个 DerBlob 对象（仅演示二进制容器能力，数据无 ASN.1/DER 加密规范格式）
     let content = "Hello, DerBlob!".toArray()
     let derBlob = DerBlob(content)
 
-    // 访问size属性
+    // 访问 size 属性
     let size = derBlob.size
     println("DerBlob size: ${size}")
 }
@@ -102,7 +102,7 @@ public init(content: Array<Byte>)
 import stdx.crypto.common.*
 
 main(): Unit {
-    // 创建一个DerBlob对象（仅演示二进制容器能力，数据无ASN.1/DER加密规范格式）
+    // 创建一个 DerBlob 对象（仅演示二进制容器能力，数据无 ASN.1/DER 加密规范格式）
     let content = "Hello, DerBlob!".toArray()
     let derBlob = DerBlob(content)
 
@@ -135,7 +135,7 @@ public override func hashCode(): Int64
 import stdx.crypto.common.*
 
 main(): Unit {
-    // 创建一个DerBlob对象（仅演示二进制容器能力，数据无ASN.1/DER加密规范格式）
+    // 创建一个 DerBlob 对象（仅演示二进制容器能力，数据无 ASN.1/DER 加密规范格式）
     let content = "Hello, DerBlob!".toArray()
     let derBlob = DerBlob(content)
 
@@ -174,7 +174,7 @@ public override operator func !=(other: DerBlob): Bool
 import stdx.crypto.common.*
 
 main(): Unit {
-    // 创建两个不同的DerBlob对象（仅演示二进制容器能力，数据无ASN.1/DER加密规范格式）
+    // 创建两个不同的 DerBlob 对象（仅演示二进制容器能力，数据无 ASN.1/DER 加密规范格式）
     let content1 = "Hello, DerBlob1!".toArray()
     let content2 = "Hello, DerBlob2!".toArray()
     let derBlob1 = DerBlob(content1)
@@ -221,7 +221,7 @@ public override operator func ==(other: DerBlob): Bool
 import stdx.crypto.common.*
 
 main(): Unit {
-    // 创建两个相同的DerBlob对象（仅演示二进制容器能力，数据无ASN.1/DER加密规范格式）
+    // 创建两个相同的 DerBlob 对象（仅演示二进制容器能力，数据无 ASN.1/DER 加密规范格式）
     let content1 = "Hello, DerBlob!".toArray()
     let content2 = "Hello, DerBlob!".toArray()
     let derBlob1 = DerBlob(content1)
@@ -279,11 +279,11 @@ public Pem(private let items: Array<PemEntry>)
 import stdx.crypto.common.*
 
 main(): Unit {
-    // 创建一个PemEntry对象（DerBlob仅演示二进制容器能力，数据无ASN.1/DER加密规范格式）
+    // 创建一个 PemEntry 对象（DerBlob 仅演示二进制容器能力，数据无 ASN.1/DER 加密规范格式）
     let derBlob = DerBlob("Hello, PEM!".toArray())
     let pemEntry = PemEntry(PemEntry.LABEL_CERTIFICATE, [("HeaderKey", "HeaderValue")], derBlob)
 
-    // 创建Pem对象
+    // 创建 Pem 对象
     let pem = Pem([pemEntry])
 
     println("Pem对象创建成功")
@@ -313,14 +313,14 @@ public override prop size: Int64
 import stdx.crypto.common.*
 
 main(): Unit {
-    // 创建一个PemEntry对象（DerBlob仅演示二进制容器能力，数据无ASN.1/DER加密规范格式）
+    // 创建一个 PemEntry 对象（DerBlob 仅演示二进制容器能力，数据无 ASN.1/DER 加密规范格式）
     let derBlob = DerBlob("Hello, PEM!".toArray())
     let pemEntry = PemEntry(PemEntry.LABEL_CERTIFICATE, [("HeaderKey", "HeaderValue")], derBlob)
 
-    // 创建Pem对象
+    // 创建 Pem 对象
     let pem = Pem([pemEntry])
 
-    // 访问size属性
+    // 访问 size 属性
     println("Pem对象大小: ${pem.size}")
 }
 ```
@@ -358,14 +358,14 @@ public static func decode(text: String): Pem
 import stdx.crypto.common.*
 
 main(): Unit {
-    // 创建一个PemEntry对象（DerBlob仅演示二进制容器能力，数据无ASN.1/DER加密规范格式）
+    // 创建一个 PemEntry 对象（DerBlob 仅演示二进制容器能力，数据无 ASN.1/DER 加密规范格式）
     let derBlob = DerBlob("Hello, PEM!".toArray())
     let pemEntry = PemEntry(PemEntry.LABEL_CERTIFICATE, [("HeaderKey", "HeaderValue")], derBlob)
 
-    // 创建Pem对象
+    // 创建 Pem 对象
     let pem = Pem([pemEntry])
 
-    // 编码为PEM格式
+    // 编码为 PEM 格式
     let encoded = pem.encode()
     println("编码后的PEM字符串: \n${encoded}")
 
@@ -408,14 +408,14 @@ public func encode(): String
 import stdx.crypto.common.*
 
 main(): Unit {
-    // 创建一个PemEntry对象（DerBlob仅演示二进制容器能力，数据无ASN.1/DER加密规范格式）
+    // 创建一个 PemEntry 对象（DerBlob 仅演示二进制容器能力，数据无 ASN.1/DER 加密规范格式）
     let derBlob = DerBlob("Hello, PEM!".toArray())
     let pemEntry = PemEntry(PemEntry.LABEL_CERTIFICATE, [("HeaderKey", "HeaderValue")], derBlob)
 
-    // 创建Pem对象
+    // 创建 Pem 对象
     let pem = Pem([pemEntry])
 
-    // 编码为PEM格式
+    // 编码为 PEM 格式
     let encoded = pem.encode()
     println("编码后的PEM字符串: \n${encoded}")
 }
@@ -452,17 +452,17 @@ public override func isEmpty(): Bool
 import stdx.crypto.common.*
 
 main(): Unit {
-    // 创建一个PemEntry对象（DerBlob仅演示二进制容器能力，数据无ASN.1/DER加密规范格式）
+    // 创建一个 PemEntry 对象（DerBlob 仅演示二进制容器能力，数据无 ASN.1/DER 加密规范格式）
     let derBlob = DerBlob("Hello, PEM!".toArray())
     let pemEntry = PemEntry(PemEntry.LABEL_CERTIFICATE, [("HeaderKey", "HeaderValue")], derBlob)
 
-    // 创建Pem对象
+    // 创建 Pem 对象
     let pem = Pem([pemEntry])
 
     // 检查是否为空
     println("Pem对象是否为空: ${pem.isEmpty()}")
 
-    // 创建Pem对象
+    // 创建 Pem 对象
     let pemEmpty = Pem([])
     // 检查是否为空
     println("Pem对象是否为空: ${pemEmpty.isEmpty()}")
@@ -495,17 +495,17 @@ public override func iterator(): Iterator<PemEntry>
 import stdx.crypto.common.*
 
 main(): Unit {
-    // 创建一个PemEntry对象（DerBlob仅演示二进制容器能力，数据无ASN.1/DER加密规范格式）
+    // 创建一个 PemEntry 对象（DerBlob 仅演示二进制容器能力，数据无 ASN.1/DER 加密规范格式）
     let derBlob01 = DerBlob("Hello, PEM01!".toArray())
     let pemEntry01 = PemEntry("CERTIFICATE01", [("HeaderKey01", "HeaderValue01"), ("HeaderKey02", "HeaderValue02")],
         derBlob01)
 
-    // 创建另一个PemEntry对象
+    // 创建另一个 PemEntry 对象
     let derBlob02 = DerBlob("Hello!!, PEM02!".toArray())
     let pemEntry02 = PemEntry("CERTIFICATE02", [("HeaderKey03", "HeaderValue03"), ("HeaderKey04", "HeaderValue04")],
         derBlob02)
 
-    // 创建Pem对象
+    // 创建 Pem 对象
     let pem = Pem([pemEntry01, pemEntry02])
 
     // 获取迭代器
@@ -557,11 +557,11 @@ public override func toString(): String
 import stdx.crypto.common.*
 
 main(): Unit {
-    // 创建一个PemEntry对象（DerBlob仅演示二进制容器能力，数据无ASN.1/DER加密规范格式）
+    // 创建一个 PemEntry 对象（DerBlob 仅演示二进制容器能力，数据无 ASN.1/DER 加密规范格式）
     let derBlob = DerBlob("Hello, PEM!".toArray())
     let pemEntry = PemEntry(PemEntry.LABEL_CERTIFICATE, [("HeaderKey", "HeaderValue")], derBlob)
 
-    // 创建Pem对象
+    // 创建 Pem 对象
     let pem = Pem([pemEntry])
 
     // 转换为字符串
@@ -638,10 +638,10 @@ public PemEntry(
 import stdx.crypto.common.*
 
 main(): Unit {
-    // 创建一个DerBlob对象（DerBlob仅演示二进制容器能力，数据无ASN.1/DER加密规范格式）
+    // 创建一个 DerBlob 对象（DerBlob 仅演示二进制容器能力，数据无 ASN.1/DER 加密规范格式）
     let derBlob = DerBlob("Hello, PEM Entry!".toArray())
 
-    // 创建一个PemEntry对象
+    // 创建一个 PemEntry 对象
     let pemEntry = PemEntry(PemEntry.LABEL_CERTIFICATE, [("HeaderKey", "HeaderValue")], derBlob)
 
     println("PemEntry对象创建成功")
@@ -990,13 +990,13 @@ public let body: ?DerBlob
 import stdx.crypto.common.*
 
 main(): Unit {
-    // 创建一个DerBlob对象（DerBlob仅演示二进制容器能力，数据无ASN.1/DER加密规范格式）
+    // 创建一个 DerBlob 对象（DerBlob 仅演示二进制容器能力，数据无 ASN.1/DER 加密规范格式）
     let derBlob = DerBlob("Hello, PEM Entry!".toArray())
 
-    // 创建一个PemEntry对象
+    // 创建一个 PemEntry 对象
     let pemEntry = PemEntry(PemEntry.LABEL_CERTIFICATE, derBlob)
 
-    // 访问body属性
+    // 访问 body 属性
     match (pemEntry.body) {
         case Some(blob) => println("PemEntry包含二进制内容，大小: ${blob.size}")
         case None => println("PemEntry不包含二进制内容")
@@ -1027,14 +1027,14 @@ public let headers: Array<(String, String)>
 import stdx.crypto.common.*
 
 main(): Unit {
-    // 创建一个DerBlob对象（DerBlob仅演示二进制容器能力，数据无ASN.1/DER加密规范格式）
+    // 创建一个 DerBlob 对象（DerBlob 仅演示二进制容器能力，数据无 ASN.1/DER 加密规范格式）
     let derBlob = DerBlob("Hello, PEM Entry!".toArray())
 
-    // 创建一个PemEntry对象，包含头部信息
+    // 创建一个 PemEntry 对象，包含头部信息
     let pemEntry = PemEntry(PemEntry.LABEL_CERTIFICATE, [("HeaderKey", "HeaderValue"), ("AnotherKey", "AnotherValue")],
         derBlob)
 
-    // 访问headers属性
+    // 访问 headers 属性
     println("PemEntry头部数量: ${pemEntry.headers.size}")
 
     // 遍历头部
@@ -1069,13 +1069,13 @@ public let label: String
 import stdx.crypto.common.*
 
 main(): Unit {
-    // 创建一个DerBlob对象（DerBlob仅演示二进制容器能力，数据无ASN.1/DER加密规范格式）
+    // 创建一个 DerBlob 对象（DerBlob 仅演示二进制容器能力，数据无 ASN.1/DER 加密规范格式）
     let derBlob = DerBlob("Hello, PEM Entry!".toArray())
 
-    // 创建一个PemEntry对象
+    // 创建一个 PemEntry 对象
     let pemEntry = PemEntry(PemEntry.LABEL_CERTIFICATE, derBlob)
 
-    // 访问label属性
+    // 访问 label 属性
     println("PemEntry标签: ${pemEntry.label}")
 }
 ```
@@ -1106,10 +1106,10 @@ public init(label: String, body: DerBlob)
 import stdx.crypto.common.*
 
 main(): Unit {
-    // 创建一个DerBlob对象（DerBlob仅演示二进制容器能力，数据无ASN.1/DER加密规范格式）
+    // 创建一个 DerBlob 对象（DerBlob 仅演示二进制容器能力，数据无 ASN.1/DER 加密规范格式）
     let derBlob = DerBlob("Hello, PEM Entry!".toArray())
 
-    // 创建一个PemEntry对象（使用简化构造函数）
+    // 创建一个 PemEntry 对象（使用简化构造函数）
     let pemEntry = PemEntry(PemEntry.LABEL_CERTIFICATE, derBlob)
 
     println("PemEntry对象创建成功")
@@ -1141,13 +1141,13 @@ public func encode(): String
 import stdx.crypto.common.*
 
 main(): Unit {
-    // 创建一个DerBlob对象（DerBlob仅演示二进制容器能力，数据无ASN.1/DER加密规范格式）
+    // 创建一个 DerBlob 对象（DerBlob 仅演示二进制容器能力，数据无 ASN.1/DER 加密规范格式）
     let derBlob = DerBlob("Hello, PEM Entry!".toArray())
 
-    // 创建一个PemEntry对象
+    // 创建一个 PemEntry 对象
     let pemEntry = PemEntry(PemEntry.LABEL_CERTIFICATE, derBlob)
 
-    // 编码为PEM格式
+    // 编码为 PEM 格式
     let encoded = pemEntry.encode()
     println("编码后字符串长度: ${encoded.size}")
     print("编码后字符串: \n${encoded}")
@@ -1187,10 +1187,10 @@ public func header(name: String): Iterator<String>
 import stdx.crypto.common.*
 
 main(): Unit {
-    // 创建一个DerBlob对象（DerBlob仅演示二进制容器能力，数据无ASN.1/DER加密规范格式）
+    // 创建一个 DerBlob 对象（DerBlob 仅演示二进制容器能力，数据无 ASN.1/DER 加密规范格式）
     let derBlob = DerBlob("Hello, PEM Entry!".toArray())
 
-    // 创建一个PemEntry对象，包含头部信息
+    // 创建一个 PemEntry 对象，包含头部信息
     let pemEntry = PemEntry(PemEntry.LABEL_CERTIFICATE, [("HeaderKey", "HeaderValue"), ("HeaderKey", "AnotherValue")],
         derBlob)
 
@@ -1230,10 +1230,10 @@ public override func toString(): String
 import stdx.crypto.common.*
 
 main(): Unit {
-    // 创建一个DerBlob对象（DerBlob仅演示二进制容器能力，数据无ASN.1/DER加密规范格式）
+    // 创建一个 DerBlob 对象（DerBlob 仅演示二进制容器能力，数据无 ASN.1/DER 加密规范格式）
     let derBlob = DerBlob("Hello, PEM Entry!".toArray())
 
-    // 创建一个PemEntry对象
+    // 创建一个 PemEntry 对象
     let pemEntry = PemEntry(PemEntry.LABEL_CERTIFICATE, derBlob)
 
     // 转换为字符串

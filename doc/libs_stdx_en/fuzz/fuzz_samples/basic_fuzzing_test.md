@@ -5,7 +5,7 @@
 
 ```cangjie
 // Import required classes
-import stdx.fuzz.fuzz.Fuzzer
+import stdx.fuzz.Fuzzer
 
 main() {
     // Create Fuzzer and start the fuzz process
@@ -26,9 +26,9 @@ public func api(data: Array<UInt8>): Int32 {
 
 > In the commands below, CANGJIE_STDX_PATH points to the directory containing the stdx series, e.g., "./static/stdx"
 
-Linux compilation command: `cjc fuzz_main.cj -L $CANGJIE_STDX_PATH -lstdx.fuzz.fuzz --import-path $CANGJIE_STDX_PATH --link-options="--whole-archive $CANGJIE_HOME/lib/linux_x86_64_cjnative/libclang_rt.fuzzer_no_main.a -no-whole-archive -lstdc++" --sanitizer-coverage-inline-8bit-counters -lpthread`
+Linux compilation command: `cjc fuzz_main.cj -L $CANGJIE_STDX_PATH -lstdx.fuzz --import-path $CANGJIE_STDX_PATH --link-options="--whole-archive $CANGJIE_HOME/lib/linux_x86_64_cjnative/libclang_rt.fuzzer_no_main.a -no-whole-archive -lstdc++" --sanitizer-coverage-inline-8bit-counters -lpthread`
 
-macOS compilation command: `cjc fuzz_main.cj -L $CANGJIE_STDX_PATH -lstdx.fuzz.fuzz --import-path $CANGJIE_STDX_PATH --link-options="$CANGJIE_HOME/lib/linux_x86_64_cjnative/libclang_rt.fuzzer_no_main.a -lc++" --sanitizer-coverage-inline-8bit-counters -lpthread`
+macOS compilation command: `cjc fuzz_main.cj -L $CANGJIE_STDX_PATH -lstdx.fuzz --import-path $CANGJIE_STDX_PATH --link-options="$CANGJIE_HOME/lib/linux_x86_64_cjnative/libclang_rt.fuzzer_no_main.a -lc++" --sanitizer-coverage-inline-8bit-counters -lpthread`
 
 Explanation:
 

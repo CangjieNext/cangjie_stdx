@@ -35,7 +35,7 @@ Parameters:
 
 Return Value:
 
-- [CsvStrategy](data_package_classes.md#class-csvstrategyt)\<T> object, where T is serializable, with data values read from the CSV file.
+- [CsvStrategy](data_package_classes.md#class-csvstrategyt)\<T> - object, where T is serializable, with data values read from the CSV file.
 
 Exceptions:
 

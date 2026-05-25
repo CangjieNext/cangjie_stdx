@@ -29,6 +29,12 @@ func getPythonCommand(): String {
         "Could not find 'python3' or 'python' in your system's PATH. Please ensure Python is installed and added to your environment variables!")
 }
 
+@When[os == "Windows"]
+let isWin = true
+
+@When[os != "Windows"]
+let isWin = false
+
 func getPythonCommandFromEnv(): ?String {
     let commands = ["python3", "python"];
     for (command in commands) {
@@ -43,10 +49,69 @@ func getPythonCommandFromEnv(): ?String {
     return None
 }
 
+func ensurePsutilInstalled(pyCommand: String): Unit {
+    try {
+        if (execute(pyCommand, "-c", "import psutil") != 0) {
+            println("psutil library not found, installing...")
+            if (isWin) {
+                execute(pyCommand, "-m", "pip", "install", "psutil", "--timeout", "10", "--retries", "0")
+            } else {
+                execute("timeout", "-k", "0s", "15s", pyCommand, "-m", "pip", "install", "psutil", "--timeout", "10", "--retries", "0")
+            }
+            println("psutil installed successfully")
+        }
+    } catch (e: Exception) {}
+}
+
+func checkBuildTools(): Unit {
+    // Check CMake
+    var found = false
+    try {
+        if (execute("cmake", "--version") == 0) {
+            found = true
+        }
+    } catch (_: Exception) {}
+    if (!found) {
+        throw Exception("Could not find 'cmake' in your system's PATH. Please ensure CMake is installed and added to your environment variables!")
+    }
+    found = false
+    // Check Ninja
+    try {
+        if (execute("ninja", "--version") == 0) {
+            found = true
+        }
+    } catch (_: Exception) {}
+    if (!found) {
+        throw Exception("Could not find 'ninja' in your system's PATH. Please ensure Ninja is installed and added to your environment variables!")
+    }
+    found = false
+    
+    // Check C/C++ compiler
+    let ccCommands = ["gcc", "clang", "cc"]
+    for (command in ccCommands) {
+        try {
+            if (execute(command, "--version") == 0) {
+                found = true
+                break
+            }
+        } catch (_: Exception) {
+            continue
+        }
+    }
+    if (!found) {
+        throw Exception("Could not find C compiler (gcc/clang/cc) in your system's PATH. Please ensure a C compiler is installed!")
+    }
+}
+
 main(): Int64 {
+    // Check all required build tools first
+    checkBuildTools()
+    
     let pyCommand: String = getPythonCommand()
     match (getCommandLine()[1]) {
-        case "pre-build" => stagePreBuild(pyCommand)              
+        case "pre-build" =>
+            ensurePsutilInstalled(pyCommand)
+            stagePreBuild(pyCommand)              
         case "post-build" => stagePostBuild(pyCommand)
         case "pre-clean" => stagePreClean(pyCommand)
         case _ => 0

@@ -36,7 +36,7 @@ public override func consumeAll(): Array<UInt8>
 
 <!-- verify -->
 ```cangjie
-import stdx.fuzz.fuzz.*
+import stdx.fuzz.*
 
 main() {
     // 通过手动传入数据创建FuzzDataProvider（真实模糊测试自动、持续生成海量随机初始数据）
@@ -74,7 +74,7 @@ public override func consumeAllAsAscii(): String
 
 <!-- verify -->
 ```cangjie
-import stdx.fuzz.fuzz.*
+import stdx.fuzz.*
 
 main() {
     // 通过手动传入数据创建FuzzDataProvider（真实模糊测试自动、持续生成海量随机初始数据）
@@ -112,7 +112,7 @@ public override func consumeAllAsString(): String
 
 <!-- verify -->
 ```cangjie
-import stdx.fuzz.fuzz.*
+import stdx.fuzz.*
 
 main() {
     // 通过手动传入数据创建FuzzDataProvider（真实模糊测试自动、持续生成海量随机初始数据）
@@ -158,7 +158,7 @@ public override func consumeAsciiString(maxLength: Int64): String
 
 <!-- verify -->
 ```cangjie
-import stdx.fuzz.fuzz.*
+import stdx.fuzz.*
 
 main() {
     // 通过手动传入数据创建FuzzDataProvider（真实模糊测试自动、持续生成海量随机初始数据）
@@ -196,7 +196,7 @@ public override func consumeBool(): Bool
 
 <!-- verify -->
 ```cangjie
-import stdx.fuzz.fuzz.*
+import stdx.fuzz.*
 
 main() {
     // 通过手动传入数据创建FuzzDataProvider（真实模糊测试自动、持续生成海量随机初始数据）
@@ -242,7 +242,7 @@ public override func consumeBools(count: Int64): Array<Bool>
 
 <!-- verify -->
 ```cangjie
-import stdx.fuzz.fuzz.*
+import stdx.fuzz.*
 
 main() {
     // 通过手动传入数据创建FuzzDataProvider（真实模糊测试自动、持续生成海量随机初始数据）
@@ -280,7 +280,7 @@ public override func consumeByte(): Byte
 
 <!-- verify -->
 ```cangjie
-import stdx.fuzz.fuzz.*
+import stdx.fuzz.*
 
 main() {
     // 通过手动传入数据创建FuzzDataProvider（真实模糊测试自动、持续生成海量随机初始数据）
@@ -326,7 +326,7 @@ public override func consumeBytes(count: Int64): Array<Byte>
 
 <!-- verify -->
 ```cangjie
-import stdx.fuzz.fuzz.*
+import stdx.fuzz.*
 
 main() {
     // 通过手动传入数据创建FuzzDataProvider（真实模糊测试自动、持续生成海量随机初始数据）
@@ -364,7 +364,7 @@ public override func consumeFloat32(): Float32
 
 <!-- verify -->
 ```cangjie
-import stdx.fuzz.fuzz.*
+import stdx.fuzz.*
 
 main() {
     // 通过手动传入数据创建FuzzDataProvider（真实模糊测试自动、持续生成海量随机初始数据）
@@ -402,7 +402,7 @@ public override func consumeFloat64(): Float64
 
 <!-- verify -->
 ```cangjie
-import stdx.fuzz.fuzz.*
+import stdx.fuzz.*
 
 main() {
     // 通过手动传入数据创建FuzzDataProvider（真实模糊测试自动、持续生成海量随机初始数据）
@@ -440,7 +440,7 @@ public override func consumeInt16(): Int16
 
 <!-- verify -->
 ```cangjie
-import stdx.fuzz.fuzz.*
+import stdx.fuzz.*
 
 main() {
     // 通过手动传入数据创建FuzzDataProvider（真实模糊测试自动、持续生成海量随机初始数据）
@@ -486,7 +486,7 @@ public override func consumeInt16s(count: Int64): Array<Int16>
 
 <!-- verify -->
 ```cangjie
-import stdx.fuzz.fuzz.*
+import stdx.fuzz.*
 
 main() {
     // 通过手动传入数据创建FuzzDataProvider（真实模糊测试自动、持续生成海量随机初始数据）
@@ -524,7 +524,7 @@ public override func consumeInt32(): Int32
 
 <!-- verify -->
 ```cangjie
-import stdx.fuzz.fuzz.*
+import stdx.fuzz.*
 
 main() {
     // 通过手动传入数据创建FuzzDataProvider（真实模糊测试自动、持续生成海量随机初始数据）
@@ -570,7 +570,7 @@ public override func consumeInt32s(count: Int64): Array<Int32>
 
 <!-- verify -->
 ```cangjie
-import stdx.fuzz.fuzz.*
+import stdx.fuzz.*
 
 main() {
     // 通过手动传入数据创建FuzzDataProvider（真实模糊测试自动、持续生成海量随机初始数据）
@@ -608,7 +608,7 @@ public override func consumeInt64(): Int64
 
 <!-- verify -->
 ```cangjie
-import stdx.fuzz.fuzz.*
+import stdx.fuzz.*
 
 main() {
     // 通过手动传入数据创建FuzzDataProvider（真实模糊测试自动、持续生成海量随机初始数据）
@@ -654,7 +654,7 @@ public override func consumeInt64s(count: Int64): Array<Int64>
 
 <!-- verify -->
 ```cangjie
-import stdx.fuzz.fuzz.*
+import stdx.fuzz.*
 
 main() {
     // 通过手动传入数据创建FuzzDataProvider（真实模糊测试自动、持续生成海量随机初始数据）
@@ -692,7 +692,7 @@ public override func consumeInt8(): Int8
 
 <!-- verify -->
 ```cangjie
-import stdx.fuzz.fuzz.*
+import stdx.fuzz.*
 
 main() {
     // 通过手动传入数据创建FuzzDataProvider（真实模糊测试自动、持续生成海量随机初始数据）
@@ -738,7 +738,7 @@ public override func consumeInt8s(count: Int64): Array<Int8>
 
 <!-- verify -->
 ```cangjie
-import stdx.fuzz.fuzz.*
+import stdx.fuzz.*
 
 main() {
     // 通过手动传入数据创建FuzzDataProvider（真实模糊测试自动、持续生成海量随机初始数据）
@@ -776,7 +776,7 @@ public override func consumeRune(): Rune
 
 <!-- verify -->
 ```cangjie
-import stdx.fuzz.fuzz.*
+import stdx.fuzz.*
 
 main() {
     // 通过手动传入数据创建FuzzDataProvider（真实模糊测试自动、持续生成海量随机初始数据）
@@ -822,7 +822,7 @@ public override func consumeString(maxLength: Int64): String
 
 <!-- verify -->
 ```cangjie
-import stdx.fuzz.fuzz.*
+import stdx.fuzz.*
 
 main() {
     // 通过手动传入数据创建FuzzDataProvider（真实模糊测试自动、持续生成海量随机初始数据）
@@ -860,7 +860,7 @@ public override func consumeUInt16(): UInt16
 
 <!-- verify -->
 ```cangjie
-import stdx.fuzz.fuzz.*
+import stdx.fuzz.*
 
 main() {
     // 通过手动传入数据创建FuzzDataProvider（真实模糊测试自动、持续生成海量随机初始数据）
@@ -906,7 +906,7 @@ public override func consumeUInt16s(count: Int64): Array<UInt16>
 
 <!-- verify -->
 ```cangjie
-import stdx.fuzz.fuzz.*
+import stdx.fuzz.*
 
 main() {
     // 通过手动传入数据创建FuzzDataProvider（真实模糊测试自动、持续生成海量随机初始数据）
@@ -944,7 +944,7 @@ public override func consumeUInt32(): UInt32
 
 <!-- verify -->
 ```cangjie
-import stdx.fuzz.fuzz.*
+import stdx.fuzz.*
 
 main() {
     // 通过手动传入数据创建FuzzDataProvider（真实模糊测试自动、持续生成海量随机初始数据）
@@ -990,7 +990,7 @@ public override func consumeUInt32s(count: Int64): Array<UInt32>
 
 <!-- verify -->
 ```cangjie
-import stdx.fuzz.fuzz.*
+import stdx.fuzz.*
 
 main() {
     // 通过手动传入数据创建FuzzDataProvider（真实模糊测试自动、持续生成海量随机初始数据）
@@ -1028,7 +1028,7 @@ public override func consumeUInt64(): UInt64
 
 <!-- verify -->
 ```cangjie
-import stdx.fuzz.fuzz.*
+import stdx.fuzz.*
 
 main() {
     // 通过手动传入数据创建FuzzDataProvider（真实模糊测试自动、持续生成海量随机初始数据）
@@ -1074,7 +1074,7 @@ public override func consumeUInt64s(count: Int64): Array<UInt64>
 
 <!-- verify -->
 ```cangjie
-import stdx.fuzz.fuzz.*
+import stdx.fuzz.*
 
 main() {
     // 通过手动传入数据创建FuzzDataProvider（真实模糊测试自动、持续生成海量随机初始数据）
@@ -1112,7 +1112,7 @@ public override func consumeUInt8(): UInt8
 
 <!-- verify -->
 ```cangjie
-import stdx.fuzz.fuzz.*
+import stdx.fuzz.*
 
 main() {
     // 通过手动传入数据创建FuzzDataProvider（真实模糊测试自动、持续生成海量随机初始数据）
@@ -1158,7 +1158,7 @@ public override func consumeUInt8s(count: Int64): Array<UInt8>
 
 <!-- verify -->
 ```cangjie
-import stdx.fuzz.fuzz.*
+import stdx.fuzz.*
 
 main() {
     // 通过手动传入数据创建FuzzDataProvider（真实模糊测试自动、持续生成海量随机初始数据）
@@ -1200,7 +1200,7 @@ public static func wrap(dp: FuzzDataProvider): DebugDataProvider
 
 <!-- verify -->
 ```cangjie
-import stdx.fuzz.fuzz.*
+import stdx.fuzz.*
 
 main() {
     // 通过手动传入数据创建FuzzDataProvider（真实模糊测试自动、持续生成海量随机初始数据）
@@ -1291,7 +1291,7 @@ public let data: Array<UInt8>
 
 <!-- verify -->
 ```cangjie
-import stdx.fuzz.fuzz.*
+import stdx.fuzz.*
 
 main() {
     // 通过手动传入数据创建FuzzDataProvider（真实模糊测试自动、持续生成海量随机初始数据）
@@ -1327,7 +1327,7 @@ public var offset: Int64
 
 <!-- verify -->
 ```cangjie
-import stdx.fuzz.fuzz.*
+import stdx.fuzz.*
 
 main() {
     // 通过手动传入数据创建FuzzDataProvider（真实模糊测试自动、持续生成海量随机初始数据）
@@ -1368,7 +1368,7 @@ public var remainingBytes: Int64
 
 <!-- verify -->
 ```cangjie
-import stdx.fuzz.fuzz.*
+import stdx.fuzz.*
 
 main() {
     // 通过手动传入数据创建FuzzDataProvider（真实模糊测试自动、持续生成海量随机初始数据）
@@ -1415,7 +1415,7 @@ public static func withCangjieData(data: Array<UInt8>): FuzzDataProvider
 
 <!-- verify -->
 ```cangjie
-import stdx.fuzz.fuzz.*
+import stdx.fuzz.*
 
 main() {
     // 通过手动传入数据创建FuzzDataProvider（真实模糊测试自动、持续生成海量随机初始数据）
@@ -1458,7 +1458,7 @@ public static unsafe func withNativeData(data: CPointer<UInt8>, length: Int64): 
 
 <!-- verify -->
 ```cangjie
-import stdx.fuzz.fuzz.*
+import stdx.fuzz.*
 
 main() {
     // 通过手动传入数据创建FuzzDataProvider（真实模糊测试自动、持续生成海量随机初始数据）
@@ -1504,7 +1504,7 @@ public open func consumeAll(): Array<UInt8>
 
 <!-- verify -->
 ```cangjie
-import stdx.fuzz.fuzz.*
+import stdx.fuzz.*
 
 main() {
     // 通过手动传入数据创建FuzzDataProvider（真实模糊测试自动、持续生成海量随机初始数据）
@@ -1542,7 +1542,7 @@ public open func consumeAllAsAscii(): String
 
 <!-- verify -->
 ```cangjie
-import stdx.fuzz.fuzz.*
+import stdx.fuzz.*
 
 main() {
     // 通过手动传入数据创建FuzzDataProvider（真实模糊测试自动、持续生成海量随机初始数据）
@@ -1581,7 +1581,7 @@ public open func consumeAllAsString(): String
 
 <!-- verify -->
 ```cangjie
-import stdx.fuzz.fuzz.*
+import stdx.fuzz.*
 
 main() {
     // 通过手动传入数据创建FuzzDataProvider（真实模糊测试自动、持续生成海量随机初始数据）
@@ -1628,7 +1628,7 @@ public open func consumeAsciiString(maxLength: Int64): String
 
 <!-- verify -->
 ```cangjie
-import stdx.fuzz.fuzz.*
+import stdx.fuzz.*
 
 main() {
     // 通过手动传入数据创建FuzzDataProvider（真实模糊测试自动、持续生成海量随机初始数据）
@@ -1667,7 +1667,7 @@ public open func consumeBool(): Bool
 
 <!-- verify -->
 ```cangjie
-import stdx.fuzz.fuzz.*
+import stdx.fuzz.*
 
 main() {
     // 通过手动传入数据创建FuzzDataProvider（真实模糊测试自动、持续生成海量随机初始数据）
@@ -1713,7 +1713,7 @@ public open func consumeBools(count: Int64): Array<Bool>
 
 <!-- verify -->
 ```cangjie
-import stdx.fuzz.fuzz.*
+import stdx.fuzz.*
 
 main() {
     // 通过手动传入数据创建FuzzDataProvider（真实模糊测试自动、持续生成海量随机初始数据）
@@ -1751,7 +1751,7 @@ public open func consumeByte(): Byte
 
 <!-- verify -->
 ```cangjie
-import stdx.fuzz.fuzz.*
+import stdx.fuzz.*
 
 main() {
     // 通过手动传入数据创建FuzzDataProvider（真实模糊测试自动、持续生成海量随机初始数据）
@@ -1797,7 +1797,7 @@ public open func consumeBytes(count: Int64): Array<Byte>
 
 <!-- verify -->
 ```cangjie
-import stdx.fuzz.fuzz.*
+import stdx.fuzz.*
 
 main() {
     // 通过手动传入数据创建FuzzDataProvider（真实模糊测试自动、持续生成海量随机初始数据）
@@ -1835,7 +1835,7 @@ public open func consumeFloat32(): Float32
 
 <!-- verify -->
 ```cangjie
-import stdx.fuzz.fuzz.*
+import stdx.fuzz.*
 
 main() {
     // 通过手动传入数据创建FuzzDataProvider（真实模糊测试自动、持续生成海量随机初始数据）
@@ -1873,7 +1873,7 @@ public open func consumeFloat64(): Float64
 
 <!-- verify -->
 ```cangjie
-import stdx.fuzz.fuzz.*
+import stdx.fuzz.*
 
 main() {
     // 通过手动传入数据创建FuzzDataProvider（真实模糊测试自动、持续生成海量随机初始数据）
@@ -1911,7 +1911,7 @@ public open func consumeInt16(): Int16
 
 <!-- verify -->
 ```cangjie
-import stdx.fuzz.fuzz.*
+import stdx.fuzz.*
 
 main() {
     // 通过手动传入数据创建FuzzDataProvider（真实模糊测试自动、持续生成海量随机初始数据）
@@ -1957,7 +1957,7 @@ public open func consumeInt16s(count: Int64): Array<Int16>
 
 <!-- verify -->
 ```cangjie
-import stdx.fuzz.fuzz.*
+import stdx.fuzz.*
 
 main() {
     // 通过手动传入数据创建FuzzDataProvider（真实模糊测试自动、持续生成海量随机初始数据）
@@ -1995,7 +1995,7 @@ public open func consumeInt32(): Int32
 
 <!-- verify -->
 ```cangjie
-import stdx.fuzz.fuzz.*
+import stdx.fuzz.*
 
 main() {
     // 通过手动传入数据创建FuzzDataProvider（真实模糊测试自动、持续生成海量随机初始数据）
@@ -2041,7 +2041,7 @@ public open func consumeInt32s(count: Int64): Array<Int32>
 
 <!-- verify -->
 ```cangjie
-import stdx.fuzz.fuzz.*
+import stdx.fuzz.*
 
 main() {
     // 通过手动传入数据创建FuzzDataProvider（真实模糊测试自动、持续生成海量随机初始数据）
@@ -2079,7 +2079,7 @@ public open func consumeInt64(): Int64
 
 <!-- verify -->
 ```cangjie
-import stdx.fuzz.fuzz.*
+import stdx.fuzz.*
 
 main() {
     // 通过手动传入数据创建FuzzDataProvider（真实模糊测试自动、持续生成海量随机初始数据）
@@ -2125,7 +2125,7 @@ public open func consumeInt64s(count: Int64): Array<Int64>
 
 <!-- verify -->
 ```cangjie
-import stdx.fuzz.fuzz.*
+import stdx.fuzz.*
 
 main() {
     // 通过手动传入数据创建FuzzDataProvider（真实模糊测试自动、持续生成海量随机初始数据）
@@ -2163,7 +2163,7 @@ public open func consumeInt8(): Int8
 
 <!-- verify -->
 ```cangjie
-import stdx.fuzz.fuzz.*
+import stdx.fuzz.*
 
 main() {
     // 通过手动传入数据创建FuzzDataProvider（真实模糊测试自动、持续生成海量随机初始数据）
@@ -2209,7 +2209,7 @@ public open func consumeInt8s(count: Int64): Array<Int8>
 
 <!-- verify -->
 ```cangjie
-import stdx.fuzz.fuzz.*
+import stdx.fuzz.*
 
 main() {
     // 通过手动传入数据创建FuzzDataProvider（真实模糊测试自动、持续生成海量随机初始数据）
@@ -2247,7 +2247,7 @@ public open func consumeRune(): Rune
 
 <!-- verify -->
 ```cangjie
-import stdx.fuzz.fuzz.*
+import stdx.fuzz.*
 
 main() {
     // 通过手动传入数据创建FuzzDataProvider（真实模糊测试自动、持续生成海量随机初始数据）
@@ -2294,7 +2294,7 @@ public open func consumeString(maxLength: Int64): String
 
 <!-- verify -->
 ```cangjie
-import stdx.fuzz.fuzz.*
+import stdx.fuzz.*
 
 main() {
     // 通过手动传入数据创建FuzzDataProvider（真实模糊测试自动、持续生成海量随机初始数据）
@@ -2333,7 +2333,7 @@ public open func consumeUInt16(): UInt16
 
 <!-- verify -->
 ```cangjie
-import stdx.fuzz.fuzz.*
+import stdx.fuzz.*
 
 main() {
     // 通过手动传入数据创建FuzzDataProvider（真实模糊测试自动、持续生成海量随机初始数据）
@@ -2379,7 +2379,7 @@ public open func consumeUInt16s(count: Int64): Array<UInt16>
 
 <!-- verify -->
 ```cangjie
-import stdx.fuzz.fuzz.*
+import stdx.fuzz.*
 
 main() {
     // 通过手动传入数据创建FuzzDataProvider（真实模糊测试自动、持续生成海量随机初始数据）
@@ -2417,7 +2417,7 @@ public open func consumeUInt32(): UInt32
 
 <!-- verify -->
 ```cangjie
-import stdx.fuzz.fuzz.*
+import stdx.fuzz.*
 
 main() {
     // 通过手动传入数据创建FuzzDataProvider（真实模糊测试自动、持续生成海量随机初始数据）
@@ -2463,7 +2463,7 @@ public open func consumeUInt32s(count: Int64): Array<UInt32>
 
 <!-- verify -->
 ```cangjie
-import stdx.fuzz.fuzz.*
+import stdx.fuzz.*
 
 main() {
     // 通过手动传入数据创建FuzzDataProvider（真实模糊测试自动、持续生成海量随机初始数据）
@@ -2501,7 +2501,7 @@ public open func consumeUInt64(): UInt64
 
 <!-- verify -->
 ```cangjie
-import stdx.fuzz.fuzz.*
+import stdx.fuzz.*
 
 main() {
     // 通过手动传入数据创建FuzzDataProvider（真实模糊测试自动、持续生成海量随机初始数据）
@@ -2547,7 +2547,7 @@ public open func consumeUInt64s(count: Int64): Array<UInt64>
 
 <!-- verify -->
 ```cangjie
-import stdx.fuzz.fuzz.*
+import stdx.fuzz.*
 
 main() {
     // 通过手动传入数据创建FuzzDataProvider（真实模糊测试自动、持续生成海量随机初始数据）
@@ -2585,7 +2585,7 @@ public open func consumeUInt8(): UInt8
 
 <!-- verify -->
 ```cangjie
-import stdx.fuzz.fuzz.*
+import stdx.fuzz.*
 
 main() {
     // 通过手动传入数据创建FuzzDataProvider（真实模糊测试自动、持续生成海量随机初始数据）
@@ -2631,7 +2631,7 @@ public open func consumeUInt8s(count: Int64): Array<UInt8>
 
 <!-- verify -->
 ```cangjie
-import stdx.fuzz.fuzz.*
+import stdx.fuzz.*
 
 main() {
     // 通过手动传入数据创建FuzzDataProvider（真实模糊测试自动、持续生成海量随机初始数据）
@@ -2686,7 +2686,7 @@ public init(targetFunction: (Array<UInt8>) -> Int32)
 
 <!-- run -->
 ```cangjie
-import stdx.fuzz.fuzz.*
+import stdx.fuzz.*
 
 main() {
     // 创建Fuzzer
@@ -2728,7 +2728,7 @@ public init(targetFunction: (Array<UInt8>) -> Int32, args: Array<String>)
 
 <!-- run -->
 ```cangjie
-import stdx.fuzz.fuzz.*
+import stdx.fuzz.*
 
 main() {
     // 此示例因为有运行参数的原因而输出帮助信息
@@ -2763,7 +2763,7 @@ public init(targetFunction: (FuzzDataProvider) -> Int32)
 
 <!-- run -->
 ```cangjie
-import stdx.fuzz.fuzz.*
+import stdx.fuzz.*
 
 main() {
     // 创建Fuzzer
@@ -2803,7 +2803,7 @@ public init(targetFunction: (FuzzDataProvider) -> Int32, args: Array<String>)
 
 <!-- run -->
 ```cangjie
-import stdx.fuzz.fuzz.*
+import stdx.fuzz.*
 
 main() {
     // 此示例因为有运行参数的原因而输出帮助信息
@@ -2834,7 +2834,7 @@ public func disableDebugDataProvider(): Unit
 
 <!-- run -->
 ```cangjie
-import stdx.fuzz.fuzz.*
+import stdx.fuzz.*
 
 main() {
     // 创建Fuzzer
@@ -2872,7 +2872,7 @@ public func disableFakeCoverage(): Unit
 
 <!-- run -->
 ```cangjie
-import stdx.fuzz.fuzz.*
+import stdx.fuzz.*
 
 main() {
     // 创建Fuzzer
@@ -2910,7 +2910,7 @@ public func enableDebugDataProvider(): Unit
 
 <!-- run -->
 ```cangjie
-import stdx.fuzz.fuzz.*
+import stdx.fuzz.*
 
 main() {
     // 创建Fuzzer
@@ -2948,7 +2948,7 @@ public func enableFakeCoverage(): Unit
 
 <!-- run -->
 ```cangjie
-import stdx.fuzz.fuzz.*
+import stdx.fuzz.*
 
 main() {
     // 创建Fuzzer
@@ -2989,7 +2989,7 @@ public func getArgs(): Array<String>
 
 <!-- verify -->
 ```cangjie
-import stdx.fuzz.fuzz.*
+import stdx.fuzz.*
 
 main() {
     // 创建有运行参数的Fuzzer
@@ -3034,7 +3034,7 @@ public func setArgs(args: Array<String>): Unit
 
 <!-- verify -->
 ```cangjie
-import stdx.fuzz.fuzz.*
+import stdx.fuzz.*
 
 main() {
     // 创建Fuzzer
@@ -3082,7 +3082,7 @@ public func setTargetFunction(targetFunction: (Array<UInt8>) -> Int32): Unit
 
 <!-- run -->
 ```cangjie
-import stdx.fuzz.fuzz.*
+import stdx.fuzz.*
 
 main() {
     // 创建Fuzzer
@@ -3134,7 +3134,7 @@ public func setTargetFunction(targetFunction: (FuzzDataProvider) -> Int32): Unit
 
 <!-- run -->
 ```cangjie
-import stdx.fuzz.fuzz.*
+import stdx.fuzz.*
 
 main() {
     // 创建Fuzzer
@@ -3182,7 +3182,7 @@ public func startFuzz(): Unit
 
 <!-- run -->
 ```cangjie
-import stdx.fuzz.fuzz.*
+import stdx.fuzz.*
 
 main() {
     // 创建Fuzzer
@@ -3238,7 +3238,7 @@ public init(targetFunction: (Array<UInt8>) -> Int32)
 
 <!-- verify -->
 ```cangjie
-import stdx.fuzz.fuzz.*
+import stdx.fuzz.*
 
 func myFuzzFunction(data: Array<UInt8>): Int32 {
     // 简单的模糊测试函数，检查数据长度
@@ -3283,7 +3283,7 @@ public init(targetFunction: (FuzzDataProvider) -> Int32)
 
 <!-- verify -->
 ```cangjie
-import stdx.fuzz.fuzz.*
+import stdx.fuzz.*
 
 func myFuzzFunctionWithProvider(fdp: FuzzDataProvider): Int32 {
     // 使用FuzzDataProvider的简单模糊测试函数
@@ -3331,7 +3331,7 @@ public func build(): Fuzzer
 
 <!-- verify -->
 ```cangjie
-import stdx.fuzz.fuzz.*
+import stdx.fuzz.*
 
 func myFuzzFunction(data: Array<UInt8>): Int32 {
     // 简单的模糊测试函数
@@ -3382,7 +3382,7 @@ public func setArgs(args: Array<String>): FuzzerBuilder
 
 <!-- run -->
 ```cangjie
-import stdx.fuzz.fuzz.*
+import stdx.fuzz.*
 
 func myFuzzFunction(data: Array<UInt8>): Int32 {
     // 简单的模糊测试函数
@@ -3422,7 +3422,7 @@ public func setTargetFunction(targetFunction: (Array<UInt8>) -> Int32): FuzzerBu
 
 <!-- verify -->
 ```cangjie
-import stdx.fuzz.fuzz.*
+import stdx.fuzz.*
 
 func myFirstFuzzFunction(data: Array<UInt8>): Int32 {
     // 第一个模糊测试函数
@@ -3476,7 +3476,7 @@ public func setTargetFunction(targetFunction: (FuzzDataProvider) -> Int32): Fuzz
 
 <!-- verify -->
 ```cangjie
-import stdx.fuzz.fuzz.*
+import stdx.fuzz.*
 
 func myFirstFuzzFunctionWithProvider(fdp: FuzzDataProvider): Int32 {
     // 第一个使用FuzzDataProvider的模糊测试函数

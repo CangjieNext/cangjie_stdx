@@ -143,6 +143,7 @@ func countSeparator(path: Array<Byte>, idx!: Int64, cnt!: Int64): Int64 {
     return path.size
 }
 
+// cjlint-ignore -start !G.EXP.03
 @When[os == "Windows"]
 func getRootLen(path: String): Int64 {
     let raw = unsafe { path.rawData() }
@@ -172,6 +173,7 @@ func getRootLen(path: String): Int64 {
     }
     return 0
 }
+// cjlint-ignore -end
 
 @When[os != "Windows"]
 func isRootPath(path: String) {

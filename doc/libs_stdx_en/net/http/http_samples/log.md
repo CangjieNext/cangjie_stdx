@@ -6,6 +6,7 @@ Example:
 ```cangjie
 import stdx.log.*
 import stdx.net.http.*
+import stdx.net.tls
 
 main() {
     // 1. Create a Server instance

@@ -147,6 +147,7 @@ Example:
 ```cangjie
 import std.fs.*
 import stdx.crypto.x509.*
+import stdx.crypto.keys.*
 import std.time.*
 import std.io.*
 
@@ -168,9 +169,9 @@ main() {
     let parentCertPem = String.fromUtf8(readToEnd(File("./certificate.pem", Read)))
     let parentCert = X509Certificate.decodeFromPem(parentCertPem)[0]
     let parentKeyPem = String.fromUtf8(readToEnd(File("./rsa_private_key.pem", Read)))
-    let parentPrivateKey = PrivateKey.decodeFromPem(parentKeyPem)
+    let parentPrivateKey = GeneralPrivateKey.decodeFromPem(parentKeyPem)
     let usrKeyPem = String.fromUtf8(readToEnd(File("./ecdsa_public_key.pem", Read)))
-    let usrPublicKey = PublicKey.decodeFromPem(usrKeyPem)
+    let usrPublicKey = GeneralPublicKey.decodeFromPem(usrKeyPem)
 
     let certInfo = X509CertificateInfo(serialNumber: serialNumber, notBefore: startTime, notAfter: endTime,
         subject: x509Name, dnsNames: ["b.com"], IPAddresses: [ip1, ip2]);
@@ -203,6 +204,7 @@ Example:
 import std.fs.*
 import std.io.*
 import stdx.crypto.x509.*
+import stdx.crypto.keys.GeneralPrivateKey
 
 main() {
     let x509Name = X509Name(
@@ -217,7 +219,7 @@ main() {
     let ip1: IP = [8, 8, 8, 8]
     let ip2: IP = [0, 1, 0, 1, 0, 1, 0, 1, 0, 8, 0, 8, 0, 8, 0, 8]
     let rsaPem = String.fromUtf8(readToEnd(File("./rsa_private_key.pem", Read)))
-    let rsa = PrivateKey.decodeFromPem(rsaPem)
+    let rsa = GeneralPrivateKey.decodeFromPem(rsaPem)
 
     let csrInfo = X509CertificateRequestInfo(subject: x509Name, dnsNames: ["b.com"], IPAddresses: [ip1, ip2]);
     let csr = X509CertificateRequest(rsa, certificateRequestInfo: csrInfo, signatureAlgorithm: SHA256WithRSA)
