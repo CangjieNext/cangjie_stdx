@@ -1,5 +1,7 @@
 # AOP 开发示例
 
+## InsertAtEntry 入口插桩示例
+
 下面是使用 @InsertAtEntry 完成在指定函数入口插桩的示例代码：
 
 <!-- compile -->
@@ -40,6 +42,8 @@ cjc aop_demo1.cj -L $CANGJIE_STDX_PATH --import-path $CANGJIE_STDX_PATH -lstdx.a
 hi
 bye
 ```
+
+## InsertAtExit 退出插桩示例
 
 下面是使用 @InsertAtExit 完成在指定函数退出前插桩的示例代码：
 
@@ -83,6 +87,8 @@ bye
 ----- 2025-06-03T00:04:59.996469-07:00 -----
 done
 ```
+
+## ReplaceFuncBody 替换函数体示例
 
 下面是使用 @ReplaceFuncBody 完成替换指定函数函数体的示例代码：
 

@@ -60,7 +60,7 @@ Parameters:
 
 Exceptions:
 
-- [CryptoException](digest_package_exceptions.md#class-cryptoexception) - Thrown when the key value is empty.
+- [CryptoException](../../common/crypto_common_package_api/crypto_common_package_exceptions.md#class-cryptoexception) - Thrown when the key value is empty.
 
 ### init(Array\<Byte>, HashType)
 
@@ -77,7 +77,7 @@ Parameters:
 
 Exceptions:
 
-- [CryptoException](digest_package_exceptions.md#class-cryptoexception) - Thrown when the key value is empty.
+- [CryptoException](../../common/crypto_common_package_api/crypto_common_package_exceptions.md#class-cryptoexception) - Thrown when the key value is empty.
 
 ### static func equal(Array\<Byte>, Array\<Byte>)
 
@@ -110,7 +110,7 @@ Return Value:
 
 Exceptions:
 
-- [CryptoException](digest_package_exceptions.md#class-cryptoexception) - Thrown when finish() is called again for digest calculation without resetting the context.
+- [CryptoException](../../common/crypto_common_package_api/crypto_common_package_exceptions.md#class-cryptoexception) - Thrown when finish() is called again for digest calculation without resetting the context.
 
 ### func finish(Array\<Byte>)
 
@@ -126,7 +126,7 @@ Parameters:
 
 Exceptions:
 
-- [CryptoException](digest_package_exceptions.md#class-cryptoexception) - Thrown when finish() is called again for digest calculation without resetting the context, or when the specified output array size does not match the digest algorithm's length.
+- [CryptoException](../../common/crypto_common_package_api/crypto_common_package_exceptions.md#class-cryptoexception) - Thrown when finish() is called again for digest calculation without resetting the context, or when the specified output array size does not match the digest algorithm's length.
 
 ### func reset()
 
@@ -138,7 +138,7 @@ Function: Resets the [HMAC](digest_package_classes.md#class-hmac) object to its 
 
 Exceptions:
 
-- [CryptoException](digest_package_exceptions.md#class-cryptoexception) - Thrown when an internal error occurs and the reset fails.
+- [CryptoException](../../common/crypto_common_package_api/crypto_common_package_exceptions.md#class-cryptoexception) - Thrown when an internal error occurs and the reset fails.
 
 ### func write(Array\<Byte>)
 
@@ -154,7 +154,7 @@ Parameters:
 
 Exceptions:
 
-- [CryptoException](digest_package_exceptions.md#class-cryptoexception) - Thrown when the buffer is empty or when finish() has already been called to generate the digest.
+- [CryptoException](../../common/crypto_common_package_api/crypto_common_package_exceptions.md#class-cryptoexception) - Thrown when the buffer is empty or when finish() has already been called to generate the digest.
 
 ## class MD5
 
@@ -222,7 +222,7 @@ Return Value:
 
 Exceptions:
 
-- [CryptoException](digest_package_exceptions.md#class-cryptoexception) - Thrown when finish() is called again for digest calculation without resetting the context.
+- [CryptoException](../../common/crypto_common_package_api/crypto_common_package_exceptions.md#class-cryptoexception) - Thrown when finish() is called again for digest calculation without resetting the context.
 
 ### func finish(Array\<Byte>)
 
@@ -238,7 +238,7 @@ Parameters:
 
 Exceptions:
 
-- [CryptoException](digest_package_exceptions.md#class-cryptoexception) - Thrown when finish() is called again for digest calculation without resetting the context, or when the specified output array size does not match the digest algorithm's length.
+- [CryptoException](../../common/crypto_common_package_api/crypto_common_package_exceptions.md#class-cryptoexception) - Thrown when finish() is called again for digest calculation without resetting the context, or when the specified output array size does not match the digest algorithm's length.
 
 ### func reset()
 
@@ -262,7 +262,7 @@ Parameters:
 
 Exceptions:
 
-- [CryptoException](digest_package_exceptions.md#class-cryptoexception) - Thrown when finish() has already been called for digest calculation without resetting the context.
+- [CryptoException](../../common/crypto_common_package_api/crypto_common_package_exceptions.md#class-cryptoexception) - Thrown when finish() has already been called for digest calculation without resetting the context.
 
 ## class SHA1
 
@@ -296,7 +296,9 @@ public prop blockSize: Int64
 
 Function: Block size of [SHA1](digest_package_classes.md#class-sha1), in bytes.
 
-Type: Int64### prop size
+Type: Int64
+
+### prop size
 
 ```cangjie
 public prop size: Int64
@@ -328,7 +330,7 @@ Return value:
 
 Exceptions:
 
-- [CryptoException](digest_package_exceptions.md#class-cryptoexception) - Thrown if finish is called again for digest computation without resetting the context.
+- [CryptoException](../../common/crypto_common_package_api/crypto_common_package_exceptions.md#class-cryptoexception) - Thrown if finish is called again for digest computation without resetting the context.
 
 ### func finish(Array\<Byte>)
 
@@ -344,7 +346,7 @@ Parameters:
 
 Exceptions:
 
-- [CryptoException](digest_package_exceptions.md#class-cryptoexception) - Thrown if finish is called again for digest computation without resetting the context, or if the specified output array size does not match the digest algorithm's information length.
+- [CryptoException](../../common/crypto_common_package_api/crypto_common_package_exceptions.md#class-cryptoexception) - Thrown if finish is called again for digest computation without resetting the context, or if the specified output array size does not match the digest algorithm's information length.
 
 ### func reset()
 
@@ -368,7 +370,7 @@ Parameters:
 
 Exceptions:
 
-- [CryptoException](digest_package_exceptions.md#class-cryptoexception) - Thrown if digest computation has already been performed via finish without resetting the context.
+- [CryptoException](../../common/crypto_common_package_api/crypto_common_package_exceptions.md#class-cryptoexception) - Thrown if digest computation has already been performed via finish without resetting the context.
 
 ## class SHA224
 
@@ -436,7 +438,7 @@ Return value:
 
 Exceptions:
 
-- [CryptoException](digest_package_exceptions.md#class-cryptoexception) - Thrown if finish is called again for digest computation without resetting the context.
+- [CryptoException](../../common/crypto_common_package_api/crypto_common_package_exceptions.md#class-cryptoexception) - Thrown if finish is called again for digest computation without resetting the context.
 
 ### func finish(Array\<Byte>)
 
@@ -452,7 +454,7 @@ Parameters:
 
 Exceptions:
 
-- [CryptoException](digest_package_exceptions.md#class-cryptoexception) - Thrown if finish is called again for digest computation without resetting the context, or if the specified output array size does not match the digest algorithm's information length.
+- [CryptoException](../../common/crypto_common_package_api/crypto_common_package_exceptions.md#class-cryptoexception) - Thrown if finish is called again for digest computation without resetting the context, or if the specified output array size does not match the digest algorithm's information length.
 
 ### func reset()
 
@@ -476,7 +478,7 @@ Parameters:
 
 Exceptions:
 
-- [CryptoException](digest_package_exceptions.md#class-cryptoexception) - Thrown if digest computation has already been performed via finish without resetting the context.
+- [CryptoException](../../common/crypto_common_package_api/crypto_common_package_exceptions.md#class-cryptoexception) - Thrown if digest computation has already been performed via finish without resetting the context.
 
 ## class SHA256
 
@@ -544,7 +546,7 @@ Return value:
 
 Exceptions:
 
-- [CryptoException](digest_package_exceptions.md#class-cryptoexception) - Thrown if finish is called again for digest computation without resetting the context.
+- [CryptoException](../../common/crypto_common_package_api/crypto_common_package_exceptions.md#class-cryptoexception) - Thrown if finish is called again for digest computation without resetting the context.
 
 ### func finish(Array\<Byte>)
 
@@ -560,7 +562,7 @@ Parameters:
 
 Exceptions:
 
-- [CryptoException](digest_package_exceptions.md#class-cryptoexception) - Thrown if finish is called again for digest computation without resetting the context, or if the specified output array size does not match the digest algorithm's information length.
+- [CryptoException](../../common/crypto_common_package_api/crypto_common_package_exceptions.md#class-cryptoexception) - Thrown if finish is called again for digest computation without resetting the context, or if the specified output array size does not match the digest algorithm's information length.
 
 ### func reset()
 
@@ -584,7 +586,7 @@ Parameters:
 
 Exceptions:
 
-- [CryptoException](digest_package_exceptions.md#class-cryptoexception) - Thrown if digest computation has already been performed via finish without resetting the context.
+- [CryptoException](../../common/crypto_common_package_api/crypto_common_package_exceptions.md#class-cryptoexception) - Thrown if digest computation has already been performed via finish without resetting the context.
 
 ## class SHA384
 
@@ -594,7 +596,9 @@ public class SHA384 <: Digest {
 }
 ```
 
-Function: Provides the implementation interface for the [SHA384](digest_package_classes.md#class-sha384) algorithm. Usage examples can be found in [SHA384 Algorithm Example](../digest_samples/sample_digest.md#sha384-algorithm-example).Parent Type:
+Function: Provides the implementation interface for the [SHA384](digest_package_classes.md#class-sha384) algorithm. Usage examples can be found in [SHA384 Algorithm Example](../digest_samples/sample_digest.md#sha384-algorithm-example).
+
+Parent Type:
 
 - Digest
 
@@ -650,7 +654,7 @@ Return Value:
 
 Exceptions:
 
-- [CryptoException](digest_package_exceptions.md#class-cryptoexception) - Thrown if finish() is called again for digest calculation without resetting the context.
+- [CryptoException](../../common/crypto_common_package_api/crypto_common_package_exceptions.md#class-cryptoexception) - Thrown if finish() is called again for digest calculation without resetting the context.
 
 ### func finish(Array\<Byte>)
 
@@ -666,7 +670,7 @@ Parameters:
 
 Exceptions:
 
-- [CryptoException](digest_package_exceptions.md#class-cryptoexception) - Thrown if finish() is called again for digest calculation without resetting the context, or if the specified output array size does not match the digest algorithm's message length.
+- [CryptoException](../../common/crypto_common_package_api/crypto_common_package_exceptions.md#class-cryptoexception) - Thrown if finish() is called again for digest calculation without resetting the context, or if the specified output array size does not match the digest algorithm's message length.
 
 ### func reset()
 
@@ -690,7 +694,7 @@ Parameters:
 
 Exceptions:
 
-- [CryptoException](digest_package_exceptions.md#class-cryptoexception) - Thrown if finish() has been called for digest calculation without resetting the context.
+- [CryptoException](../../common/crypto_common_package_api/crypto_common_package_exceptions.md#class-cryptoexception) - Thrown if finish() has been called for digest calculation without resetting the context.
 
 ## class SHA512
 
@@ -758,7 +762,7 @@ Return Value:
 
 Exceptions:
 
-- [CryptoException](digest_package_exceptions.md#class-cryptoexception) - Thrown if finish() is called again for digest calculation without resetting the context.
+- [CryptoException](../../common/crypto_common_package_api/crypto_common_package_exceptions.md#class-cryptoexception) - Thrown if finish() is called again for digest calculation without resetting the context.
 
 ### func finish(Array\<Byte>)
 
@@ -774,7 +778,7 @@ Parameters:
 
 Exceptions:
 
-- [CryptoException](digest_package_exceptions.md#class-cryptoexception) - Thrown if finish() is called again for digest calculation without resetting the context, or if the specified output array size does not match the digest algorithm's message length.
+- [CryptoException](../../common/crypto_common_package_api/crypto_common_package_exceptions.md#class-cryptoexception) - Thrown if finish() is called again for digest calculation without resetting the context, or if the specified output array size does not match the digest algorithm's message length.
 
 ### func reset()
 
@@ -798,7 +802,7 @@ Parameters:
 
 Exceptions:
 
-- [CryptoException](digest_package_exceptions.md#class-cryptoexception) - Thrown if finish() has been called for digest calculation without resetting the context.
+- [CryptoException](../../common/crypto_common_package_api/crypto_common_package_exceptions.md#class-cryptoexception) - Thrown if finish() has been called for digest calculation without resetting the context.
 
 ## class SM3
 
@@ -866,7 +870,7 @@ Return Value:
 
 Exceptions:
 
-- [CryptoException](digest_package_exceptions.md#class-cryptoexception) - Thrown if finish() is called again for digest calculation without resetting the context.
+- [CryptoException](../../common/crypto_common_package_api/crypto_common_package_exceptions.md#class-cryptoexception) - Thrown if finish() is called again for digest calculation without resetting the context.
 
 ### func finish(Array\<Byte>)
 
@@ -882,7 +886,7 @@ Parameters:
 
 Exceptions:
 
-- [CryptoException](digest_package_exceptions.md#class-cryptoexception) - Thrown if finish() is called again for digest calculation without resetting the context, or if the specified output array size does not match the digest algorithm's message length.
+- [CryptoException](../../common/crypto_common_package_api/crypto_common_package_exceptions.md#class-cryptoexception) - Thrown if finish() is called again for digest calculation without resetting the context, or if the specified output array size does not match the digest algorithm's message length.
 
 ### func reset()
 
@@ -906,4 +910,4 @@ Parameters:
 
 Exceptions:
 
-- [CryptoException](digest_package_exceptions.md#class-cryptoexception) - Throws this exception if the context has not been reset after calling finish for digest computation.
+- [CryptoException](../../common/crypto_common_package_api/crypto_common_package_exceptions.md#class-cryptoexception) - Throws this exception if the context has not been reset after calling finish for digest computation.

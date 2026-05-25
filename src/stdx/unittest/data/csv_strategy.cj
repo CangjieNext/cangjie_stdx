@@ -328,11 +328,11 @@ class LineIterator<T> <: Iterator<String> where T <: InputStream {
 }
 
 extend<T> LineIterator<T> <: Resource where T <: Resource {
-    public func isClosed() {
+    public func isClosed(): Bool {
         this.reader.isClosed()
     }
 
-    public func close() {
+    public func close(): Unit {
         this.reader.close()
     }
 }

@@ -13,6 +13,9 @@ Please describe the type of changes in this Pull Request (reason). **Simply save
 
 ## Self-Check of Changes (Required)
 
+
+
+
 **Please do not modify or delete the following options. Simply save and click the checkbox, or when editing, change `[ ]` to `[x]` for the relevant item.**
 
 ### Local Compilation Verification Results:
@@ -27,11 +30,6 @@ Please describe the type of changes in this Pull Request (reason). **Simply save
 
 - [ ] Pass. Please provide screenshots below.
 - [ ] Not applicable. Please explain the reasons below.
-
-### Results of compiling and running the documentation example code:
-
-- [ ] Pass. Please provide screenshots below.
-- [ ] Not applicable.
 
 ## Related Issues (Required)
 

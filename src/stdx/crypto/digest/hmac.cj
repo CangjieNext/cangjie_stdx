@@ -194,9 +194,6 @@ public class HMAC <: Digest {
         if (this.hasFinished) {
             throw CryptoException("HMAC write failed, digest calculation has been completed.")
         }
-        if (buffer.size <= 0) {
-            throw CryptoException("The data cannot be empty.")
-        }
         hmacUpdateC(this.ctxPtr, buffer, UIntNative(buffer.size))
     }
 

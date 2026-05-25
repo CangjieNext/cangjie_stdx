@@ -241,14 +241,14 @@ Exceptions:
 ### func getTlsConfig()
 
 ```cangjie
-public func getTlsConfig(): ?TlsClientConfig
+public func getTlsConfig(): ?TlsConfig
 ```
 
 Functionality: Gets the TLS configuration set for the client.
 
 Return value:
 
-- ?[TlsClientConfig](../../tls/tls_package_api/tls_package_structs.md#struct-tlsclientconfig) - The TLS configuration set for the client, or None if not set.
+- ?[TlsConfig](../../tls/common/tls_common_package_api/tls_common_package_interfaces.md#interface-tlsconfig) - The TLS configuration set for the client, or None if not set.
 
 ### func head(String)
 
@@ -465,7 +465,7 @@ Exceptions:
 - SocketException - Thrown when a socket connection error occurs.
 - [ConnectionException](http_package_exceptions.md#class-connectionexception) - Thrown when the peer closes the connection while reading data.
 - SocketTimeoutException - Thrown when a socket connection times out.
-- [TlsException](../../tls/tls_package_api/tls_package_exceptions.md#class-tlsexception) - Thrown when TLS connection establishment fails or communication errors occur.
+- [TlsException](../../tls/common/tls_common_package_api/tls_common_package_exceptions.md#class-tlsexception) - Thrown when TLS connection establishment fails or communication errors occur.
 - [HttpException](http_package_exceptions.md#class-httpexception) - Thrown when the user does not use the http library's API to upgrade [WebSocket](http_package_classes.md#class-websocket).
 - [HttpTimeoutException](http_package_exceptions.md#class-httptimeoutexception) - Thrown when the request times out or reading [HttpResponse](http_package_classes.md#class-httpresponse).body times out.
 
@@ -503,7 +503,7 @@ Exceptions:
     - Sending a TRACE request with a body;
 - SocketException, [ConnectionException](http_package_exceptions.md#class-connectionexception) - Socket connection errors or closures;
 - SocketTimeoutException - Socket connection timeout;
-- [TlsException](../../tls/tls_package_api/tls_package_exceptions.md#class-tlsexception) - TLS connection establishment failure or communication errors.
+- [TlsException](../../tls/common/tls_common_package_api/tls_common_package_exceptions.md#class-tlsexception) - TLS connection establishment failure or communication errors.
 
 ## class ClientBuilder
 
@@ -561,7 +561,7 @@ Exceptions:
 
 - IllegalArgumentException - Thrown when configuration parameters are invalid.
 
-### func connector((SocketAddress) -> StreamingSocket)
+### func connector((SocketAddress)->StreamingSocket)
 
 ```cangjie
 public func connector(c: (SocketAddress) -> StreamingSocket): ClientBuilder
@@ -785,17 +785,17 @@ Return Value:
 
 - [ClientBuilder](http_package_classes.md#class-clientbuilder) - Reference to the current [ClientBuilder](http_package_classes.md#class-clientbuilder) instance.
 
-### func tlsConfig(TlsClientConfig)
+### func tlsConfig(TlsConfig)
 
 ```cangjie
-public func tlsConfig(config: TlsClientConfig): ClientBuilder
+public func tlsConfig(config: TlsConfig): ClientBuilder
 ```
 
 Function: Set the TLS layer configuration. By default, it is not configured.
 
 Parameters:
 
-- config: [TlsClientConfig](../../tls/tls_package_api/tls_package_structs.md#struct-tlsclientconfig) - Configuration information required for TLS client support.
+- config: [TlsConfig](../../tls/common/tls_common_package_api/tls_common_package_interfaces.md#interface-tlsconfig) - Configuration information required for TLS client support.
 
 Return Value:
 
@@ -1094,19 +1094,6 @@ Exceptions:
 - [HttpException](http_package_exceptions.md#class-httpexception) - Thrown if the path does not exist.
 - IllegalArgumentException - Thrown for parameter errors (e.g., empty path or invalid strings).
 
-Example:
-
-<!-- run -->
-```cangjie
-import stdx.net.http.*
-
-main() {
-    let filePath: String = "./http_filehandler_download.txt"
-    FileHandler(filePath, validator: {fileName: String => fileName.contains(".txt")})
-    return 0
-}
-```
-
 ### func handle(HttpContext)
 
 ```cangjie
@@ -1168,12 +1155,12 @@ Function: HTTP request context, used as a parameter for [HttpRequestHandler](htt
 ### prop clientCertificate
 
 ```cangjie
-public prop clientCertificate: ?Array<X509Certificate>
+public prop clientCertificate: ?Array<Certificate>
 ```
 
 Function: Retrieves the HTTP client certificate.
 
-Type: ?Array\<[X509Certificate](../../../crypto/x509/x509_package_api/x509_package_classes.md#class-x509certificate)>
+Type: ?Array\<[Certificate](../../../crypto/common/crypto_common_package_api/crypto_common_package_interfaces.md#interface-certificate)>
 
 ### prop request
 
@@ -1990,6 +1977,7 @@ public prop isPersistent: Bool
 Function: Indicates whether the response use a persistent connection. If it contains `Connection: close`, it is false; otherwise, it is true.
 
 - For the server, isPersistent being false means the connection should be closed after processing the request.
+
 - For the client, isPersistent being false means the client should actively close the connection if the server does not close it after receiving the response.
 
 Type: `Bool`
@@ -2154,9 +2142,7 @@ public func body(body: InputStream): HttpResponseBuilder
 
 Function: Sets the response body. If the body has already been set, calling this function will replace the original body. This function sets the request body.
 
-Return Value:
-
-- [HttpResponseBuilder](http_package_classes.md#class-httpresponsebuilder) - A reference to the current [HttpResponseBuilder](http_package_classes.md#class-httpresponsebuilder) instance.Parameters:
+Parameters:
 
 - body: InputStream - The response body in stream format.
 
@@ -2455,7 +2441,9 @@ public func handle(ctx: HttpContext): Unit
 
 Function: Processes the HTTP OPTIONS request.
 
-Parameters:- ctx: [HttpContext](http_package_classes.md#class-httpcontext) - HTTP request context.
+Parameters:
+
+- ctx: [HttpContext](http_package_classes.md#class-httpcontext) - HTTP request context.
 
 ## class ProtocolService
 
@@ -2465,6 +2453,76 @@ public abstract class ProtocolService
 
 Functionality: HTTP protocol service instance that provides HTTP services for a single client connection, including parsing client request messages, dispatching request processing, and sending responses.
 
+### prop distributor
+
+```cangjie
+protected prop distributor: HttpRequestDistributor
+```
+
+Function: Retrieves the request distributor, which routes requests to corresponding handlers based on URLs.
+
+Type: [HttpRequestDistributor](http_package_interfaces.md#interface-httprequestdistributor)
+
+### prop httpKeepAliveTimeout
+
+```cangjie
+protected prop httpKeepAliveTimeout: Duration
+```
+
+Function: HTTP/1.1 specific. Retrieves the server-configured timeout duration for maintaining persistent connections.
+
+Type: Duration
+
+### prop logger
+
+```cangjie
+protected prop logger: Logger
+```
+
+Function: Retrieves the server logger. Setting `logger.level` takes immediate effect. The logger should be thread-safe.
+
+Type: [Logger](../../../log/log_package_api/log_package_classes.md#class-logger)
+
+### prop maxRequestBodySize
+
+```cangjie
+protected prop maxRequestBodySize: Int64
+```
+
+Function: Retrieves the server-configured maximum request body size for reading requests. Only applies to HTTP/1.1 requests without "Transfer-Encoding: chunked" header.
+
+Type: Int64
+
+### prop maxRequestHeaderSize
+
+```cangjie
+protected prop maxRequestHeaderSize: Int64
+```
+
+Function: Retrieves the server-configured maximum request header size for reading requests. Only applies to HTTP/1.1. For HTTP/2, use the dedicated `maxHeaderListSize` configuration.
+
+Type: Int64
+
+### prop readHeaderTimeout
+
+```cangjie
+protected prop readHeaderTimeout: Duration
+```
+
+Function: Retrieves the server-configured timeout duration for reading request headers.
+
+Type: Duration
+
+### prop readTimeout
+
+```cangjie
+protected prop readTimeout: Duration
+```
+
+Function: Retrieves the server-configured timeout duration for reading the entire request.
+
+Type: Duration
+
 ### prop server
 
 ```cangjie
@@ -2473,13 +2531,23 @@ protected open mut prop server: Server
 
 Functionality: Returns the [Server](#class-server) instance, provides default implementation, set as the bound [Server](#class-server) instance.
 
-### func serve()
+### prop writeTimeout
 
 ```cangjie
-protected func serve(): Unit
+protected prop writeTimeout: Duration
 ```
 
-Functionality: Processes requests from client connections, no default implementation provided.
+Function: Gets the timeout duration for writing responses as configured by the server.
+
+Type: Duration
+
+### func close()
+
+```cangjie
+protected open func close(): Unit
+```
+
+Function: Forces the connection to close. Provides a default implementation with no specific behavior.
 
 ### func closeGracefully()
 
@@ -2789,14 +2857,14 @@ Function: Close the server gracefully. After closing, the server will no longer 
 ### func getTlsConfig()
 
 ```cangjie
-public func getTlsConfig(): ?TlsServerConfig
+public func getTlsConfig(): ?TlsConfig
 ```
 
 Function: Get the server's configured TLS layer settings.
 
 Return Value:
 
-- ?[TlsServerConfig](../../tls/tls_package_api/tls_package_structs.md#struct-tlsclientconfig) - The server's TLS configuration, returns None if not configured.
+- ?[TlsConfig](../../tls/common/tls_common_package_api/tls_common_package_interfaces.md#interface-tlsconfig) - The server's TLS configuration, returns None if not configured.
 
 ### func onShutdown(() -> Unit)
 
@@ -2824,8 +2892,7 @@ h1 Request Validation and Processing:
 - Method consists of tokens and is case-sensitive; request-target must be a parsable URL; HTTP-version must be HTTP/1.0 or HTTP/1.1, otherwise returns 400 response;
 - Headers name and value must comply with specific rules (see [HttpHeaders](http_package_classes.md#class-httpheaders) class documentation), otherwise returns 400 response;
 - When headers size exceeds server's maxRequestHeaderSize setting, automatically returns 431 response;
-- Headers must include "host" header with a unique value, otherwise returns 400 response;
-- Headers cannot simultaneously contain "content-length" and "transfer-encoding", otherwise returns 400 response;
+- Headers must include "host" header with a unique value, otherwise returns 400 response; Headers cannot simultaneously contain "content-length" and "transfer-encoding", otherwise returns 400 response;
 - For "transfer-encoding" header, the last value after splitting by "," must be "chunked", and previous values cannot contain "chunked", otherwise returns 400 response;
 - For "content-length" header, value must be parsable as Int64 type and non-negative, otherwise returns 400 response. If value exceeds server's maxRequestBodySize, returns 413 response;
 - If headers lack both "content-length" and "transfer-encoding: chunked", body is assumed absent by default;
@@ -2890,26 +2957,23 @@ h2 Request Prioritization:
 Default [ProtocolServiceFactory](http_package_interfaces.md#interface-protocolservicefactory) Protocol Selection:
 
 - For TCP connections, uses HTTP/1.1 server;
-- For TLS connections, determines HTTP version based on ALPN negotiation:
-    - If result is "http/1.0", "http/1.1" or "", uses HTTP/1.1 server;
-    - If result is "h2", uses HTTP/2 server;
-    - Otherwise doesn't process request, logs and closes connection.
+- For TLS connections, determines HTTP version based on ALPN negotiation: If result is "http/1.0", "http/1.1" or "", uses HTTP/1.1 server; If result is "h2", uses HTTP/2 server; Otherwise doesn't process request, logs and closes connection.
 
 Exceptions:
 
 - SocketException - Thrown when port listening fails.
 
-### func updateCA(Array\<X509Certificate>)
+### func updateCA(Array\<Certificate>)
 
 ```cangjie
-public func updateCA(newCa: Array<X509Certificate>): Unit
+public func updateCA(newCa: Array<Certificate>): Unit
 ```
 
 Function: Hot update CA certificates.
 
 Parameters:
 
-- newCa: Array\<[X509Certificate](../../../crypto/x509/x509_package_api/x509_package_classes.md#class-x509certificate)> - CA certificates.
+- newCa: Array\<[Certificate](../../../crypto/common/crypto_common_package_api/crypto_common_package_interfaces.md#interface-certificate)> - CA certificates.
 
 Exceptions:
 
@@ -2933,18 +2997,18 @@ Exceptions:
 - IllegalArgumentException - Thrown when parameters contain empty characters.
 - [HttpException](http_package_exceptions.md#class-httpexception) - Thrown when server lacks tlsConfig configuration.
 
-### func updateCert(Array\<X509Certificate>, PrivateKey)
+### func updateCert(Array\<Certificate>, PrivateKey)
 
 ```cangjie
-public func updateCert(certChain: Array<X509Certificate>, certKey: PrivateKey): Unit
+public func updateCert(certChain: Array<Certificate>, certKey: PrivateKey): Unit
 ```
 
 Function: Hot update TLS certificates.
 
 Parameters:
 
-- certChain: Array\<[X509Certificate](../../../crypto/x509/x509_package_api/x509_package_classes.md#class-x509certificate)> - Certificate chain.
-- certKey: [PrivateKey](../../../crypto/x509/x509_package_api/x509_package_interfaces.md#interface-privatekey) - Private key matching the certificate.
+- certChain: Array\<[Certificate](../../../crypto/common/crypto_common_package_api/crypto_common_package_interfaces.md#interface-certificate)> - Certificate chain.
+- certKey: [PrivateKey](../../../crypto/common/crypto_common_package_api/crypto_common_package_interfaces.md#interface-privatekey) - Private key matching the certificate.
 
 Exceptions:
 
@@ -3352,17 +3416,17 @@ Return Value:
 
 - [ServerBuilder](http_package_classes.md#class-serverbuilder) - Reference to the current [ServerBuilder](http_package_classes.md#class-serverbuilder).
 
-### func tlsConfig(TlsServerConfig)
+### func tlsConfig(TlsConfig)
 
 ```cangjie
-public func tlsConfig(config: TlsServerConfig): ServerBuilder
+public func tlsConfig(config: TlsConfig): ServerBuilder
 ```
 
 Function: Configure TLS layer settings, which are not set by default.
 
 Parameters:
 
-- config: [TlsServerConfig](../../tls/tls_package_api/tls_package_structs.md#struct-tlsserverconfig) - Configuration information required for setting up TLS service support.
+- config: [TlsConfig](../../tls/common/tls_common_package_api/tls_common_package_interfaces.md#interface-tlsconfig) - Configuration information required for setting up TLS service support.
 
 Return Value:
 
@@ -3516,16 +3580,12 @@ Function: Reads a frame from the connection. Blocks if data is not ready. Not th
 
 The `read` function returns a [WebSocketFrame](http_package_classes.md#class-websocketframe) object. Users can determine the frame type and whether it is fragmented via the [WebSocketFrame](http_package_classes.md#class-websocketframe)'s `frameType` and `fin` properties. The raw binary data array (Array\<UInt8>) can be obtained via the [WebSocketFrame](http_package_classes.md#class-websocketframe)'s `payload` function.
 
-- The first fragment of a fragmented frame has `fin == false` and `frameType == TextWebFrame` or `BinaryWebFrame`.
-- Intermediate fragments have `fin == false` and `frameType == ContinuationWebFrame`.
-- The last fragment has `fin == true` and `frameType == ContinuationWebFrame`.
+- The first fragment of a fragmented frame has `fin == false` and `frameType == TextWebFrame` or `BinaryWebFrame`. Intermediate fragments have `fin == false` and `frameType == ContinuationWebFrame`. The last fragment has `fin == true` and `frameType == ContinuationWebFrame`.
 - Non-fragmented frames have `fin == true` and `frameType != ContinuationWebFrame`.
 
 > **Note:**
 >
-> - Data frames (Text, Binary) can be fragmented. Users must call `read` multiple times to receive all fragments (referred to as receiving a complete message) and concatenate the payloads in order.
->   - Text frame payloads are UTF-8 encoded. After receiving a complete message, users can convert the concatenated payload to a string using `String.fromUtf8`.
->   - Binary frame payloads are application-specific. After receiving a complete message, users pass the concatenated payload to the upper-layer application.
+> - Data frames (Text, Binary) can be fragmented. Users must call `read` multiple times to receive all fragments (referred to as receiving a complete message) and concatenate the payloads in order. Text frame payloads are UTF-8 encoded. After receiving a complete message, users can convert the concatenated payload to a string using `String.fromUtf8`. Binary frame payloads are application-specific. After receiving a complete message, users pass the concatenated payload to the upper-layer application.
 > - Control frames (Close, Ping, Pong) cannot be fragmented.
 > - Control frames cannot be fragmented but can be interleaved between fragmented data frames. Fragmented data frames cannot be interleaved with other data frames. If interleaved fragments are received, treat as an error.
 > - Clients must receive masked frames; servers must receive unmasked frames. Otherwise, the underlying connection is closed, and an exception is thrown.

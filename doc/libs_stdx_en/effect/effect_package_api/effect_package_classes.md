@@ -8,8 +8,7 @@ public abstract class Command<Res> {
 }
 ```
 
-**Description:**
-This abstract class represents an **effect** that can be performed and handled.
+**Description:** This abstract class represents an **effect** that can be performed and handled.
 
 **Type Parameters:**
 
@@ -21,9 +20,7 @@ This abstract class represents an **effect** that can be performed and handled.
 public open func defaultImpl(): Res
 ```
 
-**Description:**
-This is the default handler for the effect. If an effect is not explicitly handled by any handler, this method will throw an [UnhandledCommandException](./effect_package_exceptions.md#class-unhandledcommandexception).
-You can override this method in a concrete `Command` subclass to provide a default implementation for the effect.
+**Description:** This is the default handler for the effect. If an effect is not explicitly handled by any handler, this method will throw an [UnhandledCommandException](./effect_package_exceptions.md#class-unhandledcommandexception). You can override this method in a concrete `Command` subclass to provide a default implementation for the effect.
 
 **Returns:**
 

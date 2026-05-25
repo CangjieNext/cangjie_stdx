@@ -15,13 +15,13 @@ public type IP = Array<Byte>
 import stdx.crypto.x509.*
 
 main() {
-    // 创建IP地址列表
+    // 创建 IP 地址列表
     let ipList = [[192u8, 168u8, 1u8, 1u8], [10u8, 0u8, 0u8, 1u8]]
 
-    // 创建一个X509CertificateRequestInfo对象
+    // 创建一个 X509CertificateRequestInfo 对象
     let certRequestInfo = X509CertificateRequestInfo(IPAddresses: ipList)
 
-    // 输出IP地址列表
+    // 输出 IP 地址列表
     println("IP Addresses: ${certRequestInfo.IPAddresses}")
 }
 ```

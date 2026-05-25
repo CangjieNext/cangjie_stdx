@@ -28,6 +28,11 @@ Using this package requires external dependencies on OpenSSL 3's crypto dynamic 
     - Download the `OpenSSL 3.x.x` source code and use Android NDK to cross-compile dynamic library files for the target architectures (currently only `arm64-v8a` is supported). Ensure the build artifacts include `libcrypto.so` and `libcrypto.so.3`.
     - Add the directory containing these files to the environment variables `LD_LIBRARY_PATH`.
 
+- For HarmonyOS operating systems:
+    - Due to system restrictions in `HarmonyOS` 6.0 and above, `stdx` cannot directly access the system's built-in `OpenSSL`, users need to compile `OpenSSL` dynamic libraries for `HarmonyOS` and package them into the application.
+    - For compiling `OpenSSL` for `HarmonyOS`, refer to [OHOS Cangjie SDK Build Guide](https://gitcode.com/Cangjie/cangjie_build/blob/dev/docs/linux_ohos_toolchain.md).
+    - Package the compiled dynamic library files `libcrypto_openssl.z.so` and `libssl_openssl.z.so` into the application and ensure they can be correctly loaded at runtime.
+
 > **Note:**
 >
 > If the OpenSSL 3 package is not installed or a lower version is installed, the program may fail to function and throw the related exception `CryptoException: Can not load openssl library or function xxx`.
@@ -40,6 +45,8 @@ Using this package requires external dependencies on OpenSSL 3's crypto dynamic 
 | ---------------------------------------- | ----------------------------------------- |
 | [ECDSAPrivateKey](./keys_package_api/keys_package_classes.md#class-ecdsaprivatekey) | ECDSA private key class. |
 | [ECDSAPublicKey](./keys_package_api/keys_package_classes.md#class-ecdsapublickey) | ECDSA public key class. |
+| [GeneralPrivateKey](./keys_package_api/keys_package_classes.md#class-generalprivatekey) | Implementation of generic private key parameter encryption/decryption functionality. |
+| [GeneralPublicKey](./keys_package_api/keys_package_classes.md#class-generalpublickey)   | Implementation of generic public key parameter encryption/decryption functionality. |
 | [RSAPrivateKey](./keys_package_api/keys_package_classes.md#class-rsaprivatekey) | RSA private key class. |
 | [RSAPublicKey](./keys_package_api/keys_package_classes.md#class-rsapublickey) | RSA public key class. |
 | [SM2PrivateKey](./keys_package_api/keys_package_classes.md#class-sm2privatekey) | SM2 private key class. |

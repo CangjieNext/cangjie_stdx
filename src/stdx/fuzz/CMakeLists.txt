@@ -5,4 +5,14 @@
 #
 # See https://cangjie-lang.cn/pages/LICENSE for license information.
 
-add_subdirectory(fuzz)
+add_subdirectory(native)
+
+set(FUZZ_SRCS
+        callback.cj
+        data_provider.cj
+        fuzzer.cj
+        fz_exception.cj
+        native.cj
+        oom_handler.cj
+        report.cj
+        CACHE INTERNAL "")

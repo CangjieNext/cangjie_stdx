@@ -1,47 +1,5 @@
 # Enumerations
 
-## enum CertificateVerifyMode
-
-```cangjie
-public enum CertificateVerifyMode {
-    | CustomCA(Array<X509Certificate>)
-    | Default
-    | TrustAll
-}
-```
-
-Function: Defines the certificate verification handling mode.
-
-> **Note:**
->
-> The CustomCA mode allows using user-configured certificate addresses, suitable for scenarios where user certificates cannot be set as system certificates.<br>
-> In certificate authentication mode, after TCP connection establishment, clients and servers can exchange certificates. The Default mode uses system certificates.<br>
-> During development and testing phases, the TrustAll mode can be used. This mode indicates that the local end does not verify peer certificates. In this mode, the local end trusts any connection establishment object and should only be used during development and testing.
-
-### CustomCA(Array\<X509Certificate>)
-
-```cangjie
-CustomCA(Array<X509Certificate>)
-```
-
-Function: Indicates verification based on the provided CA list and system CAs.
-
-### Default
-
-```cangjie
-Default
-```
-
-Function: Indicates the default verification mode, which verifies certificates based on system CAs.
-
-### TrustAll
-
-```cangjie
-TrustAll
-```
-
-Function: Indicates trusting all certificates.
-
 ## enum SignatureAlgorithm
 
 ```cangjie
@@ -296,7 +254,9 @@ public operator func ==(other: SignatureSchemeType): Bool
 
 Function: Determines whether the two encryption algorithm types are the same.
 
-Parameters:- other: [SignatureSchemeType](tls_package_enums.md#enum-signatureschemetype) - The type of cryptographic algorithm to compare.
+Parameters:
+
+- other: [SignatureSchemeType](tls_package_enums.md#enum-signatureschemetype) - The type of cryptographic algorithm to compare.
 
 Return Value:
 
@@ -422,55 +382,3 @@ Required
 ```
 
 Function: Indicates that the server validates client certificates and mandates clients to provide certificates and public keys (bidirectional authentication).
-
-## enum TlsVersion
-
-```cangjie
-public enum TlsVersion <: ToString {
-    | V1_2
-    | V1_3
-    | Unknown
-}
-```
-
-Function: TLS protocol version.
-
-Parent Types:
-
-- ToString
-
-### Unknown
-
-```cangjie
-Unknown
-```
-
-Function: Represents an unknown protocol version.
-
-### V1_2
-
-```cangjie
-V1_2
-```
-
-Function: Represents TLS 1.2.
-
-### V1_3
-
-```cangjie
-V1_3
-```
-
-Function: Represents TLS 1.3.
-
-### func toString()
-
-```cangjie
-public override func toString(): String
-```
-
-Function: Returns the string representation of the current [TlsVersion](tls_package_enums.md#enum-tlsversion).
-
-Return Value:
-
-- String - The string representation of the current [TlsVersion](tls_package_enums.md#enum-tlsversion).

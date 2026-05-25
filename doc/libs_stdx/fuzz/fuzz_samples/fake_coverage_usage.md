@@ -18,7 +18,7 @@ ERROR: no interesting inputs were found. Is the code instrumented for coverage? 
 
 ```cangjie
 // main.cj
-import stdx.fuzz.fuzz.*
+import stdx.fuzz.*
 
 main() {
     let f = Fuzzer(api)
@@ -36,7 +36,7 @@ public func api(dp: FuzzDataProvider): Int32 {
 }
 ```
 
-运行结果如下：
+运行结果：
 
 ```text
 ...
@@ -52,7 +52,7 @@ ERROR: no interesting inputs were found. Is the code instrumented for coverage? 
 
 ```cangjie
 // main.cj
-import stdx.fuzz.fuzz.*
+import stdx.fuzz.*
 
 main() {
     let f = Fuzzer(api)
@@ -70,7 +70,7 @@ public func api(dp: FuzzDataProvider): Int32 {
 }
 ```
 
-运行结果如下：
+运行结果：
 
 ```text
 INFO: Running with entropic power schedule (0xFF, 100).

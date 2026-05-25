@@ -1,5 +1,7 @@
 # AOP Development Example
 
+## InsertAtEntry Entry Instrumentation Example
+
 The following is an example code demonstrating function entry point instrumentation using `@InsertAtEntry`:
 
 <!-- compile -->
@@ -40,6 +42,8 @@ Possible execution output:
 hi
 bye
 ```
+
+## InsertAtExit Exit Instrumentation Example
 
 The following is an example code demonstrating function exit point instrumentation using `@InsertAtExit`:
 
@@ -83,6 +87,8 @@ bye
 ----- 2025-06-03T00:04:59.996469-07:00 -----
 done
 ```
+
+## ReplaceFuncBody Function Body Replacement Example
 
 The following is an example code demonstrating function body replacement using `@ReplaceFuncBody`:
 

@@ -1,4 +1,3 @@
-
 # stdx.effect
 
 ## Overview
@@ -9,21 +8,17 @@ They are similar to exception handling: exceptions can be **thrown** (`throw`) a
 
 ### Core Structure
 
-Effect Handlers extend the traditional `try-catch` structure by adding a `handle` clause for processing effects.
-A `try` expression can contain `catch` blocks for handling exceptions as well as one or more `handle` blocks for handling effects triggered via `perform`. The core components of Effect Handlers are as follows:
+Effect Handlers extend the traditional `try-catch` structure by adding a `handle` clause for processing effects. A `try` expression can contain `catch` blocks for handling exceptions as well as one or more `handle` blocks for handling effects triggered via `perform`. The core components of Effect Handlers are as follows:
 
 * **`Command<T>` Interface:**
-  All effects must inherit from `Command<T>`, where `T` is the type returned when the effect is resumed.
-  The `defaultImpl` method can be overridden to provide default behavior when the effect is not caught by any handler.
+
+    All effects must inherit from `Command<T>`, where `T` is the type returned when the effect is resumed. The `defaultImpl` method can be overridden to provide default behavior when the effect is not caught by any handler.
 
 * **`perform` Expression:**
-  `perform expr` triggers an effect, where `expr` must be an instance of `Command<T>`.
-  If the effect is handled and resumed, the `perform` expression has type `T`.
+
+    `perform expr` triggers an effect, where `expr` must be an instance of `Command<T>`. If the effect is handled and resumed, the `perform` expression has type `T`.
 
 * **`handle` Clause:**
-  A `handle` clause defines the logic to process an effect when it is triggered.
-  At runtime, the nearest matching `handle` clause is selected, and the handler code block is executed.
-  Within a `handle` block, you must use a `resume` expression to continue execution.
 
     A `handle` clause defines the logic to process an effect when it is triggered. At runtime, the nearest matching `handle` clause is selected, and the handler code block is executed. Within a `handle` block, you must use a `resume` expression to continue execution.
 
@@ -44,8 +39,8 @@ A `try` expression can contain `catch` blocks for handling exceptions as well as
     * In `resume with value`, the type of `value` must match `T`
 
 * **`resume` Expression:**
-    * `resume with value` resumes execution at the `perform` site and returns `value` as the result of the `perform` expression
-    * `resume throwing exn` throws an exception back to the `perform` site
+
+    `resume with value` resumes execution at the `perform` site and returns `value` as the result of the `perform` expression. `resume throwing exn` throws an exception back to the `perform` site.
 
 ### Basic Syntax
 
@@ -153,26 +148,24 @@ No handler here
 > Since this feature is experimental, tooling support is still in progress, as shown below:
 
 | Tool          | Support Status                                             |
-| ------------- | ---------------------------------------------------------- |
-| **Cjdb**      | Fully supported                                            |
+| ------------- | ------------------------------- |
+| **Cjdb**      | Fully supported            |
 | **LSP**       | Does not yet recognize keywords related to Effect Handlers |
 | **Formatter** | Not yet supported                                          |
 | **Coverage**  | Not yet supported                                          |
 | **Cjlint**    | Not yet supported                                          |
 
----
-
 ## API Reference
 
 ### Classes
 
-| Class Name                                                                       | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
-| -------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Class Name                                                                       | Description                         |
+| ----------------------- | ----------------------------------------------------------- |
 | [Command\<Res>](./effect_package_api/effect_package_classes.md#class-commandres) | An abstract class representing an **effect** that is expected to return a result of type `Res`. This class provides a default handler method [defaultImpl](./effect_package_api/effect_package_classes.md#func-defaultimpl), which can be overridden. If an effect is not handled, this default method is called; its default implementation throws an [UnhandledCommandException](./effect_package_api/effect_package_exceptions.md#class-unhandledcommandexception). |
 
 ### Exceptions
 
 | Exception Name                                                                                                 | Description                                                                                              |
-| -------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------- |
+| --------------------------- | ----------------------------------------------------------- |
 | [DoubleResumeException](./effect_package_api/effect_package_exceptions.md#class-doubleresumeexception)         | Thrown when attempting to `resume` the same effect more than once. Each effect can only be resumed once. |
 | [UnhandledCommandException](./effect_package_api/effect_package_exceptions.md#class-unhandledcommandexception) | Thrown when an effect is not caught and handled by any handler.                                          |
