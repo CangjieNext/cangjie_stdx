@@ -6924,3 +6924,13926 @@ op_eq_VArrayType: true
 ```
 
 ---
+
+## class CHIRException
+
+```cangjie
+public class CHIRException <: Exception
+```
+
+Function: Checked exception thrown when CHIR construction or IR state is inconsistent.
+
+Parent Types:
+
+- Exception
+
+### init()
+
+```cangjie
+public init()
+```
+
+Function: Constructs a `CHIRException` without a detail message.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let e = CHIRException()
+    println("init_no_msg: ${e.toString().size > 0}")
+}
+```
+
+Output:
+
+```text
+init_no_msg: true
+```
+
+### init(String)
+
+```cangjie
+public init(message: String)
+```
+
+Function: Constructs a `CHIRException` with a detail message.
+
+Parameters:
+
+- message: String - Human-readable error description text.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let e = CHIRException("invalid IR")
+    println("init_with_msg: ${e.toString().size > 0}")
+}
+```
+
+Output:
+
+```text
+init_with_msg: true
+```
+
+---
+
+## class FuncSigInfo
+
+```cangjie
+public class FuncSigInfo
+```
+
+Function: Lightweight signature package for function symbols (name, function type, generic type parameters), used to describe the target signature information of a function call.
+
+### init(String, FuncType)
+
+```cangjie
+public init(name: String, ty: FuncType)
+```
+
+Function: Constructs a `FuncSigInfo` without generic type parameters; `genericTypeParams` is initialized as an empty array.
+
+Parameters:
+
+- name: String - The logical name or mangled name of the symbol.
+- ty: [FuncType](#class-functype) - The function type (parameter list and return type).
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let i32 = IntType.getInt32()
+    let ft = FuncType.get([i32], i32)
+    let sig = FuncSigInfo("foo", ft)
+    println("init_no_generic: ${sig.name}")
+}
+```
+
+Output:
+
+```text
+init_no_generic: foo
+```
+
+### init(String, FuncType, Array\<GenericType>)
+
+```cangjie
+public init(name: String, ty: FuncType, genericTypeParams: Array<GenericType>)
+```
+
+Function: Constructs a `FuncSigInfo` with generic type parameters.
+
+Parameters:
+
+- name: String - The logical name or mangled name of the symbol.
+- ty: [FuncType](#class-functype) - The function type (parameter list and return type).
+- genericTypeParams: Array\<[GenericType](#class-generictype)> - Generic type parameter list (in declaration order).
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let i32 = IntType.getInt32()
+    let ft = FuncType.get([i32], i32)
+    let g = GenericType.get("pkg:T", "T")
+    let sig = FuncSigInfo("bar", ft, [g])
+    println("init_with_generic: ${sig.genericTypeParams.size}")
+}
+```
+
+Output:
+
+```text
+init_with_generic: 1
+```
+
+### prop genericTypeParams
+
+```cangjie
+public prop genericTypeParams: Array<GenericType>
+```
+
+Function: Generic type parameter list attached to this signature.
+
+Type: Array\<[GenericType](#class-generictype)>
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let i32 = IntType.getInt32()
+    let ft = FuncType.get([i32], i32)
+    let g = GenericType.get("pkg:T", "T")
+    let sig = FuncSigInfo("m", ft, [g])
+    println("${sig.genericTypeParams.size}")
+}
+```
+
+Output:
+
+```text
+1
+```
+
+### prop name
+
+```cangjie
+public prop name: String
+```
+
+Function: The display name or mangled name of the symbol.
+
+Type: String
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let ft = FuncType.get([], UnitType.get())
+    let sig = FuncSigInfo("myFunc", ft)
+    println(sig.name)
+}
+```
+
+Output:
+
+```text
+myFunc
+```
+
+### prop ty
+
+```cangjie
+public prop ty: FuncType
+```
+
+Function: The function type of this signature.
+
+Type: [FuncType](#class-functype)
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let i32 = IntType.getInt32()
+    let ft = FuncType.get([i32], i32)
+    let sig = FuncSigInfo("f", ft)
+    println(sig.ty.toString())
+}
+```
+
+Output:
+
+```text
+(Int32) -> Int32
+```
+
+### func dump()
+
+```cangjie
+public func dump(): Unit
+```
+
+Function: Outputs signature information to standard output (prints after calling `toString()`).
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let i32 = IntType.getInt32()
+    let ft = FuncType.get([i32], i32)
+    let sig = FuncSigInfo("g", ft)
+    sig.dump()
+}
+```
+
+Output:
+
+```text
+g(Int32) -> Int32
+```
+
+### func toString()
+
+```cangjie
+public func toString(): String
+```
+
+Function: Renders into the single-line text form `name<generics>(params) -> ret`, convenient for logging and debugging.
+
+Return Value:
+
+- String - Textual form of the signature.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let i32 = IntType.getInt32()
+    let ft = FuncType.get([i32], UnitType.get())
+    let g = GenericType.get("pkg:T", "T")
+    let sig = FuncSigInfo("h", ft, [g])
+    println(sig.toString())
+}
+```
+
+Output:
+
+```text
+h<Generic-pkg:T>(Int32) -> Unit
+```
+
+---
+
+## class CHIRVisitor
+
+```cangjie
+public abstract class CHIRVisitor
+```
+
+Function: **Abstract visitor** for CHIR functions, block groups, basic blocks, and nested expressions. Subclasses can override [`action`](#func-actionexpression) to observe each expression node; `walk` methods recursively traverse until `IRActionMode.STOP` is returned.
+
+### func walk(Function)
+
+```cangjie
+public func walk(f: Function): Unit
+```
+
+Function: Traverses the body of the given function (if present); internally visits all block groups in the body sequentially.
+
+Parameters:
+
+- f: [Function](#class-function) - The function to traverse.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    println("walk_Function: ${f.body.isNone()}")
+}
+```
+
+Output:
+
+```text
+walk_Function: true
+```
+
+### func walk(BlockGroup)
+
+```cangjie
+public func walk(bg: BlockGroup): Unit
+```
+
+Function: Traverses each basic block in the block group in order; terminates early when `STOP` status is encountered.
+
+Parameters:
+
+- bg: [BlockGroup](#class-blockgroup) - The block group to traverse.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    if (let Some(bg) <- f.body) {
+        println("${bg.blocks.size}")
+    } else {
+        println("0")
+    }
+}
+```
+
+Output:
+
+```text
+0
+```
+
+### func walk(Block)
+
+```cangjie
+public func walk(b: Block): Unit
+```
+
+Function: Traverses each expression in the basic block, and recursively visits nested block groups within expressions; terminates early when `STOP` status is encountered.
+
+Parameters:
+
+- b: [Block](#class-block) - The basic block to traverse.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    if (let Some(bg) <- f.body) {
+        if (bg.blocks.size > 0) {
+            println("${bg.blocks[0].exprs.size}")
+        } else {
+            println("0")
+        }
+    } else {
+        println("0")
+    }
+}
+```
+
+Output:
+
+```text
+0
+```
+
+### func action(Expression)
+
+```cangjie
+public open func action(ty: Expression): IRActionMode
+```
+
+Function: Called for each visited expression node, determining whether to continue traversal. Defaults to returning `IRActionMode.CONTINUE`; subclasses can override to implement custom observation logic or early termination.
+
+Parameters:
+
+- ty: Expression - The current expression node.
+
+Return Value:
+
+- [IRActionMode](chir_package_enums.md#enum-iractionmode) - Visitor control mode (`CONTINUE` to continue traversal, `STOP` to terminate traversal).
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+class MyVisitor <: CHIRVisitor {
+    public open func action(ty: Expression): IRActionMode {
+        println(ty.toString().size > 0)
+        return IRActionMode.CONTINUE
+    }
+}
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    let v = MyVisitor()
+    v.walk(f)
+    println("visitor_done")
+}
+```
+
+Output:
+
+```text
+visitor_done
+```
+
+---
+
+## class FuncCallContext
+
+```cangjie
+public class FuncCallContext
+```
+
+Function: Function call context, encapsulating the argument value list, instantiation type arguments, and optional calling object type.
+
+### init(Array\<Value>, Array\<Type>, ?Type)
+
+```cangjie
+public init(args: Array<Value>, instTypeArgs: Array<Type>, objType: ?Type)
+```
+
+Function: Constructs a `FuncCallContext`, specifying the argument list, instantiation type arguments, and calling object type.
+
+Parameters:
+
+- args: Array\<Value> - The argument value list of the function call.
+- instTypeArgs: Array\<[Type](#class-type)> - Instantiation generic type argument list.
+- objType: ?[Type](#class-type) - Calling object type (`None` for static calls).
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let ctx = FuncCallContext([], [], None)
+    println("init_FuncCallContext: ${ctx.args.size}")
+}
+```
+
+Output:
+
+```text
+init_FuncCallContext: 0
+```
+
+### prop args
+
+```cangjie
+public prop args: Array<Value>
+```
+
+Function: The argument value list of the function call.
+
+Type: Array\<Value>
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let ctx = FuncCallContext([], [], None)
+    println("${ctx.args.size}")
+}
+```
+
+Output:
+
+```text
+0
+```
+
+### prop instTypeArgs
+
+```cangjie
+public prop instTypeArgs: Array<Type>
+```
+
+Function: Instantiation generic type argument list.
+
+Type: Array\<[Type](#class-type)>
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let ctx = FuncCallContext([], [], None)
+    println("${ctx.instTypeArgs.size}")
+}
+```
+
+Output:
+
+```text
+0
+```
+
+### prop objType
+
+```cangjie
+public prop objType: ?Type
+```
+
+Function: Calling object type; `None` for static calls.
+
+Type: ?[Type](#class-type)
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let ctx = FuncCallContext([], [], None)
+    println("prop_objType: ${ctx.objType.isNone()}")
+}
+```
+
+Output:
+
+```text
+prop_objType: true
+```
+
+---
+
+## class InvokeCallContext
+
+```cangjie
+public class InvokeCallContext
+```
+
+Function: Virtual method call context, encapsulating the caller value, virtual method signature information, and function call context.
+
+### init(Value, FuncSigInfo, FuncCallContext)
+
+```cangjie
+public init(caller: Value, virMethodCtx: FuncSigInfo, funcCallCtx: FuncCallContext)
+```
+
+Function: Constructs an `InvokeCallContext`, specifying the caller, virtual method signature information, and function call context.
+
+Parameters:
+
+- caller: Value - The caller value (i.e., the receiver object).
+- virMethodCtx: [FuncSigInfo](#class-funcsiginfo) - Signature information of the invoked virtual method.
+- funcCallCtx: [FuncCallContext](#class-funccallcontext) - Function call context for arguments and type arguments.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let ft = FuncType.get([], UnitType.get())
+    let sig = FuncSigInfo("method", ft)
+    let fcc = FuncCallContext([], [], None)
+    let ctx = InvokeCallContext(BoolLiteral.get(false), sig, fcc)
+    println("init_InvokeCallContext: done")
+}
+```
+
+Output:
+
+```text
+init_InvokeCallContext: done
+```
+
+### prop caller
+
+```cangjie
+public prop caller: Value
+```
+
+Function: The caller value (i.e., the receiver object of the virtual method call).
+
+Type: Value
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let ft = FuncType.get([], UnitType.get())
+    let sig = FuncSigInfo("m", ft)
+    let fcc = FuncCallContext([], [], None)
+    let ctx = InvokeCallContext(BoolLiteral.get(false), sig, fcc)
+    println("prop_caller: ${ctx.caller.toString().size > 0}")
+}
+```
+
+Output:
+
+```text
+prop_caller: true
+```
+
+### prop virMethodCtx
+
+```cangjie
+public prop virMethodCtx: FuncSigInfo
+```
+
+Function: Signature information of the invoked virtual method.
+
+Type: [FuncSigInfo](#class-funcsiginfo)
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let ft = FuncType.get([], UnitType.get())
+    let sig = FuncSigInfo("m", ft)
+    let fcc = FuncCallContext([], [], None)
+    let ctx = InvokeCallContext(BoolLiteral.get(false), sig, fcc)
+    println("prop_virMethodCtx: ${ctx.virMethodCtx.name}")
+}
+```
+
+Output:
+
+```text
+prop_virMethodCtx: m
+```
+
+### prop funcCallCtx
+
+```cangjie
+public prop funcCallCtx: FuncCallContext
+```
+
+Function: Function call context for arguments and type arguments.
+
+Type: [FuncCallContext](#class-funccallcontext)
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let ft = FuncType.get([], UnitType.get())
+    let sig = FuncSigInfo("m", ft)
+    let fcc = FuncCallContext([], [], None)
+    let ctx = InvokeCallContext(BoolLiteral.get(false), sig, fcc)
+    println("prop_funcCallCtx: ${ctx.funcCallCtx.args.size}")
+}
+```
+
+Output:
+
+```text
+prop_funcCallCtx: 0
+```
+
+---
+
+## class Block
+
+```cangjie
+public class Block <: Value & Equatable<Block>
+```
+
+Function: Represents a **basic block** in CHIR, the fundamental unit of control flow within a function body. Each basic block contains a sequence of expressions and can form a control flow graph with predecessor basic blocks; setting `exceptions` marks it as an exception-handling landing pad block.
+
+Parent Types:
+
+- Value
+- Equatable\<Block>
+
+### prop exceptions
+
+```cangjie
+public mut prop exceptions: Array<ClassLikeType>
+```
+
+Function: Exception type list; setting this property makes the basic block an exception-handling landing pad block. Internally `None` in the initial state; must be assigned before reading.
+
+Type: Array\<ClassLikeType>
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    block.exceptions = []
+    println("mut_prop_exceptions: ${block.exceptions.size}")
+}
+```
+
+Output:
+
+```text
+mut_prop_exceptions: 0
+```
+
+### prop exprs
+
+```cangjie
+public prop exprs: Array<Expression>
+```
+
+Function: Expression list within the basic block.
+
+Type: Array\<Expression>
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    println("prop_exprs: ${block.exprs.size}")
+}
+```
+
+Output:
+
+```text
+prop_exprs: 0
+```
+
+### prop isLandingPadBlock
+
+```cangjie
+public prop isLandingPadBlock: Bool
+```
+
+Function: Whether this is an exception-handling landing pad block; returns `true` when `exceptions` has been assigned (internally `Some`).
+
+Type: Bool
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    println("prop_isLandingPadBlock: ${block.isLandingPadBlock}")
+}
+```
+
+Output:
+
+```text
+prop_isLandingPadBlock: false
+```
+
+### prop owner
+
+```cangjie
+public prop owner: BlockGroup
+```
+
+Function: The owning BlockGroup.
+
+Type: [BlockGroup](#class-blockgroup)
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    println("prop_owner: ${block.owner == f.body.getOrThrow()}")
+}
+```
+
+Output:
+
+```text
+prop_owner: true
+```
+
+### prop predecessors
+
+```cangjie
+public prop predecessors: Array<Block>
+```
+
+Function: Predecessor basic block list.
+
+Type: Array\<Block>
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    println("prop_predecessors: ${block.predecessors.size}")
+}
+```
+
+Output:
+
+```text
+prop_predecessors: 0
+```
+
+### prop topLevelFunc
+
+```cangjie
+public prop topLevelFunc: Function
+```
+
+Function: The owning top-level function.
+
+Type: [Function](#class-function)
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    println("prop_topLevelFunc: ${block.topLevelFunc == f}")
+}
+```
+
+Output:
+
+```text
+prop_topLevelFunc: true
+```
+
+### func appendExpr(Expression)
+
+```cangjie
+public func appendExpr(expr: Expression): Unit
+```
+
+Function: Appends an expression to the end of the basic block.
+
+Parameters:
+
+- expr: Expression - The expression to append.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let expr = Constant.create(IntLiteral.get(IntType.getInt32(), 0))
+    block.appendExpr(expr)
+    println("fn_appendExpr: ${block.exprs.size}")
+}
+```
+
+Output:
+
+```text
+fn_appendExpr: 1
+```
+
+### func destroySelf()
+
+```cangjie
+public func destroySelf(): Unit
+```
+
+Function: Destroys itself and removes all reference relationships; after destruction, the basic block is removed from the owning BlockGroup's `blocks` list, and its internal `kind` is marked as `Invalid`.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let bg = f.body.getOrThrow()
+    let newBlock = bg.appendBlock()
+    println("fn_destroySelf_before: ${bg.blocks.size}")
+    newBlock.destroySelf()
+    println("fn_destroySelf_after: ${bg.blocks.size}")
+}
+```
+
+Output:
+
+```text
+fn_destroySelf_before: 2
+fn_destroySelf_after: 1
+```
+
+### func insertExpr(Expression, Int64)
+
+```cangjie
+public func insertExpr(expr: Expression, at: Int64): Unit
+```
+
+Function: Inserts an expression at the specified position; when `at` is out of range, it is equivalent to appending to the end.
+
+Parameters:
+
+- expr: Expression - The expression to insert.
+- at: Int64 - Insertion position index (0-based).
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let expr0 = Constant.create(IntLiteral.get(IntType.getInt32(), 0))
+    let expr1 = Constant.create(IntLiteral.get(IntType.getInt32(), 1))
+    block.appendExpr(expr0)
+    block.insertExpr(expr1, 0)
+    println("fn_insertExpr: ${block.exprs.size}")
+}
+```
+
+Output:
+
+```text
+fn_insertExpr: 2
+```
+
+### func toString()
+
+```cangjie
+public func toString(): String
+```
+
+Function: String form of the basic block (including identifier, expression list, etc.).
+
+Return Value:
+
+- String - Textual form.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    println("fn_toString: ${block.toString().size > 0}")
+}
+```
+
+Output:
+
+```text
+fn_toString: true
+```
+
+### operator func==(Block)
+
+```cangjie
+public operator func==(other: Block): Bool
+```
+
+Function: Reference comparison, determines whether two Blocks are the same instance.
+
+Parameters:
+
+- other: Block - Another basic block.
+
+Return Value:
+
+- Bool - Whether they are the same reference.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    println("op_eq_Block: ${block == block}")
+}
+```
+
+Output:
+
+```text
+op_eq_Block: true
+```
+
+---
+
+## class BlockGroup
+
+```cangjie
+public class BlockGroup <: Value & Equatable<BlockGroup>
+```
+
+Function: Represents a **basic block group** in CHIR, the control flow graph container for a function body or lambda body, containing several basic blocks and maintaining an entry block pointer.
+
+Parent Types:
+
+- Value
+- Equatable\<BlockGroup>
+
+### prop blocks
+
+```cangjie
+public prop blocks: Array<Block>
+```
+
+Function: Basic block list.
+
+Type: Array\<Block>
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let bg = f.body.getOrThrow()
+    println("prop_blocks: ${bg.blocks.size}")
+}
+```
+
+Output:
+
+```text
+prop_blocks: 1
+```
+
+### prop entryBlock
+
+```cangjie
+public prop entryBlock: Block
+```
+
+Function: Entry basic block; accessing it when unset will throw an exception.
+
+Type: Block
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let bg = f.body.getOrThrow()
+    println("prop_entryBlock: ${bg.entryBlock == bg.blocks[0]}")
+}
+```
+
+Output:
+
+```text
+prop_entryBlock: true
+```
+
+### prop owner
+
+```cangjie
+public prop owner: Value
+```
+
+Function: The owning parent value (the function or the local variable corresponding to a lambda).
+
+Type: Value
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let bg = f.body.getOrThrow()
+    println("prop_owner: ${bg.owner == f}")
+}
+```
+
+Output:
+
+```text
+prop_owner: true
+```
+
+### prop topLevelFunc
+
+```cangjie
+public prop topLevelFunc: Function
+```
+
+Function: The owning top-level function.
+
+Type: [Function](#class-function)
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let bg = f.body.getOrThrow()
+    println("prop_topLevelFunc: ${bg.topLevelFunc == f}")
+}
+```
+
+Output:
+
+```text
+prop_topLevelFunc: true
+```
+
+### func appendBlock()
+
+```cangjie
+public func appendBlock(): Block
+```
+
+Function: Appends and returns a new empty basic block.
+
+Return Value:
+
+- Block - The newly created basic block.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let bg = f.body.getOrThrow()
+    let newBlock = bg.appendBlock()
+    println("fn_appendBlock: ${bg.blocks.size}")
+}
+```
+
+Output:
+
+```text
+fn_appendBlock: 2
+```
+
+### func destroySelf()
+
+```cangjie
+public func destroySelf(): Unit
+```
+
+Function: Destroys itself and its subordinate basic blocks, and removes references from the owning function or lambda.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    println("fn_destroySelf_before: ${f.body.isSome()}")
+}
+```
+
+Output:
+
+```text
+fn_destroySelf_before: true
+```
+
+### func setEntryBlock(Block)
+
+```cangjie
+public func setEntryBlock(block: Block): Unit
+```
+
+Function: Sets the entry basic block; requires that the block is already in the current BlockGroup's `blocks` list.
+
+Parameters:
+
+- block: Block - The basic block to set as entry.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let bg = f.body.getOrThrow()
+    let newBlock = bg.appendBlock()
+    bg.setEntryBlock(newBlock)
+    println("fn_setEntryBlock: ${bg.entryBlock == newBlock}")
+}
+```
+
+Output:
+
+```text
+fn_setEntryBlock: true
+```
+
+### func toString()
+
+```cangjie
+public func toString(): String
+```
+
+Function: String form of the basic block group.
+
+Return Value:
+
+- String - Textual form.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let bg = f.body.getOrThrow()
+    println("fn_toString: ${bg.toString().size > 0}")
+}
+```
+
+Output:
+
+```text
+fn_toString: true
+```
+
+### operator func==(BlockGroup)
+
+```cangjie
+public operator func==(other: BlockGroup): Bool
+```
+
+Function: Reference comparison, determines whether two BlockGroups are the same instance.
+
+Parameters:
+
+- other: BlockGroup - Another basic block group.
+
+Return Value:
+
+- Bool - Whether they are the same reference.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let bg = f.body.getOrThrow()
+    println("op_eq_BlockGroup: ${bg == bg}")
+}
+```
+
+Output:
+
+```text
+op_eq_BlockGroup: true
+```
+
+---
+
+## class BoolLiteral
+
+```cangjie
+public class BoolLiteral <: LiteralValue & Equatable<BoolLiteral>
+```
+
+Function: Represents a boolean literal (`true` or `false`), cached by value to ensure the same boolean value corresponds to a unique instance.
+
+Parent Types:
+
+- LiteralValue
+- Equatable\<BoolLiteral>
+
+### prop value
+
+```cangjie
+public prop value: Bool
+```
+
+Function: The boolean value.
+
+Type: Bool
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let lit = BoolLiteral.get(true)
+    println("prop_value: ${lit.value}")
+}
+```
+
+Output:
+
+```text
+prop_value: true
+```
+
+### static func get(Bool)
+
+```cangjie
+public static func get(value: Bool): BoolLiteral
+```
+
+Function: Gets a boolean literal; the same boolean value always returns the same cached instance.
+
+Parameters:
+
+- value: Bool - Boolean value.
+
+Return Value:
+
+- BoolLiteral - The corresponding boolean literal.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let lit = BoolLiteral.get(false)
+    println(lit.toString())
+}
+```
+
+Output:
+
+```text
+false
+```
+
+### func toString()
+
+```cangjie
+public func toString(): String
+```
+
+Function: String form, i.e. `"true"` or `"false"`.
+
+Return Value:
+
+- String - Textual form of the boolean value.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let lit = BoolLiteral.get(true)
+    println(lit.toString())
+}
+```
+
+Output:
+
+```text
+true
+```
+
+### operator func==(BoolLiteral)
+
+```cangjie
+public operator func==(other: BoolLiteral): Bool
+```
+
+Function: Reference comparison, determines whether two BoolLiterals are the same instance.
+
+Parameters:
+
+- other: BoolLiteral - Another boolean literal.
+
+Return Value:
+
+- Bool - Whether they are the same reference.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let lit1 = BoolLiteral.get(true)
+    let lit2 = BoolLiteral.get(true)
+    println("op_eq_BoolLiteral: ${lit1 == lit2}")
+}
+```
+
+Output:
+
+```text
+op_eq_BoolLiteral: true
+```
+
+---
+
+## class FloatLiteral
+
+```cangjie
+public class FloatLiteral <: LiteralValue & Equatable<FloatLiteral>
+```
+
+Function: Represents a floating-point literal, cached by `(FloatType, Float64)` to ensure the same type and value correspond to a unique instance.
+
+Parent Types:
+
+- LiteralValue
+- Equatable\<FloatLiteral>
+
+### prop value
+
+```cangjie
+public prop value: Float64
+```
+
+Function: The floating-point value.
+
+Type: Float64
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let lit = FloatLiteral.get(FloatType.getFloat64(), 3.14)
+    println("prop_value: ${lit.value}")
+}
+```
+
+Output:
+
+```text
+prop_value: 3.140000
+```
+
+### static func get(FloatType, Float64)
+
+```cangjie
+public static func get(ty: FloatType, value: Float64): FloatLiteral
+```
+
+Function: Gets a floating-point literal; the same type and value combination always returns the same cached instance.
+
+Parameters:
+
+- ty: FloatType - Floating-point type.
+- value: Float64 - Floating-point value.
+
+Return Value:
+
+- FloatLiteral - The corresponding floating-point literal.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let lit = FloatLiteral.get(FloatType.getFloat32(), 1.5)
+    println(lit.toString())
+}
+```
+
+Output:
+
+```text
+1.500000f
+```
+
+### func toString()
+
+```cangjie
+public func toString(): String
+```
+
+Function: String form, the numeric value suffixed with `"f"` (e.g. `3.14f`).
+
+Return Value:
+
+- String - Textual form of the floating-point value.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let lit = FloatLiteral.get(FloatType.getFloat64(), 2.0)
+    println(lit.toString())
+}
+```
+
+Output:
+
+```text
+2.000000f
+```
+
+### operator func==(FloatLiteral)
+
+```cangjie
+public operator func==(other: FloatLiteral): Bool
+```
+
+Function: Reference comparison, determines whether two FloatLiterals are the same instance.
+
+Parameters:
+
+- other: FloatLiteral - Another floating-point literal.
+
+Return Value:
+
+- Bool - Whether they are the same reference.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let lit1 = FloatLiteral.get(FloatType.getFloat64(), 1.0)
+    let lit2 = FloatLiteral.get(FloatType.getFloat64(), 1.0)
+    println("op_eq_FloatLiteral: ${lit1 == lit2}")
+}
+```
+
+Output:
+
+```text
+op_eq_FloatLiteral: true
+```
+
+---
+
+## class Function
+
+```cangjie
+public class Function <: GlobalValue & Equatable<Function>
+```
+
+Function: Represents a **function definition** in CHIR, containing function type, parameters, body (BlockGroup), generic type parameters, and abstract/open attribute markers.
+
+Parent Types:
+
+- GlobalValue
+- Equatable\<Function>
+
+### prop body
+
+```cangjie
+public prop body: ?BlockGroup
+```
+
+Function: Function body; `None` when not initialized.
+
+Type: ?[BlockGroup](#class-blockgroup)
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    println("prop_body: ${f.body.isNone()}")
+}
+```
+
+Output:
+
+```text
+prop_body: true
+```
+
+### prop funcSrcCodeType
+
+```cangjie
+public prop funcSrcCodeType: FuncType
+```
+
+Function: Source-level function type; for instance member methods, the implicit `this` parameter type is excluded; otherwise identical to `funcType`.
+
+Type: [FuncType](#class-functype)
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([IntType.getInt32()], UnitType.get()), "f_m", "f", "demo")
+    println("prop_funcSrcCodeType: ${f.funcSrcCodeType == f.funcType}")
+}
+```
+
+Output:
+
+```text
+prop_funcSrcCodeType: true
+```
+
+### prop funcType
+
+```cangjie
+public prop funcType: FuncType
+```
+
+Function: Function type (including parameter types and return type).
+
+Type: [FuncType](#class-functype)
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    println("prop_funcType: ${f.funcType.toString()}")
+}
+```
+
+Output:
+
+```text
+prop_funcType: () -> Unit
+```
+
+### prop genericTypeParams
+
+```cangjie
+public mut prop genericTypeParams: Array<GenericType>
+```
+
+Function: Generic type parameters; assignment automatically updates the `Generic` attribute marker (marked as generic when non-empty).
+
+Type: Array\<[GenericType](#class-generictype)>
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    println("mut_prop_genericTypeParams: ${f.genericTypeParams.size}")
+}
+```
+
+Output:
+
+```text
+mut_prop_genericTypeParams: 0
+```
+
+### prop parameters
+
+```cangjie
+public prop parameters: Array<Parameter>
+```
+
+Function: Parameter list.
+
+Type: Array\<[Parameter](#class-parameter)>
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([IntType.getInt32()], UnitType.get()), "f_m", "f", "demo")
+    println("prop_parameters: ${f.parameters.size}")
+}
+```
+
+Output:
+
+```text
+prop_parameters: 1
+```
+
+### prop returnValue
+
+```cangjie
+public mut prop returnValue: ?LocalVar
+```
+
+Function: Return value local variable; assignment automatically updates the `isRetValue` marker on the old and new LocalVars.
+
+Type: ?[LocalVar](#class-localvar)
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    println("mut_prop_returnValue: ${f.returnValue.isNone()}")
+}
+```
+
+Output:
+
+```text
+mut_prop_returnValue: true
+```
+
+### func initBody()
+
+```cangjie
+public func initBody(): Unit
+```
+
+Function: Initializes the function body, creating the entry BlockGroup and Block.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    println("fn_initBody: ${f.body.isSome()}")
+}
+```
+
+Output:
+
+```text
+fn_initBody: true
+```
+
+### func isAbstract()
+
+```cangjie
+public func isAbstract(): Bool
+```
+
+Function: Whether this is an abstract function (with `abstract` marker or a method belonging to an interface).
+
+Return Value:
+
+- Bool - Whether it is abstract.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    println("fn_isAbstract: ${f.isAbstract()}")
+}
+```
+
+Output:
+
+```text
+fn_isAbstract: false
+```
+
+### func isDeclaredInCurPackage()
+
+```cangjie
+public func isDeclaredInCurPackage(): Bool
+```
+
+Function: Whether this is declared in the current package (opposite of `isImported()`).
+
+Return Value:
+
+- Bool - Whether it is declared in this package.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    println("fn_isDeclaredInCurPackage: ${f.isDeclaredInCurPackage()}")
+}
+```
+
+Output:
+
+```text
+fn_isDeclaredInCurPackage: true
+```
+
+### func isGeneric()
+
+```cangjie
+public func isGeneric(): Bool
+```
+
+Function: Whether this is a generic function.
+
+Return Value:
+
+- Bool - Whether it has the generic marker.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    println("fn_isGeneric: ${f.isGeneric()}")
+}
+```
+
+Output:
+
+```text
+fn_isGeneric: false
+```
+
+### func isInstanceMemberMethod()
+
+```cangjie
+public func isInstanceMemberMethod(): Bool
+```
+
+Function: Whether this is an instance member method (has `declaredParent` and is not static).
+
+Return Value:
+
+- Bool - Whether it is an instance member method.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    println("fn_isInstanceMemberMethod: ${f.isInstanceMemberMethod()}")
+}
+```
+
+Output:
+
+```text
+fn_isInstanceMemberMethod: false
+```
+
+### func isMemberMethod()
+
+```cangjie
+public func isMemberMethod(): Bool
+```
+
+Function: Whether this is a member method (instance or static), i.e. whether it has `declaredParent`.
+
+Return Value:
+
+- Bool - Whether it is a member method.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    println("fn_isMemberMethod: ${f.isMemberMethod()}")
+}
+```
+
+Output:
+
+```text
+fn_isMemberMethod: false
+```
+
+### func isOpen()
+
+```cangjie
+public func isOpen(): Bool
+```
+
+Function: Whether this is an open/virtual function (can be overridden by subclasses).
+
+Return Value:
+
+- Bool - Whether it is open.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    println("fn_isOpen: ${f.isOpen()}")
+}
+```
+
+Output:
+
+```text
+fn_isOpen: false
+```
+
+### func isSrcCodeImported()
+
+```cangjie
+public func isSrcCodeImported(): Bool
+```
+
+Function: Whether the source code is imported (`isImported()` and already has a function body).
+
+Return Value:
+
+- Bool - Whether it is imported and already has a body.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    println("fn_isSrcCodeImported: ${f.isSrcCodeImported()}")
+}
+```
+
+Output:
+
+```text
+fn_isSrcCodeImported: false
+```
+
+### func isStaticMemberMethod()
+
+```cangjie
+public func isStaticMemberMethod(): Bool
+```
+
+Function: Whether this is a static member method (has `declaredParent` and is static).
+
+Return Value:
+
+- Bool - Whether it is a static member method.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    println("fn_isStaticMemberMethod: ${f.isStaticMemberMethod()}")
+}
+```
+
+Output:
+
+```text
+fn_isStaticMemberMethod: false
+```
+
+### func moveBodyTo(Function)
+
+```cangjie
+public func moveBodyTo(other: Function): Unit
+```
+
+Function: Moves the function body, parameters, generic type parameters, and return value to another function; after calling, the above contents of this function are cleared.
+
+Parameters:
+
+- other: Function - Target function.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f1 = pkg.addFunction(FuncType.get([], UnitType.get()), "f1_m", "f1", "demo")
+    let f2 = pkg.addFunction(FuncType.get([], UnitType.get()), "f2_m", "f2", "demo")
+    f1.initBody()
+    f1.moveBodyTo(f2)
+    println("fn_moveBodyTo_src: ${f1.body.isNone()}")
+    println("fn_moveBodyTo_dst: ${f2.body.isSome()}")
+}
+```
+
+Output:
+
+```text
+fn_moveBodyTo_src: true
+fn_moveBodyTo_dst: true
+```
+
+### func selfOrParentIsGeneric()
+
+```cangjie
+public func selfOrParentIsGeneric(): Bool
+```
+
+Function: Whether this function or its parent definition is generic.
+
+Return Value:
+
+- Bool - Whether it is in a generic context.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    println("fn_selfOrParentIsGeneric: ${f.selfOrParentIsGeneric()}")
+}
+```
+
+Output:
+
+```text
+fn_selfOrParentIsGeneric: false
+```
+
+### func setAbstract(Bool)
+
+```cangjie
+public func setAbstract(enable: Bool): Unit
+```
+
+Function: Sets or clears the `abstract` marker.
+
+Parameters:
+
+- enable: Bool - `true` marks as abstract, `false` clears the marker.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.setAbstract(true)
+    println("fn_setAbstract: ${f.isAbstract()}")
+}
+```
+
+Output:
+
+```text
+fn_setAbstract: true
+```
+
+### func setOpen(Bool)
+
+```cangjie
+public func setOpen(enable: Bool): Unit
+```
+
+Function: Sets or clears the `open` (virtual) marker.
+
+Parameters:
+
+- enable: Bool - `true` marks as open, `false` clears the marker.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.setOpen(true)
+    println("fn_setOpen: ${f.isOpen()}")
+}
+```
+
+Output:
+
+```text
+fn_setOpen: true
+```
+
+### func toString()
+
+```cangjie
+public func toString(): String
+```
+
+Function: String form of the function (including identifier, type, parameters, etc.).
+
+Return Value:
+
+- String - Textual form.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    println("fn_toString: ${f.toString().size > 0}")
+}
+```
+
+Output:
+
+```text
+fn_toString: true
+```
+
+### operator func==(Function)
+
+```cangjie
+public operator func==(other: Function): Bool
+```
+
+Function: Reference comparison, determines whether two Functions are the same instance.
+
+Parameters:
+
+- other: Function - Another function.
+
+Return Value:
+
+- Bool - Whether they are the same reference.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    println("op_eq_Function: ${f == f}")
+}
+```
+
+Output:
+
+```text
+op_eq_Function: true
+```
+
+---
+
+## class GlobalVar
+
+```cangjie
+public class GlobalVar <: GlobalValue & Equatable<GlobalVar>
+```
+
+Function: Represents a **global variable definition** in CHIR, containing type, initializer value, and read-only marker.
+
+Parent Types:
+
+- GlobalValue
+- Equatable\<GlobalVar>
+
+### prop initializer
+
+```cangjie
+public prop initializer: ?Value
+```
+
+Function: Initializer value; `None` when not set.
+
+Type: ?Value
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let gv = pkg.addGlobalVar(IntType.getInt32(), "gv_m", "gv", "demo")
+    println("prop_initializer: ${gv.initializer.isNone()}")
+}
+```
+
+Output:
+
+```text
+prop_initializer: true
+```
+
+### func isReadOnly()
+
+```cangjie
+public func isReadOnly(): Bool
+```
+
+Function: Whether this is a read-only global variable (corresponding to a `let` declaration in source code).
+
+Return Value:
+
+- Bool - Whether it is read-only.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let gv = pkg.addGlobalVar(IntType.getInt32(), "gv_m", "gv", "demo")
+    println("fn_isReadOnly: ${gv.isReadOnly()}")
+}
+```
+
+Output:
+
+```text
+fn_isReadOnly: false
+```
+
+### func isSrcCodeImported()
+
+```cangjie
+public func isSrcCodeImported(): Bool
+```
+
+Function: Whether the source code is imported (`isImported()` and already has an initializer value).
+
+Return Value:
+
+- Bool - Whether it is imported and already initialized.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let gv = pkg.addGlobalVar(IntType.getInt32(), "gv_m", "gv", "demo")
+    println("fn_isSrcCodeImported: ${gv.isSrcCodeImported()}")
+}
+```
+
+Output:
+
+```text
+fn_isSrcCodeImported: false
+```
+
+### func setInitializer(Value)
+
+```cangjie
+public func setInitializer(initializer: Value): Unit
+```
+
+Function: Sets the initializer value.
+
+Parameters:
+
+- initializer: Value - Initializer value (can be a literal or function reference).
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let gv = pkg.addGlobalVar(IntType.getInt32(), "gv_m", "gv", "demo")
+    gv.setInitializer(IntLiteral.get(IntType.getInt32(), 42))
+    println("fn_setInitializer: ${gv.initializer.isSome()}")
+}
+```
+
+Output:
+
+```text
+fn_setInitializer: true
+```
+
+### func setReadOnly(Bool)
+
+```cangjie
+public func setReadOnly(enable: Bool): Unit
+```
+
+Function: Sets or clears the read-only marker.
+
+Parameters:
+
+- enable: Bool - `true` marks as read-only, `false` clears the marker.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let gv = pkg.addGlobalVar(IntType.getInt32(), "gv_m", "gv", "demo")
+    gv.setReadOnly(true)
+    println("fn_setReadOnly: ${gv.isReadOnly()}")
+}
+```
+
+Output:
+
+```text
+fn_setReadOnly: true
+```
+
+### func toString()
+
+```cangjie
+public func toString(): String
+```
+
+Function: String form of the global variable (including attributes, type, initializer value, etc.).
+
+Return Value:
+
+- String - Textual form.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let gv = pkg.addGlobalVar(IntType.getInt32(), "gv_m", "gv", "demo")
+    println("fn_toString: ${gv.toString().size > 0}")
+}
+```
+
+Output:
+
+```text
+fn_toString: true
+```
+
+### operator func==(GlobalVar)
+
+```cangjie
+public operator func==(other: GlobalVar): Bool
+```
+
+Function: Reference comparison, determines whether two GlobalVars are the same instance.
+
+Parameters:
+
+- other: GlobalVar - Another global variable.
+
+Return Value:
+
+- Bool - Whether they are the same reference.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let gv = pkg.addGlobalVar(IntType.getInt32(), "gv_m", "gv", "demo")
+    println("op_eq_GlobalVar: ${gv == gv}")
+}
+```
+
+Output:
+
+```text
+op_eq_GlobalVar: true
+```
+
+---
+
+## class IntLiteral
+
+```cangjie
+public class IntLiteral <: LiteralValue & Equatable<IntLiteral>
+```
+
+Function: Represents an integer literal, cached by `(IntType, UInt64)` to ensure the same type and value correspond to a unique instance.
+
+Parent Types:
+
+- LiteralValue
+- Equatable\<IntLiteral>
+
+### prop signedValue
+
+```cangjie
+public prop signedValue: Int64
+```
+
+Function: Signed integer value (converts internal `UInt64` to `Int64`).
+
+Type: Int64
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let lit = IntLiteral.get(IntType.getInt32(), 42)
+    println("prop_signedValue: ${lit.signedValue}")
+}
+```
+
+Output:
+
+```text
+prop_signedValue: 42
+```
+
+### prop unsignedValue
+
+```cangjie
+public prop unsignedValue: UInt64
+```
+
+Function: Unsigned integer value.
+
+Type: UInt64
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let lit = IntLiteral.get(IntType.getUInt32(), 42)
+    println("prop_unsignedValue: ${lit.unsignedValue}")
+}
+```
+
+Output:
+
+```text
+prop_unsignedValue: 42
+```
+
+### static func get(IntType, UInt64)
+
+```cangjie
+public static func get(ty: IntType, value: UInt64): IntLiteral
+```
+
+Function: Gets an integer literal; the same type and value combination always returns the same cached instance.
+
+Parameters:
+
+- ty: IntType - Integer type.
+- value: UInt64 - Unsigned integer value.
+
+Return Value:
+
+- IntLiteral - The corresponding integer literal.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let lit = IntLiteral.get(IntType.getInt64(), 100)
+    println(lit.toString())
+}
+```
+
+Output:
+
+```text
+100i
+```
+
+### func isSigned()
+
+```cangjie
+public func isSigned(): Bool
+```
+
+Function: Whether this is a signed integer (determined by the owning `IntType`).
+
+Return Value:
+
+- Bool - Whether it is signed.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let lit = IntLiteral.get(IntType.getInt32(), 0)
+    println("fn_isSigned: ${lit.isSigned()}")
+}
+```
+
+Output:
+
+```text
+fn_isSigned: true
+```
+
+### func toString()
+
+```cangjie
+public func toString(): String
+```
+
+Function: String form, suffixed with `"i"` when signed, `"u"` when unsigned (e.g. `42i`, `42u`).
+
+Return Value:
+
+- String - Textual form of the integer value.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let lit = IntLiteral.get(IntType.getUInt16(), 7)
+    println(lit.toString())
+}
+```
+
+Output:
+
+```text
+7u
+```
+
+### operator func==(IntLiteral)
+
+```cangjie
+public operator func==(other: IntLiteral): Bool
+```
+
+Function: Reference comparison, determines whether two IntLiterals are the same instance.
+
+Parameters:
+
+- other: IntLiteral - Another integer literal.
+
+Return Value:
+
+- Bool - Whether they are the same reference.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let lit1 = IntLiteral.get(IntType.getInt32(), 10)
+    let lit2 = IntLiteral.get(IntType.getInt32(), 10)
+    println("op_eq_IntLiteral: ${lit1 == lit2}")
+}
+```
+
+Output:
+
+```text
+op_eq_IntLiteral: true
+```
+
+---
+
+## class LocalVar
+
+```cangjie
+public class LocalVar <: Value & Equatable<LocalVar>
+```
+
+Function: Represents a **local variable** in CHIR, produced by expression results, and can also serve as a function return value.
+
+Parent Types:
+
+- Value
+- Equatable\<LocalVar>
+
+### prop expr
+
+```cangjie
+public prop expr: Expression
+```
+
+Function: The expression that defines this local variable.
+
+Type: Expression
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], IntType.getInt32()), "f_m", "f", "demo")
+    f.initBody()
+    let lit = IntLiteral.get(IntType.getInt32(), 1)
+    let expr = Constant.create(lit)
+    let lv = expr.result
+    println("prop_expr: ${lv.expr == expr}")
+}
+```
+
+Output:
+
+```text
+prop_expr: true
+```
+
+### prop srcCodeName
+
+```cangjie
+public mut prop srcCodeName: String
+```
+
+Function: Source code name; initially an empty string.
+
+Type: String
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], IntType.getInt32()), "f_m", "f", "demo")
+    f.initBody()
+    let lit = IntLiteral.get(IntType.getInt32(), 1)
+    let expr = Constant.create(lit)
+    let lv = expr.result
+    lv.srcCodeName = "x"
+    println("mut_prop_srcCodeName: ${lv.srcCodeName}")
+}
+```
+
+Output:
+
+```text
+mut_prop_srcCodeName: x
+```
+
+### prop topLevelFunc
+
+```cangjie
+public prop topLevelFunc: Function
+```
+
+Function: The owning top-level function.
+
+Type: [Function](#class-function)
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], IntType.getInt32()), "f_m", "f", "demo")
+    f.initBody()
+    let lit = IntLiteral.get(IntType.getInt32(), 1)
+    let expr = Constant.create(lit)
+    f.body.getOrThrow().entryBlock.appendExpr(expr)
+    let lv = expr.result
+    println("prop_topLevelFunc: ${lv.topLevelFunc == f}")
+}
+```
+
+Output:
+
+```text
+prop_topLevelFunc: true
+```
+
+### func toString()
+
+```cangjie
+public func toString(): String
+```
+
+Function: String form of the local variable (equivalent to the `toString()` of its defining expression).
+
+Return Value:
+
+- String - Textual form.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], IntType.getInt32()), "f_m", "f", "demo")
+    f.initBody()
+    let lit = IntLiteral.get(IntType.getInt32(), 1)
+    let expr = Constant.create(lit)
+    f.body.getOrThrow().entryBlock.appendExpr(expr)
+    let lv = expr.result
+    println("fn_toString: ${lv.toString().size > 0}")
+}
+```
+
+Output:
+
+```text
+fn_toString: true
+```
+
+### operator func==(LocalVar)
+
+```cangjie
+public operator func==(other: LocalVar): Bool
+```
+
+Function: Reference comparison, determines whether two LocalVars are the same instance.
+
+Parameters:
+
+- other: LocalVar - Another local variable.
+
+Return Value:
+
+- Bool - Whether they are the same reference.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], IntType.getInt32()), "f_m", "f", "demo")
+    f.initBody()
+    let lit = IntLiteral.get(IntType.getInt32(), 1)
+    let expr = Constant.create(lit)
+    f.body.getOrThrow().entryBlock.appendExpr(expr)
+    let lv = expr.result
+    println("op_eq_LocalVar: ${lv == lv}")
+}
+```
+
+Output:
+
+```text
+op_eq_LocalVar: true
+```
+
+---
+
+## class NullLiteral
+
+```cangjie
+public class NullLiteral <: LiteralValue & Equatable<NullLiteral>
+```
+
+Function: Represents a Null literal, cached by type to ensure the same type corresponds to a unique instance.
+
+Parent Types:
+
+- LiteralValue
+- Equatable\<NullLiteral>
+
+### static func get(Type)
+
+```cangjie
+public static func get(ty: Type): NullLiteral
+```
+
+Function: Gets a Null literal for the specified type; the same type always returns the same cached instance.
+
+Parameters:
+
+- ty: Type - The type of Null.
+
+Return Value:
+
+- NullLiteral - Null literal instance.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let lit = NullLiteral.get(BoxType.get(IntType.getInt32()))
+    println(lit.toString())
+}
+```
+
+Output:
+
+```text
+Null
+```
+
+### func toString()
+
+```cangjie
+public func toString(): String
+```
+
+Function: String form, always `"Null"`.
+
+Return Value:
+
+- String - `"Null"`.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let lit = NullLiteral.get(BoxType.get(IntType.getInt32()))
+    println(lit.toString())
+}
+```
+
+Output:
+
+```text
+Null
+```
+
+### operator func==(NullLiteral)
+
+```cangjie
+public operator func==(other: NullLiteral): Bool
+```
+
+Function: Reference comparison, determines whether two NullLiterals are the same instance.
+
+Parameters:
+
+- other: NullLiteral - Another Null literal.
+
+Return Value:
+
+- Bool - Whether they are the same reference.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let lit1 = NullLiteral.get(BoxType.get(IntType.getInt32()))
+    let lit2 = NullLiteral.get(BoxType.get(IntType.getInt32()))
+    println("op_eq_NullLiteral: ${lit1 == lit2}")
+}
+```
+
+Output:
+
+```text
+op_eq_NullLiteral: true
+```
+
+---
+
+## class Parameter
+
+```cangjie
+public class Parameter <: Value & Equatable<Parameter>
+```
+
+Function: Represents a **function parameter** in CHIR, containing type, source code name, annotations, and other information.
+
+Parent Types:
+
+- Value
+- Equatable\<Parameter>
+
+### prop annotations
+
+```cangjie
+public mut prop annotations: Array<Annotation>
+```
+
+Function: Parameter annotation list; `set` replaces the entire list.
+
+Type: Array\<[Annotation](#class-annotation)>
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([IntType.getInt32()], UnitType.get()), "f_m", "f", "demo")
+    let param = f.parameters[0]
+    println("mut_prop_annotations: ${param.annotations.size}")
+}
+```
+
+Output:
+
+```text
+mut_prop_annotations: 0
+```
+
+### prop srcCodeName
+
+```cangjie
+public mut prop srcCodeName: String
+```
+
+Function: Parameter source code name; initially an empty string.
+
+Type: String
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([IntType.getInt32()], UnitType.get()), "f_m", "f", "demo")
+    let param = f.parameters[0]
+    param.srcCodeName = "x"
+    println("mut_prop_srcCodeName: ${param.srcCodeName}")
+}
+```
+
+Output:
+
+```text
+mut_prop_srcCodeName: x
+```
+
+### prop topLevelFunc
+
+```cangjie
+public prop topLevelFunc: Function
+```
+
+Function: The owning top-level function.
+
+Type: [Function](#class-function)
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([IntType.getInt32()], UnitType.get()), "f_m", "f", "demo")
+    let param = f.parameters[0]
+    println("prop_topLevelFunc: ${param.topLevelFunc == f}")
+}
+```
+
+Output:
+
+```text
+prop_topLevelFunc: true
+```
+
+### func toString()
+
+```cangjie
+public func toString(): String
+```
+
+Function: String form of the parameter (including type, annotations, etc.).
+
+Return Value:
+
+- String - Textual form.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([IntType.getInt32()], UnitType.get()), "f_m", "f", "demo")
+    let param = f.parameters[0]
+    println("fn_toString: ${param.toString().size > 0}")
+}
+```
+
+Output:
+
+```text
+fn_toString: true
+```
+
+### operator func==(Parameter)
+
+```cangjie
+public operator func==(other: Parameter): Bool
+```
+
+Function: Reference comparison, determines whether two Parameters are the same instance.
+
+Parameters:
+
+- other: Parameter - Another parameter.
+
+Return Value:
+
+- Bool - Whether they are the same reference.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([IntType.getInt32()], UnitType.get()), "f_m", "f", "demo")
+    let param = f.parameters[0]
+    println("op_eq_Parameter: ${param == param}")
+}
+```
+
+Output:
+
+```text
+op_eq_Parameter: true
+```
+
+---
+
+## class RuneLiteral
+
+```cangjie
+public class RuneLiteral <: LiteralValue & Equatable<RuneLiteral>
+```
+
+Function: Represents a Rune (character) literal, cached by value to ensure the same Rune value corresponds to a unique instance.
+
+Parent Types:
+
+- LiteralValue
+- Equatable\<RuneLiteral>
+
+### prop value
+
+```cangjie
+public prop value: Rune
+```
+
+Function: Rune value (Unicode code point).
+
+Type: Rune
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let lit = RuneLiteral.get(Rune(65))
+    println("prop_value: ${lit.value}")
+}
+```
+
+Output:
+
+```text
+prop_value: A
+```
+
+### static func get(Rune)
+
+```cangjie
+public static func get(value: Rune): RuneLiteral
+```
+
+Function: Gets a Rune literal; the same Rune value always returns the same cached instance.
+
+Parameters:
+
+- value: Rune - Rune value.
+
+Return Value:
+
+- RuneLiteral - The corresponding Rune literal.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let lit = RuneLiteral.get(Rune(97))
+    println(lit.toString())
+}
+```
+
+Output:
+
+```text
+'a'
+```
+
+### func toString()
+
+```cangjie
+public func toString(): String
+```
+
+Function: String form, a single-quoted character representation (e.g. `'A'`).
+
+Return Value:
+
+- String - Textual form of the Rune value.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let lit = RuneLiteral.get(Rune(48))
+    println(lit.toString())
+}
+```
+
+Output:
+
+```text
+'0'
+```
+
+### operator func==(RuneLiteral)
+
+```cangjie
+public operator func==(other: RuneLiteral): Bool
+```
+
+Function: Reference comparison, determines whether two RuneLiterals are the same instance.
+
+Parameters:
+
+- other: RuneLiteral - Another Rune literal.
+
+Return Value:
+
+- Bool - Whether they are the same reference.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let lit1 = RuneLiteral.get(Rune(65))
+    let lit2 = RuneLiteral.get(Rune(65))
+    println("op_eq_RuneLiteral: ${lit1 == lit2}")
+}
+```
+
+Output:
+
+```text
+op_eq_RuneLiteral: true
+```
+
+---
+
+## class StringLiteral
+
+```cangjie
+public class StringLiteral <: LiteralValue & Equatable<StringLiteral>
+```
+
+Function: Represents a string literal, cached by value to ensure the same string value corresponds to a unique instance.
+
+Parent Types:
+
+- LiteralValue
+- Equatable\<StringLiteral>
+
+### prop value
+
+```cangjie
+public prop value: String
+```
+
+Function: String value.
+
+Type: String
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let lit = StringLiteral.get(UnitType.get(), "hello")
+    println("prop_value: ${lit.value}")
+}
+```
+
+Output:
+
+```text
+prop_value: hello
+```
+
+### static func get(Type, String)
+
+```cangjie
+public static func get(ty: Type, value: String): StringLiteral
+```
+
+Function: Gets a string literal; the same string value always returns the same cached instance.
+
+Parameters:
+
+- ty: Type - The type the string belongs to.
+- value: String - String content.
+
+Return Value:
+
+- StringLiteral - The corresponding string literal.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let lit = StringLiteral.get(UnitType.get(), "world")
+    println(lit.toString())
+}
+```
+
+Output:
+
+```text
+"world"
+```
+
+### func toString()
+
+```cangjie
+public func toString(): String
+```
+
+Function: String form, wrapped in double quotes (e.g. `"hello"`).
+
+Return Value:
+
+- String - Textual form of the string value.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let lit = StringLiteral.get(UnitType.get(), "abc")
+    println(lit.toString())
+}
+```
+
+Output:
+
+```text
+"abc"
+```
+
+### operator func==(StringLiteral)
+
+```cangjie
+public operator func==(other: StringLiteral): Bool
+```
+
+Function: Reference comparison, determines whether two StringLiterals are the same instance.
+
+Parameters:
+
+- other: StringLiteral - Another string literal.
+
+Return Value:
+
+- Bool - Whether they are the same reference.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let lit1 = StringLiteral.get(UnitType.get(), "test")
+    let lit2 = StringLiteral.get(UnitType.get(), "test")
+    println("op_eq_StringLiteral: ${lit1 == lit2}")
+}
+```
+
+Output:
+
+```text
+op_eq_StringLiteral: true
+```
+
+---
+
+## class UnitLiteral
+
+```cangjie
+public class UnitLiteral <: LiteralValue & Equatable<UnitLiteral>
+```
+
+Function: Represents a Unit literal (singleton, denoting no return value).
+
+Parent Types:
+
+- LiteralValue
+- Equatable\<UnitLiteral>
+
+### static func get()
+
+```cangjie
+public static func get(): UnitLiteral
+```
+
+Function: Gets the singleton instance of the Unit literal.
+
+Return Value:
+
+- UnitLiteral - Unit literal instance.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let lit = UnitLiteral.get()
+    println(lit.toString())
+}
+```
+
+Output:
+
+```text
+Unit
+```
+
+### func toString()
+
+```cangjie
+public func toString(): String
+```
+
+Function: String form, always `"Unit"`.
+
+Return Value:
+
+- String - `"Unit"`.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let lit = UnitLiteral.get()
+    println(lit.toString())
+}
+```
+
+Output:
+
+```text
+Unit
+```
+
+### operator func==(UnitLiteral)
+
+```cangjie
+public operator func==(other: UnitLiteral): Bool
+```
+
+Function: Reference comparison, determines whether two UnitLiterals are the same instance.
+
+Parameters:
+
+- other: UnitLiteral - Another Unit literal.
+
+Return Value:
+
+- Bool - Whether they are the same reference.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let lit1 = UnitLiteral.get()
+    let lit2 = UnitLiteral.get()
+    println("op_eq_UnitLiteral: ${lit1 == lit2}")
+}
+```
+
+Output:
+
+```text
+op_eq_UnitLiteral: true
+```
+
+---
+</task_result>
+
+---
+
+## class Allocate
+
+```cangjie
+public class Allocate <: AllocateBase & Equatable<Allocate>
+```
+
+Function: Memory allocation expression, allocating space for the specified type without exception handling.
+
+Parent Types:
+
+- AllocateBase
+- Equatable\<Allocate>
+
+### static func create(Type)
+
+```cangjie
+public static func create(allocatedType: Type): Allocate
+```
+
+Function: Creates a memory allocation expression.
+
+Parameters:
+
+- allocatedType: Type - The type to allocate.
+
+Return Value:
+
+- Allocate - The created memory allocation expression.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let expr = Allocate.create(IntType.getInt32())
+    block.appendExpr(expr)
+    println("static_func_create: ${block.exprs.size}")
+}
+```
+
+Output:
+
+```text
+static_func_create: 1
+```
+
+### operator func==(Allocate)
+
+```cangjie
+public operator func==(other: Allocate): Bool
+```
+
+Function: Reference comparison, determines whether two Allocate instances are the same.
+
+Parameters:
+
+- other: Allocate - Another memory allocation expression.
+
+Return Value:
+
+- Bool - Whether they are the same reference.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let expr = Allocate.create(IntType.getInt32())
+    block.appendExpr(expr)
+    println("op_eq_Allocate: ${expr == expr}")
+}
+```
+
+Output:
+
+```text
+op_eq_Allocate: true
+```
+
+---
+
+## class TryAllocate
+
+```cangjie
+public class TryAllocate <: AllocateBase & Equatable<TryAllocate>
+```
+
+Function: Memory allocation expression with exception handling; jumps to the normal branch on success and to the error branch on failure.
+
+Parent Types:
+
+- AllocateBase
+- Equatable\<TryAllocate>
+
+### prop normalBranch
+
+```cangjie
+public prop normalBranch: Block
+```
+
+Function: Normal branch target block.
+
+Type: Block
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let bg = f.body.getOrThrow()
+    let block = bg.entryBlock
+    let normalBlock = bg.appendBlock()
+    let errorBlock = bg.appendBlock()
+    let expr = TryAllocate.create(IntType.getInt32(), normalBlock, errorBlock)
+    block.appendExpr(expr)
+    println("prop_normalBranch: ${expr.normalBranch == normalBlock}")
+}
+```
+
+Output:
+
+```text
+prop_normalBranch: true
+```
+
+### prop errorBranch
+
+```cangjie
+public prop errorBranch: Block
+```
+
+Function: Error branch target block.
+
+Type: Block
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let bg = f.body.getOrThrow()
+    let block = bg.entryBlock
+    let normalBlock = bg.appendBlock()
+    let errorBlock = bg.appendBlock()
+    let expr = TryAllocate.create(IntType.getInt32(), normalBlock, errorBlock)
+    block.appendExpr(expr)
+    println("prop_errorBranch: ${expr.errorBranch == errorBlock}")
+}
+```
+
+Output:
+
+```text
+prop_errorBranch: true
+```
+
+### static func create(Type, Block, Block)
+
+```cangjie
+public static func create(allocatedType: Type, normal: Block, err: Block): TryAllocate
+```
+
+Function: Creates a memory allocation expression with exception handling.
+
+Parameters:
+
+- allocatedType: Type - The type to allocate.
+- normal: Block - Normal branch target block.
+- err: Block - Error branch target block.
+
+Return Value:
+
+- TryAllocate - The created memory allocation expression with exception handling.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let bg = f.body.getOrThrow()
+    let block = bg.entryBlock
+    let normalBlock = bg.appendBlock()
+    let errorBlock = bg.appendBlock()
+    let expr = TryAllocate.create(IntType.getInt32(), normalBlock, errorBlock)
+    block.appendExpr(expr)
+    println("static_func_create: ${block.exprs.size}")
+}
+```
+
+Output:
+
+```text
+static_func_create: 1
+```
+
+### operator func==(TryAllocate)
+
+```cangjie
+public operator func==(other: TryAllocate): Bool
+```
+
+Function: Reference comparison, determines whether two TryAllocate instances are the same.
+
+Parameters:
+
+- other: TryAllocate - Another memory allocation expression with exception handling.
+
+Return Value:
+
+- Bool - Whether they are the same reference.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let bg = f.body.getOrThrow()
+    let block = bg.entryBlock
+    let normalBlock = bg.appendBlock()
+    let errorBlock = bg.appendBlock()
+    let expr = TryAllocate.create(IntType.getInt32(), normalBlock, errorBlock)
+    block.appendExpr(expr)
+    println("op_eq_TryAllocate: ${expr == expr}")
+}
+```
+
+Output:
+
+```text
+op_eq_TryAllocate: true
+```
+
+---
+
+## class BinaryExpression
+
+```cangjie
+public class BinaryExpression <: BinaryExpressionBase & Equatable<BinaryExpression>
+```
+
+Function: Binary operation expression (without exception handling), supporting arithmetic, bitwise, comparison, and logical operations.
+
+Parent Types:
+
+- BinaryExpressionBase
+- Equatable\<BinaryExpression>
+
+### static func create(BinaryExprKind, Value, Value)
+
+```cangjie
+public static func create(kind: BinaryExprKind, leftOp: Value, rightOp: Value): BinaryExpression
+```
+
+Function: Creates a binary operation expression.
+
+Parameters:
+
+- kind: BinaryExprKind - The binary operation type.
+- leftOp: Value - The left operand.
+- rightOp: Value - The right operand.
+
+Return Value:
+
+- BinaryExpression - The created binary operation expression.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let leftOp = IntLiteral.get(IntType.getInt32(), 1)
+    let rightOp = IntLiteral.get(IntType.getInt32(), 2)
+    let expr = BinaryExpression.create(BinaryExprKind.Add, leftOp, rightOp)
+    block.appendExpr(expr)
+    println("static_func_create: ${block.exprs.size}")
+}
+```
+
+Output:
+
+```text
+static_func_create: 1
+```
+
+### operator func==(BinaryExpression)
+
+```cangjie
+public operator func==(other: BinaryExpression): Bool
+```
+
+Function: Reference comparison, determines whether two BinaryExpression instances are the same.
+
+Parameters:
+
+- other: BinaryExpression - Another binary operation expression.
+
+Return Value:
+
+- Bool - Whether they are the same reference.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let leftOp = IntLiteral.get(IntType.getInt32(), 1)
+    let rightOp = IntLiteral.get(IntType.getInt32(), 2)
+    let expr = BinaryExpression.create(BinaryExprKind.Add, leftOp, rightOp)
+    block.appendExpr(expr)
+    println("op_eq_BinaryExpression: ${expr == expr}")
+}
+```
+
+Output:
+
+```text
+op_eq_BinaryExpression: true
+```
+
+---
+
+## class TryBinaryExpression
+
+```cangjie
+public class TryBinaryExpression <: BinaryExpressionBase & Equatable<TryBinaryExpression>
+```
+
+Function: Binary operation expression with exception handling; jumps to the normal branch on success and to the error branch on overflow or error.
+
+Parent Types:
+
+- BinaryExpressionBase
+- Equatable\<TryBinaryExpression>
+
+### prop normalBranch
+
+```cangjie
+public prop normalBranch: Block
+```
+
+Function: Normal branch target block.
+
+Type: Block
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let bg = f.body.getOrThrow()
+    let block = bg.entryBlock
+    let normalBlock = bg.appendBlock()
+    let errorBlock = bg.appendBlock()
+    let leftOp = IntLiteral.get(IntType.getInt32(), 1)
+    let rightOp = IntLiteral.get(IntType.getInt32(), 2)
+    let expr = TryBinaryExpression.create(BinaryExprKind.Add, leftOp, rightOp, normalBlock, errorBlock)
+    block.appendExpr(expr)
+    println("prop_normalBranch: ${expr.normalBranch == normalBlock}")
+}
+```
+
+Output:
+
+```text
+prop_normalBranch: true
+```
+
+### prop errorBranch
+
+```cangjie
+public prop errorBranch: Block
+```
+
+Function: Error branch target block.
+
+Type: Block
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let bg = f.body.getOrThrow()
+    let block = bg.entryBlock
+    let normalBlock = bg.appendBlock()
+    let errorBlock = bg.appendBlock()
+    let leftOp = IntLiteral.get(IntType.getInt32(), 1)
+    let rightOp = IntLiteral.get(IntType.getInt32(), 2)
+    let expr = TryBinaryExpression.create(BinaryExprKind.Add, leftOp, rightOp, normalBlock, errorBlock)
+    block.appendExpr(expr)
+    println("prop_errorBranch: ${expr.errorBranch == errorBlock}")
+}
+```
+
+Output:
+
+```text
+prop_errorBranch: true
+```
+
+### static func create(BinaryExprKind, Value, Value, Block, Block)
+
+```cangjie
+public static func create(kind: BinaryExprKind, leftOp: Value, rightOp: Value, normal: Block, err: Block): TryBinaryExpression
+```
+
+Function: Creates a binary operation expression with exception handling.
+
+Parameters:
+
+- kind: BinaryExprKind - The binary operation type.
+- leftOp: Value - The left operand.
+- rightOp: Value - The right operand.
+- normal: Block - Normal branch target block.
+- err: Block - Error branch target block.
+
+Return Value:
+
+- TryBinaryExpression - The created binary operation expression with exception handling.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let bg = f.body.getOrThrow()
+    let block = bg.entryBlock
+    let normalBlock = bg.appendBlock()
+    let errorBlock = bg.appendBlock()
+    let leftOp = IntLiteral.get(IntType.getInt32(), 1)
+    let rightOp = IntLiteral.get(IntType.getInt32(), 2)
+    let expr = TryBinaryExpression.create(BinaryExprKind.Add, leftOp, rightOp, normalBlock, errorBlock)
+    block.appendExpr(expr)
+    println("static_func_create: ${block.exprs.size}")
+}
+```
+
+Output:
+
+```text
+static_func_create: 1
+```
+
+### operator func==(TryBinaryExpression)
+
+```cangjie
+public operator func==(other: TryBinaryExpression): Bool
+```
+
+Function: Reference comparison, determines whether two TryBinaryExpression instances are the same.
+
+Parameters:
+
+- other: TryBinaryExpression - Another binary operation expression with exception handling.
+
+Return Value:
+
+- Bool - Whether they are the same reference.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let bg = f.body.getOrThrow()
+    let block = bg.entryBlock
+    let normalBlock = bg.appendBlock()
+    let errorBlock = bg.appendBlock()
+    let leftOp = IntLiteral.get(IntType.getInt32(), 1)
+    let rightOp = IntLiteral.get(IntType.getInt32(), 2)
+    let expr = TryBinaryExpression.create(BinaryExprKind.Add, leftOp, rightOp, normalBlock, errorBlock)
+    block.appendExpr(expr)
+    println("op_eq_TryBinaryExpression: ${expr == expr}")
+}
+```
+
+Output:
+
+```text
+op_eq_TryBinaryExpression: true
+```
+
+---
+
+## class Branch
+
+```cangjie
+public class Branch <: Expression & Equatable<Branch>
+```
+
+Function: Conditional branch (if-else) terminator expression, jumping to the true or false target block based on the condition value.
+
+Parent Types:
+
+- Expression
+- Equatable\<Branch>
+
+### prop condition
+
+```cangjie
+public prop condition: Value
+```
+
+Function: Condition value.
+
+Type: Value
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let bg = f.body.getOrThrow()
+    let block = bg.entryBlock
+    let trueBlock = bg.appendBlock()
+    let falseBlock = bg.appendBlock()
+    let cond = Constant.create(BoolLiteral.get(true))
+    block.appendExpr(cond)
+    let expr = Branch.create(cond.result, trueBlock, falseBlock)
+    block.appendExpr(expr)
+    println("prop_condition: ${expr.condition == cond.result}")
+}
+```
+
+Output:
+
+```text
+prop_condition: true
+```
+
+### prop trueTarget
+
+```cangjie
+public prop trueTarget: Block
+```
+
+Function: Target block when the condition is true.
+
+Type: Block
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let bg = f.body.getOrThrow()
+    let block = bg.entryBlock
+    let trueBlock = bg.appendBlock()
+    let falseBlock = bg.appendBlock()
+    let cond = Constant.create(BoolLiteral.get(true))
+    block.appendExpr(cond)
+    let expr = Branch.create(cond.result, trueBlock, falseBlock)
+    block.appendExpr(expr)
+    println("prop_trueTarget: ${expr.trueTarget == trueBlock}")
+}
+```
+
+Output:
+
+```text
+prop_trueTarget: true
+```
+
+### prop falseTarget
+
+```cangjie
+public prop falseTarget: Block
+```
+
+Function: Target block when the condition is false.
+
+Type: Block
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let bg = f.body.getOrThrow()
+    let block = bg.entryBlock
+    let trueBlock = bg.appendBlock()
+    let falseBlock = bg.appendBlock()
+    let cond = Constant.create(BoolLiteral.get(true))
+    block.appendExpr(cond)
+    let expr = Branch.create(cond.result, trueBlock, falseBlock)
+    block.appendExpr(expr)
+    println("prop_falseTarget: ${expr.falseTarget == falseBlock}")
+}
+```
+
+Output:
+
+```text
+prop_falseTarget: true
+```
+
+### static func create(Value, Block, Block)
+
+```cangjie
+public static func create(condition: Value, trueTarget: Block, falseTarget: Block): Branch
+```
+
+Function: Creates a conditional branch terminator expression.
+
+Parameters:
+
+- condition: Value - Condition value.
+- trueTarget: Block - Target block when the condition is true.
+- falseTarget: Block - Target block when the condition is false.
+
+Return Value:
+
+- Branch - The created conditional branch expression.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let bg = f.body.getOrThrow()
+    let block = bg.entryBlock
+    let trueBlock = bg.appendBlock()
+    let falseBlock = bg.appendBlock()
+    let cond = Constant.create(BoolLiteral.get(true))
+    block.appendExpr(cond)
+    let expr = Branch.create(cond.result, trueBlock, falseBlock)
+    block.appendExpr(expr)
+    println("static_func_create: ${block.exprs.size}")
+}
+```
+
+Output:
+
+```text
+static_func_create: 2
+```
+
+### operator func==(Branch)
+
+```cangjie
+public operator func==(other: Branch): Bool
+```
+
+Function: Reference comparison, determines whether two Branch instances are the same.
+
+Parameters:
+
+- other: Branch - Another conditional branch expression.
+
+Return Value:
+
+- Bool - Whether they are the same reference.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let bg = f.body.getOrThrow()
+    let block = bg.entryBlock
+    let trueBlock = bg.appendBlock()
+    let falseBlock = bg.appendBlock()
+    let cond = Constant.create(BoolLiteral.get(true))
+    block.appendExpr(cond)
+    let expr = Branch.create(cond.result, trueBlock, falseBlock)
+    block.appendExpr(expr)
+    println("op_eq_Branch: ${expr == expr}")
+}
+```
+
+Output:
+
+```text
+op_eq_Branch: true
+```
+
+---
+
+## class Constant
+
+```cangjie
+public class Constant <: Expression & Equatable<Constant>
+```
+
+Function: Literal constant expression, representing a compile-time determined constant value.
+
+Parent Types:
+
+- Expression
+- Equatable\<Constant>
+
+### static func create(LiteralValue)
+
+```cangjie
+public static func create(val: LiteralValue): Constant
+```
+
+Function: Creates a literal constant expression.
+
+Parameters:
+
+- val: LiteralValue - The literal value.
+
+Return Value:
+
+- Constant - The created constant expression.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let expr = Constant.create(IntLiteral.get(IntType.getInt32(), 42))
+    block.appendExpr(expr)
+    println("static_func_create: ${block.exprs.size}")
+}
+```
+
+Output:
+
+```text
+static_func_create: 1
+```
+
+### operator func==(Constant)
+
+```cangjie
+public operator func==(other: Constant): Bool
+```
+
+Function: Reference comparison, determines whether two Constant instances are the same.
+
+Parameters:
+
+- other: Constant - Another constant expression.
+
+Return Value:
+
+- Bool - Whether they are the same reference.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let expr = Constant.create(IntLiteral.get(IntType.getInt32(), 0))
+    block.appendExpr(expr)
+    println("op_eq_Constant: ${expr == expr}")
+}
+```
+
+Output:
+
+```text
+op_eq_Constant: true
+```
+
+---
+
+## class Debug
+
+```cangjie
+public class Debug <: Expression & Equatable<Debug>
+```
+
+Function: Debug marker expression, storing source code position mapping information, used to associate values in the IR with variable names in the source code.
+
+Parent Types:
+
+- Expression
+- Equatable\<Debug>
+
+### prop srcCodeName
+
+```cangjie
+public prop srcCodeName: String
+```
+
+Function: Source code debug name.
+
+Type: String
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let loc = Constant.create(IntLiteral.get(IntType.getInt32(), 0))
+    block.appendExpr(loc)
+    let expr = Debug.create(loc.result, "var_x")
+    block.appendExpr(expr)
+    println("prop_srcCodeName: ${expr.srcCodeName}")
+}
+```
+
+Output:
+
+```text
+prop_srcCodeName: var_x
+```
+
+### static func create(Value, String)
+
+```cangjie
+public static func create(location: Value, srcName: String): Debug
+```
+
+Function: Creates a debug marker expression.
+
+Parameters:
+
+- location: Value - The value to mark.
+- srcName: String - Source code debug name.
+
+Return Value:
+
+- Debug - The created debug marker expression.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let loc = Constant.create(IntLiteral.get(IntType.getInt32(), 0))
+    block.appendExpr(loc)
+    let expr = Debug.create(loc.result, "x")
+    block.appendExpr(expr)
+    println("static_func_create: ${block.exprs.size}")
+}
+```
+
+Output:
+
+```text
+static_func_create: 2
+```
+
+### operator func==(Debug)
+
+```cangjie
+public operator func==(other: Debug): Bool
+```
+
+Function: Reference comparison, determines whether two Debug instances are the same.
+
+Parameters:
+
+- other: Debug - Another debug marker expression.
+
+Return Value:
+
+- Bool - Whether they are the same reference.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let loc = Constant.create(IntLiteral.get(IntType.getInt32(), 0))
+    block.appendExpr(loc)
+    let expr = Debug.create(loc.result, "x")
+    block.appendExpr(expr)
+    println("op_eq_Debug: ${expr == expr}")
+}
+```
+
+Output:
+
+```text
+op_eq_Debug: true
+```
+
+---
+
+## class Exit
+
+```cangjie
+public class Exit <: Expression & Equatable<Exit>
+```
+
+Function: Function exit terminator expression, indicating normal function execution completion.
+
+Parent Types:
+
+- Expression
+- Equatable\<Exit>
+
+### static func create()
+
+```cangjie
+public static func create(): Exit
+```
+
+Function: Creates a function exit terminator expression.
+
+Return Value:
+
+- Exit - The created exit expression.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let expr = Exit.create()
+    block.appendExpr(expr)
+    println("static_func_create: ${block.exprs.size}")
+}
+```
+
+Output:
+
+```text
+static_func_create: 1
+```
+
+### operator func==(Exit)
+
+```cangjie
+public operator func==(other: Exit): Bool
+```
+
+Function: Reference comparison, determines whether two Exit instances are the same.
+
+Parameters:
+
+- other: Exit - Another exit expression.
+
+Return Value:
+
+- Bool - Whether they are the same reference.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let expr = Exit.create()
+    block.appendExpr(expr)
+    println("op_eq_Exit: ${expr == expr}")
+}
+```
+
+Output:
+
+```text
+op_eq_Exit: true
+```
+
+---
+
+## class Field
+
+```cangjie
+public class Field <: Expression & Equatable<Field>
+```
+
+Function: Field access expression by numeric index path, locating a sub-field within an aggregate through a sequence of numeric indices.
+
+Parent Types:
+
+- Expression
+- Equatable\<Field>
+
+### prop path
+
+```cangjie
+public prop path: Array<UInt64>
+```
+
+Function: Numeric index path of the field.
+
+Type: Array\<UInt64>
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+import std.collection.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let st = pkg.addStruct("S_m", "S")
+    st.appendInstanceMemberVar("x", IntType.getInt32())
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let alloc = Allocate.create(StructType.get(st, []))
+    block.appendExpr(alloc)
+    let expr = Field.create(alloc.result, ArrayList<UInt64>([0]))
+    block.appendExpr(expr)
+    println("prop_path: ${expr.path.size}")
+}
+```
+
+Output:
+
+```text
+prop_path: 1
+```
+
+### static func create(Value, ArrayList\<UInt64>)
+
+```cangjie
+public static func create(location: Value, path: ArrayList<UInt64>): Field
+```
+
+Function: Creates a field access expression by numeric index path.
+
+Parameters:
+
+- location: Value - Source aggregate value.
+- path: ArrayList\<UInt64> - Numeric index path of the field.
+
+Return Value:
+
+- Field - The created field access expression.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+import std.collection.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let st = pkg.addStruct("S_m", "S")
+    st.appendInstanceMemberVar("x", IntType.getInt32())
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let alloc = Allocate.create(StructType.get(st, []))
+    block.appendExpr(alloc)
+    let expr = Field.create(alloc.result, ArrayList<UInt64>([0]))
+    block.appendExpr(expr)
+    println("static_func_create: ${block.exprs.size}")
+}
+```
+
+Output:
+
+```text
+static_func_create: 2
+```
+
+### operator func==(Field)
+
+```cangjie
+public operator func==(other: Field): Bool
+```
+
+Function: Reference comparison, determines whether two Field instances are the same.
+
+Parameters:
+
+- other: Field - Another field access expression.
+
+Return Value:
+
+- Bool - Whether they are the same reference.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+import std.collection.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let st = pkg.addStruct("S_m", "S")
+    st.appendInstanceMemberVar("x", IntType.getInt32())
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let alloc = Allocate.create(StructType.get(st, []))
+    block.appendExpr(alloc)
+    let expr = Field.create(alloc.result, ArrayList<UInt64>([0]))
+    block.appendExpr(expr)
+    println("op_eq_Field: ${expr == expr}")
+}
+```
+
+Output:
+
+```text
+op_eq_Field: true
+```
+
+---
+
+## class FieldByName
+
+```cangjie
+public class FieldByName <: Expression & Equatable<FieldByName>
+```
+
+Function: Field access expression by field name path, locating a sub-field within an aggregate through a sequence of string field names.
+
+Parent Types:
+
+- Expression
+- Equatable\<FieldByName>
+
+### prop fieldNames
+
+```cangjie
+public prop fieldNames: Array<String>
+```
+
+Function: Field name path.
+
+Type: Array\<String>
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+import std.collection.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let st = pkg.addStruct("S_m", "S")
+    st.appendInstanceMemberVar("x", IntType.getInt32())
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let alloc = Allocate.create(StructType.get(st, []))
+    block.appendExpr(alloc)
+    let expr = FieldByName.create(alloc.result, ArrayList<String>(["x"]))
+    block.appendExpr(expr)
+    println("prop_fieldNames: ${expr.fieldNames.size}")
+}
+```
+
+Output:
+
+```text
+prop_fieldNames: 1
+```
+
+### static func create(Value, ArrayList\<String>)
+
+```cangjie
+public static func create(location: Value, fieldNames: ArrayList<String>): FieldByName
+```
+
+Function: Creates a field access expression by field name path.
+
+Parameters:
+
+- location: Value - Source aggregate value.
+- fieldNames: ArrayList\<String> - Field name path.
+
+Return Value:
+
+- FieldByName - The created field name access expression.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+import std.collection.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let st = pkg.addStruct("S_m", "S")
+    st.appendInstanceMemberVar("x", IntType.getInt32())
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let alloc = Allocate.create(StructType.get(st, []))
+    block.appendExpr(alloc)
+    let expr = FieldByName.create(alloc.result, ArrayList<String>(["x"]))
+    block.appendExpr(expr)
+    println("static_func_create: ${block.exprs.size}")
+}
+```
+
+Output:
+
+```text
+static_func_create: 2
+```
+
+### operator func==(FieldByName)
+
+```cangjie
+public operator func==(other: FieldByName): Bool
+```
+
+Function: Reference comparison, determines whether two FieldByName instances are the same.
+
+Parameters:
+
+- other: FieldByName - Another field name access expression.
+
+Return Value:
+
+- Bool - Whether they are the same reference.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+import std.collection.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let st = pkg.addStruct("S_m", "S")
+    st.appendInstanceMemberVar("x", IntType.getInt32())
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let alloc = Allocate.create(StructType.get(st, []))
+    block.appendExpr(alloc)
+    let expr = FieldByName.create(alloc.result, ArrayList<String>(["x"]))
+    block.appendExpr(expr)
+    println("op_eq_FieldByName: ${expr == expr}")
+}
+```
+
+Output:
+
+```text
+op_eq_FieldByName: true
+```
+
+---
+
+## class Apply
+
+```cangjie
+public class Apply <: ApplyBase & Equatable<Apply>
+```
+
+Function: Function call (Apply) expression, representing a direct call to a function.
+
+Parent Types:
+
+- ApplyBase
+- Equatable\<Apply>
+
+### static func create(Value, FuncCallContext)
+
+```cangjie
+public static func create(callee: Value, funcCallCtx: FuncCallContext): Apply
+```
+
+Function: Creates a function call expression.
+
+Parameters:
+
+- callee: Value - The callee function value.
+- funcCallCtx: FuncCallContext - Function call context (including arguments, generic arguments, and object type).
+
+Return Value:
+
+- Apply - The created function call expression.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let calleeFunc = pkg.addFunction(FuncType.get([], UnitType.get()), "callee_m", "callee", "demo")
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let ctx = FuncCallContext([], [], None)
+    let expr = Apply.create(calleeFunc, ctx)
+    block.appendExpr(expr)
+    println("static_func_create: ${block.exprs.size}")
+}
+```
+
+Output:
+
+```text
+static_func_create: 1
+```
+
+### override func getArgs()
+
+<!-- compile -->
+```cangjie
+public override func getArgs(): Array<Value>
+```
+
+Function: Gets the call argument list.
+
+Return Value:
+
+- Array\<Value> - Call argument list.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let calleeFunc = pkg.addFunction(FuncType.get([IntType.getInt32()], UnitType.get()), "callee_m", "callee", "demo")
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let arg = IntLiteral.get(IntType.getInt32(), 1)
+    let ctx = FuncCallContext([arg], [], None)
+    let expr = Apply.create(calleeFunc, ctx)
+    block.appendExpr(expr)
+    println("func_getArgs: ${expr.getArgs().size}")
+}
+```
+
+Output:
+
+```text
+func_getArgs: 1
+```
+
+### operator func==(Apply)
+
+```cangjie
+public operator func==(other: Apply): Bool
+```
+
+Function: Reference comparison, determines whether two Apply instances are the same.
+
+Parameters:
+
+- other: Apply - Another function call expression.
+
+Return Value:
+
+- Bool - Whether they are the same reference.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let calleeFunc = pkg.addFunction(FuncType.get([], UnitType.get()), "callee_m", "callee", "demo")
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let ctx = FuncCallContext([], [], None)
+    let expr = Apply.create(calleeFunc, ctx)
+    block.appendExpr(expr)
+    println("op_eq_Apply: ${expr == expr}")
+}
+```
+
+Output:
+
+```text
+op_eq_Apply: true
+```
+
+---
+
+## class TryApply
+
+```cangjie
+public class TryApply <: ApplyBase & Equatable<TryApply>
+```
+
+Function: Function call expression with exception handling; jumps to the normal branch on success and to the error branch when an exception is thrown.
+
+Parent Types:
+
+- ApplyBase
+- Equatable\<TryApply>
+
+### prop normalBranch
+
+```cangjie
+public prop normalBranch: Block
+```
+
+Function: Normal branch target block.
+
+Type: Block
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let calleeFunc = pkg.addFunction(FuncType.get([], UnitType.get()), "callee_m", "callee", "demo")
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let bg = f.body.getOrThrow()
+    let block = bg.entryBlock
+    let normalBlock = bg.appendBlock()
+    let errorBlock = bg.appendBlock()
+    let ctx = FuncCallContext([], [], None)
+    let expr = TryApply.create(calleeFunc, ctx, normalBlock, errorBlock)
+    block.appendExpr(expr)
+    println("prop_normalBranch: ${expr.normalBranch == normalBlock}")
+}
+```
+
+Output:
+
+```text
+prop_normalBranch: true
+```
+
+### prop errorBranch
+
+```cangjie
+public prop errorBranch: Block
+```
+
+Function: Error branch target block.
+
+Type: Block
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let calleeFunc = pkg.addFunction(FuncType.get([], UnitType.get()), "callee_m", "callee", "demo")
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let bg = f.body.getOrThrow()
+    let block = bg.entryBlock
+    let normalBlock = bg.appendBlock()
+    let errorBlock = bg.appendBlock()
+    let ctx = FuncCallContext([], [], None)
+    let expr = TryApply.create(calleeFunc, ctx, normalBlock, errorBlock)
+    block.appendExpr(expr)
+    println("prop_errorBranch: ${expr.errorBranch == errorBlock}")
+}
+```
+
+Output:
+
+```text
+prop_errorBranch: true
+```
+
+### static func create(Value, FuncCallContext, Block, Block)
+
+```cangjie
+public static func create(callee: Value, funcCallCtx: FuncCallContext, normal: Block, err: Block): TryApply
+```
+
+Function: Creates a function call expression with exception handling.
+
+Parameters:
+
+- callee: Value - The callee function value.
+- funcCallCtx: FuncCallContext - Function call context.
+- normal: Block - Normal branch target block.
+- err: Block - Error branch target block.
+
+Return Value:
+
+- TryApply - The created function call expression with exception handling.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let calleeFunc = pkg.addFunction(FuncType.get([], UnitType.get()), "callee_m", "callee", "demo")
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let bg = f.body.getOrThrow()
+    let block = bg.entryBlock
+    let normalBlock = bg.appendBlock()
+    let errorBlock = bg.appendBlock()
+    let ctx = FuncCallContext([], [], None)
+    let expr = TryApply.create(calleeFunc, ctx, normalBlock, errorBlock)
+    block.appendExpr(expr)
+    println("static_func_create: ${block.exprs.size}")
+}
+```
+
+Output:
+
+```text
+static_func_create: 1
+```
+
+### override func getArgs()
+
+<!-- compile -->
+```cangjie
+public override func getArgs(): Array<Value>
+```
+
+Function: Gets the call argument list (excluding normal and error branch operands).
+
+Return Value:
+
+- Array\<Value> - Call argument list.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let calleeFunc = pkg.addFunction(FuncType.get([IntType.getInt32()], UnitType.get()), "callee_m", "callee", "demo")
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let bg = f.body.getOrThrow()
+    let block = bg.entryBlock
+    let normalBlock = bg.appendBlock()
+    let errorBlock = bg.appendBlock()
+    let arg = IntLiteral.get(IntType.getInt32(), 1)
+    let ctx = FuncCallContext([arg], [], None)
+    let expr = TryApply.create(calleeFunc, ctx, normalBlock, errorBlock)
+    block.appendExpr(expr)
+    println("func_getArgs: ${expr.getArgs().size}")
+}
+```
+
+Output:
+
+```text
+func_getArgs: 1
+```
+
+### operator func==(TryApply)
+
+```cangjie
+public operator func==(other: TryApply): Bool
+```
+
+Function: Reference comparison, determines whether two TryApply instances are the same.
+
+Parameters:
+
+- other: TryApply - Another function call expression with exception handling.
+
+Return Value:
+
+- Bool - Whether they are the same reference.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let calleeFunc = pkg.addFunction(FuncType.get([], UnitType.get()), "callee_m", "callee", "demo")
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let bg = f.body.getOrThrow()
+    let block = bg.entryBlock
+    let normalBlock = bg.appendBlock()
+    let errorBlock = bg.appendBlock()
+    let ctx = FuncCallContext([], [], None)
+    let expr = TryApply.create(calleeFunc, ctx, normalBlock, errorBlock)
+    block.appendExpr(expr)
+    println("op_eq_TryApply: ${expr == expr}")
+}
+```
+
+Output:
+
+```text
+op_eq_TryApply: true
+```
+
+---
+
+## class Intrinsic
+
+```cangjie
+public class Intrinsic <: IntrinsicBase & Equatable<Intrinsic>
+```
+
+Function: Intrinsic function call expression (without exception handling), representing a call to a compiler intrinsic function (such as `sizeof`, `alignof`, etc.). Intrinsic instances are created by the compiler's internal process and can be accessed by traversing a Block's `exprs` list to find existing Intrinsic expressions.
+
+Parent Types:
+
+- IntrinsicBase
+- Equatable\<Intrinsic>
+
+### override func getArgs()
+
+<!-- compile -->
+```cangjie
+public override func getArgs(): Array<Value>
+```
+
+Function: Gets the intrinsic function call argument list.
+
+Return Value:
+
+- Array\<Value> - Call argument list.
+
+### operator func==(Intrinsic)
+
+```cangjie
+public operator func==(other: Intrinsic): Bool
+```
+
+Function: Reference comparison, determines whether two Intrinsic instances are the same.
+
+Parameters:
+
+- other: Intrinsic - Another intrinsic function call expression.
+
+Return Value:
+
+- Bool - Whether they are the same reference.
+
+---
+
+## class TryIntrinsic
+
+```cangjie
+public class TryIntrinsic <: IntrinsicBase & Equatable<TryIntrinsic>
+```
+
+Function: Intrinsic function call expression with exception handling. TryIntrinsic instances are created by the compiler's internal process and can be accessed by traversing a Block's `exprs` list to find existing TryIntrinsic expressions.
+
+Parent Types:
+
+- IntrinsicBase
+- Equatable\<TryIntrinsic>
+
+### prop normalBranch
+
+```cangjie
+public prop normalBranch: Block
+```
+
+Function: Normal branch target block.
+
+Type: Block
+
+### prop errorBranch
+
+```cangjie
+public prop errorBranch: Block
+```
+
+Function: Error branch target block.
+
+Type: Block
+
+### override func getArgs()
+
+<!-- compile -->
+```cangjie
+public override func getArgs(): Array<Value>
+```
+
+Function: Gets the intrinsic function call argument list (excluding normal and error branch operands).
+
+Return Value:
+
+- Array\<Value> - Call argument list.
+
+### operator func==(TryIntrinsic)
+
+```cangjie
+public operator func==(other: TryIntrinsic): Bool
+```
+
+Function: Reference comparison, determines whether two TryIntrinsic instances are the same.
+
+Parameters:
+
+- other: TryIntrinsic - Another intrinsic function call expression with exception handling.
+
+Return Value:
+
+- Bool - Whether they are the same reference.
+
+---
+
+## class Invoke
+
+```cangjie
+public class Invoke <: InvokeBase & Equatable<Invoke>
+```
+
+Function: Virtual method call (Invoke) expression, representing a virtual call to an instance method.
+
+Parent Types:
+
+- InvokeBase
+- Equatable\<Invoke>
+
+### static func create(Type, InvokeCallContext)
+
+```cangjie
+public static func create(retTy: Type, callContext: InvokeCallContext): Invoke
+```
+
+Function: Creates a virtual method call expression.
+
+Parameters:
+
+- retTy: Type - Return type.
+- callContext: InvokeCallContext - Virtual method call context.
+
+Return Value:
+
+- Invoke - The created virtual method call expression.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let ft = FuncType.get([], UnitType.get())
+    let sig = FuncSigInfo("method", ft)
+    let fcc = FuncCallContext([], [], None)
+    let ctx = InvokeCallContext(BoolLiteral.get(false), sig, fcc)
+    let expr = Invoke.create(UnitType.get(), ctx)
+    block.appendExpr(expr)
+    println("static_func_create: ${block.exprs.size}")
+}
+```
+
+Output:
+
+```text
+static_func_create: 1
+```
+
+### override func getArgs()
+
+<!-- compile -->
+```cangjie
+public override func getArgs(): Array<Value>
+```
+
+Function: Gets the virtual method call argument list.
+
+Return Value:
+
+- Array\<Value> - Call argument list.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let ft = FuncType.get([], UnitType.get())
+    let sig = FuncSigInfo("method", ft)
+    let fcc = FuncCallContext([], [], None)
+    let ctx = InvokeCallContext(BoolLiteral.get(false), sig, fcc)
+    let expr = Invoke.create(UnitType.get(), ctx)
+    block.appendExpr(expr)
+    println("func_getArgs: ${expr.getArgs().size}")
+}
+```
+
+Output:
+
+```text
+func_getArgs: 1
+```
+
+### operator func==(Invoke)
+
+```cangjie
+public operator func==(other: Invoke): Bool
+```
+
+Function: Reference comparison, determines whether two Invoke instances are the same.
+
+Parameters:
+
+- other: Invoke - Another virtual method call expression.
+
+Return Value:
+
+- Bool - Whether they are the same reference.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let ft = FuncType.get([], UnitType.get())
+    let sig = FuncSigInfo("method", ft)
+    let fcc = FuncCallContext([], [], None)
+    let ctx = InvokeCallContext(BoolLiteral.get(false), sig, fcc)
+    let expr = Invoke.create(UnitType.get(), ctx)
+    block.appendExpr(expr)
+    println("op_eq_Invoke: ${expr == expr}")
+}
+```
+
+Output:
+
+```text
+op_eq_Invoke: true
+```
+
+---
+
+## class TryInvoke
+
+```cangjie
+public class TryInvoke <: InvokeBase & Equatable<TryInvoke>
+```
+
+Function: Virtual method call expression with exception handling; jumps to the normal branch on success and to the error branch when an exception is thrown.
+
+Parent Types:
+
+- InvokeBase
+- Equatable\<TryInvoke>
+
+### prop normalBranch
+
+```cangjie
+public prop normalBranch: Block
+```
+
+Function: Normal branch target block.
+
+Type: Block
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let bg = f.body.getOrThrow()
+    let block = bg.entryBlock
+    let normalBlock = bg.appendBlock()
+    let errorBlock = bg.appendBlock()
+    let ft = FuncType.get([], UnitType.get())
+    let sig = FuncSigInfo("method", ft)
+    let fcc = FuncCallContext([], [], None)
+    let ctx = InvokeCallContext(BoolLiteral.get(false), sig, fcc)
+    let expr = TryInvoke.create(UnitType.get(), ctx, normalBlock, errorBlock)
+    block.appendExpr(expr)
+    println("prop_normalBranch: ${expr.normalBranch == normalBlock}")
+}
+```
+
+Output:
+
+```text
+prop_normalBranch: true
+```
+
+### prop errorBranch
+
+```cangjie
+public prop errorBranch: Block
+```
+
+Function: Error branch target block.
+
+Type: Block
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let bg = f.body.getOrThrow()
+    let block = bg.entryBlock
+    let normalBlock = bg.appendBlock()
+    let errorBlock = bg.appendBlock()
+    let ft = FuncType.get([], UnitType.get())
+    let sig = FuncSigInfo("method", ft)
+    let fcc = FuncCallContext([], [], None)
+    let ctx = InvokeCallContext(BoolLiteral.get(false), sig, fcc)
+    let expr = TryInvoke.create(UnitType.get(), ctx, normalBlock, errorBlock)
+    block.appendExpr(expr)
+    println("prop_errorBranch: ${expr.errorBranch == errorBlock}")
+}
+```
+
+Output:
+
+```text
+prop_errorBranch: true
+```
+
+### static func create(Type, InvokeCallContext, Block, Block)
+
+```cangjie
+public static func create(retTy: Type, callContext: InvokeCallContext, normal: Block, err: Block): TryInvoke
+```
+
+Function: Creates a virtual method call expression with exception handling.
+
+Parameters:
+
+- retTy: Type - Return type.
+- callContext: InvokeCallContext - Virtual method call context.
+- normal: Block - Normal branch target block.
+- err: Block - Error branch target block.
+
+Return Value:
+
+- TryInvoke - The created virtual method call expression with exception handling.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let bg = f.body.getOrThrow()
+    let block = bg.entryBlock
+    let normalBlock = bg.appendBlock()
+    let errorBlock = bg.appendBlock()
+    let ft = FuncType.get([], UnitType.get())
+    let sig = FuncSigInfo("method", ft)
+    let fcc = FuncCallContext([], [], None)
+    let ctx = InvokeCallContext(BoolLiteral.get(false), sig, fcc)
+    let expr = TryInvoke.create(UnitType.get(), ctx, normalBlock, errorBlock)
+    block.appendExpr(expr)
+    println("static_func_create: ${block.exprs.size}")
+}
+```
+
+Output:
+
+```text
+static_func_create: 1
+```
+
+### override func getArgs()
+
+<!-- compile -->
+```cangjie
+public override func getArgs(): Array<Value>
+```
+
+Function: Gets the virtual method call argument list (excluding normal and error branch operands).
+
+Return Value:
+
+- Array\<Value> - Call argument list.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let bg = f.body.getOrThrow()
+    let block = bg.entryBlock
+    let normalBlock = bg.appendBlock()
+    let errorBlock = bg.appendBlock()
+    let ft = FuncType.get([], UnitType.get())
+    let sig = FuncSigInfo("method", ft)
+    let fcc = FuncCallContext([], [], None)
+    let ctx = InvokeCallContext(BoolLiteral.get(false), sig, fcc)
+    let expr = TryInvoke.create(UnitType.get(), ctx, normalBlock, errorBlock)
+    block.appendExpr(expr)
+    println("func_getArgs: ${expr.getArgs().size}")
+}
+```
+
+Output:
+
+```text
+func_getArgs: 1
+```
+
+### operator func==(TryInvoke)
+
+```cangjie
+public operator func==(other: TryInvoke): Bool
+```
+
+Function: Reference comparison, determines whether two TryInvoke instances are the same.
+
+Parameters:
+
+- other: TryInvoke - Another virtual method call expression with exception handling.
+
+Return Value:
+
+- Bool - Whether they are the same reference.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let bg = f.body.getOrThrow()
+    let block = bg.entryBlock
+    let normalBlock = bg.appendBlock()
+    let errorBlock = bg.appendBlock()
+    let ft = FuncType.get([], UnitType.get())
+    let sig = FuncSigInfo("method", ft)
+    let fcc = FuncCallContext([], [], None)
+    let ctx = InvokeCallContext(BoolLiteral.get(false), sig, fcc)
+    let expr = TryInvoke.create(UnitType.get(), ctx, normalBlock, errorBlock)
+    block.appendExpr(expr)
+    println("op_eq_TryInvoke: ${expr == expr}")
+}
+```
+
+Output:
+
+```text
+op_eq_TryInvoke: true
+```
+
+---
+
+## class GetElementByName
+
+```cangjie
+public class GetElementByName <: Expression & Equatable<GetElementByName>
+```
+
+Function: Expression that reads an aggregate element by field name, returning a reference to the element.
+
+Parent Types:
+
+- Expression
+- Equatable\<GetElementByName>
+
+### prop fieldNames
+
+```cangjie
+public prop fieldNames: Array<String>
+```
+
+Function: Field name path.
+
+Type: Array\<String>
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+import std.collection.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let st = pkg.addStruct("S_m", "S")
+    st.appendInstanceMemberVar("x", IntType.getInt32())
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let alloc = Allocate.create(StructType.get(st, []))
+    block.appendExpr(alloc)
+    let expr = GetElementByName.create(alloc.result, ArrayList<String>(["x"]))
+    block.appendExpr(expr)
+    println("prop_fieldNames: ${expr.fieldNames.size}")
+}
+```
+
+Output:
+
+```text
+prop_fieldNames: 1
+```
+
+### static func create(Value, ArrayList\<String>)
+
+```cangjie
+public static func create(location: Value, fieldNames: ArrayList<String>): GetElementByName
+```
+
+Function: Creates an expression that reads an aggregate element by field name.
+
+Parameters:
+
+- location: Value - Source aggregate value.
+- fieldNames: ArrayList\<String> - Field name path.
+
+Return Value:
+
+- GetElementByName - The created element read expression.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+import std.collection.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let st = pkg.addStruct("S_m", "S")
+    st.appendInstanceMemberVar("x", IntType.getInt32())
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let alloc = Allocate.create(StructType.get(st, []))
+    block.appendExpr(alloc)
+    let expr = GetElementByName.create(alloc.result, ArrayList<String>(["x"]))
+    block.appendExpr(expr)
+    println("static_func_create: ${block.exprs.size}")
+}
+```
+
+Output:
+
+```text
+static_func_create: 2
+```
+
+### operator func==(GetElementByName)
+
+```cangjie
+public operator func==(other: GetElementByName): Bool
+```
+
+Function: Reference comparison, determines whether two GetElementByName instances are the same.
+
+Parameters:
+
+- other: GetElementByName - Another element read expression.
+
+Return Value:
+
+- Bool - Whether they are the same reference.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+import std.collection.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let st = pkg.addStruct("S_m", "S")
+    st.appendInstanceMemberVar("x", IntType.getInt32())
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let alloc = Allocate.create(StructType.get(st, []))
+    block.appendExpr(alloc)
+    let expr = GetElementByName.create(alloc.result, ArrayList<String>(["x"]))
+    block.appendExpr(expr)
+    println("op_eq_GetElementByName: ${expr == expr}")
+}
+```
+
+Output:
+
+```text
+op_eq_GetElementByName: true
+```
+
+---
+
+## class GetElementRef
+
+```cangjie
+public class GetElementRef <: Expression & Equatable<GetElementRef>
+```
+
+Function: Expression that reads an aggregate element reference by numeric index, returning a reference to the element.
+
+Parent Types:
+
+- Expression
+- Equatable\<GetElementRef>
+
+### prop path
+
+```cangjie
+public prop path: Array<UInt64>
+```
+
+Function: Index path.
+
+Type: Array\<UInt64>
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+import std.collection.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let st = pkg.addStruct("S_m", "S")
+    st.appendInstanceMemberVar("x", IntType.getInt32())
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let alloc = Allocate.create(StructType.get(st, []))
+    block.appendExpr(alloc)
+    let expr = GetElementRef.create(alloc.result, ArrayList<UInt64>([0]))
+    block.appendExpr(expr)
+    println("prop_path: ${expr.path.size}")
+}
+```
+
+Output:
+
+```text
+prop_path: 1
+```
+
+### static func create(Value, ArrayList\<UInt64>)
+
+```cangjie
+public static func create(location: Value, path: ArrayList<UInt64>): GetElementRef
+```
+
+Function: Creates an expression that reads an aggregate element reference by numeric index.
+
+Parameters:
+
+- location: Value - Source aggregate value.
+- path: ArrayList\<UInt64> - Index path.
+
+Return Value:
+
+- GetElementRef - The created element reference read expression.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+import std.collection.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let st = pkg.addStruct("S_m", "S")
+    st.appendInstanceMemberVar("x", IntType.getInt32())
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let alloc = Allocate.create(StructType.get(st, []))
+    block.appendExpr(alloc)
+    let expr = GetElementRef.create(alloc.result, ArrayList<UInt64>([0]))
+    block.appendExpr(expr)
+    println("static_func_create: ${block.exprs.size}")
+}
+```
+
+Output:
+
+```text
+static_func_create: 2
+```
+
+### operator func==(GetElementRef)
+
+```cangjie
+public operator func==(other: GetElementRef): Bool
+```
+
+Function: Reference comparison, determines whether two GetElementRef instances are the same.
+
+Parameters:
+
+- other: GetElementRef - Another element reference read expression.
+
+Return Value:
+
+- Bool - Whether they are the same reference.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+import std.collection.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let st = pkg.addStruct("S_m", "S")
+    st.appendInstanceMemberVar("x", IntType.getInt32())
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let alloc = Allocate.create(StructType.get(st, []))
+    block.appendExpr(alloc)
+    let expr = GetElementRef.create(alloc.result, ArrayList<UInt64>([0]))
+    block.appendExpr(expr)
+    println("op_eq_GetElementRef: ${expr == expr}")
+}
+```
+
+Output:
+
+```text
+op_eq_GetElementRef: true
+```
+
+---
+
+## class GetException
+
+```cangjie
+public class GetException <: Expression & Equatable<GetException>
+```
+
+Function: Expression that gets the exception value, used in exception handling landing pad blocks to read the captured exception object.
+
+Parent Types:
+
+- Expression
+- Equatable\<GetException>
+
+### static func create(Type)
+
+```cangjie
+public static func create(retTy: Type): GetException
+```
+
+Function: Creates an expression that gets the exception value.
+
+Parameters:
+
+- retTy: Type - The type of the exception value.
+
+Return Value:
+
+- GetException - The created exception value expression.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let expr = GetException.create(IntType.getInt32())
+    block.appendExpr(expr)
+    println("static_func_create: ${block.exprs.size}")
+}
+```
+
+Output:
+
+```text
+static_func_create: 1
+```
+
+### operator func==(GetException)
+
+```cangjie
+public operator func==(other: GetException): Bool
+```
+
+Function: Reference comparison, determines whether two GetException instances are the same.
+
+Parameters:
+
+- other: GetException - Another exception value expression.
+
+Return Value:
+
+- Bool - Whether they are the same reference.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let expr = GetException.create(IntType.getInt32())
+    block.appendExpr(expr)
+    println("op_eq_GetException: ${expr == expr}")
+}
+```
+
+Output:
+
+```text
+op_eq_GetException: true
+```
+
+---
+
+## class GetInstantiateValue
+
+```cangjie
+public class GetInstantiateValue <: Expression & Equatable<GetInstantiateValue>
+```
+
+Function: Expression that gets the generic function instantiation value, representing a monomorphized instance of a generic function.
+
+Parent Types:
+
+- Expression
+- Equatable\<GetInstantiateValue>
+
+### prop instantiateTypes
+
+```cangjie
+public prop instantiateTypes: Array<Type>
+```
+
+Function: Instantiation type parameters.
+
+Type: Array\<Type>
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+import std.collection.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let g = pkg.addFunction(FuncType.get([], UnitType.get()), "g_m", "g", "demo")
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let expr = GetInstantiateValue.create(g, ArrayList<Type>())
+    block.appendExpr(expr)
+    println("prop_instantiateTypes: ${expr.instantiateTypes.size}")
+}
+```
+
+Output:
+
+```text
+prop_instantiateTypes: 0
+```
+
+### static func create(Function, ArrayList\<Type>)
+
+```cangjie
+public static func create(val: Function, instantiateTypes: ArrayList<Type>): GetInstantiateValue
+```
+
+Function: Creates an expression that gets the generic function instantiation value.
+
+Parameters:
+
+- val: Function - Target function.
+- instantiateTypes: ArrayList\<Type> - Instantiation type parameters.
+
+Return Value:
+
+- GetInstantiateValue - The created instantiation value expression.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+import std.collection.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let g = pkg.addFunction(FuncType.get([], UnitType.get()), "g_m", "g", "demo")
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let expr = GetInstantiateValue.create(g, ArrayList<Type>())
+    block.appendExpr(expr)
+    println("static_func_create: ${block.exprs.size}")
+}
+```
+
+Output:
+
+```text
+static_func_create: 1
+```
+
+### operator func==(GetInstantiateValue)
+
+```cangjie
+public operator func==(other: GetInstantiateValue): Bool
+```
+
+Function: Reference comparison, determines whether two GetInstantiateValue instances are the same.
+
+Parameters:
+
+- other: GetInstantiateValue - Another instantiation value expression.
+
+Return Value:
+
+- Bool - Whether they are the same reference.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+import std.collection.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let g = pkg.addFunction(FuncType.get([], UnitType.get()), "g_m", "g", "demo")
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let expr = GetInstantiateValue.create(g, ArrayList<Type>())
+    block.appendExpr(expr)
+    println("op_eq_GetInstantiateValue: ${expr == expr}")
+}
+```
+
+Output:
+
+```text
+op_eq_GetInstantiateValue: true
+```
+
+---
+
+## class GetRTTI
+
+```cangjie
+public class GetRTTI <: Expression & Equatable<GetRTTI>
+```
+
+Function: Expression that gets runtime type information, extracting RTTI data from a value.
+
+Parent Types:
+
+- Expression
+- Equatable\<GetRTTI>
+
+### static func create(Value)
+
+```cangjie
+public static func create(val: Value): GetRTTI
+```
+
+Function: Creates an expression that gets runtime type information.
+
+Parameters:
+
+- val: Value - Target value.
+
+Return Value:
+
+- GetRTTI - The created RTTI expression.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let val = IntLiteral.get(IntType.getInt32(), 0)
+    let expr = GetRTTI.create(val)
+    block.appendExpr(expr)
+    println("static_func_create: ${block.exprs.size}")
+}
+```
+
+Output:
+
+```text
+static_func_create: 1
+```
+
+### operator func==(GetRTTI)
+
+```cangjie
+public operator func==(other: GetRTTI): Bool
+```
+
+Function: Reference comparison, determines whether two GetRTTI instances are the same.
+
+Parameters:
+
+- other: GetRTTI - Another RTTI expression.
+
+Return Value:
+
+- Bool - Whether they are the same reference.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let val = IntLiteral.get(IntType.getInt32(), 0)
+    let expr = GetRTTI.create(val)
+    block.appendExpr(expr)
+    println("op_eq_GetRTTI: ${expr == expr}")
+}
+```
+
+Output:
+
+```text
+op_eq_GetRTTI: true
+```
+
+---
+
+## class GetRTTIStatic
+
+```cangjie
+public class GetRTTIStatic <: Expression & Equatable<GetRTTIStatic>
+```
+
+Function: Expression that statically gets runtime type information, extracting RTTI data directly from a type (not dependent on a value instance).
+
+Parent Types:
+
+- Expression
+- Equatable\<GetRTTIStatic>
+
+### prop ty
+
+```cangjie
+public prop ty: Type
+```
+
+Function: Target type.
+
+Type: Type
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let expr = GetRTTIStatic.create(IntType.getInt32())
+    block.appendExpr(expr)
+    println("prop_ty: ${expr.ty.toString()}")
+}
+```
+
+Output:
+
+```text
+prop_ty: Int32
+```
+
+### static func create(Type)
+
+```cangjie
+public static func create(ty: Type): GetRTTIStatic
+```
+
+Function: Creates an expression that statically gets runtime type information.
+
+Parameters:
+
+- ty: Type - Target type.
+
+Return Value:
+
+- GetRTTIStatic - The created static RTTI expression.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let expr = GetRTTIStatic.create(IntType.getInt32())
+    block.appendExpr(expr)
+    println("static_func_create: ${block.exprs.size}")
+}
+```
+
+Output:
+
+```text
+static_func_create: 1
+```
+
+### operator func==(GetRTTIStatic)
+
+```cangjie
+public operator func==(other: GetRTTIStatic): Bool
+```
+
+Function: Reference comparison, determines whether two GetRTTIStatic instances are the same.
+
+Parameters:
+
+- other: GetRTTIStatic - Another static RTTI expression.
+
+Return Value:
+
+- Bool - Whether they are the same reference.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let expr = GetRTTIStatic.create(IntType.getInt32())
+    block.appendExpr(expr)
+    println("op_eq_GetRTTIStatic: ${expr == expr}")
+}
+```
+
+Output:
+
+```text
+op_eq_GetRTTIStatic: true
+```
+
+---
+
+## class GoTo
+
+```cangjie
+public class GoTo <: Expression & Equatable<GoTo>
+```
+
+Function: Unconditional jump terminator expression, jumping directly to the target basic block.
+
+Parent Types:
+
+- Expression
+- Equatable\<GoTo>
+
+### static func create(Block)
+
+```cangjie
+public static func create(target: Block): GoTo
+```
+
+Function: Creates an unconditional jump terminator expression.
+
+Parameters:
+
+- target: Block - Jump target block.
+
+Return Value:
+
+- GoTo - The created unconditional jump expression.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let bg = f.body.getOrThrow()
+    let block = bg.entryBlock
+    let target = bg.appendBlock()
+    let expr = GoTo.create(target)
+    block.appendExpr(expr)
+    println("static_func_create: ${block.exprs.size}")
+}
+```
+
+Output:
+
+```text
+static_func_create: 1
+```
+
+### operator func==(GoTo)
+
+```cangjie
+public operator func==(other: GoTo): Bool
+```
+
+Function: Reference comparison, determines whether two GoTo instances are the same.
+
+Parameters:
+
+- other: GoTo - Another unconditional jump expression.
+
+Return Value:
+
+- Bool - Whether they are the same reference.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let bg = f.body.getOrThrow()
+    let block = bg.entryBlock
+    let target = bg.appendBlock()
+    let expr = GoTo.create(target)
+    block.appendExpr(expr)
+    println("op_eq_GoTo: ${expr == expr}")
+}
+```
+
+Output:
+
+```text
+op_eq_GoTo: true
+```
+
+---
+
+## class InstanceOf
+
+```cangjie
+public class InstanceOf <: Expression & Equatable<InstanceOf>
+```
+
+Function: Type check expression, determining whether a source value belongs to the target type, returning a boolean result.
+
+Parent Types:
+
+- Expression
+- Equatable\<InstanceOf>
+
+### prop targetType
+
+```cangjie
+public prop targetType: Type
+```
+
+Function: Target type.
+
+Type: Type
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let srcVal = IntLiteral.get(IntType.getInt32(), 0)
+    let expr = InstanceOf.create(srcVal, IntType.getInt32())
+    block.appendExpr(expr)
+    println("prop_targetType: ${expr.targetType.toString()}")
+}
+```
+
+Output:
+
+```text
+prop_targetType: Int32
+```
+
+### static func create(Value, Type)
+
+```cangjie
+public static func create(srcVal: Value, targetTy: Type): InstanceOf
+```
+
+Function: Creates a type check expression.
+
+Parameters:
+
+- srcVal: Value - The source value to check.
+- targetTy: Type - Target type.
+
+Return Value:
+
+- InstanceOf - The created type check expression.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let srcVal = IntLiteral.get(IntType.getInt32(), 0)
+    let expr = InstanceOf.create(srcVal, IntType.getInt32())
+    block.appendExpr(expr)
+    println("static_func_create: ${block.exprs.size}")
+}
+```
+
+Output:
+
+```text
+static_func_create: 1
+```
+
+### operator func==(InstanceOf)
+
+```cangjie
+public operator func==(other: InstanceOf): Bool
+```
+
+Function: Reference comparison, determines whether two InstanceOf instances are the same.
+
+Parameters:
+
+- other: InstanceOf - Another type check expression.
+
+Return Value:
+
+- Bool - Whether they are the same reference.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let srcVal = IntLiteral.get(IntType.getInt32(), 0)
+    let expr = InstanceOf.create(srcVal, IntType.getInt32())
+    block.appendExpr(expr)
+    println("op_eq_InstanceOf: ${expr == expr}")
+}
+```
+
+Output:
+
+```text
+op_eq_InstanceOf: true
+```
+
+---
+
+## class Lambda
+
+```cangjie
+public class Lambda <: Expression & Equatable<Lambda>
+```
+
+Function: Lambda / local function expression, representing a nested anonymous function or local function definition.
+
+Parent Types:
+
+- Expression
+- Equatable\<Lambda>
+
+### prop identifier
+
+```cangjie
+public prop identifier: String
+```
+
+Function: Internal identifier; globally unique identifier.
+
+Type: String
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+import std.collection.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let lambdaType = FuncType.get([], UnitType.get())
+    let expr = Lambda.create(lambdaType, "lambda_m", "myLambda", ArrayList<GenericType>())
+    block.appendExpr(expr)
+    println("prop_identifier: ${expr.identifier}")
+}
+```
+
+Output:
+
+```text
+prop_identifier: lambda_m
+```
+
+### prop srcCodeName
+
+```cangjie
+public prop srcCodeName: String
+```
+
+Function: Source code name.
+
+Type: String
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+import std.collection.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let lambdaType = FuncType.get([], UnitType.get())
+    let expr = Lambda.create(lambdaType, "lambda_m", "myLambda", ArrayList<GenericType>())
+    block.appendExpr(expr)
+    println("prop_srcCodeName: ${expr.srcCodeName}")
+}
+```
+
+Output:
+
+```text
+prop_srcCodeName: myLambda
+```
+
+### prop funcType
+
+```cangjie
+public prop funcType: FuncType
+```
+
+Function: Function type.
+
+Type: [FuncType](#class-functype)
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+import std.collection.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let lambdaType = FuncType.get([], UnitType.get())
+    let expr = Lambda.create(lambdaType, "lambda_m", "myLambda", ArrayList<GenericType>())
+    block.appendExpr(expr)
+    println("prop_funcType: ${expr.funcType.toString()}")
+}
+```
+
+Output:
+
+```text
+prop_funcType: () -> Unit
+```
+
+### prop genericTypeParams
+
+```cangjie
+public prop genericTypeParams: Array<GenericType>
+```
+
+Function: Generic type parameters.
+
+Type: Array\<[GenericType](#class-generictype)>
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+import std.collection.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let lambdaType = FuncType.get([], UnitType.get())
+    let expr = Lambda.create(lambdaType, "lambda_m", "myLambda", ArrayList<GenericType>())
+    block.appendExpr(expr)
+    println("prop_genericTypeParams: ${expr.genericTypeParams.size}")
+}
+```
+
+Output:
+
+```text
+prop_genericTypeParams: 0
+```
+
+### prop parameters
+
+```cangjie
+public prop parameters: Array<Parameter>
+```
+
+Function: Parameter list.
+
+Type: Array\<[Parameter](#class-parameter)>
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+import std.collection.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let lambdaType = FuncType.get([IntType.getInt32()], UnitType.get())
+    let expr = Lambda.create(lambdaType, "lambda_m", "myLambda", ArrayList<GenericType>())
+    block.appendExpr(expr)
+    expr.initParameters()
+    println("prop_parameters: ${expr.parameters.size}")
+}
+```
+
+Output:
+
+```text
+prop_parameters: 1
+```
+
+### prop body
+
+```cangjie
+public prop body: BlockGroup
+```
+
+Function: Lambda body.
+
+Type: [BlockGroup](#class-blockgroup)
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+import std.collection.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let lambdaType = FuncType.get([], UnitType.get())
+    let expr = Lambda.create(lambdaType, "lambda_m", "myLambda", ArrayList<GenericType>())
+    block.appendExpr(expr)
+    expr.initBody()
+    println("prop_body: ${expr.body.blocks.size > 0}")
+}
+```
+
+Output:
+
+```text
+prop_body: true
+```
+
+### mut prop returnValue
+
+<!-- compile -->
+```cangjie
+public mut prop returnValue: LocalVar
+```
+
+Function: Return value local variable.
+
+Type: [LocalVar](#class-localvar)
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+import std.collection.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let lambdaType = FuncType.get([], IntType.getInt32())
+    let expr = Lambda.create(lambdaType, "lambda_m", "myLambda", ArrayList<GenericType>())
+    block.appendExpr(expr)
+    expr.initBody()
+    let lit = IntLiteral.get(IntType.getInt32(), 42)
+    expr.returnValue = Constant.create(lit).result
+    println("mut_prop_returnValue: ${expr.returnValue.toString().size > 0}")
+}
+```
+
+Output:
+
+```text
+mut_prop_returnValue: true
+```
+
+### mut prop isLocalFunc
+
+<!-- compile -->
+```cangjie
+public mut prop isLocalFunc: Bool
+```
+
+Function: Whether it is a local function.
+
+Type: Bool
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+import std.collection.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let lambdaType = FuncType.get([], UnitType.get())
+    let expr = Lambda.create(lambdaType, "lambda_m", "myLambda", ArrayList<GenericType>())
+    block.appendExpr(expr)
+    println("mut_prop_isLocalFunc: ${expr.isLocalFunc}")
+}
+```
+
+Output:
+
+```text
+mut_prop_isLocalFunc: false
+```
+
+### mut prop isCompileTimeValue
+
+<!-- compile -->
+```cangjie
+public mut prop isCompileTimeValue: Bool
+```
+
+Function: Whether it is a compile-time value.
+
+Type: Bool
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+import std.collection.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let lambdaType = FuncType.get([], UnitType.get())
+    let expr = Lambda.create(lambdaType, "lambda_m", "myLambda", ArrayList<GenericType>())
+    block.appendExpr(expr)
+    println("mut_prop_isCompileTimeValue: ${expr.isCompileTimeValue}")
+}
+```
+
+Output:
+
+```text
+mut_prop_isCompileTimeValue: false
+```
+
+### static func create(FuncType, String, String, ArrayList\<GenericType>)
+
+```cangjie
+public static func create(ty: FuncType, identifier: String, srcName: String, genericTypeParams: ArrayList<GenericType>): Lambda
+```
+
+Function: Creates a Lambda / local function expression.
+
+Parameters:
+
+- ty: FuncType - Function type.
+- identifier: String - Internal identifier (mangled name).
+- srcName: String - Source code name.
+- genericTypeParams: ArrayList\<GenericType> - Generic type parameter list.
+
+Return Value:
+
+- Lambda - The created Lambda expression.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+import std.collection.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let lambdaType = FuncType.get([], UnitType.get())
+    let expr = Lambda.create(lambdaType, "lambda_m", "myLambda", ArrayList<GenericType>())
+    block.appendExpr(expr)
+    println("static_func_create: ${block.exprs.size}")
+}
+```
+
+Output:
+
+```text
+static_func_create: 1
+```
+
+### func initBody()
+
+```cangjie
+public func initBody(): Unit
+```
+
+Function: Initializes the Lambda body, creating the entry BlockGroup and Block. Must be called after the Lambda has been appended to a basic block.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+import std.collection.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let lambdaType = FuncType.get([], UnitType.get())
+    let expr = Lambda.create(lambdaType, "lambda_m", "myLambda", ArrayList<GenericType>())
+    block.appendExpr(expr)
+    expr.initBody()
+    println("fn_initBody: ${expr.body.blocks.size > 0}")
+}
+```
+
+Output:
+
+```text
+fn_initBody: true
+```
+
+### func initParameters()
+
+```cangjie
+public func initParameters(): Unit
+```
+
+Function: Initializes the Lambda parameter list based on the parameter types of `funcType`.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+import std.collection.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let lambdaType = FuncType.get([IntType.getInt32()], UnitType.get())
+    let expr = Lambda.create(lambdaType, "lambda_m", "myLambda", ArrayList<GenericType>())
+    block.appendExpr(expr)
+    expr.initParameters()
+    println("fn_initParameters: ${expr.parameters.size}")
+}
+```
+
+Output:
+
+```text
+fn_initParameters: 1
+```
+
+### func toString()
+
+```cangjie
+public func toString(): String
+```
+
+Function: String form of the Lambda.
+
+Return Value:
+
+- String - Readable text dump of the Lambda.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+import std.collection.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let lambdaType = FuncType.get([], UnitType.get())
+    let expr = Lambda.create(lambdaType, "lambda_m", "myLambda", ArrayList<GenericType>())
+    block.appendExpr(expr)
+    expr.initBody()
+    println("fn_toString: ${expr.toString().size > 0}")
+}
+```
+
+Output:
+
+```text
+fn_toString: true
+```
+
+### operator func==(Lambda)
+
+```cangjie
+public operator func==(other: Lambda): Bool
+```
+
+Function: Reference comparison, determines whether two Lambda instances are the same.
+
+Parameters:
+
+- other: Lambda - Another Lambda expression.
+
+Return Value:
+
+- Bool - Whether they are the same reference.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+import std.collection.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let lambdaType = FuncType.get([], UnitType.get())
+    let expr = Lambda.create(lambdaType, "lambda_m", "myLambda", ArrayList<GenericType>())
+    block.appendExpr(expr)
+    println("op_eq_Lambda: ${expr == expr}")
+}
+```
+
+Output:
+
+```text
+op_eq_Lambda: true
+```
+
+---
+
+## class Load
+
+```cangjie
+public class Load <: Expression & Equatable<Load>
+```
+
+Function: Memory load expression.
+
+Parent Types:
+
+- Expression
+- Equatable\<Load>
+
+### prop srcAddress
+
+```cangjie
+public prop srcAddress: Value
+```
+
+Function: Source address.
+
+Type: Value
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([CPointerType.get(IntType.getInt32())], IntType.getInt32()), "f_m", "f", "demo")
+    f.initBody()
+    let param = f.parameters[0]
+    let load = Load.create(param)
+    println("prop_srcAddress: ${load.srcAddress == param}")
+}
+```
+
+Output:
+
+```text
+prop_srcAddress: true
+```
+
+### static func create(Value)
+
+```cangjie
+public static func create(location: Value): Load
+```
+
+Function: Creates a memory load expression, loading a value from the specified address.
+
+Parameters:
+
+- location: Value - Source address value.
+
+Return Value:
+
+- Load - Memory load expression instance.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([CPointerType.get(IntType.getInt32())], IntType.getInt32()), "f_m", "f", "demo")
+    f.initBody()
+    let param = f.parameters[0]
+    let load = Load.create(param)
+    println("static_create: ${load.srcAddress == param}")
+}
+```
+
+Output:
+
+```text
+static_create: true
+```
+
+### operator func==(Load)
+
+```cangjie
+public operator func==(other: Load): Bool
+```
+
+Function: Reference comparison, determines whether two Load instances are the same.
+
+Parameters:
+
+- other: Load - Another memory load expression.
+
+Return Value:
+
+- Bool - Whether they are the same reference.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([CPointerType.get(IntType.getInt32())], IntType.getInt32()), "f_m", "f", "demo")
+    f.initBody()
+    let param = f.parameters[0]
+    let load = Load.create(param)
+    println("op_eq_Load: ${load == load}")
+}
+```
+
+Output:
+
+```text
+op_eq_Load: true
+```
+
+---
+
+## class MultiBranch
+
+```cangjie
+public class MultiBranch <: Expression & Equatable<MultiBranch>
+```
+
+Function: Multi-branch (switch-case) terminator expression.
+
+Parent Types:
+
+- Expression
+- Equatable\<MultiBranch>
+
+### prop condition
+
+```cangjie
+public prop condition: Value
+```
+
+Function: Condition value.
+
+Type: Value
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+import std.collection.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([IntType.getInt32()], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let defaultBlock = f.body.getOrThrow().appendBlock()
+    let caseBlock = f.body.getOrThrow().appendBlock()
+    let targets = ArrayList<Block>()
+    targets.add(caseBlock)
+    let caseValues = ArrayList<UInt64>()
+    caseValues.add(1)
+    let param = f.parameters[0]
+    let mb = MultiBranch.create(param, defaultBlock, targets, caseValues)
+    println("prop_condition: ${mb.condition == param}")
+}
+```
+
+Output:
+
+```text
+prop_condition: true
+```
+
+### prop defaultTarget
+
+```cangjie
+public prop defaultTarget: Block
+```
+
+Function: Default target block.
+
+Type: [Block](#class-block)
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+import std.collection.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([IntType.getInt32()], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let defaultBlock = f.body.getOrThrow().appendBlock()
+    let caseBlock = f.body.getOrThrow().appendBlock()
+    let targets = ArrayList<Block>()
+    targets.add(caseBlock)
+    let caseValues = ArrayList<UInt64>()
+    caseValues.add(1)
+    let param = f.parameters[0]
+    let mb = MultiBranch.create(param, defaultBlock, targets, caseValues)
+    println("prop_defaultTarget: ${mb.defaultTarget == defaultBlock}")
+}
+```
+
+Output:
+
+```text
+prop_defaultTarget: true
+```
+
+### prop targetsWithoutDefault
+
+```cangjie
+public prop targetsWithoutDefault: Array<Block>
+```
+
+Function: Target blocks other than default.
+
+Type: Array\<[Block](#class-block)>
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+import std.collection.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([IntType.getInt32()], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let defaultBlock = f.body.getOrThrow().appendBlock()
+    let caseBlock = f.body.getOrThrow().appendBlock()
+    let targets = ArrayList<Block>()
+    targets.add(caseBlock)
+    let caseValues = ArrayList<UInt64>()
+    caseValues.add(1)
+    let param = f.parameters[0]
+    let mb = MultiBranch.create(param, defaultBlock, targets, caseValues)
+    println("prop_targetsWithoutDefault: ${mb.targetsWithoutDefault.size}")
+}
+```
+
+Output:
+
+```text
+prop_targetsWithoutDefault: 1
+```
+
+### prop caseValues
+
+```cangjie
+public prop caseValues: Array<UInt64>
+```
+
+Function: Match values for each case.
+
+Type: Array\<UInt64>
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+import std.collection.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([IntType.getInt32()], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let defaultBlock = f.body.getOrThrow().appendBlock()
+    let caseBlock = f.body.getOrThrow().appendBlock()
+    let targets = ArrayList<Block>()
+    targets.add(caseBlock)
+    let caseValues = ArrayList<UInt64>()
+    caseValues.add(1)
+    let param = f.parameters[0]
+    let mb = MultiBranch.create(param, defaultBlock, targets, caseValues)
+    println("prop_caseValues: ${mb.caseValues.size}")
+}
+```
+
+Output:
+
+```text
+prop_caseValues: 1
+```
+
+### static func create(Value, Block, ArrayList\<Block>, ArrayList\<UInt64>)
+
+```cangjie
+public static func create(condition: Value, default: Block, targets: ArrayList<Block>, caseValues: ArrayList<UInt64>): MultiBranch
+```
+
+Function: Creates a multi-branch terminator expression, specifying the condition value, default target block, case target block list, and match values for each case.
+
+Parameters:
+
+- condition: Value - Condition value.
+- default: Block - Default target block.
+- targets: ArrayList\<Block> - Target block list other than default.
+- caseValues: ArrayList\<UInt64> - Match values for each case.
+
+Return Value:
+
+- MultiBranch - Multi-branch terminator expression instance.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+import std.collection.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([IntType.getInt32()], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let defaultBlock = f.body.getOrThrow().appendBlock()
+    let caseBlock = f.body.getOrThrow().appendBlock()
+    let targets = ArrayList<Block>()
+    targets.add(caseBlock)
+    let caseValues = ArrayList<UInt64>()
+    caseValues.add(1)
+    let param = f.parameters[0]
+    let mb = MultiBranch.create(param, defaultBlock, targets, caseValues)
+    println("static_create: ${mb.condition == param}")
+}
+```
+
+Output:
+
+```text
+static_create: true
+```
+
+### operator func==(MultiBranch)
+
+```cangjie
+public operator func==(other: MultiBranch): Bool
+```
+
+Function: Reference comparison, determines whether two MultiBranch instances are the same.
+
+Parameters:
+
+- other: MultiBranch - Another multi-branch terminator expression.
+
+Return Value:
+
+- Bool - Whether they are the same reference.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+import std.collection.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([IntType.getInt32()], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let defaultBlock = f.body.getOrThrow().appendBlock()
+    let caseBlock = f.body.getOrThrow().appendBlock()
+    let targets = ArrayList<Block>()
+    targets.add(caseBlock)
+    let caseValues = ArrayList<UInt64>()
+    caseValues.add(1)
+    let param = f.parameters[0]
+    let mb = MultiBranch.create(param, defaultBlock, targets, caseValues)
+    println("op_eq_MultiBranch: ${mb == mb}")
+}
+```
+
+Output:
+
+```text
+op_eq_MultiBranch: true
+```
+
+---
+
+## class NumericCast
+
+```cangjie
+public class NumericCast <: NumericCastBase & Equatable<NumericCast>
+```
+
+Function: Numeric type cast expression.
+
+Parent Types:
+
+- NumericCastBase
+- Equatable\<NumericCast>
+
+### static func create(Value, Type, OverflowStrategy)
+
+```cangjie
+public static func create(srcVal: Value, targetType: Type, overflow: OverflowStrategy): NumericCast
+```
+
+Function: Creates a numeric type cast expression, converting the source value to the target type.
+
+Parameters:
+
+- srcVal: Value - Source value.
+- targetType: Type - Target type.
+- overflow: OverflowStrategy - Overflow handling strategy.
+
+Return Value:
+
+- NumericCast - Numeric type cast expression instance.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([IntType.getInt32()], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let param = f.parameters[0]
+    let cast = NumericCast.create(param, IntType.getInt64(), OverflowStrategy.Wrapping)
+    println("static_create: ${cast.operands[0] == param}")
+}
+```
+
+Output:
+
+```text
+static_create: true
+```
+
+### operator func==(NumericCast)
+
+```cangjie
+public operator func==(other: NumericCast): Bool
+```
+
+Function: Reference comparison, determines whether two NumericCast instances are the same.
+
+Parameters:
+
+- other: NumericCast - Another numeric type cast expression.
+
+Return Value:
+
+- Bool - Whether they are the same reference.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([IntType.getInt32()], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let param = f.parameters[0]
+    let cast = NumericCast.create(param, IntType.getInt64(), OverflowStrategy.Wrapping)
+    println("op_eq_NumericCast: ${cast == cast}")
+}
+```
+
+Output:
+
+```text
+op_eq_NumericCast: true
+```
+
+---
+
+## class TryNumericCast
+
+```cangjie
+public class TryNumericCast <: NumericCastBase & Equatable<TryNumericCast>
+```
+
+Function: Numeric type cast expression with exception handling.
+
+Parent Types:
+
+- NumericCastBase
+- Equatable\<TryNumericCast>
+
+### prop normalBranch
+
+```cangjie
+public prop normalBranch: Block
+```
+
+Function: Normal branch target block.
+
+Type: [Block](#class-block)
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([IntType.getInt32()], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let normalBlock = f.body.getOrThrow().appendBlock()
+    let errBlock = f.body.getOrThrow().appendBlock()
+    let param = f.parameters[0]
+    let cast = TryNumericCast.create(param, IntType.getInt64(), normalBlock, errBlock)
+    println("prop_normalBranch: ${cast.normalBranch == normalBlock}")
+}
+```
+
+Output:
+
+```text
+prop_normalBranch: true
+```
+
+### prop errorBranch
+
+```cangjie
+public prop errorBranch: Block
+```
+
+Function: Error branch target block.
+
+Type: [Block](#class-block)
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([IntType.getInt32()], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let normalBlock = f.body.getOrThrow().appendBlock()
+    let errBlock = f.body.getOrThrow().appendBlock()
+    let param = f.parameters[0]
+    let cast = TryNumericCast.create(param, IntType.getInt64(), normalBlock, errBlock)
+    println("prop_errorBranch: ${cast.errorBranch == errBlock}")
+}
+```
+
+Output:
+
+```text
+prop_errorBranch: true
+```
+
+### static func create(Value, Type, Block, Block)
+
+```cangjie
+public static func create(srcVal: Value, targetType: Type, normal: Block, err: Block): TryNumericCast
+```
+
+Function: Creates a numeric type cast expression with exception handling, specifying the normal branch and error branch target blocks.
+
+Parameters:
+
+- srcVal: Value - Source value.
+- targetType: Type - Target type.
+- normal: Block - Normal branch target block.
+- err: Block - Error branch target block.
+
+Return Value:
+
+- TryNumericCast - Numeric type cast expression instance with exception handling.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([IntType.getInt32()], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let normalBlock = f.body.getOrThrow().appendBlock()
+    let errBlock = f.body.getOrThrow().appendBlock()
+    let param = f.parameters[0]
+    let cast = TryNumericCast.create(param, IntType.getInt64(), normalBlock, errBlock)
+    println("static_create: ${cast.normalBranch == normalBlock}")
+}
+```
+
+Output:
+
+```text
+static_create: true
+```
+
+### operator func==(TryNumericCast)
+
+```cangjie
+public operator func==(other: TryNumericCast): Bool
+```
+
+Function: Reference comparison, determines whether two TryNumericCast instances are the same.
+
+Parameters:
+
+- other: TryNumericCast - Another numeric type cast expression with exception handling.
+
+Return Value:
+
+- Bool - Whether they are the same reference.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([IntType.getInt32()], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let normalBlock = f.body.getOrThrow().appendBlock()
+    let errBlock = f.body.getOrThrow().appendBlock()
+    let param = f.parameters[0]
+    let cast = TryNumericCast.create(param, IntType.getInt64(), normalBlock, errBlock)
+    println("op_eq_TryNumericCast: ${cast == cast}")
+}
+```
+
+Output:
+
+```text
+op_eq_TryNumericCast: true
+```
+
+---
+
+## class RaiseException
+
+```cangjie
+public class RaiseException <: Expression & Equatable<RaiseException>
+```
+
+Function: Raise exception terminator expression.
+
+Parent Types:
+
+- Expression
+- Equatable\<RaiseException>
+
+### static func create(Value)
+
+```cangjie
+public static func create(value: Value): RaiseException
+```
+
+Function: Creates a raise exception terminator expression (no successor block version).
+
+Parameters:
+
+- value: Value - Exception value.
+
+Return Value:
+
+- RaiseException - Raise exception terminator expression instance.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let lit = IntLiteral.get(IntType.getInt32(), 1)
+    let expr = Constant.create(lit)
+    f.body.getOrThrow().entryBlock.appendExpr(expr)
+    let lv = expr.result
+    let raise = RaiseException.create(lv)
+    println("static_create_noSuccessor: ${raise.result.toString().size > 0}")
+}
+```
+
+Output:
+
+```text
+static_create_noSuccessor: true
+```
+
+### static func create(Value, Block)
+
+```cangjie
+public static func create(value: Value, successor: Block): RaiseException
+```
+
+Function: Creates a raise exception terminator expression (with successor block version).
+
+Parameters:
+
+- value: Value - Exception value.
+- successor: Block - Successor block.
+
+Return Value:
+
+- RaiseException - Raise exception terminator expression instance.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let successor = f.body.getOrThrow().appendBlock()
+    let lit = IntLiteral.get(IntType.getInt32(), 1)
+    let expr = Constant.create(lit)
+    f.body.getOrThrow().entryBlock.appendExpr(expr)
+    let lv = expr.result
+    let raise = RaiseException.create(lv, successor)
+    println("static_create_withSuccessor: done")
+}
+```
+
+Output:
+
+```text
+static_create_withSuccessor: done
+```
+
+### operator func==(RaiseException)
+
+```cangjie
+public operator func==(other: RaiseException): Bool
+```
+
+Function: Reference comparison, determines whether two RaiseException instances are the same.
+
+Parameters:
+
+- other: RaiseException - Another raise exception terminator expression.
+
+Return Value:
+
+- Bool - Whether they are the same reference.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let lit = IntLiteral.get(IntType.getInt32(), 1)
+    let expr = Constant.create(lit)
+    f.body.getOrThrow().entryBlock.appendExpr(expr)
+    let lv = expr.result
+    let raise = RaiseException.create(lv)
+    println("op_eq_RaiseException: ${raise == raise}")
+}
+```
+
+Output:
+
+```text
+op_eq_RaiseException: true
+```
+</task_result>
+
+---
+
+## class RawArrayAllocate
+
+```cangjie
+public class RawArrayAllocate <: RawArrayAllocateBase & Equatable<RawArrayAllocate>
+```
+
+Function: Raw array allocation expression.
+
+Parent Types:
+
+- RawArrayAllocateBase
+- Equatable\<RawArrayAllocate>
+
+### static func create(Type, Value)
+
+```cangjie
+public static func create(elementType: Type, size: Value): RawArrayAllocate
+```
+
+Function: Creates a raw array allocation expression, specifying the element type and array size.
+
+Parameters:
+
+- elementType: Type - The element type.
+- size: Value - The array size.
+
+Return Value:
+
+- RawArrayAllocate - Raw array allocation expression instance.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([IntType.getInt32()], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let param = f.parameters[0]
+    let alloc = RawArrayAllocate.create(IntType.getInt32(), param)
+    println("static_create: ${alloc.elementType == IntType.getInt32()}")
+}
+```
+
+Output:
+
+```text
+static_create: true
+```
+
+### operator func==(RawArrayAllocate)
+
+```cangjie
+public operator func==(other: RawArrayAllocate): Bool
+```
+
+Function: Reference comparison, determines whether two RawArrayAllocate instances are the same instance.
+
+Parameters:
+
+- other: RawArrayAllocate - Another raw array allocation expression.
+
+Return Value:
+
+- Bool - Whether they are the same reference.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([IntType.getInt32()], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let param = f.parameters[0]
+    let alloc = RawArrayAllocate.create(IntType.getInt32(), param)
+    println("op_eq_RawArrayAllocate: ${alloc == alloc}")
+}
+```
+
+Output:
+
+```text
+op_eq_RawArrayAllocate: true
+```
+
+---
+
+## class TryRawArrayAllocate
+
+```cangjie
+public class TryRawArrayAllocate <: RawArrayAllocateBase & Equatable<TryRawArrayAllocate>
+```
+
+Function: Raw array allocation expression with exception handling.
+
+Parent Types:
+
+- RawArrayAllocateBase
+- Equatable\<TryRawArrayAllocate>
+
+### prop normalBranch
+
+```cangjie
+public prop normalBranch: Block
+```
+
+Function: Normal branch target block.
+
+Type: [Block](#class-block)
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([IntType.getInt32()], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let normalBlock = f.body.getOrThrow().appendBlock()
+    let errBlock = f.body.getOrThrow().appendBlock()
+    let param = f.parameters[0]
+    let alloc = TryRawArrayAllocate.create(IntType.getInt32(), param, normalBlock, errBlock)
+    println("prop_normalBranch: ${alloc.normalBranch == normalBlock}")
+}
+```
+
+Output:
+
+```text
+prop_normalBranch: true
+```
+
+### prop errorBranch
+
+```cangjie
+public prop errorBranch: Block
+```
+
+Function: Error branch target block.
+
+Type: [Block](#class-block)
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([IntType.getInt32()], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let normalBlock = f.body.getOrThrow().appendBlock()
+    let errBlock = f.body.getOrThrow().appendBlock()
+    let param = f.parameters[0]
+    let alloc = TryRawArrayAllocate.create(IntType.getInt32(), param, normalBlock, errBlock)
+    println("prop_errorBranch: ${alloc.errorBranch == errBlock}")
+}
+```
+
+Output:
+
+```text
+prop_errorBranch: true
+```
+
+### static func create(Type, Value, Block, Block)
+
+```cangjie
+public static func create(elementType: Type, size: Value, normal: Block, err: Block): TryRawArrayAllocate
+```
+
+Function: Creates a raw array allocation expression with exception handling, specifying the normal branch and error branch target blocks.
+
+Parameters:
+
+- elementType: Type - The element type.
+- size: Value - The array size.
+- normal: Block - Normal branch target block.
+- err: Block - Error branch target block.
+
+Return Value:
+
+- TryRawArrayAllocate - Raw array allocation expression with exception handling instance.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([IntType.getInt32()], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let normalBlock = f.body.getOrThrow().appendBlock()
+    let errBlock = f.body.getOrThrow().appendBlock()
+    let param = f.parameters[0]
+    let alloc = TryRawArrayAllocate.create(IntType.getInt32(), param, normalBlock, errBlock)
+    println("static_create: ${alloc.normalBranch == normalBlock}")
+}
+```
+
+Output:
+
+```text
+static_create: true
+```
+
+### operator func==(TryRawArrayAllocate)
+
+```cangjie
+public operator func==(other: TryRawArrayAllocate): Bool
+```
+
+Function: Reference comparison, determines whether two TryRawArrayAllocate instances are the same instance.
+
+Parameters:
+
+- other: TryRawArrayAllocate - Another raw array allocation expression with exception handling.
+
+Return Value:
+
+- Bool - Whether they are the same reference.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([IntType.getInt32()], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let normalBlock = f.body.getOrThrow().appendBlock()
+    let errBlock = f.body.getOrThrow().appendBlock()
+    let param = f.parameters[0]
+    let alloc = TryRawArrayAllocate.create(IntType.getInt32(), param, normalBlock, errBlock)
+    println("op_eq_TryRawArrayAllocate: ${alloc == alloc}")
+}
+```
+
+Output:
+
+```text
+op_eq_TryRawArrayAllocate: true
+```
+
+---
+
+## class RawArrayInitByValue
+
+```cangjie
+public class RawArrayInitByValue <: Expression & Equatable<RawArrayInitByValue>
+```
+
+Function: Initialize raw array by value expression.
+
+Parent Types:
+
+- Expression
+- Equatable\<RawArrayInitByValue>
+
+### static func create(Value, Value, Value)
+
+```cangjie
+public static func create(memory: Value, size: Value, initVal: Value): RawArrayInitByValue
+```
+
+Function: Creates an initialize raw array by value expression, specifying the memory address, array size, and initial value.
+
+Parameters:
+
+- memory: Value - The memory address.
+- size: Value - The array size.
+- initVal: Value - The initial value.
+
+Return Value:
+
+- RawArrayInitByValue - Initialize raw array by value expression instance.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([IntType.getInt32(), IntType.getInt32(), IntType.getInt32()], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let mem = f.parameters[0]
+    let sz = f.parameters[1]
+    let iv = f.parameters[2]
+    let initExpr = RawArrayInitByValue.create(mem, sz, iv)
+    println("static_create: done")
+}
+```
+
+Output:
+
+```text
+static_create: done
+```
+
+### operator func==(RawArrayInitByValue)
+
+```cangjie
+public operator func==(other: RawArrayInitByValue): Bool
+```
+
+Function: Reference comparison, determines whether two RawArrayInitByValue instances are the same instance.
+
+Parameters:
+
+- other: RawArrayInitByValue - Another initialize raw array by value expression.
+
+Return Value:
+
+- Bool - Whether they are the same reference.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([IntType.getInt32(), IntType.getInt32(), IntType.getInt32()], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let mem = f.parameters[0]
+    let sz = f.parameters[1]
+    let iv = f.parameters[2]
+    let initExpr = RawArrayInitByValue.create(mem, sz, iv)
+    println("op_eq_RawArrayInitByValue: ${initExpr == initExpr}")
+}
+```
+
+Output:
+
+```text
+op_eq_RawArrayInitByValue: true
+```
+
+---
+
+## class RawArrayLiteralInit
+
+```cangjie
+public class RawArrayLiteralInit <: Expression & Equatable<RawArrayLiteralInit>
+```
+
+Function: Initialize raw array by literal expression.
+
+Parent Types:
+
+- Expression
+- Equatable\<RawArrayLiteralInit>
+
+### static func create(Value, ArrayList\<Value>)
+
+```cangjie
+public static func create(memory: Value, elements: ArrayList<Value>): RawArrayLiteralInit
+```
+
+Function: Creates an initialize raw array by literal expression, specifying the memory address and element list.
+
+Parameters:
+
+- memory: Value - The memory address.
+- elements: ArrayList\<Value> - The element value list.
+
+Return Value:
+
+- RawArrayLiteralInit - Initialize raw array by literal expression instance.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+import std.collection.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([IntType.getInt32()], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let mem = f.parameters[0]
+    let e1 = IntLiteral.get(IntType.getInt32(), 1)
+    let e2 = IntLiteral.get(IntType.getInt32(), 2)
+    let elements = ArrayList<Value>()
+    elements.add(e1)
+    elements.add(e2)
+    let initExpr = RawArrayLiteralInit.create(mem, elements)
+    println("static_create: done")
+}
+```
+
+Output:
+
+```text
+static_create: done
+```
+
+### operator func==(RawArrayLiteralInit)
+
+```cangjie
+public operator func==(other: RawArrayLiteralInit): Bool
+```
+
+Function: Reference comparison, determines whether two RawArrayLiteralInit instances are the same instance.
+
+Parameters:
+
+- other: RawArrayLiteralInit - Another initialize raw array by literal expression.
+
+Return Value:
+
+- Bool - Whether they are the same reference.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+import std.collection.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([IntType.getInt32()], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let mem = f.parameters[0]
+    let e1 = IntLiteral.get(IntType.getInt32(), 1)
+    let e2 = IntLiteral.get(IntType.getInt32(), 2)
+    let elements = ArrayList<Value>()
+    elements.add(e1)
+    elements.add(e2)
+    let initExpr = RawArrayLiteralInit.create(mem, elements)
+    println("op_eq_RawArrayLiteralInit: ${initExpr == initExpr}")
+}
+```
+
+Output:
+
+```text
+op_eq_RawArrayLiteralInit: true
+```
+
+---
+
+## class Spawn
+
+```cangjie
+public class Spawn <: SpawnBase & Equatable<Spawn>
+```
+
+Function: Concurrent Spawn expression (without exception handling).
+
+Parent Types:
+
+- SpawnBase
+- Equatable\<Spawn>
+
+### static func create(Type, Value)
+
+```cangjie
+public static func create(retTy: Type, lambda: Value): Spawn
+```
+
+Function: Creates a concurrent Spawn expression (no-argument version).
+
+Parameters:
+
+- retTy: Type - The return type.
+- lambda: Value - The lambda value.
+
+Return Value:
+
+- Spawn - Spawn expression instance.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([FuncType.get([], IntType.getInt32())], IntType.getInt32()), "f_m", "f", "demo")
+    f.initBody()
+    let param = f.parameters[0]
+    let spawnExpr = Spawn.create(IntType.getInt32(), param)
+    println("static_create_noArg: ${spawnExpr.result.toString().size > 0}")
+}
+```
+
+Output:
+
+```text
+static_create_noArg: true
+```
+
+### static func create(Type, Value, Value)
+
+```cangjie
+public static func create(retTy: Type, lambda: Value, arg: Value): Spawn
+```
+
+Function: Creates a concurrent Spawn expression (with-argument version).
+
+Parameters:
+
+- retTy: Type - The return type.
+- lambda: Value - The lambda value.
+- arg: Value - The Spawn argument value.
+
+Return Value:
+
+- Spawn - Spawn expression instance.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([FuncType.get([IntType.getInt32()], IntType.getInt32()), IntType.getInt32()], IntType.getInt32()), "f_m", "f", "demo")
+    f.initBody()
+    let lambda = f.parameters[0]
+    let arg = f.parameters[1]
+    let spawnExpr = Spawn.create(IntType.getInt32(), lambda, arg)
+    println("static_create_withArg: ${spawnExpr.result.toString().size > 0}")
+}
+```
+
+Output:
+
+```text
+static_create_withArg: true
+```
+
+### operator func==(Spawn)
+
+```cangjie
+public operator func==(other: Spawn): Bool
+```
+
+Function: Reference comparison, determines whether two Spawn instances are the same instance.
+
+Parameters:
+
+- other: Spawn - Another Spawn expression.
+
+Return Value:
+
+- Bool - Whether they are the same reference.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([FuncType.get([], IntType.getInt32())], IntType.getInt32()), "f_m", "f", "demo")
+    f.initBody()
+    let param = f.parameters[0]
+    let spawnExpr = Spawn.create(IntType.getInt32(), param)
+    println("op_eq_Spawn: ${spawnExpr == spawnExpr}")
+}
+```
+
+Output:
+
+```text
+op_eq_Spawn: true
+```
+
+---
+
+## class TrySpawn
+
+```cangjie
+public class TrySpawn <: SpawnBase & Equatable<TrySpawn>
+```
+
+Function: Concurrent Spawn expression with exception handling.
+
+Parent Types:
+
+- SpawnBase
+- Equatable\<TrySpawn>
+
+### prop normalBranch
+
+```cangjie
+public prop normalBranch: Block
+```
+
+Function: Normal branch target block.
+
+Type: [Block](#class-block)
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([FuncType.get([], IntType.getInt32())], IntType.getInt32()), "f_m", "f", "demo")
+    f.initBody()
+    let normalBlock = f.body.getOrThrow().appendBlock()
+    let errBlock = f.body.getOrThrow().appendBlock()
+    let param = f.parameters[0]
+    let spawnExpr = TrySpawn.create(IntType.getInt32(), param, normalBlock, errBlock)
+    println("prop_normalBranch: ${spawnExpr.normalBranch == normalBlock}")
+}
+```
+
+Output:
+
+```text
+prop_normalBranch: true
+```
+
+### prop errorBranch
+
+```cangjie
+public prop errorBranch: Block
+```
+
+Function: Error branch target block.
+
+Type: [Block](#class-block)
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([FuncType.get([], IntType.getInt32())], IntType.getInt32()), "f_m", "f", "demo")
+    f.initBody()
+    let normalBlock = f.body.getOrThrow().appendBlock()
+    let errBlock = f.body.getOrThrow().appendBlock()
+    let param = f.parameters[0]
+    let spawnExpr = TrySpawn.create(IntType.getInt32(), param, normalBlock, errBlock)
+    println("prop_errorBranch: ${spawnExpr.errorBranch == errBlock}")
+}
+```
+
+Output:
+
+```text
+prop_errorBranch: true
+```
+
+### static func create(Type, Value, Block, Block)
+
+```cangjie
+public static func create(retTy: Type, lambda: Value, normal: Block, err: Block): TrySpawn
+```
+
+Function: Creates a concurrent Spawn expression with exception handling (no-argument version).
+
+Parameters:
+
+- retTy: Type - The return type.
+- lambda: Value - The lambda value.
+- normal: Block - Normal branch target block.
+- err: Block - Error branch target block.
+
+Return Value:
+
+- TrySpawn - Spawn expression with exception handling instance.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([FuncType.get([], IntType.getInt32())], IntType.getInt32()), "f_m", "f", "demo")
+    f.initBody()
+    let normalBlock = f.body.getOrThrow().appendBlock()
+    let errBlock = f.body.getOrThrow().appendBlock()
+    let param = f.parameters[0]
+    let spawnExpr = TrySpawn.create(IntType.getInt32(), param, normalBlock, errBlock)
+    println("static_create_noArg: ${spawnExpr.normalBranch == normalBlock}")
+}
+```
+
+Output:
+
+```text
+static_create_noArg: true
+```
+
+### static func create(Type, Value, Value, Block, Block)
+
+```cangjie
+public static func create(retTy: Type, lambda: Value, arg: Value, normal: Block, err: Block): TrySpawn
+```
+
+Function: Creates a concurrent Spawn expression with exception handling (with-argument version).
+
+Parameters:
+
+- retTy: Type - The return type.
+- lambda: Value - The lambda value.
+- arg: Value - The Spawn argument value.
+- normal: Block - Normal branch target block.
+- err: Block - Error branch target block.
+
+Return Value:
+
+- TrySpawn - Spawn expression with exception handling instance.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([FuncType.get([IntType.getInt32()], IntType.getInt32()), IntType.getInt32()], IntType.getInt32()), "f_m", "f", "demo")
+    f.initBody()
+    let normalBlock = f.body.getOrThrow().appendBlock()
+    let errBlock = f.body.getOrThrow().appendBlock()
+    let lambda = f.parameters[0]
+    let arg = f.parameters[1]
+    let spawnExpr = TrySpawn.create(IntType.getInt32(), lambda, arg, normalBlock, errBlock)
+    println("static_create_withArg: ${spawnExpr.normalBranch == normalBlock}")
+}
+```
+
+Output:
+
+```text
+static_create_withArg: true
+```
+
+### operator func==(TrySpawn)
+
+```cangjie
+public operator func==(other: TrySpawn): Bool
+```
+
+Function: Reference comparison, determines whether two TrySpawn instances are the same instance.
+
+Parameters:
+
+- other: TrySpawn - Another Spawn expression with exception handling.
+
+Return Value:
+
+- Bool - Whether they are the same reference.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([FuncType.get([], IntType.getInt32())], IntType.getInt32()), "f_m", "f", "demo")
+    f.initBody()
+    let normalBlock = f.body.getOrThrow().appendBlock()
+    let errBlock = f.body.getOrThrow().appendBlock()
+    let param = f.parameters[0]
+    let spawnExpr = TrySpawn.create(IntType.getInt32(), param, normalBlock, errBlock)
+    println("op_eq_TrySpawn: ${spawnExpr == spawnExpr}")
+}
+```
+
+Output:
+
+```text
+op_eq_TrySpawn: true
+```
+
+---
+
+## class Store
+
+```cangjie
+public class Store <: Expression & Equatable<Store>
+```
+
+Function: Memory store expression.
+
+Parent Types:
+
+- Expression
+- Equatable\<Store>
+
+### prop dstAddress
+
+```cangjie
+public prop dstAddress: Value
+```
+
+Function: Destination address.
+
+Type: Value
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([IntType.getInt32(), CPointerType.get(IntType.getInt32())], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let valParam = f.parameters[0]
+    let addrParam = f.parameters[1]
+    let store = Store.create(valParam, addrParam)
+    println("prop_dstAddress: ${store.dstAddress == addrParam}")
+}
+```
+
+Output:
+
+```text
+prop_dstAddress: true
+```
+
+### prop srcValue
+
+```cangjie
+public prop srcValue: Value
+```
+
+Function: Source value.
+
+Type: Value
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([IntType.getInt32(), CPointerType.get(IntType.getInt32())], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let valParam = f.parameters[0]
+    let addrParam = f.parameters[1]
+    let store = Store.create(valParam, addrParam)
+    println("prop_srcValue: ${store.srcValue == valParam}")
+}
+```
+
+Output:
+
+```text
+prop_srcValue: true
+```
+
+### static func create(Value, Value)
+
+```cangjie
+public static func create(val: Value, location: Value): Store
+```
+
+Function: Creates a memory store expression, storing the source value to the destination address.
+
+Parameters:
+
+- val: Value - The source value.
+- location: Value - The destination address.
+
+Return Value:
+
+- Store - Memory store expression instance.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([IntType.getInt32(), CPointerType.get(IntType.getInt32())], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let valParam = f.parameters[0]
+    let addrParam = f.parameters[1]
+    let store = Store.create(valParam, addrParam)
+    println("static_create: ${store.srcValue == valParam}")
+}
+```
+
+Output:
+
+```text
+static_create: true
+```
+
+### operator func==(Store)
+
+```cangjie
+public operator func==(other: Store): Bool
+```
+
+Function: Reference comparison, determines whether two Store instances are the same instance.
+
+Parameters:
+
+- other: Store - Another memory store expression.
+
+Return Value:
+
+- Bool - Whether they are the same reference.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([IntType.getInt32(), CPointerType.get(IntType.getInt32())], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let valParam = f.parameters[0]
+    let addrParam = f.parameters[1]
+    let store = Store.create(valParam, addrParam)
+    println("op_eq_Store: ${store == store}")
+}
+```
+
+Output:
+
+```text
+op_eq_Store: true
+```
+
+---
+
+## class StoreElementByName
+
+```cangjie
+public class StoreElementByName <: Expression & Equatable<StoreElementByName>
+```
+
+Function: Expression that stores an aggregate element by field name.
+
+Parent Types:
+
+- Expression
+- Equatable\<StoreElementByName>
+
+### prop fieldNames
+
+```cangjie
+public prop fieldNames: Array<String>
+```
+
+Function: Field name path.
+
+Type: Array\<String>
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+import std.collection.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([IntType.getInt32(), IntType.getInt32()], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let valParam = f.parameters[0]
+    let locParam = f.parameters[1]
+    let fieldNames = ArrayList<String>()
+    fieldNames.add("x")
+    let store = StoreElementByName.create(valParam, locParam, fieldNames)
+    println("prop_fieldNames: ${store.fieldNames.size}")
+}
+```
+
+Output:
+
+```text
+prop_fieldNames: 1
+```
+
+### static func create(Value, Value, ArrayList\<String>)
+
+```cangjie
+public static func create(val: Value, location: Value, fieldNames: ArrayList<String>): StoreElementByName
+```
+
+Function: Creates an expression that stores an aggregate element by field name.
+
+Parameters:
+
+- val: Value - The source value.
+- location: Value - The destination address.
+- fieldNames: ArrayList\<String> - The field name path.
+
+Return Value:
+
+- StoreElementByName - Store aggregate element by field name expression instance.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+import std.collection.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([IntType.getInt32(), IntType.getInt32()], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let valParam = f.parameters[0]
+    let locParam = f.parameters[1]
+    let fieldNames = ArrayList<String>()
+    fieldNames.add("x")
+    let store = StoreElementByName.create(valParam, locParam, fieldNames)
+    println("static_create: ${store.fieldNames.size}")
+}
+```
+
+Output:
+
+```text
+static_create: 1
+```
+
+### operator func==(StoreElementByName)
+
+```cangjie
+public operator func==(other: StoreElementByName): Bool
+```
+
+Function: Reference comparison, determines whether two StoreElementByName instances are the same instance.
+
+Parameters:
+
+- other: StoreElementByName - Another store aggregate element by field name expression.
+
+Return Value:
+
+- Bool - Whether they are the same reference.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+import std.collection.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([IntType.getInt32(), IntType.getInt32()], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let valParam = f.parameters[0]
+    let locParam = f.parameters[1]
+    let fieldNames = ArrayList<String>()
+    fieldNames.add("x")
+    let store = StoreElementByName.create(valParam, locParam, fieldNames)
+    println("op_eq_StoreElementByName: ${store == store}")
+}
+```
+
+Output:
+
+```text
+op_eq_StoreElementByName: true
+```
+
+---
+
+## class StoreElementRef
+
+```cangjie
+public class StoreElementRef <: Expression & Equatable<StoreElementRef>
+```
+
+Function: Expression that stores an aggregate element by numeric index.
+
+Parent Types:
+
+- Expression
+- Equatable\<StoreElementRef>
+
+### prop path
+
+```cangjie
+public prop path: Array<UInt64>
+```
+
+Function: Index path.
+
+Type: Array\<UInt64>
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+import std.collection.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([IntType.getInt32(), IntType.getInt32()], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let valParam = f.parameters[0]
+    let locParam = f.parameters[1]
+    let path = ArrayList<UInt64>()
+    path.add(0)
+    let store = StoreElementRef.create(valParam, locParam, path)
+    println("prop_path: ${store.path.size}")
+}
+```
+
+Output:
+
+```text
+prop_path: 1
+```
+
+### static func create(Value, Value, ArrayList\<UInt64>)
+
+```cangjie
+public static func create(val: Value, location: Value, path: ArrayList<UInt64>): StoreElementRef
+```
+
+Function: Creates an expression that stores an aggregate element by numeric index.
+
+Parameters:
+
+- val: Value - The source value.
+- location: Value - The destination address.
+- path: ArrayList\<UInt64> - The index path.
+
+Return Value:
+
+- StoreElementRef - Store aggregate element by numeric index expression instance.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+import std.collection.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([IntType.getInt32(), IntType.getInt32()], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let valParam = f.parameters[0]
+    let locParam = f.parameters[1]
+    let path = ArrayList<UInt64>()
+    path.add(0)
+    let store = StoreElementRef.create(valParam, locParam, path)
+    println("static_create: ${store.path.size}")
+}
+```
+
+Output:
+
+```text
+static_create: 1
+```
+
+### operator func==(StoreElementRef)
+
+```cangjie
+public operator func==(other: StoreElementRef): Bool
+```
+
+Function: Reference comparison, determines whether two StoreElementRef instances are the same instance.
+
+Parameters:
+
+- other: StoreElementRef - Another store aggregate element by numeric index expression.
+
+Return Value:
+
+- Bool - Whether they are the same reference.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+import std.collection.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([IntType.getInt32(), IntType.getInt32()], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let valParam = f.parameters[0]
+    let locParam = f.parameters[1]
+    let path = ArrayList<UInt64>()
+    path.add(0)
+    let store = StoreElementRef.create(valParam, locParam, path)
+    println("op_eq_StoreElementRef: ${store == store}")
+}
+```
+
+Output:
+
+```text
+op_eq_StoreElementRef: true
+```
+
+---
+
+## class Tuple
+
+```cangjie
+public class Tuple <: Expression & Equatable<Tuple>
+```
+
+Function: Tuple construction expression.
+
+Parent Types:
+
+- Expression
+- Equatable\<Tuple>
+
+### prop elements
+
+```cangjie
+public prop elements: Array<Value>
+```
+
+Function: Tuple elements.
+
+Type: Array\<Value>
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+import std.collection.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let e1 = IntLiteral.get(IntType.getInt32(), 1)
+    let e2 = IntLiteral.get(IntType.getInt32(), 2)
+    let elements = ArrayList<Value>()
+    elements.add(e1)
+    elements.add(e2)
+    let tuple = Tuple.create(elements)
+    println("prop_elements: ${tuple.elements.size}")
+}
+```
+
+Output:
+
+```text
+prop_elements: 2
+```
+
+### static func create(ArrayList\<Value>)
+
+```cangjie
+public static func create(elements: ArrayList<Value>): Tuple
+```
+
+Function: Creates a tuple construction expression, specifying the element list.
+
+Parameters:
+
+- elements: ArrayList\<Value> - The element value list.
+
+Return Value:
+
+- Tuple - Tuple construction expression instance.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+import std.collection.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let e1 = IntLiteral.get(IntType.getInt32(), 1)
+    let e2 = IntLiteral.get(IntType.getInt32(), 2)
+    let elements = ArrayList<Value>()
+    elements.add(e1)
+    elements.add(e2)
+    let tuple = Tuple.create(elements)
+    println("static_create: ${tuple.elements.size}")
+}
+```
+
+Output:
+
+```text
+static_create: 2
+```
+
+### operator func==(Tuple)
+
+```cangjie
+public operator func==(other: Tuple): Bool
+```
+
+Function: Reference comparison, determines whether two Tuple instances are the same instance.
+
+Parameters:
+
+- other: Tuple - Another tuple construction expression.
+
+Return Value:
+
+- Bool - Whether they are the same reference.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+import std.collection.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let e1 = IntLiteral.get(IntType.getInt32(), 1)
+    let e2 = IntLiteral.get(IntType.getInt32(), 2)
+    let elements = ArrayList<Value>()
+    elements.add(e1)
+    elements.add(e2)
+    let tuple = Tuple.create(elements)
+    println("op_eq_Tuple: ${tuple == tuple}")
+}
+```
+
+Output:
+
+```text
+op_eq_Tuple: true
+```
+
+---
+
+## class Box
+
+```cangjie
+public class Box <: TypeCast & Equatable<Box>
+```
+
+Function: Boxing type cast expression.
+
+Parent Types:
+
+- TypeCast
+- Equatable\<Box>
+
+### static func create(Value, Type)
+
+```cangjie
+public static func create(srcVal: Value, targetType: Type): Box
+```
+
+Function: Creates a boxing type cast expression, boxing the source value to the target type.
+
+Parameters:
+
+- srcVal: Value - The source value.
+- targetType: Type - The target type.
+
+Return Value:
+
+- Box - Boxing type cast expression instance.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.Box as BoxExpr
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([IntType.getInt32()], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let param = f.parameters[0]
+    let boxExpr = BoxExpr.create(param, BoxType.get(IntType.getInt32()))
+    println("static_create: ${boxExpr.srcValue == param}")
+}
+```
+
+Output:
+
+```text
+static_create: true
+```
+
+### operator func==(Box)
+
+```cangjie
+public operator func==(other: Box): Bool
+```
+
+Function: Reference comparison, determines whether two Box instances are the same instance.
+
+Parameters:
+
+- other: Box - Another boxing type cast expression.
+
+Return Value:
+
+- Bool - Whether they are the same reference.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.Box as BoxExpr
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([IntType.getInt32()], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let param = f.parameters[0]
+    let boxExpr = BoxExpr.create(param, BoxType.get(IntType.getInt32()))
+    println("op_eq_Box: ${boxExpr == boxExpr}")
+}
+```
+
+Output:
+
+```text
+op_eq_Box: true
+```
+
+---
+
+## class StaticCast
+
+```cangjie
+public class StaticCast <: TypeCast & Equatable<StaticCast>
+```
+
+Function: Static type cast expression.
+
+Parent Types:
+
+- TypeCast
+- Equatable\<StaticCast>
+
+### static func create(Value, Type)
+
+```cangjie
+public static func create(srcVal: Value, targetType: Type): StaticCast
+```
+
+Function: Creates a static type cast expression, statically casting the source value to the target type.
+
+Parameters:
+
+- srcVal: Value - The source value.
+- targetType: Type - The target type.
+
+Return Value:
+
+- StaticCast - Static type cast expression instance.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([IntType.getInt32()], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let param = f.parameters[0]
+    let cast = StaticCast.create(param, IntType.getInt64())
+    println("static_create: ${cast.srcValue == param}")
+}
+```
+
+Output:
+
+```text
+static_create: true
+```
+
+### operator func==(StaticCast)
+
+```cangjie
+public operator func==(other: StaticCast): Bool
+```
+
+Function: Reference comparison, determines whether two StaticCast instances are the same instance.
+
+Parameters:
+
+- other: StaticCast - Another static type cast expression.
+
+Return Value:
+
+- Bool - Whether they are the same reference.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([IntType.getInt32()], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let param = f.parameters[0]
+    let cast = StaticCast.create(param, IntType.getInt64())
+    println("op_eq_StaticCast: ${cast == cast}")
+}
+```
+
+Output:
+
+```text
+op_eq_StaticCast: true
+```
+
+---
+
+## class CastToConcrete
+
+```cangjie
+public class CastToConcrete <: TypeCast & Equatable<CastToConcrete>
+```
+
+Function: Cast to concrete type expression.
+
+Parent Types:
+
+- TypeCast
+- Equatable\<CastToConcrete>
+
+### static func create(Value, Type)
+
+```cangjie
+public static func create(srcVal: Value, targetType: Type): CastToConcrete
+```
+
+Function: Creates a cast to concrete type expression.
+
+Parameters:
+
+- srcVal: Value - The source value.
+- targetType: Type - The target concrete type.
+
+Return Value:
+
+- CastToConcrete - Cast to concrete type expression instance.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([IntType.getInt32()], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let param = f.parameters[0]
+    let cast = CastToConcrete.create(param, IntType.getInt64())
+    println("static_create: ${cast.srcValue == param}")
+}
+```
+
+Output:
+
+```text
+static_create: true
+```
+
+### operator func==(CastToConcrete)
+
+```cangjie
+public operator func==(other: CastToConcrete): Bool
+```
+
+Function: Reference comparison, determines whether two CastToConcrete instances are the same instance.
+
+Parameters:
+
+- other: CastToConcrete - Another cast to concrete type expression.
+
+Return Value:
+
+- Bool - Whether they are the same reference.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([IntType.getInt32()], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let param = f.parameters[0]
+    let cast = CastToConcrete.create(param, IntType.getInt64())
+    println("op_eq_CastToConcrete: ${cast == cast}")
+}
+```
+
+Output:
+
+```text
+op_eq_CastToConcrete: true
+```
+
+---
+
+## class CastToGeneric
+
+```cangjie
+public class CastToGeneric <: TypeCast & Equatable<CastToGeneric>
+```
+
+Function: Cast to generic type expression.
+
+Parent Types:
+
+- TypeCast
+- Equatable\<CastToGeneric>
+
+### static func create(Value, Type)
+
+```cangjie
+public static func create(srcVal: Value, targetType: Type): CastToGeneric
+```
+
+Function: Creates a cast to generic type expression.
+
+Parameters:
+
+- srcVal: Value - The source value.
+- targetType: Type - The target generic type.
+
+Return Value:
+
+- CastToGeneric - Cast to generic type expression instance.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([IntType.getInt32()], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let param = f.parameters[0]
+    let gt = GenericType.get("T_m", "T")
+    let cast = CastToGeneric.create(param, gt)
+    println("static_create: ${cast.srcValue == param}")
+}
+```
+
+Output:
+
+```text
+static_create: true
+```
+
+### operator func==(CastToGeneric)
+
+```cangjie
+public operator func==(other: CastToGeneric): Bool
+```
+
+Function: Reference comparison, determines whether two CastToGeneric instances are the same instance.
+
+Parameters:
+
+- other: CastToGeneric - Another cast to generic type expression.
+
+Return Value:
+
+- Bool - Whether they are the same reference.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([IntType.getInt32()], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let param = f.parameters[0]
+    let gt = GenericType.get("T_m", "T")
+    let cast = CastToGeneric.create(param, gt)
+    println("op_eq_CastToGeneric: ${cast == cast}")
+}
+```
+
+Output:
+
+```text
+op_eq_CastToGeneric: true
+```
+
+---
+
+## class UnboxToRef
+
+```cangjie
+public class UnboxToRef <: TypeCast & Equatable<UnboxToRef>
+```
+
+Function: Unbox to reference type cast expression.
+
+Parent Types:
+
+- TypeCast
+- Equatable\<UnboxToRef>
+
+### static func create(Value, Type)
+
+```cangjie
+public static func create(srcVal: Value, targetType: Type): UnboxToRef
+```
+
+Function: Creates an unbox to reference type cast expression.
+
+Parameters:
+
+- srcVal: Value - The source value.
+- targetType: Type - The target reference type.
+
+Return Value:
+
+- UnboxToRef - Unbox to reference type cast expression instance.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([BoxType.get(IntType.getInt32())], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let param = f.parameters[0]
+    let cast = UnboxToRef.create(param, RefType.get(IntType.getInt32()))
+    println("static_create: ${cast.srcValue == param}")
+}
+```
+
+Output:
+
+```text
+static_create: true
+```
+
+### operator func==(UnboxToRef)
+
+```cangjie
+public operator func==(other: UnboxToRef): Bool
+```
+
+Function: Reference comparison, determines whether two UnboxToRef instances are the same instance.
+
+Parameters:
+
+- other: UnboxToRef - Another unbox to reference type cast expression.
+
+Return Value:
+
+- Bool - Whether they are the same reference.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([BoxType.get(IntType.getInt32())], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let param = f.parameters[0]
+    let cast = UnboxToRef.create(param, RefType.get(IntType.getInt32()))
+    println("op_eq_UnboxToRef: ${cast == cast}")
+}
+```
+
+Output:
+
+```text
+op_eq_UnboxToRef: true
+```
+
+---
+
+## class UnboxToValue
+
+```cangjie
+public class UnboxToValue <: TypeCast & Equatable<UnboxToValue>
+```
+
+Function: Unbox to value type cast expression.
+
+Parent Types:
+
+- TypeCast
+- Equatable\<UnboxToValue>
+
+### static func create(Value, Type)
+
+```cangjie
+public static func create(srcVal: Value, targetType: Type): UnboxToValue
+```
+
+Function: Creates an unbox to value type cast expression.
+
+Parameters:
+
+- srcVal: Value - The source value.
+- targetType: Type - The target value type.
+
+Return Value:
+
+- UnboxToValue - Unbox to value type cast expression instance.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([BoxType.get(IntType.getInt32())], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let param = f.parameters[0]
+    let cast = UnboxToValue.create(param, IntType.getInt32())
+    println("static_create: ${cast.srcValue == param}")
+}
+```
+
+Output:
+
+```text
+static_create: true
+```
+
+### operator func==(UnboxToValue)
+
+```cangjie
+public operator func==(other: UnboxToValue): Bool
+```
+
+Function: Reference comparison, determines whether two UnboxToValue instances are the same instance.
+
+Parameters:
+
+- other: UnboxToValue - Another unbox to value type cast expression.
+
+Return Value:
+
+- Bool - Whether they are the same reference.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([BoxType.get(IntType.getInt32())], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let param = f.parameters[0]
+    let cast = UnboxToValue.create(param, IntType.getInt32())
+    println("op_eq_UnboxToValue: ${cast == cast}")
+}
+```
+
+Output:
+
+```text
+op_eq_UnboxToValue: true
+```
+
+---
+
+## class UnaryExpression
+
+```cangjie
+public class UnaryExpression <: UnaryExpressionBase & Equatable<UnaryExpression>
+```
+
+Function: Unary operation expression (without exception handling).
+
+Parent Types:
+
+- UnaryExpressionBase
+- Equatable\<UnaryExpression>
+
+### static func create(UnaryExprKind, Value)
+
+```cangjie
+public static func create(kind: UnaryExprKind, op: Value): UnaryExpression
+```
+
+Function: Creates a unary operation expression, specifying the operation kind and operand.
+
+Parameters:
+
+- kind: UnaryExprKind - The unary operation kind.
+- op: Value - The operand.
+
+Return Value:
+
+- UnaryExpression - Unary operation expression instance.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([IntType.getInt64()], IntType.getInt64()), "f_m", "f", "demo")
+    f.initBody()
+    let param = f.parameters[0]
+    let expr = UnaryExpression.create(UnaryExprKind.Neg, param)
+    println("static_create: ${expr.result.toString().size > 0}")
+}
+```
+
+Output:
+
+```text
+static_create: true
+```
+
+### operator func==(UnaryExpression)
+
+```cangjie
+public operator func==(other: UnaryExpression): Bool
+```
+
+Function: Reference comparison, determines whether two UnaryExpression instances are the same instance.
+
+Parameters:
+
+- other: UnaryExpression - Another unary operation expression.
+
+Return Value:
+
+- Bool - Whether they are the same reference.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([IntType.getInt64()], IntType.getInt64()), "f_m", "f", "demo")
+    f.initBody()
+    let param = f.parameters[0]
+    let expr = UnaryExpression.create(UnaryExprKind.Neg, param)
+    println("op_eq_UnaryExpression: ${expr == expr}")
+}
+```
+
+Output:
+
+```text
+op_eq_UnaryExpression: true
+```
+
+---
+
+## class TryUnaryExpression
+
+```cangjie
+public class TryUnaryExpression <: UnaryExpressionBase & Equatable<TryUnaryExpression>
+```
+
+Function: Unary operation expression with exception handling.
+
+Parent Types:
+
+- UnaryExpressionBase
+- Equatable\<TryUnaryExpression>
+
+### prop normalBranch
+
+```cangjie
+public prop normalBranch: Block
+```
+
+Function: Normal branch target block.
+
+Type: [Block](#class-block)
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([IntType.getInt64()], IntType.getInt64()), "f_m", "f", "demo")
+    f.initBody()
+    let normalBlock = f.body.getOrThrow().appendBlock()
+    let errBlock = f.body.getOrThrow().appendBlock()
+    let param = f.parameters[0]
+    let expr = TryUnaryExpression.create(param, normalBlock, errBlock)
+    println("prop_normalBranch: ${expr.normalBranch == normalBlock}")
+}
+```
+
+Output:
+
+```text
+prop_normalBranch: true
+```
+
+### prop errorBranch
+
+```cangjie
+public prop errorBranch: Block
+```
+
+Function: Error branch target block.
+
+Type: [Block](#class-block)
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([IntType.getInt64()], IntType.getInt64()), "f_m", "f", "demo")
+    f.initBody()
+    let normalBlock = f.body.getOrThrow().appendBlock()
+    let errBlock = f.body.getOrThrow().appendBlock()
+    let param = f.parameters[0]
+    let expr = TryUnaryExpression.create(param, normalBlock, errBlock)
+    println("prop_errorBranch: ${expr.errorBranch == errBlock}")
+}
+```
+
+Output:
+
+```text
+prop_errorBranch: true
+```
+
+### static func create(Value, Block, Block)
+
+```cangjie
+public static func create(op: Value, normal: Block, err: Block): TryUnaryExpression
+```
+
+Function: Creates a unary operation expression with exception handling, specifying the normal branch and error branch target blocks.
+
+Parameters:
+
+- op: Value - The operand.
+- normal: Block - Normal branch target block.
+- err: Block - Error branch target block.
+
+Return Value:
+
+- TryUnaryExpression - Unary operation expression with exception handling instance.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([IntType.getInt64()], IntType.getInt64()), "f_m", "f", "demo")
+    f.initBody()
+    let normalBlock = f.body.getOrThrow().appendBlock()
+    let errBlock = f.body.getOrThrow().appendBlock()
+    let param = f.parameters[0]
+    let expr = TryUnaryExpression.create(param, normalBlock, errBlock)
+    println("static_create: ${expr.normalBranch == normalBlock}")
+}
+```
+
+Output:
+
+```text
+static_create: true
+```
+
+### operator func==(TryUnaryExpression)
+
+```cangjie
+public operator func==(other: TryUnaryExpression): Bool
+```
+
+Function: Reference comparison, determines whether two TryUnaryExpression instances are the same instance.
+
+Parameters:
+
+- other: TryUnaryExpression - Another unary operation expression with exception handling.
+
+Return Value:
+
+- Bool - Whether they are the same reference.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([IntType.getInt64()], IntType.getInt64()), "f_m", "f", "demo")
+    f.initBody()
+    let normalBlock = f.body.getOrThrow().appendBlock()
+    let errBlock = f.body.getOrThrow().appendBlock()
+    let param = f.parameters[0]
+    let expr = TryUnaryExpression.create(param, normalBlock, errBlock)
+    println("op_eq_TryUnaryExpression: ${expr == expr}")
+}
+```
+
+Output:
+
+```text
+op_eq_TryUnaryExpression: true
+```
+
+---
+
+## class VArrayBuilder
+
+```cangjie
+public class VArrayBuilder <: Expression & Equatable<VArrayBuilder>
+```
+
+Function: VArray builder expression.
+
+Parent Types:
+
+- Expression
+- Equatable\<VArrayBuilder>
+
+### static func create(Type, Value, Value, Value)
+
+```cangjie
+public static func create(retTy: Type, size: Value, initVal: Value, initFunc: Value): VArrayBuilder
+```
+
+Function: Creates a VArray builder expression, specifying the return type, array size, initial value, and initialization function.
+
+Parameters:
+
+- retTy: Type - The return type.
+- size: Value - The array size.
+- initVal: Value - The initial value.
+- initFunc: Value - The initialization function.
+
+Return Value:
+
+- VArrayBuilder - VArray builder expression instance.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([IntType.getInt32(), IntType.getInt32(), FuncType.get([IntType.getInt32()], IntType.getInt32())], VArrayType.get(IntType.getInt32(), 5)), "f_m", "f", "demo")
+    f.initBody()
+    let sizeVal = f.parameters[0]
+    let initVal = f.parameters[1]
+    let initFunc = f.parameters[2]
+    let builder = VArrayBuilder.create(VArrayType.get(IntType.getInt32(), 5), sizeVal, initVal, initFunc)
+    println("static_create: ${builder.result.toString().size > 0}")
+}
+```
+
+Output:
+
+```text
+static_create: true
+```
+
+### operator func==(VArrayBuilder)
+
+```cangjie
+public operator func==(other: VArrayBuilder): Bool
+```
+
+Function: Reference comparison, determines whether two VArrayBuilder instances are the same instance.
+
+Parameters:
+
+- other: VArrayBuilder - Another VArray builder expression.
+
+Return Value:
+
+- Bool - Whether they are the same reference.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([IntType.getInt32(), IntType.getInt32(), FuncType.get([IntType.getInt32()], IntType.getInt32())], VArrayType.get(IntType.getInt32(), 5)), "f_m", "f", "demo")
+    f.initBody()
+    let sizeVal = f.parameters[0]
+    let initVal = f.parameters[1]
+    let initFunc = f.parameters[2]
+    let builder = VArrayBuilder.create(VArrayType.get(IntType.getInt32(), 5), sizeVal, initVal, initFunc)
+    println("op_eq_VArrayBuilder: ${builder == builder}")
+}
+```
+
+Output:
+
+```text
+op_eq_VArrayBuilder: true
+```
+
+---
+
+## class VArrayExpr
+
+```cangjie
+public class VArrayExpr <: Expression & Equatable<VArrayExpr>
+```
+
+Function: VArray literal expression.
+
+Parent Types:
+
+- Expression
+- Equatable\<VArrayExpr>
+
+### static func create(ArrayList\<Value>)
+
+```cangjie
+public static func create(elements: ArrayList<Value>): VArrayExpr
+```
+
+Function: Creates a VArray literal expression, specifying the element list.
+
+Parameters:
+
+- elements: ArrayList\<Value> - The element value list.
+
+Return Value:
+
+- VArrayExpr - VArray literal expression instance.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+import std.collection.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let e1 = IntLiteral.get(IntType.getInt32(), 1)
+    let e2 = IntLiteral.get(IntType.getInt32(), 2)
+    let e3 = IntLiteral.get(IntType.getInt32(), 3)
+    let elements = ArrayList<Value>()
+    elements.add(e1)
+    elements.add(e2)
+    elements.add(e3)
+    let expr = VArrayExpr.create(elements)
+    println("static_create: ${expr.result.toString().size > 0}")
+}
+```
+
+Output:
+
+```text
+static_create: true
+```
+
+### operator func==(VArrayExpr)
+
+```cangjie
+public operator func==(other: VArrayExpr): Bool
+```
+
+Function: Reference comparison, determines whether two VArrayExpr instances are the same instance.
+
+Parameters:
+
+- other: VArrayExpr - Another VArray literal expression.
+
+Return Value:
+
+- Bool - Whether they are the same reference.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+import std.collection.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let e1 = IntLiteral.get(IntType.getInt32(), 1)
+    let e2 = IntLiteral.get(IntType.getInt32(), 2)
+    let elements = ArrayList<Value>()
+    elements.add(e1)
+    elements.add(e2)
+    let expr = VArrayExpr.create(elements)
+    println("op_eq_VArrayExpr: ${expr == expr}")
+}
+```
+
+Output:
+
+```text
+op_eq_VArrayExpr: true
+```
+
+---
+</task_result>
+
+---
+
+## class CHIRBuilder
+
+```cangjie
+public class CHIRBuilder
+```
+
+Function: CHIR expression builder, used to insert various CHIR expressions (arithmetic, memory, control flow, type conversions, etc.) into a basic block at a specified position.
+
+### init(Block)
+
+```cangjie
+public init(parent: Block)
+```
+
+Function: Constructs a CHIRBuilder with the insertion position set to the end of the given basic block.
+
+Parameters:
+
+- parent: Block - Target basic block for insertion.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let builder = CHIRBuilder(block)
+    builder.createBinaryAdd(IntLiteral.get(IntType.getInt64(), 1), IntLiteral.get(IntType.getInt64(), 2), OverflowStrategy.NA)
+    println("init_Block: ${block.exprs.size}")
+}
+```
+
+Output:
+
+```text
+init_Block: 1
+```
+
+### init(InsertPosition)
+
+```cangjie
+public init(position: InsertPosition)
+```
+
+Function: Constructs a CHIRBuilder with a specified insertion position.
+
+Parameters:
+
+- position: InsertPosition - Insertion position enum value (AtEnd/AtStart/Before/After).
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let pos = InsertPosition.AtEnd(block)
+    let builder = CHIRBuilder(pos)
+    builder.createBinaryAdd(IntLiteral.get(IntType.getInt64(), 1), IntLiteral.get(IntType.getInt64(), 2), OverflowStrategy.NA)
+    println("init_InsertPosition: ${block.exprs.size}")
+}
+```
+
+Output:
+
+```text
+init_InsertPosition: 1
+```
+
+### func createAllocate(Type)
+
+```cangjie
+public func createAllocate(ty: Type): Allocate
+```
+
+Function: Creates a memory allocation expression.
+
+Parameters:
+
+- ty: Type - The type to allocate.
+
+Return Value:
+
+- Allocate - Allocation expression.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let builder = CHIRBuilder(InsertPosition.AtEnd(block))
+    let alloc = builder.createAllocate(IntType.getInt32())
+    println("createAllocate: ${alloc.toString().size > 0}")
+}
+```
+
+Output:
+
+```text
+createAllocate: true
+```
+
+### func createApply(Value, FuncCallContext)
+
+```cangjie
+public func createApply(callee: Value, funcCallCtx: FuncCallContext): Apply
+```
+
+Function: Creates a function call (Apply) expression.
+
+Parameters:
+
+- callee: Value - The called function value.
+- funcCallCtx: FuncCallContext - Function call context.
+
+Return Value:
+
+- Apply - Apply expression.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f1 = pkg.addFunction(FuncType.get([], UnitType.get()), "callee_m", "callee", "demo")
+    let f2 = pkg.addFunction(FuncType.get([], UnitType.get()), "caller_m", "caller", "demo")
+    f2.initBody()
+    let block = f2.body.getOrThrow().entryBlock
+    let builder = CHIRBuilder(InsertPosition.AtEnd(block))
+    let ctx = FuncCallContext([], [], None)
+    let apply = builder.createApply(f1, ctx)
+    println("createApply: ${apply.toString().size > 0}")
+}
+```
+
+Output:
+
+```text
+createApply: true
+```
+
+### func createBinaryAdd(Value, Value, OverflowStrategy)
+
+```cangjie
+public func createBinaryAdd(leftOp: Value, rightOp: Value, overflow: OverflowStrategy): BinaryExpression
+```
+
+Function: Creates an addition binary expression.
+
+Parameters:
+
+- leftOp: Value - Left operand.
+- rightOp: Value - Right operand.
+- overflow: OverflowStrategy - Overflow strategy.
+
+Return Value:
+
+- BinaryExpression - Addition expression.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let builder = CHIRBuilder(InsertPosition.AtEnd(block))
+    let expr = builder.createBinaryAdd(IntLiteral.get(IntType.getInt64(), 1), IntLiteral.get(IntType.getInt64(), 2), OverflowStrategy.NA)
+    println("createBinaryAdd: ${expr.toString().size > 0}")
+}
+```
+
+Output:
+
+```text
+createBinaryAdd: true
+```
+
+### func createBinaryAnd(Value, Value)
+
+```cangjie
+public func createBinaryAnd(leftOp: Value, rightOp: Value): BinaryExpression
+```
+
+Function: Creates a logical AND binary expression.
+
+Parameters:
+
+- leftOp: Value - Left operand.
+- rightOp: Value - Right operand.
+
+Return Value:
+
+- BinaryExpression - Logical AND expression.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let builder = CHIRBuilder(InsertPosition.AtEnd(block))
+    let expr = builder.createBinaryAnd(BoolLiteral.get(true), BoolLiteral.get(false))
+    println("createBinaryAnd: ${expr.toString().size > 0}")
+}
+```
+
+Output:
+
+```text
+createBinaryAnd: true
+```
+
+### func createBinaryBitAnd(Value, Value)
+
+```cangjie
+public func createBinaryBitAnd(leftOp: Value, rightOp: Value): BinaryExpression
+```
+
+Function: Creates a bitwise AND binary expression.
+
+Parameters:
+
+- leftOp: Value - Left operand.
+- rightOp: Value - Right operand.
+
+Return Value:
+
+- BinaryExpression - Bitwise AND expression.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let builder = CHIRBuilder(InsertPosition.AtEnd(block))
+    let expr = builder.createBinaryBitAnd(IntLiteral.get(IntType.getInt64(), 3), IntLiteral.get(IntType.getInt64(), 5))
+    println("createBinaryBitAnd: ${expr.toString().size > 0}")
+}
+```
+
+Output:
+
+```text
+createBinaryBitAnd: true
+```
+
+### func createBinaryBitOr(Value, Value)
+
+```cangjie
+public func createBinaryBitOr(leftOp: Value, rightOp: Value): BinaryExpression
+```
+
+Function: Creates a bitwise OR binary expression.
+
+Parameters:
+
+- leftOp: Value - Left operand.
+- rightOp: Value - Right operand.
+
+Return Value:
+
+- BinaryExpression - Bitwise OR expression.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let builder = CHIRBuilder(InsertPosition.AtEnd(block))
+    let expr = builder.createBinaryBitOr(IntLiteral.get(IntType.getInt64(), 3), IntLiteral.get(IntType.getInt64(), 5))
+    println("createBinaryBitOr: ${expr.toString().size > 0}")
+}
+```
+
+Output:
+
+```text
+createBinaryBitOr: true
+```
+
+### func createBinaryBitXor(Value, Value)
+
+```cangjie
+public func createBinaryBitXor(leftOp: Value, rightOp: Value): BinaryExpression
+```
+
+Function: Creates a bitwise XOR binary expression.
+
+Parameters:
+
+- leftOp: Value - Left operand.
+- rightOp: Value - Right operand.
+
+Return Value:
+
+- BinaryExpression - Bitwise XOR expression.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let builder = CHIRBuilder(InsertPosition.AtEnd(block))
+    let expr = builder.createBinaryBitXor(IntLiteral.get(IntType.getInt64(), 3), IntLiteral.get(IntType.getInt64(), 5))
+    println("createBinaryBitXor: ${expr.toString().size > 0}")
+}
+```
+
+Output:
+
+```text
+createBinaryBitXor: true
+```
+
+### func createBinaryDiv(Value, Value, OverflowStrategy)
+
+```cangjie
+public func createBinaryDiv(leftOp: Value, rightOp: Value, overflow: OverflowStrategy): BinaryExpression
+```
+
+Function: Creates a division binary expression.
+
+Parameters:
+
+- leftOp: Value - Left operand.
+- rightOp: Value - Right operand.
+- overflow: OverflowStrategy - Overflow strategy.
+
+Return Value:
+
+- BinaryExpression - Division expression.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let builder = CHIRBuilder(InsertPosition.AtEnd(block))
+    let expr = builder.createBinaryDiv(IntLiteral.get(IntType.getInt64(), 10), IntLiteral.get(IntType.getInt64(), 2), OverflowStrategy.NA)
+    println("createBinaryDiv: ${expr.toString().size > 0}")
+}
+```
+
+Output:
+
+```text
+createBinaryDiv: true
+```
+
+### func createBinaryEqual(Value, Value)
+
+```cangjie
+public func createBinaryEqual(leftOp: Value, rightOp: Value): BinaryExpression
+```
+
+Function: Creates an equality comparison binary expression.
+
+Parameters:
+
+- leftOp: Value - Left operand.
+- rightOp: Value - Right operand.
+
+Return Value:
+
+- BinaryExpression - Equality comparison expression.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let builder = CHIRBuilder(InsertPosition.AtEnd(block))
+    let expr = builder.createBinaryEqual(IntLiteral.get(IntType.getInt64(), 1), IntLiteral.get(IntType.getInt64(), 1))
+    println("createBinaryEqual: ${expr.toString().size > 0}")
+}
+```
+
+Output:
+
+```text
+createBinaryEqual: true
+```
+
+### func createBinaryExp(Value, Value, OverflowStrategy)
+
+```cangjie
+public func createBinaryExp(leftOp: Value, rightOp: Value, overflow: OverflowStrategy): BinaryExpression
+```
+
+Function: Creates an exponentiation binary expression.
+
+Parameters:
+
+- leftOp: Value - Left operand.
+- rightOp: Value - Right operand.
+- overflow: OverflowStrategy - Overflow strategy.
+
+Return Value:
+
+- BinaryExpression - Exponentiation expression.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let builder = CHIRBuilder(InsertPosition.AtEnd(block))
+    let expr = builder.createBinaryExp(IntLiteral.get(IntType.getInt64(), 2), IntLiteral.get(IntType.getInt64(), 3), OverflowStrategy.NA)
+    println("createBinaryExp: ${expr.toString().size > 0}")
+}
+```
+
+Output:
+
+```text
+createBinaryExp: true
+```
+
+### func createBinaryGreaterThan(Value, Value)
+
+```cangjie
+public func createBinaryGreaterThan(leftOp: Value, rightOp: Value): BinaryExpression
+```
+
+Function: Creates a greater-than comparison binary expression.
+
+Parameters:
+
+- leftOp: Value - Left operand.
+- rightOp: Value - Right operand.
+
+Return Value:
+
+- BinaryExpression - Greater-than comparison expression.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let builder = CHIRBuilder(InsertPosition.AtEnd(block))
+    let expr = builder.createBinaryGreaterThan(IntLiteral.get(IntType.getInt64(), 5), IntLiteral.get(IntType.getInt64(), 3))
+    println("createBinaryGreaterThan: ${expr.toString().size > 0}")
+}
+```
+
+Output:
+
+```text
+createBinaryGreaterThan: true
+```
+
+### func createBinaryGreaterThanOrEqual(Value, Value)
+
+```cangjie
+public func createBinaryGreaterThanOrEqual(leftOp: Value, rightOp: Value): BinaryExpression
+```
+
+Function: Creates a greater-than-or-equal comparison binary expression.
+
+Parameters:
+
+- leftOp: Value - Left operand.
+- rightOp: Value - Right operand.
+
+Return Value:
+
+- BinaryExpression - Greater-than-or-equal comparison expression.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let builder = CHIRBuilder(InsertPosition.AtEnd(block))
+    let expr = builder.createBinaryGreaterThanOrEqual(IntLiteral.get(IntType.getInt64(), 5), IntLiteral.get(IntType.getInt64(), 5))
+    println("createBinaryGreaterThanOrEqual: ${expr.toString().size > 0}")
+}
+```
+
+Output:
+
+```text
+createBinaryGreaterThanOrEqual: true
+```
+
+### func createBinaryLShift(Value, Value, OverflowStrategy)
+
+```cangjie
+public func createBinaryLShift(leftOp: Value, rightOp: Value, overflow: OverflowStrategy): BinaryExpression
+```
+
+Function: Creates a left-shift binary expression.
+
+Parameters:
+
+- leftOp: Value - Left operand.
+- rightOp: Value - Right operand.
+- overflow: OverflowStrategy - Overflow strategy.
+
+Return Value:
+
+- BinaryExpression - Left-shift expression.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let builder = CHIRBuilder(InsertPosition.AtEnd(block))
+    let expr = builder.createBinaryLShift(IntLiteral.get(IntType.getInt64(), 1), IntLiteral.get(IntType.getInt64(), 2), OverflowStrategy.NA)
+    println("createBinaryLShift: ${expr.toString().size > 0}")
+}
+```
+
+Output:
+
+```text
+createBinaryLShift: true
+```
+
+### func createBinaryLessThan(Value, Value)
+
+```cangjie
+public func createBinaryLessThan(leftOp: Value, rightOp: Value): BinaryExpression
+```
+
+Function: Creates a less-than comparison binary expression.
+
+Parameters:
+
+- leftOp: Value - Left operand.
+- rightOp: Value - Right operand.
+
+Return Value:
+
+- BinaryExpression - Less-than comparison expression.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let builder = CHIRBuilder(InsertPosition.AtEnd(block))
+    let expr = builder.createBinaryLessThan(IntLiteral.get(IntType.getInt64(), 3), IntLiteral.get(IntType.getInt64(), 5))
+    println("createBinaryLessThan: ${expr.toString().size > 0}")
+}
+```
+
+Output:
+
+```text
+createBinaryLessThan: true
+```
+
+### func createBinaryLessThanOrEqual(Value, Value)
+
+```cangjie
+public func createBinaryLessThanOrEqual(leftOp: Value, rightOp: Value): BinaryExpression
+```
+
+Function: Creates a less-than-or-equal comparison binary expression.
+
+Parameters:
+
+- leftOp: Value - Left operand.
+- rightOp: Value - Right operand.
+
+Return Value:
+
+- BinaryExpression - Less-than-or-equal comparison expression.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let builder = CHIRBuilder(InsertPosition.AtEnd(block))
+    let expr = builder.createBinaryLessThanOrEqual(IntLiteral.get(IntType.getInt64(), 3), IntLiteral.get(IntType.getInt64(), 5))
+    println("createBinaryLessThanOrEqual: ${expr.toString().size > 0}")
+}
+```
+
+Output:
+
+```text
+createBinaryLessThanOrEqual: true
+```
+
+### func createBinaryMod(Value, Value, OverflowStrategy)
+
+```cangjie
+public func createBinaryMod(leftOp: Value, rightOp: Value, overflow: OverflowStrategy): BinaryExpression
+```
+
+Function: Creates a modulo binary expression.
+
+Parameters:
+
+- leftOp: Value - Left operand.
+- rightOp: Value - Right operand.
+- overflow: OverflowStrategy - Overflow strategy.
+
+Return Value:
+
+- BinaryExpression - Modulo expression.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let builder = CHIRBuilder(InsertPosition.AtEnd(block))
+    let expr = builder.createBinaryMod(IntLiteral.get(IntType.getInt64(), 10), IntLiteral.get(IntType.getInt64(), 3), OverflowStrategy.NA)
+    println("createBinaryMod: ${expr.toString().size > 0}")
+}
+```
+
+Output:
+
+```text
+createBinaryMod: true
+```
+
+### func createBinaryMul(Value, Value, OverflowStrategy)
+
+```cangjie
+public func createBinaryMul(leftOp: Value, rightOp: Value, overflow: OverflowStrategy): BinaryExpression
+```
+
+Function: Creates a multiplication binary expression.
+
+Parameters:
+
+- leftOp: Value - Left operand.
+- rightOp: Value - Right operand.
+- overflow: OverflowStrategy - Overflow strategy.
+
+Return Value:
+
+- BinaryExpression - Multiplication expression.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let builder = CHIRBuilder(InsertPosition.AtEnd(block))
+    let expr = builder.createBinaryMul(IntLiteral.get(IntType.getInt64(), 3), IntLiteral.get(IntType.getInt64(), 4), OverflowStrategy.NA)
+    println("createBinaryMul: ${expr.toString().size > 0}")
+}
+```
+
+Output:
+
+```text
+createBinaryMul: true
+```
+
+### func createBinaryNotEqual(Value, Value)
+
+```cangjie
+public func createBinaryNotEqual(leftOp: Value, rightOp: Value): BinaryExpression
+```
+
+Function: Creates a not-equal comparison binary expression.
+
+Parameters:
+
+- leftOp: Value - Left operand.
+- rightOp: Value - Right operand.
+
+Return Value:
+
+- BinaryExpression - Not-equal comparison expression.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let builder = CHIRBuilder(InsertPosition.AtEnd(block))
+    let expr = builder.createBinaryNotEqual(IntLiteral.get(IntType.getInt64(), 1), IntLiteral.get(IntType.getInt64(), 2))
+    println("createBinaryNotEqual: ${expr.toString().size > 0}")
+}
+```
+
+Output:
+
+```text
+createBinaryNotEqual: true
+```
+
+### func createBinaryOr(Value, Value)
+
+```cangjie
+public func createBinaryOr(leftOp: Value, rightOp: Value): BinaryExpression
+```
+
+Function: Creates a logical OR binary expression.
+
+Parameters:
+
+- leftOp: Value - Left operand.
+- rightOp: Value - Right operand.
+
+Return Value:
+
+- BinaryExpression - Logical OR expression.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let builder = CHIRBuilder(InsertPosition.AtEnd(block))
+    let expr = builder.createBinaryOr(BoolLiteral.get(true), BoolLiteral.get(false))
+    println("createBinaryOr: ${expr.toString().size > 0}")
+}
+```
+
+Output:
+
+```text
+createBinaryOr: true
+```
+
+### func createBinaryRShift(Value, Value, OverflowStrategy)
+
+```cangjie
+public func createBinaryRShift(leftOp: Value, rightOp: Value, overflow: OverflowStrategy): BinaryExpression
+```
+
+Function: Creates a right-shift binary expression.
+
+Parameters:
+
+- leftOp: Value - Left operand.
+- rightOp: Value - Right operand.
+- overflow: OverflowStrategy - Overflow strategy.
+
+Return Value:
+
+- BinaryExpression - Right-shift expression.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let builder = CHIRBuilder(InsertPosition.AtEnd(block))
+    let expr = builder.createBinaryRShift(IntLiteral.get(IntType.getInt64(), 8), IntLiteral.get(IntType.getInt64(), 2), OverflowStrategy.NA)
+    println("createBinaryRShift: ${expr.toString().size > 0}")
+}
+```
+
+Output:
+
+```text
+createBinaryRShift: true
+```
+
+### func createBinarySub(Value, Value, OverflowStrategy)
+
+```cangjie
+public func createBinarySub(leftOp: Value, rightOp: Value, overflow: OverflowStrategy): BinaryExpression
+```
+
+Function: Creates a subtraction binary expression.
+
+Parameters:
+
+- leftOp: Value - Left operand.
+- rightOp: Value - Right operand.
+- overflow: OverflowStrategy - Overflow strategy.
+
+Return Value:
+
+- BinaryExpression - Subtraction expression.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let builder = CHIRBuilder(InsertPosition.AtEnd(block))
+    let expr = builder.createBinarySub(IntLiteral.get(IntType.getInt64(), 5), IntLiteral.get(IntType.getInt64(), 3), OverflowStrategy.NA)
+    println("createBinarySub: ${expr.toString().size > 0}")
+}
+```
+
+Output:
+
+```text
+createBinarySub: true
+```
+
+### func createBox(Value, Type)
+
+```cangjie
+public func createBox(srcVal: Value, dstTy: Type): Box
+```
+
+Function: Creates a boxing (Box) type conversion expression.
+
+Parameters:
+
+- srcVal: Value - Source value.
+- dstTy: Type - Target boxed type.
+
+Return Value:
+
+- Box - Boxing expression.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let builder = CHIRBuilder(InsertPosition.AtEnd(block))
+    let expr = builder.createBox(IntLiteral.get(IntType.getInt32(), 42), BoxType.get(IntType.getInt32()))
+    println("createBox: ${expr.toString().size > 0}")
+}
+```
+
+Output:
+
+```text
+createBox: true
+```
+
+### func createBranch(Value, Block, Block)
+
+```cangjie
+public func createBranch(condition: Value, trueTarget: Block, falseTarget: Block): Branch
+```
+
+Function: Creates a conditional branch expression.
+
+Parameters:
+
+- condition: Value - Branch condition value.
+- trueTarget: Block - Target basic block when the condition is true.
+- falseTarget: Block - Target basic block when the condition is false.
+
+Return Value:
+
+- Branch - Conditional branch expression.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let bg = f.body.getOrThrow()
+    let entryBlock = bg.entryBlock
+    let trueBlock = bg.appendBlock()
+    let falseBlock = bg.appendBlock()
+    let builder = CHIRBuilder(InsertPosition.AtEnd(entryBlock))
+    let expr = builder.createBranch(BoolLiteral.get(true), trueBlock, falseBlock)
+    println("createBranch: ${expr.toString().size > 0}")
+}
+```
+
+Output:
+
+```text
+createBranch: true
+```
+
+### func createCastToConcrete(Value, Type)
+
+```cangjie
+public func createCastToConcrete(srcVal: Value, targetType: Type): CastToConcrete
+```
+
+Function: Creates a cast-to-concrete-type expression.
+
+Parameters:
+
+- srcVal: Value - Source value.
+- targetType: Type - Target concrete type.
+
+Return Value:
+
+- CastToConcrete - Cast-to-concrete-type expression.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let builder = CHIRBuilder(InsertPosition.AtEnd(block))
+    let expr = builder.createCastToConcrete(IntLiteral.get(IntType.getInt32(), 1), IntType.getInt64())
+    println("createCastToConcrete: ${expr.toString().size > 0}")
+}
+```
+
+Output:
+
+```text
+createCastToConcrete: true
+```
+
+### func createCastToGeneric(Value, Type)
+
+```cangjie
+public func createCastToGeneric(srcVal: Value, targetType: Type): CastToGeneric
+```
+
+Function: Creates a cast-to-generic-type expression.
+
+Parameters:
+
+- srcVal: Value - Source value.
+- targetType: Type - Target generic type.
+
+Return Value:
+
+- CastToGeneric - Cast-to-generic-type expression.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let builder = CHIRBuilder(InsertPosition.AtEnd(block))
+    let g = GenericType.get("pkg:T", "T")
+    let expr = builder.createCastToGeneric(IntLiteral.get(IntType.getInt32(), 1), g)
+    println("createCastToGeneric: ${expr.toString().size > 0}")
+}
+```
+
+Output:
+
+```text
+createCastToGeneric: true
+```
+
+### func createConstant(LiteralValue)
+
+```cangjie
+public func createConstant(val: LiteralValue): Constant
+```
+
+Function: Creates a constant expression.
+
+Parameters:
+
+- val: LiteralValue - Literal value.
+
+Return Value:
+
+- Constant - Constant expression.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let builder = CHIRBuilder(InsertPosition.AtEnd(block))
+    let expr = builder.createConstant(IntLiteral.get(IntType.getInt32(), 42))
+    println("createConstant: ${expr.toString().size > 0}")
+}
+```
+
+Output:
+
+```text
+createConstant: true
+```
+
+### func createDebug(Value, String)
+
+```cangjie
+public func createDebug(location: Value, srcCodeName: String): Debug
+```
+
+Function: Creates a debug marker expression.
+
+Parameters:
+
+- location: Value - Debug location value.
+- srcCodeName: String - Source code variable name.
+
+Return Value:
+
+- Debug - Debug marker expression.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let builder = CHIRBuilder(InsertPosition.AtEnd(block))
+    let alloc = builder.createAllocate(IntType.getInt32())
+    let expr = builder.createDebug(alloc.result, "x")
+    println("createDebug: ${expr.toString().size > 0}")
+}
+```
+
+Output:
+
+```text
+createDebug: true
+```
+
+### func createExit()
+
+```cangjie
+public func createExit(): Exit
+```
+
+Function: Creates a function exit expression.
+
+Return Value:
+
+- Exit - Function exit expression.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let builder = CHIRBuilder(InsertPosition.AtEnd(block))
+    let expr = builder.createExit()
+    println("createExit: ${expr.toString().size > 0}")
+}
+```
+
+Output:
+
+```text
+createExit: true
+```
+
+### func createField(Value, ArrayList\<UInt64>)
+
+```cangjie
+public func createField(val: Value, path: ArrayList<UInt64>): Field
+```
+
+Function: Creates a field access expression by numeric path.
+
+Parameters:
+
+- val: Value - Struct or class instance value.
+- path: ArrayList\<UInt64> - Numeric path index list.
+
+Return Value:
+
+- Field - Field access expression.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+import std.collection.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let builder = CHIRBuilder(InsertPosition.AtEnd(block))
+    let i32 = IntType.getInt32()
+    let a = builder.createConstant(IntLiteral.get(i32, 1u64)).result
+    let b = builder.createConstant(IntLiteral.get(i32, 1u64)).result
+    let c = builder.createConstant(IntLiteral.get(i32, 1u64)).result
+    let tuple = builder.createTuple([a, b, c])
+    let path = ArrayList<UInt64>()
+    path.add(0)
+    let expr = builder.createField(tuple.result, path)
+    println("createField: ${expr.toString().size > 0}")
+}
+```
+
+Output:
+
+```text
+createField: true
+```
+
+### func createFieldByName(Value, ArrayList\<String>)
+
+```cangjie
+public func createFieldByName(val: Value, fieldNames: ArrayList<String>): FieldByName
+```
+
+Function: Creates a field access expression by field name path.
+
+Parameters:
+
+- val: Value - Struct or class instance value.
+- fieldNames: ArrayList\<String> - Field name path list.
+
+Return Value:
+
+- FieldByName - Field access expression by name.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+import std.collection.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let st = pkg.addStruct("mS", "S")
+    let vx = st.appendInstanceMemberVar("x", IntType.getInt32())
+    let vy = st.appendInstanceMemberVar("y", BoolType.get())
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let builder = CHIRBuilder(InsertPosition.AtEnd(block))
+    let alloc = builder.createAllocate(st.ty)
+    let names = ArrayList<String>()
+    names.add("x")
+    let expr = builder.createFieldByName(alloc.result, names)
+    println("createFieldByName: ${expr.toString().size > 0}")
+}
+```
+
+Output:
+
+```text
+createFieldByName: true
+```
+
+### func createGetElementByName(Value, ArrayList\<String>)
+
+```cangjie
+public func createGetElementByName(location: Value, fieldNames: ArrayList<String>): GetElementByName
+```
+
+Function: Creates an element read expression by field name.
+
+Parameters:
+
+- location: Value - Memory location value.
+- fieldNames: ArrayList\<String> - Field name path list.
+
+Return Value:
+
+- GetElementByName - Element read expression.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+import std.collection.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let ca = pkg.addClass("mC", "C", true)
+    let vx = ca.appendInstanceMemberVar("x", IntType.getInt32())
+    let vy = ca.appendInstanceMemberVar("y", BoolType.get())
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let builder = CHIRBuilder(InsertPosition.AtEnd(block))
+    let alloc = builder.createAllocate(ca.ty)
+    let names = ArrayList<String>()
+    names.add("x")
+    let expr = builder.createGetElementByName(alloc.result, names)
+    println("createGetElementByName: ${expr.toString().size > 0}")
+}
+```
+
+Output:
+
+```text
+createGetElementByName: true
+```
+
+### func createGetElementRef(Value, ArrayList\<UInt64>)
+
+```cangjie
+public func createGetElementRef(location: Value, path: ArrayList<UInt64>): GetElementRef
+```
+
+Function: Creates an element reference expression by numeric index.
+
+Parameters:
+
+- location: Value - Memory location value.
+- path: ArrayList\<UInt64> - Numeric index path list.
+
+Return Value:
+
+- GetElementRef - Element reference expression.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+import std.collection.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let ca = pkg.addClass("mC", "C", true)
+    let vx = ca.appendInstanceMemberVar("x", IntType.getInt32())
+    let vy = ca.appendInstanceMemberVar("y", BoolType.get())
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let builder = CHIRBuilder(InsertPosition.AtEnd(block))
+    let alloc = builder.createAllocate(ca.ty)
+    let path = ArrayList<UInt64>()
+    path.add(0)
+    let expr = builder.createGetElementRef(alloc.result, path)
+    println("createGetElementRef: ${expr.toString().size > 0}")
+}
+```
+
+Output:
+
+```text
+createGetElementRef: true
+```
+
+### func createGetException(Type)
+
+```cangjie
+public func createGetException(retTy: Type): GetException
+```
+
+Function: Creates an expression to get the exception value.
+
+Parameters:
+
+- retTy: Type - Return type.
+
+Return Value:
+
+- GetException - Get exception value expression.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let builder = CHIRBuilder(InsertPosition.AtEnd(block))
+    let expr = builder.createGetException(IntType.getInt32())
+    println("createGetException: ${expr.toString().size > 0}")
+}
+```
+
+Output:
+
+```text
+createGetException: true
+```
+
+### func createGetInstantiateValue(Function, ArrayList\<Type>)
+
+```cangjie
+public func createGetInstantiateValue(val: Function, instantiateTypes: ArrayList<Type>): GetInstantiateValue
+```
+
+Function: Creates an expression to get a generic instantiation value.
+
+Parameters:
+
+- val: Function - Target function.
+- instantiateTypes: ArrayList\<Type> - Instantiation type argument list.
+
+Return Value:
+
+- GetInstantiateValue - Generic instantiation value expression.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+import std.collection.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let builder = CHIRBuilder(InsertPosition.AtEnd(block))
+    let types = ArrayList<Type>()
+    types.add(IntType.getInt32())
+    let expr = builder.createGetInstantiateValue(f, types)
+    println("createGetInstantiateValue: ${expr.toString().size > 0}")
+}
+```
+
+Output:
+
+```text
+createGetInstantiateValue: true
+```
+
+### func createGetRTTI(Value)
+
+```cangjie
+public func createGetRTTI(val: Value): GetRTTI
+```
+
+Function: Creates an expression to get runtime type information.
+
+Parameters:
+
+- val: Value - Target value.
+
+Return Value:
+
+- GetRTTI - Runtime type information expression.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let builder = CHIRBuilder(InsertPosition.AtEnd(block))
+    let alloc = builder.createAllocate(IntType.getInt32())
+    let expr = builder.createGetRTTI(alloc.result)
+    println("createGetRTTI: ${expr.toString().size > 0}")
+}
+```
+
+Output:
+
+```text
+createGetRTTI: true
+```
+
+### func createGetRTTIStatic(Type)
+
+```cangjie
+public func createGetRTTIStatic(rttiType: Type): GetRTTIStatic
+```
+
+Function: Creates an expression to statically get runtime type information.
+
+Parameters:
+
+- rttiType: Type - Target type.
+
+Return Value:
+
+- GetRTTIStatic - Static runtime type information expression.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let builder = CHIRBuilder(InsertPosition.AtEnd(block))
+    let expr = builder.createGetRTTIStatic(IntType.getInt32())
+    println("createGetRTTIStatic: ${expr.toString().size > 0}")
+}
+```
+
+Output:
+
+```text
+createGetRTTIStatic: true
+```
+
+### func createGoTo(Block)
+
+```cangjie
+public func createGoTo(target: Block): GoTo
+```
+
+Function: Creates an unconditional jump expression.
+
+Parameters:
+
+- target: Block - Jump target basic block.
+
+Return Value:
+
+- GoTo - Unconditional jump expression.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let bg = f.body.getOrThrow()
+    let entryBlock = bg.entryBlock
+    let targetBlock = bg.appendBlock()
+    let builder = CHIRBuilder(InsertPosition.AtEnd(entryBlock))
+    let expr = builder.createGoTo(targetBlock)
+    println("createGoTo: ${expr.toString().size > 0}")
+}
+```
+
+Output:
+
+```text
+createGoTo: true
+```
+
+### func createInstanceOf(Value, Type)
+
+```cangjie
+public func createInstanceOf(srcVal: Value, targetTy: Type): InstanceOf
+```
+
+Function: Creates a type check expression.
+
+Parameters:
+
+- srcVal: Value - Source value.
+- targetTy: Type - Target type.
+
+Return Value:
+
+- InstanceOf - Type check expression.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let builder = CHIRBuilder(InsertPosition.AtEnd(block))
+    let alloc = builder.createAllocate(IntType.getInt32())
+    let expr = builder.createInstanceOf(alloc.result, IntType.getInt32())
+    println("createInstanceOf: ${expr.toString().size > 0}")
+}
+```
+
+Output:
+
+```text
+createInstanceOf: true
+```
+
+### func createInvoke(Type, InvokeCallContext)
+
+```cangjie
+public func createInvoke(retTy: Type, callContext: InvokeCallContext): Invoke
+```
+
+Function: Creates a virtual method call (Invoke) expression.
+
+Parameters:
+
+- retTy: Type - Return type.
+- callContext: InvokeCallContext - Virtual method call context.
+
+Return Value:
+
+- Invoke - Invoke expression.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let builder = CHIRBuilder(InsertPosition.AtEnd(block))
+    let ft = FuncType.get([], UnitType.get())
+    let sig = FuncSigInfo("method", ft)
+    let fcc = FuncCallContext([], [], None)
+    let ctx = InvokeCallContext(BoolLiteral.get(false), sig, fcc)
+    let expr = builder.createInvoke(UnitType.get(), ctx)
+    println("createInvoke: ${expr.toString().size > 0}")
+}
+```
+
+Output:
+
+```text
+createInvoke: true
+```
+
+### func createLambda(FuncType, String, String, Array\<GenericType>)
+
+```cangjie
+public func createLambda(ty: FuncType, mangledName: String, srcName: String, genericTypeParams!: Array<GenericType> = Array<GenericType>()): Lambda
+```
+
+Function: Creates a Lambda expression.
+
+Parameters:
+
+- ty: FuncType - Lambda function type.
+- mangledName: String - Mangled name.
+- srcName: String - Source name.
+- genericTypeParams!: Array\<GenericType> - Generic type parameter list (defaults to empty array).
+
+Return Value:
+
+- Lambda - Lambda expression.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let builder = CHIRBuilder(InsertPosition.AtEnd(block))
+    let ft = FuncType.get([], UnitType.get())
+    let expr = builder.createLambda(ft, "lambda_m", "myLambda")
+    println("createLambda: ${expr.toString().size > 0}")
+}
+```
+
+Output:
+
+```text
+createLambda: true
+```
+
+### func createLoad(Value)
+
+```cangjie
+public func createLoad(location: Value): Load
+```
+
+Function: Creates a memory load expression.
+
+Parameters:
+
+- location: Value - Memory location value.
+
+Return Value:
+
+- Load - Memory load expression.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let builder = CHIRBuilder(InsertPosition.AtEnd(block))
+    let alloc = builder.createAllocate(IntType.getInt32())
+    let expr = builder.createLoad(alloc.result)
+    println("createLoad: ${expr.toString().size > 0}")
+}
+```
+
+Output:
+
+```text
+createLoad: true
+```
+
+### func createMultiBranch(Value, Block, ArrayList\<Block>, ArrayList\<UInt64>)
+
+```cangjie
+public func createMultiBranch(condition: Value, defaultBlock: Block, targets: ArrayList<Block>, caseValues: ArrayList<UInt64>): MultiBranch
+```
+
+Function: Creates a multi-branch (switch) expression.
+
+Parameters:
+
+- condition: Value - Branch condition value.
+- defaultBlock: Block - Default target basic block.
+- targets: ArrayList\<Block> - List of case branch target basic blocks.
+- caseValues: ArrayList\<UInt64> - List of values corresponding to each case branch.
+
+Return Value:
+
+- MultiBranch - Multi-branch expression.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+import std.collection.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let bg = f.body.getOrThrow()
+    let entryBlock = bg.entryBlock
+    let defaultBlock = bg.appendBlock()
+    let caseBlock1 = bg.appendBlock()
+    let targets = ArrayList<Block>()
+    targets.add(caseBlock1)
+    let caseValues = ArrayList<UInt64>()
+    caseValues.add(1)
+    let builder = CHIRBuilder(InsertPosition.AtEnd(entryBlock))
+    let expr = builder.createMultiBranch(IntLiteral.get(IntType.getInt64(), 1), defaultBlock, targets, caseValues)
+    println("createMultiBranch: ${expr.toString().size > 0}")
+}
+```
+
+Output:
+
+```text
+createMultiBranch: true
+```
+
+### func createNumericCast(Value, Type, OverflowStrategy)
+
+```cangjie
+public func createNumericCast(srcVal: Value, dstTy: Type, overflow: OverflowStrategy): NumericCast
+```
+
+Function: Creates a numeric type conversion expression.
+
+Parameters:
+
+- srcVal: Value - Source value.
+- dstTy: Type - Target numeric type.
+- overflow: OverflowStrategy - Overflow strategy.
+
+Return Value:
+
+- NumericCast - Numeric type conversion expression.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let builder = CHIRBuilder(InsertPosition.AtEnd(block))
+    let expr = builder.createNumericCast(IntLiteral.get(IntType.getInt32(), 42), IntType.getInt64(), OverflowStrategy.NA)
+    println("createNumericCast: ${expr.toString().size > 0}")
+}
+```
+
+Output:
+
+```text
+createNumericCast: true
+```
+
+### func createRaiseException(Value)
+
+```cangjie
+public func createRaiseException(value: Value): RaiseException
+```
+
+Function: Creates a raise exception expression (no successor block).
+
+Parameters:
+
+- value: Value - Exception value.
+
+Return Value:
+
+- RaiseException - Raise exception expression.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let builder = CHIRBuilder(InsertPosition.AtEnd(block))
+    let expr = builder.createRaiseException(IntLiteral.get(IntType.getInt32(), 1))
+    println("createRaiseException_no_successor: ${expr.toString().size > 0}")
+}
+```
+
+Output:
+
+```text
+createRaiseException_no_successor: true
+```
+
+### func createRaiseException(Value, Block)
+
+```cangjie
+public func createRaiseException(value: Value, successor: Block): RaiseException
+```
+
+Function: Creates a raise exception expression (with successor block).
+
+Parameters:
+
+- value: Value - Exception value.
+- successor: Block - Successor basic block after the exception is raised.
+
+Return Value:
+
+- RaiseException - Raise exception expression.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let bg = f.body.getOrThrow()
+    let entryBlock = bg.entryBlock
+    let successorBlock = bg.appendBlock()
+    let builder = CHIRBuilder(InsertPosition.AtEnd(entryBlock))
+    let expr = builder.createRaiseException(IntLiteral.get(IntType.getInt32(), 1), successorBlock)
+    println("createRaiseException_with_successor: ${expr.toString().size > 0}")
+}
+```
+
+Output:
+
+```text
+createRaiseException_with_successor: true
+```
+
+### func createRawArrayAllocate(Type, Value)
+
+```cangjie
+public func createRawArrayAllocate(elementType: Type, size: Value): RawArrayAllocate
+```
+
+Function: Creates a raw array allocation expression.
+
+Parameters:
+
+- elementType: Type - Array element type.
+- size: Value - Array size value.
+
+Return Value:
+
+- RawArrayAllocate - Raw array allocation expression.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let builder = CHIRBuilder(InsertPosition.AtEnd(block))
+    let expr = builder.createRawArrayAllocate(IntType.getInt32(), IntLiteral.get(IntType.getInt64(), 10))
+    println("createRawArrayAllocate: ${expr.toString().size > 0}")
+}
+```
+
+Output:
+
+```text
+createRawArrayAllocate: true
+```
+
+### func createRawArrayInitByValue(Value, Value, Value)
+
+```cangjie
+public func createRawArrayInitByValue(memory: Value, size: Value, initVal: Value): RawArrayInitByValue
+```
+
+Function: Creates a raw array initialization-by-value expression.
+
+Parameters:
+
+- memory: Value - Array memory location value.
+- size: Value - Array size value.
+- initVal: Value - Initialization value.
+
+Return Value:
+
+- RawArrayInitByValue - Initialization-by-value expression.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let builder = CHIRBuilder(InsertPosition.AtEnd(block))
+    let alloc = builder.createRawArrayAllocate(IntType.getInt32(), IntLiteral.get(IntType.getInt64(), 5))
+    let expr = builder.createRawArrayInitByValue(alloc.result, IntLiteral.get(IntType.getInt64(), 5), IntLiteral.get(IntType.getInt32(), 0))
+    println("createRawArrayInitByValue: ${expr.toString().size > 0}")
+}
+```
+
+Output:
+
+```text
+createRawArrayInitByValue: true
+```
+
+### func createRawArrayLiteralInit(Value, ArrayList\<Value>)
+
+```cangjie
+public func createRawArrayLiteralInit(memory: Value, elements: ArrayList<Value>): RawArrayLiteralInit
+```
+
+Function: Creates a raw array literal initialization expression.
+
+Parameters:
+
+- memory: Value - Array memory location value.
+- elements: ArrayList\<Value> - Initialization element value list.
+
+Return Value:
+
+- RawArrayLiteralInit - Literal initialization expression.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+import std.collection.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let builder = CHIRBuilder(InsertPosition.AtEnd(block))
+    let alloc = builder.createRawArrayAllocate(IntType.getInt32(), IntLiteral.get(IntType.getInt64(), 3))
+    let elements = ArrayList<Value>()
+    elements.add(IntLiteral.get(IntType.getInt32(), 1))
+    elements.add(IntLiteral.get(IntType.getInt32(), 2))
+    elements.add(IntLiteral.get(IntType.getInt32(), 3))
+    let expr = builder.createRawArrayLiteralInit(alloc.result, elements)
+    println("createRawArrayLiteralInit: ${expr.toString().size > 0}")
+}
+```
+
+Output:
+
+```text
+createRawArrayLiteralInit: true
+```
+
+### func createSpawn(Type, Value)
+
+```cangjie
+public func createSpawn(retTy: Type, val: Value): Spawn
+```
+
+Function: Creates a concurrent Spawn expression.
+
+Parameters:
+
+- retTy: Type - Return type.
+- val: Value - The function value to spawn.
+
+Return Value:
+
+- Spawn - Spawn expression.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f1 = pkg.addFunction(FuncType.get([], UnitType.get()), "spawn_m", "spawnTarget", "demo")
+    let f2 = pkg.addFunction(FuncType.get([], UnitType.get()), "caller_m", "caller", "demo")
+    f2.initBody()
+    let block = f2.body.getOrThrow().entryBlock
+    let builder = CHIRBuilder(InsertPosition.AtEnd(block))
+    let expr = builder.createSpawn(UnitType.get(), f1)
+    println("createSpawn_no_arg: ${expr.toString().size > 0}")
+}
+```
+
+Output:
+
+```text
+createSpawn_no_arg: true
+```
+
+### func createSpawn(Type, Value, Value)
+
+```cangjie
+public func createSpawn(retTy: Type, val: Value, arg: Value): Spawn
+```
+
+Function: Creates a concurrent Spawn expression with an argument.
+
+Parameters:
+
+- retTy: Type - Return type.
+- val: Value - The function value to spawn.
+- arg: Value - Function argument value.
+
+Return Value:
+
+- Spawn - Spawn expression with argument.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f1 = pkg.addFunction(FuncType.get([IntType.getInt32()], UnitType.get()), "spawn_m", "spawnTarget", "demo")
+    let f2 = pkg.addFunction(FuncType.get([], UnitType.get()), "caller_m", "caller", "demo")
+    f2.initBody()
+    let block = f2.body.getOrThrow().entryBlock
+    let builder = CHIRBuilder(InsertPosition.AtEnd(block))
+    let expr = builder.createSpawn(UnitType.get(), f1, IntLiteral.get(IntType.getInt32(), 42))
+    println("createSpawn_with_arg: ${expr.toString().size > 0}")
+}
+```
+
+Output:
+
+```text
+createSpawn_with_arg: true
+```
+
+### func createStaticCast(Value, Type)
+
+```cangjie
+public func createStaticCast(srcVal: Value, dstTy: Type): StaticCast
+```
+
+Function: Creates a static type conversion expression.
+
+Parameters:
+
+- srcVal: Value - Source value.
+- dstTy: Type - Target type.
+
+Return Value:
+
+- StaticCast - Static type conversion expression.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let builder = CHIRBuilder(InsertPosition.AtEnd(block))
+    let expr = builder.createStaticCast(IntLiteral.get(IntType.getInt32(), 1), IntType.getInt64())
+    println("createStaticCast: ${expr.toString().size > 0}")
+}
+```
+
+Output:
+
+```text
+createStaticCast: true
+```
+
+### func createStore(Value, Value)
+
+```cangjie
+public func createStore(val: Value, location: Value): Store
+```
+
+Function: Creates a memory store expression.
+
+Parameters:
+
+- val: Value - The value to store.
+- location: Value - Memory location value.
+
+Return Value:
+
+- Store - Memory store expression.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let builder = CHIRBuilder(InsertPosition.AtEnd(block))
+    let alloc = builder.createAllocate(IntType.getInt32())
+    let expr = builder.createStore(IntLiteral.get(IntType.getInt32(), 42), alloc.result)
+    println("createStore: ${expr.toString().size > 0}")
+}
+```
+
+Output:
+
+```text
+createStore: true
+```
+
+### func createStoreElementByName(Value, Value, ArrayList\<String>)
+
+```cangjie
+public func createStoreElementByName(val: Value, location: Value, fieldNames: ArrayList<String>): StoreElementByName
+```
+
+Function: Creates an element store expression by field name.
+
+Parameters:
+
+- val: Value - The value to store.
+- location: Value - Memory location value.
+- fieldNames: ArrayList\<String> - Field name path list.
+
+Return Value:
+
+- StoreElementByName - Element store expression by field name.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+import std.collection.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let builder = CHIRBuilder(InsertPosition.AtEnd(block))
+    let alloc = builder.createAllocate(IntType.getInt32())
+    let names = ArrayList<String>()
+    names.add("x")
+    let expr = builder.createStoreElementByName(IntLiteral.get(IntType.getInt32(), 10), alloc.result, names)
+    println("createStoreElementByName: ${expr.toString().size > 0}")
+}
+```
+
+Output:
+
+```text
+createStoreElementByName: true
+```
+
+### func createStoreElementRef(Value, Value, ArrayList\<UInt64>)
+
+```cangjie
+public func createStoreElementRef(val: Value, location: Value, path: ArrayList<UInt64>): StoreElementRef
+```
+
+Function: Creates an element store expression by numeric index.
+
+Parameters:
+
+- val: Value - The value to store.
+- location: Value - Memory location value.
+- path: ArrayList\<UInt64> - Numeric index path list.
+
+Return Value:
+
+- StoreElementRef - Element store expression by numeric index.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+import std.collection.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let builder = CHIRBuilder(InsertPosition.AtEnd(block))
+    let alloc = builder.createAllocate(IntType.getInt32())
+    let path = ArrayList<UInt64>()
+    path.add(0)
+    let expr = builder.createStoreElementRef(IntLiteral.get(IntType.getInt32(), 10), alloc.result, path)
+    println("createStoreElementRef: ${expr.toString().size > 0}")
+}
+```
+
+Output:
+
+```text
+createStoreElementRef: true
+```
+
+### func createTryAllocate(Type, Block, Block)
+
+```cangjie
+public func createTryAllocate(ty: Type, normal: Block, err: Block): TryAllocate
+```
+
+Function: Creates a memory allocation expression with exception handling.
+
+Parameters:
+
+- ty: Type - The type to allocate.
+- normal: Block - Normal branch target basic block.
+- err: Block - Exception branch target basic block.
+
+Return Value:
+
+- TryAllocate - Allocation expression with exception handling.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let bg = f.body.getOrThrow()
+    let entryBlock = bg.entryBlock
+    let normalBlock = bg.appendBlock()
+    let errBlock = bg.appendBlock()
+    let builder = CHIRBuilder(InsertPosition.AtEnd(entryBlock))
+    let expr = builder.createTryAllocate(IntType.getInt32(), normalBlock, errBlock)
+    println("createTryAllocate: ${expr.toString().size > 0}")
+}
+```
+
+Output:
+
+```text
+createTryAllocate: true
+```
+
+### func createTryApply(Value, FuncCallContext, Block, Block)
+
+```cangjie
+public func createTryApply(callee: Value, funcCallCtx: FuncCallContext, normal: Block, err: Block): TryApply
+```
+
+Function: Creates a function call expression with exception handling.
+
+Parameters:
+
+- callee: Value - The called function value.
+- funcCallCtx: FuncCallContext - Function call context.
+- normal: Block - Normal branch target basic block.
+- err: Block - Exception branch target basic block.
+
+Return Value:
+
+- TryApply - Function call expression with exception handling.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f1 = pkg.addFunction(FuncType.get([], UnitType.get()), "callee_m", "callee", "demo")
+    let f2 = pkg.addFunction(FuncType.get([], UnitType.get()), "caller_m", "caller", "demo")
+    f2.initBody()
+    let bg = f2.body.getOrThrow()
+    let entryBlock = bg.entryBlock
+    let normalBlock = bg.appendBlock()
+    let errBlock = bg.appendBlock()
+    let builder = CHIRBuilder(InsertPosition.AtEnd(entryBlock))
+    let ctx = FuncCallContext([], [], None)
+    let expr = builder.createTryApply(f1, ctx, normalBlock, errBlock)
+    println("createTryApply: ${expr.toString().size > 0}")
+}
+```
+
+Output:
+
+```text
+createTryApply: true
+```
+
+### func createTryBinaryAdd(Value, Value, Block, Block)
+
+```cangjie
+public func createTryBinaryAdd(leftOp: Value, rightOp: Value, normal: Block, err: Block): TryBinaryExpression
+```
+
+Function: Creates an addition expression with exception handling.
+
+Parameters:
+
+- leftOp: Value - Left operand.
+- rightOp: Value - Right operand.
+- normal: Block - Normal branch target basic block.
+- err: Block - Exception branch target basic block.
+
+Return Value:
+
+- TryBinaryExpression - Addition expression with exception handling.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let bg = f.body.getOrThrow()
+    let entryBlock = bg.entryBlock
+    let normalBlock = bg.appendBlock()
+    let errBlock = bg.appendBlock()
+    let builder = CHIRBuilder(InsertPosition.AtEnd(entryBlock))
+    let expr = builder.createTryBinaryAdd(IntLiteral.get(IntType.getInt64(), 1), IntLiteral.get(IntType.getInt64(), 2), normalBlock, errBlock)
+    println("createTryBinaryAdd: ${expr.toString().size > 0}")
+}
+```
+
+Output:
+
+```text
+createTryBinaryAdd: true
+```
+
+### func createTryBinaryDiv(Value, Value, OverflowStrategy, Block, Block)
+
+```cangjie
+public func createTryBinaryDiv(leftOp: Value, rightOp: Value, overflow: OverflowStrategy, normal: Block, err: Block): TryBinaryExpression
+```
+
+Function: Creates a division expression with exception handling.
+
+Parameters:
+
+- leftOp: Value - Left operand.
+- rightOp: Value - Right operand.
+- overflow: OverflowStrategy - Overflow strategy.
+- normal: Block - Normal branch target basic block.
+- err: Block - Exception branch target basic block.
+
+Return Value:
+
+- TryBinaryExpression - Division expression with exception handling.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let bg = f.body.getOrThrow()
+    let entryBlock = bg.entryBlock
+    let normalBlock = bg.appendBlock()
+    let errBlock = bg.appendBlock()
+    let builder = CHIRBuilder(InsertPosition.AtEnd(entryBlock))
+    let expr = builder.createTryBinaryDiv(IntLiteral.get(IntType.getInt64(), 10), IntLiteral.get(IntType.getInt64(), 2), OverflowStrategy.NA, normalBlock, errBlock)
+    println("createTryBinaryDiv: ${expr.toString().size > 0}")
+}
+```
+
+Output:
+
+```text
+createTryBinaryDiv: true
+```
+
+### func createTryBinaryExp(Value, Value, Block, Block)
+
+```cangjie
+public func createTryBinaryExp(leftOp: Value, rightOp: Value, normal: Block, err: Block): TryBinaryExpression
+```
+
+Function: Creates an exponentiation expression with exception handling.
+
+Parameters:
+
+- leftOp: Value - Left operand.
+- rightOp: Value - Right operand.
+- normal: Block - Normal branch target basic block.
+- err: Block - Exception branch target basic block.
+
+Return Value:
+
+- TryBinaryExpression - Exponentiation expression with exception handling.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let bg = f.body.getOrThrow()
+    let entryBlock = bg.entryBlock
+    let normalBlock = bg.appendBlock()
+    let errBlock = bg.appendBlock()
+    let builder = CHIRBuilder(InsertPosition.AtEnd(entryBlock))
+    let expr = builder.createTryBinaryExp(IntLiteral.get(IntType.getInt64(), 2), IntLiteral.get(IntType.getInt64(), 3), normalBlock, errBlock)
+    println("createTryBinaryExp: ${expr.toString().size > 0}")
+}
+```
+
+Output:
+
+```text
+createTryBinaryExp: true
+```
+
+### func createTryBinaryLShift(Value, Value, Block, Block)
+
+```cangjie
+public func createTryBinaryLShift(leftOp: Value, rightOp: Value, normal: Block, err: Block): TryBinaryExpression
+```
+
+Function: Creates a left-shift expression with exception handling.
+
+Parameters:
+
+- leftOp: Value - Left operand.
+- rightOp: Value - Right operand.
+- normal: Block - Normal branch target basic block.
+- err: Block - Exception branch target basic block.
+
+Return Value:
+
+- TryBinaryExpression - Left-shift expression with exception handling.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let bg = f.body.getOrThrow()
+    let entryBlock = bg.entryBlock
+    let normalBlock = bg.appendBlock()
+    let errBlock = bg.appendBlock()
+    let builder = CHIRBuilder(InsertPosition.AtEnd(entryBlock))
+    let expr = builder.createTryBinaryLShift(IntLiteral.get(IntType.getInt64(), 1), IntLiteral.get(IntType.getInt64(), 2), normalBlock, errBlock)
+    println("createTryBinaryLShift: ${expr.toString().size > 0}")
+}
+```
+
+Output:
+
+```text
+createTryBinaryLShift: true
+```
+
+### func createTryBinaryMod(Value, Value, Block, Block)
+
+```cangjie
+public func createTryBinaryMod(leftOp: Value, rightOp: Value, normal: Block, err: Block): TryBinaryExpression
+```
+
+Function: Creates a modulo expression with exception handling.
+
+Parameters:
+
+- leftOp: Value - Left operand.
+- rightOp: Value - Right operand.
+- normal: Block - Normal branch target basic block.
+- err: Block - Exception branch target basic block.
+
+Return Value:
+
+- TryBinaryExpression - Modulo expression with exception handling.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let bg = f.body.getOrThrow()
+    let entryBlock = bg.entryBlock
+    let normalBlock = bg.appendBlock()
+    let errBlock = bg.appendBlock()
+    let builder = CHIRBuilder(InsertPosition.AtEnd(entryBlock))
+    let expr = builder.createTryBinaryMod(IntLiteral.get(IntType.getInt64(), 10), IntLiteral.get(IntType.getInt64(), 3), normalBlock, errBlock)
+    println("createTryBinaryMod: ${expr.toString().size > 0}")
+}
+```
+
+Output:
+
+```text
+createTryBinaryMod: true
+```
+
+### func createTryBinaryMul(Value, Value, Block, Block)
+
+```cangjie
+public func createTryBinaryMul(leftOp: Value, rightOp: Value, normal: Block, err: Block): TryBinaryExpression
+```
+
+Function: Creates a multiplication expression with exception handling.
+
+Parameters:
+
+- leftOp: Value - Left operand.
+- rightOp: Value - Right operand.
+- normal: Block - Normal branch target basic block.
+- err: Block - Exception branch target basic block.
+
+Return Value:
+
+- TryBinaryExpression - Multiplication expression with exception handling.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let bg = f.body.getOrThrow()
+    let entryBlock = bg.entryBlock
+    let normalBlock = bg.appendBlock()
+    let errBlock = bg.appendBlock()
+    let builder = CHIRBuilder(InsertPosition.AtEnd(entryBlock))
+    let expr = builder.createTryBinaryMul(IntLiteral.get(IntType.getInt64(), 3), IntLiteral.get(IntType.getInt64(), 4), normalBlock, errBlock)
+    println("createTryBinaryMul: ${expr.toString().size > 0}")
+}
+```
+
+Output:
+
+```text
+createTryBinaryMul: true
+```
+
+### func createTryBinaryRShift(Value, Value, Block, Block)
+
+```cangjie
+public func createTryBinaryRShift(leftOp: Value, rightOp: Value, normal: Block, err: Block): TryBinaryExpression
+```
+
+Function: Creates a right-shift expression with exception handling.
+
+Parameters:
+
+- leftOp: Value - Left operand.
+- rightOp: Value - Right operand.
+- normal: Block - Normal branch target basic block.
+- err: Block - Exception branch target basic block.
+
+Return Value:
+
+- TryBinaryExpression - Right-shift expression with exception handling.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let bg = f.body.getOrThrow()
+    let entryBlock = bg.entryBlock
+    let normalBlock = bg.appendBlock()
+    let errBlock = bg.appendBlock()
+    let builder = CHIRBuilder(InsertPosition.AtEnd(entryBlock))
+    let expr = builder.createTryBinaryRShift(IntLiteral.get(IntType.getInt64(), 8), IntLiteral.get(IntType.getInt64(), 2), normalBlock, errBlock)
+    println("createTryBinaryRShift: ${expr.toString().size > 0}")
+}
+```
+
+Output:
+
+```text
+createTryBinaryRShift: true
+```
+
+### func createTryBinarySub(Value, Value, Block, Block)
+
+```cangjie
+public func createTryBinarySub(leftOp: Value, rightOp: Value, normal: Block, err: Block): TryBinaryExpression
+```
+
+Function: Creates a subtraction expression with exception handling.
+
+Parameters:
+
+- leftOp: Value - Left operand.
+- rightOp: Value - Right operand.
+- normal: Block - Normal branch target basic block.
+- err: Block - Exception branch target basic block.
+
+Return Value:
+
+- TryBinaryExpression - Subtraction expression with exception handling.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let bg = f.body.getOrThrow()
+    let entryBlock = bg.entryBlock
+    let normalBlock = bg.appendBlock()
+    let errBlock = bg.appendBlock()
+    let builder = CHIRBuilder(InsertPosition.AtEnd(entryBlock))
+    let expr = builder.createTryBinarySub(IntLiteral.get(IntType.getInt64(), 5), IntLiteral.get(IntType.getInt64(), 3), normalBlock, errBlock)
+    println("createTryBinarySub: ${expr.toString().size > 0}")
+}
+```
+
+Output:
+
+```text
+createTryBinarySub: true
+```
+
+### func createTryInvoke(Type, InvokeCallContext, Block, Block)
+
+```cangjie
+public func createTryInvoke(retTy: Type, callContext: InvokeCallContext, normal: Block, err: Block): TryInvoke
+```
+
+Function: Creates a virtual method call expression with exception handling.
+
+Parameters:
+
+- retTy: Type - Return type.
+- callContext: InvokeCallContext - Virtual method call context.
+- normal: Block - Normal branch target basic block.
+- err: Block - Exception branch target basic block.
+
+Return Value:
+
+- TryInvoke - Virtual method call expression with exception handling.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let bg = f.body.getOrThrow()
+    let entryBlock = bg.entryBlock
+    let normalBlock = bg.appendBlock()
+    let errBlock = bg.appendBlock()
+    let builder = CHIRBuilder(InsertPosition.AtEnd(entryBlock))
+    let ft = FuncType.get([], UnitType.get())
+    let sig = FuncSigInfo("method", ft)
+    let fcc = FuncCallContext([], [], None)
+    let ctx = InvokeCallContext(BoolLiteral.get(false), sig, fcc)
+    let expr = builder.createTryInvoke(UnitType.get(), ctx, normalBlock, errBlock)
+    println("createTryInvoke: ${expr.toString().size > 0}")
+}
+```
+
+Output:
+
+```text
+createTryInvoke: true
+```
+
+### func createTryNumericCast(Value, Type, Block, Block)
+
+```cangjie
+public func createTryNumericCast(srcVal: Value, dstTy: Type, normal: Block, err: Block): TryNumericCast
+```
+
+Function: Creates a numeric type conversion expression with exception handling.
+
+Parameters:
+
+- srcVal: Value - Source value.
+- dstTy: Type - Target numeric type.
+- normal: Block - Normal branch target basic block.
+- err: Block - Exception branch target basic block.
+
+Return Value:
+
+- TryNumericCast - Numeric type conversion expression with exception handling.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let bg = f.body.getOrThrow()
+    let entryBlock = bg.entryBlock
+    let normalBlock = bg.appendBlock()
+    let errBlock = bg.appendBlock()
+    let builder = CHIRBuilder(InsertPosition.AtEnd(entryBlock))
+    let expr = builder.createTryNumericCast(IntLiteral.get(IntType.getInt32(), 42), IntType.getInt64(), normalBlock, errBlock)
+    println("createTryNumericCast: ${expr.toString().size > 0}")
+}
+```
+
+Output:
+
+```text
+createTryNumericCast: true
+```
+
+### func createTryRawArrayAllocate(Type, Value, Block, Block)
+
+```cangjie
+public func createTryRawArrayAllocate(elementType: Type, size: Value, normal: Block, err: Block): TryRawArrayAllocate
+```
+
+Function: Creates a raw array allocation expression with exception handling.
+
+Parameters:
+
+- elementType: Type - Array element type.
+- size: Value - Array size value.
+- normal: Block - Normal branch target basic block.
+- err: Block - Exception branch target basic block.
+
+Return Value:
+
+- TryRawArrayAllocate - Raw array allocation expression with exception handling.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let bg = f.body.getOrThrow()
+    let entryBlock = bg.entryBlock
+    let normalBlock = bg.appendBlock()
+    let errBlock = bg.appendBlock()
+    let builder = CHIRBuilder(InsertPosition.AtEnd(entryBlock))
+    let expr = builder.createTryRawArrayAllocate(IntType.getInt32(), IntLiteral.get(IntType.getInt64(), 10), normalBlock, errBlock)
+    println("createTryRawArrayAllocate: ${expr.toString().size > 0}")
+}
+```
+
+Output:
+
+```text
+createTryRawArrayAllocate: true
+```
+
+### func createTrySpawn(Type, Value, Block, Block)
+
+```cangjie
+public func createTrySpawn(retTy: Type, val: Value, normal: Block, err: Block): TrySpawn
+```
+
+Function: Creates a concurrent Spawn expression with exception handling.
+
+Parameters:
+
+- retTy: Type - Return type.
+- val: Value - The function value to spawn.
+- normal: Block - Normal branch target basic block.
+- err: Block - Exception branch target basic block.
+
+Return Value:
+
+- TrySpawn - Spawn expression with exception handling.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f1 = pkg.addFunction(FuncType.get([], UnitType.get()), "spawn_m", "spawnTarget", "demo")
+    let f2 = pkg.addFunction(FuncType.get([], UnitType.get()), "caller_m", "caller", "demo")
+    f2.initBody()
+    let bg = f2.body.getOrThrow()
+    let entryBlock = bg.entryBlock
+    let normalBlock = bg.appendBlock()
+    let errBlock = bg.appendBlock()
+    let builder = CHIRBuilder(InsertPosition.AtEnd(entryBlock))
+    let expr = builder.createTrySpawn(UnitType.get(), f1, normalBlock, errBlock)
+    println("createTrySpawn_no_arg: ${expr.toString().size > 0}")
+}
+```
+
+Output:
+
+```text
+createTrySpawn_no_arg: true
+```
+
+### func createTrySpawn(Type, Value, Value, Block, Block)
+
+```cangjie
+public func createTrySpawn(retTy: Type, val: Value, arg: Value, normal: Block, err: Block): TrySpawn
+```
+
+Function: Creates a concurrent Spawn expression with an argument and exception handling.
+
+Parameters:
+
+- retTy: Type - Return type.
+- val: Value - The function value to spawn.
+- arg: Value - Function argument value.
+- normal: Block - Normal branch target basic block.
+- err: Block - Exception branch target basic block.
+
+Return Value:
+
+- TrySpawn - Spawn expression with argument and exception handling.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f1 = pkg.addFunction(FuncType.get([IntType.getInt32()], UnitType.get()), "spawn_m", "spawnTarget", "demo")
+    let f2 = pkg.addFunction(FuncType.get([], UnitType.get()), "caller_m", "caller", "demo")
+    f2.initBody()
+    let bg = f2.body.getOrThrow()
+    let entryBlock = bg.entryBlock
+    let normalBlock = bg.appendBlock()
+    let errBlock = bg.appendBlock()
+    let builder = CHIRBuilder(InsertPosition.AtEnd(entryBlock))
+    let expr = builder.createTrySpawn(UnitType.get(), f1, IntLiteral.get(IntType.getInt32(), 42), normalBlock, errBlock)
+    println("createTrySpawn_with_arg: ${expr.toString().size > 0}")
+}
+```
+
+Output:
+
+```text
+createTrySpawn_with_arg: true
+```
+
+### func createTryUnaryNeg(Value, Block, Block)
+
+```cangjie
+public func createTryUnaryNeg(op: Value, normal: Block, err: Block): TryUnaryExpression
+```
+
+Function: Creates a negation unary expression with exception handling.
+
+Parameters:
+
+- op: Value - Operand.
+- normal: Block - Normal branch target basic block.
+- err: Block - Exception branch target basic block.
+
+Return Value:
+
+- TryUnaryExpression - Negation expression with exception handling.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let bg = f.body.getOrThrow()
+    let entryBlock = bg.entryBlock
+    let normalBlock = bg.appendBlock()
+    let errBlock = bg.appendBlock()
+    let builder = CHIRBuilder(InsertPosition.AtEnd(entryBlock))
+    let expr = builder.createTryUnaryNeg(IntLiteral.get(IntType.getInt64(), 1), normalBlock, errBlock)
+    println("createTryUnaryNeg: ${expr.toString().size > 0}")
+}
+```
+
+Output:
+
+```text
+createTryUnaryNeg: true
+```
+
+### func createTuple(Array\<Value>)
+
+```cangjie
+public func createTuple(elements: Array<Value>): Tuple
+```
+
+Function: Creates a tuple expression.
+
+Parameters:
+
+- elements: Array\<Value> - Tuple element value list.
+
+Return Value:
+
+- Tuple - Tuple expression.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let builder = CHIRBuilder(InsertPosition.AtEnd(block))
+    let expr = builder.createTuple([IntLiteral.get(IntType.getInt32(), 1), IntLiteral.get(IntType.getInt32(), 2)])
+    println("createTuple: ${expr.toString().size > 0}")
+}
+```
+
+Output:
+
+```text
+createTuple: true
+```
+
+### func createUnaryBitNot(Value)
+
+```cangjie
+public func createUnaryBitNot(op: Value): UnaryExpression
+```
+
+Function: Creates a bitwise NOT unary expression.
+
+Parameters:
+
+- op: Value - Operand.
+
+Return Value:
+
+- UnaryExpression - Bitwise NOT expression.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let builder = CHIRBuilder(InsertPosition.AtEnd(block))
+    let expr = builder.createUnaryBitNot(IntLiteral.get(IntType.getInt64(), 3))
+    println("createUnaryBitNot: ${expr.toString().size > 0}")
+}
+```
+
+Output:
+
+```text
+createUnaryBitNot: true
+```
+
+### func createUnaryNeg(Value, OverflowStrategy)
+
+```cangjie
+public func createUnaryNeg(op: Value, overflow: OverflowStrategy): UnaryExpression
+```
+
+Function: Creates a negation unary expression.
+
+Parameters:
+
+- op: Value - Operand.
+- overflow: OverflowStrategy - Overflow strategy.
+
+Return Value:
+
+- UnaryExpression - Negation expression.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let builder = CHIRBuilder(InsertPosition.AtEnd(block))
+    let expr = builder.createUnaryNeg(IntLiteral.get(IntType.getInt64(), 5), OverflowStrategy.NA)
+    println("createUnaryNeg: ${expr.toString().size > 0}")
+}
+```
+
+Output:
+
+```text
+createUnaryNeg: true
+```
+
+### func createUnaryNot(Value)
+
+```cangjie
+public func createUnaryNot(op: Value): UnaryExpression
+```
+
+Function: Creates a logical NOT unary expression.
+
+Parameters:
+
+- op: Value - Operand.
+
+Return Value:
+
+- UnaryExpression - Logical NOT expression.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let builder = CHIRBuilder(InsertPosition.AtEnd(block))
+    let expr = builder.createUnaryNot(BoolLiteral.get(true))
+    println("createUnaryNot: ${expr.toString().size > 0}")
+}
+```
+
+Output:
+
+```text
+createUnaryNot: true
+```
+
+### func createUnboxToRef(Value, Type)
+
+```cangjie
+public func createUnboxToRef(srcVal: Value, dstTy: Type): UnboxToRef
+```
+
+Function: Creates an unbox-to-reference type conversion expression.
+
+Parameters:
+
+- srcVal: Value - Source value.
+- dstTy: Type - Target reference type.
+
+Return Value:
+
+- UnboxToRef - Unbox-to-reference expression.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let builder = CHIRBuilder(InsertPosition.AtEnd(block))
+    let alloc = builder.createAllocate(BoxType.get(IntType.getInt32()))
+    let expr = builder.createUnboxToRef(alloc.result, IntType.getInt32())
+    println("createUnboxToRef: ${expr.toString().size > 0}")
+}
+```
+
+Output:
+
+```text
+createUnboxToRef: true
+```
+
+### func createUnboxToValue(Value, Type)
+
+```cangjie
+public func createUnboxToValue(srcVal: Value, dstTy: Type): UnboxToValue
+```
+
+Function: Creates an unbox-to-value type conversion expression.
+
+Parameters:
+
+- srcVal: Value - Source value.
+- dstTy: Type - Target value type.
+
+Return Value:
+
+- UnboxToValue - Unbox-to-value expression.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let builder = CHIRBuilder(InsertPosition.AtEnd(block))
+    let alloc = builder.createAllocate(BoxType.get(IntType.getInt32()))
+    let expr = builder.createUnboxToValue(alloc.result, IntType.getInt32())
+    println("createUnboxToValue: ${expr.toString().size > 0}")
+}
+```
+
+Output:
+
+```text
+createUnboxToValue: true
+```
+
+### func createVArray(ArrayList\<Value>)
+
+```cangjie
+public func createVArray(elements: ArrayList<Value>): VArrayExpr
+```
+
+Function: Creates a VArray expression.
+
+Parameters:
+
+- elements: ArrayList\<Value> - VArray element value list.
+
+Return Value:
+
+- VArrayExpr - VArray expression.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+import std.collection.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let builder = CHIRBuilder(InsertPosition.AtEnd(block))
+    let elements = ArrayList<Value>()
+    elements.add(IntLiteral.get(IntType.getInt32(), 1))
+    elements.add(IntLiteral.get(IntType.getInt32(), 2))
+    let expr = builder.createVArray(elements)
+    println("createVArray: ${expr.toString().size > 0}")
+}
+```
+
+Output:
+
+```text
+createVArray: true
+```
+
+### func createVArrayBuilder(Type, Value, Value, Value)
+
+```cangjie
+public func createVArrayBuilder(retTy: Type, size: Value, initVal: Value, initFunc: Value): VArrayBuilder
+```
+
+Function: Creates a VArray builder expression.
+
+Parameters:
+
+- retTy: Type - Return type.
+- size: Value - Array size value.
+- initVal: Value - Initialization value.
+- initFunc: Value - Initialization function value.
+
+Return Value:
+
+- VArrayBuilder - VArray builder expression.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let initF = pkg.addFunction(FuncType.get([IntType.getInt32()], IntType.getInt32()), "init_m", "init", "demo")
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let builder = CHIRBuilder(InsertPosition.AtEnd(block))
+    let expr = builder.createVArrayBuilder(IntType.getInt32(), IntLiteral.get(IntType.getInt64(), 5), IntLiteral.get(IntType.getInt32(), 0), initF)
+    println("createVArrayBuilder: ${expr.toString().size > 0}")
+}
+```
+
+Output:
+
+```text
+createVArrayBuilder: true
+```
+</task_result>
