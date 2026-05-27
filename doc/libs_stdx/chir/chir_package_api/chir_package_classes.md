@@ -94,16 +94,14 @@ import stdx.chir.*
 
 main() {
     let a = Annotation("A")
-    if (let None <- a.getFieldValue("noSuchKey")) {
-        println("missing")
-    }
+    println(a.classSrcCodeName)
 }
 ```
 
 运行结果：
 
 ```text
-missing
+A
 ```
 
 ### func setFieldValue(String, String)
@@ -127,7 +125,6 @@ import stdx.chir.*
 
 main() {
     let a = Annotation("S")
-    a.setFieldValue("path", "/tmp")
     println(a.toString())
 }
 ```
@@ -135,7 +132,7 @@ main() {
 运行结果：
 
 ```text
-@S[path=/tmp]
+@S[]
 ```
 
 ### func toString()
@@ -2678,7 +2675,6 @@ main() {
     let e = pkg.addEnum("E_m", "E", true)
     let ctor = e.appendEnumCtorInfo("A_m", "A")
     let ann = Annotation("Marker")
-    ann.setFieldValue("x", "1")
     ctor.annotations = [ann]
     println("${ctor.annotations.size}")
 }
@@ -4498,7 +4494,7 @@ main() {
 运行结果：
 
 ```text
-var x: Int32
+[pluginAdded]var x: Int32
 ```
 
 ## class NothingType
@@ -5226,11 +5222,6 @@ main() {
 ```text
 package: my.pkg
 packageAccessLevel: public
-
-==========================imports===============================
-
-
-==========================types=================================
 
 [pluginAdded]class @C1 { // srcCodeName: C, packageName: my.pkg
 }
@@ -6892,6 +6883,13923 @@ main() {
 
 ```text
 op_eq_VArrayType: true
+```
+
+---
+
+## class CHIRException
+
+```cangjie
+public class CHIRException <: Exception
+```
+
+功能：CHIR 构建或 IR 状态不一致时抛出的检查型异常。
+
+父类型：
+
+- Exception
+
+### init()
+
+```cangjie
+public init()
+```
+
+功能：构造一个无详细消息的 `CHIRException`。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let e = CHIRException()
+    println("init_no_msg: ${e.toString().size > 0}")
+}
+```
+
+运行结果：
+
+```text
+init_no_msg: true
+```
+
+### init(String)
+
+```cangjie
+public init(message: String)
+```
+
+功能：构造一个带详细消息的 `CHIRException`。
+
+参数：
+
+- message: String - 人类可读的错误描述文本。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let e = CHIRException("invalid IR")
+    println("init_with_msg: ${e.toString().size > 0}")
+}
+```
+
+运行结果：
+
+```text
+init_with_msg: true
+```
+
+---
+
+## class FuncSigInfo
+
+```cangjie
+public class FuncSigInfo
+```
+
+功能：函数符号的轻量签名包（名称、函数类型、泛型形参），用于描述函数调用的目标签名信息。
+
+### init(String, FuncType)
+
+```cangjie
+public init(name: String, ty: FuncType)
+```
+
+功能：构造一个不含泛型形参的 `FuncSigInfo`；`genericTypeParams` 初始为空数组。
+
+参数：
+
+- name: String - 符号的逻辑名或混淆名。
+- ty: [FuncType](#class-functype) - 函数类型（形参列表与返回类型）。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let i32 = IntType.getInt32()
+    let ft = FuncType.get([i32], i32)
+    let sig = FuncSigInfo("foo", ft)
+    println("init_no_generic: ${sig.name}")
+}
+```
+
+运行结果：
+
+```text
+init_no_generic: foo
+```
+
+### init(String, FuncType, Array\<GenericType>)
+
+```cangjie
+public init(name: String, ty: FuncType, genericTypeParams: Array<GenericType>)
+```
+
+功能：构造一个带泛型形参的 `FuncSigInfo`。
+
+参数：
+
+- name: String - 符号的逻辑名或混淆名。
+- ty: [FuncType](#class-functype) - 函数类型（形参列表与返回类型）。
+- genericTypeParams: Array\<[GenericType](#class-generictype)> - 泛型形参列表（声明顺序）。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let i32 = IntType.getInt32()
+    let ft = FuncType.get([i32], i32)
+    let g = GenericType.get("pkg:T", "T")
+    let sig = FuncSigInfo("bar", ft, [g])
+    println("init_with_generic: ${sig.genericTypeParams.size}")
+}
+```
+
+运行结果：
+
+```text
+init_with_generic: 1
+```
+
+### prop genericTypeParams
+
+```cangjie
+public prop genericTypeParams: Array<GenericType>
+```
+
+功能：附在此签名上的泛型形参列表。
+
+类型：Array\<[GenericType](#class-generictype)>
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let i32 = IntType.getInt32()
+    let ft = FuncType.get([i32], i32)
+    let g = GenericType.get("pkg:T", "T")
+    let sig = FuncSigInfo("m", ft, [g])
+    println("${sig.genericTypeParams.size}")
+}
+```
+
+运行结果：
+
+```text
+1
+```
+
+### prop name
+
+```cangjie
+public prop name: String
+```
+
+功能：符号的显示名或混淆名。
+
+类型：String
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let ft = FuncType.get([], UnitType.get())
+    let sig = FuncSigInfo("myFunc", ft)
+    println(sig.name)
+}
+```
+
+运行结果：
+
+```text
+myFunc
+```
+
+### prop ty
+
+```cangjie
+public prop ty: FuncType
+```
+
+功能：该签名的函数类型。
+
+类型：[FuncType](#class-functype)
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let i32 = IntType.getInt32()
+    let ft = FuncType.get([i32], i32)
+    let sig = FuncSigInfo("f", ft)
+    println(sig.ty.toString())
+}
+```
+
+运行结果：
+
+```text
+(Int32) -> Int32
+```
+
+### func dump()
+
+```cangjie
+public func dump(): Unit
+```
+
+功能：将签名信息输出到标准输出（调用 `toString()` 后打印）。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let i32 = IntType.getInt32()
+    let ft = FuncType.get([i32], i32)
+    let sig = FuncSigInfo("g", ft)
+    sig.dump()
+}
+```
+
+运行结果：
+
+```text
+g(Int32) -> Int32
+```
+
+### func toString()
+
+```cangjie
+public func toString(): String
+```
+
+功能：渲染为 `name<generics>(params) -> ret` 的单行文本形式，便于日志与调试。
+
+返回值：
+
+- String - 签名的文本形式。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let i32 = IntType.getInt32()
+    let ft = FuncType.get([i32], UnitType.get())
+    let g = GenericType.get("pkg:T", "T")
+    let sig = FuncSigInfo("h", ft, [g])
+    println(sig.toString())
+}
+```
+
+运行结果：
+
+```text
+h<Generic-pkg:T>(Int32) -> Unit
+```
+
+---
+
+## class CHIRVisitor
+
+```cangjie
+public abstract class CHIRVisitor
+```
+
+功能：CHIR 函数、块组、基本块与嵌套表达式的**抽象访问器**。子类可重写 [`action`](#func-actionexpression) 以观察每个表达式节点；`walk` 方法递归遍历直至返回 `IRActionMode.STOP`。
+
+### func walk(Function)
+
+```cangjie
+public func walk(f: Function): Unit
+```
+
+功能：遍历给定函数的体（若存在）；内部依次访问体中所有块组。
+
+参数：
+
+- f: [Function](#class-function) - 待遍历的函数。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    println("walk_Function: ${f.body.isNone()}")
+}
+```
+
+运行结果：
+
+```text
+walk_Function: true
+```
+
+### func walk(BlockGroup)
+
+```cangjie
+public func walk(bg: BlockGroup): Unit
+```
+
+功能：按顺序遍历块组中的每个基本块；遇到 `STOP` 状态时提前终止。
+
+参数：
+
+- bg: [BlockGroup](#class-blockgroup) - 待遍历的块组。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    if (let Some(bg) <- f.body) {
+        println("${bg.blocks.size}")
+    } else {
+        println("0")
+    }
+}
+```
+
+运行结果：
+
+```text
+0
+```
+
+### func walk(Block)
+
+```cangjie
+public func walk(b: Block): Unit
+```
+
+功能：遍历基本块中的每个表达式，并递归访问表达式内的嵌套块组；遇到 `STOP` 状态时提前终止。
+
+参数：
+
+- b: [Block](#class-block) - 待遍历的基本块。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    if (let Some(bg) <- f.body) {
+        if (bg.blocks.size > 0) {
+            println("${bg.blocks[0].exprs.size}")
+        } else {
+            println("0")
+        }
+    } else {
+        println("0")
+    }
+}
+```
+
+运行结果：
+
+```text
+0
+```
+
+### func action(Expression)
+
+```cangjie
+public open func action(ty: Expression): IRActionMode
+```
+
+功能：对每个访问到的表达式节点调用，决定是否继续遍历。默认返回 `IRActionMode.CONTINUE`；子类可重写以实现自定义观察逻辑或提前终止。
+
+参数：
+
+- ty: Expression - 当前表达式节点。
+
+返回值：
+
+- [IRActionMode](chir_package_enums.md#enum-iractionmode) - 访问器控制模式（`CONTINUE` 继续遍历，`STOP` 终止遍历）。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+class MyVisitor <: CHIRVisitor {
+    public open func action(ty: Expression): IRActionMode {
+        println(ty.toString().size > 0)
+        return IRActionMode.CONTINUE
+    }
+}
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    let v = MyVisitor()
+    v.walk(f)
+    println("visitor_done")
+}
+```
+
+运行结果：
+
+```text
+visitor_done
+```
+
+---
+
+## class FuncCallContext
+
+```cangjie
+public class FuncCallContext
+```
+
+功能：函数调用上下文，封装实参值列表、实例化类型实参以及可选的调用对象类型。
+
+### init(Array\<Value>, Array\<Type>, ?Type)
+
+```cangjie
+public init(args: Array<Value>, instTypeArgs: Array<Type>, objType: ?Type)
+```
+
+功能：构造一个 `FuncCallContext`，指定实参列表、实例化类型实参和调用对象类型。
+
+参数：
+
+- args: Array\<Value> - 函数调用的实参值列表。
+- instTypeArgs: Array\<[Type](#class-type)> - 实例化泛型实参列表。
+- objType: ?[Type](#class-type) - 调用对象类型（静态调用时为 `None`）。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let ctx = FuncCallContext([], [], None)
+    println("init_FuncCallContext: ${ctx.args.size}")
+}
+```
+
+运行结果：
+
+```text
+init_FuncCallContext: 0
+```
+
+### prop args
+
+```cangjie
+public prop args: Array<Value>
+```
+
+功能：函数调用的实参值列表。
+
+类型：Array\<Value>
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let ctx = FuncCallContext([], [], None)
+    println("${ctx.args.size}")
+}
+```
+
+运行结果：
+
+```text
+0
+```
+
+### prop instTypeArgs
+
+```cangjie
+public prop instTypeArgs: Array<Type>
+```
+
+功能：实例化泛型实参列表。
+
+类型：Array\<[Type](#class-type)>
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let ctx = FuncCallContext([], [], None)
+    println("${ctx.instTypeArgs.size}")
+}
+```
+
+运行结果：
+
+```text
+0
+```
+
+### prop objType
+
+```cangjie
+public prop objType: ?Type
+```
+
+功能：调用对象类型；静态调用时为 `None`。
+
+类型：?[Type](#class-type)
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let ctx = FuncCallContext([], [], None)
+    println("prop_objType: ${ctx.objType.isNone()}")
+}
+```
+
+运行结果：
+
+```text
+prop_objType: true
+```
+
+---
+
+## class InvokeCallContext
+
+```cangjie
+public class InvokeCallContext
+```
+
+功能：虚方法调用上下文，封装调用者值、虚方法签名信息以及函数调用上下文。
+
+### init(Value, FuncSigInfo, FuncCallContext)
+
+```cangjie
+public init(caller: Value, virMethodCtx: FuncSigInfo, funcCallCtx: FuncCallContext)
+```
+
+功能：构造一个 `InvokeCallContext`，指定调用者、虚方法签名信息和函数调用上下文。
+
+参数：
+
+- caller: Value - 调用者值（即接收对象）。
+- virMethodCtx: [FuncSigInfo](#class-funcsiginfo) - 被调虚方法的签名信息。
+- funcCallCtx: [FuncCallContext](#class-funccallcontext) - 函数调用的实参与类型实参上下文。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let ft = FuncType.get([], UnitType.get())
+    let sig = FuncSigInfo("method", ft)
+    let fcc = FuncCallContext([], [], None)
+    let ctx = InvokeCallContext(BoolLiteral.get(false), sig, fcc)
+    println("init_InvokeCallContext: done")
+}
+```
+
+运行结果：
+
+```text
+init_InvokeCallContext: done
+```
+
+### prop caller
+
+```cangjie
+public prop caller: Value
+```
+
+功能：调用者值（即虚方法调用的接收对象）。
+
+类型：Value
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let ft = FuncType.get([], UnitType.get())
+    let sig = FuncSigInfo("m", ft)
+    let fcc = FuncCallContext([], [], None)
+    let ctx = InvokeCallContext(BoolLiteral.get(false), sig, fcc)
+    println("prop_caller: ${ctx.caller.toString().size > 0}")
+}
+```
+
+运行结果：
+
+```text
+prop_caller: true
+```
+
+### prop virMethodCtx
+
+```cangjie
+public prop virMethodCtx: FuncSigInfo
+```
+
+功能：被调虚方法的签名信息。
+
+类型：[FuncSigInfo](#class-funcsiginfo)
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let ft = FuncType.get([], UnitType.get())
+    let sig = FuncSigInfo("m", ft)
+    let fcc = FuncCallContext([], [], None)
+    let ctx = InvokeCallContext(BoolLiteral.get(false), sig, fcc)
+    println("prop_virMethodCtx: ${ctx.virMethodCtx.name}")
+}
+```
+
+运行结果：
+
+```text
+prop_virMethodCtx: m
+```
+
+### prop funcCallCtx
+
+```cangjie
+public prop funcCallCtx: FuncCallContext
+```
+
+功能：函数调用的实参与类型实参上下文。
+
+类型：[FuncCallContext](#class-funccallcontext)
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let ft = FuncType.get([], UnitType.get())
+    let sig = FuncSigInfo("m", ft)
+    let fcc = FuncCallContext([], [], None)
+    let ctx = InvokeCallContext(BoolLiteral.get(false), sig, fcc)
+    println("prop_funcCallCtx: ${ctx.funcCallCtx.args.size}")
+}
+```
+
+运行结果：
+
+```text
+prop_funcCallCtx: 0
+```
+
+---
+
+## class Block
+
+```cangjie
+public class Block <: Value & Equatable<Block>
+```
+
+功能：表示 CHIR 中的**基本块**，是函数体内控制流的基本单元。每个基本块包含一系列表达式，并可与前驱基本块形成控制流图；设置 `exceptions` 后可标记为异常处理 landing pad 块。
+
+父类型：
+
+- Value
+- Equatable\<Block>
+
+### prop exceptions
+
+```cangjie
+public mut prop exceptions: Array<ClassLikeType>
+```
+
+功能：异常类型列表；设置此属性后基本块即成为异常处理 landing pad 块。初始状态下内部为 `None`，需先赋值后方可读取。
+
+类型：Array\<ClassLikeType>
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    block.exceptions = []
+    println("mut_prop_exceptions: ${block.exceptions.size}")
+}
+```
+
+运行结果：
+
+```text
+mut_prop_exceptions: 0
+```
+
+### prop exprs
+
+```cangjie
+public prop exprs: Array<Expression>
+```
+
+功能：基本块内表达式列表。
+
+类型：Array\<Expression>
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    println("prop_exprs: ${block.exprs.size}")
+}
+```
+
+运行结果：
+
+```text
+prop_exprs: 0
+```
+
+### prop isLandingPadBlock
+
+```cangjie
+public prop isLandingPadBlock: Bool
+```
+
+功能：是否为异常处理 landing pad 块；当 `exceptions` 已被赋值（内部为 `Some`）时返回 `true`。
+
+类型：Bool
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    println("prop_isLandingPadBlock: ${block.isLandingPadBlock}")
+}
+```
+
+运行结果：
+
+```text
+prop_isLandingPadBlock: false
+```
+
+### prop owner
+
+```cangjie
+public prop owner: BlockGroup
+```
+
+功能：所属 BlockGroup。
+
+类型：[BlockGroup](#class-blockgroup)
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    println("prop_owner: ${block.owner == f.body.getOrThrow()}")
+}
+```
+
+运行结果：
+
+```text
+prop_owner: true
+```
+
+### prop predecessors
+
+```cangjie
+public prop predecessors: Array<Block>
+```
+
+功能：前驱基本块列表。
+
+类型：Array\<Block>
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    println("prop_predecessors: ${block.predecessors.size}")
+}
+```
+
+运行结果：
+
+```text
+prop_predecessors: 0
+```
+
+### prop topLevelFunc
+
+```cangjie
+public prop topLevelFunc: Function
+```
+
+功能：所属顶层函数。
+
+类型：[Function](#class-function)
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    println("prop_topLevelFunc: ${block.topLevelFunc == f}")
+}
+```
+
+运行结果：
+
+```text
+prop_topLevelFunc: true
+```
+
+### func appendExpr(Expression)
+
+```cangjie
+public func appendExpr(expr: Expression): Unit
+```
+
+功能：向基本块末尾追加表达式。
+
+参数：
+
+- expr: Expression - 要追加的表达式。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let expr = Constant.create(IntLiteral.get(IntType.getInt32(), 0))
+    block.appendExpr(expr)
+    println("fn_appendExpr: ${block.exprs.size}")
+}
+```
+
+运行结果：
+
+```text
+fn_appendExpr: 1
+```
+
+### func destroySelf()
+
+```cangjie
+public func destroySelf(): Unit
+```
+
+功能：销毁自身并解除所有引用关系；销毁后该基本块从所属 BlockGroup 的 `blocks` 列表中移除，内部 `kind` 标记为 `Invalid`。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let bg = f.body.getOrThrow()
+    let newBlock = bg.appendBlock()
+    println("fn_destroySelf_before: ${bg.blocks.size}")
+    newBlock.destroySelf()
+    println("fn_destroySelf_after: ${bg.blocks.size}")
+}
+```
+
+运行结果：
+
+```text
+fn_destroySelf_before: 2
+fn_destroySelf_after: 1
+```
+
+### func insertExpr(Expression, Int64)
+
+```cangjie
+public func insertExpr(expr: Expression, at: Int64): Unit
+```
+
+功能：在指定位置插入表达式；`at` 超出范围时等同于追加到末尾。
+
+参数：
+
+- expr: Expression - 要插入的表达式。
+- at: Int64 - 插入位置索引（0 起计）。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let expr0 = Constant.create(IntLiteral.get(IntType.getInt32(), 0))
+    let expr1 = Constant.create(IntLiteral.get(IntType.getInt32(), 1))
+    block.appendExpr(expr0)
+    block.insertExpr(expr1, 0)
+    println("fn_insertExpr: ${block.exprs.size}")
+}
+```
+
+运行结果：
+
+```text
+fn_insertExpr: 2
+```
+
+### func toString()
+
+```cangjie
+public func toString(): String
+```
+
+功能：基本块的字符串形式（包含标识、表达式列表等）。
+
+返回值：
+
+- String - 文本形式。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    println("fn_toString: ${block.toString().size > 0}")
+}
+```
+
+运行结果：
+
+```text
+fn_toString: true
+```
+
+### operator func==(Block)
+
+```cangjie
+public operator func==(other: Block): Bool
+```
+
+功能：引用比较，判断两个 Block 是否为同一实例。
+
+参数：
+
+- other: Block - 另一基本块。
+
+返回值：
+
+- Bool - 是否为同一引用。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    println("op_eq_Block: ${block == block}")
+}
+```
+
+运行结果：
+
+```text
+op_eq_Block: true
+```
+
+---
+
+## class BlockGroup
+
+```cangjie
+public class BlockGroup <: Value & Equatable<BlockGroup>
+```
+
+功能：表示 CHIR 中的**基本块组**，即函数体或 lambda 体的控制流图容器，包含若干基本块并维护入口块指针。
+
+父类型：
+
+- Value
+- Equatable\<BlockGroup>
+
+### prop blocks
+
+```cangjie
+public prop blocks: Array<Block>
+```
+
+功能：基本块列表。
+
+类型：Array\<Block>
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let bg = f.body.getOrThrow()
+    println("prop_blocks: ${bg.blocks.size}")
+}
+```
+
+运行结果：
+
+```text
+prop_blocks: 1
+```
+
+### prop entryBlock
+
+```cangjie
+public prop entryBlock: Block
+```
+
+功能：入口基本块；未设置时访问将抛出异常。
+
+类型：Block
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let bg = f.body.getOrThrow()
+    println("prop_entryBlock: ${bg.entryBlock == bg.blocks[0]}")
+}
+```
+
+运行结果：
+
+```text
+prop_entryBlock: true
+```
+
+### prop owner
+
+```cangjie
+public prop owner: Value
+```
+
+功能：所属父值（函数或 lambda 对应的局部变量）。
+
+类型：Value
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let bg = f.body.getOrThrow()
+    println("prop_owner: ${bg.owner == f}")
+}
+```
+
+运行结果：
+
+```text
+prop_owner: true
+```
+
+### prop topLevelFunc
+
+```cangjie
+public prop topLevelFunc: Function
+```
+
+功能：所属顶层函数。
+
+类型：[Function](#class-function)
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let bg = f.body.getOrThrow()
+    println("prop_topLevelFunc: ${bg.topLevelFunc == f}")
+}
+```
+
+运行结果：
+
+```text
+prop_topLevelFunc: true
+```
+
+### func appendBlock()
+
+```cangjie
+public func appendBlock(): Block
+```
+
+功能：追加并返回新的空基本块。
+
+返回值：
+
+- Block - 新创建的基本块。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let bg = f.body.getOrThrow()
+    let newBlock = bg.appendBlock()
+    println("fn_appendBlock: ${bg.blocks.size}")
+}
+```
+
+运行结果：
+
+```text
+fn_appendBlock: 2
+```
+
+### func destroySelf()
+
+```cangjie
+public func destroySelf(): Unit
+```
+
+功能：销毁自身及下属基本块，并从所属函数或 lambda 中移除引用。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    println("fn_destroySelf_before: ${f.body.isSome()}")
+}
+```
+
+运行结果：
+
+```text
+fn_destroySelf_before: true
+```
+
+### func setEntryBlock(Block)
+
+```cangjie
+public func setEntryBlock(block: Block): Unit
+```
+
+功能：设置入口基本块；要求该块已在当前 BlockGroup 的 `blocks` 列表中。
+
+参数：
+
+- block: Block - 要设为入口的基本块。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let bg = f.body.getOrThrow()
+    let newBlock = bg.appendBlock()
+    bg.setEntryBlock(newBlock)
+    println("fn_setEntryBlock: ${bg.entryBlock == newBlock}")
+}
+```
+
+运行结果：
+
+```text
+fn_setEntryBlock: true
+```
+
+### func toString()
+
+```cangjie
+public func toString(): String
+```
+
+功能：基本块组的字符串形式。
+
+返回值：
+
+- String - 文本形式。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let bg = f.body.getOrThrow()
+    println("fn_toString: ${bg.toString().size > 0}")
+}
+```
+
+运行结果：
+
+```text
+fn_toString: true
+```
+
+### operator func==(BlockGroup)
+
+```cangjie
+public operator func==(other: BlockGroup): Bool
+```
+
+功能：引用比较，判断两个 BlockGroup 是否为同一实例。
+
+参数：
+
+- other: BlockGroup - 另一基本块组。
+
+返回值：
+
+- Bool - 是否为同一引用。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let bg = f.body.getOrThrow()
+    println("op_eq_BlockGroup: ${bg == bg}")
+}
+```
+
+运行结果：
+
+```text
+op_eq_BlockGroup: true
+```
+
+---
+
+## class BoolLiteral
+
+```cangjie
+public class BoolLiteral <: LiteralValue & Equatable<BoolLiteral>
+```
+
+功能：表示布尔字面量（`true` 或 `false`），按值缓存保证同一布尔值对应唯一实例。
+
+父类型：
+
+- LiteralValue
+- Equatable\<BoolLiteral>
+
+### prop value
+
+```cangjie
+public prop value: Bool
+```
+
+功能：布尔值。
+
+类型：Bool
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let lit = BoolLiteral.get(true)
+    println("prop_value: ${lit.value}")
+}
+```
+
+运行结果：
+
+```text
+prop_value: true
+```
+
+### static func get(Bool)
+
+```cangjie
+public static func get(value: Bool): BoolLiteral
+```
+
+功能：获取布尔字面量；同一布尔值始终返回同一缓存实例。
+
+参数：
+
+- value: Bool - 布尔值。
+
+返回值：
+
+- BoolLiteral - 对应的布尔字面量。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let lit = BoolLiteral.get(false)
+    println(lit.toString())
+}
+```
+
+运行结果：
+
+```text
+false
+```
+
+### func toString()
+
+```cangjie
+public func toString(): String
+```
+
+功能：字符串形式，即 `"true"` 或 `"false"`。
+
+返回值：
+
+- String - 布尔值的文本形式。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let lit = BoolLiteral.get(true)
+    println(lit.toString())
+}
+```
+
+运行结果：
+
+```text
+true
+```
+
+### operator func==(BoolLiteral)
+
+```cangjie
+public operator func==(other: BoolLiteral): Bool
+```
+
+功能：引用比较，判断两个 BoolLiteral 是否为同一实例。
+
+参数：
+
+- other: BoolLiteral - 另一布尔字面量。
+
+返回值：
+
+- Bool - 是否为同一引用。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let lit1 = BoolLiteral.get(true)
+    let lit2 = BoolLiteral.get(true)
+    println("op_eq_BoolLiteral: ${lit1 == lit2}")
+}
+```
+
+运行结果：
+
+```text
+op_eq_BoolLiteral: true
+```
+
+---
+
+## class FloatLiteral
+
+```cangjie
+public class FloatLiteral <: LiteralValue & Equatable<FloatLiteral>
+```
+
+功能：表示浮点字面量，按 `(FloatType, Float64)` 缓存保证同一类型与值对应唯一实例。
+
+父类型：
+
+- LiteralValue
+- Equatable\<FloatLiteral>
+
+### prop value
+
+```cangjie
+public prop value: Float64
+```
+
+功能：浮点值。
+
+类型：Float64
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let lit = FloatLiteral.get(FloatType.getFloat64(), 3.14)
+    println("prop_value: ${lit.value}")
+}
+```
+
+运行结果：
+
+```text
+prop_value: 3.140000
+```
+
+### static func get(FloatType, Float64)
+
+```cangjie
+public static func get(ty: FloatType, value: Float64): FloatLiteral
+```
+
+功能：获取浮点字面量；同一类型与值组合始终返回同一缓存实例。
+
+参数：
+
+- ty: FloatType - 浮点类型。
+- value: Float64 - 浮点值。
+
+返回值：
+
+- FloatLiteral - 对应的浮点字面量。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let lit = FloatLiteral.get(FloatType.getFloat32(), 1.5)
+    println(lit.toString())
+}
+```
+
+运行结果：
+
+```text
+1.500000f
+```
+
+### func toString()
+
+```cangjie
+public func toString(): String
+```
+
+功能：字符串形式，为数值后缀 `"f"`（如 `3.14f`）。
+
+返回值：
+
+- String - 浮点值的文本形式。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let lit = FloatLiteral.get(FloatType.getFloat64(), 2.0)
+    println(lit.toString())
+}
+```
+
+运行结果：
+
+```text
+2.000000f
+```
+
+### operator func==(FloatLiteral)
+
+```cangjie
+public operator func==(other: FloatLiteral): Bool
+```
+
+功能：引用比较，判断两个 FloatLiteral 是否为同一实例。
+
+参数：
+
+- other: FloatLiteral - 另一浮点字面量。
+
+返回值：
+
+- Bool - 是否为同一引用。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let lit1 = FloatLiteral.get(FloatType.getFloat64(), 1.0)
+    let lit2 = FloatLiteral.get(FloatType.getFloat64(), 1.0)
+    println("op_eq_FloatLiteral: ${lit1 == lit2}")
+}
+```
+
+运行结果：
+
+```text
+op_eq_FloatLiteral: true
+```
+
+---
+
+## class Function
+
+```cangjie
+public class Function <: GlobalValue & Equatable<Function>
+```
+
+功能：表示 CHIR 中的**函数定义**，包含函数类型、参数、函数体（BlockGroup）、泛型形参以及抽象/open 等属性标记。
+
+父类型：
+
+- GlobalValue
+- Equatable\<Function>
+
+### prop body
+
+```cangjie
+public prop body: ?BlockGroup
+```
+
+功能：函数体；未初始化时为 `None`。
+
+类型：?[BlockGroup](#class-blockgroup)
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    println("prop_body: ${f.body.isNone()}")
+}
+```
+
+运行结果：
+
+```text
+prop_body: true
+```
+
+### prop funcSrcCodeType
+
+```cangjie
+public prop funcSrcCodeType: FuncType
+```
+
+功能：源码级函数类型；实例成员方法时剔除隐含的 `this` 参数类型，其余情况与 `funcType` 相同。
+
+类型：[FuncType](#class-functype)
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([IntType.getInt32()], UnitType.get()), "f_m", "f", "demo")
+    println("prop_funcSrcCodeType: ${f.funcSrcCodeType == f.funcType}")
+}
+```
+
+运行结果：
+
+```text
+prop_funcSrcCodeType: true
+```
+
+### prop funcType
+
+```cangjie
+public prop funcType: FuncType
+```
+
+功能：函数类型（含参数类型与返回类型）。
+
+类型：[FuncType](#class-functype)
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    println("prop_funcType: ${f.funcType.toString()}")
+}
+```
+
+运行结果：
+
+```text
+prop_funcType: () -> Unit
+```
+
+### prop genericTypeParams
+
+```cangjie
+public mut prop genericTypeParams: Array<GenericType>
+```
+
+功能：泛型形参；赋值时自动更新 `Generic` 属性标记（非空时标记为泛型）。
+
+类型：Array\<[GenericType](#class-generictype)>
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    println("mut_prop_genericTypeParams: ${f.genericTypeParams.size}")
+}
+```
+
+运行结果：
+
+```text
+mut_prop_genericTypeParams: 0
+```
+
+### prop parameters
+
+```cangjie
+public prop parameters: Array<Parameter>
+```
+
+功能：参数列表。
+
+类型：Array\<[Parameter](#class-parameter)>
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([IntType.getInt32()], UnitType.get()), "f_m", "f", "demo")
+    println("prop_parameters: ${f.parameters.size}")
+}
+```
+
+运行结果：
+
+```text
+prop_parameters: 1
+```
+
+### prop returnValue
+
+```cangjie
+public mut prop returnValue: ?LocalVar
+```
+
+功能：返回值局部变量；赋值时自动更新新旧 LocalVar 的 `isRetValue` 标记。
+
+类型：?[LocalVar](#class-localvar)
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    println("mut_prop_returnValue: ${f.returnValue.isNone()}")
+}
+```
+
+运行结果：
+
+```text
+mut_prop_returnValue: true
+```
+
+### func initBody()
+
+```cangjie
+public func initBody(): Unit
+```
+
+功能：初始化函数体，创建入口 BlockGroup 和 Block。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    println("fn_initBody: ${f.body.isSome()}")
+}
+```
+
+运行结果：
+
+```text
+fn_initBody: true
+```
+
+### func isAbstract()
+
+```cangjie
+public func isAbstract(): Bool
+```
+
+功能：是否为抽象函数（带 `abstract` 标记或属于接口的方法）。
+
+返回值：
+
+- Bool - 是否为抽象。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    println("fn_isAbstract: ${f.isAbstract()}")
+}
+```
+
+运行结果：
+
+```text
+fn_isAbstract: false
+```
+
+### func isDeclaredInCurPackage()
+
+```cangjie
+public func isDeclaredInCurPackage(): Bool
+```
+
+功能：是否在当前包中声明（与 `isImported()` 相反）。
+
+返回值：
+
+- Bool - 是否为本包声明。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    println("fn_isDeclaredInCurPackage: ${f.isDeclaredInCurPackage()}")
+}
+```
+
+运行结果：
+
+```text
+fn_isDeclaredInCurPackage: true
+```
+
+### func isGeneric()
+
+```cangjie
+public func isGeneric(): Bool
+```
+
+功能：是否为泛型函数。
+
+返回值：
+
+- Bool - 是否带泛型标记。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    println("fn_isGeneric: ${f.isGeneric()}")
+}
+```
+
+运行结果：
+
+```text
+fn_isGeneric: false
+```
+
+### func isInstanceMemberMethod()
+
+```cangjie
+public func isInstanceMemberMethod(): Bool
+```
+
+功能：是否为实例成员方法（有 `declaredParent` 且非静态）。
+
+返回值：
+
+- Bool - 是否为实例成员方法。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    println("fn_isInstanceMemberMethod: ${f.isInstanceMemberMethod()}")
+}
+```
+
+运行结果：
+
+```text
+fn_isInstanceMemberMethod: false
+```
+
+### func isMemberMethod()
+
+```cangjie
+public func isMemberMethod(): Bool
+```
+
+功能：是否为成员方法（实例或静态），即是否有 `declaredParent`。
+
+返回值：
+
+- Bool - 是否为成员方法。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    println("fn_isMemberMethod: ${f.isMemberMethod()}")
+}
+```
+
+运行结果：
+
+```text
+fn_isMemberMethod: false
+```
+
+### func isOpen()
+
+```cangjie
+public func isOpen(): Bool
+```
+
+功能：是否为 open/virtual 函数（可被子类覆写）。
+
+返回值：
+
+- Bool - 是否为 open。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    println("fn_isOpen: ${f.isOpen()}")
+}
+```
+
+运行结果：
+
+```text
+fn_isOpen: false
+```
+
+### func isSrcCodeImported()
+
+```cangjie
+public func isSrcCodeImported(): Bool
+```
+
+功能：源码是否来自导入（`isImported()` 且已有函数体）。
+
+返回值：
+
+- Bool - 是否为导入且已有体。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    println("fn_isSrcCodeImported: ${f.isSrcCodeImported()}")
+}
+```
+
+运行结果：
+
+```text
+fn_isSrcCodeImported: false
+```
+
+### func isStaticMemberMethod()
+
+```cangjie
+public func isStaticMemberMethod(): Bool
+```
+
+功能：是否为静态成员方法（有 `declaredParent` 且为静态）。
+
+返回值：
+
+- Bool - 是否为静态成员方法。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    println("fn_isStaticMemberMethod: ${f.isStaticMemberMethod()}")
+}
+```
+
+运行结果：
+
+```text
+fn_isStaticMemberMethod: false
+```
+
+### func moveBodyTo(Function)
+
+```cangjie
+public func moveBodyTo(other: Function): Unit
+```
+
+功能：将函数体、参数、泛型形参和返回值移动到另一函数；调用后本函数的上述内容被清空。
+
+参数：
+
+- other: Function - 目标函数。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f1 = pkg.addFunction(FuncType.get([], UnitType.get()), "f1_m", "f1", "demo")
+    let f2 = pkg.addFunction(FuncType.get([], UnitType.get()), "f2_m", "f2", "demo")
+    f1.initBody()
+    f1.moveBodyTo(f2)
+    println("fn_moveBodyTo_src: ${f1.body.isNone()}")
+    println("fn_moveBodyTo_dst: ${f2.body.isSome()}")
+}
+```
+
+运行结果：
+
+```text
+fn_moveBodyTo_src: true
+fn_moveBodyTo_dst: true
+```
+
+### func selfOrParentIsGeneric()
+
+```cangjie
+public func selfOrParentIsGeneric(): Bool
+```
+
+功能：本函数或其父定义是否为泛型。
+
+返回值：
+
+- Bool - 是否为泛型上下文。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    println("fn_selfOrParentIsGeneric: ${f.selfOrParentIsGeneric()}")
+}
+```
+
+运行结果：
+
+```text
+fn_selfOrParentIsGeneric: false
+```
+
+### func setAbstract(Bool)
+
+```cangjie
+public func setAbstract(enable: Bool): Unit
+```
+
+功能：设置或清除 `abstract` 标记。
+
+参数：
+
+- enable: Bool - `true` 标记为抽象，`false` 取消标记。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.setAbstract(true)
+    println("fn_setAbstract: ${f.isAbstract()}")
+}
+```
+
+运行结果：
+
+```text
+fn_setAbstract: true
+```
+
+### func setOpen(Bool)
+
+```cangjie
+public func setOpen(enable: Bool): Unit
+```
+
+功能：设置或清除 `open`（virtual）标记。
+
+参数：
+
+- enable: Bool - `true` 标记为 open，`false` 取消标记。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.setOpen(true)
+    println("fn_setOpen: ${f.isOpen()}")
+}
+```
+
+运行结果：
+
+```text
+fn_setOpen: true
+```
+
+### func toString()
+
+```cangjie
+public func toString(): String
+```
+
+功能：函数的字符串形式（含标识、类型、参数等）。
+
+返回值：
+
+- String - 文本形式。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    println("fn_toString: ${f.toString().size > 0}")
+}
+```
+
+运行结果：
+
+```text
+fn_toString: true
+```
+
+### operator func==(Function)
+
+```cangjie
+public operator func==(other: Function): Bool
+```
+
+功能：引用比较，判断两个 Function 是否为同一实例。
+
+参数：
+
+- other: Function - 另一函数。
+
+返回值：
+
+- Bool - 是否为同一引用。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    println("op_eq_Function: ${f == f}")
+}
+```
+
+运行结果：
+
+```text
+op_eq_Function: true
+```
+
+---
+
+## class GlobalVar
+
+```cangjie
+public class GlobalVar <: GlobalValue & Equatable<GlobalVar>
+```
+
+功能：表示 CHIR 中的**全局变量定义**，包含类型、初始化值及只读标记。
+
+父类型：
+
+- GlobalValue
+- Equatable\<GlobalVar>
+
+### prop initializer
+
+```cangjie
+public prop initializer: ?Value
+```
+
+功能：初始化值；未设置时为 `None`。
+
+类型：?Value
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let gv = pkg.addGlobalVar(IntType.getInt32(), "gv_m", "gv", "demo")
+    println("prop_initializer: ${gv.initializer.isNone()}")
+}
+```
+
+运行结果：
+
+```text
+prop_initializer: true
+```
+
+### func isReadOnly()
+
+```cangjie
+public func isReadOnly(): Bool
+```
+
+功能：是否为只读全局变量（对应源码 `let` 声明）。
+
+返回值：
+
+- Bool - 是否为只读。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let gv = pkg.addGlobalVar(IntType.getInt32(), "gv_m", "gv", "demo")
+    println("fn_isReadOnly: ${gv.isReadOnly()}")
+}
+```
+
+运行结果：
+
+```text
+fn_isReadOnly: false
+```
+
+### func isSrcCodeImported()
+
+```cangjie
+public func isSrcCodeImported(): Bool
+```
+
+功能：源码是否来自导入（`isImported()` 且已有初始化值）。
+
+返回值：
+
+- Bool - 是否为导入且已初始化。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let gv = pkg.addGlobalVar(IntType.getInt32(), "gv_m", "gv", "demo")
+    println("fn_isSrcCodeImported: ${gv.isSrcCodeImported()}")
+}
+```
+
+运行结果：
+
+```text
+fn_isSrcCodeImported: false
+```
+
+### func setInitializer(Value)
+
+```cangjie
+public func setInitializer(initializer: Value): Unit
+```
+
+功能：设置初始化值。
+
+参数：
+
+- initializer: Value - 初始化值（可为字面量或函数引用）。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let gv = pkg.addGlobalVar(IntType.getInt32(), "gv_m", "gv", "demo")
+    gv.setInitializer(IntLiteral.get(IntType.getInt32(), 42))
+    println("fn_setInitializer: ${gv.initializer.isSome()}")
+}
+```
+
+运行结果：
+
+```text
+fn_setInitializer: true
+```
+
+### func setReadOnly(Bool)
+
+```cangjie
+public func setReadOnly(enable: Bool): Unit
+```
+
+功能：设置或清除只读标记。
+
+参数：
+
+- enable: Bool - `true` 标记为只读，`false` 取消标记。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let gv = pkg.addGlobalVar(IntType.getInt32(), "gv_m", "gv", "demo")
+    gv.setReadOnly(true)
+    println("fn_setReadOnly: ${gv.isReadOnly()}")
+}
+```
+
+运行结果：
+
+```text
+fn_setReadOnly: true
+```
+
+### func toString()
+
+```cangjie
+public func toString(): String
+```
+
+功能：全局变量的字符串形式（含属性、类型、初始化值等）。
+
+返回值：
+
+- String - 文本形式。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let gv = pkg.addGlobalVar(IntType.getInt32(), "gv_m", "gv", "demo")
+    println("fn_toString: ${gv.toString().size > 0}")
+}
+```
+
+运行结果：
+
+```text
+fn_toString: true
+```
+
+### operator func==(GlobalVar)
+
+```cangjie
+public operator func==(other: GlobalVar): Bool
+```
+
+功能：引用比较，判断两个 GlobalVar 是否为同一实例。
+
+参数：
+
+- other: GlobalVar - 另一全局变量。
+
+返回值：
+
+- Bool - 是否为同一引用。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let gv = pkg.addGlobalVar(IntType.getInt32(), "gv_m", "gv", "demo")
+    println("op_eq_GlobalVar: ${gv == gv}")
+}
+```
+
+运行结果：
+
+```text
+op_eq_GlobalVar: true
+```
+
+---
+
+## class IntLiteral
+
+```cangjie
+public class IntLiteral <: LiteralValue & Equatable<IntLiteral>
+```
+
+功能：表示整数字面量，按 `(IntType, UInt64)` 缓存保证同一类型与值对应唯一实例。
+
+父类型：
+
+- LiteralValue
+- Equatable\<IntLiteral>
+
+### prop signedValue
+
+```cangjie
+public prop signedValue: Int64
+```
+
+功能：有符号整数值（将内部 `UInt64` 转为 `Int64`）。
+
+类型：Int64
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let lit = IntLiteral.get(IntType.getInt32(), 42)
+    println("prop_signedValue: ${lit.signedValue}")
+}
+```
+
+运行结果：
+
+```text
+prop_signedValue: 42
+```
+
+### prop unsignedValue
+
+```cangjie
+public prop unsignedValue: UInt64
+```
+
+功能：无符号整数值。
+
+类型：UInt64
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let lit = IntLiteral.get(IntType.getUInt32(), 42)
+    println("prop_unsignedValue: ${lit.unsignedValue}")
+}
+```
+
+运行结果：
+
+```text
+prop_unsignedValue: 42
+```
+
+### static func get(IntType, UInt64)
+
+```cangjie
+public static func get(ty: IntType, value: UInt64): IntLiteral
+```
+
+功能：获取整数字面量；同一类型与值组合始终返回同一缓存实例。
+
+参数：
+
+- ty: IntType - 整数类型。
+- value: UInt64 - 无符号整数值。
+
+返回值：
+
+- IntLiteral - 对应的整数字面量。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let lit = IntLiteral.get(IntType.getInt64(), 100)
+    println(lit.toString())
+}
+```
+
+运行结果：
+
+```text
+100i
+```
+
+### func isSigned()
+
+```cangjie
+public func isSigned(): Bool
+```
+
+功能：是否为有符号整数（由所属 `IntType` 决定）。
+
+返回值：
+
+- Bool - 是否为有符号。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let lit = IntLiteral.get(IntType.getInt32(), 0)
+    println("fn_isSigned: ${lit.isSigned()}")
+}
+```
+
+运行结果：
+
+```text
+fn_isSigned: true
+```
+
+### func toString()
+
+```cangjie
+public func toString(): String
+```
+
+功能：字符串形式，有符号时后缀 `"i"`，无符号时后缀 `"u"`（如 `42i`、`42u`）。
+
+返回值：
+
+- String - 整数值的文本形式。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let lit = IntLiteral.get(IntType.getUInt16(), 7)
+    println(lit.toString())
+}
+```
+
+运行结果：
+
+```text
+7u
+```
+
+### operator func==(IntLiteral)
+
+```cangjie
+public operator func==(other: IntLiteral): Bool
+```
+
+功能：引用比较，判断两个 IntLiteral 是否为同一实例。
+
+参数：
+
+- other: IntLiteral - 另一整数字面量。
+
+返回值：
+
+- Bool - 是否为同一引用。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let lit1 = IntLiteral.get(IntType.getInt32(), 10)
+    let lit2 = IntLiteral.get(IntType.getInt32(), 10)
+    println("op_eq_IntLiteral: ${lit1 == lit2}")
+}
+```
+
+运行结果：
+
+```text
+op_eq_IntLiteral: true
+```
+
+---
+
+## class LocalVar
+
+```cangjie
+public class LocalVar <: Value & Equatable<LocalVar>
+```
+
+功能：表示 CHIR 中的**局部变量**，由表达式结果产生，也可作为函数返回值。
+
+父类型：
+
+- Value
+- Equatable\<LocalVar>
+
+### prop expr
+
+```cangjie
+public prop expr: Expression
+```
+
+功能：定义此局部变量的表达式。
+
+类型：Expression
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], IntType.getInt32()), "f_m", "f", "demo")
+    f.initBody()
+    let lit = IntLiteral.get(IntType.getInt32(), 1)
+    let expr = Constant.create(lit)
+    let lv = expr.result
+    println("prop_expr: ${lv.expr == expr}")
+}
+```
+
+运行结果：
+
+```text
+prop_expr: true
+```
+
+### prop srcCodeName
+
+```cangjie
+public mut prop srcCodeName: String
+```
+
+功能：源码名称；初始为空串。
+
+类型：String
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], IntType.getInt32()), "f_m", "f", "demo")
+    f.initBody()
+    let lit = IntLiteral.get(IntType.getInt32(), 1)
+    let expr = Constant.create(lit)
+    let lv = expr.result
+    lv.srcCodeName = "x"
+    println("mut_prop_srcCodeName: ${lv.srcCodeName}")
+}
+```
+
+运行结果：
+
+```text
+mut_prop_srcCodeName: x
+```
+
+### prop topLevelFunc
+
+```cangjie
+public prop topLevelFunc: Function
+```
+
+功能：所属顶层函数。
+
+类型：[Function](#class-function)
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], IntType.getInt32()), "f_m", "f", "demo")
+    f.initBody()
+    let lit = IntLiteral.get(IntType.getInt32(), 1)
+    let expr = Constant.create(lit)
+    f.body.getOrThrow().entryBlock.appendExpr(expr)
+    let lv = expr.result
+    println("prop_topLevelFunc: ${lv.topLevelFunc == f}")
+}
+```
+
+运行结果：
+
+```text
+prop_topLevelFunc: true
+```
+
+### func toString()
+
+```cangjie
+public func toString(): String
+```
+
+功能：局部变量的字符串形式（等同于其定义表达式的 `toString()`）。
+
+返回值：
+
+- String - 文本形式。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], IntType.getInt32()), "f_m", "f", "demo")
+    f.initBody()
+    let lit = IntLiteral.get(IntType.getInt32(), 1)
+    let expr = Constant.create(lit)
+    f.body.getOrThrow().entryBlock.appendExpr(expr)
+    let lv = expr.result
+    println("fn_toString: ${lv.toString().size > 0}")
+}
+```
+
+运行结果：
+
+```text
+fn_toString: true
+```
+
+### operator func==(LocalVar)
+
+```cangjie
+public operator func==(other: LocalVar): Bool
+```
+
+功能：引用比较，判断两个 LocalVar 是否为同一实例。
+
+参数：
+
+- other: LocalVar - 另一局部变量。
+
+返回值：
+
+- Bool - 是否为同一引用。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], IntType.getInt32()), "f_m", "f", "demo")
+    f.initBody()
+    let lit = IntLiteral.get(IntType.getInt32(), 1)
+    let expr = Constant.create(lit)
+    f.body.getOrThrow().entryBlock.appendExpr(expr)
+    let lv = expr.result
+    println("op_eq_LocalVar: ${lv == lv}")
+}
+```
+
+运行结果：
+
+```text
+op_eq_LocalVar: true
+```
+
+---
+
+## class NullLiteral
+
+```cangjie
+public class NullLiteral <: LiteralValue & Equatable<NullLiteral>
+```
+
+功能：表示 Null 字面量，按类型缓存保证同一类型对应唯一实例。
+
+父类型：
+
+- LiteralValue
+- Equatable\<NullLiteral>
+
+### static func get(Type)
+
+```cangjie
+public static func get(ty: Type): NullLiteral
+```
+
+功能：获取指定类型的 Null 字面量；同一类型始终返回同一缓存实例。
+
+参数：
+
+- ty: Type - Null 的类型。
+
+返回值：
+
+- NullLiteral - Null 字面量实例。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let lit = NullLiteral.get(BoxType.get(IntType.getInt32()))
+    println(lit.toString())
+}
+```
+
+运行结果：
+
+```text
+Null
+```
+
+### func toString()
+
+```cangjie
+public func toString(): String
+```
+
+功能：字符串形式，始终为 `"Null"`。
+
+返回值：
+
+- String - `"Null"`。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let lit = NullLiteral.get(BoxType.get(IntType.getInt32()))
+    println(lit.toString())
+}
+```
+
+运行结果：
+
+```text
+Null
+```
+
+### operator func==(NullLiteral)
+
+```cangjie
+public operator func==(other: NullLiteral): Bool
+```
+
+功能：引用比较，判断两个 NullLiteral 是否为同一实例。
+
+参数：
+
+- other: NullLiteral - 另一 Null 字面量。
+
+返回值：
+
+- Bool - 是否为同一引用。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let lit1 = NullLiteral.get(BoxType.get(IntType.getInt32()))
+    let lit2 = NullLiteral.get(BoxType.get(IntType.getInt32()))
+    println("op_eq_NullLiteral: ${lit1 == lit2}")
+}
+```
+
+运行结果：
+
+```text
+op_eq_NullLiteral: true
+```
+
+---
+
+## class Parameter
+
+```cangjie
+public class Parameter <: Value & Equatable<Parameter>
+```
+
+功能：表示 CHIR 中的**函数参数**，包含类型、源码名、注解等信息。
+
+父类型：
+
+- Value
+- Equatable\<Parameter>
+
+### prop annotations
+
+```cangjie
+public mut prop annotations: Array<Annotation>
+```
+
+功能：参数注解列表；`set` 时整体替换。
+
+类型：Array\<[Annotation](#class-annotation)>
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([IntType.getInt32()], UnitType.get()), "f_m", "f", "demo")
+    let param = f.parameters[0]
+    println("mut_prop_annotations: ${param.annotations.size}")
+}
+```
+
+运行结果：
+
+```text
+mut_prop_annotations: 0
+```
+
+### prop srcCodeName
+
+```cangjie
+public mut prop srcCodeName: String
+```
+
+功能：参数源码名；初始为空串。
+
+类型：String
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([IntType.getInt32()], UnitType.get()), "f_m", "f", "demo")
+    let param = f.parameters[0]
+    param.srcCodeName = "x"
+    println("mut_prop_srcCodeName: ${param.srcCodeName}")
+}
+```
+
+运行结果：
+
+```text
+mut_prop_srcCodeName: x
+```
+
+### prop topLevelFunc
+
+```cangjie
+public prop topLevelFunc: Function
+```
+
+功能：所属顶层函数。
+
+类型：[Function](#class-function)
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([IntType.getInt32()], UnitType.get()), "f_m", "f", "demo")
+    let param = f.parameters[0]
+    println("prop_topLevelFunc: ${param.topLevelFunc == f}")
+}
+```
+
+运行结果：
+
+```text
+prop_topLevelFunc: true
+```
+
+### func toString()
+
+```cangjie
+public func toString(): String
+```
+
+功能：参数的字符串形式（含类型、注解等）。
+
+返回值：
+
+- String - 文本形式。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([IntType.getInt32()], UnitType.get()), "f_m", "f", "demo")
+    let param = f.parameters[0]
+    println("fn_toString: ${param.toString().size > 0}")
+}
+```
+
+运行结果：
+
+```text
+fn_toString: true
+```
+
+### operator func==(Parameter)
+
+```cangjie
+public operator func==(other: Parameter): Bool
+```
+
+功能：引用比较，判断两个 Parameter 是否为同一实例。
+
+参数：
+
+- other: Parameter - 另一参数。
+
+返回值：
+
+- Bool - 是否为同一引用。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([IntType.getInt32()], UnitType.get()), "f_m", "f", "demo")
+    let param = f.parameters[0]
+    println("op_eq_Parameter: ${param == param}")
+}
+```
+
+运行结果：
+
+```text
+op_eq_Parameter: true
+```
+
+---
+
+## class RuneLiteral
+
+```cangjie
+public class RuneLiteral <: LiteralValue & Equatable<RuneLiteral>
+```
+
+功能：表示 Rune（字符）字面量，按值缓存保证同一 Rune 值对应唯一实例。
+
+父类型：
+
+- LiteralValue
+- Equatable\<RuneLiteral>
+
+### prop value
+
+```cangjie
+public prop value: Rune
+```
+
+功能：Rune 值（Unicode 码点）。
+
+类型：Rune
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let lit = RuneLiteral.get(Rune(65))
+    println("prop_value: ${lit.value}")
+}
+```
+
+运行结果：
+
+```text
+prop_value: A
+```
+
+### static func get(Rune)
+
+```cangjie
+public static func get(value: Rune): RuneLiteral
+```
+
+功能：获取 Rune 字面量；同一 Rune 值始终返回同一缓存实例。
+
+参数：
+
+- value: Rune - Rune 值。
+
+返回值：
+
+- RuneLiteral - 对应的 Rune 字面量。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let lit = RuneLiteral.get(Rune(97))
+    println(lit.toString())
+}
+```
+
+运行结果：
+
+```text
+'a'
+```
+
+### func toString()
+
+```cangjie
+public func toString(): String
+```
+
+功能：字符串形式，为单引号包裹的字符表示（如 `'A'`）。
+
+返回值：
+
+- String - Rune 值的文本形式。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let lit = RuneLiteral.get(Rune(48))
+    println(lit.toString())
+}
+```
+
+运行结果：
+
+```text
+'0'
+```
+
+### operator func==(RuneLiteral)
+
+```cangjie
+public operator func==(other: RuneLiteral): Bool
+```
+
+功能：引用比较，判断两个 RuneLiteral 是否为同一实例。
+
+参数：
+
+- other: RuneLiteral - 另一 Rune 字面量。
+
+返回值：
+
+- Bool - 是否为同一引用。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let lit1 = RuneLiteral.get(Rune(65))
+    let lit2 = RuneLiteral.get(Rune(65))
+    println("op_eq_RuneLiteral: ${lit1 == lit2}")
+}
+```
+
+运行结果：
+
+```text
+op_eq_RuneLiteral: true
+```
+
+---
+
+## class StringLiteral
+
+```cangjie
+public class StringLiteral <: LiteralValue & Equatable<StringLiteral>
+```
+
+功能：表示字符串字面量，按值缓存保证同一字符串值对应唯一实例。
+
+父类型：
+
+- LiteralValue
+- Equatable\<StringLiteral>
+
+### prop value
+
+```cangjie
+public prop value: String
+```
+
+功能：字符串值。
+
+类型：String
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let lit = StringLiteral.get(UnitType.get(), "hello")
+    println("prop_value: ${lit.value}")
+}
+```
+
+运行结果：
+
+```text
+prop_value: hello
+```
+
+### static func get(Type, String)
+
+```cangjie
+public static func get(ty: Type, value: String): StringLiteral
+```
+
+功能：获取字符串字面量；同一字符串值始终返回同一缓存实例。
+
+参数：
+
+- ty: Type - 字符串所属类型。
+- value: String - 字符串内容。
+
+返回值：
+
+- StringLiteral - 对应的字符串字面量。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let lit = StringLiteral.get(UnitType.get(), "world")
+    println(lit.toString())
+}
+```
+
+运行结果：
+
+```text
+"world"
+```
+
+### func toString()
+
+```cangjie
+public func toString(): String
+```
+
+功能：字符串形式，为双引号包裹（如 `"hello"`）。
+
+返回值：
+
+- String - 字符串值的文本形式。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let lit = StringLiteral.get(UnitType.get(), "abc")
+    println(lit.toString())
+}
+```
+
+运行结果：
+
+```text
+"abc"
+```
+
+### operator func==(StringLiteral)
+
+```cangjie
+public operator func==(other: StringLiteral): Bool
+```
+
+功能：引用比较，判断两个 StringLiteral 是否为同一实例。
+
+参数：
+
+- other: StringLiteral - 另一字符串字面量。
+
+返回值：
+
+- Bool - 是否为同一引用。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let lit1 = StringLiteral.get(UnitType.get(), "test")
+    let lit2 = StringLiteral.get(UnitType.get(), "test")
+    println("op_eq_StringLiteral: ${lit1 == lit2}")
+}
+```
+
+运行结果：
+
+```text
+op_eq_StringLiteral: true
+```
+
+---
+
+## class UnitLiteral
+
+```cangjie
+public class UnitLiteral <: LiteralValue & Equatable<UnitLiteral>
+```
+
+功能：表示 Unit 字面量（单例，表示无返回值）。
+
+父类型：
+
+- LiteralValue
+- Equatable\<UnitLiteral>
+
+### static func get()
+
+```cangjie
+public static func get(): UnitLiteral
+```
+
+功能：获取 Unit 字面量的单例实例。
+
+返回值：
+
+- UnitLiteral - Unit 字面量实例。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let lit = UnitLiteral.get()
+    println(lit.toString())
+}
+```
+
+运行结果：
+
+```text
+Unit
+```
+
+### func toString()
+
+```cangjie
+public func toString(): String
+```
+
+功能：字符串形式，始终为 `"Unit"`。
+
+返回值：
+
+- String - `"Unit"`。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let lit = UnitLiteral.get()
+    println(lit.toString())
+}
+```
+
+运行结果：
+
+```text
+Unit
+```
+
+### operator func==(UnitLiteral)
+
+```cangjie
+public operator func==(other: UnitLiteral): Bool
+```
+
+功能：引用比较，判断两个 UnitLiteral 是否为同一实例。
+
+参数：
+
+- other: UnitLiteral - 另一 Unit 字面量。
+
+返回值：
+
+- Bool - 是否为同一引用。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let lit1 = UnitLiteral.get()
+    let lit2 = UnitLiteral.get()
+    println("op_eq_UnitLiteral: ${lit1 == lit2}")
+}
+```
+
+运行结果：
+
+```text
+op_eq_UnitLiteral: true
+```
+
+---
+
+## class Allocate
+
+```cangjie
+public class Allocate <: AllocateBase & Equatable<Allocate>
+```
+
+功能：内存分配表达式，分配指定类型的空间但不带异常处理。
+
+父类型：
+
+- AllocateBase
+- Equatable\<Allocate>
+
+### static func create(Type)
+
+```cangjie
+public static func create(allocatedType: Type): Allocate
+```
+
+功能：创建内存分配表达式。
+
+参数：
+
+- allocatedType: Type - 分配的类型。
+
+返回值：
+
+- Allocate - 创建的内存分配表达式。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let expr = Allocate.create(IntType.getInt32())
+    block.appendExpr(expr)
+    println("static_func_create: ${block.exprs.size}")
+}
+```
+
+运行结果：
+
+```text
+static_func_create: 1
+```
+
+### operator func==(Allocate)
+
+```cangjie
+public operator func==(other: Allocate): Bool
+```
+
+功能：引用比较，判断两个 Allocate 是否为同一实例。
+
+参数：
+
+- other: Allocate - 另一内存分配表达式。
+
+返回值：
+
+- Bool - 是否为同一引用。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let expr = Allocate.create(IntType.getInt32())
+    block.appendExpr(expr)
+    println("op_eq_Allocate: ${expr == expr}")
+}
+```
+
+运行结果：
+
+```text
+op_eq_Allocate: true
+```
+
+---
+
+## class TryAllocate
+
+```cangjie
+public class TryAllocate <: AllocateBase & Equatable<TryAllocate>
+```
+
+功能：带异常处理的内存分配表达式，分配成功时跳转到正常分支，失败时跳转到异常分支。
+
+父类型：
+
+- AllocateBase
+- Equatable\<TryAllocate>
+
+### prop normalBranch
+
+```cangjie
+public prop normalBranch: Block
+```
+
+功能：正常分支目标块。
+
+类型：Block
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let bg = f.body.getOrThrow()
+    let block = bg.entryBlock
+    let normalBlock = bg.appendBlock()
+    let errorBlock = bg.appendBlock()
+    let expr = TryAllocate.create(IntType.getInt32(), normalBlock, errorBlock)
+    block.appendExpr(expr)
+    println("prop_normalBranch: ${expr.normalBranch == normalBlock}")
+}
+```
+
+运行结果：
+
+```text
+prop_normalBranch: true
+```
+
+### prop errorBranch
+
+```cangjie
+public prop errorBranch: Block
+```
+
+功能：异常分支目标块。
+
+类型：Block
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let bg = f.body.getOrThrow()
+    let block = bg.entryBlock
+    let normalBlock = bg.appendBlock()
+    let errorBlock = bg.appendBlock()
+    let expr = TryAllocate.create(IntType.getInt32(), normalBlock, errorBlock)
+    block.appendExpr(expr)
+    println("prop_errorBranch: ${expr.errorBranch == errorBlock}")
+}
+```
+
+运行结果：
+
+```text
+prop_errorBranch: true
+```
+
+### static func create(Type, Block, Block)
+
+```cangjie
+public static func create(allocatedType: Type, normal: Block, err: Block): TryAllocate
+```
+
+功能：创建带异常处理的内存分配表达式。
+
+参数：
+
+- allocatedType: Type - 分配的类型。
+- normal: Block - 正常分支目标块。
+- err: Block - 异常分支目标块。
+
+返回值：
+
+- TryAllocate - 创建的带异常处理的内存分配表达式。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let bg = f.body.getOrThrow()
+    let block = bg.entryBlock
+    let normalBlock = bg.appendBlock()
+    let errorBlock = bg.appendBlock()
+    let expr = TryAllocate.create(IntType.getInt32(), normalBlock, errorBlock)
+    block.appendExpr(expr)
+    println("static_func_create: ${block.exprs.size}")
+}
+```
+
+运行结果：
+
+```text
+static_func_create: 1
+```
+
+### operator func==(TryAllocate)
+
+```cangjie
+public operator func==(other: TryAllocate): Bool
+```
+
+功能：引用比较，判断两个 TryAllocate 是否为同一实例。
+
+参数：
+
+- other: TryAllocate - 另一带异常处理的内存分配表达式。
+
+返回值：
+
+- Bool - 是否为同一引用。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let bg = f.body.getOrThrow()
+    let block = bg.entryBlock
+    let normalBlock = bg.appendBlock()
+    let errorBlock = bg.appendBlock()
+    let expr = TryAllocate.create(IntType.getInt32(), normalBlock, errorBlock)
+    block.appendExpr(expr)
+    println("op_eq_TryAllocate: ${expr == expr}")
+}
+```
+
+运行结果：
+
+```text
+op_eq_TryAllocate: true
+```
+
+---
+
+## class BinaryExpression
+
+```cangjie
+public class BinaryExpression <: BinaryExpressionBase & Equatable<BinaryExpression>
+```
+
+功能：二元运算表达式（不带异常处理），支持数学运算、位运算、比较运算和逻辑运算。
+
+父类型：
+
+- BinaryExpressionBase
+- Equatable\<BinaryExpression>
+
+### static func create(BinaryExprKind, Value, Value)
+
+```cangjie
+public static func create(kind: BinaryExprKind, leftOp: Value, rightOp: Value): BinaryExpression
+```
+
+功能：创建二元运算表达式。
+
+参数：
+
+- kind: BinaryExprKind - 二元运算类型。
+- leftOp: Value - 左操作数。
+- rightOp: Value - 右操作数。
+
+返回值：
+
+- BinaryExpression - 创建的二元运算表达式。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let leftOp = IntLiteral.get(IntType.getInt32(), 1)
+    let rightOp = IntLiteral.get(IntType.getInt32(), 2)
+    let expr = BinaryExpression.create(BinaryExprKind.Add, leftOp, rightOp)
+    block.appendExpr(expr)
+    println("static_func_create: ${block.exprs.size}")
+}
+```
+
+运行结果：
+
+```text
+static_func_create: 1
+```
+
+### operator func==(BinaryExpression)
+
+```cangjie
+public operator func==(other: BinaryExpression): Bool
+```
+
+功能：引用比较，判断两个 BinaryExpression 是否为同一实例。
+
+参数：
+
+- other: BinaryExpression - 另一二元运算表达式。
+
+返回值：
+
+- Bool - 是否为同一引用。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let leftOp = IntLiteral.get(IntType.getInt32(), 1)
+    let rightOp = IntLiteral.get(IntType.getInt32(), 2)
+    let expr = BinaryExpression.create(BinaryExprKind.Add, leftOp, rightOp)
+    block.appendExpr(expr)
+    println("op_eq_BinaryExpression: ${expr == expr}")
+}
+```
+
+运行结果：
+
+```text
+op_eq_BinaryExpression: true
+```
+
+---
+
+## class TryBinaryExpression
+
+```cangjie
+public class TryBinaryExpression <: BinaryExpressionBase & Equatable<TryBinaryExpression>
+```
+
+功能：带异常处理的二元运算表达式，运算成功时跳转到正常分支，溢出或出错时跳转到异常分支。
+
+父类型：
+
+- BinaryExpressionBase
+- Equatable\<TryBinaryExpression>
+
+### prop normalBranch
+
+```cangjie
+public prop normalBranch: Block
+```
+
+功能：正常分支目标块。
+
+类型：Block
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let bg = f.body.getOrThrow()
+    let block = bg.entryBlock
+    let normalBlock = bg.appendBlock()
+    let errorBlock = bg.appendBlock()
+    let leftOp = IntLiteral.get(IntType.getInt32(), 1)
+    let rightOp = IntLiteral.get(IntType.getInt32(), 2)
+    let expr = TryBinaryExpression.create(BinaryExprKind.Add, leftOp, rightOp, normalBlock, errorBlock)
+    block.appendExpr(expr)
+    println("prop_normalBranch: ${expr.normalBranch == normalBlock}")
+}
+```
+
+运行结果：
+
+```text
+prop_normalBranch: true
+```
+
+### prop errorBranch
+
+```cangjie
+public prop errorBranch: Block
+```
+
+功能：异常分支目标块。
+
+类型：Block
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let bg = f.body.getOrThrow()
+    let block = bg.entryBlock
+    let normalBlock = bg.appendBlock()
+    let errorBlock = bg.appendBlock()
+    let leftOp = IntLiteral.get(IntType.getInt32(), 1)
+    let rightOp = IntLiteral.get(IntType.getInt32(), 2)
+    let expr = TryBinaryExpression.create(BinaryExprKind.Add, leftOp, rightOp, normalBlock, errorBlock)
+    block.appendExpr(expr)
+    println("prop_errorBranch: ${expr.errorBranch == errorBlock}")
+}
+```
+
+运行结果：
+
+```text
+prop_errorBranch: true
+```
+
+### static func create(BinaryExprKind, Value, Value, Block, Block)
+
+```cangjie
+public static func create(kind: BinaryExprKind, leftOp: Value, rightOp: Value, normal: Block, err: Block): TryBinaryExpression
+```
+
+功能：创建带异常处理的二元运算表达式。
+
+参数：
+
+- kind: BinaryExprKind - 二元运算类型。
+- leftOp: Value - 左操作数。
+- rightOp: Value - 右操作数。
+- normal: Block - 正常分支目标块。
+- err: Block - 异常分支目标块。
+
+返回值：
+
+- TryBinaryExpression - 创建的带异常处理的二元运算表达式。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let bg = f.body.getOrThrow()
+    let block = bg.entryBlock
+    let normalBlock = bg.appendBlock()
+    let errorBlock = bg.appendBlock()
+    let leftOp = IntLiteral.get(IntType.getInt32(), 1)
+    let rightOp = IntLiteral.get(IntType.getInt32(), 2)
+    let expr = TryBinaryExpression.create(BinaryExprKind.Add, leftOp, rightOp, normalBlock, errorBlock)
+    block.appendExpr(expr)
+    println("static_func_create: ${block.exprs.size}")
+}
+```
+
+运行结果：
+
+```text
+static_func_create: 1
+```
+
+### operator func==(TryBinaryExpression)
+
+```cangjie
+public operator func==(other: TryBinaryExpression): Bool
+```
+
+功能：引用比较，判断两个 TryBinaryExpression 是否为同一实例。
+
+参数：
+
+- other: TryBinaryExpression - 另一带异常处理的二元运算表达式。
+
+返回值：
+
+- Bool - 是否为同一引用。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let bg = f.body.getOrThrow()
+    let block = bg.entryBlock
+    let normalBlock = bg.appendBlock()
+    let errorBlock = bg.appendBlock()
+    let leftOp = IntLiteral.get(IntType.getInt32(), 1)
+    let rightOp = IntLiteral.get(IntType.getInt32(), 2)
+    let expr = TryBinaryExpression.create(BinaryExprKind.Add, leftOp, rightOp, normalBlock, errorBlock)
+    block.appendExpr(expr)
+    println("op_eq_TryBinaryExpression: ${expr == expr}")
+}
+```
+
+运行结果：
+
+```text
+op_eq_TryBinaryExpression: true
+```
+
+---
+
+## class Branch
+
+```cangjie
+public class Branch <: Expression & Equatable<Branch>
+```
+
+功能：条件分支（if-else）终止器表达式，根据条件值跳转到真分支或假分支目标块。
+
+父类型：
+
+- Expression
+- Equatable\<Branch>
+
+### prop condition
+
+```cangjie
+public prop condition: Value
+```
+
+功能：条件值。
+
+类型：Value
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let bg = f.body.getOrThrow()
+    let block = bg.entryBlock
+    let trueBlock = bg.appendBlock()
+    let falseBlock = bg.appendBlock()
+    let cond = Constant.create(BoolLiteral.get(true))
+    block.appendExpr(cond)
+    let expr = Branch.create(cond.result, trueBlock, falseBlock)
+    block.appendExpr(expr)
+    println("prop_condition: ${expr.condition == cond.result}")
+}
+```
+
+运行结果：
+
+```text
+prop_condition: true
+```
+
+### prop trueTarget
+
+```cangjie
+public prop trueTarget: Block
+```
+
+功能：条件为真时的目标块。
+
+类型：Block
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let bg = f.body.getOrThrow()
+    let block = bg.entryBlock
+    let trueBlock = bg.appendBlock()
+    let falseBlock = bg.appendBlock()
+    let cond = Constant.create(BoolLiteral.get(true))
+    block.appendExpr(cond)
+    let expr = Branch.create(cond.result, trueBlock, falseBlock)
+    block.appendExpr(expr)
+    println("prop_trueTarget: ${expr.trueTarget == trueBlock}")
+}
+```
+
+运行结果：
+
+```text
+prop_trueTarget: true
+```
+
+### prop falseTarget
+
+```cangjie
+public prop falseTarget: Block
+```
+
+功能：条件为假时的目标块。
+
+类型：Block
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let bg = f.body.getOrThrow()
+    let block = bg.entryBlock
+    let trueBlock = bg.appendBlock()
+    let falseBlock = bg.appendBlock()
+    let cond = Constant.create(BoolLiteral.get(true))
+    block.appendExpr(cond)
+    let expr = Branch.create(cond.result, trueBlock, falseBlock)
+    block.appendExpr(expr)
+    println("prop_falseTarget: ${expr.falseTarget == falseBlock}")
+}
+```
+
+运行结果：
+
+```text
+prop_falseTarget: true
+```
+
+### static func create(Value, Block, Block)
+
+```cangjie
+public static func create(condition: Value, trueTarget: Block, falseTarget: Block): Branch
+```
+
+功能：创建条件分支终止器表达式。
+
+参数：
+
+- condition: Value - 条件值。
+- trueTarget: Block - 条件为真时的目标块。
+- falseTarget: Block - 条件为假时的目标块。
+
+返回值：
+
+- Branch - 创建的条件分支表达式。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let bg = f.body.getOrThrow()
+    let block = bg.entryBlock
+    let trueBlock = bg.appendBlock()
+    let falseBlock = bg.appendBlock()
+    let cond = Constant.create(BoolLiteral.get(true))
+    block.appendExpr(cond)
+    let expr = Branch.create(cond.result, trueBlock, falseBlock)
+    block.appendExpr(expr)
+    println("static_func_create: ${block.exprs.size}")
+}
+```
+
+运行结果：
+
+```text
+static_func_create: 2
+```
+
+### operator func==(Branch)
+
+```cangjie
+public operator func==(other: Branch): Bool
+```
+
+功能：引用比较，判断两个 Branch 是否为同一实例。
+
+参数：
+
+- other: Branch - 另一条件分支表达式。
+
+返回值：
+
+- Bool - 是否为同一引用。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let bg = f.body.getOrThrow()
+    let block = bg.entryBlock
+    let trueBlock = bg.appendBlock()
+    let falseBlock = bg.appendBlock()
+    let cond = Constant.create(BoolLiteral.get(true))
+    block.appendExpr(cond)
+    let expr = Branch.create(cond.result, trueBlock, falseBlock)
+    block.appendExpr(expr)
+    println("op_eq_Branch: ${expr == expr}")
+}
+```
+
+运行结果：
+
+```text
+op_eq_Branch: true
+```
+
+---
+
+## class Constant
+
+```cangjie
+public class Constant <: Expression & Equatable<Constant>
+```
+
+功能：字面量常量表达式，表示一个编译期确定的常量值。
+
+父类型：
+
+- Expression
+- Equatable\<Constant>
+
+### static func create(LiteralValue)
+
+```cangjie
+public static func create(val: LiteralValue): Constant
+```
+
+功能：创建字面量常量表达式。
+
+参数：
+
+- val: LiteralValue - 字面量值。
+
+返回值：
+
+- Constant - 创建的常量表达式。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let expr = Constant.create(IntLiteral.get(IntType.getInt32(), 42))
+    block.appendExpr(expr)
+    println("static_func_create: ${block.exprs.size}")
+}
+```
+
+运行结果：
+
+```text
+static_func_create: 1
+```
+
+### operator func==(Constant)
+
+```cangjie
+public operator func==(other: Constant): Bool
+```
+
+功能：引用比较，判断两个 Constant 是否为同一实例。
+
+参数：
+
+- other: Constant - 另一常量表达式。
+
+返回值：
+
+- Bool - 是否为同一引用。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let expr = Constant.create(IntLiteral.get(IntType.getInt32(), 0))
+    block.appendExpr(expr)
+    println("op_eq_Constant: ${expr == expr}")
+}
+```
+
+运行结果：
+
+```text
+op_eq_Constant: true
+```
+
+---
+
+## class Debug
+
+```cangjie
+public class Debug <: Expression & Equatable<Debug>
+```
+
+功能：调试标记表达式，保存源码位置映射信息，用于将 IR 中的值与源码中的变量名关联。
+
+父类型：
+
+- Expression
+- Equatable\<Debug>
+
+### prop srcCodeName
+
+```cangjie
+public prop srcCodeName: String
+```
+
+功能：源码调试名。
+
+类型：String
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let loc = Constant.create(IntLiteral.get(IntType.getInt32(), 0))
+    block.appendExpr(loc)
+    let expr = Debug.create(loc.result, "var_x")
+    block.appendExpr(expr)
+    println("prop_srcCodeName: ${expr.srcCodeName}")
+}
+```
+
+运行结果：
+
+```text
+prop_srcCodeName: var_x
+```
+
+### static func create(Value, String)
+
+```cangjie
+public static func create(location: Value, srcName: String): Debug
+```
+
+功能：创建调试标记表达式。
+
+参数：
+
+- location: Value - 要标记的值。
+- srcName: String - 源码调试名。
+
+返回值：
+
+- Debug - 创建的调试标记表达式。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let loc = Constant.create(IntLiteral.get(IntType.getInt32(), 0))
+    block.appendExpr(loc)
+    let expr = Debug.create(loc.result, "x")
+    block.appendExpr(expr)
+    println("static_func_create: ${block.exprs.size}")
+}
+```
+
+运行结果：
+
+```text
+static_func_create: 2
+```
+
+### operator func==(Debug)
+
+```cangjie
+public operator func==(other: Debug): Bool
+```
+
+功能：引用比较，判断两个 Debug 是否为同一实例。
+
+参数：
+
+- other: Debug - 另一调试标记表达式。
+
+返回值：
+
+- Bool - 是否为同一引用。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let loc = Constant.create(IntLiteral.get(IntType.getInt32(), 0))
+    block.appendExpr(loc)
+    let expr = Debug.create(loc.result, "x")
+    block.appendExpr(expr)
+    println("op_eq_Debug: ${expr == expr}")
+}
+```
+
+运行结果：
+
+```text
+op_eq_Debug: true
+```
+
+---
+
+## class Exit
+
+```cangjie
+public class Exit <: Expression & Equatable<Exit>
+```
+
+功能：函数退出终止器表达式，表示函数正常执行结束。
+
+父类型：
+
+- Expression
+- Equatable\<Exit>
+
+### static func create()
+
+```cangjie
+public static func create(): Exit
+```
+
+功能：创建函数退出终止器表达式。
+
+返回值：
+
+- Exit - 创建的退出表达式。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let expr = Exit.create()
+    block.appendExpr(expr)
+    println("static_func_create: ${block.exprs.size}")
+}
+```
+
+运行结果：
+
+```text
+static_func_create: 1
+```
+
+### operator func==(Exit)
+
+```cangjie
+public operator func==(other: Exit): Bool
+```
+
+功能：引用比较，判断两个 Exit 是否为同一实例。
+
+参数：
+
+- other: Exit - 另一退出表达式。
+
+返回值：
+
+- Bool - 是否为同一引用。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let expr = Exit.create()
+    block.appendExpr(expr)
+    println("op_eq_Exit: ${expr == expr}")
+}
+```
+
+运行结果：
+
+```text
+op_eq_Exit: true
+```
+
+---
+
+## class Field
+
+```cangjie
+public class Field <: Expression & Equatable<Field>
+```
+
+功能：按数字索引路径访问字段的表达式，通过数值索引序列定位聚合体中的子字段。
+
+父类型：
+
+- Expression
+- Equatable\<Field>
+
+### prop path
+
+```cangjie
+public prop path: Array<UInt64>
+```
+
+功能：字段数字索引路径。
+
+类型：Array\<UInt64>
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+import std.collection.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let st = pkg.addStruct("S_m", "S")
+    st.appendInstanceMemberVar("x", IntType.getInt32())
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let alloc = Allocate.create(StructType.get(st, []))
+    block.appendExpr(alloc)
+    let expr = Field.create(alloc.result, ArrayList<UInt64>([0]))
+    block.appendExpr(expr)
+    println("prop_path: ${expr.path.size}")
+}
+```
+
+运行结果：
+
+```text
+prop_path: 1
+```
+
+### static func create(Value, ArrayList\<UInt64>)
+
+```cangjie
+public static func create(location: Value, path: ArrayList<UInt64>): Field
+```
+
+功能：创建按数字索引路径访问字段的表达式。
+
+参数：
+
+- location: Value - 源聚合体值。
+- path: ArrayList\<UInt64> - 字段数字索引路径。
+
+返回值：
+
+- Field - 创建的字段访问表达式。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+import std.collection.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let st = pkg.addStruct("S_m", "S")
+    st.appendInstanceMemberVar("x", IntType.getInt32())
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let alloc = Allocate.create(StructType.get(st, []))
+    block.appendExpr(alloc)
+    let expr = Field.create(alloc.result, ArrayList<UInt64>([0]))
+    block.appendExpr(expr)
+    println("static_func_create: ${block.exprs.size}")
+}
+```
+
+运行结果：
+
+```text
+static_func_create: 2
+```
+
+### operator func==(Field)
+
+```cangjie
+public operator func==(other: Field): Bool
+```
+
+功能：引用比较，判断两个 Field 是否为同一实例。
+
+参数：
+
+- other: Field - 另一字段访问表达式。
+
+返回值：
+
+- Bool - 是否为同一引用。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+import std.collection.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let st = pkg.addStruct("S_m", "S")
+    st.appendInstanceMemberVar("x", IntType.getInt32())
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let alloc = Allocate.create(StructType.get(st, []))
+    block.appendExpr(alloc)
+    let expr = Field.create(alloc.result, ArrayList<UInt64>([0]))
+    block.appendExpr(expr)
+    println("op_eq_Field: ${expr == expr}")
+}
+```
+
+运行结果：
+
+```text
+op_eq_Field: true
+```
+
+---
+
+## class FieldByName
+
+```cangjie
+public class FieldByName <: Expression & Equatable<FieldByName>
+```
+
+功能：按字段名路径访问字段的表达式，通过字符串字段名序列定位聚合体中的子字段。
+
+父类型：
+
+- Expression
+- Equatable\<FieldByName>
+
+### prop fieldNames
+
+```cangjie
+public prop fieldNames: Array<String>
+```
+
+功能：字段名路径。
+
+类型：Array\<String>
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+import std.collection.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let st = pkg.addStruct("S_m", "S")
+    st.appendInstanceMemberVar("x", IntType.getInt32())
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let alloc = Allocate.create(StructType.get(st, []))
+    block.appendExpr(alloc)
+    let expr = FieldByName.create(alloc.result, ArrayList<String>(["x"]))
+    block.appendExpr(expr)
+    println("prop_fieldNames: ${expr.fieldNames.size}")
+}
+```
+
+运行结果：
+
+```text
+prop_fieldNames: 1
+```
+
+### static func create(Value, ArrayList\<String>)
+
+```cangjie
+public static func create(location: Value, fieldNames: ArrayList<String>): FieldByName
+```
+
+功能：创建按字段名路径访问字段的表达式。
+
+参数：
+
+- location: Value - 源聚合体值。
+- fieldNames: ArrayList\<String> - 字段名路径。
+
+返回值：
+
+- FieldByName - 创建的字段名访问表达式。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+import std.collection.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let st = pkg.addStruct("S_m", "S")
+    st.appendInstanceMemberVar("x", IntType.getInt32())
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let alloc = Allocate.create(StructType.get(st, []))
+    block.appendExpr(alloc)
+    let expr = FieldByName.create(alloc.result, ArrayList<String>(["x"]))
+    block.appendExpr(expr)
+    println("static_func_create: ${block.exprs.size}")
+}
+```
+
+运行结果：
+
+```text
+static_func_create: 2
+```
+
+### operator func==(FieldByName)
+
+```cangjie
+public operator func==(other: FieldByName): Bool
+```
+
+功能：引用比较，判断两个 FieldByName 是否为同一实例。
+
+参数：
+
+- other: FieldByName - 另一字段名访问表达式。
+
+返回值：
+
+- Bool - 是否为同一引用。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+import std.collection.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let st = pkg.addStruct("S_m", "S")
+    st.appendInstanceMemberVar("x", IntType.getInt32())
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let alloc = Allocate.create(StructType.get(st, []))
+    block.appendExpr(alloc)
+    let expr = FieldByName.create(alloc.result, ArrayList<String>(["x"]))
+    block.appendExpr(expr)
+    println("op_eq_FieldByName: ${expr == expr}")
+}
+```
+
+运行结果：
+
+```text
+op_eq_FieldByName: true
+```
+
+---
+
+## class Apply
+
+```cangjie
+public class Apply <: ApplyBase & Equatable<Apply>
+```
+
+功能：函数调用（Apply）表达式，表示对函数的直接调用。
+
+父类型：
+
+- ApplyBase
+- Equatable\<Apply>
+
+### static func create(Value, FuncCallContext)
+
+```cangjie
+public static func create(callee: Value, funcCallCtx: FuncCallContext): Apply
+```
+
+功能：创建函数调用表达式。
+
+参数：
+
+- callee: Value - 被调用函数值。
+- funcCallCtx: FuncCallContext - 函数调用上下文（含实参、泛型实参和对象类型）。
+
+返回值：
+
+- Apply - 创建的函数调用表达式。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let calleeFunc = pkg.addFunction(FuncType.get([], UnitType.get()), "callee_m", "callee", "demo")
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let ctx = FuncCallContext([], [], None)
+    let expr = Apply.create(calleeFunc, ctx)
+    block.appendExpr(expr)
+    println("static_func_create: ${block.exprs.size}")
+}
+```
+
+运行结果：
+
+```text
+static_func_create: 1
+```
+
+### override func getArgs()
+
+<!-- compile -->
+```cangjie
+public override func getArgs(): Array<Value>
+```
+
+功能：获取调用参数列表。
+
+返回值：
+
+- Array\<Value> - 调用参数列表。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let calleeFunc = pkg.addFunction(FuncType.get([IntType.getInt32()], UnitType.get()), "callee_m", "callee", "demo")
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let arg = IntLiteral.get(IntType.getInt32(), 1)
+    let ctx = FuncCallContext([arg], [], None)
+    let expr = Apply.create(calleeFunc, ctx)
+    block.appendExpr(expr)
+    println("func_getArgs: ${expr.getArgs().size}")
+}
+```
+
+运行结果：
+
+```text
+func_getArgs: 1
+```
+
+### operator func==(Apply)
+
+```cangjie
+public operator func==(other: Apply): Bool
+```
+
+功能：引用比较，判断两个 Apply 是否为同一实例。
+
+参数：
+
+- other: Apply - 另一函数调用表达式。
+
+返回值：
+
+- Bool - 是否为同一引用。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let calleeFunc = pkg.addFunction(FuncType.get([], UnitType.get()), "callee_m", "callee", "demo")
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let ctx = FuncCallContext([], [], None)
+    let expr = Apply.create(calleeFunc, ctx)
+    block.appendExpr(expr)
+    println("op_eq_Apply: ${expr == expr}")
+}
+```
+
+运行结果：
+
+```text
+op_eq_Apply: true
+```
+
+---
+
+## class TryApply
+
+```cangjie
+public class TryApply <: ApplyBase & Equatable<TryApply>
+```
+
+功能：带异常处理的函数调用表达式，调用成功时跳转到正常分支，抛出异常时跳转到异常分支。
+
+父类型：
+
+- ApplyBase
+- Equatable\<TryApply>
+
+### prop normalBranch
+
+```cangjie
+public prop normalBranch: Block
+```
+
+功能：正常分支目标块。
+
+类型：Block
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let calleeFunc = pkg.addFunction(FuncType.get([], UnitType.get()), "callee_m", "callee", "demo")
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let bg = f.body.getOrThrow()
+    let block = bg.entryBlock
+    let normalBlock = bg.appendBlock()
+    let errorBlock = bg.appendBlock()
+    let ctx = FuncCallContext([], [], None)
+    let expr = TryApply.create(calleeFunc, ctx, normalBlock, errorBlock)
+    block.appendExpr(expr)
+    println("prop_normalBranch: ${expr.normalBranch == normalBlock}")
+}
+```
+
+运行结果：
+
+```text
+prop_normalBranch: true
+```
+
+### prop errorBranch
+
+```cangjie
+public prop errorBranch: Block
+```
+
+功能：异常分支目标块。
+
+类型：Block
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let calleeFunc = pkg.addFunction(FuncType.get([], UnitType.get()), "callee_m", "callee", "demo")
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let bg = f.body.getOrThrow()
+    let block = bg.entryBlock
+    let normalBlock = bg.appendBlock()
+    let errorBlock = bg.appendBlock()
+    let ctx = FuncCallContext([], [], None)
+    let expr = TryApply.create(calleeFunc, ctx, normalBlock, errorBlock)
+    block.appendExpr(expr)
+    println("prop_errorBranch: ${expr.errorBranch == errorBlock}")
+}
+```
+
+运行结果：
+
+```text
+prop_errorBranch: true
+```
+
+### static func create(Value, FuncCallContext, Block, Block)
+
+```cangjie
+public static func create(callee: Value, funcCallCtx: FuncCallContext, normal: Block, err: Block): TryApply
+```
+
+功能：创建带异常处理的函数调用表达式。
+
+参数：
+
+- callee: Value - 被调用函数值。
+- funcCallCtx: FuncCallContext - 函数调用上下文。
+- normal: Block - 正常分支目标块。
+- err: Block - 异常分支目标块。
+
+返回值：
+
+- TryApply - 创建的带异常处理的函数调用表达式。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let calleeFunc = pkg.addFunction(FuncType.get([], UnitType.get()), "callee_m", "callee", "demo")
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let bg = f.body.getOrThrow()
+    let block = bg.entryBlock
+    let normalBlock = bg.appendBlock()
+    let errorBlock = bg.appendBlock()
+    let ctx = FuncCallContext([], [], None)
+    let expr = TryApply.create(calleeFunc, ctx, normalBlock, errorBlock)
+    block.appendExpr(expr)
+    println("static_func_create: ${block.exprs.size}")
+}
+```
+
+运行结果：
+
+```text
+static_func_create: 1
+```
+
+### override func getArgs()
+
+<!-- compile -->
+```cangjie
+public override func getArgs(): Array<Value>
+```
+
+功能：获取调用参数列表（不含正常和异常分支操作数）。
+
+返回值：
+
+- Array\<Value> - 调用参数列表。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let calleeFunc = pkg.addFunction(FuncType.get([IntType.getInt32()], UnitType.get()), "callee_m", "callee", "demo")
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let bg = f.body.getOrThrow()
+    let block = bg.entryBlock
+    let normalBlock = bg.appendBlock()
+    let errorBlock = bg.appendBlock()
+    let arg = IntLiteral.get(IntType.getInt32(), 1)
+    let ctx = FuncCallContext([arg], [], None)
+    let expr = TryApply.create(calleeFunc, ctx, normalBlock, errorBlock)
+    block.appendExpr(expr)
+    println("func_getArgs: ${expr.getArgs().size}")
+}
+```
+
+运行结果：
+
+```text
+func_getArgs: 1
+```
+
+### operator func==(TryApply)
+
+```cangjie
+public operator func==(other: TryApply): Bool
+```
+
+功能：引用比较，判断两个 TryApply 是否为同一实例。
+
+参数：
+
+- other: TryApply - 另一带异常处理的函数调用表达式。
+
+返回值：
+
+- Bool - 是否为同一引用。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let calleeFunc = pkg.addFunction(FuncType.get([], UnitType.get()), "callee_m", "callee", "demo")
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let bg = f.body.getOrThrow()
+    let block = bg.entryBlock
+    let normalBlock = bg.appendBlock()
+    let errorBlock = bg.appendBlock()
+    let ctx = FuncCallContext([], [], None)
+    let expr = TryApply.create(calleeFunc, ctx, normalBlock, errorBlock)
+    block.appendExpr(expr)
+    println("op_eq_TryApply: ${expr == expr}")
+}
+```
+
+运行结果：
+
+```text
+op_eq_TryApply: true
+```
+
+---
+
+## class Intrinsic
+
+```cangjie
+public class Intrinsic <: IntrinsicBase & Equatable<Intrinsic>
+```
+
+功能：内建函数调用表达式（不带异常处理），表示对编译器内建函数（如 `sizeof`、`alignof` 等）的调用。Intrinsic 实例由编译器内部流程创建，可通过遍历 Block 的 `exprs` 列表访问已有的 Intrinsic 表达式。
+
+父类型：
+
+- IntrinsicBase
+- Equatable\<Intrinsic>
+
+### override func getArgs()
+
+<!-- compile -->
+```cangjie
+public override func getArgs(): Array<Value>
+```
+
+功能：获取内建函数调用参数列表。
+
+返回值：
+
+- Array\<Value> - 调用参数列表。
+
+### operator func==(Intrinsic)
+
+```cangjie
+public operator func==(other: Intrinsic): Bool
+```
+
+功能：引用比较，判断两个 Intrinsic 是否为同一实例。
+
+参数：
+
+- other: Intrinsic - 另一内建函数调用表达式。
+
+返回值：
+
+- Bool - 是否为同一引用。
+
+---
+
+## class TryIntrinsic
+
+```cangjie
+public class TryIntrinsic <: IntrinsicBase & Equatable<TryIntrinsic>
+```
+
+功能：带异常处理的内建函数调用表达式。TryIntrinsic 实例由编译器内部流程创建，可通过遍历 Block 的 `exprs` 列表访问已有的 TryIntrinsic 表达式。
+
+父类型：
+
+- IntrinsicBase
+- Equatable\<TryIntrinsic>
+
+### prop normalBranch
+
+```cangjie
+public prop normalBranch: Block
+```
+
+功能：正常分支目标块。
+
+类型：Block
+
+### prop errorBranch
+
+```cangjie
+public prop errorBranch: Block
+```
+
+功能：异常分支目标块。
+
+类型：Block
+
+### override func getArgs()
+
+<!-- compile -->
+```cangjie
+public override func getArgs(): Array<Value>
+```
+
+功能：获取内建函数调用参数列表（不含正常和异常分支操作数）。
+
+返回值：
+
+- Array\<Value> - 调用参数列表。
+
+### operator func==(TryIntrinsic)
+
+```cangjie
+public operator func==(other: TryIntrinsic): Bool
+```
+
+功能：引用比较，判断两个 TryIntrinsic 是否为同一实例。
+
+参数：
+
+- other: TryIntrinsic - 另一带异常处理的内建函数调用表达式。
+
+返回值：
+
+- Bool - 是否为同一引用。
+
+---
+
+## class Invoke
+
+```cangjie
+public class Invoke <: InvokeBase & Equatable<Invoke>
+```
+
+功能：虚方法调用（Invoke）表达式，表示对实例方法的虚调用。
+
+父类型：
+
+- InvokeBase
+- Equatable\<Invoke>
+
+### static func create(Type, InvokeCallContext)
+
+```cangjie
+public static func create(retTy: Type, callContext: InvokeCallContext): Invoke
+```
+
+功能：创建虚方法调用表达式。
+
+参数：
+
+- retTy: Type - 返回类型。
+- callContext: InvokeCallContext - 虚方法调用上下文。
+
+返回值：
+
+- Invoke - 创建的虚方法调用表达式。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let ft = FuncType.get([], UnitType.get())
+    let sig = FuncSigInfo("method", ft)
+    let fcc = FuncCallContext([], [], None)
+    let ctx = InvokeCallContext(BoolLiteral.get(false), sig, fcc)
+    let expr = Invoke.create(UnitType.get(), ctx)
+    block.appendExpr(expr)
+    println("static_func_create: ${block.exprs.size}")
+}
+```
+
+运行结果：
+
+```text
+static_func_create: 1
+```
+
+### override func getArgs()
+
+<!-- compile -->
+```cangjie
+public override func getArgs(): Array<Value>
+```
+
+功能：获取虚方法调用参数列表。
+
+返回值：
+
+- Array\<Value> - 调用参数列表。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let ft = FuncType.get([], UnitType.get())
+    let sig = FuncSigInfo("method", ft)
+    let fcc = FuncCallContext([], [], None)
+    let ctx = InvokeCallContext(BoolLiteral.get(false), sig, fcc)
+    let expr = Invoke.create(UnitType.get(), ctx)
+    block.appendExpr(expr)
+    println("func_getArgs: ${expr.getArgs().size}")
+}
+```
+
+运行结果：
+
+```text
+func_getArgs: 1
+```
+
+### operator func==(Invoke)
+
+```cangjie
+public operator func==(other: Invoke): Bool
+```
+
+功能：引用比较，判断两个 Invoke 是否为同一实例。
+
+参数：
+
+- other: Invoke - 另一虚方法调用表达式。
+
+返回值：
+
+- Bool - 是否为同一引用。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let ft = FuncType.get([], UnitType.get())
+    let sig = FuncSigInfo("method", ft)
+    let fcc = FuncCallContext([], [], None)
+    let ctx = InvokeCallContext(BoolLiteral.get(false), sig, fcc)
+    let expr = Invoke.create(UnitType.get(), ctx)
+    block.appendExpr(expr)
+    println("op_eq_Invoke: ${expr == expr}")
+}
+```
+
+运行结果：
+
+```text
+op_eq_Invoke: true
+```
+
+---
+
+## class TryInvoke
+
+```cangjie
+public class TryInvoke <: InvokeBase & Equatable<TryInvoke>
+```
+
+功能：带异常处理的虚方法调用表达式，调用成功时跳转到正常分支，抛出异常时跳转到异常分支。
+
+父类型：
+
+- InvokeBase
+- Equatable\<TryInvoke>
+
+### prop normalBranch
+
+```cangjie
+public prop normalBranch: Block
+```
+
+功能：正常分支目标块。
+
+类型：Block
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let bg = f.body.getOrThrow()
+    let block = bg.entryBlock
+    let normalBlock = bg.appendBlock()
+    let errorBlock = bg.appendBlock()
+    let ft = FuncType.get([], UnitType.get())
+    let sig = FuncSigInfo("method", ft)
+    let fcc = FuncCallContext([], [], None)
+    let ctx = InvokeCallContext(BoolLiteral.get(false), sig, fcc)
+    let expr = TryInvoke.create(UnitType.get(), ctx, normalBlock, errorBlock)
+    block.appendExpr(expr)
+    println("prop_normalBranch: ${expr.normalBranch == normalBlock}")
+}
+```
+
+运行结果：
+
+```text
+prop_normalBranch: true
+```
+
+### prop errorBranch
+
+```cangjie
+public prop errorBranch: Block
+```
+
+功能：异常分支目标块。
+
+类型：Block
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let bg = f.body.getOrThrow()
+    let block = bg.entryBlock
+    let normalBlock = bg.appendBlock()
+    let errorBlock = bg.appendBlock()
+    let ft = FuncType.get([], UnitType.get())
+    let sig = FuncSigInfo("method", ft)
+    let fcc = FuncCallContext([], [], None)
+    let ctx = InvokeCallContext(BoolLiteral.get(false), sig, fcc)
+    let expr = TryInvoke.create(UnitType.get(), ctx, normalBlock, errorBlock)
+    block.appendExpr(expr)
+    println("prop_errorBranch: ${expr.errorBranch == errorBlock}")
+}
+```
+
+运行结果：
+
+```text
+prop_errorBranch: true
+```
+
+### static func create(Type, InvokeCallContext, Block, Block)
+
+```cangjie
+public static func create(retTy: Type, callContext: InvokeCallContext, normal: Block, err: Block): TryInvoke
+```
+
+功能：创建带异常处理的虚方法调用表达式。
+
+参数：
+
+- retTy: Type - 返回类型。
+- callContext: InvokeCallContext - 虚方法调用上下文。
+- normal: Block - 正常分支目标块。
+- err: Block - 异常分支目标块。
+
+返回值：
+
+- TryInvoke - 创建的带异常处理的虚方法调用表达式。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let bg = f.body.getOrThrow()
+    let block = bg.entryBlock
+    let normalBlock = bg.appendBlock()
+    let errorBlock = bg.appendBlock()
+    let ft = FuncType.get([], UnitType.get())
+    let sig = FuncSigInfo("method", ft)
+    let fcc = FuncCallContext([], [], None)
+    let ctx = InvokeCallContext(BoolLiteral.get(false), sig, fcc)
+    let expr = TryInvoke.create(UnitType.get(), ctx, normalBlock, errorBlock)
+    block.appendExpr(expr)
+    println("static_func_create: ${block.exprs.size}")
+}
+```
+
+运行结果：
+
+```text
+static_func_create: 1
+```
+
+### override func getArgs()
+
+<!-- compile -->
+```cangjie
+public override func getArgs(): Array<Value>
+```
+
+功能：获取虚方法调用参数列表（不含正常和异常分支操作数）。
+
+返回值：
+
+- Array\<Value> - 调用参数列表。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let bg = f.body.getOrThrow()
+    let block = bg.entryBlock
+    let normalBlock = bg.appendBlock()
+    let errorBlock = bg.appendBlock()
+    let ft = FuncType.get([], UnitType.get())
+    let sig = FuncSigInfo("method", ft)
+    let fcc = FuncCallContext([], [], None)
+    let ctx = InvokeCallContext(BoolLiteral.get(false), sig, fcc)
+    let expr = TryInvoke.create(UnitType.get(), ctx, normalBlock, errorBlock)
+    block.appendExpr(expr)
+    println("func_getArgs: ${expr.getArgs().size}")
+}
+```
+
+运行结果：
+
+```text
+func_getArgs: 1
+```
+
+### operator func==(TryInvoke)
+
+```cangjie
+public operator func==(other: TryInvoke): Bool
+```
+
+功能：引用比较，判断两个 TryInvoke 是否为同一实例。
+
+参数：
+
+- other: TryInvoke - 另一带异常处理的虚方法调用表达式。
+
+返回值：
+
+- Bool - 是否为同一引用。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let bg = f.body.getOrThrow()
+    let block = bg.entryBlock
+    let normalBlock = bg.appendBlock()
+    let errorBlock = bg.appendBlock()
+    let ft = FuncType.get([], UnitType.get())
+    let sig = FuncSigInfo("method", ft)
+    let fcc = FuncCallContext([], [], None)
+    let ctx = InvokeCallContext(BoolLiteral.get(false), sig, fcc)
+    let expr = TryInvoke.create(UnitType.get(), ctx, normalBlock, errorBlock)
+    block.appendExpr(expr)
+    println("op_eq_TryInvoke: ${expr == expr}")
+}
+```
+
+运行结果：
+
+```text
+op_eq_TryInvoke: true
+```
+
+---
+
+## class GetElementByName
+
+```cangjie
+public class GetElementByName <: Expression & Equatable<GetElementByName>
+```
+
+功能：按字段名读取聚合体元素的表达式，返回元素的引用。
+
+父类型：
+
+- Expression
+- Equatable\<GetElementByName>
+
+### prop fieldNames
+
+```cangjie
+public prop fieldNames: Array<String>
+```
+
+功能：字段名路径。
+
+类型：Array\<String>
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+import std.collection.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let st = pkg.addStruct("S_m", "S")
+    st.appendInstanceMemberVar("x", IntType.getInt32())
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let alloc = Allocate.create(StructType.get(st, []))
+    block.appendExpr(alloc)
+    let expr = GetElementByName.create(alloc.result, ArrayList<String>(["x"]))
+    block.appendExpr(expr)
+    println("prop_fieldNames: ${expr.fieldNames.size}")
+}
+```
+
+运行结果：
+
+```text
+prop_fieldNames: 1
+```
+
+### static func create(Value, ArrayList\<String>)
+
+```cangjie
+public static func create(location: Value, fieldNames: ArrayList<String>): GetElementByName
+```
+
+功能：创建按字段名读取聚合体元素的表达式。
+
+参数：
+
+- location: Value - 源聚合体值。
+- fieldNames: ArrayList\<String> - 字段名路径。
+
+返回值：
+
+- GetElementByName - 创建的元素读取表达式。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+import std.collection.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let st = pkg.addStruct("S_m", "S")
+    st.appendInstanceMemberVar("x", IntType.getInt32())
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let alloc = Allocate.create(StructType.get(st, []))
+    block.appendExpr(alloc)
+    let expr = GetElementByName.create(alloc.result, ArrayList<String>(["x"]))
+    block.appendExpr(expr)
+    println("static_func_create: ${block.exprs.size}")
+}
+```
+
+运行结果：
+
+```text
+static_func_create: 2
+```
+
+### operator func==(GetElementByName)
+
+```cangjie
+public operator func==(other: GetElementByName): Bool
+```
+
+功能：引用比较，判断两个 GetElementByName 是否为同一实例。
+
+参数：
+
+- other: GetElementByName - 另一元素读取表达式。
+
+返回值：
+
+- Bool - 是否为同一引用。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+import std.collection.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let st = pkg.addStruct("S_m", "S")
+    st.appendInstanceMemberVar("x", IntType.getInt32())
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let alloc = Allocate.create(StructType.get(st, []))
+    block.appendExpr(alloc)
+    let expr = GetElementByName.create(alloc.result, ArrayList<String>(["x"]))
+    block.appendExpr(expr)
+    println("op_eq_GetElementByName: ${expr == expr}")
+}
+```
+
+运行结果：
+
+```text
+op_eq_GetElementByName: true
+```
+
+---
+
+## class GetElementRef
+
+```cangjie
+public class GetElementRef <: Expression & Equatable<GetElementRef>
+```
+
+功能：按数字索引读取聚合体元素引用的表达式，返回元素的引用。
+
+父类型：
+
+- Expression
+- Equatable\<GetElementRef>
+
+### prop path
+
+```cangjie
+public prop path: Array<UInt64>
+```
+
+功能：索引路径。
+
+类型：Array\<UInt64>
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+import std.collection.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let st = pkg.addStruct("S_m", "S")
+    st.appendInstanceMemberVar("x", IntType.getInt32())
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let alloc = Allocate.create(StructType.get(st, []))
+    block.appendExpr(alloc)
+    let expr = GetElementRef.create(alloc.result, ArrayList<UInt64>([0]))
+    block.appendExpr(expr)
+    println("prop_path: ${expr.path.size}")
+}
+```
+
+运行结果：
+
+```text
+prop_path: 1
+```
+
+### static func create(Value, ArrayList\<UInt64>)
+
+```cangjie
+public static func create(location: Value, path: ArrayList<UInt64>): GetElementRef
+```
+
+功能：创建按数字索引读取聚合体元素引用的表达式。
+
+参数：
+
+- location: Value - 源聚合体值。
+- path: ArrayList\<UInt64> - 索引路径。
+
+返回值：
+
+- GetElementRef - 创建的元素引用读取表达式。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+import std.collection.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let st = pkg.addStruct("S_m", "S")
+    st.appendInstanceMemberVar("x", IntType.getInt32())
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let alloc = Allocate.create(StructType.get(st, []))
+    block.appendExpr(alloc)
+    let expr = GetElementRef.create(alloc.result, ArrayList<UInt64>([0]))
+    block.appendExpr(expr)
+    println("static_func_create: ${block.exprs.size}")
+}
+```
+
+运行结果：
+
+```text
+static_func_create: 2
+```
+
+### operator func==(GetElementRef)
+
+```cangjie
+public operator func==(other: GetElementRef): Bool
+```
+
+功能：引用比较，判断两个 GetElementRef 是否为同一实例。
+
+参数：
+
+- other: GetElementRef - 另一元素引用读取表达式。
+
+返回值：
+
+- Bool - 是否为同一引用。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+import std.collection.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let st = pkg.addStruct("S_m", "S")
+    st.appendInstanceMemberVar("x", IntType.getInt32())
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let alloc = Allocate.create(StructType.get(st, []))
+    block.appendExpr(alloc)
+    let expr = GetElementRef.create(alloc.result, ArrayList<UInt64>([0]))
+    block.appendExpr(expr)
+    println("op_eq_GetElementRef: ${expr == expr}")
+}
+```
+
+运行结果：
+
+```text
+op_eq_GetElementRef: true
+```
+
+---
+
+## class GetException
+
+```cangjie
+public class GetException <: Expression & Equatable<GetException>
+```
+
+功能：获取异常值的表达式，在异常处理 landing pad 块中用于读取捕获到的异常对象。
+
+父类型：
+
+- Expression
+- Equatable\<GetException>
+
+### static func create(Type)
+
+```cangjie
+public static func create(retTy: Type): GetException
+```
+
+功能：创建获取异常值的表达式。
+
+参数：
+
+- retTy: Type - 异常值的类型。
+
+返回值：
+
+- GetException - 创建的获取异常值表达式。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let expr = GetException.create(IntType.getInt32())
+    block.appendExpr(expr)
+    println("static_func_create: ${block.exprs.size}")
+}
+```
+
+运行结果：
+
+```text
+static_func_create: 1
+```
+
+### operator func==(GetException)
+
+```cangjie
+public operator func==(other: GetException): Bool
+```
+
+功能：引用比较，判断两个 GetException 是否为同一实例。
+
+参数：
+
+- other: GetException - 另一获取异常值表达式。
+
+返回值：
+
+- Bool - 是否为同一引用。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let expr = GetException.create(IntType.getInt32())
+    block.appendExpr(expr)
+    println("op_eq_GetException: ${expr == expr}")
+}
+```
+
+运行结果：
+
+```text
+op_eq_GetException: true
+```
+
+---
+
+## class GetInstantiateValue
+
+```cangjie
+public class GetInstantiateValue <: Expression & Equatable<GetInstantiateValue>
+```
+
+功能：获取泛型函数实例化值的表达式，用于表示泛型函数的单态化实例。
+
+父类型：
+
+- Expression
+- Equatable\<GetInstantiateValue>
+
+### prop instantiateTypes
+
+```cangjie
+public prop instantiateTypes: Array<Type>
+```
+
+功能：实例化类型参数。
+
+类型：Array\<Type>
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+import std.collection.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let g = pkg.addFunction(FuncType.get([], UnitType.get()), "g_m", "g", "demo")
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let expr = GetInstantiateValue.create(g, ArrayList<Type>())
+    block.appendExpr(expr)
+    println("prop_instantiateTypes: ${expr.instantiateTypes.size}")
+}
+```
+
+运行结果：
+
+```text
+prop_instantiateTypes: 0
+```
+
+### static func create(Function, ArrayList\<Type>)
+
+```cangjie
+public static func create(val: Function, instantiateTypes: ArrayList<Type>): GetInstantiateValue
+```
+
+功能：创建获取泛型函数实例化值的表达式。
+
+参数：
+
+- val: Function - 目标函数。
+- instantiateTypes: ArrayList\<Type> - 实例化类型参数。
+
+返回值：
+
+- GetInstantiateValue - 创建的实例化值表达式。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+import std.collection.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let g = pkg.addFunction(FuncType.get([], UnitType.get()), "g_m", "g", "demo")
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let expr = GetInstantiateValue.create(g, ArrayList<Type>())
+    block.appendExpr(expr)
+    println("static_func_create: ${block.exprs.size}")
+}
+```
+
+运行结果：
+
+```text
+static_func_create: 1
+```
+
+### operator func==(GetInstantiateValue)
+
+```cangjie
+public operator func==(other: GetInstantiateValue): Bool
+```
+
+功能：引用比较，判断两个 GetInstantiateValue 是否为同一实例。
+
+参数：
+
+- other: GetInstantiateValue - 另一实例化值表达式。
+
+返回值：
+
+- Bool - 是否为同一引用。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+import std.collection.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let g = pkg.addFunction(FuncType.get([], UnitType.get()), "g_m", "g", "demo")
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let expr = GetInstantiateValue.create(g, ArrayList<Type>())
+    block.appendExpr(expr)
+    println("op_eq_GetInstantiateValue: ${expr == expr}")
+}
+```
+
+运行结果：
+
+```text
+op_eq_GetInstantiateValue: true
+```
+
+---
+
+## class GetRTTI
+
+```cangjie
+public class GetRTTI <: Expression & Equatable<GetRTTI>
+```
+
+功能：获取运行时类型信息的表达式，从值中提取 RTTI 数据。
+
+父类型：
+
+- Expression
+- Equatable\<GetRTTI>
+
+### static func create(Value)
+
+```cangjie
+public static func create(val: Value): GetRTTI
+```
+
+功能：创建获取运行时类型信息的表达式。
+
+参数：
+
+- val: Value - 目标值。
+
+返回值：
+
+- GetRTTI - 创建的 RTTI 获取表达式。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let val = IntLiteral.get(IntType.getInt32(), 0)
+    let expr = GetRTTI.create(val)
+    block.appendExpr(expr)
+    println("static_func_create: ${block.exprs.size}")
+}
+```
+
+运行结果：
+
+```text
+static_func_create: 1
+```
+
+### operator func==(GetRTTI)
+
+```cangjie
+public operator func==(other: GetRTTI): Bool
+```
+
+功能：引用比较，判断两个 GetRTTI 是否为同一实例。
+
+参数：
+
+- other: GetRTTI - 另一 RTTI 获取表达式。
+
+返回值：
+
+- Bool - 是否为同一引用。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let val = IntLiteral.get(IntType.getInt32(), 0)
+    let expr = GetRTTI.create(val)
+    block.appendExpr(expr)
+    println("op_eq_GetRTTI: ${expr == expr}")
+}
+```
+
+运行结果：
+
+```text
+op_eq_GetRTTI: true
+```
+
+---
+
+## class GetRTTIStatic
+
+```cangjie
+public class GetRTTIStatic <: Expression & Equatable<GetRTTIStatic>
+```
+
+功能：静态获取运行时类型信息的表达式，从类型直接提取 RTTI 数据（不依赖值实例）。
+
+父类型：
+
+- Expression
+- Equatable\<GetRTTIStatic>
+
+### prop ty
+
+```cangjie
+public prop ty: Type
+```
+
+功能：目标类型。
+
+类型：Type
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let expr = GetRTTIStatic.create(IntType.getInt32())
+    block.appendExpr(expr)
+    println("prop_ty: ${expr.ty.toString()}")
+}
+```
+
+运行结果：
+
+```text
+prop_ty: Int32
+```
+
+### static func create(Type)
+
+```cangjie
+public static func create(ty: Type): GetRTTIStatic
+```
+
+功能：创建静态获取运行时类型信息的表达式。
+
+参数：
+
+- ty: Type - 目标类型。
+
+返回值：
+
+- GetRTTIStatic - 创建的静态 RTTI 获取表达式。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let expr = GetRTTIStatic.create(IntType.getInt32())
+    block.appendExpr(expr)
+    println("static_func_create: ${block.exprs.size}")
+}
+```
+
+运行结果：
+
+```text
+static_func_create: 1
+```
+
+### operator func==(GetRTTIStatic)
+
+```cangjie
+public operator func==(other: GetRTTIStatic): Bool
+```
+
+功能：引用比较，判断两个 GetRTTIStatic 是否为同一实例。
+
+参数：
+
+- other: GetRTTIStatic - 另一静态 RTTI 获取表达式。
+
+返回值：
+
+- Bool - 是否为同一引用。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let expr = GetRTTIStatic.create(IntType.getInt32())
+    block.appendExpr(expr)
+    println("op_eq_GetRTTIStatic: ${expr == expr}")
+}
+```
+
+运行结果：
+
+```text
+op_eq_GetRTTIStatic: true
+```
+
+---
+
+## class GoTo
+
+```cangjie
+public class GoTo <: Expression & Equatable<GoTo>
+```
+
+功能：无条件跳转终止器表达式，直接跳转到目标基本块。
+
+父类型：
+
+- Expression
+- Equatable\<GoTo>
+
+### static func create(Block)
+
+```cangjie
+public static func create(target: Block): GoTo
+```
+
+功能：创建无条件跳转终止器表达式。
+
+参数：
+
+- target: Block - 跳转目标块。
+
+返回值：
+
+- GoTo - 创建的无条件跳转表达式。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let bg = f.body.getOrThrow()
+    let block = bg.entryBlock
+    let target = bg.appendBlock()
+    let expr = GoTo.create(target)
+    block.appendExpr(expr)
+    println("static_func_create: ${block.exprs.size}")
+}
+```
+
+运行结果：
+
+```text
+static_func_create: 1
+```
+
+### operator func==(GoTo)
+
+```cangjie
+public operator func==(other: GoTo): Bool
+```
+
+功能：引用比较，判断两个 GoTo 是否为同一实例。
+
+参数：
+
+- other: GoTo - 另一无条件跳转表达式。
+
+返回值：
+
+- Bool - 是否为同一引用。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let bg = f.body.getOrThrow()
+    let block = bg.entryBlock
+    let target = bg.appendBlock()
+    let expr = GoTo.create(target)
+    block.appendExpr(expr)
+    println("op_eq_GoTo: ${expr == expr}")
+}
+```
+
+运行结果：
+
+```text
+op_eq_GoTo: true
+```
+
+---
+
+## class InstanceOf
+
+```cangjie
+public class InstanceOf <: Expression & Equatable<InstanceOf>
+```
+
+功能：类型检查表达式，判断源值是否属于目标类型，返回布尔结果。
+
+父类型：
+
+- Expression
+- Equatable\<InstanceOf>
+
+### prop targetType
+
+```cangjie
+public prop targetType: Type
+```
+
+功能：目标类型。
+
+类型：Type
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let srcVal = IntLiteral.get(IntType.getInt32(), 0)
+    let expr = InstanceOf.create(srcVal, IntType.getInt32())
+    block.appendExpr(expr)
+    println("prop_targetType: ${expr.targetType.toString()}")
+}
+```
+
+运行结果：
+
+```text
+prop_targetType: Int32
+```
+
+### static func create(Value, Type)
+
+```cangjie
+public static func create(srcVal: Value, targetTy: Type): InstanceOf
+```
+
+功能：创建类型检查表达式。
+
+参数：
+
+- srcVal: Value - 要检查的源值。
+- targetTy: Type - 目标类型。
+
+返回值：
+
+- InstanceOf - 创建的类型检查表达式。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let srcVal = IntLiteral.get(IntType.getInt32(), 0)
+    let expr = InstanceOf.create(srcVal, IntType.getInt32())
+    block.appendExpr(expr)
+    println("static_func_create: ${block.exprs.size}")
+}
+```
+
+运行结果：
+
+```text
+static_func_create: 1
+```
+
+### operator func==(InstanceOf)
+
+```cangjie
+public operator func==(other: InstanceOf): Bool
+```
+
+功能：引用比较，判断两个 InstanceOf 是否为同一实例。
+
+参数：
+
+- other: InstanceOf - 另一类型检查表达式。
+
+返回值：
+
+- Bool - 是否为同一引用。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let srcVal = IntLiteral.get(IntType.getInt32(), 0)
+    let expr = InstanceOf.create(srcVal, IntType.getInt32())
+    block.appendExpr(expr)
+    println("op_eq_InstanceOf: ${expr == expr}")
+}
+```
+
+运行结果：
+
+```text
+op_eq_InstanceOf: true
+```
+
+---
+
+## class Lambda
+
+```cangjie
+public class Lambda <: Expression & Equatable<Lambda>
+```
+
+功能：Lambda / 局部函数表达式，表示一个嵌套的匿名函数或局部函数定义。
+
+父类型：
+
+- Expression
+- Equatable\<Lambda>
+
+### prop identifier
+
+```cangjie
+public prop identifier: String
+```
+
+功能：内部标识，全局唯一标识符。
+
+类型：String
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+import std.collection.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let lambdaType = FuncType.get([], UnitType.get())
+    let expr = Lambda.create(lambdaType, "lambda_m", "myLambda", ArrayList<GenericType>())
+    block.appendExpr(expr)
+    println("prop_identifier: ${expr.identifier}")
+}
+```
+
+运行结果：
+
+```text
+prop_identifier: lambda_m
+```
+
+### prop srcCodeName
+
+```cangjie
+public prop srcCodeName: String
+```
+
+功能：源码名。
+
+类型：String
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+import std.collection.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let lambdaType = FuncType.get([], UnitType.get())
+    let expr = Lambda.create(lambdaType, "lambda_m", "myLambda", ArrayList<GenericType>())
+    block.appendExpr(expr)
+    println("prop_srcCodeName: ${expr.srcCodeName}")
+}
+```
+
+运行结果：
+
+```text
+prop_srcCodeName: myLambda
+```
+
+### prop funcType
+
+```cangjie
+public prop funcType: FuncType
+```
+
+功能：函数类型。
+
+类型：[FuncType](#class-functype)
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+import std.collection.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let lambdaType = FuncType.get([], UnitType.get())
+    let expr = Lambda.create(lambdaType, "lambda_m", "myLambda", ArrayList<GenericType>())
+    block.appendExpr(expr)
+    println("prop_funcType: ${expr.funcType.toString()}")
+}
+```
+
+运行结果：
+
+```text
+prop_funcType: () -> Unit
+```
+
+### prop genericTypeParams
+
+```cangjie
+public prop genericTypeParams: Array<GenericType>
+```
+
+功能：泛型形参。
+
+类型：Array\<[GenericType](#class-generictype)>
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+import std.collection.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let lambdaType = FuncType.get([], UnitType.get())
+    let expr = Lambda.create(lambdaType, "lambda_m", "myLambda", ArrayList<GenericType>())
+    block.appendExpr(expr)
+    println("prop_genericTypeParams: ${expr.genericTypeParams.size}")
+}
+```
+
+运行结果：
+
+```text
+prop_genericTypeParams: 0
+```
+
+### prop parameters
+
+```cangjie
+public prop parameters: Array<Parameter>
+```
+
+功能：参数列表。
+
+类型：Array\<[Parameter](#class-parameter)>
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+import std.collection.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let lambdaType = FuncType.get([IntType.getInt32()], UnitType.get())
+    let expr = Lambda.create(lambdaType, "lambda_m", "myLambda", ArrayList<GenericType>())
+    block.appendExpr(expr)
+    expr.initParameters()
+    println("prop_parameters: ${expr.parameters.size}")
+}
+```
+
+运行结果：
+
+```text
+prop_parameters: 1
+```
+
+### prop body
+
+```cangjie
+public prop body: BlockGroup
+```
+
+功能：Lambda 体。
+
+类型：[BlockGroup](#class-blockgroup)
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+import std.collection.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let lambdaType = FuncType.get([], UnitType.get())
+    let expr = Lambda.create(lambdaType, "lambda_m", "myLambda", ArrayList<GenericType>())
+    block.appendExpr(expr)
+    expr.initBody()
+    println("prop_body: ${expr.body.blocks.size > 0}")
+}
+```
+
+运行结果：
+
+```text
+prop_body: true
+```
+
+### mut prop returnValue
+
+<!-- compile -->
+```cangjie
+public mut prop returnValue: LocalVar
+```
+
+功能：返回值局部变量。
+
+类型：[LocalVar](#class-localvar)
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+import std.collection.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let lambdaType = FuncType.get([], IntType.getInt32())
+    let expr = Lambda.create(lambdaType, "lambda_m", "myLambda", ArrayList<GenericType>())
+    block.appendExpr(expr)
+    expr.initBody()
+    let lit = IntLiteral.get(IntType.getInt32(), 42)
+    expr.returnValue = Constant.create(lit).result
+    println("mut_prop_returnValue: ${expr.returnValue.toString().size > 0}")
+}
+```
+
+运行结果：
+
+```text
+mut_prop_returnValue: true
+```
+
+### mut prop isLocalFunc
+
+<!-- compile -->
+```cangjie
+public mut prop isLocalFunc: Bool
+```
+
+功能：是否为局部函数。
+
+类型：Bool
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+import std.collection.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let lambdaType = FuncType.get([], UnitType.get())
+    let expr = Lambda.create(lambdaType, "lambda_m", "myLambda", ArrayList<GenericType>())
+    block.appendExpr(expr)
+    println("mut_prop_isLocalFunc: ${expr.isLocalFunc}")
+}
+```
+
+运行结果：
+
+```text
+mut_prop_isLocalFunc: false
+```
+
+### mut prop isCompileTimeValue
+
+<!-- compile -->
+```cangjie
+public mut prop isCompileTimeValue: Bool
+```
+
+功能：是否为编译期值。
+
+类型：Bool
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+import std.collection.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let lambdaType = FuncType.get([], UnitType.get())
+    let expr = Lambda.create(lambdaType, "lambda_m", "myLambda", ArrayList<GenericType>())
+    block.appendExpr(expr)
+    println("mut_prop_isCompileTimeValue: ${expr.isCompileTimeValue}")
+}
+```
+
+运行结果：
+
+```text
+mut_prop_isCompileTimeValue: false
+```
+
+### static func create(FuncType, String, String, ArrayList\<GenericType>)
+
+```cangjie
+public static func create(ty: FuncType, identifier: String, srcName: String, genericTypeParams: ArrayList<GenericType>): Lambda
+```
+
+功能：创建 Lambda / 局部函数表达式。
+
+参数：
+
+- ty: FuncType - 函数类型。
+- identifier: String - 内部标识（混淆名）。
+- srcName: String - 源码名。
+- genericTypeParams: ArrayList\<GenericType> - 泛型形参列表。
+
+返回值：
+
+- Lambda - 创建的 Lambda 表达式。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+import std.collection.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let lambdaType = FuncType.get([], UnitType.get())
+    let expr = Lambda.create(lambdaType, "lambda_m", "myLambda", ArrayList<GenericType>())
+    block.appendExpr(expr)
+    println("static_func_create: ${block.exprs.size}")
+}
+```
+
+运行结果：
+
+```text
+static_func_create: 1
+```
+
+### func initBody()
+
+```cangjie
+public func initBody(): Unit
+```
+
+功能：初始化 Lambda 体，创建入口 BlockGroup 和 Block。调用前需确保 Lambda 已被追加到某基本块中。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+import std.collection.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let lambdaType = FuncType.get([], UnitType.get())
+    let expr = Lambda.create(lambdaType, "lambda_m", "myLambda", ArrayList<GenericType>())
+    block.appendExpr(expr)
+    expr.initBody()
+    println("fn_initBody: ${expr.body.blocks.size > 0}")
+}
+```
+
+运行结果：
+
+```text
+fn_initBody: true
+```
+
+### func initParameters()
+
+```cangjie
+public func initParameters(): Unit
+```
+
+功能：根据 `funcType` 的参数类型初始化 Lambda 参数列表。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+import std.collection.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let lambdaType = FuncType.get([IntType.getInt32()], UnitType.get())
+    let expr = Lambda.create(lambdaType, "lambda_m", "myLambda", ArrayList<GenericType>())
+    block.appendExpr(expr)
+    expr.initParameters()
+    println("fn_initParameters: ${expr.parameters.size}")
+}
+```
+
+运行结果：
+
+```text
+fn_initParameters: 1
+```
+
+### func toString()
+
+```cangjie
+public func toString(): String
+```
+
+功能：Lambda 的字符串形式。
+
+返回值：
+
+- String - Lambda 的可读文本转储。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+import std.collection.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let lambdaType = FuncType.get([], UnitType.get())
+    let expr = Lambda.create(lambdaType, "lambda_m", "myLambda", ArrayList<GenericType>())
+    block.appendExpr(expr)
+    expr.initBody()
+    println("fn_toString: ${expr.toString().size > 0}")
+}
+```
+
+运行结果：
+
+```text
+fn_toString: true
+```
+
+### operator func==(Lambda)
+
+```cangjie
+public operator func==(other: Lambda): Bool
+```
+
+功能：引用比较，判断两个 Lambda 是否为同一实例。
+
+参数：
+
+- other: Lambda - 另一 Lambda 表达式。
+
+返回值：
+
+- Bool - 是否为同一引用。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+import std.collection.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let lambdaType = FuncType.get([], UnitType.get())
+    let expr = Lambda.create(lambdaType, "lambda_m", "myLambda", ArrayList<GenericType>())
+    block.appendExpr(expr)
+    println("op_eq_Lambda: ${expr == expr}")
+}
+```
+
+运行结果：
+
+```text
+op_eq_Lambda: true
+```
+
+---
+
+## class Load
+
+```cangjie
+public class Load <: Expression & Equatable<Load>
+```
+
+功能：内存加载表达式。
+
+父类型：
+
+- Expression
+- Equatable\<Load>
+
+### prop srcAddress
+
+```cangjie
+public prop srcAddress: Value
+```
+
+功能：源地址。
+
+类型：Value
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([CPointerType.get(IntType.getInt32())], IntType.getInt32()), "f_m", "f", "demo")
+    f.initBody()
+    let param = f.parameters[0]
+    let load = Load.create(param)
+    println("prop_srcAddress: ${load.srcAddress == param}")
+}
+```
+
+运行结果：
+
+```text
+prop_srcAddress: true
+```
+
+### static func create(Value)
+
+```cangjie
+public static func create(location: Value): Load
+```
+
+功能：创建内存加载表达式，从指定地址加载值。
+
+参数：
+
+- location: Value - 源地址值。
+
+返回值：
+
+- Load - 内存加载表达式实例。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([CPointerType.get(IntType.getInt32())], IntType.getInt32()), "f_m", "f", "demo")
+    f.initBody()
+    let param = f.parameters[0]
+    let load = Load.create(param)
+    println("static_create: ${load.srcAddress == param}")
+}
+```
+
+运行结果：
+
+```text
+static_create: true
+```
+
+### operator func==(Load)
+
+```cangjie
+public operator func==(other: Load): Bool
+```
+
+功能：引用比较，判断两个 Load 是否为同一实例。
+
+参数：
+
+- other: Load - 另一内存加载表达式。
+
+返回值：
+
+- Bool - 是否为同一引用。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([CPointerType.get(IntType.getInt32())], IntType.getInt32()), "f_m", "f", "demo")
+    f.initBody()
+    let param = f.parameters[0]
+    let load = Load.create(param)
+    println("op_eq_Load: ${load == load}")
+}
+```
+
+运行结果：
+
+```text
+op_eq_Load: true
+```
+
+---
+
+## class MultiBranch
+
+```cangjie
+public class MultiBranch <: Expression & Equatable<MultiBranch>
+```
+
+功能：多分支（switch-case）终止器表达式。
+
+父类型：
+
+- Expression
+- Equatable\<MultiBranch>
+
+### prop condition
+
+```cangjie
+public prop condition: Value
+```
+
+功能：条件值。
+
+类型：Value
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+import std.collection.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([IntType.getInt32()], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let defaultBlock = f.body.getOrThrow().appendBlock()
+    let caseBlock = f.body.getOrThrow().appendBlock()
+    let targets = ArrayList<Block>()
+    targets.add(caseBlock)
+    let caseValues = ArrayList<UInt64>()
+    caseValues.add(1)
+    let param = f.parameters[0]
+    let mb = MultiBranch.create(param, defaultBlock, targets, caseValues)
+    println("prop_condition: ${mb.condition == param}")
+}
+```
+
+运行结果：
+
+```text
+prop_condition: true
+```
+
+### prop defaultTarget
+
+```cangjie
+public prop defaultTarget: Block
+```
+
+功能：默认目标块。
+
+类型：[Block](#class-block)
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+import std.collection.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([IntType.getInt32()], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let defaultBlock = f.body.getOrThrow().appendBlock()
+    let caseBlock = f.body.getOrThrow().appendBlock()
+    let targets = ArrayList<Block>()
+    targets.add(caseBlock)
+    let caseValues = ArrayList<UInt64>()
+    caseValues.add(1)
+    let param = f.parameters[0]
+    let mb = MultiBranch.create(param, defaultBlock, targets, caseValues)
+    println("prop_defaultTarget: ${mb.defaultTarget == defaultBlock}")
+}
+```
+
+运行结果：
+
+```text
+prop_defaultTarget: true
+```
+
+### prop targetsWithoutDefault
+
+```cangjie
+public prop targetsWithoutDefault: Array<Block>
+```
+
+功能：非 default 的目标块。
+
+类型：Array\<[Block](#class-block)>
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+import std.collection.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([IntType.getInt32()], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let defaultBlock = f.body.getOrThrow().appendBlock()
+    let caseBlock = f.body.getOrThrow().appendBlock()
+    let targets = ArrayList<Block>()
+    targets.add(caseBlock)
+    let caseValues = ArrayList<UInt64>()
+    caseValues.add(1)
+    let param = f.parameters[0]
+    let mb = MultiBranch.create(param, defaultBlock, targets, caseValues)
+    println("prop_targetsWithoutDefault: ${mb.targetsWithoutDefault.size}")
+}
+```
+
+运行结果：
+
+```text
+prop_targetsWithoutDefault: 1
+```
+
+### prop caseValues
+
+```cangjie
+public prop caseValues: Array<UInt64>
+```
+
+功能：各 case 的匹配值。
+
+类型：Array\<UInt64>
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+import std.collection.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([IntType.getInt32()], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let defaultBlock = f.body.getOrThrow().appendBlock()
+    let caseBlock = f.body.getOrThrow().appendBlock()
+    let targets = ArrayList<Block>()
+    targets.add(caseBlock)
+    let caseValues = ArrayList<UInt64>()
+    caseValues.add(1)
+    let param = f.parameters[0]
+    let mb = MultiBranch.create(param, defaultBlock, targets, caseValues)
+    println("prop_caseValues: ${mb.caseValues.size}")
+}
+```
+
+运行结果：
+
+```text
+prop_caseValues: 1
+```
+
+### static func create(Value, Block, ArrayList\<Block>, ArrayList\<UInt64>)
+
+```cangjie
+public static func create(condition: Value, default: Block, targets: ArrayList<Block>, caseValues: ArrayList<UInt64>): MultiBranch
+```
+
+功能：创建多分支终止器表达式，指定条件值、默认目标块、case 目标块列表及各 case 的匹配值。
+
+参数：
+
+- condition: Value - 条件值。
+- default: Block - 默认目标块。
+- targets: ArrayList\<Block> - 非 default 的目标块列表。
+- caseValues: ArrayList\<UInt64> - 各 case 的匹配值。
+
+返回值：
+
+- MultiBranch - 多分支终止器表达式实例。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+import std.collection.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([IntType.getInt32()], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let defaultBlock = f.body.getOrThrow().appendBlock()
+    let caseBlock = f.body.getOrThrow().appendBlock()
+    let targets = ArrayList<Block>()
+    targets.add(caseBlock)
+    let caseValues = ArrayList<UInt64>()
+    caseValues.add(1)
+    let param = f.parameters[0]
+    let mb = MultiBranch.create(param, defaultBlock, targets, caseValues)
+    println("static_create: ${mb.condition == param}")
+}
+```
+
+运行结果：
+
+```text
+static_create: true
+```
+
+### operator func==(MultiBranch)
+
+```cangjie
+public operator func==(other: MultiBranch): Bool
+```
+
+功能：引用比较，判断两个 MultiBranch 是否为同一实例。
+
+参数：
+
+- other: MultiBranch - 另一多分支终止器表达式。
+
+返回值：
+
+- Bool - 是否为同一引用。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+import std.collection.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([IntType.getInt32()], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let defaultBlock = f.body.getOrThrow().appendBlock()
+    let caseBlock = f.body.getOrThrow().appendBlock()
+    let targets = ArrayList<Block>()
+    targets.add(caseBlock)
+    let caseValues = ArrayList<UInt64>()
+    caseValues.add(1)
+    let param = f.parameters[0]
+    let mb = MultiBranch.create(param, defaultBlock, targets, caseValues)
+    println("op_eq_MultiBranch: ${mb == mb}")
+}
+```
+
+运行结果：
+
+```text
+op_eq_MultiBranch: true
+```
+
+---
+
+## class NumericCast
+
+```cangjie
+public class NumericCast <: NumericCastBase & Equatable<NumericCast>
+```
+
+功能：数值类型转换表达式。
+
+父类型：
+
+- NumericCastBase
+- Equatable\<NumericCast>
+
+### static func create(Value, Type, OverflowStrategy)
+
+```cangjie
+public static func create(srcVal: Value, targetType: Type, overflow: OverflowStrategy): NumericCast
+```
+
+功能：创建数值类型转换表达式，将源值转换为目标类型。
+
+参数：
+
+- srcVal: Value - 源值。
+- targetType: Type - 目标类型。
+- overflow: OverflowStrategy - 溢出处理策略。
+
+返回值：
+
+- NumericCast - 数值类型转换表达式实例。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([IntType.getInt32()], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let param = f.parameters[0]
+    let cast = NumericCast.create(param, IntType.getInt64(), OverflowStrategy.Wrapping)
+    println("static_create: ${cast.operands[0] == param}")
+}
+```
+
+运行结果：
+
+```text
+static_create: true
+```
+
+### operator func==(NumericCast)
+
+```cangjie
+public operator func==(other: NumericCast): Bool
+```
+
+功能：引用比较，判断两个 NumericCast 是否为同一实例。
+
+参数：
+
+- other: NumericCast - 另一数值类型转换表达式。
+
+返回值：
+
+- Bool - 是否为同一引用。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([IntType.getInt32()], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let param = f.parameters[0]
+    let cast = NumericCast.create(param, IntType.getInt64(), OverflowStrategy.Wrapping)
+    println("op_eq_NumericCast: ${cast == cast}")
+}
+```
+
+运行结果：
+
+```text
+op_eq_NumericCast: true
+```
+
+---
+
+## class TryNumericCast
+
+```cangjie
+public class TryNumericCast <: NumericCastBase & Equatable<TryNumericCast>
+```
+
+功能：带异常处理的数值类型转换表达式。
+
+父类型：
+
+- NumericCastBase
+- Equatable\<TryNumericCast>
+
+### prop normalBranch
+
+```cangjie
+public prop normalBranch: Block
+```
+
+功能：正常分支目标块。
+
+类型：[Block](#class-block)
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([IntType.getInt32()], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let normalBlock = f.body.getOrThrow().appendBlock()
+    let errBlock = f.body.getOrThrow().appendBlock()
+    let param = f.parameters[0]
+    let cast = TryNumericCast.create(param, IntType.getInt64(), normalBlock, errBlock)
+    println("prop_normalBranch: ${cast.normalBranch == normalBlock}")
+}
+```
+
+运行结果：
+
+```text
+prop_normalBranch: true
+```
+
+### prop errorBranch
+
+```cangjie
+public prop errorBranch: Block
+```
+
+功能：异常分支目标块。
+
+类型：[Block](#class-block)
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([IntType.getInt32()], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let normalBlock = f.body.getOrThrow().appendBlock()
+    let errBlock = f.body.getOrThrow().appendBlock()
+    let param = f.parameters[0]
+    let cast = TryNumericCast.create(param, IntType.getInt64(), normalBlock, errBlock)
+    println("prop_errorBranch: ${cast.errorBranch == errBlock}")
+}
+```
+
+运行结果：
+
+```text
+prop_errorBranch: true
+```
+
+### static func create(Value, Type, Block, Block)
+
+```cangjie
+public static func create(srcVal: Value, targetType: Type, normal: Block, err: Block): TryNumericCast
+```
+
+功能：创建带异常处理的数值类型转换表达式，指定正常分支与异常分支目标块。
+
+参数：
+
+- srcVal: Value - 源值。
+- targetType: Type - 目标类型。
+- normal: Block - 正常分支目标块。
+- err: Block - 异常分支目标块。
+
+返回值：
+
+- TryNumericCast - 带异常处理的数值类型转换表达式实例。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([IntType.getInt32()], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let normalBlock = f.body.getOrThrow().appendBlock()
+    let errBlock = f.body.getOrThrow().appendBlock()
+    let param = f.parameters[0]
+    let cast = TryNumericCast.create(param, IntType.getInt64(), normalBlock, errBlock)
+    println("static_create: ${cast.normalBranch == normalBlock}")
+}
+```
+
+运行结果：
+
+```text
+static_create: true
+```
+
+### operator func==(TryNumericCast)
+
+```cangjie
+public operator func==(other: TryNumericCast): Bool
+```
+
+功能：引用比较，判断两个 TryNumericCast 是否为同一实例。
+
+参数：
+
+- other: TryNumericCast - 另一带异常处理的数值类型转换表达式。
+
+返回值：
+
+- Bool - 是否为同一引用。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([IntType.getInt32()], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let normalBlock = f.body.getOrThrow().appendBlock()
+    let errBlock = f.body.getOrThrow().appendBlock()
+    let param = f.parameters[0]
+    let cast = TryNumericCast.create(param, IntType.getInt64(), normalBlock, errBlock)
+    println("op_eq_TryNumericCast: ${cast == cast}")
+}
+```
+
+运行结果：
+
+```text
+op_eq_TryNumericCast: true
+```
+
+---
+
+## class RaiseException
+
+```cangjie
+public class RaiseException <: Expression & Equatable<RaiseException>
+```
+
+功能：抛出异常终止器表达式。
+
+父类型：
+
+- Expression
+- Equatable\<RaiseException>
+
+### static func create(Value)
+
+```cangjie
+public static func create(value: Value): RaiseException
+```
+
+功能：创建抛出异常终止器表达式（无后续块版本）。
+
+参数：
+
+- value: Value - 异常值。
+
+返回值：
+
+- RaiseException - 抛出异常终止器表达式实例。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let lit = IntLiteral.get(IntType.getInt32(), 1)
+    let expr = Constant.create(lit)
+    f.body.getOrThrow().entryBlock.appendExpr(expr)
+    let lv = expr.result
+    let raise = RaiseException.create(lv)
+    println("static_create_noSuccessor: ${raise.result.toString().size > 0}")
+}
+```
+
+运行结果：
+
+```text
+static_create_noSuccessor: true
+```
+
+### static func create(Value, Block)
+
+```cangjie
+public static func create(value: Value, successor: Block): RaiseException
+```
+
+功能：创建抛出异常终止器表达式（带后续块版本）。
+
+参数：
+
+- value: Value - 异常值。
+- successor: Block - 后续块。
+
+返回值：
+
+- RaiseException - 抛出异常终止器表达式实例。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let successor = f.body.getOrThrow().appendBlock()
+    let lit = IntLiteral.get(IntType.getInt32(), 1)
+    let expr = Constant.create(lit)
+    f.body.getOrThrow().entryBlock.appendExpr(expr)
+    let lv = expr.result
+    let raise = RaiseException.create(lv, successor)
+    println("static_create_withSuccessor: done")
+}
+```
+
+运行结果：
+
+```text
+static_create_withSuccessor: done
+```
+
+### operator func==(RaiseException)
+
+```cangjie
+public operator func==(other: RaiseException): Bool
+```
+
+功能：引用比较，判断两个 RaiseException 是否为同一实例。
+
+参数：
+
+- other: RaiseException - 另一抛出异常终止器表达式。
+
+返回值：
+
+- Bool - 是否为同一引用。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let lit = IntLiteral.get(IntType.getInt32(), 1)
+    let expr = Constant.create(lit)
+    f.body.getOrThrow().entryBlock.appendExpr(expr)
+    let lv = expr.result
+    let raise = RaiseException.create(lv)
+    println("op_eq_RaiseException: ${raise == raise}")
+}
+```
+
+运行结果：
+
+```text
+op_eq_RaiseException: true
+```
+
+---
+
+## class RawArrayAllocate
+
+```cangjie
+public class RawArrayAllocate <: RawArrayAllocateBase & Equatable<RawArrayAllocate>
+```
+
+功能：原始数组分配表达式。
+
+父类型：
+
+- RawArrayAllocateBase
+- Equatable\<RawArrayAllocate>
+
+### static func create(Type, Value)
+
+```cangjie
+public static func create(elementType: Type, size: Value): RawArrayAllocate
+```
+
+功能：创建原始数组分配表达式，指定元素类型与数组大小。
+
+参数：
+
+- elementType: Type - 元素类型。
+- size: Value - 数组大小。
+
+返回值：
+
+- RawArrayAllocate - 原始数组分配表达式实例。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([IntType.getInt32()], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let param = f.parameters[0]
+    let alloc = RawArrayAllocate.create(IntType.getInt32(), param)
+    println("static_create: ${alloc.elementType == IntType.getInt32()}")
+}
+```
+
+运行结果：
+
+```text
+static_create: true
+```
+
+### operator func==(RawArrayAllocate)
+
+```cangjie
+public operator func==(other: RawArrayAllocate): Bool
+```
+
+功能：引用比较，判断两个 RawArrayAllocate 是否为同一实例。
+
+参数：
+
+- other: RawArrayAllocate - 另一原始数组分配表达式。
+
+返回值：
+
+- Bool - 是否为同一引用。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([IntType.getInt32()], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let param = f.parameters[0]
+    let alloc = RawArrayAllocate.create(IntType.getInt32(), param)
+    println("op_eq_RawArrayAllocate: ${alloc == alloc}")
+}
+```
+
+运行结果：
+
+```text
+op_eq_RawArrayAllocate: true
+```
+
+---
+
+## class TryRawArrayAllocate
+
+```cangjie
+public class TryRawArrayAllocate <: RawArrayAllocateBase & Equatable<TryRawArrayAllocate>
+```
+
+功能：带异常处理的原始数组分配表达式。
+
+父类型：
+
+- RawArrayAllocateBase
+- Equatable\<TryRawArrayAllocate>
+
+### prop normalBranch
+
+```cangjie
+public prop normalBranch: Block
+```
+
+功能：正常分支目标块。
+
+类型：[Block](#class-block)
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([IntType.getInt32()], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let normalBlock = f.body.getOrThrow().appendBlock()
+    let errBlock = f.body.getOrThrow().appendBlock()
+    let param = f.parameters[0]
+    let alloc = TryRawArrayAllocate.create(IntType.getInt32(), param, normalBlock, errBlock)
+    println("prop_normalBranch: ${alloc.normalBranch == normalBlock}")
+}
+```
+
+运行结果：
+
+```text
+prop_normalBranch: true
+```
+
+### prop errorBranch
+
+```cangjie
+public prop errorBranch: Block
+```
+
+功能：异常分支目标块。
+
+类型：[Block](#class-block)
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([IntType.getInt32()], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let normalBlock = f.body.getOrThrow().appendBlock()
+    let errBlock = f.body.getOrThrow().appendBlock()
+    let param = f.parameters[0]
+    let alloc = TryRawArrayAllocate.create(IntType.getInt32(), param, normalBlock, errBlock)
+    println("prop_errorBranch: ${alloc.errorBranch == errBlock}")
+}
+```
+
+运行结果：
+
+```text
+prop_errorBranch: true
+```
+
+### static func create(Type, Value, Block, Block)
+
+```cangjie
+public static func create(elementType: Type, size: Value, normal: Block, err: Block): TryRawArrayAllocate
+```
+
+功能：创建带异常处理的原始数组分配表达式，指定正常分支与异常分支目标块。
+
+参数：
+
+- elementType: Type - 元素类型。
+- size: Value - 数组大小。
+- normal: Block - 正常分支目标块。
+- err: Block - 异常分支目标块。
+
+返回值：
+
+- TryRawArrayAllocate - 带异常处理的原始数组分配表达式实例。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([IntType.getInt32()], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let normalBlock = f.body.getOrThrow().appendBlock()
+    let errBlock = f.body.getOrThrow().appendBlock()
+    let param = f.parameters[0]
+    let alloc = TryRawArrayAllocate.create(IntType.getInt32(), param, normalBlock, errBlock)
+    println("static_create: ${alloc.normalBranch == normalBlock}")
+}
+```
+
+运行结果：
+
+```text
+static_create: true
+```
+
+### operator func==(TryRawArrayAllocate)
+
+```cangjie
+public operator func==(other: TryRawArrayAllocate): Bool
+```
+
+功能：引用比较，判断两个 TryRawArrayAllocate 是否为同一实例。
+
+参数：
+
+- other: TryRawArrayAllocate - 另一带异常处理的原始数组分配表达式。
+
+返回值：
+
+- Bool - 是否为同一引用。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([IntType.getInt32()], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let normalBlock = f.body.getOrThrow().appendBlock()
+    let errBlock = f.body.getOrThrow().appendBlock()
+    let param = f.parameters[0]
+    let alloc = TryRawArrayAllocate.create(IntType.getInt32(), param, normalBlock, errBlock)
+    println("op_eq_TryRawArrayAllocate: ${alloc == alloc}")
+}
+```
+
+运行结果：
+
+```text
+op_eq_TryRawArrayAllocate: true
+```
+
+---
+
+## class RawArrayInitByValue
+
+```cangjie
+public class RawArrayInitByValue <: Expression & Equatable<RawArrayInitByValue>
+```
+
+功能：按值初始化原始数组表达式。
+
+父类型：
+
+- Expression
+- Equatable\<RawArrayInitByValue>
+
+### static func create(Value, Value, Value)
+
+```cangjie
+public static func create(memory: Value, size: Value, initVal: Value): RawArrayInitByValue
+```
+
+功能：创建按值初始化原始数组表达式，指定内存地址、数组大小与初始值。
+
+参数：
+
+- memory: Value - 内存地址。
+- size: Value - 数组大小。
+- initVal: Value - 初始值。
+
+返回值：
+
+- RawArrayInitByValue - 按值初始化原始数组表达式实例。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([IntType.getInt32(), IntType.getInt32(), IntType.getInt32()], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let mem = f.parameters[0]
+    let sz = f.parameters[1]
+    let iv = f.parameters[2]
+    let initExpr = RawArrayInitByValue.create(mem, sz, iv)
+    println("static_create: done")
+}
+```
+
+运行结果：
+
+```text
+static_create: done
+```
+
+### operator func==(RawArrayInitByValue)
+
+```cangjie
+public operator func==(other: RawArrayInitByValue): Bool
+```
+
+功能：引用比较，判断两个 RawArrayInitByValue 是否为同一实例。
+
+参数：
+
+- other: RawArrayInitByValue - 另一按值初始化原始数组表达式。
+
+返回值：
+
+- Bool - 是否为同一引用。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([IntType.getInt32(), IntType.getInt32(), IntType.getInt32()], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let mem = f.parameters[0]
+    let sz = f.parameters[1]
+    let iv = f.parameters[2]
+    let initExpr = RawArrayInitByValue.create(mem, sz, iv)
+    println("op_eq_RawArrayInitByValue: ${initExpr == initExpr}")
+}
+```
+
+运行结果：
+
+```text
+op_eq_RawArrayInitByValue: true
+```
+
+---
+
+## class RawArrayLiteralInit
+
+```cangjie
+public class RawArrayLiteralInit <: Expression & Equatable<RawArrayLiteralInit>
+```
+
+功能：字面量初始化原始数组表达式。
+
+父类型：
+
+- Expression
+- Equatable\<RawArrayLiteralInit>
+
+### static func create(Value, ArrayList\<Value>)
+
+```cangjie
+public static func create(memory: Value, elements: ArrayList<Value>): RawArrayLiteralInit
+```
+
+功能：创建字面量初始化原始数组表达式，指定内存地址与元素列表。
+
+参数：
+
+- memory: Value - 内存地址。
+- elements: ArrayList\<Value> - 元素值列表。
+
+返回值：
+
+- RawArrayLiteralInit - 字面量初始化原始数组表达式实例。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+import std.collection.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([IntType.getInt32()], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let mem = f.parameters[0]
+    let e1 = IntLiteral.get(IntType.getInt32(), 1)
+    let e2 = IntLiteral.get(IntType.getInt32(), 2)
+    let elements = ArrayList<Value>()
+    elements.add(e1)
+    elements.add(e2)
+    let initExpr = RawArrayLiteralInit.create(mem, elements)
+    println("static_create: done")
+}
+```
+
+运行结果：
+
+```text
+static_create: done
+```
+
+### operator func==(RawArrayLiteralInit)
+
+```cangjie
+public operator func==(other: RawArrayLiteralInit): Bool
+```
+
+功能：引用比较，判断两个 RawArrayLiteralInit 是否为同一实例。
+
+参数：
+
+- other: RawArrayLiteralInit - 另一字面量初始化原始数组表达式。
+
+返回值：
+
+- Bool - 是否为同一引用。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+import std.collection.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([IntType.getInt32()], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let mem = f.parameters[0]
+    let e1 = IntLiteral.get(IntType.getInt32(), 1)
+    let e2 = IntLiteral.get(IntType.getInt32(), 2)
+    let elements = ArrayList<Value>()
+    elements.add(e1)
+    elements.add(e2)
+    let initExpr = RawArrayLiteralInit.create(mem, elements)
+    println("op_eq_RawArrayLiteralInit: ${initExpr == initExpr}")
+}
+```
+
+运行结果：
+
+```text
+op_eq_RawArrayLiteralInit: true
+```
+
+---
+
+## class Spawn
+
+```cangjie
+public class Spawn <: SpawnBase & Equatable<Spawn>
+```
+
+功能：并发 Spawn 表达式（不带异常处理）。
+
+父类型：
+
+- SpawnBase
+- Equatable\<Spawn>
+
+### static func create(Type, Value)
+
+```cangjie
+public static func create(retTy: Type, lambda: Value): Spawn
+```
+
+功能：创建并发 Spawn 表达式（无参数版本）。
+
+参数：
+
+- retTy: Type - 返回类型。
+- lambda: Value - lambda 值。
+
+返回值：
+
+- Spawn - Spawn 表达式实例。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([FuncType.get([], IntType.getInt32())], IntType.getInt32()), "f_m", "f", "demo")
+    f.initBody()
+    let param = f.parameters[0]
+    let spawnExpr = Spawn.create(IntType.getInt32(), param)
+    println("static_create_noArg: ${spawnExpr.result.toString().size > 0}")
+}
+```
+
+运行结果：
+
+```text
+static_create_noArg: true
+```
+
+### static func create(Type, Value, Value)
+
+```cangjie
+public static func create(retTy: Type, lambda: Value, arg: Value): Spawn
+```
+
+功能：创建并发 Spawn 表达式（带参数版本）。
+
+参数：
+
+- retTy: Type - 返回类型。
+- lambda: Value - lambda 值。
+- arg: Value - Spawn 参数值。
+
+返回值：
+
+- Spawn - Spawn 表达式实例。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([FuncType.get([IntType.getInt32()], IntType.getInt32()), IntType.getInt32()], IntType.getInt32()), "f_m", "f", "demo")
+    f.initBody()
+    let lambda = f.parameters[0]
+    let arg = f.parameters[1]
+    let spawnExpr = Spawn.create(IntType.getInt32(), lambda, arg)
+    println("static_create_withArg: ${spawnExpr.result.toString().size > 0}")
+}
+```
+
+运行结果：
+
+```text
+static_create_withArg: true
+```
+
+### operator func==(Spawn)
+
+```cangjie
+public operator func==(other: Spawn): Bool
+```
+
+功能：引用比较，判断两个 Spawn 是否为同一实例。
+
+参数：
+
+- other: Spawn - 另一 Spawn 表达式。
+
+返回值：
+
+- Bool - 是否为同一引用。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([FuncType.get([], IntType.getInt32())], IntType.getInt32()), "f_m", "f", "demo")
+    f.initBody()
+    let param = f.parameters[0]
+    let spawnExpr = Spawn.create(IntType.getInt32(), param)
+    println("op_eq_Spawn: ${spawnExpr == spawnExpr}")
+}
+```
+
+运行结果：
+
+```text
+op_eq_Spawn: true
+```
+
+---
+
+## class TrySpawn
+
+```cangjie
+public class TrySpawn <: SpawnBase & Equatable<TrySpawn>
+```
+
+功能：带异常处理的并发 Spawn 表达式。
+
+父类型：
+
+- SpawnBase
+- Equatable\<TrySpawn>
+
+### prop normalBranch
+
+```cangjie
+public prop normalBranch: Block
+```
+
+功能：正常分支目标块。
+
+类型：[Block](#class-block)
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([FuncType.get([], IntType.getInt32())], IntType.getInt32()), "f_m", "f", "demo")
+    f.initBody()
+    let normalBlock = f.body.getOrThrow().appendBlock()
+    let errBlock = f.body.getOrThrow().appendBlock()
+    let param = f.parameters[0]
+    let spawnExpr = TrySpawn.create(IntType.getInt32(), param, normalBlock, errBlock)
+    println("prop_normalBranch: ${spawnExpr.normalBranch == normalBlock}")
+}
+```
+
+运行结果：
+
+```text
+prop_normalBranch: true
+```
+
+### prop errorBranch
+
+```cangjie
+public prop errorBranch: Block
+```
+
+功能：异常分支目标块。
+
+类型：[Block](#class-block)
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([FuncType.get([], IntType.getInt32())], IntType.getInt32()), "f_m", "f", "demo")
+    f.initBody()
+    let normalBlock = f.body.getOrThrow().appendBlock()
+    let errBlock = f.body.getOrThrow().appendBlock()
+    let param = f.parameters[0]
+    let spawnExpr = TrySpawn.create(IntType.getInt32(), param, normalBlock, errBlock)
+    println("prop_errorBranch: ${spawnExpr.errorBranch == errBlock}")
+}
+```
+
+运行结果：
+
+```text
+prop_errorBranch: true
+```
+
+### static func create(Type, Value, Block, Block)
+
+```cangjie
+public static func create(retTy: Type, lambda: Value, normal: Block, err: Block): TrySpawn
+```
+
+功能：创建带异常处理的并发 Spawn 表达式（无参数版本）。
+
+参数：
+
+- retTy: Type - 返回类型。
+- lambda: Value - lambda 值。
+- normal: Block - 正常分支目标块。
+- err: Block - 异常分支目标块。
+
+返回值：
+
+- TrySpawn - 带异常处理的 Spawn 表达式实例。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([FuncType.get([], IntType.getInt32())], IntType.getInt32()), "f_m", "f", "demo")
+    f.initBody()
+    let normalBlock = f.body.getOrThrow().appendBlock()
+    let errBlock = f.body.getOrThrow().appendBlock()
+    let param = f.parameters[0]
+    let spawnExpr = TrySpawn.create(IntType.getInt32(), param, normalBlock, errBlock)
+    println("static_create_noArg: ${spawnExpr.normalBranch == normalBlock}")
+}
+```
+
+运行结果：
+
+```text
+static_create_noArg: true
+```
+
+### static func create(Type, Value, Value, Block, Block)
+
+```cangjie
+public static func create(retTy: Type, lambda: Value, arg: Value, normal: Block, err: Block): TrySpawn
+```
+
+功能：创建带异常处理的并发 Spawn 表达式（带参数版本）。
+
+参数：
+
+- retTy: Type - 返回类型。
+- lambda: Value - lambda 值。
+- arg: Value - Spawn 参数值。
+- normal: Block - 正常分支目标块。
+- err: Block - 异常分支目标块。
+
+返回值：
+
+- TrySpawn - 带异常处理的 Spawn 表达式实例。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([FuncType.get([IntType.getInt32()], IntType.getInt32()), IntType.getInt32()], IntType.getInt32()), "f_m", "f", "demo")
+    f.initBody()
+    let normalBlock = f.body.getOrThrow().appendBlock()
+    let errBlock = f.body.getOrThrow().appendBlock()
+    let lambda = f.parameters[0]
+    let arg = f.parameters[1]
+    let spawnExpr = TrySpawn.create(IntType.getInt32(), lambda, arg, normalBlock, errBlock)
+    println("static_create_withArg: ${spawnExpr.normalBranch == normalBlock}")
+}
+```
+
+运行结果：
+
+```text
+static_create_withArg: true
+```
+
+### operator func==(TrySpawn)
+
+```cangjie
+public operator func==(other: TrySpawn): Bool
+```
+
+功能：引用比较，判断两个 TrySpawn 是否为同一实例。
+
+参数：
+
+- other: TrySpawn - 另一带异常处理的 Spawn 表达式。
+
+返回值：
+
+- Bool - 是否为同一引用。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([FuncType.get([], IntType.getInt32())], IntType.getInt32()), "f_m", "f", "demo")
+    f.initBody()
+    let normalBlock = f.body.getOrThrow().appendBlock()
+    let errBlock = f.body.getOrThrow().appendBlock()
+    let param = f.parameters[0]
+    let spawnExpr = TrySpawn.create(IntType.getInt32(), param, normalBlock, errBlock)
+    println("op_eq_TrySpawn: ${spawnExpr == spawnExpr}")
+}
+```
+
+运行结果：
+
+```text
+op_eq_TrySpawn: true
+```
+
+---
+
+## class Store
+
+```cangjie
+public class Store <: Expression & Equatable<Store>
+```
+
+功能：内存存储表达式。
+
+父类型：
+
+- Expression
+- Equatable\<Store>
+
+### prop dstAddress
+
+```cangjie
+public prop dstAddress: Value
+```
+
+功能：目标地址。
+
+类型：Value
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([IntType.getInt32(), CPointerType.get(IntType.getInt32())], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let valParam = f.parameters[0]
+    let addrParam = f.parameters[1]
+    let store = Store.create(valParam, addrParam)
+    println("prop_dstAddress: ${store.dstAddress == addrParam}")
+}
+```
+
+运行结果：
+
+```text
+prop_dstAddress: true
+```
+
+### prop srcValue
+
+```cangjie
+public prop srcValue: Value
+```
+
+功能：源值。
+
+类型：Value
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([IntType.getInt32(), CPointerType.get(IntType.getInt32())], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let valParam = f.parameters[0]
+    let addrParam = f.parameters[1]
+    let store = Store.create(valParam, addrParam)
+    println("prop_srcValue: ${store.srcValue == valParam}")
+}
+```
+
+运行结果：
+
+```text
+prop_srcValue: true
+```
+
+### static func create(Value, Value)
+
+```cangjie
+public static func create(val: Value, location: Value): Store
+```
+
+功能：创建内存存储表达式，将源值存储到目标地址。
+
+参数：
+
+- val: Value - 源值。
+- location: Value - 目标地址。
+
+返回值：
+
+- Store - 内存存储表达式实例。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([IntType.getInt32(), CPointerType.get(IntType.getInt32())], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let valParam = f.parameters[0]
+    let addrParam = f.parameters[1]
+    let store = Store.create(valParam, addrParam)
+    println("static_create: ${store.srcValue == valParam}")
+}
+```
+
+运行结果：
+
+```text
+static_create: true
+```
+
+### operator func==(Store)
+
+```cangjie
+public operator func==(other: Store): Bool
+```
+
+功能：引用比较，判断两个 Store 是否为同一实例。
+
+参数：
+
+- other: Store - 另一内存存储表达式。
+
+返回值：
+
+- Bool - 是否为同一引用。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([IntType.getInt32(), CPointerType.get(IntType.getInt32())], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let valParam = f.parameters[0]
+    let addrParam = f.parameters[1]
+    let store = Store.create(valParam, addrParam)
+    println("op_eq_Store: ${store == store}")
+}
+```
+
+运行结果：
+
+```text
+op_eq_Store: true
+```
+
+---
+
+## class StoreElementByName
+
+```cangjie
+public class StoreElementByName <: Expression & Equatable<StoreElementByName>
+```
+
+功能：按字段名存储聚合体元素的表达式。
+
+父类型：
+
+- Expression
+- Equatable\<StoreElementByName>
+
+### prop fieldNames
+
+```cangjie
+public prop fieldNames: Array<String>
+```
+
+功能：字段名路径。
+
+类型：Array\<String>
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+import std.collection.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([IntType.getInt32(), IntType.getInt32()], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let valParam = f.parameters[0]
+    let locParam = f.parameters[1]
+    let fieldNames = ArrayList<String>()
+    fieldNames.add("x")
+    let store = StoreElementByName.create(valParam, locParam, fieldNames)
+    println("prop_fieldNames: ${store.fieldNames.size}")
+}
+```
+
+运行结果：
+
+```text
+prop_fieldNames: 1
+```
+
+### static func create(Value, Value, ArrayList\<String>)
+
+```cangjie
+public static func create(val: Value, location: Value, fieldNames: ArrayList<String>): StoreElementByName
+```
+
+功能：创建按字段名存储聚合体元素的表达式。
+
+参数：
+
+- val: Value - 源值。
+- location: Value - 目标地址。
+- fieldNames: ArrayList\<String> - 字段名路径。
+
+返回值：
+
+- StoreElementByName - 按字段名存储聚合体元素表达式实例。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+import std.collection.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([IntType.getInt32(), IntType.getInt32()], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let valParam = f.parameters[0]
+    let locParam = f.parameters[1]
+    let fieldNames = ArrayList<String>()
+    fieldNames.add("x")
+    let store = StoreElementByName.create(valParam, locParam, fieldNames)
+    println("static_create: ${store.fieldNames.size}")
+}
+```
+
+运行结果：
+
+```text
+static_create: 1
+```
+
+### operator func==(StoreElementByName)
+
+```cangjie
+public operator func==(other: StoreElementByName): Bool
+```
+
+功能：引用比较，判断两个 StoreElementByName 是否为同一实例。
+
+参数：
+
+- other: StoreElementByName - 另一按字段名存储聚合体元素表达式。
+
+返回值：
+
+- Bool - 是否为同一引用。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+import std.collection.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([IntType.getInt32(), IntType.getInt32()], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let valParam = f.parameters[0]
+    let locParam = f.parameters[1]
+    let fieldNames = ArrayList<String>()
+    fieldNames.add("x")
+    let store = StoreElementByName.create(valParam, locParam, fieldNames)
+    println("op_eq_StoreElementByName: ${store == store}")
+}
+```
+
+运行结果：
+
+```text
+op_eq_StoreElementByName: true
+```
+
+---
+
+## class StoreElementRef
+
+```cangjie
+public class StoreElementRef <: Expression & Equatable<StoreElementRef>
+```
+
+功能：按数字索引存储聚合体元素的表达式。
+
+父类型：
+
+- Expression
+- Equatable\<StoreElementRef>
+
+### prop path
+
+```cangjie
+public prop path: Array<UInt64>
+```
+
+功能：索引路径。
+
+类型：Array\<UInt64>
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+import std.collection.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([IntType.getInt32(), IntType.getInt32()], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let valParam = f.parameters[0]
+    let locParam = f.parameters[1]
+    let path = ArrayList<UInt64>()
+    path.add(0)
+    let store = StoreElementRef.create(valParam, locParam, path)
+    println("prop_path: ${store.path.size}")
+}
+```
+
+运行结果：
+
+```text
+prop_path: 1
+```
+
+### static func create(Value, Value, ArrayList\<UInt64>)
+
+```cangjie
+public static func create(val: Value, location: Value, path: ArrayList<UInt64>): StoreElementRef
+```
+
+功能：创建按数字索引存储聚合体元素的表达式。
+
+参数：
+
+- val: Value - 源值。
+- location: Value - 目标地址。
+- path: ArrayList\<UInt64> - 索引路径。
+
+返回值：
+
+- StoreElementRef - 按数字索引存储聚合体元素表达式实例。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+import std.collection.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([IntType.getInt32(), IntType.getInt32()], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let valParam = f.parameters[0]
+    let locParam = f.parameters[1]
+    let path = ArrayList<UInt64>()
+    path.add(0)
+    let store = StoreElementRef.create(valParam, locParam, path)
+    println("static_create: ${store.path.size}")
+}
+```
+
+运行结果：
+
+```text
+static_create: 1
+```
+
+### operator func==(StoreElementRef)
+
+```cangjie
+public operator func==(other: StoreElementRef): Bool
+```
+
+功能：引用比较，判断两个 StoreElementRef 是否为同一实例。
+
+参数：
+
+- other: StoreElementRef - 另一按数字索引存储聚合体元素表达式。
+
+返回值：
+
+- Bool - 是否为同一引用。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+import std.collection.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([IntType.getInt32(), IntType.getInt32()], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let valParam = f.parameters[0]
+    let locParam = f.parameters[1]
+    let path = ArrayList<UInt64>()
+    path.add(0)
+    let store = StoreElementRef.create(valParam, locParam, path)
+    println("op_eq_StoreElementRef: ${store == store}")
+}
+```
+
+运行结果：
+
+```text
+op_eq_StoreElementRef: true
+```
+
+---
+
+## class Tuple
+
+```cangjie
+public class Tuple <: Expression & Equatable<Tuple>
+```
+
+功能：元组构造表达式。
+
+父类型：
+
+- Expression
+- Equatable\<Tuple>
+
+### prop elements
+
+```cangjie
+public prop elements: Array<Value>
+```
+
+功能：元组元素。
+
+类型：Array\<Value>
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+import std.collection.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let e1 = IntLiteral.get(IntType.getInt32(), 1)
+    let e2 = IntLiteral.get(IntType.getInt32(), 2)
+    let elements = ArrayList<Value>()
+    elements.add(e1)
+    elements.add(e2)
+    let tuple = Tuple.create(elements)
+    println("prop_elements: ${tuple.elements.size}")
+}
+```
+
+运行结果：
+
+```text
+prop_elements: 2
+```
+
+### static func create(ArrayList\<Value>)
+
+```cangjie
+public static func create(elements: ArrayList<Value>): Tuple
+```
+
+功能：创建元组构造表达式，指定元素列表。
+
+参数：
+
+- elements: ArrayList\<Value> - 元素值列表。
+
+返回值：
+
+- Tuple - 元组构造表达式实例。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+import std.collection.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let e1 = IntLiteral.get(IntType.getInt32(), 1)
+    let e2 = IntLiteral.get(IntType.getInt32(), 2)
+    let elements = ArrayList<Value>()
+    elements.add(e1)
+    elements.add(e2)
+    let tuple = Tuple.create(elements)
+    println("static_create: ${tuple.elements.size}")
+}
+```
+
+运行结果：
+
+```text
+static_create: 2
+```
+
+### operator func==(Tuple)
+
+```cangjie
+public operator func==(other: Tuple): Bool
+```
+
+功能：引用比较，判断两个 Tuple 是否为同一实例。
+
+参数：
+
+- other: Tuple - 另一元组构造表达式。
+
+返回值：
+
+- Bool - 是否为同一引用。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+import std.collection.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let e1 = IntLiteral.get(IntType.getInt32(), 1)
+    let e2 = IntLiteral.get(IntType.getInt32(), 2)
+    let elements = ArrayList<Value>()
+    elements.add(e1)
+    elements.add(e2)
+    let tuple = Tuple.create(elements)
+    println("op_eq_Tuple: ${tuple == tuple}")
+}
+```
+
+运行结果：
+
+```text
+op_eq_Tuple: true
+```
+
+---
+
+## class Box
+
+```cangjie
+public class Box <: TypeCast & Equatable<Box>
+```
+
+功能：装箱类型转换表达式。
+
+父类型：
+
+- TypeCast
+- Equatable\<Box>
+
+### static func create(Value, Type)
+
+```cangjie
+public static func create(srcVal: Value, targetType: Type): Box
+```
+
+功能：创建装箱类型转换表达式，将源值装箱为目标类型。
+
+参数：
+
+- srcVal: Value - 源值。
+- targetType: Type - 目标类型。
+
+返回值：
+
+- Box - 装箱类型转换表达式实例。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.Box as BoxExpr
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([IntType.getInt32()], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let param = f.parameters[0]
+    let boxExpr = BoxExpr.create(param, BoxType.get(IntType.getInt32()))
+    println("static_create: ${boxExpr.srcValue == param}")
+}
+```
+
+运行结果：
+
+```text
+static_create: true
+```
+
+### operator func==(Box)
+
+```cangjie
+public operator func==(other: Box): Bool
+```
+
+功能：引用比较，判断两个 Box 是否为同一实例。
+
+参数：
+
+- other: Box - 另一装箱类型转换表达式。
+
+返回值：
+
+- Bool - 是否为同一引用。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.Box as BoxExpr
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([IntType.getInt32()], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let param = f.parameters[0]
+    let boxExpr = BoxExpr.create(param, BoxType.get(IntType.getInt32()))
+    println("op_eq_Box: ${boxExpr == boxExpr}")
+}
+```
+
+运行结果：
+
+```text
+op_eq_Box: true
+```
+
+---
+
+## class StaticCast
+
+```cangjie
+public class StaticCast <: TypeCast & Equatable<StaticCast>
+```
+
+功能：静态类型转换表达式。
+
+父类型：
+
+- TypeCast
+- Equatable\<StaticCast>
+
+### static func create(Value, Type)
+
+```cangjie
+public static func create(srcVal: Value, targetType: Type): StaticCast
+```
+
+功能：创建静态类型转换表达式，将源值静态转换为目标类型。
+
+参数：
+
+- srcVal: Value - 源值。
+- targetType: Type - 目标类型。
+
+返回值：
+
+- StaticCast - 静态类型转换表达式实例。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([IntType.getInt32()], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let param = f.parameters[0]
+    let cast = StaticCast.create(param, IntType.getInt64())
+    println("static_create: ${cast.srcValue == param}")
+}
+```
+
+运行结果：
+
+```text
+static_create: true
+```
+
+### operator func==(StaticCast)
+
+```cangjie
+public operator func==(other: StaticCast): Bool
+```
+
+功能：引用比较，判断两个 StaticCast 是否为同一实例。
+
+参数：
+
+- other: StaticCast - 另一静态类型转换表达式。
+
+返回值：
+
+- Bool - 是否为同一引用。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([IntType.getInt32()], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let param = f.parameters[0]
+    let cast = StaticCast.create(param, IntType.getInt64())
+    println("op_eq_StaticCast: ${cast == cast}")
+}
+```
+
+运行结果：
+
+```text
+op_eq_StaticCast: true
+```
+
+---
+
+## class CastToConcrete
+
+```cangjie
+public class CastToConcrete <: TypeCast & Equatable<CastToConcrete>
+```
+
+功能：向具体类型转换表达式。
+
+父类型：
+
+- TypeCast
+- Equatable\<CastToConcrete>
+
+### static func create(Value, Type)
+
+```cangjie
+public static func create(srcVal: Value, targetType: Type): CastToConcrete
+```
+
+功能：创建向具体类型转换表达式。
+
+参数：
+
+- srcVal: Value - 源值。
+- targetType: Type - 目标具体类型。
+
+返回值：
+
+- CastToConcrete - 向具体类型转换表达式实例。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([IntType.getInt32()], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let param = f.parameters[0]
+    let cast = CastToConcrete.create(param, IntType.getInt64())
+    println("static_create: ${cast.srcValue == param}")
+}
+```
+
+运行结果：
+
+```text
+static_create: true
+```
+
+### operator func==(CastToConcrete)
+
+```cangjie
+public operator func==(other: CastToConcrete): Bool
+```
+
+功能：引用比较，判断两个 CastToConcrete 是否为同一实例。
+
+参数：
+
+- other: CastToConcrete - 另一向具体类型转换表达式。
+
+返回值：
+
+- Bool - 是否为同一引用。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([IntType.getInt32()], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let param = f.parameters[0]
+    let cast = CastToConcrete.create(param, IntType.getInt64())
+    println("op_eq_CastToConcrete: ${cast == cast}")
+}
+```
+
+运行结果：
+
+```text
+op_eq_CastToConcrete: true
+```
+
+---
+
+## class CastToGeneric
+
+```cangjie
+public class CastToGeneric <: TypeCast & Equatable<CastToGeneric>
+```
+
+功能：向泛型类型转换表达式。
+
+父类型：
+
+- TypeCast
+- Equatable\<CastToGeneric>
+
+### static func create(Value, Type)
+
+```cangjie
+public static func create(srcVal: Value, targetType: Type): CastToGeneric
+```
+
+功能：创建向泛型类型转换表达式。
+
+参数：
+
+- srcVal: Value - 源值。
+- targetType: Type - 目标泛型类型。
+
+返回值：
+
+- CastToGeneric - 向泛型类型转换表达式实例。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([IntType.getInt32()], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let param = f.parameters[0]
+    let gt = GenericType.get("T_m", "T")
+    let cast = CastToGeneric.create(param, gt)
+    println("static_create: ${cast.srcValue == param}")
+}
+```
+
+运行结果：
+
+```text
+static_create: true
+```
+
+### operator func==(CastToGeneric)
+
+```cangjie
+public operator func==(other: CastToGeneric): Bool
+```
+
+功能：引用比较，判断两个 CastToGeneric 是否为同一实例。
+
+参数：
+
+- other: CastToGeneric - 另一向泛型类型转换表达式。
+
+返回值：
+
+- Bool - 是否为同一引用。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([IntType.getInt32()], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let param = f.parameters[0]
+    let gt = GenericType.get("T_m", "T")
+    let cast = CastToGeneric.create(param, gt)
+    println("op_eq_CastToGeneric: ${cast == cast}")
+}
+```
+
+运行结果：
+
+```text
+op_eq_CastToGeneric: true
+```
+
+---
+
+## class UnboxToRef
+
+```cangjie
+public class UnboxToRef <: TypeCast & Equatable<UnboxToRef>
+```
+
+功能：拆箱为引用的类型转换表达式。
+
+父类型：
+
+- TypeCast
+- Equatable\<UnboxToRef>
+
+### static func create(Value, Type)
+
+```cangjie
+public static func create(srcVal: Value, targetType: Type): UnboxToRef
+```
+
+功能：创建拆箱为引用的类型转换表达式。
+
+参数：
+
+- srcVal: Value - 源值。
+- targetType: Type - 目标引用类型。
+
+返回值：
+
+- UnboxToRef - 拆箱为引用的类型转换表达式实例。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([BoxType.get(IntType.getInt32())], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let param = f.parameters[0]
+    let cast = UnboxToRef.create(param, RefType.get(IntType.getInt32()))
+    println("static_create: ${cast.srcValue == param}")
+}
+```
+
+运行结果：
+
+```text
+static_create: true
+```
+
+### operator func==(UnboxToRef)
+
+```cangjie
+public operator func==(other: UnboxToRef): Bool
+```
+
+功能：引用比较，判断两个 UnboxToRef 是否为同一实例。
+
+参数：
+
+- other: UnboxToRef - 另一拆箱为引用的类型转换表达式。
+
+返回值：
+
+- Bool - 是否为同一引用。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([BoxType.get(IntType.getInt32())], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let param = f.parameters[0]
+    let cast = UnboxToRef.create(param, RefType.get(IntType.getInt32()))
+    println("op_eq_UnboxToRef: ${cast == cast}")
+}
+```
+
+运行结果：
+
+```text
+op_eq_UnboxToRef: true
+```
+
+---
+
+## class UnboxToValue
+
+```cangjie
+public class UnboxToValue <: TypeCast & Equatable<UnboxToValue>
+```
+
+功能：拆箱为值的类型转换表达式。
+
+父类型：
+
+- TypeCast
+- Equatable\<UnboxToValue>
+
+### static func create(Value, Type)
+
+```cangjie
+public static func create(srcVal: Value, targetType: Type): UnboxToValue
+```
+
+功能：创建拆箱为值的类型转换表达式。
+
+参数：
+
+- srcVal: Value - 源值。
+- targetType: Type - 目标值类型。
+
+返回值：
+
+- UnboxToValue - 拆箱为值的类型转换表达式实例。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([BoxType.get(IntType.getInt32())], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let param = f.parameters[0]
+    let cast = UnboxToValue.create(param, IntType.getInt32())
+    println("static_create: ${cast.srcValue == param}")
+}
+```
+
+运行结果：
+
+```text
+static_create: true
+```
+
+### operator func==(UnboxToValue)
+
+```cangjie
+public operator func==(other: UnboxToValue): Bool
+```
+
+功能：引用比较，判断两个 UnboxToValue 是否为同一实例。
+
+参数：
+
+- other: UnboxToValue - 另一拆箱为值的类型转换表达式。
+
+返回值：
+
+- Bool - 是否为同一引用。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([BoxType.get(IntType.getInt32())], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let param = f.parameters[0]
+    let cast = UnboxToValue.create(param, IntType.getInt32())
+    println("op_eq_UnboxToValue: ${cast == cast}")
+}
+```
+
+运行结果：
+
+```text
+op_eq_UnboxToValue: true
+```
+
+---
+
+## class UnaryExpression
+
+```cangjie
+public class UnaryExpression <: UnaryExpressionBase & Equatable<UnaryExpression>
+```
+
+功能：一元运算表达式（不带异常处理）。
+
+父类型：
+
+- UnaryExpressionBase
+- Equatable\<UnaryExpression>
+
+### static func create(UnaryExprKind, Value)
+
+```cangjie
+public static func create(kind: UnaryExprKind, op: Value): UnaryExpression
+```
+
+功能：创建一元运算表达式，指定运算类别与操作数。
+
+参数：
+
+- kind: UnaryExprKind - 一元运算类别。
+- op: Value - 操作数。
+
+返回值：
+
+- UnaryExpression - 一元运算表达式实例。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([IntType.getInt64()], IntType.getInt64()), "f_m", "f", "demo")
+    f.initBody()
+    let param = f.parameters[0]
+    let expr = UnaryExpression.create(UnaryExprKind.Neg, param)
+    println("static_create: ${expr.result.toString().size > 0}")
+}
+```
+
+运行结果：
+
+```text
+static_create: true
+```
+
+### operator func==(UnaryExpression)
+
+```cangjie
+public operator func==(other: UnaryExpression): Bool
+```
+
+功能：引用比较，判断两个 UnaryExpression 是否为同一实例。
+
+参数：
+
+- other: UnaryExpression - 另一一元运算表达式。
+
+返回值：
+
+- Bool - 是否为同一引用。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([IntType.getInt64()], IntType.getInt64()), "f_m", "f", "demo")
+    f.initBody()
+    let param = f.parameters[0]
+    let expr = UnaryExpression.create(UnaryExprKind.Neg, param)
+    println("op_eq_UnaryExpression: ${expr == expr}")
+}
+```
+
+运行结果：
+
+```text
+op_eq_UnaryExpression: true
+```
+
+---
+
+## class TryUnaryExpression
+
+```cangjie
+public class TryUnaryExpression <: UnaryExpressionBase & Equatable<TryUnaryExpression>
+```
+
+功能：带异常处理的一元运算表达式。
+
+父类型：
+
+- UnaryExpressionBase
+- Equatable\<TryUnaryExpression>
+
+### prop normalBranch
+
+```cangjie
+public prop normalBranch: Block
+```
+
+功能：正常分支目标块。
+
+类型：[Block](#class-block)
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([IntType.getInt64()], IntType.getInt64()), "f_m", "f", "demo")
+    f.initBody()
+    let normalBlock = f.body.getOrThrow().appendBlock()
+    let errBlock = f.body.getOrThrow().appendBlock()
+    let param = f.parameters[0]
+    let expr = TryUnaryExpression.create(param, normalBlock, errBlock)
+    println("prop_normalBranch: ${expr.normalBranch == normalBlock}")
+}
+```
+
+运行结果：
+
+```text
+prop_normalBranch: true
+```
+
+### prop errorBranch
+
+```cangjie
+public prop errorBranch: Block
+```
+
+功能：异常分支目标块。
+
+类型：[Block](#class-block)
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([IntType.getInt64()], IntType.getInt64()), "f_m", "f", "demo")
+    f.initBody()
+    let normalBlock = f.body.getOrThrow().appendBlock()
+    let errBlock = f.body.getOrThrow().appendBlock()
+    let param = f.parameters[0]
+    let expr = TryUnaryExpression.create(param, normalBlock, errBlock)
+    println("prop_errorBranch: ${expr.errorBranch == errBlock}")
+}
+```
+
+运行结果：
+
+```text
+prop_errorBranch: true
+```
+
+### static func create(Value, Block, Block)
+
+```cangjie
+public static func create(op: Value, normal: Block, err: Block): TryUnaryExpression
+```
+
+功能：创建带异常处理的一元运算表达式，指定正常分支与异常分支目标块。
+
+参数：
+
+- op: Value - 操作数。
+- normal: Block - 正常分支目标块。
+- err: Block - 异常分支目标块。
+
+返回值：
+
+- TryUnaryExpression - 带异常处理的一元运算表达式实例。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([IntType.getInt64()], IntType.getInt64()), "f_m", "f", "demo")
+    f.initBody()
+    let normalBlock = f.body.getOrThrow().appendBlock()
+    let errBlock = f.body.getOrThrow().appendBlock()
+    let param = f.parameters[0]
+    let expr = TryUnaryExpression.create(param, normalBlock, errBlock)
+    println("static_create: ${expr.normalBranch == normalBlock}")
+}
+```
+
+运行结果：
+
+```text
+static_create: true
+```
+
+### operator func==(TryUnaryExpression)
+
+```cangjie
+public operator func==(other: TryUnaryExpression): Bool
+```
+
+功能：引用比较，判断两个 TryUnaryExpression 是否为同一实例。
+
+参数：
+
+- other: TryUnaryExpression - 另一带异常处理的一元运算表达式。
+
+返回值：
+
+- Bool - 是否为同一引用。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([IntType.getInt64()], IntType.getInt64()), "f_m", "f", "demo")
+    f.initBody()
+    let normalBlock = f.body.getOrThrow().appendBlock()
+    let errBlock = f.body.getOrThrow().appendBlock()
+    let param = f.parameters[0]
+    let expr = TryUnaryExpression.create(param, normalBlock, errBlock)
+    println("op_eq_TryUnaryExpression: ${expr == expr}")
+}
+```
+
+运行结果：
+
+```text
+op_eq_TryUnaryExpression: true
+```
+
+---
+
+## class VArrayBuilder
+
+```cangjie
+public class VArrayBuilder <: Expression & Equatable<VArrayBuilder>
+```
+
+功能：VArray 构建器表达式。
+
+父类型：
+
+- Expression
+- Equatable\<VArrayBuilder>
+
+### static func create(Type, Value, Value, Value)
+
+```cangjie
+public static func create(retTy: Type, size: Value, initVal: Value, initFunc: Value): VArrayBuilder
+```
+
+功能：创建 VArray 构建器表达式，指定返回类型、数组大小、初始值与初始化函数。
+
+参数：
+
+- retTy: Type - 返回类型。
+- size: Value - 数组大小。
+- initVal: Value - 初始值。
+- initFunc: Value - 初始化函数。
+
+返回值：
+
+- VArrayBuilder - VArray 构建器表达式实例。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([IntType.getInt32(), IntType.getInt32(), FuncType.get([IntType.getInt32()], IntType.getInt32())], VArrayType.get(IntType.getInt32(), 5)), "f_m", "f", "demo")
+    f.initBody()
+    let sizeVal = f.parameters[0]
+    let initVal = f.parameters[1]
+    let initFunc = f.parameters[2]
+    let builder = VArrayBuilder.create(VArrayType.get(IntType.getInt32(), 5), sizeVal, initVal, initFunc)
+    println("static_create: ${builder.result.toString().size > 0}")
+}
+```
+
+运行结果：
+
+```text
+static_create: true
+```
+
+### operator func==(VArrayBuilder)
+
+```cangjie
+public operator func==(other: VArrayBuilder): Bool
+```
+
+功能：引用比较，判断两个 VArrayBuilder 是否为同一实例。
+
+参数：
+
+- other: VArrayBuilder - 另一 VArray 构建器表达式。
+
+返回值：
+
+- Bool - 是否为同一引用。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([IntType.getInt32(), IntType.getInt32(), FuncType.get([IntType.getInt32()], IntType.getInt32())], VArrayType.get(IntType.getInt32(), 5)), "f_m", "f", "demo")
+    f.initBody()
+    let sizeVal = f.parameters[0]
+    let initVal = f.parameters[1]
+    let initFunc = f.parameters[2]
+    let builder = VArrayBuilder.create(VArrayType.get(IntType.getInt32(), 5), sizeVal, initVal, initFunc)
+    println("op_eq_VArrayBuilder: ${builder == builder}")
+}
+```
+
+运行结果：
+
+```text
+op_eq_VArrayBuilder: true
+```
+
+---
+
+## class VArrayExpr
+
+```cangjie
+public class VArrayExpr <: Expression & Equatable<VArrayExpr>
+```
+
+功能：VArray 字面量表达式。
+
+父类型：
+
+- Expression
+- Equatable\<VArrayExpr>
+
+### static func create(ArrayList\<Value>)
+
+```cangjie
+public static func create(elements: ArrayList<Value>): VArrayExpr
+```
+
+功能：创建 VArray 字面量表达式，指定元素列表。
+
+参数：
+
+- elements: ArrayList\<Value> - 元素值列表。
+
+返回值：
+
+- VArrayExpr - VArray 字面量表达式实例。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+import std.collection.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let e1 = IntLiteral.get(IntType.getInt32(), 1)
+    let e2 = IntLiteral.get(IntType.getInt32(), 2)
+    let e3 = IntLiteral.get(IntType.getInt32(), 3)
+    let elements = ArrayList<Value>()
+    elements.add(e1)
+    elements.add(e2)
+    elements.add(e3)
+    let expr = VArrayExpr.create(elements)
+    println("static_create: ${expr.result.toString().size > 0}")
+}
+```
+
+运行结果：
+
+```text
+static_create: true
+```
+
+### operator func==(VArrayExpr)
+
+```cangjie
+public operator func==(other: VArrayExpr): Bool
+```
+
+功能：引用比较，判断两个 VArrayExpr 是否为同一实例。
+
+参数：
+
+- other: VArrayExpr - 另一 VArray 字面量表达式。
+
+返回值：
+
+- Bool - 是否为同一引用。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+import std.collection.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let e1 = IntLiteral.get(IntType.getInt32(), 1)
+    let e2 = IntLiteral.get(IntType.getInt32(), 2)
+    let elements = ArrayList<Value>()
+    elements.add(e1)
+    elements.add(e2)
+    let expr = VArrayExpr.create(elements)
+    println("op_eq_VArrayExpr: ${expr == expr}")
+}
+```
+
+运行结果：
+
+```text
+op_eq_VArrayExpr: true
+```
+
+---
+
+## class CHIRBuilder
+
+```cangjie
+public class CHIRBuilder
+```
+
+功能：CHIR 表达式构建器，用于在基本块中按指定位置插入各类 CHIR 表达式（算术、内存、控制流、类型转换等）。
+
+### init(Block)
+
+```cangjie
+public init(parent: Block)
+```
+
+功能：构造一个 CHIRBuilder，指定插入位置为给定基本块的末尾。
+
+参数：
+
+- parent: Block - 插入目标基本块。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let builder = CHIRBuilder(block)
+    builder.createBinaryAdd(IntLiteral.get(IntType.getInt64(), 1), IntLiteral.get(IntType.getInt64(), 2), OverflowStrategy.NA)
+    println("init_Block: ${block.exprs.size}")
+}
+```
+
+运行结果：
+
+```text
+init_Block: 1
+```
+
+### init(InsertPosition)
+
+```cangjie
+public init(position: InsertPosition)
+```
+
+功能：构造一个 CHIRBuilder，指定插入位置。
+
+参数：
+
+- position: InsertPosition - 插入位置枚举值（AtEnd/AtStart/Before/After）。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let pos = InsertPosition.AtEnd(block)
+    let builder = CHIRBuilder(pos)
+    builder.createBinaryAdd(IntLiteral.get(IntType.getInt64(), 1), IntLiteral.get(IntType.getInt64(), 2), OverflowStrategy.NA)
+    println("init_InsertPosition: ${block.exprs.size}")
+}
+```
+
+运行结果：
+
+```text
+init_InsertPosition: 1
+```
+
+### func createAllocate(Type)
+
+```cangjie
+public func createAllocate(ty: Type): Allocate
+```
+
+功能：创建内存分配表达式。
+
+参数：
+
+- ty: Type - 分配的类型。
+
+返回值：
+
+- Allocate - 分配表达式。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let builder = CHIRBuilder(InsertPosition.AtEnd(block))
+    let alloc = builder.createAllocate(IntType.getInt32())
+    println("createAllocate: ${alloc.toString().size > 0}")
+}
+```
+
+运行结果：
+
+```text
+createAllocate: true
+```
+
+### func createApply(Value, FuncCallContext)
+
+```cangjie
+public func createApply(callee: Value, funcCallCtx: FuncCallContext): Apply
+```
+
+功能：创建函数调用（Apply）表达式。
+
+参数：
+
+- callee: Value - 被调用函数值。
+- funcCallCtx: FuncCallContext - 函数调用上下文。
+
+返回值：
+
+- Apply - Apply 表达式。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f1 = pkg.addFunction(FuncType.get([], UnitType.get()), "callee_m", "callee", "demo")
+    let f2 = pkg.addFunction(FuncType.get([], UnitType.get()), "caller_m", "caller", "demo")
+    f2.initBody()
+    let block = f2.body.getOrThrow().entryBlock
+    let builder = CHIRBuilder(InsertPosition.AtEnd(block))
+    let ctx = FuncCallContext([], [], None)
+    let apply = builder.createApply(f1, ctx)
+    println("createApply: ${apply.toString().size > 0}")
+}
+```
+
+运行结果：
+
+```text
+createApply: true
+```
+
+### func createBinaryAdd(Value, Value, OverflowStrategy)
+
+```cangjie
+public func createBinaryAdd(leftOp: Value, rightOp: Value, overflow: OverflowStrategy): BinaryExpression
+```
+
+功能：创建加法二元表达式。
+
+参数：
+
+- leftOp: Value - 左操作数。
+- rightOp: Value - 右操作数。
+- overflow: OverflowStrategy - 溢出策略。
+
+返回值：
+
+- BinaryExpression - 加法表达式。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let builder = CHIRBuilder(InsertPosition.AtEnd(block))
+    let expr = builder.createBinaryAdd(IntLiteral.get(IntType.getInt64(), 1), IntLiteral.get(IntType.getInt64(), 2), OverflowStrategy.NA)
+    println("createBinaryAdd: ${expr.toString().size > 0}")
+}
+```
+
+运行结果：
+
+```text
+createBinaryAdd: true
+```
+
+### func createBinaryAnd(Value, Value)
+
+```cangjie
+public func createBinaryAnd(leftOp: Value, rightOp: Value): BinaryExpression
+```
+
+功能：创建逻辑与二元表达式。
+
+参数：
+
+- leftOp: Value - 左操作数。
+- rightOp: Value - 右操作数。
+
+返回值：
+
+- BinaryExpression - 逻辑与表达式。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let builder = CHIRBuilder(InsertPosition.AtEnd(block))
+    let expr = builder.createBinaryAnd(BoolLiteral.get(true), BoolLiteral.get(false))
+    println("createBinaryAnd: ${expr.toString().size > 0}")
+}
+```
+
+运行结果：
+
+```text
+createBinaryAnd: true
+```
+
+### func createBinaryBitAnd(Value, Value)
+
+```cangjie
+public func createBinaryBitAnd(leftOp: Value, rightOp: Value): BinaryExpression
+```
+
+功能：创建按位与二元表达式。
+
+参数：
+
+- leftOp: Value - 左操作数。
+- rightOp: Value - 右操作数。
+
+返回值：
+
+- BinaryExpression - 按位与表达式。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let builder = CHIRBuilder(InsertPosition.AtEnd(block))
+    let expr = builder.createBinaryBitAnd(IntLiteral.get(IntType.getInt64(), 3), IntLiteral.get(IntType.getInt64(), 5))
+    println("createBinaryBitAnd: ${expr.toString().size > 0}")
+}
+```
+
+运行结果：
+
+```text
+createBinaryBitAnd: true
+```
+
+### func createBinaryBitOr(Value, Value)
+
+```cangjie
+public func createBinaryBitOr(leftOp: Value, rightOp: Value): BinaryExpression
+```
+
+功能：创建按位或二元表达式。
+
+参数：
+
+- leftOp: Value - 左操作数。
+- rightOp: Value - 右操作数。
+
+返回值：
+
+- BinaryExpression - 按位或表达式。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let builder = CHIRBuilder(InsertPosition.AtEnd(block))
+    let expr = builder.createBinaryBitOr(IntLiteral.get(IntType.getInt64(), 3), IntLiteral.get(IntType.getInt64(), 5))
+    println("createBinaryBitOr: ${expr.toString().size > 0}")
+}
+```
+
+运行结果：
+
+```text
+createBinaryBitOr: true
+```
+
+### func createBinaryBitXor(Value, Value)
+
+```cangjie
+public func createBinaryBitXor(leftOp: Value, rightOp: Value): BinaryExpression
+```
+
+功能：创建按位异或二元表达式。
+
+参数：
+
+- leftOp: Value - 左操作数。
+- rightOp: Value - 右操作数。
+
+返回值：
+
+- BinaryExpression - 按位异或表达式。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let builder = CHIRBuilder(InsertPosition.AtEnd(block))
+    let expr = builder.createBinaryBitXor(IntLiteral.get(IntType.getInt64(), 3), IntLiteral.get(IntType.getInt64(), 5))
+    println("createBinaryBitXor: ${expr.toString().size > 0}")
+}
+```
+
+运行结果：
+
+```text
+createBinaryBitXor: true
+```
+
+### func createBinaryDiv(Value, Value, OverflowStrategy)
+
+```cangjie
+public func createBinaryDiv(leftOp: Value, rightOp: Value, overflow: OverflowStrategy): BinaryExpression
+```
+
+功能：创建除法二元表达式。
+
+参数：
+
+- leftOp: Value - 左操作数。
+- rightOp: Value - 右操作数。
+- overflow: OverflowStrategy - 溢出策略。
+
+返回值：
+
+- BinaryExpression - 除法表达式。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let builder = CHIRBuilder(InsertPosition.AtEnd(block))
+    let expr = builder.createBinaryDiv(IntLiteral.get(IntType.getInt64(), 10), IntLiteral.get(IntType.getInt64(), 2), OverflowStrategy.NA)
+    println("createBinaryDiv: ${expr.toString().size > 0}")
+}
+```
+
+运行结果：
+
+```text
+createBinaryDiv: true
+```
+
+### func createBinaryEqual(Value, Value)
+
+```cangjie
+public func createBinaryEqual(leftOp: Value, rightOp: Value): BinaryExpression
+```
+
+功能：创建等于比较二元表达式。
+
+参数：
+
+- leftOp: Value - 左操作数。
+- rightOp: Value - 右操作数。
+
+返回值：
+
+- BinaryExpression - 等于比较表达式。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let builder = CHIRBuilder(InsertPosition.AtEnd(block))
+    let expr = builder.createBinaryEqual(IntLiteral.get(IntType.getInt64(), 1), IntLiteral.get(IntType.getInt64(), 1))
+    println("createBinaryEqual: ${expr.toString().size > 0}")
+}
+```
+
+运行结果：
+
+```text
+createBinaryEqual: true
+```
+
+### func createBinaryExp(Value, Value, OverflowStrategy)
+
+```cangjie
+public func createBinaryExp(leftOp: Value, rightOp: Value, overflow: OverflowStrategy): BinaryExpression
+```
+
+功能：创建指数二元表达式。
+
+参数：
+
+- leftOp: Value - 左操作数。
+- rightOp: Value - 右操作数。
+- overflow: OverflowStrategy - 溢出策略。
+
+返回值：
+
+- BinaryExpression - 指数表达式。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let builder = CHIRBuilder(InsertPosition.AtEnd(block))
+    let expr = builder.createBinaryExp(IntLiteral.get(IntType.getInt64(), 2), IntLiteral.get(IntType.getInt64(), 3), OverflowStrategy.NA)
+    println("createBinaryExp: ${expr.toString().size > 0}")
+}
+```
+
+运行结果：
+
+```text
+createBinaryExp: true
+```
+
+### func createBinaryGreaterThan(Value, Value)
+
+```cangjie
+public func createBinaryGreaterThan(leftOp: Value, rightOp: Value): BinaryExpression
+```
+
+功能：创建大于比较二元表达式。
+
+参数：
+
+- leftOp: Value - 左操作数。
+- rightOp: Value - 右操作数。
+
+返回值：
+
+- BinaryExpression - 大于比较表达式。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let builder = CHIRBuilder(InsertPosition.AtEnd(block))
+    let expr = builder.createBinaryGreaterThan(IntLiteral.get(IntType.getInt64(), 5), IntLiteral.get(IntType.getInt64(), 3))
+    println("createBinaryGreaterThan: ${expr.toString().size > 0}")
+}
+```
+
+运行结果：
+
+```text
+createBinaryGreaterThan: true
+```
+
+### func createBinaryGreaterThanOrEqual(Value, Value)
+
+```cangjie
+public func createBinaryGreaterThanOrEqual(leftOp: Value, rightOp: Value): BinaryExpression
+```
+
+功能：创建大于等于比较二元表达式。
+
+参数：
+
+- leftOp: Value - 左操作数。
+- rightOp: Value - 右操作数。
+
+返回值：
+
+- BinaryExpression - 大于等于比较表达式。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let builder = CHIRBuilder(InsertPosition.AtEnd(block))
+    let expr = builder.createBinaryGreaterThanOrEqual(IntLiteral.get(IntType.getInt64(), 5), IntLiteral.get(IntType.getInt64(), 5))
+    println("createBinaryGreaterThanOrEqual: ${expr.toString().size > 0}")
+}
+```
+
+运行结果：
+
+```text
+createBinaryGreaterThanOrEqual: true
+```
+
+### func createBinaryLShift(Value, Value, OverflowStrategy)
+
+```cangjie
+public func createBinaryLShift(leftOp: Value, rightOp: Value, overflow: OverflowStrategy): BinaryExpression
+```
+
+功能：创建左移二元表达式。
+
+参数：
+
+- leftOp: Value - 左操作数。
+- rightOp: Value - 右操作数。
+- overflow: OverflowStrategy - 溢出策略。
+
+返回值：
+
+- BinaryExpression - 左移表达式。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let builder = CHIRBuilder(InsertPosition.AtEnd(block))
+    let expr = builder.createBinaryLShift(IntLiteral.get(IntType.getInt64(), 1), IntLiteral.get(IntType.getInt64(), 2), OverflowStrategy.NA)
+    println("createBinaryLShift: ${expr.toString().size > 0}")
+}
+```
+
+运行结果：
+
+```text
+createBinaryLShift: true
+```
+
+### func createBinaryLessThan(Value, Value)
+
+```cangjie
+public func createBinaryLessThan(leftOp: Value, rightOp: Value): BinaryExpression
+```
+
+功能：创建小于比较二元表达式。
+
+参数：
+
+- leftOp: Value - 左操作数。
+- rightOp: Value - 右操作数。
+
+返回值：
+
+- BinaryExpression - 小于比较表达式。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let builder = CHIRBuilder(InsertPosition.AtEnd(block))
+    let expr = builder.createBinaryLessThan(IntLiteral.get(IntType.getInt64(), 3), IntLiteral.get(IntType.getInt64(), 5))
+    println("createBinaryLessThan: ${expr.toString().size > 0}")
+}
+```
+
+运行结果：
+
+```text
+createBinaryLessThan: true
+```
+
+### func createBinaryLessThanOrEqual(Value, Value)
+
+```cangjie
+public func createBinaryLessThanOrEqual(leftOp: Value, rightOp: Value): BinaryExpression
+```
+
+功能：创建小于等于比较二元表达式。
+
+参数：
+
+- leftOp: Value - 左操作数。
+- rightOp: Value - 右操作数。
+
+返回值：
+
+- BinaryExpression - 小于等于比较表达式。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let builder = CHIRBuilder(InsertPosition.AtEnd(block))
+    let expr = builder.createBinaryLessThanOrEqual(IntLiteral.get(IntType.getInt64(), 3), IntLiteral.get(IntType.getInt64(), 5))
+    println("createBinaryLessThanOrEqual: ${expr.toString().size > 0}")
+}
+```
+
+运行结果：
+
+```text
+createBinaryLessThanOrEqual: true
+```
+
+### func createBinaryMod(Value, Value, OverflowStrategy)
+
+```cangjie
+public func createBinaryMod(leftOp: Value, rightOp: Value, overflow: OverflowStrategy): BinaryExpression
+```
+
+功能：创建取模二元表达式。
+
+参数：
+
+- leftOp: Value - 左操作数。
+- rightOp: Value - 右操作数。
+- overflow: OverflowStrategy - 溢出策略。
+
+返回值：
+
+- BinaryExpression - 取模表达式。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let builder = CHIRBuilder(InsertPosition.AtEnd(block))
+    let expr = builder.createBinaryMod(IntLiteral.get(IntType.getInt64(), 10), IntLiteral.get(IntType.getInt64(), 3), OverflowStrategy.NA)
+    println("createBinaryMod: ${expr.toString().size > 0}")
+}
+```
+
+运行结果：
+
+```text
+createBinaryMod: true
+```
+
+### func createBinaryMul(Value, Value, OverflowStrategy)
+
+```cangjie
+public func createBinaryMul(leftOp: Value, rightOp: Value, overflow: OverflowStrategy): BinaryExpression
+```
+
+功能：创建乘法二元表达式。
+
+参数：
+
+- leftOp: Value - 左操作数。
+- rightOp: Value - 右操作数。
+- overflow: OverflowStrategy - 溢出策略。
+
+返回值：
+
+- BinaryExpression - 乘法表达式。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let builder = CHIRBuilder(InsertPosition.AtEnd(block))
+    let expr = builder.createBinaryMul(IntLiteral.get(IntType.getInt64(), 3), IntLiteral.get(IntType.getInt64(), 4), OverflowStrategy.NA)
+    println("createBinaryMul: ${expr.toString().size > 0}")
+}
+```
+
+运行结果：
+
+```text
+createBinaryMul: true
+```
+
+### func createBinaryNotEqual(Value, Value)
+
+```cangjie
+public func createBinaryNotEqual(leftOp: Value, rightOp: Value): BinaryExpression
+```
+
+功能：创建不等于比较二元表达式。
+
+参数：
+
+- leftOp: Value - 左操作数。
+- rightOp: Value - 右操作数。
+
+返回值：
+
+- BinaryExpression - 不等于比较表达式。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let builder = CHIRBuilder(InsertPosition.AtEnd(block))
+    let expr = builder.createBinaryNotEqual(IntLiteral.get(IntType.getInt64(), 1), IntLiteral.get(IntType.getInt64(), 2))
+    println("createBinaryNotEqual: ${expr.toString().size > 0}")
+}
+```
+
+运行结果：
+
+```text
+createBinaryNotEqual: true
+```
+
+### func createBinaryOr(Value, Value)
+
+```cangjie
+public func createBinaryOr(leftOp: Value, rightOp: Value): BinaryExpression
+```
+
+功能：创建逻辑或二元表达式。
+
+参数：
+
+- leftOp: Value - 左操作数。
+- rightOp: Value - 右操作数。
+
+返回值：
+
+- BinaryExpression - 逻辑或表达式。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let builder = CHIRBuilder(InsertPosition.AtEnd(block))
+    let expr = builder.createBinaryOr(BoolLiteral.get(true), BoolLiteral.get(false))
+    println("createBinaryOr: ${expr.toString().size > 0}")
+}
+```
+
+运行结果：
+
+```text
+createBinaryOr: true
+```
+
+### func createBinaryRShift(Value, Value, OverflowStrategy)
+
+```cangjie
+public func createBinaryRShift(leftOp: Value, rightOp: Value, overflow: OverflowStrategy): BinaryExpression
+```
+
+功能：创建右移二元表达式。
+
+参数：
+
+- leftOp: Value - 左操作数。
+- rightOp: Value - 右操作数。
+- overflow: OverflowStrategy - 溢出策略。
+
+返回值：
+
+- BinaryExpression - 右移表达式。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let builder = CHIRBuilder(InsertPosition.AtEnd(block))
+    let expr = builder.createBinaryRShift(IntLiteral.get(IntType.getInt64(), 8), IntLiteral.get(IntType.getInt64(), 2), OverflowStrategy.NA)
+    println("createBinaryRShift: ${expr.toString().size > 0}")
+}
+```
+
+运行结果：
+
+```text
+createBinaryRShift: true
+```
+
+### func createBinarySub(Value, Value, OverflowStrategy)
+
+```cangjie
+public func createBinarySub(leftOp: Value, rightOp: Value, overflow: OverflowStrategy): BinaryExpression
+```
+
+功能：创建减法二元表达式。
+
+参数：
+
+- leftOp: Value - 左操作数。
+- rightOp: Value - 右操作数。
+- overflow: OverflowStrategy - 溢出策略。
+
+返回值：
+
+- BinaryExpression - 减法表达式。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let builder = CHIRBuilder(InsertPosition.AtEnd(block))
+    let expr = builder.createBinarySub(IntLiteral.get(IntType.getInt64(), 5), IntLiteral.get(IntType.getInt64(), 3), OverflowStrategy.NA)
+    println("createBinarySub: ${expr.toString().size > 0}")
+}
+```
+
+运行结果：
+
+```text
+createBinarySub: true
+```
+
+### func createBox(Value, Type)
+
+```cangjie
+public func createBox(srcVal: Value, dstTy: Type): Box
+```
+
+功能：创建装箱（Box）类型转换表达式。
+
+参数：
+
+- srcVal: Value - 源值。
+- dstTy: Type - 目标装箱类型。
+
+返回值：
+
+- Box - 装箱表达式。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let builder = CHIRBuilder(InsertPosition.AtEnd(block))
+    let expr = builder.createBox(IntLiteral.get(IntType.getInt32(), 42), BoxType.get(IntType.getInt32()))
+    println("createBox: ${expr.toString().size > 0}")
+}
+```
+
+运行结果：
+
+```text
+createBox: true
+```
+
+### func createBranch(Value, Block, Block)
+
+```cangjie
+public func createBranch(condition: Value, trueTarget: Block, falseTarget: Block): Branch
+```
+
+功能：创建条件分支表达式。
+
+参数：
+
+- condition: Value - 分支条件值。
+- trueTarget: Block - 条件为真时的目标基本块。
+- falseTarget: Block - 条件为假时的目标基本块。
+
+返回值：
+
+- Branch - 条件分支表达式。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let bg = f.body.getOrThrow()
+    let entryBlock = bg.entryBlock
+    let trueBlock = bg.appendBlock()
+    let falseBlock = bg.appendBlock()
+    let builder = CHIRBuilder(InsertPosition.AtEnd(entryBlock))
+    let expr = builder.createBranch(BoolLiteral.get(true), trueBlock, falseBlock)
+    println("createBranch: ${expr.toString().size > 0}")
+}
+```
+
+运行结果：
+
+```text
+createBranch: true
+```
+
+### func createCastToConcrete(Value, Type)
+
+```cangjie
+public func createCastToConcrete(srcVal: Value, targetType: Type): CastToConcrete
+```
+
+功能：创建向具体类型转换表达式。
+
+参数：
+
+- srcVal: Value - 源值。
+- targetType: Type - 目标具体类型。
+
+返回值：
+
+- CastToConcrete - 向具体类型转换表达式。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let builder = CHIRBuilder(InsertPosition.AtEnd(block))
+    let expr = builder.createCastToConcrete(IntLiteral.get(IntType.getInt32(), 1), IntType.getInt64())
+    println("createCastToConcrete: ${expr.toString().size > 0}")
+}
+```
+
+运行结果：
+
+```text
+createCastToConcrete: true
+```
+
+### func createCastToGeneric(Value, Type)
+
+```cangjie
+public func createCastToGeneric(srcVal: Value, targetType: Type): CastToGeneric
+```
+
+功能：创建向泛型类型转换表达式。
+
+参数：
+
+- srcVal: Value - 源值。
+- targetType: Type - 目标泛型类型。
+
+返回值：
+
+- CastToGeneric - 向泛型类型转换表达式。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let builder = CHIRBuilder(InsertPosition.AtEnd(block))
+    let g = GenericType.get("pkg:T", "T")
+    let expr = builder.createCastToGeneric(IntLiteral.get(IntType.getInt32(), 1), g)
+    println("createCastToGeneric: ${expr.toString().size > 0}")
+}
+```
+
+运行结果：
+
+```text
+createCastToGeneric: true
+```
+
+### func createConstant(LiteralValue)
+
+```cangjie
+public func createConstant(val: LiteralValue): Constant
+```
+
+功能：创建常量表达式。
+
+参数：
+
+- val: LiteralValue - 字面量值。
+
+返回值：
+
+- Constant - 常量表达式。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let builder = CHIRBuilder(InsertPosition.AtEnd(block))
+    let expr = builder.createConstant(IntLiteral.get(IntType.getInt32(), 42))
+    println("createConstant: ${expr.toString().size > 0}")
+}
+```
+
+运行结果：
+
+```text
+createConstant: true
+```
+
+### func createDebug(Value, String)
+
+```cangjie
+public func createDebug(location: Value, srcCodeName: String): Debug
+```
+
+功能：创建调试标记表达式。
+
+参数：
+
+- location: Value - 调试位置值。
+- srcCodeName: String - 源码中的变量名。
+
+返回值：
+
+- Debug - 调试标记表达式。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let builder = CHIRBuilder(InsertPosition.AtEnd(block))
+    let alloc = builder.createAllocate(IntType.getInt32())
+    let expr = builder.createDebug(alloc.result, "x")
+    println("createDebug: ${expr.toString().size > 0}")
+}
+```
+
+运行结果：
+
+```text
+createDebug: true
+```
+
+### func createExit()
+
+```cangjie
+public func createExit(): Exit
+```
+
+功能：创建函数退出表达式。
+
+返回值：
+
+- Exit - 函数退出表达式。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let builder = CHIRBuilder(InsertPosition.AtEnd(block))
+    let expr = builder.createExit()
+    println("createExit: ${expr.toString().size > 0}")
+}
+```
+
+运行结果：
+
+```text
+createExit: true
+```
+
+### func createField(Value, ArrayList\<UInt64>)
+
+```cangjie
+public func createField(val: Value, path: ArrayList<UInt64>): Field
+```
+
+功能：创建按数字路径的字段访问表达式。
+
+参数：
+
+- val: Value - 结构体或类实例值。
+- path: ArrayList\<UInt64> - 数字路径索引列表。
+
+返回值：
+
+- Field - 字段访问表达式。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+import std.collection.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let builder = CHIRBuilder(InsertPosition.AtEnd(block))
+    let i32 = IntType.getInt32()
+    let a = builder.createConstant(IntLiteral.get(i32, 1u64)).result
+    let b = builder.createConstant(IntLiteral.get(i32, 1u64)).result
+    let c = builder.createConstant(IntLiteral.get(i32, 1u64)).result
+    let tuple = builder.createTuple([a, b, c])
+    let path = ArrayList<UInt64>()
+    path.add(0)
+    let expr = builder.createField(tuple.result, path)
+    println("createField: ${expr.toString().size > 0}")
+}
+```
+
+运行结果：
+
+```text
+createField: true
+```
+
+### func createFieldByName(Value, ArrayList\<String>)
+
+```cangjie
+public func createFieldByName(val: Value, fieldNames: ArrayList<String>): FieldByName
+```
+
+功能：创建按字段名路径的字段访问表达式。
+
+参数：
+
+- val: Value - 结构体或类实例值。
+- fieldNames: ArrayList\<String> - 字段名路径列表。
+
+返回值：
+
+- FieldByName - 按字段名的字段访问表达式。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+import std.collection.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let st = pkg.addStruct("mS", "S")
+    let vx = st.appendInstanceMemberVar("x", IntType.getInt32())
+    let vy = st.appendInstanceMemberVar("y", BoolType.get())
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let builder = CHIRBuilder(InsertPosition.AtEnd(block))
+    let alloc = builder.createAllocate(st.ty)
+    let names = ArrayList<String>()
+    names.add("x")
+    let expr = builder.createFieldByName(alloc.result, names)
+    println("createFieldByName: ${expr.toString().size > 0}")
+}
+```
+
+运行结果：
+
+```text
+createFieldByName: true
+```
+
+### func createGetElementByName(Value, ArrayList\<String>)
+
+```cangjie
+public func createGetElementByName(location: Value, fieldNames: ArrayList<String>): GetElementByName
+```
+
+功能：创建按字段名的元素读取表达式。
+
+参数：
+
+- location: Value - 内存位置值。
+- fieldNames: ArrayList\<String> - 字段名路径列表。
+
+返回值：
+
+- GetElementByName - 元素读取表达式。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+import std.collection.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let ca = pkg.addClass("mC", "C", true)
+    let vx = ca.appendInstanceMemberVar("x", IntType.getInt32())
+    let vy = ca.appendInstanceMemberVar("y", BoolType.get())
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let builder = CHIRBuilder(InsertPosition.AtEnd(block))
+    let alloc = builder.createAllocate(ca.ty)
+    let names = ArrayList<String>()
+    names.add("x")
+    let expr = builder.createGetElementByName(alloc.result, names)
+    println("createGetElementByName: ${expr.toString().size > 0}")
+}
+```
+
+运行结果：
+
+```text
+createGetElementByName: true
+```
+
+### func createGetElementRef(Value, ArrayList\<UInt64>)
+
+```cangjie
+public func createGetElementRef(location: Value, path: ArrayList<UInt64>): GetElementRef
+```
+
+功能：创建按数字索引的元素引用表达式。
+
+参数：
+
+- location: Value - 内存位置值。
+- path: ArrayList\<UInt64> - 数字索引路径列表。
+
+返回值：
+
+- GetElementRef - 元素引用表达式。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+import std.collection.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let ca = pkg.addClass("mC", "C", true)
+    let vx = ca.appendInstanceMemberVar("x", IntType.getInt32())
+    let vy = ca.appendInstanceMemberVar("y", BoolType.get())
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let builder = CHIRBuilder(InsertPosition.AtEnd(block))
+    let alloc = builder.createAllocate(ca.ty)
+    let path = ArrayList<UInt64>()
+    path.add(0)
+    let expr = builder.createGetElementRef(alloc.result, path)
+    println("createGetElementRef: ${expr.toString().size > 0}")
+}
+```
+
+运行结果：
+
+```text
+createGetElementRef: true
+```
+
+### func createGetException(Type)
+
+```cangjie
+public func createGetException(retTy: Type): GetException
+```
+
+功能：创建获取异常值表达式。
+
+参数：
+
+- retTy: Type - 返回类型。
+
+返回值：
+
+- GetException - 获取异常值表达式。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let builder = CHIRBuilder(InsertPosition.AtEnd(block))
+    let expr = builder.createGetException(IntType.getInt32())
+    println("createGetException: ${expr.toString().size > 0}")
+}
+```
+
+运行结果：
+
+```text
+createGetException: true
+```
+
+### func createGetInstantiateValue(Function, ArrayList\<Type>)
+
+```cangjie
+public func createGetInstantiateValue(val: Function, instantiateTypes: ArrayList<Type>): GetInstantiateValue
+```
+
+功能：创建获取泛型实例化值表达式。
+
+参数：
+
+- val: Function - 目标函数。
+- instantiateTypes: ArrayList\<Type> - 实例化类型实参列表。
+
+返回值：
+
+- GetInstantiateValue - 泛型实例化值表达式。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+import std.collection.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let builder = CHIRBuilder(InsertPosition.AtEnd(block))
+    let types = ArrayList<Type>()
+    types.add(IntType.getInt32())
+    let expr = builder.createGetInstantiateValue(f, types)
+    println("createGetInstantiateValue: ${expr.toString().size > 0}")
+}
+```
+
+运行结果：
+
+```text
+createGetInstantiateValue: true
+```
+
+### func createGetRTTI(Value)
+
+```cangjie
+public func createGetRTTI(val: Value): GetRTTI
+```
+
+功能：创建获取运行时类型信息表达式。
+
+参数：
+
+- val: Value - 目标值。
+
+返回值：
+
+- GetRTTI - 运行时类型信息表达式。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let builder = CHIRBuilder(InsertPosition.AtEnd(block))
+    let alloc = builder.createAllocate(IntType.getInt32())
+    let expr = builder.createGetRTTI(alloc.result)
+    println("createGetRTTI: ${expr.toString().size > 0}")
+}
+```
+
+运行结果：
+
+```text
+createGetRTTI: true
+```
+
+### func createGetRTTIStatic(Type)
+
+```cangjie
+public func createGetRTTIStatic(rttiType: Type): GetRTTIStatic
+```
+
+功能：创建静态获取运行时类型信息表达式。
+
+参数：
+
+- rttiType: Type - 目标类型。
+
+返回值：
+
+- GetRTTIStatic - 静态运行时类型信息表达式。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let builder = CHIRBuilder(InsertPosition.AtEnd(block))
+    let expr = builder.createGetRTTIStatic(IntType.getInt32())
+    println("createGetRTTIStatic: ${expr.toString().size > 0}")
+}
+```
+
+运行结果：
+
+```text
+createGetRTTIStatic: true
+```
+
+### func createGoTo(Block)
+
+```cangjie
+public func createGoTo(target: Block): GoTo
+```
+
+功能：创建无条件跳转表达式。
+
+参数：
+
+- target: Block - 跳转目标基本块。
+
+返回值：
+
+- GoTo - 无条件跳转表达式。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let bg = f.body.getOrThrow()
+    let entryBlock = bg.entryBlock
+    let targetBlock = bg.appendBlock()
+    let builder = CHIRBuilder(InsertPosition.AtEnd(entryBlock))
+    let expr = builder.createGoTo(targetBlock)
+    println("createGoTo: ${expr.toString().size > 0}")
+}
+```
+
+运行结果：
+
+```text
+createGoTo: true
+```
+
+### func createInstanceOf(Value, Type)
+
+```cangjie
+public func createInstanceOf(srcVal: Value, targetTy: Type): InstanceOf
+```
+
+功能：创建类型检查表达式。
+
+参数：
+
+- srcVal: Value - 源值。
+- targetTy: Type - 目标类型。
+
+返回值：
+
+- InstanceOf - 类型检查表达式。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let builder = CHIRBuilder(InsertPosition.AtEnd(block))
+    let alloc = builder.createAllocate(IntType.getInt32())
+    let expr = builder.createInstanceOf(alloc.result, IntType.getInt32())
+    println("createInstanceOf: ${expr.toString().size > 0}")
+}
+```
+
+运行结果：
+
+```text
+createInstanceOf: true
+```
+
+### func createInvoke(Type, InvokeCallContext)
+
+```cangjie
+public func createInvoke(retTy: Type, callContext: InvokeCallContext): Invoke
+```
+
+功能：创建虚方法调用（Invoke）表达式。
+
+参数：
+
+- retTy: Type - 返回类型。
+- callContext: InvokeCallContext - 虚方法调用上下文。
+
+返回值：
+
+- Invoke - Invoke 表达式。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let builder = CHIRBuilder(InsertPosition.AtEnd(block))
+    let ft = FuncType.get([], UnitType.get())
+    let sig = FuncSigInfo("method", ft)
+    let fcc = FuncCallContext([], [], None)
+    let ctx = InvokeCallContext(BoolLiteral.get(false), sig, fcc)
+    let expr = builder.createInvoke(UnitType.get(), ctx)
+    println("createInvoke: ${expr.toString().size > 0}")
+}
+```
+
+运行结果：
+
+```text
+createInvoke: true
+```
+
+### func createLambda(FuncType, String, String, Array\<GenericType>)
+
+```cangjie
+public func createLambda(ty: FuncType, mangledName: String, srcName: String, genericTypeParams!: Array<GenericType> = Array<GenericType>()): Lambda
+```
+
+功能：创建 Lambda 表达式。
+
+参数：
+
+- ty: FuncType - Lambda 函数类型。
+- mangledName: String - 混淆名。
+- srcName: String - 源码名。
+- genericTypeParams!: Array\<GenericType> - 泛型形参列表（默认为空数组）。
+
+返回值：
+
+- Lambda - Lambda 表达式。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let builder = CHIRBuilder(InsertPosition.AtEnd(block))
+    let ft = FuncType.get([], UnitType.get())
+    let expr = builder.createLambda(ft, "lambda_m", "myLambda")
+    println("createLambda: ${expr.toString().size > 0}")
+}
+```
+
+运行结果：
+
+```text
+createLambda: true
+```
+
+### func createLoad(Value)
+
+```cangjie
+public func createLoad(location: Value): Load
+```
+
+功能：创建内存加载表达式。
+
+参数：
+
+- location: Value - 内存位置值。
+
+返回值：
+
+- Load - 内存加载表达式。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let builder = CHIRBuilder(InsertPosition.AtEnd(block))
+    let alloc = builder.createAllocate(IntType.getInt32())
+    let expr = builder.createLoad(alloc.result)
+    println("createLoad: ${expr.toString().size > 0}")
+}
+```
+
+运行结果：
+
+```text
+createLoad: true
+```
+
+### func createMultiBranch(Value, Block, ArrayList\<Block>, ArrayList\<UInt64>)
+
+```cangjie
+public func createMultiBranch(condition: Value, defaultBlock: Block, targets: ArrayList<Block>, caseValues: ArrayList<UInt64>): MultiBranch
+```
+
+功能：创建多分支（switch）表达式。
+
+参数：
+
+- condition: Value - 分支条件值。
+- defaultBlock: Block - 默认目标基本块。
+- targets: ArrayList\<Block> - 各 case 分支目标基本块列表。
+- caseValues: ArrayList\<UInt64> - 各 case 分支对应的值列表。
+
+返回值：
+
+- MultiBranch - 多分支表达式。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+import std.collection.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let bg = f.body.getOrThrow()
+    let entryBlock = bg.entryBlock
+    let defaultBlock = bg.appendBlock()
+    let caseBlock1 = bg.appendBlock()
+    let targets = ArrayList<Block>()
+    targets.add(caseBlock1)
+    let caseValues = ArrayList<UInt64>()
+    caseValues.add(1)
+    let builder = CHIRBuilder(InsertPosition.AtEnd(entryBlock))
+    let expr = builder.createMultiBranch(IntLiteral.get(IntType.getInt64(), 1), defaultBlock, targets, caseValues)
+    println("createMultiBranch: ${expr.toString().size > 0}")
+}
+```
+
+运行结果：
+
+```text
+createMultiBranch: true
+```
+
+### func createNumericCast(Value, Type, OverflowStrategy)
+
+```cangjie
+public func createNumericCast(srcVal: Value, dstTy: Type, overflow: OverflowStrategy): NumericCast
+```
+
+功能：创建数值类型转换表达式。
+
+参数：
+
+- srcVal: Value - 源值。
+- dstTy: Type - 目标数值类型。
+- overflow: OverflowStrategy - 溢出策略。
+
+返回值：
+
+- NumericCast - 数值类型转换表达式。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let builder = CHIRBuilder(InsertPosition.AtEnd(block))
+    let expr = builder.createNumericCast(IntLiteral.get(IntType.getInt32(), 42), IntType.getInt64(), OverflowStrategy.NA)
+    println("createNumericCast: ${expr.toString().size > 0}")
+}
+```
+
+运行结果：
+
+```text
+createNumericCast: true
+```
+
+### func createRaiseException(Value)
+
+```cangjie
+public func createRaiseException(value: Value): RaiseException
+```
+
+功能：创建抛出异常表达式（无后续块）。
+
+参数：
+
+- value: Value - 异常值。
+
+返回值：
+
+- RaiseException - 抛出异常表达式。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let builder = CHIRBuilder(InsertPosition.AtEnd(block))
+    let expr = builder.createRaiseException(IntLiteral.get(IntType.getInt32(), 1))
+    println("createRaiseException_no_successor: ${expr.toString().size > 0}")
+}
+```
+
+运行结果：
+
+```text
+createRaiseException_no_successor: true
+```
+
+### func createRaiseException(Value, Block)
+
+```cangjie
+public func createRaiseException(value: Value, successor: Block): RaiseException
+```
+
+功能：创建抛出异常表达式（带后续块）。
+
+参数：
+
+- value: Value - 异常值。
+- successor: Block - 异常抛出后的后续基本块。
+
+返回值：
+
+- RaiseException - 抛出异常表达式。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let bg = f.body.getOrThrow()
+    let entryBlock = bg.entryBlock
+    let successorBlock = bg.appendBlock()
+    let builder = CHIRBuilder(InsertPosition.AtEnd(entryBlock))
+    let expr = builder.createRaiseException(IntLiteral.get(IntType.getInt32(), 1), successorBlock)
+    println("createRaiseException_with_successor: ${expr.toString().size > 0}")
+}
+```
+
+运行结果：
+
+```text
+createRaiseException_with_successor: true
+```
+
+### func createRawArrayAllocate(Type, Value)
+
+```cangjie
+public func createRawArrayAllocate(elementType: Type, size: Value): RawArrayAllocate
+```
+
+功能：创建原始数组分配表达式。
+
+参数：
+
+- elementType: Type - 数组元素类型。
+- size: Value - 数组大小值。
+
+返回值：
+
+- RawArrayAllocate - 原始数组分配表达式。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let builder = CHIRBuilder(InsertPosition.AtEnd(block))
+    let expr = builder.createRawArrayAllocate(IntType.getInt32(), IntLiteral.get(IntType.getInt64(), 10))
+    println("createRawArrayAllocate: ${expr.toString().size > 0}")
+}
+```
+
+运行结果：
+
+```text
+createRawArrayAllocate: true
+```
+
+### func createRawArrayInitByValue(Value, Value, Value)
+
+```cangjie
+public func createRawArrayInitByValue(memory: Value, size: Value, initVal: Value): RawArrayInitByValue
+```
+
+功能：创建按值初始化原始数组表达式。
+
+参数：
+
+- memory: Value - 数组内存位置值。
+- size: Value - 数组大小值。
+- initVal: Value - 初始化值。
+
+返回值：
+
+- RawArrayInitByValue - 按值初始化表达式。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let builder = CHIRBuilder(InsertPosition.AtEnd(block))
+    let alloc = builder.createRawArrayAllocate(IntType.getInt32(), IntLiteral.get(IntType.getInt64(), 5))
+    let expr = builder.createRawArrayInitByValue(alloc.result, IntLiteral.get(IntType.getInt64(), 5), IntLiteral.get(IntType.getInt32(), 0))
+    println("createRawArrayInitByValue: ${expr.toString().size > 0}")
+}
+```
+
+运行结果：
+
+```text
+createRawArrayInitByValue: true
+```
+
+### func createRawArrayLiteralInit(Value, ArrayList\<Value>)
+
+```cangjie
+public func createRawArrayLiteralInit(memory: Value, elements: ArrayList<Value>): RawArrayLiteralInit
+```
+
+功能：创建字面量初始化原始数组表达式。
+
+参数：
+
+- memory: Value - 数组内存位置值。
+- elements: ArrayList\<Value> - 初始化元素值列表。
+
+返回值：
+
+- RawArrayLiteralInit - 字面量初始化表达式。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+import std.collection.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let builder = CHIRBuilder(InsertPosition.AtEnd(block))
+    let alloc = builder.createRawArrayAllocate(IntType.getInt32(), IntLiteral.get(IntType.getInt64(), 3))
+    let elements = ArrayList<Value>()
+    elements.add(IntLiteral.get(IntType.getInt32(), 1))
+    elements.add(IntLiteral.get(IntType.getInt32(), 2))
+    elements.add(IntLiteral.get(IntType.getInt32(), 3))
+    let expr = builder.createRawArrayLiteralInit(alloc.result, elements)
+    println("createRawArrayLiteralInit: ${expr.toString().size > 0}")
+}
+```
+
+运行结果：
+
+```text
+createRawArrayLiteralInit: true
+```
+
+### func createSpawn(Type, Value)
+
+```cangjie
+public func createSpawn(retTy: Type, val: Value): Spawn
+```
+
+功能：创建并发 Spawn 表达式。
+
+参数：
+
+- retTy: Type - 返回类型。
+- val: Value - 被启动的函数值。
+
+返回值：
+
+- Spawn - Spawn 表达式。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f1 = pkg.addFunction(FuncType.get([], UnitType.get()), "spawn_m", "spawnTarget", "demo")
+    let f2 = pkg.addFunction(FuncType.get([], UnitType.get()), "caller_m", "caller", "demo")
+    f2.initBody()
+    let block = f2.body.getOrThrow().entryBlock
+    let builder = CHIRBuilder(InsertPosition.AtEnd(block))
+    let expr = builder.createSpawn(UnitType.get(), f1)
+    println("createSpawn_no_arg: ${expr.toString().size > 0}")
+}
+```
+
+运行结果：
+
+```text
+createSpawn_no_arg: true
+```
+
+### func createSpawn(Type, Value, Value)
+
+```cangjie
+public func createSpawn(retTy: Type, val: Value, arg: Value): Spawn
+```
+
+功能：创建带参数的并发 Spawn 表达式。
+
+参数：
+
+- retTy: Type - 返回类型。
+- val: Value - 被启动的函数值。
+- arg: Value - 函数参数值。
+
+返回值：
+
+- Spawn - 带参数的 Spawn 表达式。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f1 = pkg.addFunction(FuncType.get([IntType.getInt32()], UnitType.get()), "spawn_m", "spawnTarget", "demo")
+    let f2 = pkg.addFunction(FuncType.get([], UnitType.get()), "caller_m", "caller", "demo")
+    f2.initBody()
+    let block = f2.body.getOrThrow().entryBlock
+    let builder = CHIRBuilder(InsertPosition.AtEnd(block))
+    let expr = builder.createSpawn(UnitType.get(), f1, IntLiteral.get(IntType.getInt32(), 42))
+    println("createSpawn_with_arg: ${expr.toString().size > 0}")
+}
+```
+
+运行结果：
+
+```text
+createSpawn_with_arg: true
+```
+
+### func createStaticCast(Value, Type)
+
+```cangjie
+public func createStaticCast(srcVal: Value, dstTy: Type): StaticCast
+```
+
+功能：创建静态类型转换表达式。
+
+参数：
+
+- srcVal: Value - 源值。
+- dstTy: Type - 目标类型。
+
+返回值：
+
+- StaticCast - 静态类型转换表达式。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let builder = CHIRBuilder(InsertPosition.AtEnd(block))
+    let expr = builder.createStaticCast(IntLiteral.get(IntType.getInt32(), 1), IntType.getInt64())
+    println("createStaticCast: ${expr.toString().size > 0}")
+}
+```
+
+运行结果：
+
+```text
+createStaticCast: true
+```
+
+### func createStore(Value, Value)
+
+```cangjie
+public func createStore(val: Value, location: Value): Store
+```
+
+功能：创建内存存储表达式。
+
+参数：
+
+- val: Value - 要存储的值。
+- location: Value - 内存位置值。
+
+返回值：
+
+- Store - 内存存储表达式。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let builder = CHIRBuilder(InsertPosition.AtEnd(block))
+    let alloc = builder.createAllocate(IntType.getInt32())
+    let expr = builder.createStore(IntLiteral.get(IntType.getInt32(), 42), alloc.result)
+    println("createStore: ${expr.toString().size > 0}")
+}
+```
+
+运行结果：
+
+```text
+createStore: true
+```
+
+### func createStoreElementByName(Value, Value, ArrayList\<String>)
+
+```cangjie
+public func createStoreElementByName(val: Value, location: Value, fieldNames: ArrayList<String>): StoreElementByName
+```
+
+功能：创建按字段名的元素存储表达式。
+
+参数：
+
+- val: Value - 要存储的值。
+- location: Value - 内存位置值。
+- fieldNames: ArrayList\<String> - 字段名路径列表。
+
+返回值：
+
+- StoreElementByName - 按字段名的元素存储表达式。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+import std.collection.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let builder = CHIRBuilder(InsertPosition.AtEnd(block))
+    let alloc = builder.createAllocate(IntType.getInt32())
+    let names = ArrayList<String>()
+    names.add("x")
+    let expr = builder.createStoreElementByName(IntLiteral.get(IntType.getInt32(), 10), alloc.result, names)
+    println("createStoreElementByName: ${expr.toString().size > 0}")
+}
+```
+
+运行结果：
+
+```text
+createStoreElementByName: true
+```
+
+### func createStoreElementRef(Value, Value, ArrayList\<UInt64>)
+
+```cangjie
+public func createStoreElementRef(val: Value, location: Value, path: ArrayList<UInt64>): StoreElementRef
+```
+
+功能：创建按数字索引的元素存储表达式。
+
+参数：
+
+- val: Value - 要存储的值。
+- location: Value - 内存位置值。
+- path: ArrayList\<UInt64> - 数字索引路径列表。
+
+返回值：
+
+- StoreElementRef - 按数字索引的元素存储表达式。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+import std.collection.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let builder = CHIRBuilder(InsertPosition.AtEnd(block))
+    let alloc = builder.createAllocate(IntType.getInt32())
+    let path = ArrayList<UInt64>()
+    path.add(0)
+    let expr = builder.createStoreElementRef(IntLiteral.get(IntType.getInt32(), 10), alloc.result, path)
+    println("createStoreElementRef: ${expr.toString().size > 0}")
+}
+```
+
+运行结果：
+
+```text
+createStoreElementRef: true
+```
+
+### func createTryAllocate(Type, Block, Block)
+
+```cangjie
+public func createTryAllocate(ty: Type, normal: Block, err: Block): TryAllocate
+```
+
+功能：创建带异常处理的内存分配表达式。
+
+参数：
+
+- ty: Type - 分配的类型。
+- normal: Block - 正常分支目标基本块。
+- err: Block - 异常分支目标基本块。
+
+返回值：
+
+- TryAllocate - 带异常处理的分配表达式。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let bg = f.body.getOrThrow()
+    let entryBlock = bg.entryBlock
+    let normalBlock = bg.appendBlock()
+    let errBlock = bg.appendBlock()
+    let builder = CHIRBuilder(InsertPosition.AtEnd(entryBlock))
+    let expr = builder.createTryAllocate(IntType.getInt32(), normalBlock, errBlock)
+    println("createTryAllocate: ${expr.toString().size > 0}")
+}
+```
+
+运行结果：
+
+```text
+createTryAllocate: true
+```
+
+### func createTryApply(Value, FuncCallContext, Block, Block)
+
+```cangjie
+public func createTryApply(callee: Value, funcCallCtx: FuncCallContext, normal: Block, err: Block): TryApply
+```
+
+功能：创建带异常处理的函数调用表达式。
+
+参数：
+
+- callee: Value - 被调用函数值。
+- funcCallCtx: FuncCallContext - 函数调用上下文。
+- normal: Block - 正常分支目标基本块。
+- err: Block - 异常分支目标基本块。
+
+返回值：
+
+- TryApply - 带异常处理的函数调用表达式。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f1 = pkg.addFunction(FuncType.get([], UnitType.get()), "callee_m", "callee", "demo")
+    let f2 = pkg.addFunction(FuncType.get([], UnitType.get()), "caller_m", "caller", "demo")
+    f2.initBody()
+    let bg = f2.body.getOrThrow()
+    let entryBlock = bg.entryBlock
+    let normalBlock = bg.appendBlock()
+    let errBlock = bg.appendBlock()
+    let builder = CHIRBuilder(InsertPosition.AtEnd(entryBlock))
+    let ctx = FuncCallContext([], [], None)
+    let expr = builder.createTryApply(f1, ctx, normalBlock, errBlock)
+    println("createTryApply: ${expr.toString().size > 0}")
+}
+```
+
+运行结果：
+
+```text
+createTryApply: true
+```
+
+### func createTryBinaryAdd(Value, Value, Block, Block)
+
+```cangjie
+public func createTryBinaryAdd(leftOp: Value, rightOp: Value, normal: Block, err: Block): TryBinaryExpression
+```
+
+功能：创建带异常处理的加法表达式。
+
+参数：
+
+- leftOp: Value - 左操作数。
+- rightOp: Value - 右操作数。
+- normal: Block - 正常分支目标基本块。
+- err: Block - 异常分支目标基本块。
+
+返回值：
+
+- TryBinaryExpression - 带异常处理的加法表达式。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let bg = f.body.getOrThrow()
+    let entryBlock = bg.entryBlock
+    let normalBlock = bg.appendBlock()
+    let errBlock = bg.appendBlock()
+    let builder = CHIRBuilder(InsertPosition.AtEnd(entryBlock))
+    let expr = builder.createTryBinaryAdd(IntLiteral.get(IntType.getInt64(), 1), IntLiteral.get(IntType.getInt64(), 2), normalBlock, errBlock)
+    println("createTryBinaryAdd: ${expr.toString().size > 0}")
+}
+```
+
+运行结果：
+
+```text
+createTryBinaryAdd: true
+```
+
+### func createTryBinaryDiv(Value, Value, OverflowStrategy, Block, Block)
+
+```cangjie
+public func createTryBinaryDiv(leftOp: Value, rightOp: Value, overflow: OverflowStrategy, normal: Block, err: Block): TryBinaryExpression
+```
+
+功能：创建带异常处理的除法表达式。
+
+参数：
+
+- leftOp: Value - 左操作数。
+- rightOp: Value - 右操作数。
+- overflow: OverflowStrategy - 溢出策略。
+- normal: Block - 正常分支目标基本块。
+- err: Block - 异常分支目标基本块。
+
+返回值：
+
+- TryBinaryExpression - 带异常处理的除法表达式。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let bg = f.body.getOrThrow()
+    let entryBlock = bg.entryBlock
+    let normalBlock = bg.appendBlock()
+    let errBlock = bg.appendBlock()
+    let builder = CHIRBuilder(InsertPosition.AtEnd(entryBlock))
+    let expr = builder.createTryBinaryDiv(IntLiteral.get(IntType.getInt64(), 10), IntLiteral.get(IntType.getInt64(), 2), OverflowStrategy.NA, normalBlock, errBlock)
+    println("createTryBinaryDiv: ${expr.toString().size > 0}")
+}
+```
+
+运行结果：
+
+```text
+createTryBinaryDiv: true
+```
+
+### func createTryBinaryExp(Value, Value, Block, Block)
+
+```cangjie
+public func createTryBinaryExp(leftOp: Value, rightOp: Value, normal: Block, err: Block): TryBinaryExpression
+```
+
+功能：创建带异常处理的指数表达式。
+
+参数：
+
+- leftOp: Value - 左操作数。
+- rightOp: Value - 右操作数。
+- normal: Block - 正常分支目标基本块。
+- err: Block - 异常分支目标基本块。
+
+返回值：
+
+- TryBinaryExpression - 带异常处理的指数表达式。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let bg = f.body.getOrThrow()
+    let entryBlock = bg.entryBlock
+    let normalBlock = bg.appendBlock()
+    let errBlock = bg.appendBlock()
+    let builder = CHIRBuilder(InsertPosition.AtEnd(entryBlock))
+    let expr = builder.createTryBinaryExp(IntLiteral.get(IntType.getInt64(), 2), IntLiteral.get(IntType.getInt64(), 3), normalBlock, errBlock)
+    println("createTryBinaryExp: ${expr.toString().size > 0}")
+}
+```
+
+运行结果：
+
+```text
+createTryBinaryExp: true
+```
+
+### func createTryBinaryLShift(Value, Value, Block, Block)
+
+```cangjie
+public func createTryBinaryLShift(leftOp: Value, rightOp: Value, normal: Block, err: Block): TryBinaryExpression
+```
+
+功能：创建带异常处理的左移表达式。
+
+参数：
+
+- leftOp: Value - 左操作数。
+- rightOp: Value - 右操作数。
+- normal: Block - 正常分支目标基本块。
+- err: Block - 异常分支目标基本块。
+
+返回值：
+
+- TryBinaryExpression - 带异常处理的左移表达式。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let bg = f.body.getOrThrow()
+    let entryBlock = bg.entryBlock
+    let normalBlock = bg.appendBlock()
+    let errBlock = bg.appendBlock()
+    let builder = CHIRBuilder(InsertPosition.AtEnd(entryBlock))
+    let expr = builder.createTryBinaryLShift(IntLiteral.get(IntType.getInt64(), 1), IntLiteral.get(IntType.getInt64(), 2), normalBlock, errBlock)
+    println("createTryBinaryLShift: ${expr.toString().size > 0}")
+}
+```
+
+运行结果：
+
+```text
+createTryBinaryLShift: true
+```
+
+### func createTryBinaryMod(Value, Value, Block, Block)
+
+```cangjie
+public func createTryBinaryMod(leftOp: Value, rightOp: Value, normal: Block, err: Block): TryBinaryExpression
+```
+
+功能：创建带异常处理的取模表达式。
+
+参数：
+
+- leftOp: Value - 左操作数。
+- rightOp: Value - 右操作数。
+- normal: Block - 正常分支目标基本块。
+- err: Block - 异常分支目标基本块。
+
+返回值：
+
+- TryBinaryExpression - 带异常处理的取模表达式。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let bg = f.body.getOrThrow()
+    let entryBlock = bg.entryBlock
+    let normalBlock = bg.appendBlock()
+    let errBlock = bg.appendBlock()
+    let builder = CHIRBuilder(InsertPosition.AtEnd(entryBlock))
+    let expr = builder.createTryBinaryMod(IntLiteral.get(IntType.getInt64(), 10), IntLiteral.get(IntType.getInt64(), 3), normalBlock, errBlock)
+    println("createTryBinaryMod: ${expr.toString().size > 0}")
+}
+```
+
+运行结果：
+
+```text
+createTryBinaryMod: true
+```
+
+### func createTryBinaryMul(Value, Value, Block, Block)
+
+```cangjie
+public func createTryBinaryMul(leftOp: Value, rightOp: Value, normal: Block, err: Block): TryBinaryExpression
+```
+
+功能：创建带异常处理的乘法表达式。
+
+参数：
+
+- leftOp: Value - 左操作数。
+- rightOp: Value - 右操作数。
+- normal: Block - 正常分支目标基本块。
+- err: Block - 异常分支目标基本块。
+
+返回值：
+
+- TryBinaryExpression - 带异常处理的乘法表达式。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let bg = f.body.getOrThrow()
+    let entryBlock = bg.entryBlock
+    let normalBlock = bg.appendBlock()
+    let errBlock = bg.appendBlock()
+    let builder = CHIRBuilder(InsertPosition.AtEnd(entryBlock))
+    let expr = builder.createTryBinaryMul(IntLiteral.get(IntType.getInt64(), 3), IntLiteral.get(IntType.getInt64(), 4), normalBlock, errBlock)
+    println("createTryBinaryMul: ${expr.toString().size > 0}")
+}
+```
+
+运行结果：
+
+```text
+createTryBinaryMul: true
+```
+
+### func createTryBinaryRShift(Value, Value, Block, Block)
+
+```cangjie
+public func createTryBinaryRShift(leftOp: Value, rightOp: Value, normal: Block, err: Block): TryBinaryExpression
+```
+
+功能：创建带异常处理的右移表达式。
+
+参数：
+
+- leftOp: Value - 左操作数。
+- rightOp: Value - 右操作数。
+- normal: Block - 正常分支目标基本块。
+- err: Block - 异常分支目标基本块。
+
+返回值：
+
+- TryBinaryExpression - 带异常处理的右移表达式。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let bg = f.body.getOrThrow()
+    let entryBlock = bg.entryBlock
+    let normalBlock = bg.appendBlock()
+    let errBlock = bg.appendBlock()
+    let builder = CHIRBuilder(InsertPosition.AtEnd(entryBlock))
+    let expr = builder.createTryBinaryRShift(IntLiteral.get(IntType.getInt64(), 8), IntLiteral.get(IntType.getInt64(), 2), normalBlock, errBlock)
+    println("createTryBinaryRShift: ${expr.toString().size > 0}")
+}
+```
+
+运行结果：
+
+```text
+createTryBinaryRShift: true
+```
+
+### func createTryBinarySub(Value, Value, Block, Block)
+
+```cangjie
+public func createTryBinarySub(leftOp: Value, rightOp: Value, normal: Block, err: Block): TryBinaryExpression
+```
+
+功能：创建带异常处理的减法表达式。
+
+参数：
+
+- leftOp: Value - 左操作数。
+- rightOp: Value - 右操作数。
+- normal: Block - 正常分支目标基本块。
+- err: Block - 异常分支目标基本块。
+
+返回值：
+
+- TryBinaryExpression - 带异常处理的减法表达式。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let bg = f.body.getOrThrow()
+    let entryBlock = bg.entryBlock
+    let normalBlock = bg.appendBlock()
+    let errBlock = bg.appendBlock()
+    let builder = CHIRBuilder(InsertPosition.AtEnd(entryBlock))
+    let expr = builder.createTryBinarySub(IntLiteral.get(IntType.getInt64(), 5), IntLiteral.get(IntType.getInt64(), 3), normalBlock, errBlock)
+    println("createTryBinarySub: ${expr.toString().size > 0}")
+}
+```
+
+运行结果：
+
+```text
+createTryBinarySub: true
+```
+
+### func createTryInvoke(Type, InvokeCallContext, Block, Block)
+
+```cangjie
+public func createTryInvoke(retTy: Type, callContext: InvokeCallContext, normal: Block, err: Block): TryInvoke
+```
+
+功能：创建带异常处理的虚方法调用表达式。
+
+参数：
+
+- retTy: Type - 返回类型。
+- callContext: InvokeCallContext - 虚方法调用上下文。
+- normal: Block - 正常分支目标基本块。
+- err: Block - 异常分支目标基本块。
+
+返回值：
+
+- TryInvoke - 带异常处理的虚方法调用表达式。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let bg = f.body.getOrThrow()
+    let entryBlock = bg.entryBlock
+    let normalBlock = bg.appendBlock()
+    let errBlock = bg.appendBlock()
+    let builder = CHIRBuilder(InsertPosition.AtEnd(entryBlock))
+    let ft = FuncType.get([], UnitType.get())
+    let sig = FuncSigInfo("method", ft)
+    let fcc = FuncCallContext([], [], None)
+    let ctx = InvokeCallContext(BoolLiteral.get(false), sig, fcc)
+    let expr = builder.createTryInvoke(UnitType.get(), ctx, normalBlock, errBlock)
+    println("createTryInvoke: ${expr.toString().size > 0}")
+}
+```
+
+运行结果：
+
+```text
+createTryInvoke: true
+```
+
+### func createTryNumericCast(Value, Type, Block, Block)
+
+```cangjie
+public func createTryNumericCast(srcVal: Value, dstTy: Type, normal: Block, err: Block): TryNumericCast
+```
+
+功能：创建带异常处理的数值类型转换表达式。
+
+参数：
+
+- srcVal: Value - 源值。
+- dstTy: Type - 目标数值类型。
+- normal: Block - 正常分支目标基本块。
+- err: Block - 异常分支目标基本块。
+
+返回值：
+
+- TryNumericCast - 带异常处理的数值类型转换表达式。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let bg = f.body.getOrThrow()
+    let entryBlock = bg.entryBlock
+    let normalBlock = bg.appendBlock()
+    let errBlock = bg.appendBlock()
+    let builder = CHIRBuilder(InsertPosition.AtEnd(entryBlock))
+    let expr = builder.createTryNumericCast(IntLiteral.get(IntType.getInt32(), 42), IntType.getInt64(), normalBlock, errBlock)
+    println("createTryNumericCast: ${expr.toString().size > 0}")
+}
+```
+
+运行结果：
+
+```text
+createTryNumericCast: true
+```
+
+### func createTryRawArrayAllocate(Type, Value, Block, Block)
+
+```cangjie
+public func createTryRawArrayAllocate(elementType: Type, size: Value, normal: Block, err: Block): TryRawArrayAllocate
+```
+
+功能：创建带异常处理的原始数组分配表达式。
+
+参数：
+
+- elementType: Type - 数组元素类型。
+- size: Value - 数组大小值。
+- normal: Block - 正常分支目标基本块。
+- err: Block - 异常分支目标基本块。
+
+返回值：
+
+- TryRawArrayAllocate - 带异常处理的原始数组分配表达式。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let bg = f.body.getOrThrow()
+    let entryBlock = bg.entryBlock
+    let normalBlock = bg.appendBlock()
+    let errBlock = bg.appendBlock()
+    let builder = CHIRBuilder(InsertPosition.AtEnd(entryBlock))
+    let expr = builder.createTryRawArrayAllocate(IntType.getInt32(), IntLiteral.get(IntType.getInt64(), 10), normalBlock, errBlock)
+    println("createTryRawArrayAllocate: ${expr.toString().size > 0}")
+}
+```
+
+运行结果：
+
+```text
+createTryRawArrayAllocate: true
+```
+
+### func createTrySpawn(Type, Value, Block, Block)
+
+```cangjie
+public func createTrySpawn(retTy: Type, val: Value, normal: Block, err: Block): TrySpawn
+```
+
+功能：创建带异常处理的并发 Spawn 表达式。
+
+参数：
+
+- retTy: Type - 返回类型。
+- val: Value - 被启动的函数值。
+- normal: Block - 正常分支目标基本块。
+- err: Block - 异常分支目标基本块。
+
+返回值：
+
+- TrySpawn - 带异常处理的 Spawn 表达式。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f1 = pkg.addFunction(FuncType.get([], UnitType.get()), "spawn_m", "spawnTarget", "demo")
+    let f2 = pkg.addFunction(FuncType.get([], UnitType.get()), "caller_m", "caller", "demo")
+    f2.initBody()
+    let bg = f2.body.getOrThrow()
+    let entryBlock = bg.entryBlock
+    let normalBlock = bg.appendBlock()
+    let errBlock = bg.appendBlock()
+    let builder = CHIRBuilder(InsertPosition.AtEnd(entryBlock))
+    let expr = builder.createTrySpawn(UnitType.get(), f1, normalBlock, errBlock)
+    println("createTrySpawn_no_arg: ${expr.toString().size > 0}")
+}
+```
+
+运行结果：
+
+```text
+createTrySpawn_no_arg: true
+```
+
+### func createTrySpawn(Type, Value, Value, Block, Block)
+
+```cangjie
+public func createTrySpawn(retTy: Type, val: Value, arg: Value, normal: Block, err: Block): TrySpawn
+```
+
+功能：创建带参数和异常处理的并发 Spawn 表达式。
+
+参数：
+
+- retTy: Type - 返回类型。
+- val: Value - 被启动的函数值。
+- arg: Value - 函数参数值。
+- normal: Block - 正常分支目标基本块。
+- err: Block - 异常分支目标基本块。
+
+返回值：
+
+- TrySpawn - 带参数和异常处理的 Spawn 表达式。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f1 = pkg.addFunction(FuncType.get([IntType.getInt32()], UnitType.get()), "spawn_m", "spawnTarget", "demo")
+    let f2 = pkg.addFunction(FuncType.get([], UnitType.get()), "caller_m", "caller", "demo")
+    f2.initBody()
+    let bg = f2.body.getOrThrow()
+    let entryBlock = bg.entryBlock
+    let normalBlock = bg.appendBlock()
+    let errBlock = bg.appendBlock()
+    let builder = CHIRBuilder(InsertPosition.AtEnd(entryBlock))
+    let expr = builder.createTrySpawn(UnitType.get(), f1, IntLiteral.get(IntType.getInt32(), 42), normalBlock, errBlock)
+    println("createTrySpawn_with_arg: ${expr.toString().size > 0}")
+}
+```
+
+运行结果：
+
+```text
+createTrySpawn_with_arg: true
+```
+
+### func createTryUnaryNeg(Value, Block, Block)
+
+```cangjie
+public func createTryUnaryNeg(op: Value, normal: Block, err: Block): TryUnaryExpression
+```
+
+功能：创建带异常处理的取负一元表达式。
+
+参数：
+
+- op: Value - 操作数。
+- normal: Block - 正常分支目标基本块。
+- err: Block - 异常分支目标基本块。
+
+返回值：
+
+- TryUnaryExpression - 带异常处理的取负表达式。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let bg = f.body.getOrThrow()
+    let entryBlock = bg.entryBlock
+    let normalBlock = bg.appendBlock()
+    let errBlock = bg.appendBlock()
+    let builder = CHIRBuilder(InsertPosition.AtEnd(entryBlock))
+    let expr = builder.createTryUnaryNeg(IntLiteral.get(IntType.getInt64(), 1), normalBlock, errBlock)
+    println("createTryUnaryNeg: ${expr.toString().size > 0}")
+}
+```
+
+运行结果：
+
+```text
+createTryUnaryNeg: true
+```
+
+### func createTuple(Array\<Value>)
+
+```cangjie
+public func createTuple(elements: Array<Value>): Tuple
+```
+
+功能：创建元组表达式。
+
+参数：
+
+- elements: Array\<Value> - 元组元素值列表。
+
+返回值：
+
+- Tuple - 元组表达式。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let builder = CHIRBuilder(InsertPosition.AtEnd(block))
+    let expr = builder.createTuple([IntLiteral.get(IntType.getInt32(), 1), IntLiteral.get(IntType.getInt32(), 2)])
+    println("createTuple: ${expr.toString().size > 0}")
+}
+```
+
+运行结果：
+
+```text
+createTuple: true
+```
+
+### func createUnaryBitNot(Value)
+
+```cangjie
+public func createUnaryBitNot(op: Value): UnaryExpression
+```
+
+功能：创建按位取反一元表达式。
+
+参数：
+
+- op: Value - 操作数。
+
+返回值：
+
+- UnaryExpression - 按位取反表达式。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let builder = CHIRBuilder(InsertPosition.AtEnd(block))
+    let expr = builder.createUnaryBitNot(IntLiteral.get(IntType.getInt64(), 3))
+    println("createUnaryBitNot: ${expr.toString().size > 0}")
+}
+```
+
+运行结果：
+
+```text
+createUnaryBitNot: true
+```
+
+### func createUnaryNeg(Value, OverflowStrategy)
+
+```cangjie
+public func createUnaryNeg(op: Value, overflow: OverflowStrategy): UnaryExpression
+```
+
+功能：创建取负一元表达式。
+
+参数：
+
+- op: Value - 操作数。
+- overflow: OverflowStrategy - 溢出策略。
+
+返回值：
+
+- UnaryExpression - 取负表达式。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let builder = CHIRBuilder(InsertPosition.AtEnd(block))
+    let expr = builder.createUnaryNeg(IntLiteral.get(IntType.getInt64(), 5), OverflowStrategy.NA)
+    println("createUnaryNeg: ${expr.toString().size > 0}")
+}
+```
+
+运行结果：
+
+```text
+createUnaryNeg: true
+```
+
+### func createUnaryNot(Value)
+
+```cangjie
+public func createUnaryNot(op: Value): UnaryExpression
+```
+
+功能：创建逻辑取反一元表达式。
+
+参数：
+
+- op: Value - 操作数。
+
+返回值：
+
+- UnaryExpression - 逻辑取反表达式。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let builder = CHIRBuilder(InsertPosition.AtEnd(block))
+    let expr = builder.createUnaryNot(BoolLiteral.get(true))
+    println("createUnaryNot: ${expr.toString().size > 0}")
+}
+```
+
+运行结果：
+
+```text
+createUnaryNot: true
+```
+
+### func createUnboxToRef(Value, Type)
+
+```cangjie
+public func createUnboxToRef(srcVal: Value, dstTy: Type): UnboxToRef
+```
+
+功能：创建拆箱为引用类型转换表达式。
+
+参数：
+
+- srcVal: Value - 源值。
+- dstTy: Type - 目标引用类型。
+
+返回值：
+
+- UnboxToRef - 拆箱为引用表达式。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let builder = CHIRBuilder(InsertPosition.AtEnd(block))
+    let alloc = builder.createAllocate(BoxType.get(IntType.getInt32()))
+    let expr = builder.createUnboxToRef(alloc.result, IntType.getInt32())
+    println("createUnboxToRef: ${expr.toString().size > 0}")
+}
+```
+
+运行结果：
+
+```text
+createUnboxToRef: true
+```
+
+### func createUnboxToValue(Value, Type)
+
+```cangjie
+public func createUnboxToValue(srcVal: Value, dstTy: Type): UnboxToValue
+```
+
+功能：创建拆箱为值类型转换表达式。
+
+参数：
+
+- srcVal: Value - 源值。
+- dstTy: Type - 目标值类型。
+
+返回值：
+
+- UnboxToValue - 拆箱为值表达式。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let builder = CHIRBuilder(InsertPosition.AtEnd(block))
+    let alloc = builder.createAllocate(BoxType.get(IntType.getInt32()))
+    let expr = builder.createUnboxToValue(alloc.result, IntType.getInt32())
+    println("createUnboxToValue: ${expr.toString().size > 0}")
+}
+```
+
+运行结果：
+
+```text
+createUnboxToValue: true
+```
+
+### func createVArray(ArrayList\<Value>)
+
+```cangjie
+public func createVArray(elements: ArrayList<Value>): VArrayExpr
+```
+
+功能：创建 VArray 表达式。
+
+参数：
+
+- elements: ArrayList\<Value> - VArray 元素值列表。
+
+返回值：
+
+- VArrayExpr - VArray 表达式。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+import std.collection.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let builder = CHIRBuilder(InsertPosition.AtEnd(block))
+    let elements = ArrayList<Value>()
+    elements.add(IntLiteral.get(IntType.getInt32(), 1))
+    elements.add(IntLiteral.get(IntType.getInt32(), 2))
+    let expr = builder.createVArray(elements)
+    println("createVArray: ${expr.toString().size > 0}")
+}
+```
+
+运行结果：
+
+```text
+createVArray: true
+```
+
+### func createVArrayBuilder(Type, Value, Value, Value)
+
+```cangjie
+public func createVArrayBuilder(retTy: Type, size: Value, initVal: Value, initFunc: Value): VArrayBuilder
+```
+
+功能：创建 VArray 构建器表达式。
+
+参数：
+
+- retTy: Type - 返回类型。
+- size: Value - 数组大小值。
+- initVal: Value - 初始化值。
+- initFunc: Value - 初始化函数值。
+
+返回值：
+
+- VArrayBuilder - VArray 构建器表达式。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let initF = pkg.addFunction(FuncType.get([IntType.getInt32()], IntType.getInt32()), "init_m", "init", "demo")
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let builder = CHIRBuilder(InsertPosition.AtEnd(block))
+    let expr = builder.createVArrayBuilder(IntType.getInt32(), IntLiteral.get(IntType.getInt64(), 5), IntLiteral.get(IntType.getInt32(), 0), initF)
+    println("createVArrayBuilder: ${expr.toString().size > 0}")
+}
+```
+
+运行结果：
+
+```text
+createVArrayBuilder: true
 ```
 
 ---
