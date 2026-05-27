@@ -9,7 +9,7 @@
 ```cangjie
 package AOP_demo1
 
-import stdx.aspectCJ.*
+import stdx.aspect_cj.*
 import std.time.DateTime
 
 @InsertAtEntry[packageName: "AOP_demo1", className: "", methodName: "printCurrentTime", isStatic: false, funcTypeStr: "()->Unit", recursive: false]
@@ -31,8 +31,8 @@ main() {
 linux 平台编译命令：
 
 ```shell
-cjc aop_demo1.cj -L $CANGJIE_STDX_PATH --import-path $CANGJIE_STDX_PATH -lstdx.aspectCJ --plugin=$CANGJIE_STDX_PATH/libcollect-aspects.so -o main # 第一次编译，收集切面
-cjc aop_demo1.cj -L $CANGJIE_STDX_PATH --import-path $CANGJIE_STDX_PATH -lstdx.aspectCJ --plugin=$CANGJIE_STDX_PATH/libwave-aspects.so -o main # 第二次编译，织入切面
+cjc aop_demo1.cj -L $CANGJIE_STDX_PATH --import-path $CANGJIE_STDX_PATH -lstdx.aspect_cj --plugin=$CANGJIE_STDX_PATH/libstdx.collect_aspects.so -o main # 第一次编译，收集切面
+cjc aop_demo1.cj -L $CANGJIE_STDX_PATH --import-path $CANGJIE_STDX_PATH -lstdx.aspect_cj --plugin=$CANGJIE_STDX_PATH/libstdx.wave_aspects.so -o main # 第二次编译，织入切面
 ```
 
 运行结果可能如下：
@@ -52,7 +52,7 @@ bye
 ```cangjie
 package AOP_demo2
 
-import stdx.aspectCJ.*
+import stdx.aspect_cj.*
 import std.time.DateTime
 
 @InsertAtExit[packageName: "AOP_demo2", className: "", methodName: "printCurrentTime", isStatic: false, funcTypeStr: "()->std.core:String", recursive: false]
@@ -75,8 +75,8 @@ main() {
 linux 平台编译命令：
 
 ```shell
-cjc aop_demo2.cj -L $CANGJIE_STDX_PATH --import-path $CANGJIE_STDX_PATH -lstdx.aspectCJ --plugin=$CANGJIE_STDX_PATH/libcollect-aspects.so -o main # 第一次编译，收集切面
-cjc aop_demo2.cj -L $CANGJIE_STDX_PATH --import-path $CANGJIE_STDX_PATH -lstdx.aspectCJ --plugin=$CANGJIE_STDX_PATH/libwave-aspects.so -o main # 第二次编译，织入切面
+cjc aop_demo2.cj -L $CANGJIE_STDX_PATH --import-path $CANGJIE_STDX_PATH -lstdx.aspect_cj --plugin=$CANGJIE_STDX_PATH/libstdx.collect_aspects.so -o main # 第一次编译，收集切面
+cjc aop_demo2.cj -L $CANGJIE_STDX_PATH --import-path $CANGJIE_STDX_PATH -lstdx.aspect_cj --plugin=$CANGJIE_STDX_PATH/libstdx.wave_aspects.so -o main # 第二次编译，织入切面
 ```
 
 运行结果可能如下：
@@ -97,7 +97,7 @@ done
 ```cangjie
 package AOP_demo3
 
-import stdx.aspectCJ.*
+import stdx.aspect_cj.*
 import std.time.DateTime
 
 @ReplaceFuncBody[packageName: "AOP_demo3", className: "", methodName: "printCurrentTime", isStatic: false, recursive: false]
@@ -122,8 +122,8 @@ main() {
 linux 平台编译命令：
 
 ```shell
-cjc aop_demo3.cj -L $CANGJIE_STDX_PATH --import-path $CANGJIE_STDX_PATH -lstdx.aspectCJ --plugin=$CANGJIE_STDX_PATH/libcollect-aspects.so -o main # 第一次编译，收集切面
-cjc aop_demo3.cj -L $CANGJIE_STDX_PATH --import-path $CANGJIE_STDX_PATH -lstdx.aspectCJ --plugin=$CANGJIE_STDX_PATH/libwave-aspects.so -o main # 第二次编译，织入切面
+cjc aop_demo3.cj -L $CANGJIE_STDX_PATH --import-path $CANGJIE_STDX_PATH -lstdx.aspect_cj --plugin=$CANGJIE_STDX_PATH/libstdx.collect_aspects.so -o main # 第一次编译，收集切面
+cjc aop_demo3.cj -L $CANGJIE_STDX_PATH --import-path $CANGJIE_STDX_PATH -lstdx.aspect_cj --plugin=$CANGJIE_STDX_PATH/libstdx.wave_aspects.so -o main # 第二次编译，织入切面
 ```
 
 运行结果可能如下：
