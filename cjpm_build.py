@@ -296,7 +296,7 @@ STDX_DIR = os.path.dirname(os.path.abspath(__file__))
 BUILD_DIR = os.path.join(STDX_DIR, "build_temp")
 SYNTAX_DIR = os.path.join(STDX_DIR, "src/stdx/syntax")
 FUZZ_DIR = os.path.join(STDX_DIR, "src/stdx/fuzz")
-ASPECTCJ_DIR = os.path.join(STDX_DIR, "src/stdx/aspectCJ")
+ASPECT_CJ_DIR = os.path.join(STDX_DIR, "src/stdx/aspect_cj")
 CMAKE_BUILD_DIR = os.path.join(BUILD_DIR, "build")
 CMAKE_OUTPUT_DIR = os.path.join(CJPM_DIR, "target/" + BUILD_TYPE_CJPM)
 LOG_DIR = os.path.join(BUILD_DIR, "logs")
@@ -925,7 +925,7 @@ def clean(args):
 def cleanLibs():
     LOG.info("begin clean libs...\n")
     output_dirs = []
-    output_dirs.append(ASPECTCJ_DIR)
+    output_dirs.append(ASPECT_CJ_DIR)
     output_dirs.append(SYNTAX_DIR)
     if IS_WINDOWS and not DEVECO_OH_NATIVE_HOME:
         output_dirs.append(FUZZ_DIR)

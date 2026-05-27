@@ -46,14 +46,15 @@ endfunction()
 
 function(add_cangjie_macro_library_in_local target_name)
     set(options
-        NO_SUB_PKG)
+        NO_SUB_PKG
+        INSTALL)
     set(one_value_args
         OUTPUT_NAME
         OUTPUT_DIR
         PACKAGE_NAME
         MODULE_NAME
         SOURCE_DIR)
-    set(multi_value_args SOURCES DEPENDS FFI)
+    set(multi_value_args SOURCES DEPENDS FFI LINK_LIBS)
     cmake_parse_arguments(
         CANGJIELIB
         "${options}"
@@ -71,6 +72,10 @@ function(add_cangjie_macro_library_in_local target_name)
     endif()
 
     list(APPEND cangjie_compile_flags "--compile-macro")
+
+    set(BACKEND "cjnative")
+    string(TOLOWER "${TARGET_TRIPLE_DIRECTORY_PREFIX}_${BACKEND}" output_cj_lib_dir)
+    set(_stdx_dylib_dir "${CMAKE_BINARY_DIR}/lib/${output_cj_lib_dir}${SANITIZER_SUBPATH}")
 
     if(NOT ("${CANGJIELIB_MODULE_NAME}" STREQUAL ""))
         set(output_dir "${CANGJIE_LIB_DIR}/${TARGET_TRIPLE_DIRECTORY_PREFIX}_${BACKEND}/${CANGJIELIB_MODULE_NAME}")
@@ -92,6 +97,15 @@ function(add_cangjie_macro_library_in_local target_name)
         ${no_sub_pkg}
         ${cangjie_compile_flags}
         -p ${CANGJIELIB_SOURCE_DIR})
+    if(CMAKE_CROSSCOMPILING)
+        list(APPEND COMPILE_CMD "--target=${TRIPLE}")
+        if(NOT ("${CANGJIE_TARGET_TOOLCHAIN}" STREQUAL ""))
+            list(APPEND COMPILE_CMD "-B${CANGJIE_TARGET_TOOLCHAIN}")
+        endif()
+    endif()
+    if(CANGJIELIB_LINK_LIBS)
+        list(APPEND COMPILE_CMD -L "${_stdx_dylib_dir}" ${CANGJIELIB_LINK_LIBS})
+    endif()
 
     cj_resolve_depends(resolved_depends ${CANGJIELIB_DEPENDS})
 
@@ -111,17 +125,61 @@ function(add_cangjie_macro_library_in_local target_name)
         file(GLOB source_files CONFIGURE_DEPENDS ${CANGJIELIB_SOURCE_DIR}/*.cj)
     endif()
 
+    if(NOT ("${CANGJIELIB_MODULE_NAME}" STREQUAL ""))
+        set(_macro_basename "lib-macro_${CANGJIELIB_MODULE_NAME}.${CANGJIELIB_PACKAGE_NAME}")
+    else()
+        set(_macro_basename "lib-macro_${CANGJIELIB_PACKAGE_NAME}")
+    endif()
+    set(_macro_so "${CMAKE_CURRENT_BINARY_DIR}/${_macro_basename}${CMAKE_SHARED_LIBRARY_SUFFIX}")
+
+    # cjc --compile-macro links against stdx dylibs with @rpath install names but does not
+    # set LC_RPATH. On macOS, stage plugin.manager next to the macro and add @loader_path.
+    set(_macro_post_cmds)
+    if(DARWIN AND CANGJIELIB_LINK_LIBS)
+        set(_plugin_manager_dylib "${_stdx_dylib_dir}/libstdx.plugin.manager${CMAKE_SHARED_LIBRARY_SUFFIX}")
+        list(APPEND _macro_post_cmds
+            COMMAND ${CMAKE_COMMAND} -E copy_if_different "${_plugin_manager_dylib}" "${CMAKE_CURRENT_BINARY_DIR}/"
+            COMMAND sh -c "install_name_tool -add_rpath @loader_path '${_macro_so}' 2>/dev/null || true")
+    endif()
+
+    set(_copy_macro_script "${CMAKE_CURRENT_LIST_DIR}/CopyCangjieMacroOutput.cmake")
+
     add_custom_command(
         OUTPUT ${output_full_name}
         COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_BINARY_DIR}/${output_dir}
         COMMAND ${CMAKE_COMMAND} -E env "CANGJIE_PATH=${CMAKE_BINARY_DIR}/modules/${output_cj_lib_dir}"  "LIBRARY_PATH=${CMAKE_BINARY_DIR}/lib"
                 ${COMPILE_CMD}
-        DEPENDS ${resolved_depends} ${source_files} ${CANGJIELIB_SOURCE_DIR}
+        ${_macro_post_cmds}
+        COMMAND ${CMAKE_COMMAND}
+            -DSRC_DIR=${CMAKE_CURRENT_BINARY_DIR}
+            -DSRC_DIR2=${CANGJIELIB_SOURCE_DIR}
+            -Dmacro_basename=${_macro_basename}
+            -Dmacro_suffix=${CMAKE_SHARED_LIBRARY_SUFFIX}
+            -DDEST=${output_full_name}
+            -P ${_copy_macro_script}
+        DEPENDS ${resolved_depends} ${source_files} ${CANGJIELIB_SOURCE_DIR} ${_copy_macro_script}
         COMMENT "Generating ${target_name}")
 
     add_custom_target(
         ${target_name} ALL
         DEPENDS ${output_full_name} ${CANGJIELIB_DEPENDS})
+    set_target_properties(${target_name} PROPERTIES CJ_OUTPUT_FILE ${output_full_name})
+
+    if(CANGJIE_CODEGEN_CJNATIVE_BACKEND AND CANGJIELIB_INSTALL)
+        string(TOLOWER ${TARGET_TRIPLE_DIRECTORY_PREFIX}_${BACKEND} _macro_install_lib_dir)
+        set(_macro_install_lib_dir ${_macro_install_lib_dir}${SANITIZER_SUBPATH})
+        if(NOT ("${CANGJIELIB_MODULE_NAME}" STREQUAL ""))
+            set(_macro_install_name "lib-macro_${CANGJIELIB_MODULE_NAME}.${CANGJIELIB_PACKAGE_NAME}${CMAKE_SHARED_LIBRARY_SUFFIX}")
+        else()
+            set(_macro_install_name "lib-macro_${CANGJIELIB_PACKAGE_NAME}${CMAKE_SHARED_LIBRARY_SUFFIX}")
+        endif()
+        install(FILES ${output_full_name}
+            DESTINATION ${_macro_install_lib_dir}/dynamic/stdx
+            RENAME ${_macro_install_name})
+        install(FILES ${output_full_name}
+            DESTINATION ${_macro_install_lib_dir}/static/stdx
+            RENAME ${_macro_install_name})
+    endif()
 endfunction()
 
 function(add_cangjie_library target_name
@@ -137,7 +195,7 @@ function(add_cangjie_library target_name
         PACKAGE_NAME
         MODULE_NAME
         SOURCE_DIR)
-    set(multi_value_args SOURCES DEPENDS FFI)
+    set(multi_value_args SOURCES DEPENDS FFI COMPILE_LINK_LIBS)
     cmake_parse_arguments(
         CANGJIELIB
         "${options}"
@@ -273,6 +331,15 @@ function(add_cangjie_library target_name
         list(APPEND COMPILE_CMD "${build_args}")
     endforeach()
 
+    string(TOLOWER ${TARGET_TRIPLE_DIRECTORY_PREFIX}_${BACKEND} output_cj_lib_dir)
+    if(CANGJIELIB_COMPILE_LINK_LIBS)
+        set(_compile_stdx_dylib_dir "${CMAKE_BINARY_DIR}/lib/${output_cj_lib_dir}${SANITIZER_SUBPATH}")
+        list(APPEND COMPILE_CMD
+            -L "${_compile_stdx_dylib_dir}"
+            -L "${CMAKE_BINARY_DIR}/modules/${output_cj_lib_dir}/stdx"
+            ${CANGJIELIB_COMPILE_LINK_LIBS})
+    endif()
+
     set(COMPILE_BC_CMD
         ${COMPILE_CMD}
         --lto=full
@@ -297,15 +364,39 @@ function(add_cangjie_library target_name
     endif()
 
     set(ENV{LD_LIBRARY_PATH} $ENV{LD_LIBRARY_PATH}:${CMAKE_BINARY_DIR}/lib)
-    string(TOLOWER ${TARGET_TRIPLE_DIRECTORY_PREFIX}_${BACKEND} output_cj_lib_dir)
-    
+
     cj_resolve_depends(resolved_depends ${CANGJIELIB_DEPENDS})
-    
+
+    set(_cj_lib_compile_env
+        "CANGJIE_PATH=${CMAKE_BINARY_DIR}/modules/${output_cj_lib_dir}"
+        "LIBRARY_PATH=${CMAKE_BINARY_DIR}/lib")
+    if(CANGJIELIB_COMPILE_LINK_LIBS)
+        set(_cj_stdx_dylib_dir "${CMAKE_BINARY_DIR}/lib/${output_cj_lib_dir}${SANITIZER_SUBPATH}")
+        set(_cj_runtime_lib_dir "$ENV{CANGJIE_HOME}/runtime/lib/${output_cj_lib_dir}${SANITIZER_SUBPATH}")
+        if(APPLE)
+            list(APPEND _cj_lib_compile_env
+                "DYLD_LIBRARY_PATH=${_cj_stdx_dylib_dir}:${_cj_runtime_lib_dir}:$ENV{DYLD_LIBRARY_PATH}")
+        else()
+            list(APPEND _cj_lib_compile_env
+                "LD_LIBRARY_PATH=${_cj_stdx_dylib_dir}:${_cj_runtime_lib_dir}:$ENV{LD_LIBRARY_PATH}")
+        endif()
+    endif()
+
+    set(_cj_pre_compile_cmds)
+    if(CANGJIELIB_COMPILE_LINK_LIBS AND APPLE)
+        set(_cj_plugin_manager_dylib
+            "${CMAKE_BINARY_DIR}/lib/${output_cj_lib_dir}${SANITIZER_SUBPATH}/libstdx.plugin.manager${CMAKE_SHARED_LIBRARY_SUFFIX}")
+        list(APPEND _cj_pre_compile_cmds
+            COMMAND ${CMAKE_COMMAND} -E copy_if_different
+                "${_cj_plugin_manager_dylib}" "${CMAKE_CURRENT_BINARY_DIR}/")
+    endif()
+
     if(NOT CMAKE_BUILD_STAGE STREQUAL "postBuild")
         add_custom_command(
             OUTPUT ${output_full_name}
             COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_BINARY_DIR}/${output_dir}
-            COMMAND ${CMAKE_COMMAND} -E env "CANGJIE_PATH=${CMAKE_BINARY_DIR}/modules/${output_cj_lib_dir}"  "LIBRARY_PATH=${CMAKE_BINARY_DIR}/lib"
+            ${_cj_pre_compile_cmds}
+            COMMAND ${CMAKE_COMMAND} -E env ${_cj_lib_compile_env}
                     ${COMPILE_CMD}
             DEPENDS ${resolved_depends} ${source_files} ${CANGJIELIB_SOURCE_DIR}
             COMMENT "Generating ${target_name}")
@@ -346,7 +437,7 @@ function(add_cangjie_library target_name
             add_custom_command(
                 OUTPUT ${output_lto_bc_full_name}
                 COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_BINARY_DIR}/${output_bc_dir}
-                COMMAND ${CMAKE_COMMAND} -E env "CANGJIE_PATH=${bc_cangjie_path}" "LIBRARY_PATH=${CMAKE_BINARY_DIR}/lib"
+                COMMAND ${CMAKE_COMMAND} -E env ${_cj_lib_compile_env}
                         ${COMPILE_BC_CMD}
                 # ${target_name}_bc depends on ${target_name} so they will not run simultaneously. <target> and <target>_bc
                 # compile the same package, which means they may write the same bc cache file. Running simultaneously

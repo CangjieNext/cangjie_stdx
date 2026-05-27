@@ -380,7 +380,7 @@ class CHIRSerializerImpl {
         }
     }
 
-    private func serializeCustomAnnoInstance(anno: Annotation): UInt32 {
+    private func serializeCustomAnnoInstance(anno: CustomAnnoInstance): UInt32 {
         let annoClassName = fbBuilder.createString(anno._classSrcCodeName)
         let argValuesVec: UInt32 = if (anno._argValues.isEmpty()) {
             UInt32(0)
