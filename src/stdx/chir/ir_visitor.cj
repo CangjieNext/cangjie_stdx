@@ -11,8 +11,20 @@ package stdx.chir
 /**
  * Controls how `CHIRVisitor` proceeds when visiting an expression.
  */
-public enum IRActionMode {
-    CONTINUE | STOP
+public enum IRActionMode <: Equatable<IRActionMode> {
+    | Continue
+    | Stop
+    | Skip
+    | ...
+
+    public operator func ==(rhs: IRActionMode): Bool {
+        match ((this, rhs)) {
+            case (Continue, Continue) => true
+            case (Stop, Stop) => true
+            case (Skip, Skip) => true
+            case _ => false
+        }
+    }
 }
 
 /**
@@ -52,9 +64,13 @@ public abstract class CHIRVisitor {
      */
     public func walk(b: Block): Unit {
         for (e in b.exprs) {
-            action(e)
+            let actionResult = action(e)
+            isStop = (actionResult == IRActionMode.Stop)
             if (isStop) {
                 return
+            }
+            if (actionResult == IRActionMode.Skip) {
+                continue
             }
             for (subBg in e.blockGroups) {
                 walk(subBg)
@@ -71,6 +87,6 @@ public abstract class CHIRVisitor {
      * @return Visitor control mode for this node.
      */
     public open func action(ty: Expression): IRActionMode {
-        return IRActionMode.CONTINUE
+        return IRActionMode.Continue
     }
 }
