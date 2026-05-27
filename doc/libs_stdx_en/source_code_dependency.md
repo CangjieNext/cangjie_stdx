@@ -41,7 +41,7 @@ After completing the addition of central repository module dependencies, develop
 
 ## Package Scope
 
-Currently, the integrated stdx for source code dependencies does not include aspectCJ and syntax, and there is no fuzz package on the Windows platform.
+Currently, the integrated stdx for source code dependencies does not include aspect_cj and syntax, and there is no fuzz package on the Windows platform.
 
 ## Supported Platforms
 
