@@ -25,12 +25,12 @@ public class EnumCtorInfo <: ToString {
      * Getter returns all instances; setter replaces the whole list.
      * @type { Array<Annotation> }
      */
-    public mut prop annotations: Array<Annotation> {
+    public mut prop customAnnoInstances: Array<CustomAnnoInstance> {
         get() {
             return _annoInfo._annoInstances.toArray()
         }
         set(v) {
-            _annoInfo._annoInstances = ArrayList<Annotation>.of(v)
+            _annoInfo._annoInstances = ArrayList<CustomAnnoInstance>.of(v)
         }
     }
 

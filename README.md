@@ -9,7 +9,7 @@ Architecture Diagram:
 ![](figures/stdx_Architecture_Diagram_en.png)
 
 - actors: Provides a concurrent programming model designed to simplify the handling of concurrent tasks.
-- aspectCJ: Provides annotations related to aspect-oriented programming in Cangjie.
+- aspect_cj: Provides annotations related to aspect-oriented programming in Cangjie.
 - compress: Provides compression and decompression functions.
 - crypto: Provides a utility library for cryptographic operations.
 - effect: Provides a powerful non-local control operation.
@@ -98,7 +98,7 @@ The following platform and architecture combinations are currently supported:
 ├─ src                          # Directory of stdx package codes
 │   └─ stdx
 │       ├── actors              # Provides Actors
-│       ├── aspectCJ            # Provides AOP
+│       ├── aspect_cj           # Provides AOP
 │       ├── compress            # Provides compression and decompression
 │       ├── crypto              # Provide security related capabilities
 │       ├── effect              # Provides user-level APIs for handling the Effect Handler feature. This is an experimental feature and requires the use of a Cangjie compiler that supports this mechanism.
@@ -185,7 +185,7 @@ For detailed usage of cjpm, refer to [cjpm Documentation](https://gitcode.com/Ca
 
 Building via cjpm has some dependencies, see [dependency list](./doc/libs_stdx_en/source_code_dependency.md#Dependencies).
 
-Currently, the stdx binary packages built via cjpm do not include aspectCJ and syntax, and there are no fuzz packages on the Windows platform.
+Currently, the stdx binary packages built via cjpm do not include aspect_cj and syntax, and there are no fuzz packages on the Windows platform.
 
 ### Integration Build Guide
 
