@@ -50,14 +50,14 @@ public class MemberVar <: ToString {
     /**
      * Gets or sets annotations on this member variable.
      * Getter returns instances for this member; setter replaces the whole list.
-     * @type { Array<Annotation> }
+     * @type { Array<CustomAnnoInstance> }
      */
-    public mut prop annotations: Array<Annotation> {
+    public mut prop customAnnoInstances: Array<CustomAnnoInstance> {
         get() {
             return _annoInfo._annoInstances.toArray()
         }
         set(v) {
-            _annoInfo._annoInstances = ArrayList<Annotation>.of(v)
+            _annoInfo._annoInstances = ArrayList<CustomAnnoInstance>.of(v)
         }
     }
 
@@ -239,12 +239,12 @@ sealed abstract class CustomTypeDef <: Base & Equatable<CustomTypeDef> & Hashabl
      * Gets the `annotations` property.
      * @type { Array<Annotation> }
      */
-    public mut prop annotations: Array<Annotation> {
+    public mut prop customAnnoInstances: Array<CustomAnnoInstance> {
         get() {
             return _annoInfo._annoInstances.toArray()
         }
         set(v) {
-            _annoInfo._annoInstances = ArrayList<Annotation>.of(v)
+            _annoInfo._annoInstances = ArrayList<CustomAnnoInstance>.of(v)
         }
     }
 

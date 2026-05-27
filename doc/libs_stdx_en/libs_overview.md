@@ -16,7 +16,7 @@ The standard library offers the most commonly used APIs for developers, while th
 | ------------------------------------------------------------------ | ------------------    |
 | import stdx.actors.* | stdx.actors |
 | import stdx.actors.macros.* | stdx.actors.macros |
-| import stdx.aspectCJ.* | stdx.aspectCJ |
+| import stdx.aspect_cj.* | stdx.aspect_cj |
 | import stdx.compress.zlib.* | stdx.compress.zlib |
 | import stdx.crypto.common.* | stdx.crypto.common、stdx.encoding.base64 |
 | import stdx.crypto.crypto.* | stdx.crypto.crypto、stdx.crypto.digest |
@@ -50,7 +50,7 @@ For an introduction to `cjc` and compilation, refer to the Cangjie User Manual.
 ```cangjie
 import stdx.actors.*
 import stdx.actors.macros.*
-import stdx.aspectCJ.*
+import stdx.aspect_cj.*
 import stdx.compress.zlib.*
 import stdx.crypto.crypto.*
 import stdx.crypto.digest.*
@@ -74,13 +74,13 @@ main() {
 Compilation commands for Linux and macOS:
 
 ```shell
-cjc main.cj -L $CANGJIE_STDX_PATH -lstdx.actors -lstdx.aspectCJ -lstdx.encoding.json -lstdx.serialization.serialization -lstdx.net.http -lstdx.net.tls -lstdx.logger -lstdx.log -lstdx.encoding.url -lstdx.encoding.json.stream -lstdx.crypto.keys -lstdx.crypto.x509 -lstdx.encoding.hex -lstdx.encoding.base64 -lstdx.crypto.crypto -lstdx.crypto.digest -lstdx.compress.zlib -lstdx.compress -ldl --import-path $CANGJIE_STDX_PATH -o main.out
+cjc main.cj -L $CANGJIE_STDX_PATH -lstdx.actors -lstdx.aspect_cj -lstdx.encoding.json -lstdx.serialization.serialization -lstdx.net.http -lstdx.net.tls -lstdx.logger -lstdx.log -lstdx.encoding.url -lstdx.encoding.json.stream -lstdx.crypto.keys -lstdx.crypto.x509 -lstdx.encoding.hex -lstdx.encoding.base64 -lstdx.crypto.crypto -lstdx.crypto.digest -lstdx.compress.zlib -lstdx.compress -ldl --import-path $CANGJIE_STDX_PATH -o main.out
 ```
 
 Windows compilation command:
 
 ```shell
-cjc main.cj -L $CANGJIE_STDX_PATH -lstdx.actors -lstdx.aspectCJ -lstdx.encoding.json -lstdx.serialization.serialization -lstdx.net.http -lstdx.net.tls -lstdx.logger -lstdx.log -lstdx.encoding.url -lstdx.encoding.json.stream -lstdx.crypto.keys -lstdx.crypto.x509 -lstdx.encoding.hex -lstdx.encoding.base64 -lstdx.crypto.crypto -lstdx.crypto.digest -lstdx.compress.zlib -lstdx.compress -lcrypt32 --import-path $CANGJIE_STDX_PATH -o main.out
+cjc main.cj -L $CANGJIE_STDX_PATH -lstdx.actors -lstdx.aspect_cj -lstdx.encoding.json -lstdx.serialization.serialization -lstdx.net.http -lstdx.net.tls -lstdx.logger -lstdx.log -lstdx.encoding.url -lstdx.encoding.json.stream -lstdx.crypto.keys -lstdx.crypto.x509 -lstdx.encoding.hex -lstdx.encoding.base64 -lstdx.crypto.crypto -lstdx.crypto.digest -lstdx.compress.zlib -lstdx.compress -lcrypt32 --import-path $CANGJIE_STDX_PATH -o main.out
 ```
 
 `CANGJIE_STDX_PATH` is the path to the stdx library.
@@ -124,7 +124,7 @@ stdx includes several packages that offer rich extension functionalities:
 | ---------------------------------------------------------- | --------- |
 | [actors](./actors/actors_package_overview.md)    | The `actors` package provides the foundational capabilities for the actor programming model. |
 | [actors.macros](./actors/macros/macros_package_overview.md) | The `actors.macros` package provides the ability to transform a class into an active object. |
-| [aspectCJ](./aspectCJ/aspectCJ_package_overview.md) | The aspectCJ package provides Aspect-Oriented Programming (AOP) capabilities in Cangjie. |
+| [aspect_cj](./aspect_cj/aspect_cj_package_overview.md) | The aspect_cj package provides Aspect-Oriented Programming (AOP) capabilities in Cangjie. |
 | [compress.zlib](./compress/zlib/zlib_package_overview.md)                        | The compress package provides compression and decompression functionalities. |
 | [crypto.common](./crypto/common/crypto_common_package_overview.md)             | The common package provides interfaces related to encryption and decryption.  |
 | [crypto.crypto](./crypto/crypto/crypto_package_overview.md)                        | The crypto package provides secure encryption capabilities. |
