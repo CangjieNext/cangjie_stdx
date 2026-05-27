@@ -70,9 +70,12 @@ sealed abstract class Value <: Base & ToString & Hashable & Equatable<Value> {
      * Gets the `identifier` property.
      * @type { String }
      */
-    public prop identifier: String {
+    public mut prop identifier: String {
         get() {
             return _identifier
+        }
+        set(v) {
+            _identifier = v
         }
     }
 
@@ -201,6 +204,13 @@ sealed abstract class Value <: Base & ToString & Hashable & Equatable<Value> {
         return _kind == ValueKind.Parameter
     }
 
+    public func replaceWith(other: Value): Unit {
+        let tempUsers = _users.clone()
+        for (user in tempUsers) {
+            user.replaceOperand(this, other)
+        }
+    }
+
     protected open func calculateHashCode(): Int64
 
     internal func isInvalid(): Bool {
@@ -214,6 +224,20 @@ sealed abstract class Value <: Base & ToString & Hashable & Equatable<Value> {
      */
     public operator func==(other: Value): Bool {
         return refEq(this, other)
+    }
+
+    internal func addUser(user: Expression): Unit {
+        if (_users.contains(user)) {
+            return
+        }
+        _users.add(user)
+    }
+
+    internal func removeUser(user: Expression): Unit {
+        if (user._operands.contains(this)) {
+            return
+        }
+        _users.removeIf({ u => u == user })
     }
 }
 
@@ -511,12 +535,12 @@ sealed abstract class GlobalValue <: Value & Equatable<GlobalValue> {
      * Gets the `annotations` property.
      * @type { Array<Annotation> }
      */
-    public mut prop annotations: Array<Annotation> {
+    public mut prop customAnnoInstances: Array<CustomAnnoInstance> {
         get() {
             return _annoInfo._annoInstances.toArray()
         }
         set(v) {
-            _annoInfo._annoInstances = ArrayList<Annotation>.of(v)
+            _annoInfo._annoInstances = ArrayList<CustomAnnoInstance>.of(v)
         }
     }
 
@@ -547,6 +571,16 @@ sealed abstract class GlobalValue <: Value & Equatable<GlobalValue> {
     public prop packageName: String {
         get() {
             return _packageName
+        }
+    }
+
+    public prop outerType: ?Type {
+        get() {
+            if (let Some(p) <- _declaredParent) {
+                return p.ty
+            } else {
+                return None
+            }
         }
     }
 
@@ -653,6 +687,10 @@ sealed abstract class GlobalValue <: Value & Equatable<GlobalValue> {
      */
     public func setConst(enable: Bool): Unit {
         _attributes.setAttr(Attribute.Const, enable)
+    }
+
+    public func setImported(enable: Bool): Unit {
+        _attributes.setAttr(Attribute.Imported, enable)
     }
 
     /**
@@ -949,7 +987,13 @@ public class Function <: GlobalValue & Equatable<Function> {
      * @return The `Bool` result.
      */
     public func selfOrParentIsGeneric(): Bool {
-        return isGeneric() || (_declaredParent.isSome() && _declaredParent.getOrThrow().isGeneric())
+        if (isGeneric()) {
+            return true
+        }
+        if (let Some(p) <- _declaredParent) {
+            return p.isGeneric()
+        }
+        return false
     }
 
     /**
@@ -1645,12 +1689,12 @@ public class Parameter <: Value & Equatable<Parameter> {
      * Gets the `annotations` property.
      * @type { Array<Annotation> }
      */
-    public mut prop annotations: Array<Annotation> {
+    public mut prop customAnnoInstances: Array<CustomAnnoInstance> {
         get() {
             return _annoInfo._annoInstances.toArray()
         }
         set(v) {
-            _annoInfo._annoInstances = ArrayList<Annotation>.of(v)
+            _annoInfo._annoInstances = ArrayList<CustomAnnoInstance>.of(v)
         }
     }
 
