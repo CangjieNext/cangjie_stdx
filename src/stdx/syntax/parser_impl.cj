@@ -197,6 +197,20 @@ private class NodeLoader {
         return NodeFormat_Node(flatBuf[HEADER_SIZE..], 0)
     }
 
+    private unsafe func getParseResultPointers(resPtr: CPointer<ParseRes>,
+        unsupportedNodeMessage: String): (CPointer<UInt8>, CPointer<UInt8>) {
+        if (resPtr.isNull()) {
+            throw Exception("the parsing result is empty.")
+            return (CPointer<UInt8>(), CPointer<UInt8>())
+        }
+        let res = resPtr.read()
+        if (res.node.isNull() && res.errMsg.isNull()) {
+            throw Exception(unsupportedNodeMessage)
+            return (CPointer<UInt8>(), CPointer<UInt8>())
+        }
+        return (res.node, res.errMsg)
+    }
+
     private unsafe func loadNodeFromFile(): ?NodeFormat_Node {
         var pathPtr: CString = CString(CPointer<UInt8>())
         var nodePtr = CPointer<UInt8>()
@@ -208,22 +222,13 @@ private class NodeLoader {
                 throw Exception("mallocCString failed for file path.")
             }
             resPtr = CJ_ParseFile(pathPtr)
-            if (resPtr.isNull()) {
-                throw Exception("the parsing result is empty.")
-                return None
-            }
-            let res = resPtr.read()
-            if (!res.errMsg.isNull()) {
-                diagPtr = res.errMsg
+            (nodePtr, diagPtr) = getParseResultPointers(resPtr, "unsupported node type in parseFile function.")
+            if (!diagPtr.isNull()) {
                 getDiags(diagPtr)
             }
-            if (res.node.isNull()) {
-                if (res.errMsg.isNull()) {
-                    throw Exception("unsupported node type in parseFile function.")
-                }
+            if (nodePtr.isNull()) {
                 return None
             }
-            nodePtr = res.node
             return getNode(nodePtr)
         } finally {
             // free memory allocated in C.
@@ -245,22 +250,13 @@ private class NodeLoader {
                 throw Exception("mallocCString failed for text.")
             }
             resPtr = CJ_ParseText(textPtr)
-            if (resPtr.isNull()) {
-                throw Exception("the parsing result is empty.")
-                return None
-            }
-            let res = resPtr.read()
-            if (!res.errMsg.isNull()) {
-                diagPtr = res.errMsg
+            (nodePtr, diagPtr) = getParseResultPointers(resPtr, "unsupported node type in parseText function.")
+            if (!diagPtr.isNull()) {
                 getDiags(diagPtr)
             }
-            if (res.node.isNull()) {
-                if (res.errMsg.isNull()) {
-                    throw Exception("unsupported node type in parseText function.")
-                }
+            if (nodePtr.isNull()) {
                 return None
             }
-            nodePtr = res.node
             return getNode(nodePtr)
         } finally {
             // free memory allocated in C.
