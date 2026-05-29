@@ -16,6 +16,18 @@ private func translateExprChild<T>(nodeImpl: SyntaxNodeImpl, startPos: CodePosit
     return cast<T>(SyntaxNodeImplTranslator.translate(curNode, startPos + propInfo.offset, parentNode)).getOrThrow()
 }
 
+private func createExprTokenRange(pos: CodePosition, size: Int64): CodePositionRange {
+    return CodePositionRange(pos, pos + size)
+}
+
+private func createExprTokenRanges(positions: Array<CodePosition>, size: Int64): Array<CodePositionRange> {
+    let ret = ArrayList<CodePositionRange>()
+    for (pos in positions) {
+        ret.add(createExprTokenRange(pos, size))
+    }
+    return ret.toArray()
+}
+
 sealed abstract class Expr <: SyntaxTreeNode {
     init(nodePos: CodePositionRange, nodeImpl: SyntaxNodeImpl, parentNode: ?SyntaxTreeNode,
         commentsPropInfo: Array<PropInfo>) {
@@ -65,8 +77,7 @@ public class ArrayLiteral <: Expr {
      * @return A CodePositionRange representing the position range of the left square bracket.
      */
     public func getLSquarePos(): CodePositionRange {
-        let endPos = posInfos.lSquarePos + SyntaxNodeKind.LSquareToken.size
-        return CodePositionRange(posInfos.lSquarePos, endPos)
+        return createExprTokenRange(posInfos.lSquarePos, SyntaxNodeKind.LSquareToken.size)
     }
 
     /**
@@ -75,8 +86,7 @@ public class ArrayLiteral <: Expr {
      * @return A CodePositionRange representing the position range of the right square bracket.
      */
     public func getRSquarePos(): CodePositionRange {
-        let endPos = posInfos.rSquarePos + SyntaxNodeKind.RSquareToken.size
-        return CodePositionRange(posInfos.rSquarePos, endPos)
+        return createExprTokenRange(posInfos.rSquarePos, SyntaxNodeKind.RSquareToken.size)
     }
 
     /**
@@ -85,12 +95,7 @@ public class ArrayLiteral <: Expr {
      * @return An ArrayList of CodePositionRange representing the position ranges of the commas.
      */
     public func getCommasPos(): Array<CodePositionRange> {
-        let ret = ArrayList<CodePositionRange>()
-        for (i in 0..posInfos.commasPos.size) {
-            let endPos = posInfos.commasPos[i] + SyntaxNodeKind.CommaToken.size
-            ret.add(CodePositionRange(posInfos.commasPos[i], endPos))
-        }
-        ret.toArray()
+        return createExprTokenRanges(posInfos.commasPos, SyntaxNodeKind.CommaToken.size)
     }
 
     init(nodeImpl: SyntaxNodeImpl, startPos: CodePosition, parentNode: ?SyntaxTreeNode, posInfos: ArrayLiteralPosInfos,
@@ -3267,8 +3272,7 @@ public class SubscriptExpr <: Expr {
      * @return A CodePositionRange representing the position range of the left square bracket.
      */
     public func getLSquarePos(): CodePositionRange {
-        let endPos = posInfos.lSquarePos + SyntaxNodeKind.LSquareToken.size
-        return CodePositionRange(posInfos.lSquarePos, endPos)
+        return createExprTokenRange(posInfos.lSquarePos, SyntaxNodeKind.LSquareToken.size)
     }
 
     /**
@@ -3277,8 +3281,7 @@ public class SubscriptExpr <: Expr {
      * @return A CodePositionRange representing the position range of the right square bracket.
      */
     public func getRSquarePos(): CodePositionRange {
-        let endPos = posInfos.rSquarePos + SyntaxNodeKind.RSquareToken.size
-        return CodePositionRange(posInfos.rSquarePos, endPos)
+        return createExprTokenRange(posInfos.rSquarePos, SyntaxNodeKind.RSquareToken.size)
     }
 
     /**
@@ -3287,12 +3290,7 @@ public class SubscriptExpr <: Expr {
      * @return An Array of PositionRange representing the position ranges of the commas.
      */
     public func getCommasPos(): Array<CodePositionRange> {
-        let ret = ArrayList<CodePositionRange>()
-        for (i in 0..posInfos.commasPos.size) {
-            let endPos = posInfos.commasPos[i] + SyntaxNodeKind.CommaToken.size
-            ret.add(CodePositionRange(posInfos.commasPos[i], endPos))
-        }
-        ret.toArray()
+        return createExprTokenRanges(posInfos.commasPos, SyntaxNodeKind.CommaToken.size)
     }
 
     init(nodeImpl: SyntaxNodeImpl, startPos: CodePosition, parentNode: ?SyntaxTreeNode, posInfos: SubscriptExprPosInfos,
