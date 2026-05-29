@@ -215,9 +215,7 @@ public class AsExpr <: Expr {
      */
     public prop srcVal: Expr {
         get() {
-            let curNode = (nodeImpl as NonTerminal).getOrThrow().children[propInfos.srcValPropInfo.index]
-            let offset = propInfos.srcValPropInfo.offset
-            cast<Expr>(SyntaxNodeImplTranslator.translate(curNode, startPos + offset, this)).getOrThrow()
+            return translateExprChild<Expr>(nodeImpl, startPos, this, propInfos.srcValPropInfo)
         }
     }
 
@@ -228,9 +226,8 @@ public class AsExpr <: Expr {
      */
     public prop targetTypeAnnotation: TypeAnnotation {
         get() {
-            let curNode = (nodeImpl as NonTerminal).getOrThrow().children[propInfos.targetTypeAnnotationPropInfo.index]
-            let offset = propInfos.targetTypeAnnotationPropInfo.offset
-            cast<TypeAnnotation>(SyntaxNodeImplTranslator.translate(curNode, startPos + offset, this)).getOrThrow()
+            return translateExprChild<TypeAnnotation>(nodeImpl, startPos, this,
+                propInfos.targetTypeAnnotationPropInfo)
         }
     }
 }
@@ -1586,9 +1583,7 @@ public class IsExpr <: Expr {
      */
     public prop srcVal: Expr {
         get() {
-            let curNode = (nodeImpl as NonTerminal).getOrThrow().children[propInfos.srcValPropInfo.index]
-            let offset = propInfos.srcValPropInfo.offset
-            cast<Expr>(SyntaxNodeImplTranslator.translate(curNode, startPos + offset, this)).getOrThrow()
+            return translateExprChild<Expr>(nodeImpl, startPos, this, propInfos.srcValPropInfo)
         }
     }
 
@@ -1600,9 +1595,8 @@ public class IsExpr <: Expr {
      */
     public prop targetTypeAnnotation: TypeAnnotation {
         get() {
-            let curNode = (nodeImpl as NonTerminal).getOrThrow().children[propInfos.targetTypeAnnotationPropInfo.index]
-            let offset = propInfos.targetTypeAnnotationPropInfo.offset
-            cast<TypeAnnotation>(SyntaxNodeImplTranslator.translate(curNode, startPos + offset, this)).getOrThrow()
+            return translateExprChild<TypeAnnotation>(nodeImpl, startPos, this,
+                propInfos.targetTypeAnnotationPropInfo)
         }
     }
 }
@@ -4309,9 +4303,7 @@ public class TypeConvExpr <: Expr {
      */
     public prop srcVal: Expr {
         get() {
-            let curNode = (nodeImpl as NonTerminal).getOrThrow().children[propInfos.srcValPropInfo.index]
-            let offset = propInfos.srcValPropInfo.offset
-            cast<Expr>(SyntaxNodeImplTranslator.translate(curNode, startPos + offset, this)).getOrThrow()
+            return translateExprChild<Expr>(nodeImpl, startPos, this, propInfos.srcValPropInfo)
         }
     }
 
