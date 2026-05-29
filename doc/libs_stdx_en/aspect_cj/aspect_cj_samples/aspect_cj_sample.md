@@ -9,7 +9,7 @@ The following is an example code demonstrating function entry point instrumentat
 ```cangjie
 package AOP_demo1
 
-import stdx.aspectCJ.*
+import stdx.aspect_cj.*
 import std.time.DateTime
 
 @InsertAtEntry[packageName: "AOP_demo1", className: "", methodName: "printCurrentTime", isStatic: false, funcTypeStr: "()->Unit", recursive: false]
@@ -31,8 +31,8 @@ main() {
 Linux platform compilation commands:
 
 ```shell
-cjc aop_demo1.cj --plugin=libcollect-aspects.so -o main # First compilation: aspect collection
-cjc aop_demo1.cj --plugin=libwave-aspects.so -o main # Second compilation: aspect weaving
+cjc aop_demo1.cj -L $CANGJIE_STDX_PATH --import-path $CANGJIE_STDX_PATH -lstdx.aspect_cj --plugin=$CANGJIE_STDX_PATH/libstdx.collect_aspects.so -o main # First compilation: aspect collection
+cjc aop_demo1.cj -L $CANGJIE_STDX_PATH --import-path $CANGJIE_STDX_PATH -lstdx.aspect_cj --plugin=$CANGJIE_STDX_PATH/libstdx.wave_aspects.so -o main # Second compilation: aspect weaving
 ```
 
 Possible execution output:
@@ -52,7 +52,7 @@ The following is an example code demonstrating function exit point instrumentati
 ```cangjie
 package AOP_demo2
 
-import stdx.aspectCJ.*
+import stdx.aspect_cj.*
 import std.time.DateTime
 
 @InsertAtExit[packageName: "AOP_demo1", className: "", methodName: "printCurrentTime", isStatic: false, funcTypeStr: "()->std.core:String", recursive: false]
@@ -75,8 +75,8 @@ main() {
 Linux platform compilation commands:
 
 ```shell
-cjc aop_demo2.cj --plugin=libcollect-aspects.so -o main # First compilation: aspect collection
-cjc aop_demo2.cj --plugin=libwave-aspects.so -o main # Second compilation: aspect weaving
+cjc aop_demo2.cj -L $CANGJIE_STDX_PATH --import-path $CANGJIE_STDX_PATH -lstdx.aspect_cj --plugin=$CANGJIE_STDX_PATH/libstdx.collect_aspects.so -o main # First compilation: aspect collection
+cjc aop_demo2.cj -L $CANGJIE_STDX_PATH --import-path $CANGJIE_STDX_PATH -lstdx.aspect_cj --plugin=$CANGJIE_STDX_PATH/libstdx.wave_aspects.so -o main # Second compilation: aspect weaving
 ```
 
 Possible execution output:
@@ -97,7 +97,7 @@ The following is an example code demonstrating function body replacement using `
 ```cangjie
 package AOP_demo2
 
-import stdx.aspectCJ.*
+import stdx.aspect_cj.*
 import std.time.DateTime
 
 @ReplaceFuncBody[packageName: "AOP_demo1", className: "", methodName: "printCurrentTime", isStatic: false, recursive: false]
@@ -122,8 +122,8 @@ main() {
 Linux platform compilation commands:
 
 ```shell
-cjc aop_demo2.cj --plugin=libcollect-aspects.so -o main # First compilation: aspect collection
-cjc aop_demo2.cj --plugin=libwave-aspects.so -o main # Second compilation: aspect weaving
+cjc aop_demo2.cj -L $CANGJIE_STDX_PATH --import-path $CANGJIE_STDX_PATH -lstdx.aspect_cj --plugin=$CANGJIE_STDX_PATH/libstdx.collect_aspects.so -o main # First compilation: aspect collection
+cjc aop_demo2.cj -L $CANGJIE_STDX_PATH --import-path $CANGJIE_STDX_PATH -lstdx.aspect_cj --plugin=$CANGJIE_STDX_PATH/libstdx.wave_aspects.so -o main # Second compilation: aspect weaving
 ```
 
 Possible execution output:
