@@ -375,9 +375,7 @@ public class AssignExpr <: Expr {
      */
     public prop rhs: Expr {
         get() {
-            let curNode = (nodeImpl as NonTerminal).getOrThrow().children[propInfos.rhsPropInfo.index]
-            let offset = propInfos.rhsPropInfo.offset
-            cast<Expr>(SyntaxNodeImplTranslator.translate(curNode, startPos + offset, this)).getOrThrow()
+            return translateExprChild<Expr>(nodeImpl, startPos, this, propInfos.rhsPropInfo)
         }
     }
 }
@@ -538,9 +536,7 @@ public class BinaryExpr <: Expr {
 
     public prop rhs: Expr {
         get() {
-            let curNode = (nodeImpl as NonTerminal).getOrThrow().children[propInfos.rhsPropInfo.index]
-            let offset = propInfos.rhsPropInfo.offset
-            cast<Expr>(SyntaxNodeImplTranslator.translate(curNode, startPos + offset, this)).getOrThrow()
+            return translateExprChild<Expr>(nodeImpl, startPos, this, propInfos.rhsPropInfo)
         }
     }
 }
@@ -604,8 +600,7 @@ public class CallExpr <: Expr {
      * @return A CodePositionRange representing the position range of the left parenthesis.
      */
     public func getLParenPos(): CodePositionRange {
-        let endPos = posInfos.lParenPos + SyntaxNodeKind.LParenToken.size
-        return CodePositionRange(posInfos.lParenPos, endPos)
+        return createExprTokenRange(posInfos.lParenPos, SyntaxNodeKind.LParenToken.size)
     }
 
     /**
@@ -614,8 +609,7 @@ public class CallExpr <: Expr {
      * @return A CodePositionRange representing the position range of the right parenthesis.
      */
     public func getRParenPos(): CodePositionRange {
-        let endPos = posInfos.rParenPos + SyntaxNodeKind.RParenToken.size
-        return CodePositionRange(posInfos.rParenPos, endPos)
+        return createExprTokenRange(posInfos.rParenPos, SyntaxNodeKind.RParenToken.size)
     }
 
     /**
@@ -624,12 +618,7 @@ public class CallExpr <: Expr {
      * @return An Array of PositionRange representing the position ranges of the commas.
      */
     public func getCommasPos(): Array<CodePositionRange> {
-        let ret = ArrayList<CodePositionRange>()
-        for (i in 0..posInfos.commasPos.size) {
-            let endPos = posInfos.commasPos[i] + SyntaxNodeKind.CommaToken.size
-            ret.add(CodePositionRange(posInfos.commasPos[i], endPos))
-        }
-        ret.toArray()
+        return createExprTokenRanges(posInfos.commasPos, SyntaxNodeKind.CommaToken.size)
     }
 
     init(nodeImpl: SyntaxNodeImpl, startPos: CodePosition, parentNode: ?SyntaxTreeNode, posInfos: CallExprPosInfos,
@@ -4144,8 +4133,7 @@ public class TupleLiteral <: Expr {
      * @return A CodePositionRange representing the position range of the left bracket.
      */
     public func getLParenPos(): CodePositionRange {
-        let endPos = posInfos.lParenPos + SyntaxNodeKind.LParenToken.size
-        return CodePositionRange(posInfos.lParenPos, endPos)
+        return createExprTokenRange(posInfos.lParenPos, SyntaxNodeKind.LParenToken.size)
     }
 
     /**
@@ -4154,8 +4142,7 @@ public class TupleLiteral <: Expr {
      * @return A CodePositionRange representing the position range of the right bracket.
      */
     public func getRParenPos(): CodePositionRange {
-        let endPos = posInfos.rParenPos + SyntaxNodeKind.RParenToken.size
-        return CodePositionRange(posInfos.rParenPos, endPos)
+        return createExprTokenRange(posInfos.rParenPos, SyntaxNodeKind.RParenToken.size)
     }
 
     /**
@@ -4164,12 +4151,7 @@ public class TupleLiteral <: Expr {
      * @return An ArrayList of CodePositionRange representing the position ranges of the commas.
      */
     public func getCommasPos(): Array<CodePositionRange> {
-        let ret = ArrayList<CodePositionRange>()
-        for (i in 0..posInfos.commasPos.size) {
-            let endPos = posInfos.commasPos[i] + SyntaxNodeKind.CommaToken.size
-            ret.add(CodePositionRange(posInfos.commasPos[i], endPos))
-        }
-        ret.toArray()
+        return createExprTokenRanges(posInfos.commasPos, SyntaxNodeKind.CommaToken.size)
     }
 
     init(nodeImpl: SyntaxNodeImpl, startPos: CodePosition, parentNode: ?SyntaxTreeNode, posInfos: TupleLiteralPosInfos,
