@@ -1021,24 +1021,21 @@ public class DoWhileExpr <: Expr {
      * @brief Get the position range of the 'while' keyword.
      */
     public func getWhileKeyWordPos(): CodePositionRange {
-        let endPos = posInfos.whileKeyWordPos + SyntaxNodeKind.WhileToken.size
-        CodePositionRange(posInfos.whileKeyWordPos, endPos)
+        return createExprTokenRange(posInfos.whileKeyWordPos, SyntaxNodeKind.WhileToken.size)
     }
 
     /**
      * @brief Get the position range of the left parenthesis in the condition.
      */
     public func getCondLParenPos(): CodePositionRange {
-        let endPos = posInfos.condLParenPos + SyntaxNodeKind.LParenToken.size
-        CodePositionRange(posInfos.condLParenPos, endPos)
+        return createExprTokenRange(posInfos.condLParenPos, SyntaxNodeKind.LParenToken.size)
     }
 
     /**
      * @brief Get the position range of the right parenthesis in the condition.
      */
     public func getCondRParenPos(): CodePositionRange {
-        let endPos = posInfos.condRParenPos + SyntaxNodeKind.RParenToken.size
-        CodePositionRange(posInfos.condRParenPos, endPos)
+        return createExprTokenRange(posInfos.condRParenPos, SyntaxNodeKind.RParenToken.size)
     }
 
     init(nodeImpl: SyntaxNodeImpl, startPos: CodePosition, parentNode: ?SyntaxTreeNode, posInfos: DoWhileExprPosInfos,
@@ -4619,24 +4616,21 @@ public class WhileExpr <: Expr {
      * @brief Get the position range of the 'while' keyword.
      */
     public func getWhileKeyWordPos(): CodePositionRange {
-        let endPos = posInfos.whileKeyWordPos + SyntaxNodeKind.WhileToken.size
-        CodePositionRange(posInfos.whileKeyWordPos, endPos)
+        return createExprTokenRange(posInfos.whileKeyWordPos, SyntaxNodeKind.WhileToken.size)
     }
 
     /**
      * @brief Get the position range of the left parenthesis in the condition.
      */
     public func getCondLParenPos(): CodePositionRange {
-        let endPos = posInfos.condLParenPos + SyntaxNodeKind.LParenToken.size
-        CodePositionRange(posInfos.condLParenPos, endPos)
+        return createExprTokenRange(posInfos.condLParenPos, SyntaxNodeKind.LParenToken.size)
     }
 
     /**
      * @brief Get the position range of the right parenthesis in the condition.
      */
     public func getCondRParenPos(): CodePositionRange {
-        let endPos = posInfos.condRParenPos + SyntaxNodeKind.RParenToken.size
-        CodePositionRange(posInfos.condRParenPos, endPos)
+        return createExprTokenRange(posInfos.condRParenPos, SyntaxNodeKind.RParenToken.size)
     }
 
     init(nodeImpl: SyntaxNodeImpl, startPos: CodePosition, parentNode: ?SyntaxTreeNode, posInfos: WhileExprPosInfos,
