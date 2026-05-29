@@ -805,12 +805,12 @@ sealed abstract class Type <: ToString & Hashable & Equatable<Type> {
     }
 
     private func qualifiedNameOfCustomType(t: CustomType): String {
-        let packageName = t.def.packageName.replace("::", "/")
+        let packageName = t.def.packageName
         let defName = t.def.srcCodeName
         if (defName.isEmpty()) {
-            return packageName + ":" + t.def.identifierWithoutPrefix
+            return packageName + "." + t.def.identifierWithoutPrefix
         }
-        return packageName + ":" + defName
+        return packageName + "." + defName
     }
 
     /**

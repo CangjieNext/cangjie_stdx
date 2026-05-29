@@ -1,8 +1,8 @@
-# stdx.aspectCJ
+# stdx.aspect_cj
 
 ## Feature Description
 
-The `stdx.aspectCJ` package provides annotations for Aspect-Oriented Programming (AOP) in Cangjie. When used in conjunction with the libcollect-aspects and libwave-aspects compilation plugins, it enables function instrumentation (before/after) and implementation replacement.
+The `stdx.aspect_cj` package provides annotations for Aspect-Oriented Programming (AOP) in Cangjie. When used in conjunction with the libstdx.collect_aspects and libstdx.wave_aspects compilation plugins, it enables function instrumentation (before/after) and implementation replacement.
 
 ## API List
 
@@ -10,9 +10,9 @@ The `stdx.aspectCJ` package provides annotations for Aspect-Oriented Programming
 
 | Class Name                                                    | Functionality                                                |
 | ------------------------------------------------------------ | ------------------------------------------------------------ |
-| [InsertAtEntry](./aspectCJ_package_api/aspectCJ_package_classes.md#class-insertatentry) | An annotation class that provides aspect capability. Injects a call to the annotated function at the entry point of the specified method. |
-| [InsertAtExit](./aspectCJ_package_api/aspectCJ_package_classes.md#class-insertatexit) | An annotation class that provides aspect capability. Injects a call to the annotated function at the exit point of the specified method. |
-| [ReplaceFuncBody](./aspectCJ_package_api/aspectCJ_package_classes.md#class-replacefuncbody) | An annotation class that provides aspect capability. Replaces the method body of the specified method with a call to the annotated function. |
+| [InsertAtEntry](./aspect_cj_package_api/aspect_cj_package_classes.md#class-insertatentry) | An annotation class that provides aspect capability. Injects a call to the annotated function at the entry point of the specified method. |
+| [InsertAtExit](./aspect_cj_package_api/aspect_cj_package_classes.md#class-insertatexit) | An annotation class that provides aspect capability. Injects a call to the annotated function at the exit point of the specified method. |
+| [ReplaceFuncBody](./aspect_cj_package_api/aspect_cj_package_classes.md#class-replacefuncbody) | An annotation class that provides aspect capability. Replaces the method body of the specified method with a call to the annotated function. |
 
 ## Specifications and Usage
 
@@ -50,9 +50,9 @@ The `stdx.aspectCJ` package provides annotations for Aspect-Oriented Programming
 
 To fully implement AOP functionality, in addition to using the aforementioned annotation classes to define aspects, two compilation plugins are required:
 
-- libcollect-aspects.so(.dll/.dylib)
-- libwave-aspects.so(.dll/.dylib)
+- libstdx.collect_aspects.so(.dll/.dylib)
+- libstdx.wave_aspects.so(.dll/.dylib)
 
-These compilation plugins are provided as dynamic libraries in stdx.aspectCJ, with different versions for different platforms.
+These compilation plugins are provided as dynamic libraries in stdx.aspect_cj, with different versions for different platforms.
 
-First, use libcollect-aspects to collect all aspect and join point information during compilation. Then use libwave-aspects for secondary compilation to weave the collected aspects into the join points.
+First, use libstdx.collect_aspects to collect all aspect and join point information during compilation. Then use libstdx.wave_aspects for secondary compilation to weave the collected aspects into the join points.

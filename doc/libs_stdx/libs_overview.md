@@ -36,7 +36,7 @@
 | ----------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | import stdx.actors.*                      | stdx.actors                                                                                                                                                                                                                    |
 | import stdx.actors.macros.*               | stdx.actors.macros                                                                                                                                                                                                             |
-| import stdx.aspectCJ.*                    | stdx.aspectCJ                                                                                                                                                                                                                  |
+| import stdx.aspect_cj.*                    | stdx.aspect_cj                                                                                                                                                                                                                  |
 | import stdx.compress.zlib.*               | stdx.compress.zlib                                                                                                                                                                                                             |
 | import stdx.crypto.common.*               | stdx.crypto.common、stdx.encoding.base64                                                                                                                                                                                       |
 | import stdx.crypto.crypto.*               | stdx.crypto.crypto、stdx.crypto.digest、stdx.crypto.common、stdx.encoding.base64                                                                                                                                               |
@@ -72,7 +72,7 @@ cjc 的介绍和编译请查看 cangjie 用户手册
 ```cangjie
 import stdx.actors.*
 import stdx.actors.macros.*
-import stdx.aspectCJ.*
+import stdx.aspect_cj.*
 import stdx.compress.zlib.*
 import stdx.crypto.crypto.*
 import stdx.crypto.digest.*
@@ -99,13 +99,13 @@ main() {
 Linux 和 mac 的编译命令：
 
 ```shell
-cjc main.cj -L $CANGJIE_STDX_PATH -lstdx.actors -lstdx.aspectCJ -lstdx.effect -lstdx.encoding.json -lstdx.serialization.serialization -lstdx.net.http -lstdx.net.tls -lstdx.net.tls.common -lstdx.logger -lstdx.log -lstdx.encoding.url -lstdx.encoding.json.stream -lstdx.crypto.kit -lstdx.crypto.keys -lstdx.crypto.x509 -lstdx.encoding.hex -lstdx.crypto.crypto -lstdx.crypto.digest -lstdx.crypto.common -lstdx.encoding.base64 -lstdx.compress.zlib -lstdx.compress -lstdx.syntax -lstdx.syntaxFFI -ldl --import-path $CANGJIE_STDX_PATH -o main.out
+cjc main.cj -L $CANGJIE_STDX_PATH -lstdx.actors -lstdx.aspect_cj -lstdx.effect -lstdx.encoding.json -lstdx.serialization.serialization -lstdx.net.http -lstdx.net.tls -lstdx.net.tls.common -lstdx.logger -lstdx.log -lstdx.encoding.url -lstdx.encoding.json.stream -lstdx.crypto.kit -lstdx.crypto.keys -lstdx.crypto.x509 -lstdx.encoding.hex -lstdx.crypto.crypto -lstdx.crypto.digest -lstdx.crypto.common -lstdx.encoding.base64 -lstdx.compress.zlib -lstdx.compress -lstdx.syntax -lstdx.syntaxFFI -ldl --import-path $CANGJIE_STDX_PATH -o main.out
 ```
 
 windows 编译命令：
 
 ```shell
-cjc main.cj -L $CANGJIE_STDX_PATH -lstdx.actors -lstdx.aspectCJ -lstdx.effect -lstdx.encoding.json -lstdx.serialization.serialization -lstdx.net.http -lstdx.net.tls -lstdx.net.tls.common -lstdx.logger -lstdx.log -lstdx.encoding.url -lstdx.encoding.json.stream -lstdx.crypto.kit -lstdx.crypto.keys -lstdx.crypto.x509 -lstdx.encoding.hex -lstdx.crypto.crypto -lstdx.crypto.digest -lstdx.crypto.common -lstdx.encoding.base64 -lstdx.compress.zlib -lstdx.compress -lstdx.syntax -lstdx.syntaxFFI -lcrypt32 --import-path $CANGJIE_STDX_PATH -o main.out
+cjc main.cj -L $CANGJIE_STDX_PATH -lstdx.actors -lstdx.aspect_cj -lstdx.effect -lstdx.encoding.json -lstdx.serialization.serialization -lstdx.net.http -lstdx.net.tls -lstdx.net.tls.common -lstdx.logger -lstdx.log -lstdx.encoding.url -lstdx.encoding.json.stream -lstdx.crypto.kit -lstdx.crypto.keys -lstdx.crypto.x509 -lstdx.encoding.hex -lstdx.crypto.crypto -lstdx.crypto.digest -lstdx.crypto.common -lstdx.encoding.base64 -lstdx.compress.zlib -lstdx.compress -lstdx.syntax -lstdx.syntaxFFI -lcrypt32 --import-path $CANGJIE_STDX_PATH -o main.out
 ```
 
 CANGJIE_STDX_PATH 是设置的 stdx 路径。
@@ -151,7 +151,7 @@ stdx 含若干包，提供了丰富的扩展功能：
 |--------------------------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | [actors](./actors/actors_package_overview.md)                                  | actors 包提供 actor 编程模型的基础能力。                                                                                                                                     |
 | [actors.macros](./actors/macros/macros_package_overview.md)                    | actors.macros 包提供把 class 变成 active object 的能力。                                                                                                                  |
-| [aspectCJ](./aspectCJ/aspectCJ_package_overview.md)                            | aspectCJ 包提供 Cangjie 中面向切面编程（Aspect Oriented Programming, AOP）相关的能力。                                                                                            |
+| [aspect_cj](./aspect_cj/aspect_cj_package_overview.md)                            | aspect_cj 包提供 Cangjie 中面向切面编程（Aspect Oriented Programming, AOP）相关的能力。                                                                                            |
 | [compress.zlib](./compress/zlib/zlib_package_overview.md)                      | compress 包提供压缩解压功能。                                                                                                                                             |
 | [crypto.common](./crypto/common/crypto_common_package_overview.md)             | crypto.common 包提供了加解密相关接口。                                                                                                                                      |
 | [crypto.crypto](./crypto/crypto/crypto_package_overview.md)                    | crypto 包提供安全加密能力。                                                                                                                                               |
