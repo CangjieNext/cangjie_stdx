@@ -1491,9 +1491,7 @@ public class IncOrDecExpr <: Expr {
      */
     public prop operand: Expr {
         get() {
-            let curNode = (nodeImpl as NonTerminal).getOrThrow().children[propInfos.operandPropInfo.index]
-            let offset = propInfos.operandPropInfo.offset
-            cast<Expr>(SyntaxNodeImplTranslator.translate(curNode, startPos + offset, this)).getOrThrow()
+            return translateExprChild<Expr>(nodeImpl, startPos, this, propInfos.operandPropInfo)
         }
     }
 }
@@ -2599,9 +2597,7 @@ public class OptionalExpr <: Expr {
      */
     public prop base: Expr {
         get() {
-            let curNode = (nodeImpl as NonTerminal).getOrThrow().children[propInfos.basePropInfo.index]
-            let offset = propInfos.basePropInfo.offset
-            cast<Expr>(SyntaxNodeImplTranslator.translate(curNode, startPos + offset, this)).getOrThrow()
+            return translateExprChild<Expr>(nodeImpl, startPos, this, propInfos.basePropInfo)
         }
     }
 }
@@ -3134,9 +3130,7 @@ public class SpawnExpr <: Expr {
      */
     public prop trailingLambdaExpr: Lambda {
         get() {
-            let curNode = (nodeImpl as NonTerminal).getOrThrow().children[propInfos.trailingLambdaExprPropInfo.index]
-            let offset = propInfos.trailingLambdaExprPropInfo.offset
-            cast<Lambda>(SyntaxNodeImplTranslator.translate(curNode, startPos + offset, this)).getOrThrow()
+            return translateExprChild<Lambda>(nodeImpl, startPos, this, propInfos.trailingLambdaExprPropInfo)
         }
     }
 }
@@ -3300,9 +3294,7 @@ public class SubscriptExpr <: Expr {
      */
     public prop base: Expr {
         get() {
-            let curNode = (nodeImpl as NonTerminal).getOrThrow().children[propInfos.basePropInfo.index]
-            let offset = propInfos.basePropInfo.offset
-            cast<Expr>(SyntaxNodeImplTranslator.translate(curNode, startPos + offset, this)).getOrThrow()
+            return translateExprChild<Expr>(nodeImpl, startPos, this, propInfos.basePropInfo)
         }
     }
 
@@ -3812,9 +3804,7 @@ public class TrailingClosureExpr <: Expr {
      */
     public prop trailingLambdaExpr: Lambda {
         get() {
-            let curNode = (nodeImpl as NonTerminal).getOrThrow().children[propInfos.trailingLambdaExprPropInfo.index]
-            let offset = propInfos.trailingLambdaExprPropInfo.offset
-            cast<Lambda>(SyntaxNodeImplTranslator.translate(curNode, startPos + offset, this)).getOrThrow()
+            return translateExprChild<Lambda>(nodeImpl, startPos, this, propInfos.trailingLambdaExprPropInfo)
         }
     }
 }
@@ -4400,9 +4390,7 @@ public class UnaryExpr <: Expr {
      */
     public prop operand: Expr {
         get() {
-            let curNode = (nodeImpl as NonTerminal).getOrThrow().children[propInfos.operandPropInfo.index]
-            let offset = propInfos.operandPropInfo.offset
-            cast<Expr>(SyntaxNodeImplTranslator.translate(curNode, startPos + offset, this)).getOrThrow()
+            return translateExprChild<Expr>(nodeImpl, startPos, this, propInfos.operandPropInfo)
         }
     }
 }
