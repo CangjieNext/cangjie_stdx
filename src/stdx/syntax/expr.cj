@@ -10,6 +10,12 @@ package stdx.syntax
 
 import std.collection.ArrayList
 
+private func translateExprChild<T>(nodeImpl: SyntaxNodeImpl, startPos: CodePosition, parentNode: ?SyntaxTreeNode,
+    propInfo: PropInfo): T where T <: SyntaxTreeNode {
+    let curNode = (nodeImpl as NonTerminal).getOrThrow().children[propInfo.index]
+    return cast<T>(SyntaxNodeImplTranslator.translate(curNode, startPos + propInfo.offset, parentNode)).getOrThrow()
+}
+
 sealed abstract class Expr <: SyntaxTreeNode {
     init(nodePos: CodePositionRange, nodeImpl: SyntaxNodeImpl, parentNode: ?SyntaxTreeNode,
         commentsPropInfo: Array<PropInfo>) {
@@ -1071,9 +1077,7 @@ public class DoWhileExpr <: Expr {
      */
     public prop body: Block {
         get() {
-            let curNode = (nodeImpl as NonTerminal).getOrThrow().children[propInfos.bodyPropInfo.index]
-            let offset = propInfos.bodyPropInfo.offset
-            cast<Block>(SyntaxNodeImplTranslator.translate(curNode, startPos + offset, this)).getOrThrow()
+            return translateExprChild<Block>(nodeImpl, startPos, this, propInfos.bodyPropInfo)
         }
     }
 
@@ -4692,9 +4696,7 @@ public class WhileExpr <: Expr {
      */
     public prop body: Block {
         get() {
-            let curNode = (nodeImpl as NonTerminal).getOrThrow().children[propInfos.bodyPropInfo.index]
-            let offset = propInfos.bodyPropInfo.offset
-            cast<Block>(SyntaxNodeImplTranslator.translate(curNode, startPos + offset, this)).getOrThrow()
+            return translateExprChild<Block>(nodeImpl, startPos, this, propInfos.bodyPropInfo)
         }
     }
 

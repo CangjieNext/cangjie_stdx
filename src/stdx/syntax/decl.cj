@@ -1836,9 +1836,7 @@ public class MacroDecl <: Decl {
      */
     public prop body: Block {
         get() {
-            let curNode = (nodeImpl as NonTerminal).getOrThrow().children[propInfos.bodyPropInfo.index]
-            let offset = propInfos.bodyPropInfo.offset
-            cast<Block>(SyntaxNodeImplTranslator.translate(curNode, startPos + offset, this)).getOrThrow()
+            return translateChild<Block>(nodeImpl, startPos, this, propInfos.bodyPropInfo)
         }
     }
 
@@ -1965,9 +1963,7 @@ public class MainDecl <: Decl {
      */
     public prop body: Block {
         get() {
-            let curNode = (nodeImpl as NonTerminal).getOrThrow().children[propInfos.bodyPropInfo.index]
-            let offset = propInfos.bodyPropInfo.offset
-            cast<Block>(SyntaxNodeImplTranslator.translate(curNode, startPos + offset, this)).getOrThrow()
+            return translateChild<Block>(nodeImpl, startPos, this, propInfos.bodyPropInfo)
         }
     }
 
@@ -2469,9 +2465,7 @@ public class StaticInit <: Decl {
      */
     public prop body: Block {
         get() {
-            let curNode = (nodeImpl as NonTerminal).getOrThrow().children[propInfos.bodyPropInfo.index]
-            let offset = propInfos.bodyPropInfo.offset
-            cast<Block>(SyntaxNodeImplTranslator.translate(curNode, startPos + offset, this)).getOrThrow()
+            return translateChild<Block>(nodeImpl, startPos, this, propInfos.bodyPropInfo)
         }
     }
 }
