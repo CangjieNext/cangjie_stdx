@@ -163,6 +163,21 @@ public open class ASTVisitor {
         walk(body)
     }
 
+    private func visitMacroOrMainDeclChildren(annotations: Array<Annotation>, modifiers: Array<Modifier>,
+        params: ParameterList, retTyAnnotation: Option<TypeAnnotation>, body: Block) {
+        for (a in annotations) {
+            walk(a)
+        }
+        for (m in modifiers) {
+            walk(m)
+        }
+        walk(params)
+        if (let Some(retTy) <- retTyAnnotation) {
+            walk(retTy)
+        }
+        walk(body)
+    }
+
     private func visitBinaryExpr(node: BinaryExpr) {
         walk(node.lhs)
         walk(node.rhs)
@@ -511,17 +526,7 @@ public open class ASTVisitor {
     }
 
     private func visitMacroDecl(node: MacroDecl) {
-        for (a in node.annotations) {
-            walk(a)
-        }
-        for (m in node.modifiers) {
-            walk(m)
-        }
-        walk(node.params)
-        if (let Some(retTy) <- node.retTyAnnotation) {
-            walk(retTy)
-        }
-        walk(node.body)
+        visitMacroOrMainDeclChildren(node.annotations, node.modifiers, node.params, node.retTyAnnotation, node.body)
     }
 
     private func visitMacroExpandDecl(node: MacroExpandDecl) {
@@ -567,17 +572,7 @@ public open class ASTVisitor {
     }
 
     private func visitMainDecl(node: MainDecl) {
-        for (a in node.annotations) {
-            walk(a)
-        }
-        for (m in node.modifiers) {
-            walk(m)
-        }
-        walk(node.params)
-        if (let Some(retTy) <- node.retTyAnnotation) {
-            walk(retTy)
-        }
-        walk(node.body)
+        visitMacroOrMainDeclChildren(node.annotations, node.modifiers, node.params, node.retTyAnnotation, node.body)
     }
 
     private func visitMatchCase(node: MatchCase) {
