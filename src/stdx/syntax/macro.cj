@@ -10,6 +10,17 @@ package stdx.syntax
 
 import std.collection.ArrayList
 
+private func createMacroTokenRange(pos: CodePosition, size: Int64): CodePositionRange {
+    return CodePositionRange(pos, pos + size)
+}
+
+private func createMacroOptionalTokenRange(pos: Option<CodePosition>, size: Int64): Option<CodePositionRange> {
+    if (let Some(v) <- pos) {
+        return createMacroTokenRange(v, size)
+    }
+    return None
+}
+
 class MacroExpandDeclPropInfos {
     let calleeMacroPropInfo: PropInfo
     let macroAttrsPropInfo: PropInfo
@@ -53,52 +64,35 @@ public class MacroExpandDecl <: Decl {
      * @brief Get the position range of the 'at' token.
      */
     public func getAtPos(): CodePositionRange {
-        let endPos = posInfos.atPos + SyntaxNodeKind.AtToken.size
-        CodePositionRange(posInfos.atPos, endPos)
+        return createMacroTokenRange(posInfos.atPos, SyntaxNodeKind.AtToken.size)
     }
 
     /**
      * @brief Get the position range of the left square bracket if present.
      */
     public func getLSquarePos(): Option<CodePositionRange> {
-        if (let Some(v) <- posInfos.lSquarePos) {
-            let endPos = v + SyntaxNodeKind.LSquareToken.size
-            return CodePositionRange(v, endPos)
-        }
-        return None
+        return createMacroOptionalTokenRange(posInfos.lSquarePos, SyntaxNodeKind.LSquareToken.size)
     }
 
     /**
      * @brief Get the position range of the right square bracket if present.
      */
     public func getRSquarePos(): Option<CodePositionRange> {
-        if (let Some(v) <- posInfos.rSquarePos) {
-            let endPos = v + SyntaxNodeKind.RSquareToken.size
-            return CodePositionRange(v, endPos)
-        }
-        return None
+        return createMacroOptionalTokenRange(posInfos.rSquarePos, SyntaxNodeKind.RSquareToken.size)
     }
 
     /**
      * @brief Get the position range of the left parenthesis if present.
      */
     public func getLParenPos(): Option<CodePositionRange> {
-        if (let Some(v) <- posInfos.lParenPos) {
-            let endPos = v + SyntaxNodeKind.LParenToken.size
-            return CodePositionRange(v, endPos)
-        }
-        return None
+        return createMacroOptionalTokenRange(posInfos.lParenPos, SyntaxNodeKind.LParenToken.size)
     }
 
     /**
      * @brief Get the position range of the right parenthesis if present.
      */
     public func getRParenPos(): Option<CodePositionRange> {
-        if (let Some(v) <- posInfos.rParenPos) {
-            let endPos = v + SyntaxNodeKind.RParenToken.size
-            return CodePositionRange(v, endPos)
-        }
-        return None
+        return createMacroOptionalTokenRange(posInfos.rParenPos, SyntaxNodeKind.RParenToken.size)
     }
 
     init(nodeImpl: SyntaxNodeImpl, startPos: CodePosition, parentNode: ?SyntaxTreeNode,
@@ -208,52 +202,35 @@ public class MacroExpandExpr <: Expr {
      * @brief Get the position range of the 'at' token.
      */
     public func getAtPos(): CodePositionRange {
-        let endPos = posInfos.atPos + SyntaxNodeKind.AtToken.size
-        CodePositionRange(posInfos.atPos, endPos)
+        return createMacroTokenRange(posInfos.atPos, SyntaxNodeKind.AtToken.size)
     }
 
     /**
      * @brief Get the position range of the left square bracket if present.
      */
     public func getLSquarePos(): Option<CodePositionRange> {
-        if (let Some(v) <- posInfos.lSquarePos) {
-            let endPos = v + SyntaxNodeKind.LSquareToken.size
-            return CodePositionRange(v, endPos)
-        }
-        return None
+        return createMacroOptionalTokenRange(posInfos.lSquarePos, SyntaxNodeKind.LSquareToken.size)
     }
 
     /**
      * @brief Get the position range of the right square bracket if present.
      */
     public func getRSquarePos(): Option<CodePositionRange> {
-        if (let Some(v) <- posInfos.rSquarePos) {
-            let endPos = v + SyntaxNodeKind.RSquareToken.size
-            return CodePositionRange(v, endPos)
-        }
-        return None
+        return createMacroOptionalTokenRange(posInfos.rSquarePos, SyntaxNodeKind.RSquareToken.size)
     }
 
     /**
      * @brief Get the position range of the left parenthesis if present.
      */
     public func getLParenPos(): Option<CodePositionRange> {
-        if (let Some(v) <- posInfos.lParenPos) {
-            let endPos = v + SyntaxNodeKind.LParenToken.size
-            return CodePositionRange(v, endPos)
-        }
-        return None
+        return createMacroOptionalTokenRange(posInfos.lParenPos, SyntaxNodeKind.LParenToken.size)
     }
 
     /**
      * @brief Get the position range of the right parenthesis if present.
      */
     public func getRParenPos(): Option<CodePositionRange> {
-        if (let Some(v) <- posInfos.rParenPos) {
-            let endPos = v + SyntaxNodeKind.RParenToken.size
-            return CodePositionRange(v, endPos)
-        }
-        return None
+        return createMacroOptionalTokenRange(posInfos.rParenPos, SyntaxNodeKind.RParenToken.size)
     }
 
     init(nodeImpl: SyntaxNodeImpl, startPos: CodePosition, parentNode: ?SyntaxTreeNode,
@@ -378,52 +355,35 @@ public class MacroExpandParam <: Parameter {
      * @brief Get the position range of the 'at' token.
      */
     public func getAtPos(): CodePositionRange {
-        let endPos = posInfos.atPos + SyntaxNodeKind.AtToken.size
-        CodePositionRange(posInfos.atPos, endPos)
+        return createMacroTokenRange(posInfos.atPos, SyntaxNodeKind.AtToken.size)
     }
 
     /**
      * @brief Get the position range of the left square bracket if present.
      */
     public func getLSquarePos(): Option<CodePositionRange> {
-        if (let Some(v) <- posInfos.lSquarePos) {
-            let endPos = v + SyntaxNodeKind.LSquareToken.size
-            return CodePositionRange(v, endPos)
-        }
-        return None
+        return createMacroOptionalTokenRange(posInfos.lSquarePos, SyntaxNodeKind.LSquareToken.size)
     }
 
     /**
      * @brief Get the position range of the right square bracket if present.
      */
     public func getRSquarePos(): Option<CodePositionRange> {
-        if (let Some(v) <- posInfos.rSquarePos) {
-            let endPos = v + SyntaxNodeKind.RSquareToken.size
-            return CodePositionRange(v, endPos)
-        }
-        return None
+        return createMacroOptionalTokenRange(posInfos.rSquarePos, SyntaxNodeKind.RSquareToken.size)
     }
 
     /**
      * @brief Get the position range of the left parenthesis if present.
      */
     public func getLParenPos(): Option<CodePositionRange> {
-        if (let Some(v) <- posInfos.lParenPos) {
-            let endPos = v + SyntaxNodeKind.LParenToken.size
-            return CodePositionRange(v, endPos)
-        }
-        return None
+        return createMacroOptionalTokenRange(posInfos.lParenPos, SyntaxNodeKind.LParenToken.size)
     }
 
     /**
      * @brief Get the position range of the right parenthesis if present.
      */
     public func getRParenPos(): Option<CodePositionRange> {
-        if (let Some(v) <- posInfos.rParenPos) {
-            let endPos = v + SyntaxNodeKind.RParenToken.size
-            return CodePositionRange(v, endPos)
-        }
-        return None
+        return createMacroOptionalTokenRange(posInfos.rParenPos, SyntaxNodeKind.RParenToken.size)
     }
 
     init(nodeImpl: SyntaxNodeImpl, startPos: CodePosition, parentNode: ?SyntaxTreeNode,
