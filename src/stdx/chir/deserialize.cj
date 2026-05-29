@@ -544,14 +544,14 @@ class CHIRDeserializerImpl {
         return extendDef
     }
 
-    private func deserializeAnnoInstance(annoFormat: PackageFormat_CustomAnnoInstance): Annotation {
+    private func deserializeAnnoInstance(annoFormat: PackageFormat_CustomAnnoInstance): CustomAnnoInstance {
         let className = annoFormat.GetAnnoClassName()
         let loc = if (let Some(locFormat) <- annoFormat.GetLoc()) {
             deserializeDebugLocation(locFormat)
         } else {
             DebugLocation.invalid()
         }
-        let anno = Annotation(className, loc)
+        let anno = CustomAnnoInstance(className, loc)
         let argValues = annoFormat.GetArgValues()
         anno._argValues = ArrayList<String>(argValues.size, { i => argValues[i].getOrThrow() })
         return anno
