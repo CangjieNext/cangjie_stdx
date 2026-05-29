@@ -719,6 +719,10 @@ sealed abstract class Expression <: Base & ToString & Hashable & Equatable<Expre
         return _kind == ExprKind.Lambda
     }
 
+    public func isExit(): Bool {
+        return _kind == ExprKind.Exit
+    }
+
     /**
      * Moves this expression right after another expression.
      * @param other Anchor expression.
@@ -791,6 +795,19 @@ sealed abstract class Expression <: Base & ToString & Hashable & Equatable<Expre
         // 5. update current expr's result identifier
         if (let Some(v) <- _result) {
             updateLocalVarIdAndHashCode(v)
+        }
+    }
+
+    public func replaceOperand(operand: Value, other: Value): Unit {
+        if (operand == other) {
+            return
+        }
+        for (i in 0.._operands.size) {
+            if (_operands[i] == operand) {
+                _operands[i] = other
+                other.addUser(this)
+                operand.removeUser(this)
+            }
         }
     }
 
@@ -921,6 +938,7 @@ public class Allocate <: AllocateBase & Equatable<Allocate> {
      */
     public static func create(allocatedType: Type): Allocate {
         let expr = Allocate(allocatedType)
+        expr._attributes.setAttr(Attribute.PluginAdded, true)
         let result = LocalVar(RefType.get(allocatedType), expr)
         expr._result = result
         return expr
@@ -984,6 +1002,7 @@ public class TryAllocate <: AllocateBase & Equatable<TryAllocate> {
      */
     public static func create(allocatedType: Type, normal: Block, err: Block): TryAllocate {
         let expr = TryAllocate(allocatedType, normal, err)
+        expr._attributes.setAttr(Attribute.PluginAdded, true)
         let result = LocalVar(RefType.get(allocatedType), expr)
         expr._result = result
         return expr
@@ -1055,6 +1074,7 @@ public class BinaryExpression <: BinaryExpressionBase & Equatable<BinaryExpressi
      */
     public static func create(kind: BinaryExprKind, leftOp: Value, rightOp: Value): BinaryExpression {
         let expr = BinaryExpression(kind.toExprKind(false), leftOp, rightOp)
+        expr._attributes.setAttr(Attribute.PluginAdded, true)
         let retType = match (kind) {
             case Add | Sub | Mul | Div | Mod | Exp | LShift | RShift | BitAnd | BitOr | BitXor => leftOp.ty
             case LT | GT | LE | GE | Equal | NotEqual | And | Or => BoolType.get()
@@ -1126,6 +1146,7 @@ public class TryBinaryExpression <: BinaryExpressionBase & Equatable<TryBinaryEx
      */
     public static func create(kind: BinaryExprKind, leftOp: Value, rightOp: Value, normal: Block, err: Block): TryBinaryExpression {
         let expr = TryBinaryExpression(kind.toExprKind(true), leftOp, rightOp, normal, err)
+        expr._attributes.setAttr(Attribute.PluginAdded, true)
         let result = LocalVar(leftOp.ty, expr)
         expr._result = result
         return expr
@@ -1202,6 +1223,7 @@ public class Branch <: Expression & Equatable<Branch> {
      */
     public static func create(condition: Value, trueTarget: Block, falseTarget: Block): Branch {
         let expr = Branch(condition, trueTarget, falseTarget)
+        expr._attributes.setAttr(Attribute.PluginAdded, true)
         return expr
     }
 
@@ -1235,6 +1257,7 @@ public class Constant <: Expression & Equatable<Constant> {
      */
     public static func create(val: LiteralValue): Constant {
         let expr = Constant(val)
+        expr._attributes.setAttr(Attribute.PluginAdded, true)
         let result = LocalVar(val.ty, expr)
         expr._result = result
         return expr
@@ -1280,6 +1303,7 @@ public class Debug <: Expression & Equatable<Debug> {
      */
     public static func create(location: Value, srcName: String): Debug {
         let expr = Debug(location, srcName)
+        expr._attributes.setAttr(Attribute.PluginAdded, true)
         let result = LocalVar(UnitType.get(), expr)
         expr._result = result
         return expr
@@ -1314,6 +1338,7 @@ public class Exit <: Expression & Equatable<Exit> {
      */
     public static func create(): Exit {
         let expr = Exit()
+        expr._attributes.setAttr(Attribute.PluginAdded, true)
         return expr
     }
 
@@ -1357,6 +1382,7 @@ public class Field <: Expression & Equatable<Field> {
      */
     public static func create(location: Value, path: ArrayList<UInt64>): Field {
         let expr = Field(location, path)
+        expr._attributes.setAttr(Attribute.PluginAdded, true)
         let retTy = getFieldOfType(location.ty, path.mapTo<Int64>({ i => Int64(i) }))
         let result = LocalVar(retTy, expr)
         expr._result = result
@@ -1409,6 +1435,7 @@ public class FieldByName <: Expression & Equatable<FieldByName> {
      */
     public static func create(location: Value, fieldNames: ArrayList<String>): FieldByName {
         let expr = FieldByName(location, fieldNames)
+        expr._attributes.setAttr(Attribute.PluginAdded, true)
         let retTy = getFieldOfType(location.ty, fieldNames)
         let result = LocalVar(retTy, expr)
         expr._result = result
@@ -1554,6 +1581,7 @@ public class Apply <: ApplyBase & Equatable<Apply> {
      */
     public static func create(callee: Value, funcCallCtx: FuncCallContext): Apply {
         let expr = Apply(callee, funcCallCtx)
+        expr._attributes.setAttr(Attribute.PluginAdded, true)
         completeResult(expr, callee, funcCallCtx)
         return expr
     }
@@ -1626,6 +1654,7 @@ public class TryApply <: ApplyBase & Equatable<TryApply> {
      */
     public static func create(callee: Value, funcCallCtx: FuncCallContext, normal: Block, err: Block): TryApply {
         let expr = TryApply(callee, funcCallCtx, normal, err)
+        expr._attributes.setAttr(Attribute.PluginAdded, true)
         completeResult(expr, callee, funcCallCtx)
         return expr
     }
@@ -1678,6 +1707,7 @@ public class Intrinsic <: IntrinsicBase & Equatable<Intrinsic> {
 
     internal static func create(retTy: Type, calleeKind: IntrinsicKind, funcCallCtx: FuncCallContext): Intrinsic {
         let expr = Intrinsic(calleeKind, funcCallCtx)
+        expr._attributes.setAttr(Attribute.PluginAdded, true)
         let result = LocalVar(retTy, expr)
         expr._result = result
         return expr
@@ -1742,6 +1772,7 @@ public class TryIntrinsic <: IntrinsicBase & Equatable<TryIntrinsic> {
 
     internal static func create(retTy: Type, calleeKind: IntrinsicKind, funcCallCtx: FuncCallContext, normal: Block, err: Block): TryIntrinsic {
         let expr = TryIntrinsic(calleeKind, funcCallCtx, normal, err)
+        expr._attributes.setAttr(Attribute.PluginAdded, true)
         let result = LocalVar(retTy, expr)
         expr._result = result
         return expr
@@ -1854,6 +1885,7 @@ public class Invoke <: InvokeBase & Equatable<Invoke> {
      */
     public static func create(retTy: Type, callContext: InvokeCallContext): Invoke {
         let expr = Invoke(callContext)
+        expr._attributes.setAttr(Attribute.PluginAdded, true)
         let result = LocalVar(retTy, expr)
         expr._result = result
         return expr
@@ -1931,6 +1963,7 @@ public class TryInvoke <: InvokeBase & Equatable<TryInvoke> {
      */
     public static func create(retTy: Type, callContext: InvokeCallContext, normal: Block, err: Block): TryInvoke {
         let expr = TryInvoke(callContext, normal, err)
+        expr._attributes.setAttr(Attribute.PluginAdded, true)
         let result = LocalVar(retTy, expr)
         expr._result = result
         return expr
@@ -1989,6 +2022,7 @@ public class GetElementByName <: Expression & Equatable<GetElementByName> {
      */
     public static func create(location: Value, fieldNames: ArrayList<String>): GetElementByName {
         let expr = GetElementByName(location, fieldNames)
+        expr._attributes.setAttr(Attribute.PluginAdded, true)
         let retTy = getFieldOfType(location.ty, fieldNames)
         let result = LocalVar(RefType.get(retTy), expr)
         expr._result = result
@@ -2027,6 +2061,7 @@ public class GetElementRef <: Expression & Equatable<GetElementRef> {
 
     public static func create(location: Value, path: ArrayList<UInt64>): GetElementRef {
         let expr = GetElementRef(location, path)
+        expr._attributes.setAttr(Attribute.PluginAdded, true)
         let retTy = getFieldOfType(location.ty, path.mapTo({ i => Int64(i) }))
         let result = LocalVar(RefType.get(retTy), expr)
         expr._result = result
@@ -2060,6 +2095,7 @@ public class GetException <: Expression & Equatable<GetException> {
      */
     public static func create(retTy: Type): GetException {
         let expr = GetException()
+        expr._attributes.setAttr(Attribute.PluginAdded, true)
         let result = LocalVar(retTy, expr)
         expr._result = result
         return expr
@@ -2105,6 +2141,7 @@ public class GetInstantiateValue <: Expression & Equatable<GetInstantiateValue> 
      */
     public static func create(val: Function, instantiateTypes: ArrayList<Type>): GetInstantiateValue {
         let expr = GetInstantiateValue(val, instantiateTypes)
+        expr._attributes.setAttr(Attribute.PluginAdded, true)
         let result = LocalVar(calculateFunctionInstType(val, instantiateTypes), expr)
         expr._result = result
         return expr
@@ -2136,6 +2173,7 @@ public class GetRTTI <: Expression & Equatable<GetRTTI> {
      */
     public static func create(val: Value): GetRTTI {
         let expr = GetRTTI(val)
+        expr._attributes.setAttr(Attribute.PluginAdded, true)
         let result = LocalVar(UnitType.get(), expr)
         expr._result = result
         return expr
@@ -2180,6 +2218,7 @@ public class GetRTTIStatic <: Expression & Equatable<GetRTTIStatic> {
      */
     public static func create(ty: Type): GetRTTIStatic {
         let expr = GetRTTIStatic(ty)
+        expr._attributes.setAttr(Attribute.PluginAdded, true)
         let result = LocalVar(UnitType.get(), expr)
         expr._result = result
         return expr
@@ -2216,6 +2255,7 @@ public class GoTo <: Expression & Equatable<GoTo> {
      */
     public static func create(target: Block): GoTo {
         let expr = GoTo(target)
+        expr._attributes.setAttr(Attribute.PluginAdded, true)
         return expr
     }
 
@@ -2259,6 +2299,7 @@ public class InstanceOf <: Expression & Equatable<InstanceOf> {
      */
     public static func create(srcVal: Value, targetTy: Type): InstanceOf {
         let expr = InstanceOf(srcVal, targetTy)
+        expr._attributes.setAttr(Attribute.PluginAdded, true)
         let result = LocalVar(BoolType.get(), expr)
         expr._result = result
         return expr
@@ -2425,6 +2466,7 @@ public class Lambda <: Expression & Equatable<Lambda> {
      */
     public static func create(ty: FuncType, identifier: String, srcName: String, genericTypeParams: ArrayList<GenericType>): Lambda {
         let expr = Lambda(ty, identifier, srcName, genericTypeParams)
+        expr._attributes.setAttr(Attribute.PluginAdded, true)
         let result = LocalVar(ty, expr)
         expr._result = result
         return expr
@@ -2520,6 +2562,7 @@ public class Load <: Expression & Equatable<Load> {
      */
     public static func create(location: Value): Load {
         let expr = Load(location)
+        expr._attributes.setAttr(Attribute.PluginAdded, true)
         let result = LocalVar(location._type._typeArgs[0], expr)
         expr._result = result
         return expr
@@ -2610,6 +2653,7 @@ public class MultiBranch <: Expression & Equatable<MultiBranch> {
      */
     public static func create(condition: Value, default: Block, targets: ArrayList<Block>, caseValues: ArrayList<UInt64>): MultiBranch {
         let expr = MultiBranch(condition, default, targets, caseValues)
+        expr._attributes.setAttr(Attribute.PluginAdded, true)
         return expr
     }
 
@@ -2689,6 +2733,7 @@ public class NumericCast <: NumericCastBase & Equatable<NumericCast> {
      */
     public static func create(srcVal: Value, targetType: Type, overflow: OverflowStrategy): NumericCast {
         let expr = NumericCast(srcVal, overflow)
+        expr._attributes.setAttr(Attribute.PluginAdded, true)
         let result = LocalVar(targetType, expr)
         expr._result = result
         return expr
@@ -2753,6 +2798,7 @@ public class TryNumericCast <: NumericCastBase & Equatable<TryNumericCast> {
      */
     public static func create(srcVal: Value, targetType: Type, normal: Block, err: Block): TryNumericCast {
         let expr = TryNumericCast(srcVal, normal, err)
+        expr._attributes.setAttr(Attribute.PluginAdded, true)
         let result = LocalVar(targetType, expr)
         expr._result = result
         return expr
@@ -2791,6 +2837,7 @@ public class RaiseException <: Expression & Equatable<RaiseException> {
      */
     public static func create(value: Value, successor: Block): RaiseException {
         let expr = RaiseException(value, successor)
+        expr._attributes.setAttr(Attribute.PluginAdded, true)
         return expr
     }
 
@@ -2801,6 +2848,7 @@ public class RaiseException <: Expression & Equatable<RaiseException> {
      */
     public static func create(value: Value): RaiseException {
         let expr = RaiseException(value)
+        expr._attributes.setAttr(Attribute.PluginAdded, true)
         let result = LocalVar(UnitType.get(), expr)
         expr._result = result
         return expr
@@ -2865,6 +2913,7 @@ public class RawArrayAllocate <: RawArrayAllocateBase & Equatable<RawArrayAlloca
      */
     public static func create(elementType: Type, size: Value): RawArrayAllocate {
         let expr = RawArrayAllocate(elementType, size)
+        expr._attributes.setAttr(Attribute.PluginAdded, true)
         let result = LocalVar(RefType.get(RawArrayType.get(elementType, 1)), expr)
         expr._result = result
         return expr
@@ -2929,6 +2978,7 @@ public class TryRawArrayAllocate <: RawArrayAllocateBase & Equatable<TryRawArray
      */
     public static func create(elementType: Type, size: Value, normal: Block, err: Block): TryRawArrayAllocate {
         let expr = TryRawArrayAllocate(elementType, size, normal, err)
+        expr._attributes.setAttr(Attribute.PluginAdded, true)
         let result = LocalVar(RefType.get(RawArrayType.get(elementType, 1)), expr)
         expr._result = result
         return expr
@@ -2962,6 +3012,7 @@ public class RawArrayInitByValue <: Expression & Equatable<RawArrayInitByValue> 
      */
     public static func create(memory: Value, size: Value, initVal: Value): RawArrayInitByValue {
         let expr = RawArrayInitByValue(memory, size, initVal)
+        expr._attributes.setAttr(Attribute.PluginAdded, true)
         let result = LocalVar(UnitType.get(), expr)
         expr._result = result
         return expr
@@ -2995,6 +3046,7 @@ public class RawArrayLiteralInit <: Expression & Equatable<RawArrayLiteralInit> 
      */
     public static func create(memory: Value, elements: ArrayList<Value>): RawArrayLiteralInit {
         let expr = RawArrayLiteralInit(memory, elements)
+        expr._attributes.setAttr(Attribute.PluginAdded, true)
         let result = LocalVar(UnitType.get(), expr)
         expr._result = result
         return expr
@@ -3078,6 +3130,7 @@ public class Spawn <: SpawnBase & Equatable<Spawn> {
      */
     public static func create(retTy: Type, lambda: Value): Spawn {
         let expr = Spawn(lambda)
+        expr._attributes.setAttr(Attribute.PluginAdded, true)
         let result = LocalVar(retTy, expr)
         expr._result = result
         return expr
@@ -3092,6 +3145,7 @@ public class Spawn <: SpawnBase & Equatable<Spawn> {
      */
     public static func create(retTy: Type, lambda: Value, arg: Value): Spawn {
         let expr = Spawn(lambda, arg)
+        expr._attributes.setAttr(Attribute.PluginAdded, true)
         let result = LocalVar(retTy, expr)
         expr._result = result
         return expr
@@ -3155,6 +3209,7 @@ public class TrySpawn <: SpawnBase & Equatable<TrySpawn> {
      */
     public static func create(retTy: Type, lambda: Value, normal: Block, err: Block): TrySpawn {
         let expr = TrySpawn(lambda, normal, err)
+        expr._attributes.setAttr(Attribute.PluginAdded, true)
         let result = LocalVar(retTy, expr)
         expr._result = result
         return expr
@@ -3171,6 +3226,7 @@ public class TrySpawn <: SpawnBase & Equatable<TrySpawn> {
      */
     public static func create(retTy: Type, lambda: Value, arg: Value, normal: Block, err: Block): TrySpawn {
         let expr = TrySpawn(lambda, arg, normal, err)
+        expr._attributes.setAttr(Attribute.PluginAdded, true)
         let result = LocalVar(retTy, expr)
         expr._result = result
         return expr
@@ -3225,6 +3281,7 @@ public class Store <: Expression & Equatable<Store> {
      */
     public static func create(val: Value, location: Value): Store {
         let expr = Store(val, location)
+        expr._attributes.setAttr(Attribute.PluginAdded, true)
         let result = LocalVar(UnitType.get(), expr)
         expr._result = result
         return expr
@@ -3271,6 +3328,7 @@ public class StoreElementByName <: Expression & Equatable<StoreElementByName> {
      */
     public static func create(val: Value, location: Value, fieldNames: ArrayList<String>): StoreElementByName {
         let expr = StoreElementByName(val, location, fieldNames)
+        expr._attributes.setAttr(Attribute.PluginAdded, true)
         let result = LocalVar(UnitType.get(), expr)
         expr._result = result
         return expr
@@ -3308,6 +3366,7 @@ public class StoreElementRef <: Expression & Equatable<StoreElementRef> {
 
     public static func create(val: Value, location: Value, path: ArrayList<UInt64>): StoreElementRef {
         let expr = StoreElementRef(val, location, path)
+        expr._attributes.setAttr(Attribute.PluginAdded, true)
         let result = LocalVar(UnitType.get(), expr)
         expr._result = result
         return expr
@@ -3351,6 +3410,7 @@ public class Tuple <: Expression & Equatable<Tuple> {
     public static func create(elements: ArrayList<Value>): Tuple {
         assert(!elements.isEmpty(), "Tuple: elements are not set")
         let expr = Tuple(elements)
+        expr._attributes.setAttr(Attribute.PluginAdded, true)
         let result = LocalVar(TupleType.get(elements.mapTo<Type>({ e => e.ty }).toArray()), expr)
         expr._result = result
         return expr
@@ -3430,6 +3490,7 @@ public class Box <: TypeCast & Equatable<Box> {
      */
     public static func create(srcVal: Value, targetType: Type): Box {
         let expr = Box(srcVal)
+        expr._attributes.setAttr(Attribute.PluginAdded, true)
         let result = LocalVar(targetType, expr)
         expr._result = result
         return expr
@@ -3462,6 +3523,7 @@ public class StaticCast <: TypeCast & Equatable<StaticCast> {
      */
     public static func create(srcVal: Value, targetType: Type): StaticCast {
         let expr = StaticCast(srcVal)
+        expr._attributes.setAttr(Attribute.PluginAdded, true)
         let result = LocalVar(targetType, expr)
         expr._result = result
         return expr
@@ -3491,6 +3553,7 @@ public class CastToConcrete <: TypeCast & Equatable<CastToConcrete> {
      */
     public static func create(srcVal: Value, targetType: Type): CastToConcrete {
         let expr = CastToConcrete(srcVal)
+        expr._attributes.setAttr(Attribute.PluginAdded, true)
         let result = LocalVar(targetType, expr)
         expr._result = result
         return expr
@@ -3520,6 +3583,7 @@ public class CastToGeneric <: TypeCast & Equatable<CastToGeneric> {
      */
     public static func create(srcVal: Value, targetType: Type): CastToGeneric {
         let expr = CastToGeneric(srcVal)
+        expr._attributes.setAttr(Attribute.PluginAdded, true)
         let result = LocalVar(targetType, expr)
         expr._result = result
         return expr
@@ -3552,6 +3616,7 @@ public class UnboxToRef <: TypeCast & Equatable<UnboxToRef> {
      */
     public static func create(srcVal: Value, targetType: Type): UnboxToRef {
         let expr = UnboxToRef(srcVal)
+        expr._attributes.setAttr(Attribute.PluginAdded, true)
         let result = LocalVar(targetType, expr)
         expr._result = result
         return expr
@@ -3584,6 +3649,7 @@ public class UnboxToValue <: TypeCast & Equatable<UnboxToValue> {
      */
     public static func create(srcVal: Value, targetType: Type): UnboxToValue {
         let expr = UnboxToValue(srcVal)
+        expr._attributes.setAttr(Attribute.PluginAdded, true)
         let result = LocalVar(targetType, expr)
         expr._result = result
         return expr
@@ -3686,6 +3752,7 @@ public class TryUnaryExpression <: UnaryExpressionBase & Equatable<TryUnaryExpre
      */
     public static func create(op: Value, normal: Block, err: Block): TryUnaryExpression {
         let expr = TryUnaryExpression(TryNeg, op, normal, err)
+        expr._attributes.setAttr(Attribute.PluginAdded, true)
         let result = LocalVar(op.ty, expr)
         expr._result = result
         return expr
@@ -3718,6 +3785,7 @@ public class UnaryExpression <: UnaryExpressionBase & Equatable<UnaryExpression>
      */
     public static func create(kind: UnaryExprKind, op: Value): UnaryExpression {
         let expr = UnaryExpression(kind.toExprKind(false), op)
+        expr._attributes.setAttr(Attribute.PluginAdded, true)
         let retType = match (kind) {
             case Neg | BitNot => op.ty
             case Not => BoolType.get()
@@ -3757,6 +3825,7 @@ public class VArrayBuilder <: Expression & Equatable<VArrayBuilder> {
      */
     public static func create(retTy: Type, size: Value, initVal: Value, initFunc: Value): VArrayBuilder {
         let expr = VArrayBuilder(size, initVal, initFunc)
+        expr._attributes.setAttr(Attribute.PluginAdded, true)
         let result = LocalVar(retTy, expr)
         expr._result = result
         return expr
@@ -3789,6 +3858,7 @@ public class VArrayExpr <: Expression & Equatable<VArrayExpr> {
     public static func create(elements: ArrayList<Value>): VArrayExpr {
         assert(!elements.isEmpty(), "VArrayExpr: elements are not set")
         let expr = VArrayExpr(elements)
+        expr._attributes.setAttr(Attribute.PluginAdded, true)
         let retTy = VArrayType.get(elements[0].ty, elements.size)
         let result = LocalVar(retTy, expr)
         expr._result = result
@@ -3853,6 +3923,14 @@ public class FuncCallContext {
         this._args = ArrayList<Value>.of(args)
         this._instTypeArgs = ArrayList<Type>.of(instTypeArgs)
         this._objType = objType
+    }
+
+    public func setArg(index: Int64, arg: Value): Unit {
+        _args[index] = arg
+    }
+
+    public func setInstTypeArg(index: Int64, arg: Type): Unit {
+        _instTypeArgs[index] = arg
     }
 }
 
