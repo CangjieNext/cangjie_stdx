@@ -28,6 +28,27 @@ using namespace Meta;
 using namespace AstWriter;
 using namespace Utils;
 
+namespace {
+uint8_t* ExportFinishedFlatBuffer(flatbuffers::FlatBufferBuilder& builder, std::vector<uint8_t>& bufferData)
+{
+    uint32_t length = static_cast<uint32_t>(builder.GetSize());
+    bufferData.resize(sizeof(uint32_t) + length); // Add length of buffer in front.
+    uint8_t* buf = builder.GetBufferPointer();
+    uint32_t bufferSize = length + static_cast<uint32_t>(sizeof(uint32_t));
+    uint8_t* pBufferSize = reinterpret_cast<uint8_t*>(&bufferSize);
+    (void)std::copy(pBufferSize, pBufferSize + sizeof(uint32_t), bufferData.begin());
+    (void)std::copy(
+        buf, buf + static_cast<size_t>(length), bufferData.begin() + static_cast<int32_t>(sizeof(uint32_t)));
+    uint8_t* rawPtr = (uint8_t*)malloc(bufferData.size());
+    if (rawPtr == nullptr) {
+        Errorln("Memory Allocation Failed.");
+        return rawPtr;
+    }
+    (void)std::copy_n(bufferData.begin(), bufferData.size(), rawPtr);
+    return rawPtr;
+}
+}
+
 flatbuffers::Offset<NodeFormat::Range> SerializeRange(const Range& range, flatbuffers::FlatBufferBuilder& builder)
 {
     auto begin =
@@ -64,21 +85,7 @@ uint8_t* ExportDiags(flatbuffers::Offset<NodeFormat::Diags> diags, flatbuffers::
     // Flatbuffer maximum size is 2GB, for 32-bit signed offsets.
     builder.Finish(diags);
     std::vector<uint8_t> bufferData;
-    uint32_t length = static_cast<uint32_t>(builder.GetSize());
-    bufferData.resize(sizeof(uint32_t) + length); // Add length of buffer in front.
-    uint8_t* buf = builder.GetBufferPointer();
-    uint32_t bufferSize = length + static_cast<uint32_t>(sizeof(uint32_t));
-    uint8_t* pBufferSize = reinterpret_cast<uint8_t*>(&bufferSize);
-    (void)std::copy(pBufferSize, pBufferSize + sizeof(uint32_t), bufferData.begin());
-    (void)std::copy(
-        buf, buf + static_cast<size_t>(length), bufferData.begin() + static_cast<int32_t>(sizeof(uint32_t)));
-    uint8_t* rawPtr = (uint8_t*)malloc(bufferData.size());
-    if (rawPtr == nullptr) {
-        Errorln("Memory Allocation Failed.");
-        return rawPtr;
-    }
-    (void)std::copy_n(bufferData.begin(), bufferData.size(), rawPtr);
-    return rawPtr;
+    return ExportFinishedFlatBuffer(builder, bufferData);
 }
 
 NodeFormat::Position NodeWriter::FlatPosCreateHelper(const Position& pos) const
@@ -1285,19 +1292,5 @@ uint8_t* NodeWriter::ExportNode(SourceManager* sm)
         });
     // Serialize data into buffer.
     // Flatbuffer maximum size is 2GB, for 32-bit signed offsets.
-    uint32_t length = static_cast<uint32_t>(builder.GetSize());
-    bufferData.resize(sizeof(uint32_t) + length); // Add length of buffer in front.
-    uint8_t* buf = builder.GetBufferPointer();
-    uint32_t bufferSize = length + static_cast<uint32_t>(sizeof(uint32_t));
-    uint8_t* pBufferSize = reinterpret_cast<uint8_t*>(&bufferSize);
-    (void)std::copy(pBufferSize, pBufferSize + sizeof(uint32_t), bufferData.begin());
-    (void)std::copy(
-        buf, buf + static_cast<size_t>(length), bufferData.begin() + static_cast<int32_t>(sizeof(uint32_t)));
-    uint8_t* rawPtr = (uint8_t*)malloc(bufferData.size());
-    if (rawPtr == nullptr) {
-        Errorln("Memory Allocation Failed.");
-        return rawPtr;
-    }
-    (void)std::copy_n(bufferData.begin(), bufferData.size(), rawPtr);
-    return rawPtr;
+    return ExportFinishedFlatBuffer(builder, bufferData);
 }
