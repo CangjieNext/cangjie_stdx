@@ -29,6 +29,12 @@ private func createTokenRanges(positions: Array<CodePosition>, size: Int64): Arr
     return ret.toArray()
 }
 
+private func translateChild<T>(nodeImpl: SyntaxNodeImpl, startPos: CodePosition, parentNode: ?SyntaxTreeNode,
+    propInfo: PropInfo): T where T <: SyntaxTreeNode {
+    let curNode = (nodeImpl as NonTerminal).getOrThrow().children[propInfo.index]
+    return cast<T>(SyntaxNodeImplTranslator.translate(curNode, startPos + propInfo.offset, parentNode)).getOrThrow()
+}
+
 /**
  * @brief Represents a declaration in the abstract syntax tree (AST).
  *
@@ -231,9 +237,7 @@ public class ClassDecl <: Decl {
      */
     public prop body: Body {
         get() {
-            let curNode = (nodeImpl as NonTerminal).getOrThrow().children[propInfos.bodyPropInfo.index]
-            let offset = propInfos.bodyPropInfo.offset
-            cast<Body>(SyntaxNodeImplTranslator.translate(curNode, startPos + offset, this)).getOrThrow()
+            return translateChild<Body>(nodeImpl, startPos, this, propInfos.bodyPropInfo)
         }
     }
 
@@ -630,9 +634,7 @@ public class EnumDecl <: Decl {
      */
     public prop body: Body {
         get() {
-            let curNode = (nodeImpl as NonTerminal).getOrThrow().children[propInfos.bodyPropInfo.index]
-            let offset = propInfos.bodyPropInfo.offset
-            cast<Body>(SyntaxNodeImplTranslator.translate(curNode, startPos + offset, this)).getOrThrow()
+            return translateChild<Body>(nodeImpl, startPos, this, propInfos.bodyPropInfo)
         }
     }
 
@@ -853,9 +855,7 @@ public class ExtendDecl <: Decl {
      */
     public prop body: Body {
         get() {
-            let curNode = (nodeImpl as NonTerminal).getOrThrow().children[propInfos.bodyPropInfo.index]
-            let offset = propInfos.bodyPropInfo.offset
-            cast<Body>(SyntaxNodeImplTranslator.translate(curNode, startPos + offset, this)).getOrThrow()
+            return translateChild<Body>(nodeImpl, startPos, this, propInfos.bodyPropInfo)
         }
     }
 
@@ -1742,9 +1742,7 @@ public class InterfaceDecl <: Decl {
      */
     public prop body: Body {
         get() {
-            let curNode = (nodeImpl as NonTerminal).getOrThrow().children[propInfos.bodyPropInfo.index]
-            let offset = propInfos.bodyPropInfo.offset
-            cast<Body>(SyntaxNodeImplTranslator.translate(curNode, startPos + offset, this)).getOrThrow()
+            return translateChild<Body>(nodeImpl, startPos, this, propInfos.bodyPropInfo)
         }
     }
 
@@ -2721,9 +2719,7 @@ public class StructDecl <: Decl {
      */
     public prop body: Body {
         get() {
-            let curNode = (nodeImpl as NonTerminal).getOrThrow().children[propInfos.bodyPropInfo.index]
-            let offset = propInfos.bodyPropInfo.offset
-            cast<Body>(SyntaxNodeImplTranslator.translate(curNode, startPos + offset, this)).getOrThrow()
+            return translateChild<Body>(nodeImpl, startPos, this, propInfos.bodyPropInfo)
         }
     }
 
