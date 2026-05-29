@@ -35,6 +35,43 @@ private func translateChild<T>(nodeImpl: SyntaxNodeImpl, startPos: CodePosition,
     return cast<T>(SyntaxNodeImplTranslator.translate(curNode, startPos + propInfo.offset, parentNode)).getOrThrow()
 }
 
+private func translateOptionalChild<T>(nodeImpl: SyntaxNodeImpl, startPos: CodePosition, parentNode: ?SyntaxTreeNode,
+    propInfo: Option<PropInfo>): Option<T> where T <: SyntaxTreeNode {
+    if (let Some(v) <- propInfo) {
+        return translateChild<T>(nodeImpl, startPos, parentNode, v)
+    }
+    return None
+}
+
+private func translateGenericParams(node: SyntaxNodeImpl, startPos: CodePosition,
+    parentNode: ?SyntaxTreeNode): ArrayList<GenericParam> {
+    // BNF :LT GenericParam (Comma GenericParam)* GT
+    let lp = LocalParser(((node as NonTerminal).getOrThrow()).children)
+    let typeArguments = ArrayList<GenericParam>()
+    lp.offset.move(lp.consume().getOrThrow().offset)
+    while (!lp.look(SyntaxNodeKind.GtToken)) {
+        var impl = lp.consume()
+        typeArguments.add(
+            cast<GenericParam>(SyntaxNodeImplTranslator.translate(impl.getOrThrow(), startPos + lp.offset, parentNode))
+                .getOrThrow())
+        lp.offset.move(impl.getOrThrow().offset)
+        if (let Some(v) <- lp.lookAndConsume(SyntaxNodeKind.CommaToken)) {
+            lp.offset.move(v.offset)
+        }
+    }
+    return typeArguments
+}
+
+private func translateOptionalGenericParams(nodeImpl: SyntaxNodeImpl, startPos: CodePosition,
+    parentNode: ?SyntaxTreeNode, propInfo: Option<PropInfo>): Array<GenericParam> {
+    let typeArguments = ArrayList<GenericParam>()
+    if (let Some(v) <- propInfo) {
+        let curNode = (nodeImpl as NonTerminal).getOrThrow().children[v.index]
+        return translateGenericParams(curNode, startPos + v.offset, parentNode).toArray()
+    }
+    return typeArguments.toArray()
+}
+
 /**
  * @brief Represents a declaration in the abstract syntax tree (AST).
  *
@@ -42,24 +79,6 @@ private func translateChild<T>(nodeImpl: SyntaxNodeImpl, startPos: CodePosition,
  * declarations in the syntax tree.
  */
 sealed abstract class Decl <: SyntaxTreeNode {
-    func transGenericParams(node: SyntaxNodeImpl, startPos: CodePosition) {
-        // BNF :LT GenericParam (Comma GenericParam)* GT
-        let lp = LocalParser(((node as NonTerminal).getOrThrow()).children)
-        let typeArguments = ArrayList<GenericParam>()
-        lp.offset.move(lp.consume().getOrThrow().offset)
-        while (!lp.look(SyntaxNodeKind.GtToken)) {
-            var impl = lp.consume()
-            typeArguments.add(
-                cast<GenericParam>(SyntaxNodeImplTranslator.translate(impl.getOrThrow(), startPos + lp.offset, this))
-                    .getOrThrow())
-            lp.offset.move(impl.getOrThrow().offset)
-            if (let Some(v) <- lp.lookAndConsume(SyntaxNodeKind.CommaToken)) {
-                lp.offset.move(v.offset)
-            }
-        }
-        typeArguments
-    }
-
     init(nodePos: CodePositionRange, nodeImpl: SyntaxNodeImpl, parentNode: ?SyntaxTreeNode,
         commentsPropInfo: Array<PropInfo>) {
         super(nodePos, nodeImpl, parentNode, commentsPropInfo)
@@ -249,14 +268,8 @@ public class ClassDecl <: Decl {
      */
     public prop genericConstraints: Option<GenericConstraints> {
         get() {
-            if (let Some(propInfo) <- propInfos.genericConstraintsPropInfo) {
-                let curNode = (nodeImpl as NonTerminal).getOrThrow().children[propInfo.index]
-                let offset = propInfo.offset
-                cast<GenericConstraints>(SyntaxNodeImplTranslator.translate(curNode, startPos + offset, this))
-                    .getOrThrow()
-            } else {
-                None
-            }
+            return translateOptionalChild<GenericConstraints>(nodeImpl, startPos, this,
+                propInfos.genericConstraintsPropInfo)
         }
     }
 
@@ -268,13 +281,7 @@ public class ClassDecl <: Decl {
      */
     public prop genericParams: Array<GenericParam> {
         get() {
-            var typeArguments = ArrayList<GenericParam>()
-            if (let Some(propInfo) <- propInfos.genericParamsPropInfo) {
-                let curNode = (nodeImpl as NonTerminal).getOrThrow().children[propInfo.index]
-                let offset = propInfo.offset
-                typeArguments = transGenericParams(curNode, startPos + offset)
-            }
-            typeArguments.toArray()
+            return translateOptionalGenericParams(nodeImpl, startPos, this, propInfos.genericParamsPropInfo)
         }
     }
 
@@ -646,14 +653,8 @@ public class EnumDecl <: Decl {
      */
     public prop genericConstraints: Option<GenericConstraints> {
         get() {
-            if (let Some(propInfo) <- propInfos.genericConstraintsPropInfo) {
-                let curNode = (nodeImpl as NonTerminal).getOrThrow().children[propInfo.index]
-                let offset = propInfo.offset
-                cast<GenericConstraints>(SyntaxNodeImplTranslator.translate(curNode, startPos + offset, this))
-                    .getOrThrow()
-            } else {
-                None
-            }
+            return translateOptionalChild<GenericConstraints>(nodeImpl, startPos, this,
+                propInfos.genericConstraintsPropInfo)
         }
     }
 
@@ -665,13 +666,7 @@ public class EnumDecl <: Decl {
      */
     public prop genericParams: Array<GenericParam> {
         get() {
-            var typeArguments = ArrayList<GenericParam>()
-            if (let Some(propInfo) <- propInfos.genericParamsPropInfo) {
-                let curNode = (nodeImpl as NonTerminal).getOrThrow().children[propInfo.index]
-                let offset = propInfo.offset
-                typeArguments = transGenericParams(curNode, startPos + offset)
-            }
-            typeArguments.toArray()
+            return translateOptionalGenericParams(nodeImpl, startPos, this, propInfos.genericParamsPropInfo)
         }
     }
 
@@ -881,14 +876,8 @@ public class ExtendDecl <: Decl {
      */
     public prop genericConstraints: Option<GenericConstraints> {
         get() {
-            if (let Some(propInfo) <- propInfos.genericConstraintsPropInfo) {
-                let curNode = (nodeImpl as NonTerminal).getOrThrow().children[propInfo.index]
-                let offset = propInfo.offset
-                cast<GenericConstraints>(SyntaxNodeImplTranslator.translate(curNode, startPos + offset, this))
-                    .getOrThrow()
-            } else {
-                None
-            }
+            return translateOptionalChild<GenericConstraints>(nodeImpl, startPos, this,
+                propInfos.genericConstraintsPropInfo)
         }
     }
 
@@ -900,13 +889,7 @@ public class ExtendDecl <: Decl {
      */
     public prop genericParams: Array<GenericParam> {
         get() {
-            var typeArguments = ArrayList<GenericParam>()
-            if (let Some(propInfo) <- propInfos.genericParamsPropInfo) {
-                let curNode = (nodeImpl as NonTerminal).getOrThrow().children[propInfo.index]
-                let offset = propInfo.offset
-                typeArguments = transGenericParams(curNode, startPos + offset)
-            }
-            typeArguments.toArray()
+            return translateOptionalGenericParams(nodeImpl, startPos, this, propInfos.genericParamsPropInfo)
         }
     }
 
@@ -1162,14 +1145,8 @@ public class FuncDecl <: Decl {
      */
     public prop genericConstraints: Option<GenericConstraints> {
         get() {
-            if (let Some(propInfo) <- propInfos.genericConstraintsPropInfo) {
-                let curNode = (nodeImpl as NonTerminal).getOrThrow().children[propInfo.index]
-                let offset = propInfo.offset
-                cast<GenericConstraints>(SyntaxNodeImplTranslator.translate(curNode, startPos + offset, this))
-                    .getOrThrow()
-            } else {
-                None
-            }
+            return translateOptionalChild<GenericConstraints>(nodeImpl, startPos, this,
+                propInfos.genericConstraintsPropInfo)
         }
     }
 
@@ -1181,13 +1158,7 @@ public class FuncDecl <: Decl {
      */
     public prop genericParams: Array<GenericParam> {
         get() {
-            var typeArguments = ArrayList<GenericParam>()
-            if (let Some(propInfo) <- propInfos.genericParamsPropInfo) {
-                let curNode = (nodeImpl as NonTerminal).getOrThrow().children[propInfo.index]
-                let offset = propInfo.offset
-                typeArguments = transGenericParams(curNode, startPos + offset)
-            }
-            typeArguments.toArray()
+            return translateOptionalGenericParams(nodeImpl, startPos, this, propInfos.genericParamsPropInfo)
         }
     }
 
@@ -1754,14 +1725,8 @@ public class InterfaceDecl <: Decl {
      */
     public prop genericConstraints: Option<GenericConstraints> {
         get() {
-            if (let Some(propInfo) <- propInfos.genericConstraintsPropInfo) {
-                let curNode = (nodeImpl as NonTerminal).getOrThrow().children[propInfo.index]
-                let offset = propInfo.offset
-                cast<GenericConstraints>(SyntaxNodeImplTranslator.translate(curNode, startPos + offset, this))
-                    .getOrThrow()
-            } else {
-                None
-            }
+            return translateOptionalChild<GenericConstraints>(nodeImpl, startPos, this,
+                propInfos.genericConstraintsPropInfo)
         }
     }
 
@@ -1773,13 +1738,7 @@ public class InterfaceDecl <: Decl {
      */
     public prop genericParams: Array<GenericParam> {
         get() {
-            var typeArguments = ArrayList<GenericParam>()
-            if (let Some(propInfo) <- propInfos.genericParamsPropInfo) {
-                let curNode = (nodeImpl as NonTerminal).getOrThrow().children[propInfo.index]
-                let offset = propInfo.offset
-                typeArguments = transGenericParams(curNode, startPos + offset)
-            }
-            typeArguments.toArray()
+            return translateOptionalGenericParams(nodeImpl, startPos, this, propInfos.genericParamsPropInfo)
         }
     }
 
@@ -2731,14 +2690,8 @@ public class StructDecl <: Decl {
      */
     public prop genericConstraints: Option<GenericConstraints> {
         get() {
-            if (let Some(propInfo) <- propInfos.genericConstraintsPropInfo) {
-                let curNode = (nodeImpl as NonTerminal).getOrThrow().children[propInfo.index]
-                let offset = propInfo.offset
-                cast<GenericConstraints>(SyntaxNodeImplTranslator.translate(curNode, startPos + offset, this))
-                    .getOrThrow()
-            } else {
-                None
-            }
+            return translateOptionalChild<GenericConstraints>(nodeImpl, startPos, this,
+                propInfos.genericConstraintsPropInfo)
         }
     }
 
@@ -2750,13 +2703,7 @@ public class StructDecl <: Decl {
      */
     public prop genericParams: Array<GenericParam> {
         get() {
-            var typeArguments = ArrayList<GenericParam>()
-            if (let Some(propInfo) <- propInfos.genericParamsPropInfo) {
-                let curNode = (nodeImpl as NonTerminal).getOrThrow().children[propInfo.index]
-                let offset = propInfo.offset
-                typeArguments = transGenericParams(curNode, startPos + offset)
-            }
-            typeArguments.toArray()
+            return translateOptionalGenericParams(nodeImpl, startPos, this, propInfos.genericParamsPropInfo)
         }
     }
 
