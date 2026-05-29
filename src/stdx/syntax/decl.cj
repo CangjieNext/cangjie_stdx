@@ -10,6 +10,17 @@ package stdx.syntax
 
 import std.collection.ArrayList
 
+private func createPositionRange(pos: CodePosition, size: Int64): CodePositionRange {
+    return CodePositionRange(pos, pos + size)
+}
+
+private func createOptionalTokenRange(pos: Option<CodePosition>, size: Int64): Option<CodePositionRange> {
+    if (let Some(v) <- pos) {
+        return createPositionRange(v, size)
+    }
+    return None
+}
+
 /**
  * @brief Represents a declaration in the abstract syntax tree (AST).
  *
@@ -158,15 +169,10 @@ public class ClassDecl <: Decl {
         CodePositionRange(posInfos.classKeyWordPos, endPos)
     }
     public func getIdentifierPos(): CodePositionRange {
-        let endPos = posInfos.identifierPos + name.size
-        return CodePositionRange(posInfos.identifierPos, endPos)
+        return createPositionRange(posInfos.identifierPos, name.size)
     }
     public func getGenericParamsLAnglePos(): Option<CodePositionRange> {
-        if (let Some(v) <- posInfos.genericParamsLAnglePos) {
-            let endPos = v + SyntaxNodeKind.LtToken.size
-            return CodePositionRange(v, endPos)
-        }
-        return None
+        return createOptionalTokenRange(posInfos.genericParamsLAnglePos, SyntaxNodeKind.LtToken.size)
     }
     public func getGenericParamsCommasPos(): Array<CodePositionRange> {
         let ret = ArrayList<CodePositionRange>()
@@ -533,19 +539,14 @@ public class EnumDecl <: Decl {
      * @brief Get the position range of the identifier.
      */
     public func getIdentifierPos(): CodePositionRange {
-        let endPos = posInfos.identifierPos + name.size
-        return CodePositionRange(posInfos.identifierPos, endPos)
+        return createPositionRange(posInfos.identifierPos, name.size)
     }
 
     /**
      * @brief Get the position range of the left angle bracket for generic parameters if present.
      */
     public func getGenericParamsLAnglePos(): Option<CodePositionRange> {
-        if (let Some(v) <- posInfos.genericParamsLAnglePos) {
-            let endPos = v + SyntaxNodeKind.LtToken.size
-            return CodePositionRange(v, endPos)
-        }
-        return None
+        return createOptionalTokenRange(posInfos.genericParamsLAnglePos, SyntaxNodeKind.LtToken.size)
     }
 
     /**
@@ -1717,19 +1718,14 @@ public class InterfaceDecl <: Decl {
      * @brief Get the position range of the identifier.
      */
     public func getIdentifierPos(): CodePositionRange {
-        let endPos = posInfos.identifierPos + name.size
-        return CodePositionRange(posInfos.identifierPos, endPos)
+        return createPositionRange(posInfos.identifierPos, name.size)
     }
 
     /**
      * @brief Get the position range of the left angle bracket for generic parameters if present.
      */
     public func getGenericParamsLAnglePos(): Option<CodePositionRange> {
-        if (let Some(v) <- posInfos.genericParamsLAnglePos) {
-            let endPos = v + SyntaxNodeKind.LtToken.size
-            return CodePositionRange(v, endPos)
-        }
-        return None
+        return createOptionalTokenRange(posInfos.genericParamsLAnglePos, SyntaxNodeKind.LtToken.size)
     }
 
     /**
@@ -2719,19 +2715,14 @@ public class StructDecl <: Decl {
      * @brief Get the position range of the identifier.
      */
     public func getIdentifierPos(): CodePositionRange {
-        let endPos = posInfos.identifierPos + name.size
-        return CodePositionRange(posInfos.identifierPos, endPos)
+        return createPositionRange(posInfos.identifierPos, name.size)
     }
 
     /**
      * @brief Get the position range of the left angle bracket for generic parameters if present.
      */
     public func getGenericParamsLAnglePos(): Option<CodePositionRange> {
-        if (let Some(v) <- posInfos.genericParamsLAnglePos) {
-            let endPos = v + SyntaxNodeKind.LtToken.size
-            return CodePositionRange(v, endPos)
-        }
-        return None
+        return createOptionalTokenRange(posInfos.genericParamsLAnglePos, SyntaxNodeKind.LtToken.size)
     }
 
     /**
