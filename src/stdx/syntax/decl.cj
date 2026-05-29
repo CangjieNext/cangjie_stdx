@@ -21,6 +21,14 @@ private func createOptionalTokenRange(pos: Option<CodePosition>, size: Int64): O
     return None
 }
 
+private func createTokenRanges(positions: Array<CodePosition>, size: Int64): Array<CodePositionRange> {
+    let ret = ArrayList<CodePositionRange>()
+    for (pos in positions) {
+        ret.add(createPositionRange(pos, size))
+    }
+    return ret.toArray()
+}
+
 /**
  * @brief Represents a declaration in the abstract syntax tree (AST).
  *
@@ -175,34 +183,16 @@ public class ClassDecl <: Decl {
         return createOptionalTokenRange(posInfos.genericParamsLAnglePos, SyntaxNodeKind.LtToken.size)
     }
     public func getGenericParamsCommasPos(): Array<CodePositionRange> {
-        let ret = ArrayList<CodePositionRange>()
-        for (i in 0..posInfos.genericParamsCommasPos.size) {
-            let endPos = posInfos.genericParamsCommasPos[i] + SyntaxNodeKind.CommaToken.size
-            ret.add(CodePositionRange(posInfos.genericParamsCommasPos[i], endPos))
-        }
-        ret.toArray()
+        return createTokenRanges(posInfos.genericParamsCommasPos, SyntaxNodeKind.CommaToken.size)
     }
     public func getGenericParamsRAnglePos(): Option<CodePositionRange> {
-        if (let Some(v) <- posInfos.genericParamsRAnglePos) {
-            let endPos = v + SyntaxNodeKind.GtToken.size
-            return CodePositionRange(v, endPos)
-        }
-        return None
+        return createOptionalTokenRange(posInfos.genericParamsRAnglePos, SyntaxNodeKind.GtToken.size)
     }
     public func getUpperBoundPos(): Option<CodePositionRange> {
-        if (let Some(v) <- posInfos.upperBoundPos) {
-            let endPos = v + SyntaxNodeKind.UpperBoundToken.size
-            return CodePositionRange(v, endPos)
-        }
-        return None
+        return createOptionalTokenRange(posInfos.upperBoundPos, SyntaxNodeKind.UpperBoundToken.size)
     }
     public func getSuperTyAnnotationsBitAndsPos(): Array<CodePositionRange> {
-        let ret = ArrayList<CodePositionRange>()
-        for (i in 0..posInfos.superTyAnnotationsBitAndsPos.size) {
-            let endPos = posInfos.superTyAnnotationsBitAndsPos[i] + SyntaxNodeKind.BitAndToken.size
-            ret.add(CodePositionRange(posInfos.superTyAnnotationsBitAndsPos[i], endPos))
-        }
-        ret.toArray()
+        return createTokenRanges(posInfos.superTyAnnotationsBitAndsPos, SyntaxNodeKind.BitAndToken.size)
     }
 
     init(nodeImpl: SyntaxNodeImpl, startPos: CodePosition, parentNode: ?SyntaxTreeNode, name_: String,
@@ -553,46 +543,28 @@ public class EnumDecl <: Decl {
      * @brief Get the position ranges of commas in generic parameters.
      */
     public func getGenericParamsCommasPos(): Array<CodePositionRange> {
-        let ret = ArrayList<CodePositionRange>()
-        for (i in 0..posInfos.genericParamsCommasPos.size) {
-            let endPos = posInfos.genericParamsCommasPos[i] + SyntaxNodeKind.CommaToken.size
-            ret.add(CodePositionRange(posInfos.genericParamsCommasPos[i], endPos))
-        }
-        ret.toArray()
+        return createTokenRanges(posInfos.genericParamsCommasPos, SyntaxNodeKind.CommaToken.size)
     }
 
     /**
      * @brief Get the position range of the right angle bracket for generic parameters if present.
      */
     public func getGenericParamsRAnglePos(): Option<CodePositionRange> {
-        if (let Some(v) <- posInfos.genericParamsRAnglePos) {
-            let endPos = v + SyntaxNodeKind.GtToken.size
-            return CodePositionRange(v, endPos)
-        }
-        return None
+        return createOptionalTokenRange(posInfos.genericParamsRAnglePos, SyntaxNodeKind.GtToken.size)
     }
 
     /**
      * @brief Get the position range of the upper bound token if present.
      */
     public func getUpperBoundPos(): Option<CodePositionRange> {
-        if (let Some(v) <- posInfos.upperBoundPos) {
-            let endPos = v + SyntaxNodeKind.UpperBoundToken.size
-            return CodePositionRange(v, endPos)
-        }
-        return None
+        return createOptionalTokenRange(posInfos.upperBoundPos, SyntaxNodeKind.UpperBoundToken.size)
     }
 
     /**
      * @brief Get the position ranges of bit-and tokens in super type annotations.
      */
     public func getSuperTyAnnotationsBitAndsPos(): Array<CodePositionRange> {
-        let ret = ArrayList<CodePositionRange>()
-        for (i in 0..posInfos.superTyAnnotationsBitAndsPos.size) {
-            let endPos = posInfos.superTyAnnotationsBitAndsPos[i] + SyntaxNodeKind.BitAndToken.size
-            ret.add(CodePositionRange(posInfos.superTyAnnotationsBitAndsPos[i], endPos))
-        }
-        ret.toArray()
+        return createTokenRanges(posInfos.superTyAnnotationsBitAndsPos, SyntaxNodeKind.BitAndToken.size)
     }
 
     /**
@@ -816,57 +788,35 @@ public class ExtendDecl <: Decl {
      * @brief Get the position range of the left angle bracket for generic parameters if present.
      */
     public func getGenericParamsLAnglePos(): Option<CodePositionRange> {
-        if (let Some(v) <- posInfos.genericParamsLAnglePos) {
-            let endPos = v + SyntaxNodeKind.LtToken.size
-            return CodePositionRange(v, endPos)
-        }
-        return None
+        return createOptionalTokenRange(posInfos.genericParamsLAnglePos, SyntaxNodeKind.LtToken.size)
     }
 
     /**
      * @brief Get the position ranges of commas in generic parameters.
      */
     public func getGenericParamsCommasPos(): Array<CodePositionRange> {
-        let ret = ArrayList<CodePositionRange>()
-        for (i in 0..posInfos.genericParamsCommasPos.size) {
-            let endPos = posInfos.genericParamsCommasPos[i] + SyntaxNodeKind.CommaToken.size
-            ret.add(CodePositionRange(posInfos.genericParamsCommasPos[i], endPos))
-        }
-        ret.toArray()
+        return createTokenRanges(posInfos.genericParamsCommasPos, SyntaxNodeKind.CommaToken.size)
     }
 
     /**
      * @brief Get the position range of the right angle bracket for generic parameters if present.
      */
     public func getGenericParamsRAnglePos(): Option<CodePositionRange> {
-        if (let Some(v) <- posInfos.genericParamsRAnglePos) {
-            let endPos = v + SyntaxNodeKind.GtToken.size
-            return CodePositionRange(v, endPos)
-        }
-        return None
+        return createOptionalTokenRange(posInfos.genericParamsRAnglePos, SyntaxNodeKind.GtToken.size)
     }
 
     /**
      * @brief Get the position range of the upper bound token if present.
      */
     public func getUpperBoundPos(): Option<CodePositionRange> {
-        if (let Some(v) <- posInfos.upperBoundPos) {
-            let endPos = v + SyntaxNodeKind.UpperBoundToken.size
-            return CodePositionRange(v, endPos)
-        }
-        return None
+        return createOptionalTokenRange(posInfos.upperBoundPos, SyntaxNodeKind.UpperBoundToken.size)
     }
 
     /**
      * @brief Get the position ranges of bit-and tokens in super type annotations.
      */
     public func getSuperTyAnnotationsBitAndsPos(): Array<CodePositionRange> {
-        let ret = ArrayList<CodePositionRange>()
-        for (i in 0..posInfos.superTyAnnotationsBitAndsPos.size) {
-            let endPos = posInfos.superTyAnnotationsBitAndsPos[i] + SyntaxNodeKind.BitAndToken.size
-            ret.add(CodePositionRange(posInfos.superTyAnnotationsBitAndsPos[i], endPos))
-        }
-        ret.toArray()
+        return createTokenRanges(posInfos.superTyAnnotationsBitAndsPos, SyntaxNodeKind.BitAndToken.size)
     }
 
     init(nodeImpl: SyntaxNodeImpl, startPos: CodePosition, parentNode: ?SyntaxTreeNode, posInfos: ExtendDeclPosInfos,
@@ -1732,46 +1682,28 @@ public class InterfaceDecl <: Decl {
      * @brief Get the position ranges of commas in generic parameters.
      */
     public func getGenericParamsCommasPos(): Array<CodePositionRange> {
-        let ret = ArrayList<CodePositionRange>()
-        for (i in 0..posInfos.genericParamsCommasPos.size) {
-            let endPos = posInfos.genericParamsCommasPos[i] + SyntaxNodeKind.CommaToken.size
-            ret.add(CodePositionRange(posInfos.genericParamsCommasPos[i], endPos))
-        }
-        ret.toArray()
+        return createTokenRanges(posInfos.genericParamsCommasPos, SyntaxNodeKind.CommaToken.size)
     }
 
     /**
      * @brief Get the position range of the right angle bracket for generic parameters if present.
      */
     public func getGenericParamsRAnglePos(): Option<CodePositionRange> {
-        if (let Some(v) <- posInfos.genericParamsRAnglePos) {
-            let endPos = v + SyntaxNodeKind.GtToken.size
-            return CodePositionRange(v, endPos)
-        }
-        return None
+        return createOptionalTokenRange(posInfos.genericParamsRAnglePos, SyntaxNodeKind.GtToken.size)
     }
 
     /**
      * @brief Get the position range of the upper bound token if present.
      */
     public func getUpperBoundPos(): Option<CodePositionRange> {
-        if (let Some(v) <- posInfos.upperBoundPos) {
-            let endPos = v + SyntaxNodeKind.UpperBoundToken.size
-            return CodePositionRange(v, endPos)
-        }
-        return None
+        return createOptionalTokenRange(posInfos.upperBoundPos, SyntaxNodeKind.UpperBoundToken.size)
     }
 
     /**
      * @brief Get the position ranges of bit-and tokens in super type annotations.
      */
     public func getSuperTyAnnotationsBitAndsPos(): Array<CodePositionRange> {
-        let ret = ArrayList<CodePositionRange>()
-        for (i in 0..posInfos.superTyAnnotationsBitAndsPos.size) {
-            let endPos = posInfos.superTyAnnotationsBitAndsPos[i] + SyntaxNodeKind.BitAndToken.size
-            ret.add(CodePositionRange(posInfos.superTyAnnotationsBitAndsPos[i], endPos))
-        }
-        ret.toArray()
+        return createTokenRanges(posInfos.superTyAnnotationsBitAndsPos, SyntaxNodeKind.BitAndToken.size)
     }
 
     init(nodeImpl: SyntaxNodeImpl, startPos: CodePosition, parentNode: ?SyntaxTreeNode, name_: String,
@@ -2729,46 +2661,28 @@ public class StructDecl <: Decl {
      * @brief Get the position ranges of commas in generic parameters.
      */
     public func getGenericParamsCommasPos(): Array<CodePositionRange> {
-        let ret = ArrayList<CodePositionRange>()
-        for (i in 0..posInfos.genericParamsCommasPos.size) {
-            let endPos = posInfos.genericParamsCommasPos[i] + SyntaxNodeKind.CommaToken.size
-            ret.add(CodePositionRange(posInfos.genericParamsCommasPos[i], endPos))
-        }
-        ret.toArray()
+        return createTokenRanges(posInfos.genericParamsCommasPos, SyntaxNodeKind.CommaToken.size)
     }
 
     /**
      * @brief Get the position range of the right angle bracket for generic parameters if present.
      */
     public func getGenericParamsRAnglePos(): Option<CodePositionRange> {
-        if (let Some(v) <- posInfos.genericParamsRAnglePos) {
-            let endPos = v + SyntaxNodeKind.GtToken.size
-            return CodePositionRange(v, endPos)
-        }
-        return None
+        return createOptionalTokenRange(posInfos.genericParamsRAnglePos, SyntaxNodeKind.GtToken.size)
     }
 
     /**
      * @brief Get the position range of the upper bound token if present.
      */
     public func getUpperBoundPos(): Option<CodePositionRange> {
-        if (let Some(v) <- posInfos.upperBoundPos) {
-            let endPos = v + SyntaxNodeKind.UpperBoundToken.size
-            return CodePositionRange(v, endPos)
-        }
-        return None
+        return createOptionalTokenRange(posInfos.upperBoundPos, SyntaxNodeKind.UpperBoundToken.size)
     }
 
     /**
      * @brief Get the position ranges of bit-and tokens in super type annotations.
      */
     public func getSuperTyAnnotationsBitAndsPos(): Array<CodePositionRange> {
-        let ret = ArrayList<CodePositionRange>()
-        for (i in 0..posInfos.superTyAnnotationsBitAndsPos.size) {
-            let endPos = posInfos.superTyAnnotationsBitAndsPos[i] + SyntaxNodeKind.BitAndToken.size
-            ret.add(CodePositionRange(posInfos.superTyAnnotationsBitAndsPos[i], endPos))
-        }
-        ret.toArray()
+        return createTokenRanges(posInfos.superTyAnnotationsBitAndsPos, SyntaxNodeKind.BitAndToken.size)
     }
 
     init(nodeImpl: SyntaxNodeImpl, startPos: CodePosition, parentNode: ?SyntaxTreeNode, name_: String,
