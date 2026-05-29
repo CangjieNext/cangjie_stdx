@@ -1,8 +1,8 @@
-# stdx.aspectCJ
+# stdx.aspect_cj
 
 ## 功能介绍
 
-`stdx.aspectCJ` 包提供了仓颉中面向切面编程（Aspect Oriented Programming, AOP）的相关注解，配合 libcollect-aspects 和 libwave-aspects 两个编译插件使用，可以对函数进行前后插桩以及替换实现。
+`stdx.aspect_cj` 包提供了仓颉中面向切面编程（Aspect Oriented Programming, AOP）的相关注解，配合 libstdx.collect_aspects 和 libstdx.wave_aspects 两个编译插件使用，可以对函数进行前后插桩以及替换实现。
 
 ## API 列表
 
@@ -10,9 +10,9 @@
 
 | 类名                                                         | 功能                                                         |
 | ------------------------------------------------------------ | ------------------------------------------------------------ |
-| [InsertAtEntry](./aspectCJ_package_api/aspectCJ_package_classes.md#class-insertatentry) | 一个注解类，提供一种切面能力。在注解所指定方法的入口，织入对被注解标注的函数的调用。 |
-| [InsertAtExit](./aspectCJ_package_api/aspectCJ_package_classes.md#class-insertatexit) | 一个注解类，提供一种切面能力。在注解所指定方法的退出点，织入对被注解标注的函数的调用。 |
-| [ReplaceFuncBody](./aspectCJ_package_api/aspectCJ_package_classes.md#class-replacefuncbody) | 一个注解类，提供一种切面能力。将注解所指定方法的方法体，替换为对被注解标注的函数的调用。 |
+| [InsertAtEntry](./aspect_cj_package_api/aspect_cj_package_classes.md#class-insertatentry) | 一个注解类，提供一种切面能力。在注解所指定方法的入口，织入对被注解标注的函数的调用。 |
+| [InsertAtExit](./aspect_cj_package_api/aspect_cj_package_classes.md#class-insertatexit) | 一个注解类，提供一种切面能力。在注解所指定方法的退出点，织入对被注解标注的函数的调用。 |
+| [ReplaceFuncBody](./aspect_cj_package_api/aspect_cj_package_classes.md#class-replacefuncbody) | 一个注解类，提供一种切面能力。将注解所指定方法的方法体，替换为对被注解标注的函数的调用。 |
 
 ## 规格和使用
 
@@ -50,9 +50,9 @@
 
 要实现 AOP 的完整功能，除了使用上述的注解类来定义切面，还需要两个编译插件：
 
-- libcollect-aspects.so(.dll/.dylib)
-- libwave-aspects.so(.dll/.dylib)
+- libstdx.collect_aspects.so(.dll/.dylib)
+- libstdx.wave_aspects.so(.dll/.dylib)
 
-这两个编译插件以动态库的形式在 stdx.aspectCJ 中提供，不同平台提供不同版本。
+这两个编译插件以动态库的形式在 stdx.aspect_cj 中提供，不同平台提供不同版本。
 
-应先使用 libcollect-aspects，在编译时收集所有切面、连接点信息；再使用 libwave-aspects 进行二次编译，把之前收集的切面织入到连接点。
+应先使用 libstdx.collect_aspects，在编译时收集所有切面、连接点信息；再使用 libstdx.wave_aspects 进行二次编译，把之前收集的切面织入到连接点。
