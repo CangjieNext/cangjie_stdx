@@ -447,15 +447,7 @@ public class EnumConstructor <: Decl {
      */
     public prop paramTyAnnotations: Array<TypeAnnotation> {
         get() {
-            let tyAnnos = ArrayList<TypeAnnotation>()
-            for (propInfo in propInfos.paramTyAnnotationsPropInfo) {
-                let curNode = (nodeImpl as NonTerminal).getOrThrow().children[propInfo.index]
-                let offset = propInfo.offset
-                tyAnnos.add(
-                    cast<TypeAnnotation>(SyntaxNodeImplTranslator.translate(curNode, startPos + offset, this))
-                        .getOrThrow())
-            }
-            tyAnnos.toArray()
+            return translateChildList<TypeAnnotation>(nodeImpl, startPos, this, propInfos.paramTyAnnotationsPropInfo)
         }
     }
 }
@@ -1179,9 +1171,7 @@ public class FuncDecl <: Decl {
      */
     public prop params: ParameterList {
         get() {
-            let curNode = (nodeImpl as NonTerminal).getOrThrow().children[propInfos.paramsPropInfo.index]
-            let offset = propInfos.paramsPropInfo.offset
-            cast<ParameterList>(SyntaxNodeImplTranslator.translate(curNode, startPos + offset, this)).getOrThrow()
+            return translateChild<ParameterList>(nodeImpl, startPos, this, propInfos.paramsPropInfo)
         }
     }
 
@@ -1193,13 +1183,7 @@ public class FuncDecl <: Decl {
      */
     public prop retTyAnnotation: Option<TypeAnnotation> {
         get() {
-            if (let Some(propInfo) <- propInfos.retTyAnnotationPropInfo) {
-                let curNode = (nodeImpl as NonTerminal).getOrThrow().children[propInfo.index]
-                let offset = propInfo.offset
-                cast<TypeAnnotation>(SyntaxNodeImplTranslator.translate(curNode, startPos + offset, this)).getOrThrow()
-            } else {
-                None
-            }
+            return translateOptionalChild<TypeAnnotation>(nodeImpl, startPos, this, propInfos.retTyAnnotationPropInfo)
         }
     }
 }
@@ -1878,9 +1862,7 @@ public class MacroDecl <: Decl {
      */
     public prop params: ParameterList {
         get() {
-            let curNode = (nodeImpl as NonTerminal).getOrThrow().children[propInfos.paramsPropInfo.index]
-            let offset = propInfos.paramsPropInfo.offset
-            cast<ParameterList>(SyntaxNodeImplTranslator.translate(curNode, startPos + offset, this)).getOrThrow()
+            return translateChild<ParameterList>(nodeImpl, startPos, this, propInfos.paramsPropInfo)
         }
     }
 
@@ -1892,13 +1874,7 @@ public class MacroDecl <: Decl {
      */
     public prop retTyAnnotation: Option<TypeAnnotation> {
         get() {
-            if (let Some(propInfo) <- propInfos.retTyAnnotationPropInfo) {
-                let curNode = (nodeImpl as NonTerminal).getOrThrow().children[propInfo.index]
-                let offset = propInfo.offset
-                cast<TypeAnnotation>(SyntaxNodeImplTranslator.translate(curNode, startPos + offset, this)).getOrThrow()
-            } else {
-                None
-            }
+            return translateOptionalChild<TypeAnnotation>(nodeImpl, startPos, this, propInfos.retTyAnnotationPropInfo)
         }
     }
 }
@@ -2003,9 +1979,7 @@ public class MainDecl <: Decl {
      */
     public prop params: ParameterList {
         get() {
-            let curNode = (nodeImpl as NonTerminal).getOrThrow().children[propInfos.paramsPropInfo.index]
-            let offset = propInfos.paramsPropInfo.offset
-            cast<ParameterList>(SyntaxNodeImplTranslator.translate(curNode, startPos + offset, this)).getOrThrow()
+            return translateChild<ParameterList>(nodeImpl, startPos, this, propInfos.paramsPropInfo)
         }
     }
 
@@ -2017,13 +1991,7 @@ public class MainDecl <: Decl {
      */
     public prop retTyAnnotation: Option<TypeAnnotation> {
         get() {
-            if (let Some(retTyAnnoPropInfo) <- propInfos.retTyAnnotationPropInfo) {
-                let curNode = (nodeImpl as NonTerminal).getOrThrow().children[retTyAnnoPropInfo.index]
-                let offset = retTyAnnoPropInfo.offset
-                cast<TypeAnnotation>(SyntaxNodeImplTranslator.translate(curNode, startPos + offset, this)).getOrThrow()
-            } else {
-                None
-            }
+            return translateOptionalChild<TypeAnnotation>(nodeImpl, startPos, this, propInfos.retTyAnnotationPropInfo)
         }
     }
 }
