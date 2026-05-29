@@ -3605,9 +3605,7 @@ public class SynchronizedExpr <: Expr {
      */
     public prop block: Block {
         get() {
-            let curNode = (nodeImpl as NonTerminal).getOrThrow().children[propInfos.blockPropInfo.index]
-            let offset = propInfos.blockPropInfo.offset
-            cast<Block>(SyntaxNodeImplTranslator.translate(curNode, startPos + offset, this)).getOrThrow()
+            return translateExprChild<Block>(nodeImpl, startPos, this, propInfos.blockPropInfo)
         }
     }
 
