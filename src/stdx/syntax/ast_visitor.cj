@@ -178,6 +178,23 @@ public open class ASTVisitor {
         walk(body)
     }
 
+    private func visitMacroExpandDeclOrParamChildren(annotations: Array<Annotation>, modifiers: Array<Modifier>,
+        calleeMacro: Expr, macroInputs: MacroExpandInput) {
+        for (a in annotations) {
+            walk(a)
+        }
+        for (m in modifiers) {
+            walk(m)
+        }
+        walk(calleeMacro)
+        // macroAttrs is Tokens, no need to walk
+        match (macroInputs) {
+            case MacroExpandInput.WithoutParens(decl) => walk(decl)
+            case MacroExpandInput.WithParens(_) => return
+            case _ => throw Exception("VisitException: Failed to match the enumeration value")
+        }
+    }
+
     private func visitBinaryExpr(node: BinaryExpr) {
         walk(node.lhs)
         walk(node.rhs)
@@ -530,19 +547,7 @@ public open class ASTVisitor {
     }
 
     private func visitMacroExpandDecl(node: MacroExpandDecl) {
-        for (a in node.annotations) {
-            walk(a)
-        }
-        for (m in node.modifiers) {
-            walk(m)
-        }
-        walk(node.calleeMacro)
-        // macroAttrs is Tokens, no need to walk
-        match (node.macroInputs) {
-            case MacroExpandInput.WithoutParens(decl) => walk(decl)
-            case MacroExpandInput.WithParens(_) => return
-            case _ => throw Exception("VisitException: Failed to match the enumeration value")
-        }
+        visitMacroExpandDeclOrParamChildren(node.annotations, node.modifiers, node.calleeMacro, node.macroInputs)
     }
 
     private func visitMacroExpandExpr(node: MacroExpandExpr) {
@@ -556,19 +561,7 @@ public open class ASTVisitor {
     }
 
     private func visitMacroExpandParam(node: MacroExpandParam) {
-        for (a in node.annotations) {
-            walk(a)
-        }
-        for (m in node.modifiers) {
-            walk(m)
-        }
-        walk(node.calleeMacro)
-        // macroAttrs is Tokens, no need to walk
-        match (node.macroInputs) {
-            case MacroExpandInput.WithoutParens(decl) => walk(decl)
-            case MacroExpandInput.WithParens(_) => return
-            case _ => throw Exception("VisitException: Failed to match the enumeration value")
-        }
+        visitMacroExpandDeclOrParamChildren(node.annotations, node.modifiers, node.calleeMacro, node.macroInputs)
     }
 
     private func visitMainDecl(node: MainDecl) {
