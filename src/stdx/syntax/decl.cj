@@ -43,6 +43,15 @@ private func translateOptionalChild<T>(nodeImpl: SyntaxNodeImpl, startPos: CodeP
     return None
 }
 
+private func translateChildList<T>(nodeImpl: SyntaxNodeImpl, startPos: CodePosition, parentNode: ?SyntaxTreeNode,
+    propInfos: Array<PropInfo>): Array<T> where T <: SyntaxTreeNode {
+    let nodes = ArrayList<T>()
+    for (propInfo in propInfos) {
+        nodes.add(translateChild<T>(nodeImpl, startPos, parentNode, propInfo))
+    }
+    return nodes.toArray()
+}
+
 private func translateGenericParams(node: SyntaxNodeImpl, startPos: CodePosition,
     parentNode: ?SyntaxTreeNode): ArrayList<GenericParam> {
     // BNF :LT GenericParam (Comma GenericParam)* GT
@@ -304,15 +313,7 @@ public class ClassDecl <: Decl {
      */
     public prop superTyAnnotations: Array<TypeAnnotation> {
         get() {
-            let tyAnnos = ArrayList<TypeAnnotation>()
-            for (propInfo in propInfos.superTyAnnotationsPropInfo) {
-                let curNode = (nodeImpl as NonTerminal).getOrThrow().children[propInfo.index]
-                let offset = propInfo.offset
-                tyAnnos.add(
-                    cast<TypeAnnotation>(SyntaxNodeImplTranslator.translate(curNode, startPos + offset, this))
-                        .getOrThrow())
-            }
-            tyAnnos.toArray()
+            return translateChildList<TypeAnnotation>(nodeImpl, startPos, this, propInfos.superTyAnnotationsPropInfo)
         }
     }
 }
@@ -701,15 +702,7 @@ public class EnumDecl <: Decl {
      */
     public prop superTyAnnotations: Array<TypeAnnotation> {
         get() {
-            let tyAnnos = ArrayList<TypeAnnotation>()
-            for (propInfo in propInfos.superTyAnnotationsPropInfo) {
-                let curNode = (nodeImpl as NonTerminal).getOrThrow().children[propInfo.index]
-                let offset = propInfo.offset
-                tyAnnos.add(
-                    cast<TypeAnnotation>(SyntaxNodeImplTranslator.translate(curNode, startPos + offset, this))
-                        .getOrThrow())
-            }
-            tyAnnos.toArray()
+            return translateChildList<TypeAnnotation>(nodeImpl, startPos, this, propInfos.superTyAnnotationsPropInfo)
         }
     }
 }
@@ -901,15 +894,7 @@ public class ExtendDecl <: Decl {
      */
     public prop superTyAnnotations: Array<TypeAnnotation> {
         get() {
-            let tyAnnos = ArrayList<TypeAnnotation>()
-            for (propInfo in propInfos.superTyAnnotationsPropInfo) {
-                let curNode = (nodeImpl as NonTerminal).getOrThrow().children[propInfo.index]
-                let offset = propInfo.offset
-                tyAnnos.add(
-                    cast<TypeAnnotation>(SyntaxNodeImplTranslator.translate(curNode, startPos + offset, this))
-                        .getOrThrow())
-            }
-            tyAnnos.toArray()
+            return translateChildList<TypeAnnotation>(nodeImpl, startPos, this, propInfos.superTyAnnotationsPropInfo)
         }
     }
 }
@@ -1761,15 +1746,7 @@ public class InterfaceDecl <: Decl {
      */
     public prop superTyAnnotations: Array<TypeAnnotation> {
         get() {
-            let tyAnnos = ArrayList<TypeAnnotation>()
-            for (propInfo in propInfos.superTyAnnotationsPropInfo) {
-                let curNode = (nodeImpl as NonTerminal).getOrThrow().children[propInfo.index]
-                let offset = propInfo.offset
-                tyAnnos.add(
-                    cast<TypeAnnotation>(SyntaxNodeImplTranslator.translate(curNode, startPos + offset, this))
-                        .getOrThrow())
-            }
-            tyAnnos.toArray()
+            return translateChildList<TypeAnnotation>(nodeImpl, startPos, this, propInfos.superTyAnnotationsPropInfo)
         }
     }
 }
@@ -2726,15 +2703,7 @@ public class StructDecl <: Decl {
      */
     public prop superTyAnnotations: Array<TypeAnnotation> {
         get() {
-            let tyAnnos = ArrayList<TypeAnnotation>()
-            for (propInfo in propInfos.superTyAnnotationsPropInfo) {
-                let curNode = (nodeImpl as NonTerminal).getOrThrow().children[propInfo.index]
-                let offset = propInfo.offset
-                tyAnnos.add(
-                    cast<TypeAnnotation>(SyntaxNodeImplTranslator.translate(curNode, startPos + offset, this))
-                        .getOrThrow())
-            }
-            tyAnnos.toArray()
+            return translateChildList<TypeAnnotation>(nodeImpl, startPos, this, propInfos.superTyAnnotationsPropInfo)
         }
     }
 }
