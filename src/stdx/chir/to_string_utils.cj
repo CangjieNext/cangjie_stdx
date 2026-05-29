@@ -19,7 +19,7 @@ internal func annoInfoToString(obj: AnnoInfo, indent: UInt64): String {
     return result.toString()
 }
 
-internal func annoInstanceToString(obj: Annotation, indent: UInt64): String {
+internal func annoInstanceToString(obj: CustomAnnoInstance, indent: UInt64): String {
     let result = StringBuilder()
     result.append(indentToString(indent))
     result.append("@")
