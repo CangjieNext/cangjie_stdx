@@ -1548,6 +1548,21 @@ private class FlatbufferNodeTranslator {
         }
     }
 
+    private func finishFuncBodyBlockAndComments(body: Option<NodeFormat_FuncBody>, ret: ArrayList<SyntaxNodeImpl>,
+        innerCmts: Array<Option<NodeFormat_CommentGroup>>, trailCmts: Array<Option<NodeFormat_CommentGroup>>) {
+        if (let Some(funcBody) <- body) {
+            resetGlobalVariables(ret, innerCmts)
+            if (let Some(block) <- funcBody.GetBody()) {
+                addChild(ret, transBlock(block))
+            }
+        }
+        if (trailCmts.size > 0) {
+            addChild(ret, transCommentGroupList(trailCmts))
+            resetGlobalVariables(ret, innerCmts)
+        }
+        innerComments = Array<Option<NodeFormat_CommentGroup>>()
+    }
+
     private func transVarDecl(varDecl: NodeFormat_VarDecl, preChildren: Array<SyntaxNodeImpl>): ?SyntaxNodeImpl {
         let (ret, innerCmts, trailCmts) = prepareVarDeclPrefix(varDecl.GetBase())
 
@@ -1745,18 +1760,8 @@ private class FlatbufferNodeTranslator {
                 addChild(ret, transParamList(paramList))
                 moveCursorToEnd(paramList.GetBase())
             }
-            resetGlobalVariables(ret, innerCmts)
-
-            // block
-            if (let Some(block) <- body.GetBody()) {
-                addChild(ret, transBlock(block))
-            }
         }
-        if (trailCmts.size > 0) {
-            addChild(ret, transCommentGroupList(trailCmts))
-            resetGlobalVariables(ret, innerCmts)
-        }
-        innerComments = Array<Option<NodeFormat_CommentGroup>>()
+        finishFuncBodyBlockAndComments(primaryCtorDecl.GetFuncBody(), ret, innerCmts, trailCmts)
         builder.buildNonTerminal(SyntaxNodeKind.FuncDecl, ret.toArray(), preChildren: preChildren)
     }
 
@@ -2258,17 +2263,8 @@ private class FlatbufferNodeTranslator {
                 // type
                 transType(ty)
             }
-            resetGlobalVariables(ret, innerCmts)
-            // block
-            if (let Some(block) <- body.GetBody()) {
-                addChild(ret, transBlock(block))
-            }
         }
-        if (trailCmts.size > 0) {
-            addChild(ret, transCommentGroupList(trailCmts))
-            resetGlobalVariables(ret, innerCmts)
-        }
-        innerComments = Array<Option<NodeFormat_CommentGroup>>()
+        finishFuncBodyBlockAndComments(macroDecl.GetFuncBody(), ret, innerCmts, trailCmts)
         builder.buildNonTerminal(SyntaxNodeKind.MacroDecl, ret.toArray(), preChildren: preChildren)
     }
 
