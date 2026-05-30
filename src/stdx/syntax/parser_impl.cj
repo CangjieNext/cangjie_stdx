@@ -1472,21 +1472,21 @@ private class FlatbufferNodeTranslator {
         builder.buildNonTerminal(SyntaxNodeKind.VarBindingPattern, ret.toArray())
     }
 
-    private func transVarDecl(varDecl: NodeFormat_VarDecl, preChildren: Array<SyntaxNodeImpl>): ?SyntaxNodeImpl {
-        var ret = ArrayList<SyntaxNodeImpl>()
+    private func prepareVarDeclPrefix(base: Option<NodeFormat_DeclBase>) {
+        let ret = ArrayList<SyntaxNodeImpl>()
 
-        let nodeBase = varDecl.GetBase().getOrThrow().GetBase()
+        let nodeBase = base.getOrThrow().GetBase()
         let (leadCmts, innerCmts, trailCmts) = getCommentGroups(nodeBase)
         addLeadingComments(nodeBase, ret, leadCmts, isDecl: true)
         innerComments = innerCmts
 
-        if (let Some(db) <- varDecl.GetBase()) {
+        if (let Some(db) <- base) {
             // annotation
             let annos = db.GetAnnotations()
             if (annos.size != 0) {
                 addChild(ret, transAnnotations(db.GetAnnotations()))
             } else {
-                // The begin of VarDecl is not begin of annotations
+                // The begin of variable declaration is not begin of annotations.
                 addWhitespaceAndMoveCursorToBegin(db.GetBase())
             }
             resetGlobalVariables(ret, innerCmts)
@@ -1497,6 +1497,15 @@ private class FlatbufferNodeTranslator {
                 addChild(ret, transVarDeclModifiers(modifiers))
                 resetGlobalVariables(ret, innerCmts)
             }
+        }
+
+        return (ret, innerCmts, trailCmts)
+    }
+
+    private func transVarDecl(varDecl: NodeFormat_VarDecl, preChildren: Array<SyntaxNodeImpl>): ?SyntaxNodeImpl {
+        let (ret, innerCmts, trailCmts) = prepareVarDeclPrefix(varDecl.GetBase())
+
+        if (let Some(db) <- varDecl.GetBase()) {
             if (!varDecl.GetEmptyKeyword()) {
                 if (varDecl.GetIsVar()) {
                     transBasicTerminal(db.GetKeywordPos(), SyntaxNodeKind.VarToken)
@@ -1528,29 +1537,9 @@ private class FlatbufferNodeTranslator {
     }
 
     private func transVarWithPatternDecl(varDecl: NodeFormat_VarWithPatternDecl, preChildren: Array<SyntaxNodeImpl>): ?SyntaxNodeImpl {
-        var ret = ArrayList<SyntaxNodeImpl>()
-
-        let nodeBase = varDecl.GetBase().getOrThrow().GetBase()
-        let (leadCmts, innerCmts, trailCmts) = getCommentGroups(nodeBase)
-        addLeadingComments(nodeBase, ret, leadCmts, isDecl: true)
-        innerComments = innerCmts
+        let (ret, innerCmts, trailCmts) = prepareVarDeclPrefix(varDecl.GetBase())
 
         if (let Some(db) <- varDecl.GetBase()) {
-            // annotation
-            let annos = db.GetAnnotations()
-            if (annos.size != 0) {
-                addChild(ret, transAnnotations(db.GetAnnotations()))
-            } else {
-                // The begin of VarWithPatternDecl is not begin of annotations
-                addWhitespaceAndMoveCursorToBegin(db.GetBase())
-            }
-            resetGlobalVariables(ret, innerCmts)
-            // modifier
-            let modifiers = db.GetModifiers()
-            if (modifiers.size != 0) {
-                addChild(ret, transVarDeclModifiers(modifiers))
-                resetGlobalVariables(ret, innerCmts)
-            }
             if (varDecl.GetIsVar()) {
                 transBasicTerminal(db.GetKeywordPos(), SyntaxNodeKind.VarToken)
             } else if (db.GetIsConst()) {
