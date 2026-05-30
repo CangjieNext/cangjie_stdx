@@ -27,6 +27,31 @@ private func createTextRanges(positions: Array<CodePosition>, texts: Array<Strin
     return ranges.toArray()
 }
 
+private func collectLabeledTypeAnnotations(lp: LocalParser, startPos: CodePosition,
+    parentNode: ?SyntaxTreeNode): Array<TypeAnnotation> {
+    let typeAnnotations = ArrayList<TypeAnnotation>()
+    if (let Some(node) <- lp.consume()) {
+        typeAnnotations.add(
+            cast<TypeAnnotation>(SyntaxNodeImplTranslator.translate(node, startPos + lp.offset, parentNode))
+                .getOrThrow())
+        lp.moveOffset(node)
+    }
+    while (lp.look(SyntaxNodeKind.CommaToken)) {
+        lp.moveOffset(lp.consume())
+        if (let Some(v) <- lp.lookAndConsume(SyntaxNodeKind.IdentToken)) {
+            lp.moveOffset(v)
+            lp.moveOffset(lp.consume())
+        }
+        if (let Some(node) <- lp.consume()) {
+            typeAnnotations.add(
+                cast<TypeAnnotation>(SyntaxNodeImplTranslator.translate(node, startPos + lp.offset, parentNode))
+                    .getOrThrow())
+            lp.moveOffset(node)
+        }
+    }
+    return typeAnnotations.toArray()
+}
+
 sealed abstract class TypeAnnotation <: SyntaxTreeNode {
     init(nodePos: CodePositionRange, nodeImpl: SyntaxNodeImpl, parentNode: ?SyntaxTreeNode,
         commentsPropInfo: Array<PropInfo>) {
@@ -335,31 +360,13 @@ public class FuncType <: TypeAnnotation {
      */
     public prop paramTypes: Array<TypeAnnotation> {
         get() {
-            let paramTypes = ArrayList<TypeAnnotation>()
             if (let Some(propInfo) <- propInfos.paramTypesPropInfo) {
                 let lp = LocalParser((nodeImpl as NonTerminal).getOrThrow().children, propInfo.offset,
                     index: propInfo.index)
-                if (let Some(node) <- lp.consume()) {
-                    paramTypes.add(
-                        cast<TypeAnnotation>(SyntaxNodeImplTranslator.translate(node, startPos + lp.offset, this))
-                            .getOrThrow())
-                    lp.moveOffset(node)
-                }
-                while (lp.look(SyntaxNodeKind.CommaToken)) {
-                    lp.moveOffset(lp.consume())
-                    if (let Some(v) <- lp.lookAndConsume(SyntaxNodeKind.IdentToken)) {
-                        lp.moveOffset(v)
-                        lp.moveOffset(lp.consume())
-                    }
-                    if (let Some(node) <- lp.consume()) {
-                        paramTypes.add(
-                            cast<TypeAnnotation>(SyntaxNodeImplTranslator.translate(node, startPos + lp.offset, this))
-                                .getOrThrow())
-                        lp.moveOffset(node)
-                    }
-                }
+                collectLabeledTypeAnnotations(lp, startPos, this)
+            } else {
+                Array<TypeAnnotation>()
             }
-            paramTypes.toArray()
         }
     }
     /**
@@ -712,29 +719,9 @@ public class TupleType <: TypeAnnotation {
      */
     public prop elements: Array<TypeAnnotation> {
         get() {
-            let elements = ArrayList<TypeAnnotation>()
             let lp = LocalParser((nodeImpl as NonTerminal).getOrThrow().children, propInfos.elementsPropInfo.offset,
                 index: propInfos.elementsPropInfo.index)
-            if (let Some(node) <- lp.consume()) {
-                elements.add(
-                    cast<TypeAnnotation>(SyntaxNodeImplTranslator.translate(node, startPos + lp.offset, this))
-                        .getOrThrow())
-                lp.moveOffset(node)
-            }
-            while (lp.look(SyntaxNodeKind.CommaToken)) {
-                lp.moveOffset(lp.consume())
-                if (let Some(v) <- lp.lookAndConsume(SyntaxNodeKind.IdentToken)) {
-                    lp.moveOffset(v)
-                    lp.moveOffset(lp.consume())
-                }
-                if (let Some(node) <- lp.consume()) {
-                    elements.add(
-                        cast<TypeAnnotation>(SyntaxNodeImplTranslator.translate(node, startPos + lp.offset, this))
-                            .getOrThrow())
-                    lp.moveOffset(node)
-                }
-            }
-            elements.toArray()
+            collectLabeledTypeAnnotations(lp, startPos, this)
         }
     }
     /**
