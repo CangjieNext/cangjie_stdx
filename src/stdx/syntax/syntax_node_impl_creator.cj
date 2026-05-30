@@ -134,6 +134,23 @@ class SyntaxNodeImplCreator {
         }
     }
 
+    private static func addSuperTyAnnotations(builder: SyntaxNodeBuilder, ret: ArrayList<SyntaxNodeImpl>,
+        superTyAnnotations: Array<TypeAnnotation>) {
+        if (superTyAnnotations.size > 0) {
+            ret.add(builder.buildSpace(1))
+            ret.add(builder.buildBasicTerminal(SyntaxNodeKind.UpperBoundToken))
+            ret.add(builder.buildSpace(1))
+            for (i in 0..superTyAnnotations.size) {
+                ret.add(superTyAnnotations[i].nodeImpl)
+                if (i < superTyAnnotations.size - 1) {
+                    ret.add(builder.buildSpace(1))
+                    ret.add(builder.buildBasicTerminal(SyntaxNodeKind.BitAndToken))
+                    ret.add(builder.buildSpace(1))
+                }
+            }
+        }
+    }
+
     static func createAnnotationImpl(
         arguments: Array<Argument>,
         identifier: String,
@@ -358,19 +375,7 @@ class SyntaxNodeImplCreator {
         ret.add(builder.buildBasicTerminal(SyntaxNodeKind.ClassToken))
         addNamedGenericDeclHead(builder, ret, name, genericParams)
 
-        if (superTyAnnotations.size > 0) {
-            ret.add(builder.buildSpace(1))
-            ret.add(builder.buildBasicTerminal(SyntaxNodeKind.UpperBoundToken))
-            ret.add(builder.buildSpace(1))
-            for (i in 0..superTyAnnotations.size) {
-                ret.add(superTyAnnotations[i].nodeImpl)
-                if (i < superTyAnnotations.size - 1) {
-                    ret.add(builder.buildSpace(1))
-                    ret.add(builder.buildBasicTerminal(SyntaxNodeKind.BitAndToken))
-                    ret.add(builder.buildSpace(1))
-                }
-            }
-        }
+        addSuperTyAnnotations(builder, ret, superTyAnnotations)
 
         if (let Some(constraints) <- genericConstraints) {
             ret.add(builder.buildSpace(1))
@@ -513,19 +518,7 @@ class SyntaxNodeImplCreator {
         ret.add(builder.buildBasicTerminal(SyntaxNodeKind.StructToken))
         addNamedGenericDeclHead(builder, ret, name, genericParams)
 
-        if (superTyAnnotations.size > 0) {
-            ret.add(builder.buildSpace(1))
-            ret.add(builder.buildBasicTerminal(SyntaxNodeKind.UpperBoundToken))
-            ret.add(builder.buildSpace(1))
-            for (i in 0..superTyAnnotations.size) {
-                ret.add(superTyAnnotations[i].nodeImpl)
-                if (i < superTyAnnotations.size - 1) {
-                    ret.add(builder.buildSpace(1))
-                    ret.add(builder.buildBasicTerminal(SyntaxNodeKind.BitAndToken))
-                    ret.add(builder.buildSpace(1))
-                }
-            }
-        }
+        addSuperTyAnnotations(builder, ret, superTyAnnotations)
 
         if (let Some(constraints) <- genericConstraints) {
             ret.add(builder.buildSpace(1))
@@ -554,19 +547,7 @@ class SyntaxNodeImplCreator {
         ret.add(builder.buildBasicTerminal(SyntaxNodeKind.InterfaceToken))
         addNamedGenericDeclHead(builder, ret, name, genericParams)
 
-        if (superTyAnnotations.size > 0) {
-            ret.add(builder.buildSpace(1))
-            ret.add(builder.buildBasicTerminal(SyntaxNodeKind.UpperBoundToken))
-            ret.add(builder.buildSpace(1))
-            for (i in 0..superTyAnnotations.size) {
-                ret.add(superTyAnnotations[i].nodeImpl)
-                if (i < superTyAnnotations.size - 1) {
-                    ret.add(builder.buildSpace(1))
-                    ret.add(builder.buildBasicTerminal(SyntaxNodeKind.BitAndToken))
-                    ret.add(builder.buildSpace(1))
-                }
-            }
-        }
+        addSuperTyAnnotations(builder, ret, superTyAnnotations)
 
         if (let Some(constraints) <- genericConstraints) {
             ret.add(builder.buildSpace(1))
@@ -627,19 +608,7 @@ class SyntaxNodeImplCreator {
         ret.add(builder.buildBasicTerminal(SyntaxNodeKind.EnumToken))
         addNamedGenericDeclHead(builder, ret, name, genericParams)
 
-        if (superTyAnnotations.size > 0) {
-            ret.add(builder.buildSpace(1))
-            ret.add(builder.buildBasicTerminal(SyntaxNodeKind.UpperBoundToken))
-            ret.add(builder.buildSpace(1))
-            for (i in 0..superTyAnnotations.size) {
-                ret.add(superTyAnnotations[i].nodeImpl)
-                if (i < superTyAnnotations.size - 1) {
-                    ret.add(builder.buildSpace(1))
-                    ret.add(builder.buildBasicTerminal(SyntaxNodeKind.BitAndToken))
-                    ret.add(builder.buildSpace(1))
-                }
-            }
-        }
+        addSuperTyAnnotations(builder, ret, superTyAnnotations)
 
         if (let Some(constraints) <- genericConstraints) {
             ret.add(builder.buildSpace(1))
@@ -717,19 +686,7 @@ class SyntaxNodeImplCreator {
         ret.add(builder.buildSpace(1))
         ret.add(extendedTyAnnotation.nodeImpl)
 
-        if (superTyAnnotations.size > 0) {
-            ret.add(builder.buildSpace(1))
-            ret.add(builder.buildBasicTerminal(SyntaxNodeKind.UpperBoundToken))
-            ret.add(builder.buildSpace(1))
-            for (i in 0..superTyAnnotations.size) {
-                ret.add(superTyAnnotations[i].nodeImpl)
-                if (i < superTyAnnotations.size - 1) {
-                    ret.add(builder.buildSpace(1))
-                    ret.add(builder.buildBasicTerminal(SyntaxNodeKind.BitAndToken))
-                    ret.add(builder.buildSpace(1))
-                }
-            }
-        }
+        addSuperTyAnnotations(builder, ret, superTyAnnotations)
 
         if (let Some(constraints) <- genericConstraints) {
             ret.add(builder.buildSpace(1))
