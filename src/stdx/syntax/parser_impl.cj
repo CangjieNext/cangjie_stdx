@@ -1502,6 +1502,22 @@ private class FlatbufferNodeTranslator {
         return (ret, innerCmts, trailCmts)
     }
 
+    private func finishVarDecl(ret: ArrayList<SyntaxNodeImpl>, initializer: Option<NodeFormat_Expr>,
+        assignPos: NodeFormat_Position, trailCmts: Array<Option<NodeFormat_CommentGroup>>,
+        innerCmts: Array<Option<NodeFormat_CommentGroup>>, preChildren: Array<SyntaxNodeImpl>): ?SyntaxNodeImpl {
+        resetGlobalVariables(ret, innerCmts)
+        if (let Some(initializerExpr) <- initializer) {
+            transBasicTerminal(assignPos, SyntaxNodeKind.AssignToken)
+            transNoTerminalExpr(initializerExpr)
+        }
+        if (trailCmts.size > 0) {
+            addChild(ret, transCommentGroupList(trailCmts))
+            resetGlobalVariables(ret, innerCmts)
+        }
+        innerComments = Array<Option<NodeFormat_CommentGroup>>()
+        builder.buildNonTerminal(SyntaxNodeKind.VarDecl, ret.toArray(), preChildren: preChildren)
+    }
+
     private func transVarDecl(varDecl: NodeFormat_VarDecl, preChildren: Array<SyntaxNodeImpl>): ?SyntaxNodeImpl {
         let (ret, innerCmts, trailCmts) = prepareVarDeclPrefix(varDecl.GetBase())
 
@@ -1522,18 +1538,8 @@ private class FlatbufferNodeTranslator {
                 transType(ty)
                 curChildren = ret
             }
-            resetGlobalVariables(ret, innerCmts)
-            if (let Some(initializer) <- varDecl.GetInitializer()) {
-                transBasicTerminal(varDecl.GetAssignPos(), SyntaxNodeKind.AssignToken)
-                transNoTerminalExpr(initializer)
-            }
         }
-        if (trailCmts.size > 0) {
-            addChild(ret, transCommentGroupList(trailCmts))
-            resetGlobalVariables(ret, innerCmts)
-        }
-        innerComments = Array<Option<NodeFormat_CommentGroup>>()
-        builder.buildNonTerminal(SyntaxNodeKind.VarDecl, ret.toArray(), preChildren: preChildren)
+        finishVarDecl(ret, varDecl.GetInitializer(), varDecl.GetAssignPos(), trailCmts, innerCmts, preChildren)
     }
 
     private func transVarWithPatternDecl(varDecl: NodeFormat_VarWithPatternDecl, preChildren: Array<SyntaxNodeImpl>): ?SyntaxNodeImpl {
@@ -1556,17 +1562,8 @@ private class FlatbufferNodeTranslator {
                 transType(ty)
                 resetGlobalVariables(ret, innerCmts)
             }
-            if (let Some(initializer) <- varDecl.GetInitializer()) {
-                transBasicTerminal(varDecl.GetAssignPos(), SyntaxNodeKind.AssignToken)
-                transNoTerminalExpr(initializer)
-            }
         }
-        if (trailCmts.size > 0) {
-            addChild(ret, transCommentGroupList(trailCmts))
-            resetGlobalVariables(ret, innerCmts)
-        }
-        innerComments = Array<Option<NodeFormat_CommentGroup>>()
-        builder.buildNonTerminal(SyntaxNodeKind.VarDecl, ret.toArray(), preChildren: preChildren)
+        finishVarDecl(ret, varDecl.GetInitializer(), varDecl.GetAssignPos(), trailCmts, innerCmts, preChildren)
     }
 
     private func transMainDecl(mainDecl: NodeFormat_MainDecl, preChildren: Array<SyntaxNodeImpl>): ?SyntaxNodeImpl {
