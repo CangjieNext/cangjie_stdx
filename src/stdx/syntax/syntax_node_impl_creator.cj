@@ -105,6 +105,25 @@ class SyntaxNodeImplCreator {
         builder.buildNonTerminal(SyntaxNodeKind.ModifierList, ret.toArray())
     }
 
+    private static func createDeclLikePrefix(annotations: Array<Annotation>, modifiers: Array<Modifier>,
+        comments: Array<Comment>) {
+        let builder = SyntaxNodeBuilder()
+        let ret = ArrayList<SyntaxNodeImpl>()
+        addCommentToNode(ret, comments)
+
+        if (annotations.size != 0) {
+            ret.add(createAnnotationList(annotations))
+            ret.add(builder.buildNewline(1))
+        }
+
+        if (modifiers.size != 0) {
+            ret.add(createModifierList(modifiers))
+            ret.add(builder.buildSpace(1))
+        }
+
+        return (builder, ret)
+    }
+
     static func createAnnotationImpl(
         arguments: Array<Argument>,
         identifier: String,
@@ -324,19 +343,7 @@ class SyntaxNodeImplCreator {
         checkGenericParamAndGenericConstraints(genericConstraints, genericParams)
         checkClassOrStructDeclBody(body, "ClassDecl")
         unsafe { checkIdentifier(name, "name", "ClassDecl") }
-        let builder = SyntaxNodeBuilder()
-        let ret = ArrayList<SyntaxNodeImpl>()
-        addCommentToNode(ret, comments)
-
-        if (annotations.size != 0) {
-            ret.add(createAnnotationList(annotations))
-            ret.add(builder.buildNewline(1))
-        }
-
-        if (modifiers.size != 0) {
-            ret.add(createModifierList(modifiers))
-            ret.add(builder.buildSpace(1))
-        }
+        let (builder, ret) = createDeclLikePrefix(annotations, modifiers, comments)
 
         ret.add(builder.buildBasicTerminal(SyntaxNodeKind.ClassToken))
         ret.add(builder.buildSpace(1))
@@ -497,19 +504,7 @@ class SyntaxNodeImplCreator {
         checkGenericParamAndGenericConstraints(genericConstraints, genericParams)
         checkClassOrStructDeclBody(body, "StructDecl")
         unsafe { checkIdentifier(name, "name", "StructDecl") }
-        let builder = SyntaxNodeBuilder()
-        let ret = ArrayList<SyntaxNodeImpl>()
-        addCommentToNode(ret, comments)
-
-        if (annotations.size != 0) {
-            ret.add(createAnnotationList(annotations))
-            ret.add(builder.buildNewline(1))
-        }
-
-        if (modifiers.size != 0) {
-            ret.add(createModifierList(modifiers))
-            ret.add(builder.buildSpace(1))
-        }
+        let (builder, ret) = createDeclLikePrefix(annotations, modifiers, comments)
 
         ret.add(builder.buildBasicTerminal(SyntaxNodeKind.StructToken))
         ret.add(builder.buildSpace(1))
@@ -556,19 +551,7 @@ class SyntaxNodeImplCreator {
             }
         }
 
-        let builder = SyntaxNodeBuilder()
-        let ret = ArrayList<SyntaxNodeImpl>()
-        addCommentToNode(ret, comments)
-
-        if (annotations.size != 0) {
-            ret.add(createAnnotationList(annotations))
-            ret.add(builder.buildNewline(1))
-        }
-
-        if (modifiers.size != 0) {
-            ret.add(createModifierList(modifiers))
-            ret.add(builder.buildSpace(1))
-        }
+        let (builder, ret) = createDeclLikePrefix(annotations, modifiers, comments)
 
         ret.add(builder.buildBasicTerminal(SyntaxNodeKind.InterfaceToken))
         ret.add(builder.buildSpace(1))
@@ -647,19 +630,7 @@ class SyntaxNodeImplCreator {
         if (constructors.size == 0) {
             throw Exception("InitException: The input 'constructors' cannot be empty for 'EnumDecl' init.")
         }
-        let builder = SyntaxNodeBuilder()
-        let ret = ArrayList<SyntaxNodeImpl>()
-        addCommentToNode(ret, comments)
-
-        if (annotations.size != 0) {
-            ret.add(createAnnotationList(annotations))
-            ret.add(builder.buildNewline(1))
-        }
-
-        if (modifiers.size != 0) {
-            ret.add(createModifierList(modifiers))
-            ret.add(builder.buildSpace(1))
-        }
+        let (builder, ret) = createDeclLikePrefix(annotations, modifiers, comments)
 
         ret.add(builder.buildBasicTerminal(SyntaxNodeKind.EnumToken))
         ret.add(builder.buildSpace(1))
@@ -703,19 +674,7 @@ class SyntaxNodeImplCreator {
             throw Exception(
                 "InitException: The input 'getter' cannot be None if input 'setter' exists during 'PropDecl' init.")
         }
-        let builder = SyntaxNodeBuilder()
-        let ret = ArrayList<SyntaxNodeImpl>()
-        addCommentToNode(ret, comments)
-
-        if (annotations.size != 0) {
-            ret.add(createAnnotationList(annotations))
-            ret.add(builder.buildNewline(1))
-        }
-
-        if (modifiers.size != 0) {
-            ret.add(createModifierList(modifiers))
-            ret.add(builder.buildSpace(1))
-        }
+        let (builder, ret) = createDeclLikePrefix(annotations, modifiers, comments)
 
         ret.add(builder.buildBasicTerminal(SyntaxNodeKind.PropToken))
         ret.add(builder.buildSpace(1))
@@ -885,19 +844,7 @@ class SyntaxNodeImplCreator {
         retTyAnnotation: Option<TypeAnnotation>, annotations!: Array<Annotation> = [], modifiers!: Array<Modifier> = [],
         comments!: Array<Comment> = []) {
         unsafe { checkIdentifier(name, "name", "MacroDecl") }
-        let builder = SyntaxNodeBuilder()
-        let ret = ArrayList<SyntaxNodeImpl>()
-        addCommentToNode(ret, comments)
-
-        if (annotations.size != 0) {
-            ret.add(createAnnotationList(annotations))
-            ret.add(builder.buildNewline(1))
-        }
-
-        if (modifiers.size != 0) {
-            ret.add(createModifierList(modifiers))
-            ret.add(builder.buildSpace(1))
-        }
+        let (builder, ret) = createDeclLikePrefix(annotations, modifiers, comments)
 
         ret.add(builder.buildBasicTerminal(SyntaxNodeKind.MacroToken))
         ret.add(builder.buildSpace(1))
@@ -1008,19 +955,7 @@ class SyntaxNodeImplCreator {
             throw Exception("InitException: The input 'modifiers' cannot have 'Const' for 'VarDecl' init.")
         }
 
-        let builder = SyntaxNodeBuilder()
-        let ret = ArrayList<SyntaxNodeImpl>()
-        addCommentToNode(ret, comments)
-
-        if (annotations.size != 0) {
-            ret.add(createAnnotationList(annotations))
-            ret.add(builder.buildNewline(1))
-        }
-
-        if (modifiers.size != 0) {
-            ret.add(createModifierList(modifiers))
-            ret.add(builder.buildSpace(1))
-        }
+        let (builder, ret) = createDeclLikePrefix(annotations, modifiers, comments)
 
         match (kind) {
             case VarKind.Var => ret.add(builder.buildBasicTerminal(SyntaxNodeKind.VarToken))
@@ -1057,19 +992,7 @@ class SyntaxNodeImplCreator {
             throw Exception(
                 "InitException: The input 'modifiers' is only supported when input 'kind' exists for 'FuncParam' init.")
         }
-        let builder = SyntaxNodeBuilder()
-        let ret = ArrayList<SyntaxNodeImpl>()
-        addCommentToNode(ret, comments)
-
-        if (annotations.size != 0) {
-            ret.add(createAnnotationList(annotations))
-            ret.add(builder.buildNewline(1))
-        }
-
-        if (modifiers.size != 0) {
-            ret.add(createModifierList(modifiers))
-            ret.add(builder.buildSpace(1))
-        }
+        let (builder, ret) = createDeclLikePrefix(annotations, modifiers, comments)
 
         if (let Some(varKind) <- kind) {
             match (varKind) {

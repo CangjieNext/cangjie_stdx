@@ -10,6 +10,17 @@ package stdx.syntax
 
 import std.collection.ArrayList
 
+private func translatePatternChildren(nodeImpl: SyntaxNodeImpl, startPos: CodePosition, parentNode: ?SyntaxTreeNode,
+    propInfos: Array<PropInfo>): Array<Pattern> {
+    let pats = ArrayList<Pattern>()
+    for (propInfo in propInfos) {
+        let curNode = (nodeImpl as NonTerminal).getOrThrow().children[propInfo.index]
+        let offset = propInfo.offset
+        pats.add(cast<Pattern>(SyntaxNodeImplTranslator.translate(curNode, startPos + offset, parentNode)).getOrThrow())
+    }
+    pats.toArray()
+}
+
 sealed abstract class Pattern <: SyntaxTreeNode {
     init(nodePos: CodePositionRange, nodeImpl: SyntaxNodeImpl, parentNode: ?SyntaxTreeNode,
         commentsPropInfo: Array<PropInfo>) {
@@ -207,14 +218,7 @@ public class EnumPattern <: Pattern {
      */
     public prop subPatterns: Array<Pattern> {
         get() {
-            let pats = ArrayList<Pattern>()
-            for (propInfo in propInfos.subPatternsPropInfo) {
-                let curNode = (nodeImpl as NonTerminal).getOrThrow().children[propInfo.index]
-                let offset = propInfo.offset
-                pats.add(cast<Pattern>(SyntaxNodeImplTranslator.translate(curNode, startPos + offset, this))
-                    .getOrThrow())
-            }
-            pats.toArray()
+            translatePatternChildren(nodeImpl, startPos, this, propInfos.subPatternsPropInfo)
         }
     }
 }
@@ -311,14 +315,7 @@ public class TuplePattern <: Pattern {
      */
     public prop subPatterns: Array<Pattern> {
         get() {
-            let pats = ArrayList<Pattern>()
-            for (propInfo in propInfos.subPatternsPropInfo) {
-                let curNode = (nodeImpl as NonTerminal).getOrThrow().children[propInfo.index]
-                let offset = propInfo.offset
-                pats.add(cast<Pattern>(SyntaxNodeImplTranslator.translate(curNode, startPos + offset, this))
-                    .getOrThrow())
-            }
-            pats.toArray()
+            translatePatternChildren(nodeImpl, startPos, this, propInfos.subPatternsPropInfo)
         }
     }
 }
