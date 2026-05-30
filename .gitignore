@@ -7,6 +7,7 @@
 
 build_temp/
 target/
+__pycache__/
 
 src/stdx/encoding/json/native/*.a
 src/stdx/encoding/json/native/json_api.h
