@@ -1070,6 +1070,28 @@ class SyntaxNodeImplTranslator {
             rParenPos)
     }
 
+    private func consumeSeparatedElementsStartPropInfo(lp: LocalParser, startPos: CodePosition,
+        shouldConsumeElement: (SyntaxNodeKind) -> Bool, sep: SyntaxNodeKind) {
+        let commasPos = ArrayList<CodePosition>()
+        var findStart = false
+        var elementsPropInfo = PropInfo()
+        while (lp.look(shouldConsumeElement)) {
+            if (let Some(node) <- lp.consume()) {
+                if (!findStart) {
+                    findStart = true
+                    elementsPropInfo = PropInfo(lp.cur - 1, lp.offset)
+                }
+                lp.moveOffset(node)
+            }
+            if (lp.look(sep)) {
+                let curSep = lp.consume(kind: sep)
+                commasPos.add(startPos + lp.offset)
+                lp.moveOffset(curSep)
+            }
+        }
+        return (elementsPropInfo, commasPos)
+    }
+
     private func transFuncDecl(node: NonTerminal, startPos: CodePosition, parent: ?SyntaxTreeNode): FuncDecl {
         // BNF: anno? modifier? (FUNC？ IDENT | INIT | ~INIT)  typeParams? funcParams (COLON type)? genericConstraints? block?
         let lp = LocalParser(node.children)
@@ -1966,29 +1988,13 @@ class SyntaxNodeImplTranslator {
         // BNF: LSQUARE (NL* elements)? NL* RSQUARE
         let lSquarePos = startPos
         var rSquarePos = CodePosition()
-        let commasPos = ArrayList<CodePosition>()
         let lp = LocalParser(node.children)
         lp.moveOffset(lp.consume(kind: SyntaxNodeKind.LSquareToken))
         let predictExpr = {
             kind: SyntaxNodeKind => kind.isExpr()
         }
         let sep = SyntaxNodeKind.CommaToken
-        var findStart = false
-        var exprsPropInfo = PropInfo()
-        while (lp.look(predictExpr)) {
-            if (let Some(node) <- lp.consume()) {
-                if (!findStart) {
-                    findStart = true
-                    exprsPropInfo = PropInfo(lp.cur - 1, lp.offset)
-                }
-                lp.moveOffset(node)
-            }
-            if (lp.look(sep)) {
-                let curSep = lp.consume(kind: sep)
-                commasPos.add(startPos + lp.offset)
-                lp.moveOffset(curSep)
-            }
-        }
+        let (exprsPropInfo, commasPos) = consumeSeparatedElementsStartPropInfo(lp, startPos, predictExpr, sep)
         if (let Some(v) <- lp.lookAndConsume(SyntaxNodeKind.RSquareToken)) {
             rSquarePos = startPos + lp.offset
         }
@@ -2003,29 +2009,13 @@ class SyntaxNodeImplTranslator {
         // BNF: LSQUARE (NL* elements)? NL* RSQUARE
         let lParenPos = startPos
         var rParenPos = CodePosition()
-        let commasPos = ArrayList<CodePosition>()
         let lp = LocalParser(node.children)
         lp.moveOffset(lp.consume(kind: SyntaxNodeKind.LParenToken))
-        let predictExpr = {
-            kind: SyntaxNodeKind => kind.isExpr()
+        let predictTupleElement = {
+            kind: SyntaxNodeKind => kind.isExpr() || kind == SyntaxNodeKind.WildcardPattern
         }
         let sep = SyntaxNodeKind.CommaToken
-        var findStart = false
-        var exprsPropInfo = PropInfo()
-        while (lp.look(predictExpr) || lp.look(SyntaxNodeKind.WildcardPattern)) {
-            if (let Some(node) <- lp.consume()) {
-                if (!findStart) {
-                    findStart = true
-                    exprsPropInfo = PropInfo(lp.cur - 1, lp.offset)
-                }
-                lp.moveOffset(node)
-            }
-            if (lp.look(sep)) {
-                let curSep = lp.consume(kind: sep)
-                commasPos.add(startPos + lp.offset)
-                lp.moveOffset(curSep)
-            }
-        }
+        let (exprsPropInfo, commasPos) = consumeSeparatedElementsStartPropInfo(lp, startPos, predictTupleElement, sep)
         if (let Some(v) <- lp.lookAndConsume(SyntaxNodeKind.RParenToken)) {
             rParenPos = startPos + lp.offset
         }
