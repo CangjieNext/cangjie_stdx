@@ -1019,6 +1019,57 @@ class SyntaxNodeImplTranslator {
         return (bodyNode, bodyPropInfo)
     }
 
+    private func consumeMacroExpandCommon(lp: LocalParser, startPos: CodePosition) {
+        var (calleePropInfo, macroAttrsPropInfo, macroInputsPropInfo) = (PropInfo(), PropInfo(), PropInfo())
+        var (lSquarePos, rSquarePos): (?CodePosition, ?CodePosition) = (None, None)
+        var (lParenPos, rParenPos): (?CodePosition, ?CodePosition) = (None, None)
+
+        if (let Some(v) <- lp.lookAndConsume(SyntaxNodeKind.AnnotationList)) {
+            lp.offset.move(v.offset)
+        }
+        if (let Some(v) <- lp.lookAndConsume(SyntaxNodeKind.ModifierList)) {
+            lp.offset.move(v.offset)
+        }
+        let atNode = lp.consume(kind: SyntaxNodeKind.AtToken)
+        let atPos = startPos + lp.offset
+        lp.moveOffset(atNode)
+
+        let calleeNode = lp.consume()
+        calleePropInfo = PropInfo(lp.cur - 1, lp.offset)
+        lp.moveOffset(calleeNode)
+
+        if (let Some(v) <- lp.lookAndConsume(SyntaxNodeKind.LSquareToken)) {
+            lSquarePos = startPos + lp.offset
+            lp.moveOffset(v)
+        }
+        if (lp.look(SyntaxNodeKind.TokenList) && let Some(v) <- lp.consume()) {
+            macroAttrsPropInfo = PropInfo(lp.cur - 1, lp.offset)
+            lp.moveOffset(v)
+        }
+        if (let Some(v) <- lp.lookAndConsume(SyntaxNodeKind.RSquareToken)) {
+            rSquarePos = startPos + lp.offset
+            lp.moveOffset(v)
+        }
+        if (let Some(v) <- lp.lookAndConsume(SyntaxNodeKind.LParenToken)) {
+            lParenPos = startPos + lp.offset
+            lp.moveOffset(v)
+            if (lp.look(SyntaxNodeKind.TokenList) && let Some(v) <- lp.consume()) {
+                macroInputsPropInfo = PropInfo(lp.cur - 1, lp.offset)
+                lp.moveOffset(v)
+            }
+            let rParenNode = lp.consume(kind: SyntaxNodeKind.RParenToken)
+            rParenPos = startPos + lp.offset
+            lp.moveOffset(rParenNode)
+        } else {
+            let inputNode = lp.consume()
+            macroInputsPropInfo = PropInfo(lp.cur - 1, lp.offset)
+            lp.moveOffset(inputNode)
+        }
+
+        return (calleePropInfo, macroAttrsPropInfo, macroInputsPropInfo, atPos, lSquarePos, rSquarePos, lParenPos,
+            rParenPos)
+    }
+
     private func transFuncDecl(node: NonTerminal, startPos: CodePosition, parent: ?SyntaxTreeNode): FuncDecl {
         // BNF: anno? modifier? (FUNC？ IDENT | INIT | ~INIT)  typeParams? funcParams (COLON type)? genericConstraints? block?
         let lp = LocalParser(node.children)
@@ -1745,53 +1796,9 @@ class SyntaxNodeImplTranslator {
     }
 
     private func transMacroExpandDecl(node: NonTerminal, startPos: CodePosition, parent: ?SyntaxTreeNode): MacroExpandDecl {
-        var (calleePropInfo, macroAttrsPropInfo, macroInputsPropInfo) = (PropInfo(), PropInfo(), PropInfo())
-        var (lSquarePos, rSquarePos): (?CodePosition, ?CodePosition) = (None, None)
-        var (lParenPos, rParenPos): (?CodePosition, ?CodePosition) = (None, None)
         let lp = LocalParser(node.children)
-
-        if (let Some(v) <- lp.lookAndConsume(SyntaxNodeKind.AnnotationList)) {
-            lp.offset.move(v.offset)
-        }
-        if (let Some(v) <- lp.lookAndConsume(SyntaxNodeKind.ModifierList)) {
-            lp.offset.move(v.offset)
-        }
-        let atNode = lp.consume(kind: SyntaxNodeKind.AtToken)
-        let atPos = startPos + lp.offset
-        lp.moveOffset(atNode)
-
-        let calleeNode = lp.consume()
-        calleePropInfo = PropInfo(lp.cur - 1, lp.offset)
-        lp.moveOffset(calleeNode)
-
-        if (let Some(v) <- lp.lookAndConsume(SyntaxNodeKind.LSquareToken)) {
-            lSquarePos = startPos + lp.offset
-            lp.moveOffset(v)
-        }
-        if (lp.look(SyntaxNodeKind.TokenList) && let Some(v) <- lp.consume()) {
-            macroAttrsPropInfo = PropInfo(lp.cur - 1, lp.offset)
-            lp.moveOffset(v)
-        }
-        if (let Some(v) <- lp.lookAndConsume(SyntaxNodeKind.RSquareToken)) {
-            rSquarePos = startPos + lp.offset
-            lp.moveOffset(v)
-        }
-        if (let Some(v) <- lp.lookAndConsume(SyntaxNodeKind.LParenToken)) {
-            lParenPos = startPos + lp.offset
-            lp.moveOffset(v)
-            if (lp.look(SyntaxNodeKind.TokenList) && let Some(v) <- lp.consume()) {
-                macroInputsPropInfo = PropInfo(lp.cur - 1, lp.offset)
-                lp.moveOffset(v)
-            }
-
-            let rParenNode = lp.consume(kind: SyntaxNodeKind.RParenToken)
-            rParenPos = startPos + lp.offset
-            lp.moveOffset(rParenNode)
-        } else {
-            let inputNode = lp.consume()
-            macroInputsPropInfo = PropInfo(lp.cur - 1, lp.offset)
-            lp.moveOffset(inputNode)
-        }
+        let (calleePropInfo, macroAttrsPropInfo, macroInputsPropInfo, atPos, lSquarePos, rSquarePos, lParenPos,
+            rParenPos) = consumeMacroExpandCommon(lp, startPos)
 
         let propInfos = MacroExpandDeclPropInfos(calleePropInfo, macroAttrsPropInfo, macroInputsPropInfo)
         let posInfos = MacroExpandDeclPosInfos(atPos, lSquarePos, rSquarePos, lParenPos, rParenPos)
@@ -1801,52 +1808,9 @@ class SyntaxNodeImplTranslator {
     }
 
     private func transMacroExpandParam(node: NonTerminal, startPos: CodePosition, parent: ?SyntaxTreeNode): MacroExpandParam {
-        var (calleePropInfo, macroAttrsPropInfo, macroInputsPropInfo) = (PropInfo(), PropInfo(), PropInfo())
-        var (lSquarePos, rSquarePos): (?CodePosition, ?CodePosition) = (None, None)
-        var (lParenPos, rParenPos): (?CodePosition, ?CodePosition) = (None, None)
         let lp = LocalParser(node.children)
-
-        if (let Some(v) <- lp.lookAndConsume(SyntaxNodeKind.AnnotationList)) {
-            lp.offset.move(v.offset)
-        }
-        if (let Some(v) <- lp.lookAndConsume(SyntaxNodeKind.ModifierList)) {
-            lp.offset.move(v.offset)
-        }
-        let atNode = lp.consume(kind: SyntaxNodeKind.AtToken)
-        let atPos = startPos + lp.offset
-        lp.moveOffset(atNode)
-
-        let calleeNode = lp.consume()
-        calleePropInfo = PropInfo(lp.cur - 1, lp.offset)
-        lp.moveOffset(calleeNode)
-
-        if (let Some(v) <- lp.lookAndConsume(SyntaxNodeKind.LSquareToken)) {
-            lSquarePos = startPos + lp.offset
-            lp.moveOffset(v)
-        }
-        if (lp.look(SyntaxNodeKind.TokenList) && let Some(v) <- lp.consume()) {
-            macroAttrsPropInfo = PropInfo(lp.cur - 1, lp.offset)
-            lp.moveOffset(v)
-        }
-        if (let Some(v) <- lp.lookAndConsume(SyntaxNodeKind.RSquareToken)) {
-            rSquarePos = startPos + lp.offset
-            lp.moveOffset(v)
-        }
-        if (let Some(v) <- lp.lookAndConsume(SyntaxNodeKind.LParenToken)) {
-            lParenPos = startPos + lp.offset
-            lp.moveOffset(v)
-            if (lp.look(SyntaxNodeKind.TokenList) && let Some(v) <- lp.consume()) {
-                macroInputsPropInfo = PropInfo(lp.cur - 1, lp.offset)
-                lp.moveOffset(v)
-            }
-            let rParenNode = lp.consume(kind: SyntaxNodeKind.RParenToken)
-            rParenPos = startPos + lp.offset
-            lp.moveOffset(rParenNode)
-        } else {
-            let inputNode = lp.consume()
-            macroInputsPropInfo = PropInfo(lp.cur - 1, lp.offset)
-            lp.moveOffset(inputNode)
-        }
+        let (calleePropInfo, macroAttrsPropInfo, macroInputsPropInfo, atPos, lSquarePos, rSquarePos, lParenPos,
+            rParenPos) = consumeMacroExpandCommon(lp, startPos)
 
         let propInfos = MacroExpandParamPropInfos(calleePropInfo, macroAttrsPropInfo, macroInputsPropInfo)
         let posInfos = MacroExpandParamPosInfos(atPos, lSquarePos, rSquarePos, lParenPos, rParenPos)
@@ -3206,52 +3170,9 @@ class SyntaxNodeImplTranslator {
     }
 
     private func transMacroExpandExpr(node: NonTerminal, startPos: CodePosition, parent: ?SyntaxTreeNode): MacroExpandExpr {
-        var (calleePropInfo, macroAttrsPropInfo, macroInputsPropInfo) = (PropInfo(), PropInfo(), PropInfo())
-        var (lSquarePos, rSquarePos): (?CodePosition, ?CodePosition) = (None, None)
-        var (lParenPos, rParenPos): (?CodePosition, ?CodePosition) = (None, None)
         let lp = LocalParser(node.children)
-
-        if (let Some(v) <- lp.lookAndConsume(SyntaxNodeKind.AnnotationList)) {
-            lp.offset.move(v.offset)
-        }
-        if (let Some(v) <- lp.lookAndConsume(SyntaxNodeKind.ModifierList)) {
-            lp.offset.move(v.offset)
-        }
-        let atNode = lp.consume(kind: SyntaxNodeKind.AtToken)
-        let atPos = startPos + lp.offset
-        lp.moveOffset(atNode)
-
-        let calleeNode = lp.consume()
-        calleePropInfo = PropInfo(lp.cur - 1, lp.offset)
-        lp.moveOffset(calleeNode)
-
-        if (let Some(v) <- lp.lookAndConsume(SyntaxNodeKind.LSquareToken)) {
-            lSquarePos = startPos + lp.offset
-            lp.moveOffset(v)
-        }
-        if (lp.look(SyntaxNodeKind.TokenList) && let Some(v) <- lp.consume()) {
-            macroAttrsPropInfo = PropInfo(lp.cur - 1, lp.offset)
-            lp.moveOffset(v)
-        }
-        if (let Some(v) <- lp.lookAndConsume(SyntaxNodeKind.RSquareToken)) {
-            rSquarePos = startPos + lp.offset
-            lp.moveOffset(v)
-        }
-        if (let Some(v) <- lp.lookAndConsume(SyntaxNodeKind.LParenToken)) {
-            lParenPos = startPos + lp.offset
-            lp.moveOffset(v)
-            if (lp.look(SyntaxNodeKind.TokenList) && let Some(v) <- lp.consume()) {
-                macroInputsPropInfo = PropInfo(lp.cur - 1, lp.offset)
-                lp.moveOffset(v)
-            }
-            let rParenNode = lp.consume(kind: SyntaxNodeKind.RParenToken)
-            rParenPos = startPos + lp.offset
-            lp.moveOffset(rParenNode)
-        } else {
-            let inputNode = lp.consume()
-            macroInputsPropInfo = PropInfo(lp.cur - 1, lp.offset)
-            lp.moveOffset(inputNode)
-        }
+        let (calleePropInfo, macroAttrsPropInfo, macroInputsPropInfo, atPos, lSquarePos, rSquarePos, lParenPos,
+            rParenPos) = consumeMacroExpandCommon(lp, startPos)
 
         let propInfos = MacroExpandExprPropInfos(calleePropInfo, macroAttrsPropInfo, macroInputsPropInfo)
         let posInfos = MacroExpandExprPosInfos(atPos, lSquarePos, rSquarePos, lParenPos, rParenPos)
