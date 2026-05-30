@@ -164,6 +164,33 @@ class SyntaxNodeImplCreator {
         ret.add(body.nodeImpl)
     }
 
+    private static func addMacroExpandDeclOrParamPrefix(builder: SyntaxNodeBuilder, ret: ArrayList<SyntaxNodeImpl>,
+        comments: Array<Comment>, annotations: Array<Annotation>, calleeMacro: Expr, macroAttrs: Tokens) {
+        addCommentToNode(ret, comments)
+
+        if (annotations.size != 0) {
+            ret.add(createAnnotationList(annotations))
+            ret.add(builder.buildNewline(1))
+        }
+
+        ret.add(builder.buildBasicTerminal(SyntaxNodeKind.AtToken))
+        ret.add(calleeMacro.nodeImpl)
+
+        if (macroAttrs.size != 0) {
+            ret.add(builder.buildBasicTerminal(SyntaxNodeKind.LSquareToken))
+            var tokBytes: CPointer<UInt8> = unsafePointerCastFromUint8Array((macroAttrs).toBytes())
+            var spaceFlag: CPointer<Bool> = unsafe { LibC.malloc<Bool>(count: macroAttrs.size) }
+            if (spaceFlag.isNull()) {
+                unsafe { LibC.free(tokBytes) }
+                throw IllegalMemoryException("malloc failed!")
+            }
+            unsafe { CJ_CheckAddSpaces(tokBytes, spaceFlag) }
+            let attrArray = unsafe { tokensToImplArray(macroAttrs, tokBytes, spaceFlag) }
+            ret.add(builder.buildNonTerminal(SyntaxNodeKind.TokenList, attrArray))
+            ret.add(builder.buildBasicTerminal(SyntaxNodeKind.RSquareToken))
+        }
+    }
+
     static func createAnnotationImpl(
         arguments: Array<Argument>,
         identifier: String,
@@ -702,29 +729,7 @@ class SyntaxNodeImplCreator {
 
         let builder = SyntaxNodeBuilder()
         let ret = ArrayList<SyntaxNodeImpl>()
-        addCommentToNode(ret, comments)
-
-        if (annotations.size != 0) {
-            ret.add(createAnnotationList(annotations))
-            ret.add(builder.buildNewline(1))
-        }
-
-        ret.add(builder.buildBasicTerminal(SyntaxNodeKind.AtToken))
-        ret.add(calleeMacro.nodeImpl)
-
-        if (macroAttrs.size != 0) {
-            ret.add(builder.buildBasicTerminal(SyntaxNodeKind.LSquareToken))
-            var tokBytes: CPointer<UInt8> = unsafePointerCastFromUint8Array((macroAttrs).toBytes())
-            var spaceFlag: CPointer<Bool> = unsafe { LibC.malloc<Bool>(count: macroAttrs.size) }
-            if (spaceFlag.isNull()) {
-                unsafe { LibC.free(tokBytes) }
-                throw IllegalMemoryException("malloc failed!")
-            }
-            unsafe { CJ_CheckAddSpaces(tokBytes, spaceFlag) }
-            let attrArray = unsafe { tokensToImplArray(macroAttrs, tokBytes, spaceFlag) }
-            ret.add(builder.buildNonTerminal(SyntaxNodeKind.TokenList, attrArray))
-            ret.add(builder.buildBasicTerminal(SyntaxNodeKind.RSquareToken))
-        }
+        addMacroExpandDeclOrParamPrefix(builder, ret, comments, annotations, calleeMacro, macroAttrs)
 
         match (macroInputs) {
             case MacroExpandInput.WithoutParens(decl) =>
@@ -984,29 +989,7 @@ class SyntaxNodeImplCreator {
 
         let builder = SyntaxNodeBuilder()
         let ret = ArrayList<SyntaxNodeImpl>()
-        addCommentToNode(ret, comments)
-
-        if (annotations.size != 0) {
-            ret.add(createAnnotationList(annotations))
-            ret.add(builder.buildNewline(1))
-        }
-
-        ret.add(builder.buildBasicTerminal(SyntaxNodeKind.AtToken))
-        ret.add(calleeMacro.nodeImpl)
-
-        if (macroAttrs.size != 0) {
-            ret.add(builder.buildBasicTerminal(SyntaxNodeKind.LSquareToken))
-            var tokBytes: CPointer<UInt8> = unsafePointerCastFromUint8Array((macroAttrs).toBytes())
-            var spaceFlag: CPointer<Bool> = unsafe { LibC.malloc<Bool>(count: macroAttrs.size) }
-            if (spaceFlag.isNull()) {
-                unsafe { LibC.free(tokBytes) }
-                throw IllegalMemoryException("malloc failed!")
-            }
-            unsafe { CJ_CheckAddSpaces(tokBytes, spaceFlag) }
-            let attrArray = unsafe { tokensToImplArray(macroAttrs, tokBytes, spaceFlag) }
-            ret.add(builder.buildNonTerminal(SyntaxNodeKind.TokenList, attrArray))
-            ret.add(builder.buildBasicTerminal(SyntaxNodeKind.RSquareToken))
-        }
+        addMacroExpandDeclOrParamPrefix(builder, ret, comments, annotations, calleeMacro, macroAttrs)
 
         match (macroInputs) {
             case MacroExpandInput.WithoutParens(decl) =>
