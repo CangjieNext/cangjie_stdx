@@ -1563,6 +1563,20 @@ private class FlatbufferNodeTranslator {
         innerComments = Array<Option<NodeFormat_CommentGroup>>()
     }
 
+    private func transBitAndSeparatedTypes(types: Array<Option<NodeFormat_Type>>, ret: ArrayList<SyntaxNodeImpl>,
+        innerCmts: Array<Option<NodeFormat_CommentGroup>>) {
+        for (i in 0..types.size) {
+            if (let Some(ty) <- types[i]) {
+                transType(ty)
+                resetGlobalVariables(ret, innerCmts)
+                if (i < types.size - 1 && let Some(base) <- ty.GetBase()) {
+                    transBasicTerminal(base.GetBitAndPos(), SyntaxNodeKind.BitAndToken)
+                }
+            }
+        }
+        resetGlobalVariables(ret, innerCmts)
+    }
+
     private func transVarDecl(varDecl: NodeFormat_VarDecl, preChildren: Array<SyntaxNodeImpl>): ?SyntaxNodeImpl {
         let (ret, innerCmts, trailCmts) = prepareVarDeclPrefix(varDecl.GetBase())
 
@@ -1803,16 +1817,7 @@ private class FlatbufferNodeTranslator {
         transBasicTerminal(classDecl.GetUpperBoundPos(), SyntaxNodeKind.UpperBoundToken)
 
         let superTypes = classDecl.GetSuperTypes()
-        for (i in 0..superTypes.size) {
-            if (let Some(anno) <- superTypes[i]) {
-                transType(anno)
-                resetGlobalVariables(ret, innerCmts)
-                if (i < superTypes.size - 1 && let Some(base) <- anno.GetBase()) {
-                    transBasicTerminal(base.GetBitAndPos(), SyntaxNodeKind.BitAndToken)
-                }
-            }
-        }
-        resetGlobalVariables(ret, innerCmts)
+        transBitAndSeparatedTypes(superTypes, ret, innerCmts)
 
         if (let Some(db) <- classDecl.GetBase() && let Some(generic) <- db.GetGeneric() &&
             generic.GetGenericConstraints().size != 0) {
@@ -1871,16 +1876,7 @@ private class FlatbufferNodeTranslator {
         transBasicTerminal(structDecl.GetUpperBoundPos(), SyntaxNodeKind.UpperBoundToken)
 
         let superTypes = structDecl.GetSuperTypes()
-        for (i in 0..superTypes.size) {
-            if (let Some(anno) <- superTypes[i]) {
-                transType(anno)
-                resetGlobalVariables(ret, innerCmts)
-                if (i < superTypes.size - 1 && let Some(base) <- anno.GetBase()) {
-                    transBasicTerminal(base.GetBitAndPos(), SyntaxNodeKind.BitAndToken)
-                }
-            }
-        }
-        resetGlobalVariables(ret, innerCmts)
+        transBitAndSeparatedTypes(superTypes, ret, innerCmts)
 
         if (let Some(db) <- structDecl.GetBase() && let Some(generic) <- db.GetGeneric() &&
             generic.GetGenericConstraints().size > 0) {
