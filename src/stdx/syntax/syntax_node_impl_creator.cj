@@ -164,6 +164,21 @@ class SyntaxNodeImplCreator {
         ret.add(body.nodeImpl)
     }
 
+    private static func addDelimitedTokenList(builder: SyntaxNodeBuilder, ret: ArrayList<SyntaxNodeImpl>, tks: Tokens,
+        leftToken: SyntaxNodeKind, rightToken: SyntaxNodeKind) {
+        ret.add(builder.buildBasicTerminal(leftToken))
+        var tokBytes: CPointer<UInt8> = unsafePointerCastFromUint8Array((tks).toBytes())
+        var spaceFlag: CPointer<Bool> = unsafe { LibC.malloc<Bool>(count: tks.size) }
+        if (spaceFlag.isNull()) {
+            unsafe { LibC.free(tokBytes) }
+            throw IllegalMemoryException("malloc failed!")
+        }
+        unsafe { CJ_CheckAddSpaces(tokBytes, spaceFlag) }
+        let attrArray = unsafe { tokensToImplArray(tks, tokBytes, spaceFlag) }
+        ret.add(builder.buildNonTerminal(SyntaxNodeKind.TokenList, attrArray))
+        ret.add(builder.buildBasicTerminal(rightToken))
+    }
+
     private static func addMacroExpandDeclOrParamPrefix(builder: SyntaxNodeBuilder, ret: ArrayList<SyntaxNodeImpl>,
         comments: Array<Comment>, annotations: Array<Annotation>, calleeMacro: Expr, macroAttrs: Tokens) {
         addCommentToNode(ret, comments)
@@ -177,17 +192,7 @@ class SyntaxNodeImplCreator {
         ret.add(calleeMacro.nodeImpl)
 
         if (macroAttrs.size != 0) {
-            ret.add(builder.buildBasicTerminal(SyntaxNodeKind.LSquareToken))
-            var tokBytes: CPointer<UInt8> = unsafePointerCastFromUint8Array((macroAttrs).toBytes())
-            var spaceFlag: CPointer<Bool> = unsafe { LibC.malloc<Bool>(count: macroAttrs.size) }
-            if (spaceFlag.isNull()) {
-                unsafe { LibC.free(tokBytes) }
-                throw IllegalMemoryException("malloc failed!")
-            }
-            unsafe { CJ_CheckAddSpaces(tokBytes, spaceFlag) }
-            let attrArray = unsafe { tokensToImplArray(macroAttrs, tokBytes, spaceFlag) }
-            ret.add(builder.buildNonTerminal(SyntaxNodeKind.TokenList, attrArray))
-            ret.add(builder.buildBasicTerminal(SyntaxNodeKind.RSquareToken))
+            addDelimitedTokenList(builder, ret, macroAttrs, SyntaxNodeKind.LSquareToken, SyntaxNodeKind.RSquareToken)
         }
     }
 
@@ -736,17 +741,7 @@ class SyntaxNodeImplCreator {
                 ret.add(builder.buildNewline(1))
                 ret.add(decl.nodeImpl)
             case MacroExpandInput.WithParens(toks) =>
-                ret.add(builder.buildBasicTerminal(SyntaxNodeKind.LParenToken))
-                var tokBytes: CPointer<UInt8> = unsafePointerCastFromUint8Array((toks).toBytes())
-                var spaceFlag: CPointer<Bool> = unsafe { LibC.malloc<Bool>(count: toks.size) }
-                if (spaceFlag.isNull()) {
-                    unsafe { LibC.free(tokBytes) }
-                    throw IllegalMemoryException("malloc failed!")
-                }
-                unsafe { CJ_CheckAddSpaces(tokBytes, spaceFlag) }
-                let attrArray = unsafe { tokensToImplArray(toks, tokBytes, spaceFlag) }
-                ret.add(builder.buildNonTerminal(SyntaxNodeKind.TokenList, attrArray))
-                ret.add(builder.buildBasicTerminal(SyntaxNodeKind.RParenToken))
+                addDelimitedTokenList(builder, ret, toks, SyntaxNodeKind.LParenToken, SyntaxNodeKind.RParenToken)
             case _ => throw Exception("InitException: Invalid input 'macroInputs' for 'MacroExpandDecl' init.")
         }
 
@@ -996,17 +991,7 @@ class SyntaxNodeImplCreator {
                 ret.add(builder.buildSpace(1))
                 ret.add(decl.nodeImpl)
             case MacroExpandInput.WithParens(toks) =>
-                ret.add(builder.buildBasicTerminal(SyntaxNodeKind.LParenToken))
-                var tokBytes: CPointer<UInt8> = unsafePointerCastFromUint8Array((toks).toBytes())
-                var spaceFlag: CPointer<Bool> = unsafe { LibC.malloc<Bool>(count: toks.size) }
-                if (spaceFlag.isNull()) {
-                    unsafe { LibC.free(tokBytes) }
-                    throw IllegalMemoryException("malloc failed!")
-                }
-                unsafe { CJ_CheckAddSpaces(tokBytes, spaceFlag) }
-                let attrArray = unsafe { tokensToImplArray(toks, tokBytes, spaceFlag) }
-                ret.add(builder.buildNonTerminal(SyntaxNodeKind.TokenList, attrArray))
-                ret.add(builder.buildBasicTerminal(SyntaxNodeKind.RParenToken))
+                addDelimitedTokenList(builder, ret, toks, SyntaxNodeKind.LParenToken, SyntaxNodeKind.RParenToken)
             case _ => throw Exception("InitException: Invalid input 'macroInputs' for 'MacroExpandParam' init.")
         }
 
