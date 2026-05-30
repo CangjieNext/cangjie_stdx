@@ -19,6 +19,14 @@ private func createTokenRanges(positions: Array<CodePosition>, kind: SyntaxNodeK
     return ranges.toArray()
 }
 
+private func createTextRanges(positions: Array<CodePosition>, texts: Array<String>): Array<CodePositionRange> {
+    let ranges: ArrayList<CodePositionRange> = ArrayList<CodePositionRange>()
+    for (i in 0..positions.size) {
+        ranges.add(CodePositionRange(positions[i], positions[i] + texts[i].size))
+    }
+    return ranges.toArray()
+}
+
 sealed abstract class TypeAnnotation <: SyntaxTreeNode {
     init(nodePos: CodePositionRange, nodeImpl: SyntaxNodeImpl, parentNode: ?SyntaxTreeNode,
         commentsPropInfo: Array<PropInfo>) {
@@ -279,12 +287,7 @@ public class FuncType <: TypeAnnotation {
      * @return Array of CodePositionRange objects representing the positions of labels.
      */
     public func getLabelsPos(): Array<CodePositionRange> {
-        let labelsPos: ArrayList<CodePositionRange> = ArrayList<CodePositionRange>()
-        for (i in 0..posInfos.labelsPos.size) {
-            let endPos = posInfos.labelsPos[i] + labels[i].size
-            labelsPos.add(CodePositionRange(posInfos.labelsPos[i], endPos))
-        }
-        return labelsPos.toArray()
+        return createTextRanges(posInfos.labelsPos, labels)
     }
 
     /**
@@ -292,12 +295,7 @@ public class FuncType <: TypeAnnotation {
      * @return Array of CodePositionRange objects representing the positions of colons.
      */
     public func getColonsPos(): Array<CodePositionRange> {
-        let colonsPos: ArrayList<CodePositionRange> = ArrayList<CodePositionRange>()
-        for (pos in posInfos.colonsPos) {
-            let endPos = pos + SyntaxNodeKind.ColonToken.size
-            colonsPos.add(CodePositionRange(pos, endPos))
-        }
-        return colonsPos.toArray()
+        return createTokenRanges(posInfos.colonsPos, SyntaxNodeKind.ColonToken)
     }
 
     init(nodeImpl: SyntaxNodeImpl, startPos: CodePosition, parentNode: ?SyntaxTreeNode, posInfos: FuncTypePosInfos,
@@ -675,12 +673,7 @@ public class TupleType <: TypeAnnotation {
      * @return An array of CodePositionRange objects representing the position ranges of labels.
      */
     public func getLabelsPos(): Array<CodePositionRange> {
-        let labelsPos: ArrayList<CodePositionRange> = ArrayList<CodePositionRange>()
-        for (i in 0..posInfos.labelsPos.size) {
-            let endPos = posInfos.labelsPos[i] + labels[i].size
-            labelsPos.add(CodePositionRange(posInfos.labelsPos[i], endPos))
-        }
-        return labelsPos.toArray()
+        return createTextRanges(posInfos.labelsPos, labels)
     }
 
     /**
@@ -688,12 +681,7 @@ public class TupleType <: TypeAnnotation {
      * @return An array of CodePositionRange objects representing the position ranges of colons.
      */
     public func getColonsPos(): Array<CodePositionRange> {
-        let colonsPos: ArrayList<CodePositionRange> = ArrayList<CodePositionRange>()
-        for (pos in posInfos.colonsPos) {
-            let endPos = pos + SyntaxNodeKind.ColonToken.size
-            colonsPos.add(CodePositionRange(pos, endPos))
-        }
-        return colonsPos.toArray()
+        return createTokenRanges(posInfos.colonsPos, SyntaxNodeKind.ColonToken)
     }
 
     init(nodeImpl: SyntaxNodeImpl, startPos: CodePosition, parentNode: ?SyntaxTreeNode, posInfos: TupleTypePosInfos,
