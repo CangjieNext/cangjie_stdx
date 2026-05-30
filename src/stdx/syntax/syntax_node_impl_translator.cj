@@ -980,6 +980,45 @@ class SyntaxNodeImplTranslator {
             genericParamsRAnglePos)
     }
 
+    private func consumeUpperBoundSuperTypes(lp: LocalParser, startPos: CodePosition) {
+        var upperBoundPos: Option<CodePosition> = None
+        var (superTyAnnotationsPropInfo, superTyAnnotationsBitAndPos) = (ArrayList<PropInfo>(), ArrayList<CodePosition>())
+        if (let Some(v) <- lp.lookAndConsume(SyntaxNodeKind.UpperBoundToken)) {
+            upperBoundPos = startPos + lp.offset
+            lp.offset.move(v.offset)
+            let predictTypeAnnotation = {
+                kind: SyntaxNodeKind => kind.isTypeAnnotation()
+            }
+            while (lp.look(predictTypeAnnotation)) {
+                let tyAnnoNode = lp.consume()
+                superTyAnnotationsPropInfo.add(PropInfo(lp.cur - 1, lp.offset))
+                lp.offset.move(tyAnnoNode?.offset)
+
+                if (let Some(v) <- lp.lookAndConsume(SyntaxNodeKind.BitAndToken)) {
+                    superTyAnnotationsBitAndPos.add(startPos + lp.offset)
+                    lp.moveOffset(v)
+                }
+            }
+        }
+
+        return (upperBoundPos, superTyAnnotationsPropInfo, superTyAnnotationsBitAndPos)
+    }
+
+    private func consumeGenericConstraintsPropInfo(lp: LocalParser): ?PropInfo {
+        var genericConstraintsPropInfo: ?PropInfo = None
+        if (let Some(v) <- lp.lookAndConsume(SyntaxNodeKind.GenericConstraints)) {
+            genericConstraintsPropInfo = PropInfo(lp.cur - 1, lp.offset)
+            lp.offset.move(v.offset)
+        }
+        return genericConstraintsPropInfo
+    }
+
+    private func consumeBodyNodeAndPropInfo(lp: LocalParser) {
+        let bodyNode = lp.consume(kind: SyntaxNodeKind.Body)
+        let bodyPropInfo = PropInfo(lp.cur - 1, lp.offset)
+        return (bodyNode, bodyPropInfo)
+    }
+
     private func transFuncDecl(node: NonTerminal, startPos: CodePosition, parent: ?SyntaxTreeNode): FuncDecl {
         // BNF: anno? modifier? (FUNC？ IDENT | INIT | ~INIT)  typeParams? funcParams (COLON type)? genericConstraints? block?
         let lp = LocalParser(node.children)
@@ -1267,32 +1306,10 @@ class SyntaxNodeImplTranslator {
 
         let (name, identifierPos, genericParamsPropInfo, genericParamsLAnglePos, genericParamsCommasPos,
             genericParamsRAnglePos) = consumeNamedGenericDeclHead(lp, startPos)
-        var upperBoundPos: Option<CodePosition> = None
-        var (superTyAnnotationsPropInfo, superTyAnnotationsBitAndPos) = (ArrayList<PropInfo>(), ArrayList<CodePosition>())
-        if (let Some(v) <- lp.lookAndConsume(SyntaxNodeKind.UpperBoundToken)) {
-            upperBoundPos = startPos + lp.offset
-            lp.offset.move(v.offset)
-            let predictTypeAnnotation = {
-                kind: SyntaxNodeKind => kind.isTypeAnnotation()
-            }
-            while (lp.look(predictTypeAnnotation)) {
-                let tyAnnoNode = lp.consume()
-                superTyAnnotationsPropInfo.add(PropInfo(lp.cur - 1, lp.offset))
-                lp.offset.move(tyAnnoNode?.offset)
-
-                if (let Some(v) <- lp.lookAndConsume(SyntaxNodeKind.BitAndToken)) {
-                    superTyAnnotationsBitAndPos.add(startPos + lp.offset)
-                    lp.moveOffset(v)
-                }
-            }
-        }
-        var genericConstraintsPropInfo: ?PropInfo = None
-        if (let Some(v) <- lp.lookAndConsume(SyntaxNodeKind.GenericConstraints)) {
-            genericConstraintsPropInfo = PropInfo(lp.cur - 1, lp.offset)
-            lp.offset.move(v.offset)
-        }
-        let bodyNode = lp.consume(kind: SyntaxNodeKind.Body)
-        let bodyPropInfo = PropInfo(lp.cur - 1, lp.offset)
+        let (upperBoundPos, superTyAnnotationsPropInfo, superTyAnnotationsBitAndPos) = consumeUpperBoundSuperTypes(lp,
+            startPos)
+        let genericConstraintsPropInfo = consumeGenericConstraintsPropInfo(lp)
+        let (bodyNode, bodyPropInfo) = consumeBodyNodeAndPropInfo(lp)
         lp.offset.move(bodyNode?.offset)
 
         let propInfos = ClassDeclPropInfos(bodyPropInfo, genericConstraintsPropInfo, genericParamsPropInfo,
@@ -1498,32 +1515,10 @@ class SyntaxNodeImplTranslator {
 
         let (name, identifierPos, genericParamsPropInfo, genericParamsLAnglePos, genericParamsCommasPos,
             genericParamsRAnglePos) = consumeNamedGenericDeclHead(lp, startPos)
-        var upperBoundPos: Option<CodePosition> = None
-        var (superTyAnnotationsPropInfo, superTyAnnotationsBitAndPos) = (ArrayList<PropInfo>(), ArrayList<CodePosition>())
-        if (let Some(v) <- lp.lookAndConsume(SyntaxNodeKind.UpperBoundToken)) {
-            upperBoundPos = startPos + lp.offset
-            lp.offset.move(v.offset)
-            let predictTypeAnnotation = {
-                kind: SyntaxNodeKind => kind.isTypeAnnotation()
-            }
-            while (lp.look(predictTypeAnnotation)) {
-                let tyAnnoNode = lp.consume()
-                superTyAnnotationsPropInfo.add(PropInfo(lp.cur - 1, lp.offset))
-                lp.offset.move(tyAnnoNode?.offset)
-
-                if (let Some(v) <- lp.lookAndConsume(SyntaxNodeKind.BitAndToken)) {
-                    superTyAnnotationsBitAndPos.add(startPos + lp.offset)
-                    lp.moveOffset(v)
-                }
-            }
-        }
-        var genericConstraintsPropInfo: ?PropInfo = None
-        if (let Some(v) <- lp.lookAndConsume(SyntaxNodeKind.GenericConstraints)) {
-            genericConstraintsPropInfo = PropInfo(lp.cur - 1, lp.offset)
-            lp.offset.move(v.offset)
-        }
-        let bodyNode = lp.consume(kind: SyntaxNodeKind.Body)
-        let bodyPropInfo = PropInfo(lp.cur - 1, lp.offset)
+        let (upperBoundPos, superTyAnnotationsPropInfo, superTyAnnotationsBitAndPos) = consumeUpperBoundSuperTypes(lp,
+            startPos)
+        let genericConstraintsPropInfo = consumeGenericConstraintsPropInfo(lp)
+        let (bodyNode, bodyPropInfo) = consumeBodyNodeAndPropInfo(lp)
         lp.offset.move(bodyNode?.offset)
 
         let propInfos = StructDeclPropInfos(bodyPropInfo, genericConstraintsPropInfo, genericParamsPropInfo,
@@ -1552,32 +1547,10 @@ class SyntaxNodeImplTranslator {
 
         let (name, identifierPos, genericParamsPropInfo, genericParamsLAnglePos, genericParamsCommasPos,
             genericParamsRAnglePos) = consumeNamedGenericDeclHead(lp, startPos)
-        var upperBoundPos: Option<CodePosition> = None
-        var (superTyAnnotationsPropInfo, superTyAnnotationsBitAndPos) = (ArrayList<PropInfo>(), ArrayList<CodePosition>())
-        if (let Some(v) <- lp.lookAndConsume(SyntaxNodeKind.UpperBoundToken)) {
-            upperBoundPos = startPos + lp.offset
-            lp.offset.move(v.offset)
-            let predictTypeAnnotation = {
-                kind: SyntaxNodeKind => kind.isTypeAnnotation()
-            }
-            while (lp.look(predictTypeAnnotation)) {
-                let tyAnnoNode = lp.consume()
-                superTyAnnotationsPropInfo.add(PropInfo(lp.cur - 1, lp.offset))
-                lp.offset.move(tyAnnoNode?.offset)
-
-                if (let Some(v) <- lp.lookAndConsume(SyntaxNodeKind.BitAndToken)) {
-                    superTyAnnotationsBitAndPos.add(startPos + lp.offset)
-                    lp.moveOffset(v)
-                }
-            }
-        }
-        var genericConstraintsPropInfo: ?PropInfo = None
-        if (let Some(v) <- lp.lookAndConsume(SyntaxNodeKind.GenericConstraints)) {
-            genericConstraintsPropInfo = PropInfo(lp.cur - 1, lp.offset)
-            lp.offset.move(v.offset)
-        }
-        let bodyNode = lp.consume(kind: SyntaxNodeKind.Body)
-        let bodyPropInfo = PropInfo(lp.cur - 1, lp.offset)
+        let (upperBoundPos, superTyAnnotationsPropInfo, superTyAnnotationsBitAndPos) = consumeUpperBoundSuperTypes(lp,
+            startPos)
+        let genericConstraintsPropInfo = consumeGenericConstraintsPropInfo(lp)
+        let (bodyNode, bodyPropInfo) = consumeBodyNodeAndPropInfo(lp)
         lp.offset.move(bodyNode?.offset)
 
         let propInfos = InterfaceDeclPropInfos(bodyPropInfo, genericConstraintsPropInfo, genericParamsPropInfo,
@@ -1625,32 +1598,10 @@ class SyntaxNodeImplTranslator {
             lp.offset.move(extendedTyNode?.offset)
         }
 
-        var upperBoundPos: Option<CodePosition> = None
-        var (superTyAnnotationsPropInfo, superTyAnnotationsBitAndPos) = (ArrayList<PropInfo>(), ArrayList<CodePosition>())
-        if (let Some(v) <- lp.lookAndConsume(SyntaxNodeKind.UpperBoundToken)) {
-            upperBoundPos = startPos + lp.offset
-            lp.offset.move(v.offset)
-            let predictTypeAnnotation = {
-                kind: SyntaxNodeKind => kind.isTypeAnnotation()
-            }
-            while (lp.look(predictTypeAnnotation)) {
-                let tyAnnoNode = lp.consume()
-                superTyAnnotationsPropInfo.add(PropInfo(lp.cur - 1, lp.offset))
-                lp.offset.move(tyAnnoNode?.offset)
-
-                if (let Some(v) <- lp.lookAndConsume(SyntaxNodeKind.BitAndToken)) {
-                    superTyAnnotationsBitAndPos.add(startPos + lp.offset)
-                    lp.moveOffset(v)
-                }
-            }
-        }
-        var genericConstraintsPropInfo: ?PropInfo = None
-        if (let Some(v) <- lp.lookAndConsume(SyntaxNodeKind.GenericConstraints)) {
-            genericConstraintsPropInfo = PropInfo(lp.cur - 1, lp.offset)
-            lp.offset.move(v.offset)
-        }
-        let bodyNode = lp.consume(kind: SyntaxNodeKind.Body)
-        let bodyPropInfo = PropInfo(lp.cur - 1, lp.offset)
+        let (upperBoundPos, superTyAnnotationsPropInfo, superTyAnnotationsBitAndPos) = consumeUpperBoundSuperTypes(lp,
+            startPos)
+        let genericConstraintsPropInfo = consumeGenericConstraintsPropInfo(lp)
+        let (bodyNode, bodyPropInfo) = consumeBodyNodeAndPropInfo(lp)
         lp.offset.move(bodyNode?.offset)
 
         let propInfos = ExtendDeclPropInfos(bodyPropInfo, extendedTyAnnotationPropInfo, genericConstraintsPropInfo,
@@ -1679,33 +1630,10 @@ class SyntaxNodeImplTranslator {
 
         let (name, identifierPos, genericParamsPropInfo, genericParamsLAnglePos, genericParamsCommasPos,
             genericParamsRAnglePos) = consumeNamedGenericDeclHead(lp, startPos)
-        var upperBoundPos: Option<CodePosition> = None
-        var (superTyAnnotationsPropInfo, superTyAnnotationsBitAndPos) = (ArrayList<PropInfo>(), ArrayList<CodePosition>())
-        if (let Some(v) <- lp.lookAndConsume(SyntaxNodeKind.UpperBoundToken)) {
-            upperBoundPos = startPos + lp.offset
-            lp.offset.move(v.offset)
-            let predictTypeAnnotation = {
-                kind: SyntaxNodeKind => kind.isTypeAnnotation()
-            }
-            while (lp.look(predictTypeAnnotation)) {
-                let tyAnnoNode = lp.consume()
-                superTyAnnotationsPropInfo.add(PropInfo(lp.cur - 1, lp.offset))
-                lp.offset.move(tyAnnoNode?.offset)
-
-                if (let Some(v) <- lp.lookAndConsume(SyntaxNodeKind.BitAndToken)) {
-                    superTyAnnotationsBitAndPos.add(startPos + lp.offset)
-                    lp.moveOffset(v)
-                }
-            }
-        }
-
-        var genericConstraintsPropInfo: ?PropInfo = None
-        if (let Some(v) <- lp.lookAndConsume(SyntaxNodeKind.GenericConstraints)) {
-            genericConstraintsPropInfo = PropInfo(lp.cur - 1, lp.offset)
-            lp.offset.move(v.offset)
-        }
-        let bodyNode = lp.consume(kind: SyntaxNodeKind.Body)
-        let bodyPropInfo = PropInfo(lp.cur - 1, lp.offset)
+        let (upperBoundPos, superTyAnnotationsPropInfo, superTyAnnotationsBitAndPos) = consumeUpperBoundSuperTypes(lp,
+            startPos)
+        let genericConstraintsPropInfo = consumeGenericConstraintsPropInfo(lp)
+        let (bodyNode, bodyPropInfo) = consumeBodyNodeAndPropInfo(lp)
         var body: ?Body = cast<Body>(transNode(bodyNode.getOrThrow(), startPos + lp.offset, parent))
         lp.offset.move(bodyNode?.offset)
 
