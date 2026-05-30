@@ -1518,6 +1518,19 @@ private class FlatbufferNodeTranslator {
         builder.buildNonTerminal(SyntaxNodeKind.VarDecl, ret.toArray(), preChildren: preChildren)
     }
 
+    private func transDeclIdentifierAndTypeParams(db: NodeFormat_DeclBase, ret: ArrayList<SyntaxNodeImpl>,
+        innerCmts: Array<Option<NodeFormat_CommentGroup>>) {
+        transIdentifier(db.GetIdentifierPos(), db.GetIdentifier())
+
+        if (let Some(generic) <- db.GetGeneric()) {
+            let typeParameters = generic.GetTypeParameters()
+            if (typeParameters.size != 0) {
+                addChild(ret, transTypeArguments(typeParameters, generic.GetLeftAnglePos(), generic.GetRightAnglePos()))
+            }
+        }
+        resetGlobalVariables(ret, innerCmts)
+    }
+
     private func transVarDecl(varDecl: NodeFormat_VarDecl, preChildren: Array<SyntaxNodeImpl>): ?SyntaxNodeImpl {
         let (ret, innerCmts, trailCmts) = prepareVarDeclPrefix(varDecl.GetBase())
 
@@ -1632,16 +1645,7 @@ private class FlatbufferNodeTranslator {
             }
 
             transBasicTerminal(db.GetKeywordPos(), SyntaxNodeKind.TypeToken)
-            transIdentifier(db.GetIdentifierPos(), db.GetIdentifier())
-
-            if (let Some(generic) <- db.GetGeneric()) {
-                let typeParameters = generic.GetTypeParameters()
-                if (typeParameters.size != 0) {
-                    addChild(ret,
-                        transTypeArguments(typeParameters, generic.GetLeftAnglePos(), generic.GetRightAnglePos()))
-                }
-            }
-            resetGlobalVariables(ret, innerCmts)
+            transDeclIdentifierAndTypeParams(db, ret, innerCmts)
         }
 
         transBasicTerminal(typeAlias.GetAssignPos(), SyntaxNodeKind.AssignToken)
@@ -1912,18 +1916,7 @@ private class FlatbufferNodeTranslator {
             }
             // func
             transBasicTerminal(db.GetKeywordPos(), SyntaxNodeKind.InterfaceToken)
-
-            // identifier
-            transIdentifier(db.GetIdentifierPos(), db.GetIdentifier())
-
-            if (let Some(generic) <- db.GetGeneric()) {
-                let typeParameters = generic.GetTypeParameters()
-                if (typeParameters.size != 0) {
-                    addChild(ret,
-                        transTypeArguments(typeParameters, generic.GetLeftAnglePos(), generic.GetRightAnglePos()))
-                }
-            }
-            resetGlobalVariables(ret, innerCmts)
+            transDeclIdentifierAndTypeParams(db, ret, innerCmts)
         }
 
         transBasicTerminal(interfaceDecl.GetUpperBoundPos(), SyntaxNodeKind.UpperBoundToken)
@@ -2118,18 +2111,7 @@ private class FlatbufferNodeTranslator {
             }
             // func
             transBasicTerminal(db.GetKeywordPos(), SyntaxNodeKind.EnumToken)
-
-            // identifier
-            transIdentifier(db.GetIdentifierPos(), db.GetIdentifier())
-
-            if (let Some(generic) <- db.GetGeneric()) {
-                let typeParameters = generic.GetTypeParameters()
-                if (typeParameters.size != 0) {
-                    addChild(ret,
-                        transTypeArguments(typeParameters, generic.GetLeftAnglePos(), generic.GetRightAnglePos()))
-                }
-            }
-            resetGlobalVariables(ret, innerCmts)
+            transDeclIdentifierAndTypeParams(db, ret, innerCmts)
         }
 
         transBasicTerminal(enumDecl.GetUpperBoundPos(), SyntaxNodeKind.UpperBoundToken)
