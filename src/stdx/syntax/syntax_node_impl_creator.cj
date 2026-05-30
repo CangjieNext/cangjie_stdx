@@ -124,6 +124,16 @@ class SyntaxNodeImplCreator {
         return (builder, ret)
     }
 
+    private static func addNamedGenericDeclHead(builder: SyntaxNodeBuilder, ret: ArrayList<SyntaxNodeImpl>,
+        name: String, genericParams: Array<GenericParam>) {
+        ret.add(builder.buildSpace(1))
+        ret.add(builder.buildValuedTerminal(SyntaxNodeKind.IdentToken, name))
+
+        if (genericParams.size > 0) {
+            ret.add(createTyepArguments(genericParams))
+        }
+    }
+
     static func createAnnotationImpl(
         arguments: Array<Argument>,
         identifier: String,
@@ -346,13 +356,7 @@ class SyntaxNodeImplCreator {
         let (builder, ret) = createDeclLikePrefix(annotations, modifiers, comments)
 
         ret.add(builder.buildBasicTerminal(SyntaxNodeKind.ClassToken))
-        ret.add(builder.buildSpace(1))
-
-        ret.add(builder.buildValuedTerminal(SyntaxNodeKind.IdentToken, name))
-
-        if (genericParams.size > 0) {
-            ret.add(createTyepArguments(genericParams))
-        }
+        addNamedGenericDeclHead(builder, ret, name, genericParams)
 
         if (superTyAnnotations.size > 0) {
             ret.add(builder.buildSpace(1))
@@ -507,13 +511,7 @@ class SyntaxNodeImplCreator {
         let (builder, ret) = createDeclLikePrefix(annotations, modifiers, comments)
 
         ret.add(builder.buildBasicTerminal(SyntaxNodeKind.StructToken))
-        ret.add(builder.buildSpace(1))
-
-        ret.add(builder.buildValuedTerminal(SyntaxNodeKind.IdentToken, name))
-
-        if (genericParams.size > 0) {
-            ret.add(createTyepArguments(genericParams))
-        }
+        addNamedGenericDeclHead(builder, ret, name, genericParams)
 
         if (superTyAnnotations.size > 0) {
             ret.add(builder.buildSpace(1))
@@ -554,13 +552,7 @@ class SyntaxNodeImplCreator {
         let (builder, ret) = createDeclLikePrefix(annotations, modifiers, comments)
 
         ret.add(builder.buildBasicTerminal(SyntaxNodeKind.InterfaceToken))
-        ret.add(builder.buildSpace(1))
-
-        ret.add(builder.buildValuedTerminal(SyntaxNodeKind.IdentToken, name))
-
-        if (genericParams.size > 0) {
-            ret.add(createTyepArguments(genericParams))
-        }
+        addNamedGenericDeclHead(builder, ret, name, genericParams)
 
         if (superTyAnnotations.size > 0) {
             ret.add(builder.buildSpace(1))
@@ -633,13 +625,7 @@ class SyntaxNodeImplCreator {
         let (builder, ret) = createDeclLikePrefix(annotations, modifiers, comments)
 
         ret.add(builder.buildBasicTerminal(SyntaxNodeKind.EnumToken))
-        ret.add(builder.buildSpace(1))
-
-        ret.add(builder.buildValuedTerminal(SyntaxNodeKind.IdentToken, name))
-
-        if (genericParams.size > 0) {
-            ret.add(createTyepArguments(genericParams))
-        }
+        addNamedGenericDeclHead(builder, ret, name, genericParams)
 
         if (superTyAnnotations.size > 0) {
             ret.add(builder.buildSpace(1))
