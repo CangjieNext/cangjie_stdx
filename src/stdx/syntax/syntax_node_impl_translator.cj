@@ -1092,6 +1092,22 @@ class SyntaxNodeImplTranslator {
         return (elementsPropInfo, commasPos)
     }
 
+    private func consumeParenConditionPropInfo(lp: LocalParser, startPos: CodePosition) {
+        var curNode = lp.consume(kind: SyntaxNodeKind.LParenToken)
+        let lParenPos = startPos + lp.offset
+        lp.moveOffset(curNode)
+
+        curNode = lp.consume()
+        let conditionPropInfo = PropInfo(lp.cur - 1, lp.offset)
+        lp.moveOffset(curNode)
+
+        curNode = lp.consume(kind: SyntaxNodeKind.RParenToken)
+        let rParenPos = startPos + lp.offset
+        lp.moveOffset(curNode)
+
+        return (conditionPropInfo, lParenPos, rParenPos)
+    }
+
     private func transFuncDecl(node: NonTerminal, startPos: CodePosition, parent: ?SyntaxTreeNode): FuncDecl {
         // BNF: anno? modifier? (FUNC？ IDENT | INIT | ~INIT)  typeParams? funcParams (COLON type)? genericConstraints? block?
         let lp = LocalParser(node.children)
@@ -2818,23 +2834,12 @@ class SyntaxNodeImplTranslator {
     }
 
     private func transWhileExpr(node: NonTerminal, startPos: CodePosition, parent: ?SyntaxTreeNode): WhileExpr {
-        var conditionPropInfo = PropInfo()
         var bodyPropInfo = PropInfo()
         let lp = LocalParser(node.children)
         var curNode = lp.consume(kind: SyntaxNodeKind.WhileToken)
         let whileKeyWordPos = startPos + lp.offset
         lp.moveOffset(curNode)
-        curNode = lp.consume(kind: SyntaxNodeKind.LParenToken)
-        let lParenPos = startPos + lp.offset
-        lp.moveOffset(curNode)
-
-        curNode = lp.consume()
-        conditionPropInfo = PropInfo(lp.cur - 1, lp.offset)
-        lp.moveOffset(curNode)
-
-        curNode = lp.consume(kind: SyntaxNodeKind.RParenToken)
-        let rParenPos = startPos + lp.offset
-        lp.moveOffset(curNode)
+        let (conditionPropInfo, lParenPos, rParenPos) = consumeParenConditionPropInfo(lp, startPos)
         if (lp.look(SyntaxNodeKind.Block)) {
             curNode = lp.consume(kind: SyntaxNodeKind.Block)
             bodyPropInfo = PropInfo(lp.cur - 1, lp.offset)
@@ -2848,7 +2853,6 @@ class SyntaxNodeImplTranslator {
     }
 
     private func transDoWhileExpr(node: NonTerminal, startPos: CodePosition, parent: ?SyntaxTreeNode): DoWhileExpr {
-        var conditionPropInfo = PropInfo()
         var bodyPropInfo = PropInfo()
         let lp = LocalParser(node.children)
         var curNode = lp.consume(kind: SyntaxNodeKind.DoToken)
@@ -2863,16 +2867,7 @@ class SyntaxNodeImplTranslator {
         curNode = lp.consume(kind: SyntaxNodeKind.WhileToken)
         let whileKeyWordPos = startPos + lp.offset
         lp.moveOffset(curNode)
-        curNode = lp.consume(kind: SyntaxNodeKind.LParenToken)
-        let lParenPos = startPos + lp.offset
-        lp.moveOffset(curNode)
-
-        curNode = lp.consume()
-        conditionPropInfo = PropInfo(lp.cur - 1, lp.offset)
-        lp.moveOffset(curNode)
-        curNode = lp.consume(kind: SyntaxNodeKind.RParenToken)
-        let rParenPos = startPos + lp.offset
-        lp.moveOffset(curNode)
+        let (conditionPropInfo, lParenPos, rParenPos) = consumeParenConditionPropInfo(lp, startPos)
         let posInfo = DoWhileExprPosInfos(lParenPos, rParenPos, doKeyWordPos, whileKeyWordPos)
         let propInfo = DoWhileExprPropInfos(bodyPropInfo, conditionPropInfo)
         lp.consumeToEnd()
