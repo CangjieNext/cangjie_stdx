@@ -825,6 +825,21 @@ private class FlatbufferNodeTranslator {
         builder.buildNonTerminal(SyntaxNodeKind.RefType, ret.toArray())
     }
 
+    private func transTypeElementWithOptionalLabel(type_: NodeFormat_Type, ret: ArrayList<SyntaxNodeImpl>,
+        innerCmts: Array<Option<NodeFormat_CommentGroup>>) {
+        if (let Some(db) <- type_.GetBase()) {
+            var startFromBegin = true
+            if (isValidPosition(db.GetColonPos()) && let Some(base) <- db.GetBase()) {
+                transIdentifier(base.GetBegin(), db.GetTypeParameterName())
+                transBasicTerminal(db.GetColonPos(), SyntaxNodeKind.ColonToken)
+                startFromBegin = false
+            }
+            transType(type_, startFromBegin: startFromBegin)
+            resetGlobalVariables(ret, innerCmts)
+            transBasicTerminal(db.GetCommaPos(), SyntaxNodeKind.CommaToken)
+        }
+    }
+
     private func transFuncType(ty: NodeFormat_FuncType): ?SyntaxNodeImpl {
         let ret = ArrayList<SyntaxNodeImpl>()
         addLeadCommentNodesToRet(ret)
@@ -838,16 +853,8 @@ private class FlatbufferNodeTranslator {
         transBasicTerminal(ty.GetLeftParenPos(), SyntaxNodeKind.LParenToken)
         let types = ty.GetParamTypes()
         for (t in types) {
-            if (let Some(type_) <- t && let Some(db) <- type_.GetBase()) {
-                var startFromBegin = true
-                if (isValidPosition(db.GetColonPos()) && let Some(base) <- db.GetBase()) {
-                    transIdentifier(base.GetBegin(), db.GetTypeParameterName())
-                    transBasicTerminal(db.GetColonPos(), SyntaxNodeKind.ColonToken)
-                    startFromBegin = false
-                }
-                transType(type_, startFromBegin: startFromBegin)
-                resetGlobalVariables(ret, innerCmts)
-                transBasicTerminal(db.GetCommaPos(), SyntaxNodeKind.CommaToken)
+            if (let Some(type_) <- t) {
+                transTypeElementWithOptionalLabel(type_, ret, innerCmts)
             }
         }
         resetGlobalVariables(ret, innerCmts)
@@ -898,17 +905,8 @@ private class FlatbufferNodeTranslator {
         transBasicTerminal(ty.GetLeftParenPos(), SyntaxNodeKind.LParenToken)
         let types = ty.GetFieldTypes()
         for (t in 0..types.size) {
-            if (let Some(type_) <- types[t] && let Some(db) <- type_.GetBase()) {
-                var startFromBegin = true
-                if (isValidPosition(db.GetColonPos()) && let Some(base) <- db.GetBase()) {
-                    transIdentifier(base.GetBegin(), db.GetTypeParameterName())
-                    transBasicTerminal(db.GetColonPos(), SyntaxNodeKind.ColonToken)
-                    startFromBegin = false
-                }
-                transType(type_, startFromBegin: startFromBegin)
-                resetGlobalVariables(ret, innerCmts)
-
-                transBasicTerminal(db.GetCommaPos(), SyntaxNodeKind.CommaToken)
+            if (let Some(type_) <- types[t]) {
+                transTypeElementWithOptionalLabel(type_, ret, innerCmts)
             }
         }
         resetGlobalVariables(ret, innerCmts)
