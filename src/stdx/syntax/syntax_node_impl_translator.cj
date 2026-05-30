@@ -939,6 +939,25 @@ class SyntaxNodeImplTranslator {
         return (kind, funcKindKeyWordPos, operatorFlag)
     }
 
+    private func consumeParamsAndRetTyAnnotation(lp: LocalParser, startPos: CodePosition) {
+        var paramNode = lp.consume()
+        let paramsPropInfo = PropInfo(lp.cur - 1, lp.offset)
+        lp.offset.move(paramNode?.offset)
+
+        var retTyAnnotationPropInfo: Option<PropInfo> = None
+        var retTyAnnotationColonPos: Option<CodePosition> = None
+        if (let Some(v) <- lp.lookAndConsume(SyntaxNodeKind.ColonToken)) {
+            retTyAnnotationColonPos = startPos + lp.offset
+            lp.offset.move(v.offset)
+
+            var tyAnnoNode = lp.consume()
+            retTyAnnotationPropInfo = PropInfo(lp.cur - 1, lp.offset)
+            lp.offset.move(tyAnnoNode?.offset)
+        }
+
+        return (paramsPropInfo, retTyAnnotationPropInfo, retTyAnnotationColonPos)
+    }
+
     private func transFuncDecl(node: NonTerminal, startPos: CodePosition, parent: ?SyntaxTreeNode): FuncDecl {
         // BNF: anno? modifier? (FUNC？ IDENT | INIT | ~INIT)  typeParams? funcParams (COLON type)? genericConstraints? block?
         let lp = LocalParser(node.children)
@@ -1111,20 +1130,8 @@ class SyntaxNodeImplTranslator {
             lp.offset.move(v.offset)
         }
 
-        var paramNode = lp.consume()
-        let paramsPropInfo = PropInfo(lp.cur - 1, lp.offset)
-        lp.offset.move(paramNode?.offset)
-
-        var retTyAnnotationPropInfo: Option<PropInfo> = None
-        var retTyAnnotationColonPos: Option<CodePosition> = None
-        if (let Some(v) <- lp.lookAndConsume(SyntaxNodeKind.ColonToken)) {
-            retTyAnnotationColonPos = startPos + lp.offset
-            lp.offset.move(v.offset)
-
-            var tyAnnoNode = lp.consume()
-            retTyAnnotationPropInfo = PropInfo(lp.cur - 1, lp.offset)
-            lp.offset.move(tyAnnoNode?.offset)
-        }
+        let (paramsPropInfo, retTyAnnotationPropInfo, retTyAnnotationColonPos) = consumeParamsAndRetTyAnnotation(lp,
+            startPos)
 
         var blockNode = lp.consume()
         let blockPropInfo = PropInfo(lp.cur - 1, lp.offset)
@@ -1823,20 +1830,8 @@ class SyntaxNodeImplTranslator {
             lp.offset.move(v.offset)
         }
 
-        var paramNode = lp.consume()
-        let paramsPropInfo = PropInfo(lp.cur - 1, lp.offset)
-        lp.offset.move(paramNode?.offset)
-
-        var retTyAnnotationPropInfo: Option<PropInfo> = None
-        var retTyAnnotationColonPos: Option<CodePosition> = None
-        if (let Some(v) <- lp.lookAndConsume(SyntaxNodeKind.ColonToken)) {
-            retTyAnnotationColonPos = startPos + lp.offset
-            lp.offset.move(v.offset)
-
-            var tyAnnoNode = lp.consume()
-            retTyAnnotationPropInfo = PropInfo(lp.cur - 1, lp.offset)
-            lp.offset.move(tyAnnoNode?.offset)
-        }
+        let (paramsPropInfo, retTyAnnotationPropInfo, retTyAnnotationColonPos) = consumeParamsAndRetTyAnnotation(lp,
+            startPos)
 
         var bodyPropInfo = PropInfo()
         if (let Some(v) <- lp.consume(kind: SyntaxNodeKind.Block)) {
