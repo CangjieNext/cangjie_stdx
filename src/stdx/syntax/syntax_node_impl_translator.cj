@@ -958,6 +958,28 @@ class SyntaxNodeImplTranslator {
         return (paramsPropInfo, retTyAnnotationPropInfo, retTyAnnotationColonPos)
     }
 
+    private func consumeNamedGenericDeclHead(lp: LocalParser, startPos: CodePosition) {
+        var (name, identifierPos) = ("", CodePosition())
+        if (let Some(v) <- lp.lookAndConsume(SyntaxNodeKind.IdentToken)) {
+            name = getValue(v)
+            identifierPos = startPos + lp.offset
+            lp.offset.move(v.offset)
+        }
+
+        var genericParamsPropInfo: ?PropInfo = None
+        var genericParamsCommasPos = Array<CodePosition>()
+        var (genericParamsLAnglePos, genericParamsRAnglePos): (Option<CodePosition>, Option<CodePosition>) = (None, None)
+        if (let Some(v) <- lp.lookAndConsume(SyntaxNodeKind.TypeArguments)) {
+            genericParamsPropInfo = PropInfo(lp.cur - 1, lp.offset)
+            (genericParamsLAnglePos, genericParamsCommasPos, genericParamsRAnglePos) = transGenericParams(v,
+                startPos + lp.offset)
+            lp.moveOffset(v)
+        }
+
+        return (name, identifierPos, genericParamsPropInfo, genericParamsLAnglePos, genericParamsCommasPos,
+            genericParamsRAnglePos)
+    }
+
     private func transFuncDecl(node: NonTerminal, startPos: CodePosition, parent: ?SyntaxTreeNode): FuncDecl {
         // BNF: anno? modifier? (FUNC？ IDENT | INIT | ~INIT)  typeParams? funcParams (COLON type)? genericConstraints? block?
         let lp = LocalParser(node.children)
@@ -1243,21 +1265,8 @@ class SyntaxNodeImplTranslator {
         let classKeyWordPos = startPos + lp.offset
         lp.offset.move(classNode?.offset)
 
-        var (name, identifierPos) = ("", CodePosition())
-        if (let Some(v) <- lp.lookAndConsume(SyntaxNodeKind.IdentToken)) {
-            name = getValue(v)
-            identifierPos = startPos + lp.offset
-            lp.offset.move(v.offset)
-        }
-        var genericParamsPropInfo: ?PropInfo = None
-        var genericParamsCommasPos = Array<CodePosition>()
-        var (genericParamsLAnglePos, genericParamsRAnglePos): (Option<CodePosition>, Option<CodePosition>) = (None, None)
-        if (let Some(v) <- lp.lookAndConsume(SyntaxNodeKind.TypeArguments)) {
-            genericParamsPropInfo = PropInfo(lp.cur - 1, lp.offset)
-            (genericParamsLAnglePos, genericParamsCommasPos, genericParamsRAnglePos) = transGenericParams(v,
-                startPos + lp.offset)
-            lp.moveOffset(v)
-        }
+        let (name, identifierPos, genericParamsPropInfo, genericParamsLAnglePos, genericParamsCommasPos,
+            genericParamsRAnglePos) = consumeNamedGenericDeclHead(lp, startPos)
         var upperBoundPos: Option<CodePosition> = None
         var (superTyAnnotationsPropInfo, superTyAnnotationsBitAndPos) = (ArrayList<PropInfo>(), ArrayList<CodePosition>())
         if (let Some(v) <- lp.lookAndConsume(SyntaxNodeKind.UpperBoundToken)) {
@@ -1487,21 +1496,8 @@ class SyntaxNodeImplTranslator {
         let structKeyWordPos = startPos + lp.offset
         lp.offset.move(structNode?.offset)
 
-        var (name, identifierPos) = ("", CodePosition())
-        if (let Some(v) <- lp.lookAndConsume(SyntaxNodeKind.IdentToken)) {
-            name = getValue(v)
-            identifierPos = startPos + lp.offset
-            lp.offset.move(v.offset)
-        }
-        var genericParamsPropInfo: ?PropInfo = None
-        var genericParamsCommasPos = Array<CodePosition>()
-        var (genericParamsLAnglePos, genericParamsRAnglePos): (Option<CodePosition>, Option<CodePosition>) = (None, None)
-        if (let Some(v) <- lp.lookAndConsume(SyntaxNodeKind.TypeArguments)) {
-            genericParamsPropInfo = PropInfo(lp.cur - 1, lp.offset)
-            (genericParamsLAnglePos, genericParamsCommasPos, genericParamsRAnglePos) = transGenericParams(v,
-                startPos + lp.offset)
-            lp.moveOffset(v)
-        }
+        let (name, identifierPos, genericParamsPropInfo, genericParamsLAnglePos, genericParamsCommasPos,
+            genericParamsRAnglePos) = consumeNamedGenericDeclHead(lp, startPos)
         var upperBoundPos: Option<CodePosition> = None
         var (superTyAnnotationsPropInfo, superTyAnnotationsBitAndPos) = (ArrayList<PropInfo>(), ArrayList<CodePosition>())
         if (let Some(v) <- lp.lookAndConsume(SyntaxNodeKind.UpperBoundToken)) {
@@ -1554,21 +1550,8 @@ class SyntaxNodeImplTranslator {
         let interfaceKeyWordPos = startPos + lp.offset
         lp.offset.move(interfaceNode?.offset)
 
-        var (name, identifierPos) = ("", CodePosition())
-        if (let Some(v) <- lp.lookAndConsume(SyntaxNodeKind.IdentToken)) {
-            name = getValue(v)
-            identifierPos = startPos + lp.offset
-            lp.offset.move(v.offset)
-        }
-        var genericParamsPropInfo: ?PropInfo = None
-        var genericParamsCommasPos = Array<CodePosition>()
-        var (genericParamsLAnglePos, genericParamsRAnglePos): (Option<CodePosition>, Option<CodePosition>) = (None, None)
-        if (let Some(v) <- lp.lookAndConsume(SyntaxNodeKind.TypeArguments)) {
-            genericParamsPropInfo = PropInfo(lp.cur - 1, lp.offset)
-            (genericParamsLAnglePos, genericParamsCommasPos, genericParamsRAnglePos) = transGenericParams(v,
-                startPos + lp.offset)
-            lp.moveOffset(v)
-        }
+        let (name, identifierPos, genericParamsPropInfo, genericParamsLAnglePos, genericParamsCommasPos,
+            genericParamsRAnglePos) = consumeNamedGenericDeclHead(lp, startPos)
         var upperBoundPos: Option<CodePosition> = None
         var (superTyAnnotationsPropInfo, superTyAnnotationsBitAndPos) = (ArrayList<PropInfo>(), ArrayList<CodePosition>())
         if (let Some(v) <- lp.lookAndConsume(SyntaxNodeKind.UpperBoundToken)) {
@@ -1694,21 +1677,8 @@ class SyntaxNodeImplTranslator {
         let enumKeyWordPos = startPos + lp.offset
         lp.offset.move(enumNode?.offset)
 
-        var (name, identifierPos) = ("", CodePosition())
-        if (let Some(v) <- lp.lookAndConsume(SyntaxNodeKind.IdentToken)) {
-            name = getValue(v)
-            identifierPos = startPos + lp.offset
-            lp.offset.move(v.offset)
-        }
-        var genericParamsPropInfo: ?PropInfo = None
-        var genericParamsCommasPos = Array<CodePosition>()
-        var (genericParamsLAnglePos, genericParamsRAnglePos): (Option<CodePosition>, Option<CodePosition>) = (None, None)
-        if (let Some(v) <- lp.lookAndConsume(SyntaxNodeKind.TypeArguments)) {
-            genericParamsPropInfo = PropInfo(lp.cur - 1, lp.offset)
-            (genericParamsLAnglePos, genericParamsCommasPos, genericParamsRAnglePos) = transGenericParams(v,
-                startPos + lp.offset)
-            lp.moveOffset(v)
-        }
+        let (name, identifierPos, genericParamsPropInfo, genericParamsLAnglePos, genericParamsCommasPos,
+            genericParamsRAnglePos) = consumeNamedGenericDeclHead(lp, startPos)
         var upperBoundPos: Option<CodePosition> = None
         var (superTyAnnotationsPropInfo, superTyAnnotationsBitAndPos) = (ArrayList<PropInfo>(), ArrayList<CodePosition>())
         if (let Some(v) <- lp.lookAndConsume(SyntaxNodeKind.UpperBoundToken)) {
