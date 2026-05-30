@@ -1108,6 +1108,24 @@ class SyntaxNodeImplTranslator {
         return (conditionPropInfo, lParenPos, rParenPos)
     }
 
+    private func consumeLabeledTypeAfterComma(lp: LocalParser, startPos: CodePosition, labels: ArrayList<String>,
+        labelsPos: ArrayList<CodePosition>, colonPos: ArrayList<CodePosition>, commaPos: ArrayList<CodePosition>) {
+        var curNode = lp.consume(kind: SyntaxNodeKind.CommaToken)
+        commaPos.add(startPos + lp.offset)
+        lp.moveOffset(curNode)
+
+        if (let Some(v) <- lp.lookAndConsume(SyntaxNodeKind.IdentToken)) {
+            labels.add(getValue(v))
+            labelsPos.add(startPos + lp.offset)
+            lp.moveOffset(v)
+
+            curNode = lp.consume(kind: SyntaxNodeKind.ColonToken)
+            colonPos.add(startPos + lp.offset)
+            lp.moveOffset(curNode)
+        }
+        lp.moveOffset(lp.consume())
+    }
+
     private func transFuncDecl(node: NonTerminal, startPos: CodePosition, parent: ?SyntaxTreeNode): FuncDecl {
         // BNF: anno? modifier? (FUNC？ IDENT | INIT | ~INIT)  typeParams? funcParams (COLON type)? genericConstraints? block?
         let lp = LocalParser(node.children)
@@ -3541,20 +3559,7 @@ class SyntaxNodeImplTranslator {
         elementsPropInfo = PropInfo(lp.cur - 1, lp.offset)
         lp.moveOffset(curNode)
         while (lp.look(SyntaxNodeKind.CommaToken)) {
-            curNode = lp.consume(kind: SyntaxNodeKind.CommaToken)
-            commaPos.add(startPos + lp.offset)
-            lp.moveOffset(curNode)
-
-            if (let Some(v) <- lp.lookAndConsume(SyntaxNodeKind.IdentToken)) {
-                labels.add(getValue(v))
-                labelsPos.add(startPos + lp.offset)
-                lp.moveOffset(v)
-
-                curNode = lp.consume(kind: SyntaxNodeKind.ColonToken)
-                colonPos.add(startPos + lp.offset)
-                lp.moveOffset(curNode)
-            }
-            lp.moveOffset(lp.consume())
+            consumeLabeledTypeAfterComma(lp, startPos, labels, labelsPos, colonPos, commaPos)
         }
 
         curNode = lp.consume(kind: SyntaxNodeKind.RParenToken)
@@ -3595,19 +3600,7 @@ class SyntaxNodeImplTranslator {
             lp.moveOffset(curNode)
         }
         while (lp.look(SyntaxNodeKind.CommaToken)) {
-            curNode = lp.consume(kind: SyntaxNodeKind.CommaToken)
-            commaPos.add(startPos + lp.offset)
-            lp.moveOffset(curNode)
-            if (let Some(v) <- lp.lookAndConsume(SyntaxNodeKind.IdentToken)) {
-                labels.add(getValue(v))
-                labelsPos.add(startPos + lp.offset)
-                lp.moveOffset(v)
-
-                curNode = lp.consume(kind: SyntaxNodeKind.ColonToken)
-                colonPos.add(startPos + lp.offset)
-                lp.moveOffset(curNode)
-            }
-            lp.moveOffset(lp.consume())
+            consumeLabeledTypeAfterComma(lp, startPos, labels, labelsPos, colonPos, commaPos)
         }
 
         curNode = lp.consume(kind: SyntaxNodeKind.RParenToken)
