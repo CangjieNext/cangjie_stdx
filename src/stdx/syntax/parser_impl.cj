@@ -1531,6 +1531,23 @@ private class FlatbufferNodeTranslator {
         resetGlobalVariables(ret, innerCmts)
     }
 
+    private func transDeclAnnotationsAndModifiers(db: NodeFormat_DeclBase, ret: ArrayList<SyntaxNodeImpl>,
+        innerCmts: Array<Option<NodeFormat_CommentGroup>>) {
+        let annos = db.GetAnnotations()
+        if (annos.size != 0) {
+            addChild(ret, transAnnotations(annos))
+        } else {
+            addWhitespaceAndMoveCursorToBegin(db.GetBase())
+        }
+        resetGlobalVariables(ret, innerCmts)
+
+        let modifiers = db.GetModifiers()
+        if (modifiers.size != 0) {
+            addChild(ret, transModifiers(modifiers))
+            resetGlobalVariables(ret, innerCmts)
+        }
+    }
+
     private func transVarDecl(varDecl: NodeFormat_VarDecl, preChildren: Array<SyntaxNodeImpl>): ?SyntaxNodeImpl {
         let (ret, innerCmts, trailCmts) = prepareVarDeclPrefix(varDecl.GetBase())
 
@@ -1717,20 +1734,7 @@ private class FlatbufferNodeTranslator {
         innerComments = innerCmts
 
         if (let Some(db) <- primaryCtorDecl.GetBase()) {
-            // annotation
-            let annos = db.GetAnnotations()
-            if (annos.size != 0) {
-                addChild(ret, transAnnotations(db.GetAnnotations()))
-            } else {
-                addWhitespaceAndMoveCursorToBegin(db.GetBase())
-            }
-            resetGlobalVariables(ret, innerCmts)
-            // modifier
-            let modifiers = db.GetModifiers()
-            if (modifiers.size != 0) {
-                addChild(ret, transModifiers(modifiers))
-                resetGlobalVariables(ret, innerCmts)
-            }
+            transDeclAnnotationsAndModifiers(db, ret, innerCmts)
 
             // identifier
             transIdentifier(db.GetIdentifierPos(), db.GetIdentifier())
@@ -1900,20 +1904,7 @@ private class FlatbufferNodeTranslator {
         innerComments = innerCmts
 
         if (let Some(db) <- interfaceDecl.GetBase()) {
-            // annotation
-            let annos = db.GetAnnotations()
-            if (annos.size != 0) {
-                addChild(ret, transAnnotations(db.GetAnnotations()))
-            } else {
-                addWhitespaceAndMoveCursorToBegin(db.GetBase())
-            }
-            resetGlobalVariables(ret, innerCmts)
-            // modifier
-            let modifiers = db.GetModifiers()
-            if (modifiers.size != 0) {
-                addChild(ret, transModifiers(modifiers))
-                resetGlobalVariables(ret, innerCmts)
-            }
+            transDeclAnnotationsAndModifiers(db, ret, innerCmts)
             // func
             transBasicTerminal(db.GetKeywordPos(), SyntaxNodeKind.InterfaceToken)
             transDeclIdentifierAndTypeParams(db, ret, innerCmts)
@@ -1964,20 +1955,7 @@ private class FlatbufferNodeTranslator {
         innerComments = innerCmts
 
         if (let Some(db) <- extendDecl.GetBase()) {
-            // annotation
-            let annos = db.GetAnnotations()
-            if (annos.size != 0) {
-                addChild(ret, transAnnotations(db.GetAnnotations()))
-            } else {
-                addWhitespaceAndMoveCursorToBegin(db.GetBase())
-            }
-            resetGlobalVariables(ret, innerCmts)
-            // modifier
-            let modifiers = db.GetModifiers()
-            if (modifiers.size != 0) {
-                addChild(ret, transModifiers(modifiers))
-                resetGlobalVariables(ret, innerCmts)
-            }
+            transDeclAnnotationsAndModifiers(db, ret, innerCmts)
             // extend
             transBasicTerminal(db.GetKeywordPos(), SyntaxNodeKind.ExtendToken)
 
@@ -2095,20 +2073,7 @@ private class FlatbufferNodeTranslator {
         innerComments = innerCmts
 
         if (let Some(db) <- enumDecl.GetBase()) {
-            // annotation
-            let annos = db.GetAnnotations()
-            if (annos.size != 0) {
-                addChild(ret, transAnnotations(db.GetAnnotations()))
-            } else {
-                addWhitespaceAndMoveCursorToBegin(db.GetBase())
-            }
-            resetGlobalVariables(ret, innerCmts)
-            // modifier
-            let modifiers = db.GetModifiers()
-            if (modifiers.size != 0) {
-                addChild(ret, transModifiers(modifiers))
-                resetGlobalVariables(ret, innerCmts)
-            }
+            transDeclAnnotationsAndModifiers(db, ret, innerCmts)
             // func
             transBasicTerminal(db.GetKeywordPos(), SyntaxNodeKind.EnumToken)
             transDeclIdentifierAndTypeParams(db, ret, innerCmts)
@@ -2166,20 +2131,7 @@ private class FlatbufferNodeTranslator {
                 isEnumConstructor: true)
         }
         if (let Some(db) <- enumConstructor.GetBase()) {
-            // annotation
-            let annos = db.GetAnnotations()
-            if (annos.size != 0) {
-                addChild(ret, transAnnotations(db.GetAnnotations()))
-            } else {
-                addWhitespaceAndMoveCursorToBegin(db.GetBase())
-            }
-            resetGlobalVariables(ret, innerCmts)
-            // modifier
-            let modifiers = db.GetModifiers()
-            if (modifiers.size != 0) {
-                addChild(ret, transModifiers(modifiers))
-                resetGlobalVariables(ret, innerCmts)
-            }
+            transDeclAnnotationsAndModifiers(db, ret, innerCmts)
 
             // identifier
             transIdentifier(db.GetIdentifierPos(), db.GetIdentifier())
@@ -2241,21 +2193,7 @@ private class FlatbufferNodeTranslator {
         innerComments = innerCmts
 
         if (let Some(varDecl) <- propDecl.GetBase() && let Some(db) <- varDecl.GetBase()) {
-            // annotation
-            let annos = db.GetAnnotations()
-            if (annos.size != 0) {
-                addChild(ret, transAnnotations(db.GetAnnotations()))
-            } else {
-                // The begin of FuncDecl is not begin of annotations
-                addWhitespaceAndMoveCursorToBegin(db.GetBase())
-            }
-            resetGlobalVariables(ret, innerCmts)
-            // modifier
-            let modifiers = db.GetModifiers()
-            if (modifiers.size != 0) {
-                addChild(ret, transModifiers(modifiers))
-                resetGlobalVariables(ret, innerCmts)
-            }
+            transDeclAnnotationsAndModifiers(db, ret, innerCmts)
             // prop
             transBasicTerminal(db.GetKeywordPos(), SyntaxNodeKind.PropToken)
             // identifier
@@ -2301,20 +2239,7 @@ private class FlatbufferNodeTranslator {
         innerComments = innerCmts
 
         if (let Some(db) <- macroDecl.GetBase()) {
-            // annotation
-            let annos = db.GetAnnotations()
-            if (annos.size != 0) {
-                addChild(ret, transAnnotations(db.GetAnnotations()))
-            } else {
-                addWhitespaceAndMoveCursorToBegin(db.GetBase())
-            }
-            resetGlobalVariables(ret, innerCmts)
-            // modifier
-            let modifiers = db.GetModifiers()
-            if (modifiers.size != 0) {
-                addChild(ret, transModifiers(modifiers))
-                resetGlobalVariables(ret, innerCmts)
-            }
+            transDeclAnnotationsAndModifiers(db, ret, innerCmts)
             transBasicTerminal(db.GetKeywordPos(), SyntaxNodeKind.MacroToken)
             // identifier
             transIdentifier(db.GetIdentifierPos(), db.GetIdentifier())
@@ -2498,20 +2423,7 @@ private class FlatbufferNodeTranslator {
         innerComments = innerCmts
 
         if (let Some(db) <- macroExpandDecl.GetBase()) {
-            // annotation
-            let annos = db.GetAnnotations()
-            if (annos.size != 0) {
-                addChild(ret, transAnnotations(db.GetAnnotations()))
-            } else {
-                addWhitespaceAndMoveCursorToBegin(db.GetBase())
-            }
-            resetGlobalVariables(ret, innerCmts)
-            // modifier
-            let modifiers = db.GetModifiers()
-            if (modifiers.size != 0) {
-                addChild(ret, transModifiers(modifiers))
-                resetGlobalVariables(ret, innerCmts)
-            }
+            transDeclAnnotationsAndModifiers(db, ret, innerCmts)
         }
 
         if (let Some(invocation) <- macroExpandDecl.GetInvocation()) {
@@ -2569,20 +2481,7 @@ private class FlatbufferNodeTranslator {
 
         if (let Some(funcParam) <- macroExpandParam.GetBase() && let Some(varDecl) <- funcParam.GetBase() && let Some(db) <- varDecl
             .GetBase()) {
-            // annotation
-            let annos = db.GetAnnotations()
-            if (annos.size != 0) {
-                addChild(ret, transAnnotations(db.GetAnnotations()))
-            } else {
-                addWhitespaceAndMoveCursorToBegin(db.GetBase())
-            }
-            resetGlobalVariables(ret, innerCmts)
-            // modifier
-            let modifiers = db.GetModifiers()
-            if (modifiers.size != 0) {
-                addChild(ret, transModifiers(modifiers))
-                resetGlobalVariables(ret, innerCmts)
-            }
+            transDeclAnnotationsAndModifiers(db, ret, innerCmts)
         }
 
         if (let Some(invocation) <- macroExpandParam.GetInvocation()) {
@@ -3030,21 +2929,7 @@ private class FlatbufferNodeTranslator {
 
         if (let Some(vb) <- param.GetBase()) {
             if (let Some(db) <- vb.GetBase()) {
-                // annotation
-                let annos = db.GetAnnotations()
-                if (annos.size != 0) {
-                    addChild(ret, transAnnotations(db.GetAnnotations()))
-                } else {
-                    // The begin of FuncDecl is not begin of annotations
-                    addWhitespaceAndMoveCursorToBegin(db.GetBase())
-                }
-                resetGlobalVariables(ret, innerCmts)
-                // modifier
-                let modifiers = db.GetModifiers()
-                if (modifiers.size != 0) {
-                    addChild(ret, transModifiers(modifiers))
-                    resetGlobalVariables(ret, innerCmts)
-                }
+                transDeclAnnotationsAndModifiers(db, ret, innerCmts)
                 if (param.GetHasLetOrVar() && vb.GetIsVar()) {
                     transBasicTerminal(db.GetKeywordPos(), SyntaxNodeKind.VarToken)
                 } else if (param.GetHasLetOrVar()) {
