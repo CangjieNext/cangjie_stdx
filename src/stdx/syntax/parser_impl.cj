@@ -2286,6 +2286,29 @@ private class FlatbufferNodeTranslator {
         builder.buildNonTerminal(SyntaxNodeKind.RefExpr, ret.toArray())
     }
 
+    private func transMacroInvocationCalleeAttrsAndParenArgs(invocation: NodeFormat_MacroInvocation,
+        ret: ArrayList<SyntaxNodeImpl>, innerCmts: Array<Option<NodeFormat_CommentGroup>>): Bool {
+        addChild(ret, transSymbolRef4Invocation(invocation))
+        resetGlobalVariables(ret, innerCmts)
+
+        transBasicTerminal(invocation.GetLeftSquarePos(), SyntaxNodeKind.LSquareToken)
+
+        addChild(ret, transTokenList(invocation.GetAttrs()))
+        resetGlobalVariables(ret, innerCmts)
+        transBasicTerminal(invocation.GetRightSquarePos(), SyntaxNodeKind.RSquareToken)
+
+        if (invocation.GetHasParenthesis()) {
+            transBasicTerminal(invocation.GetLeftParenPos(), SyntaxNodeKind.LParenToken)
+
+            addChild(ret, transTokenList(invocation.GetArgs()))
+            resetGlobalVariables(ret, innerCmts)
+
+            transBasicTerminal(invocation.GetRightParenPos(), SyntaxNodeKind.RParenToken)
+            return true
+        }
+        return false
+    }
+
     private func createArgumentTokens(invocation: NodeFormat_MacroInvocation) {
         var argTokens = Tokens()
         var position = invocation.GetAtPos()
@@ -2421,29 +2444,16 @@ private class FlatbufferNodeTranslator {
         if (let Some(invocation) <- macroExpandDecl.GetInvocation()) {
             transBasicTerminal(invocation.GetAtPos(), SyntaxNodeKind.AtToken)
 
-            addChild(ret, transSymbolRef4Invocation(invocation))
-            resetGlobalVariables(ret, innerCmts)
-
-            transBasicTerminal(invocation.GetLeftSquarePos(), SyntaxNodeKind.LSquareToken)
-
-            addChild(ret, transTokenList(invocation.GetAttrs()))
-            resetGlobalVariables(ret, innerCmts)
-            transBasicTerminal(invocation.GetRightSquarePos(), SyntaxNodeKind.RSquareToken)
-
-            if (invocation.GetHasParenthesis()) {
-                transBasicTerminal(invocation.GetLeftParenPos(), SyntaxNodeKind.LParenToken)
-
-                addChild(ret, transTokenList(invocation.GetArgs()))
-                resetGlobalVariables(ret, innerCmts)
-
-                transBasicTerminal(invocation.GetRightParenPos(), SyntaxNodeKind.RParenToken)
-            } else if (let Some(dl) <- invocation.GetDecl()) {
-                if (isEnumConstructor) {
-                    addChild(ret, transEnumConstructor(dl))
-                } else {
-                    addChild(ret, transDecl(dl))
+            let hasParenthesizedArgs = transMacroInvocationCalleeAttrsAndParenArgs(invocation, ret, innerCmts)
+            if (!hasParenthesizedArgs) {
+                if (let Some(dl) <- invocation.GetDecl()) {
+                    if (isEnumConstructor) {
+                        addChild(ret, transEnumConstructor(dl))
+                    } else {
+                        addChild(ret, transDecl(dl))
+                    }
+                    resetGlobalVariables(ret, innerCmts)
                 }
-                resetGlobalVariables(ret, innerCmts)
             }
         }
         if (trailCmts.size > 0) {
@@ -2480,24 +2490,8 @@ private class FlatbufferNodeTranslator {
             transBasicTerminal(invocation.GetAtPos(), SyntaxNodeKind.AtToken)
             resetGlobalVariables(ret, innerCmts)
 
-            addChild(ret, transSymbolRef4Invocation(invocation))
-            resetGlobalVariables(ret, innerCmts)
-
-            transBasicTerminal(invocation.GetLeftSquarePos(), SyntaxNodeKind.LSquareToken)
-
-            addChild(ret, transTokenList(invocation.GetAttrs()))
-            resetGlobalVariables(ret, innerCmts)
-
-            transBasicTerminal(invocation.GetRightSquarePos(), SyntaxNodeKind.RSquareToken)
-
-            if (invocation.GetHasParenthesis()) {
-                transBasicTerminal(invocation.GetLeftParenPos(), SyntaxNodeKind.LParenToken)
-
-                addChild(ret, transTokenList(invocation.GetArgs()))
-                resetGlobalVariables(ret, innerCmts)
-
-                transBasicTerminal(invocation.GetRightParenPos(), SyntaxNodeKind.RParenToken)
-            } else {
+            let hasParenthesizedArgs = transMacroInvocationCalleeAttrsAndParenArgs(invocation, ret, innerCmts)
+            if (!hasParenthesizedArgs) {
                 if (let Some(decl) <- invocation.GetDecl() && let Some(param) <- decl.GetDeclAsFuncParam()) {
                     addChild(ret, transFuncParam(param))
                     resetGlobalVariables(ret, innerCmts)
@@ -2526,26 +2520,12 @@ private class FlatbufferNodeTranslator {
             transBasicTerminal(invocation.GetAtPos(), SyntaxNodeKind.AtToken)
             resetGlobalVariables(ret, innerCmts)
 
-            addChild(ret, transSymbolRef4Invocation(invocation))
-            resetGlobalVariables(ret, innerCmts)
-
-            transBasicTerminal(invocation.GetLeftSquarePos(), SyntaxNodeKind.LSquareToken)
-
-            addChild(ret, transTokenList(invocation.GetAttrs()))
-            resetGlobalVariables(ret, innerCmts)
-
-            transBasicTerminal(invocation.GetRightSquarePos(), SyntaxNodeKind.RSquareToken)
-
-            if (invocation.GetHasParenthesis()) {
-                transBasicTerminal(invocation.GetLeftParenPos(), SyntaxNodeKind.LParenToken)
-
-                addChild(ret, transTokenList(invocation.GetArgs()))
-                resetGlobalVariables(ret, innerCmts)
-
-                transBasicTerminal(invocation.GetRightParenPos(), SyntaxNodeKind.RParenToken)
-            } else if (let Some(dl) <- invocation.GetDecl()) {
-                addChild(ret, transDecl(dl))
-                resetGlobalVariables(ret, innerCmts)
+            let hasParenthesizedArgs = transMacroInvocationCalleeAttrsAndParenArgs(invocation, ret, innerCmts)
+            if (!hasParenthesizedArgs) {
+                if (let Some(dl) <- invocation.GetDecl()) {
+                    addChild(ret, transDecl(dl))
+                    resetGlobalVariables(ret, innerCmts)
+                }
             }
         }
         if (trailCmts.size > 0) {
