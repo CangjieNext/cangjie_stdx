@@ -11,6 +11,14 @@ package stdx.syntax
 import std.collection.ArrayList
 import std.convert
 
+private func createTokenRanges(positions: Array<CodePosition>, kind: SyntaxNodeKind): Array<CodePositionRange> {
+    let ranges: ArrayList<CodePositionRange> = ArrayList<CodePositionRange>()
+    for (pos in positions) {
+        ranges.add(CodePositionRange(pos, pos + kind.size))
+    }
+    return ranges.toArray()
+}
+
 sealed abstract class TypeAnnotation <: SyntaxTreeNode {
     init(nodePos: CodePositionRange, nodeImpl: SyntaxNodeImpl, parentNode: ?SyntaxTreeNode,
         commentsPropInfo: Array<PropInfo>) {
@@ -254,12 +262,7 @@ public class FuncType <: TypeAnnotation {
      * @return Array of CodePositionRange objects representing the positions of commas.
      */
     public func getCommasPos(): Array<CodePositionRange> {
-        let commasPos: ArrayList<CodePositionRange> = ArrayList<CodePositionRange>()
-        for (pos in posInfos.commasPos) {
-            let endPos = pos + SyntaxNodeKind.CommaToken.size
-            commasPos.add(CodePositionRange(pos, endPos))
-        }
-        return commasPos.toArray()
+        return createTokenRanges(posInfos.commasPos, SyntaxNodeKind.CommaToken)
     }
 
     /**
@@ -664,12 +667,7 @@ public class TupleType <: TypeAnnotation {
      * @return An array of CodePositionRange objects representing the position ranges of commas.
      */
     public func getCommasPos(): Array<CodePositionRange> {
-        let commasPos: ArrayList<CodePositionRange> = ArrayList<CodePositionRange>()
-        for (pos in posInfos.commasPos) {
-            let endPos = pos + SyntaxNodeKind.CommaToken.size
-            commasPos.add(CodePositionRange(pos, endPos))
-        }
-        return commasPos.toArray()
+        return createTokenRanges(posInfos.commasPos, SyntaxNodeKind.CommaToken)
     }
 
     /**
