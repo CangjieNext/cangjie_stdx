@@ -151,6 +151,19 @@ class SyntaxNodeImplCreator {
         }
     }
 
+    private static func addGenericConstraints(builder: SyntaxNodeBuilder, ret: ArrayList<SyntaxNodeImpl>,
+        genericConstraints: Option<GenericConstraints>) {
+        if (let Some(constraints) <- genericConstraints) {
+            ret.add(builder.buildSpace(1))
+            ret.add(constraints.nodeImpl)
+        }
+    }
+
+    private static func addDeclBody(builder: SyntaxNodeBuilder, ret: ArrayList<SyntaxNodeImpl>, body: Body) {
+        ret.add(builder.buildSpace(1))
+        ret.add(body.nodeImpl)
+    }
+
     static func createAnnotationImpl(
         arguments: Array<Argument>,
         identifier: String,
@@ -377,13 +390,9 @@ class SyntaxNodeImplCreator {
 
         addSuperTyAnnotations(builder, ret, superTyAnnotations)
 
-        if (let Some(constraints) <- genericConstraints) {
-            ret.add(builder.buildSpace(1))
-            ret.add(constraints.nodeImpl)
-        }
+        addGenericConstraints(builder, ret, genericConstraints)
 
-        ret.add(builder.buildSpace(1))
-        ret.add(body.nodeImpl)
+        addDeclBody(builder, ret, body)
 
         builder.buildNonTerminal(SyntaxNodeKind.ClassDecl, ret.toArray())
     }
@@ -520,13 +529,9 @@ class SyntaxNodeImplCreator {
 
         addSuperTyAnnotations(builder, ret, superTyAnnotations)
 
-        if (let Some(constraints) <- genericConstraints) {
-            ret.add(builder.buildSpace(1))
-            ret.add(constraints.nodeImpl)
-        }
+        addGenericConstraints(builder, ret, genericConstraints)
 
-        ret.add(builder.buildSpace(1))
-        ret.add(body.nodeImpl)
+        addDeclBody(builder, ret, body)
 
         builder.buildNonTerminal(SyntaxNodeKind.StructDecl, ret.toArray())
     }
@@ -549,13 +554,9 @@ class SyntaxNodeImplCreator {
 
         addSuperTyAnnotations(builder, ret, superTyAnnotations)
 
-        if (let Some(constraints) <- genericConstraints) {
-            ret.add(builder.buildSpace(1))
-            ret.add(constraints.nodeImpl)
-        }
+        addGenericConstraints(builder, ret, genericConstraints)
 
-        ret.add(builder.buildSpace(1))
-        ret.add(body.nodeImpl)
+        addDeclBody(builder, ret, body)
 
         builder.buildNonTerminal(SyntaxNodeKind.InterfaceDecl, ret.toArray())
     }
@@ -610,10 +611,7 @@ class SyntaxNodeImplCreator {
 
         addSuperTyAnnotations(builder, ret, superTyAnnotations)
 
-        if (let Some(constraints) <- genericConstraints) {
-            ret.add(builder.buildSpace(1))
-            ret.add(constraints.nodeImpl)
-        }
+        addGenericConstraints(builder, ret, genericConstraints)
 
         ret.add(builder.buildSpace(1))
         ret.add(createEnumBody(body, constructors, isNonExhaustive))
@@ -688,13 +686,9 @@ class SyntaxNodeImplCreator {
 
         addSuperTyAnnotations(builder, ret, superTyAnnotations)
 
-        if (let Some(constraints) <- genericConstraints) {
-            ret.add(builder.buildSpace(1))
-            ret.add(constraints.nodeImpl)
-        }
+        addGenericConstraints(builder, ret, genericConstraints)
 
-        ret.add(builder.buildSpace(1))
-        ret.add(body.nodeImpl)
+        addDeclBody(builder, ret, body)
 
         builder.buildNonTerminal(SyntaxNodeKind.ExtendDecl, ret.toArray())
     }
