@@ -3567,21 +3567,46 @@ private class FlatbufferNodeTranslator {
         builder.buildNonTerminal(SyntaxNodeKind.MatchCaseBody, ret.toArray())
     }
 
-    private func transMatchCase(matchCase: NodeFormat_MatchCase): ?SyntaxNodeImpl {
-        // CASE NL* pattern (NL* BITOR NL* pattern)* NL* (WHERE NL* expression)? NL* DOUBLE_ARROW NL* expressionOrDeclaration (end+ expressionOrDeclaration?)*
-        addWhitespaceAndMoveCursorToBegin(matchCase.GetBase())
+    private func prepareMatchCasePrefix(base: Option<NodeFormat_NodeBase>) {
+        addWhitespaceAndMoveCursorToBegin(base)
         let ret = ArrayList<SyntaxNodeImpl>()
         addLeadCommentNodesToRet(ret)
         curChildren = ret
 
-        let nodeBase = matchCase.GetBase()
+        let nodeBase = base
         let (leadCmts, innerCmts, trailCmts) = getCommentGroups(nodeBase)
         addLeadingComments(nodeBase, ret, leadCmts)
         innerComments = innerCmts
 
-        if (let Some(db) <- matchCase.GetBase()) {
-            // case
+        if (let Some(db) <- base) {
             transBasicTerminal(db.GetBegin(), SyntaxNodeKind.CaseToken)
+        }
+        return (ret, innerCmts, trailCmts)
+    }
+
+    private func finishMatchCase(base: Option<NodeFormat_NodeBase>, arrowPos: NodeFormat_Position,
+        body: Option<NodeFormat_Block>, ret: ArrayList<SyntaxNodeImpl>,
+        innerCmts: Array<Option<NodeFormat_CommentGroup>>, trailCmts: Array<Option<NodeFormat_CommentGroup>>): ?SyntaxNodeImpl {
+        if (let Some(_) <- base) {
+            resetGlobalVariables(ret, innerCmts)
+            transBasicTerminal(arrowPos, SyntaxNodeKind.DoubleArrowToken)
+            if (let Some(block) <- body) {
+                addChild(ret, transMatchCaseBody(block))
+            }
+        }
+        if (trailCmts.size > 0) {
+            addChild(ret, transCommentGroupList(trailCmts))
+            resetGlobalVariables(ret, innerCmts)
+        }
+        innerComments = Array<Option<NodeFormat_CommentGroup>>()
+        builder.buildNonTerminal(SyntaxNodeKind.MatchCase, ret.toArray())
+    }
+
+    private func transMatchCase(matchCase: NodeFormat_MatchCase): ?SyntaxNodeImpl {
+        // CASE NL* pattern (NL* BITOR NL* pattern)* NL* (WHERE NL* expression)? NL* DOUBLE_ARROW NL* expressionOrDeclaration (end+ expressionOrDeclaration?)*
+        let (ret, innerCmts, trailCmts) = prepareMatchCasePrefix(matchCase.GetBase())
+
+        if (let Some(db) <- matchCase.GetBase()) {
             let bitOrPos = matchCase.GetBitOrPosVec()
             let patterns = matchCase.GetPatterns()
             for (i in 0..patterns.size) {
@@ -3598,53 +3623,20 @@ private class FlatbufferNodeTranslator {
                 transBasicTerminal(matchCase.GetIfPos(), SyntaxNodeKind.WhereToken)
                 addChild(ret, transExpr(patGuard))
             }
-            resetGlobalVariables(ret, innerCmts)
-            // =>
-            transBasicTerminal(matchCase.GetArrowPos(), SyntaxNodeKind.DoubleArrowToken)
-            // body
-            if (let Some(block) <- matchCase.GetExprOrDecls()) {
-                addChild(ret, transMatchCaseBody(block))
-            }
         }
-        if (trailCmts.size > 0) {
-            addChild(ret, transCommentGroupList(trailCmts))
-            resetGlobalVariables(ret, innerCmts)
-        }
-        innerComments = Array<Option<NodeFormat_CommentGroup>>()
-        builder.buildNonTerminal(SyntaxNodeKind.MatchCase, ret.toArray())
+        finishMatchCase(matchCase.GetBase(), matchCase.GetArrowPos(), matchCase.GetExprOrDecls(), ret, innerCmts, trailCmts)
     }
 
     private func transMatchCaseOther(matchCase: NodeFormat_MatchCaseOther): ?SyntaxNodeImpl {
         // CASE NL* expression NL* DOUBLE_ARROW NL* expressionOrDeclaration (end+ expressionOrDeclaration?)*
-        addWhitespaceAndMoveCursorToBegin(matchCase.GetBase())
-        let ret = ArrayList<SyntaxNodeImpl>()
-        addLeadCommentNodesToRet(ret)
-        curChildren = ret
-        let nodeBase = matchCase.GetBase()
-        let (leadCmts, innerCmts, trailCmts) = getCommentGroups(nodeBase)
-        addLeadingComments(nodeBase, ret, leadCmts)
-        innerComments = innerCmts
+        let (ret, innerCmts, trailCmts) = prepareMatchCasePrefix(matchCase.GetBase())
 
         if (let Some(db) <- matchCase.GetBase()) {
-            // case
-            transBasicTerminal(db.GetBegin(), SyntaxNodeKind.CaseToken)
             if (let Some(caseExpr) <- matchCase.GetMatchExpr()) {
                 addChild(ret, transExpr(caseExpr))
             }
-            resetGlobalVariables(ret, innerCmts)
-            // =>
-            transBasicTerminal(matchCase.GetArrowPos(), SyntaxNodeKind.DoubleArrowToken)
-            // body
-            if (let Some(block) <- matchCase.GetExprOrDecls()) {
-                addChild(ret, transMatchCaseBody(block))
-            }
         }
-        if (trailCmts.size > 0) {
-            addChild(ret, transCommentGroupList(trailCmts))
-            resetGlobalVariables(ret, innerCmts)
-        }
-        innerComments = Array<Option<NodeFormat_CommentGroup>>()
-        builder.buildNonTerminal(SyntaxNodeKind.MatchCase, ret.toArray())
+        finishMatchCase(matchCase.GetBase(), matchCase.GetArrowPos(), matchCase.GetExprOrDecls(), ret, innerCmts, trailCmts)
     }
 
     private func transRefExpr(refExpr: NodeFormat_RefExpr, preChildren: Array<SyntaxNodeImpl>): ?SyntaxNodeImpl {
