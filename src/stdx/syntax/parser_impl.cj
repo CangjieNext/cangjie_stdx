@@ -768,44 +768,33 @@ private class FlatbufferNodeTranslator {
     }
 
     private func transPrimitiveTypeExpr(primitiveType: NodeFormat_PrimitiveTypeExpr): ?SyntaxNodeImpl {
-        let ret = ArrayList<SyntaxNodeImpl>()
-        addLeadCommentNodesToRet(ret)
-        curChildren = ret
-
-        let nodeBase = primitiveType.GetBase()
-        let (leadCmts, innerCmts, trailCmts) = getCommentGroups(nodeBase)
-        addLeadingComments(nodeBase, ret, leadCmts)
-        innerComments = innerCmts
-
-        let ty = getPrimitiveTypeKind(primitiveType.GetKind())
-        addChild(ret, builder.buildBasicTerminal(ty))
-        moveCursorColumn(col: Int32(ty.size))
-        if (trailCmts.size > 0) {
-            addChild(ret, transCommentGroupList(trailCmts))
-            resetGlobalVariables(ret, innerCmts)
-        }
-        innerComments = Array<Option<NodeFormat_CommentGroup>>()
-        builder.buildNonTerminal(SyntaxNodeKind.PrimitiveType, ret.toArray())
+        return transPrimitiveTypeNode(primitiveType.GetBase(), primitiveType.GetKind(), false)
     }
 
     private func transPrimitiveType(primitiveType: NodeFormat_PrimitiveType): ?SyntaxNodeImpl {
+        return transPrimitiveTypeNode(primitiveType.GetBase().getOrThrow().GetBase(), primitiveType.GetKind(), true)
+    }
+
+    private func transPrimitiveTypeNode(nodeBase: ?NodeFormat_NodeBase, primitiveKind: UInt16,
+        addPendingTrailComments: Bool): ?SyntaxNodeImpl {
         let ret = ArrayList<SyntaxNodeImpl>()
         addLeadCommentNodesToRet(ret)
         curChildren = ret
 
-        let nodeBase = primitiveType.GetBase().getOrThrow().GetBase()
         let (leadCmts, innerCmts, trailCmts) = getCommentGroups(nodeBase)
         addLeadingComments(nodeBase, ret, leadCmts)
         innerComments = innerCmts
 
-        let ty = getPrimitiveTypeKind(primitiveType.GetKind())
+        let ty = getPrimitiveTypeKind(primitiveKind)
         addChild(ret, builder.buildBasicTerminal(ty))
         moveCursorColumn(col: Int32(ty.size))
         if (trailCmts.size > 0) {
             addChild(ret, transCommentGroupList(trailCmts))
             resetGlobalVariables(ret, innerCmts)
         }
-        addTrailCommentNodesToRet(ret, innerCmts)
+        if (addPendingTrailComments) {
+            addTrailCommentNodesToRet(ret, innerCmts)
+        }
         innerComments = Array<Option<NodeFormat_CommentGroup>>()
         builder.buildNonTerminal(SyntaxNodeKind.PrimitiveType, ret.toArray())
     }
