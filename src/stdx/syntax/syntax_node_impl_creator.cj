@@ -1012,9 +1012,7 @@ class SyntaxNodeImplCreator {
                 builder.buildValuedTerminal(SyntaxNodeKind.IntegerLiteralToken, value))
             case LitConstKind.UnitLiteral =>
                 ret.add(builder.buildBasicTerminal(SyntaxNodeKind.LParenToken))
-                // size of (LParenToken + RParenToken)
-                let unitLiteralSize = 2
-                ret.add(builder.buildSpace(value.size - unitLiteralSize))
+                ret.add(builder.buildSpace(value.size - SyntaxNodeKind.LParenToken.size - SyntaxNodeKind.RParenToken.size))
                 ret.add(builder.buildBasicTerminal(SyntaxNodeKind.RParenToken))
                 return builder.buildNonTerminal(SyntaxNodeKind.UnitLiteral, ret.toArray())
             case _ => throw Exception("InitException: Invalid input 'kind' for 'LitConstExpr' init.")
