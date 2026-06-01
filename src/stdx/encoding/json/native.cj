@@ -31,9 +31,6 @@ foreign func strlen(str: CPointer<UInt8>): UIntNative
 foreign func CJ_JSON_StringEscapeCharNumGet(input: CPointer<UInt8>, inputlen: Int64, htmlSafe: Bool): Int64
 
 @FastNative
-foreign func CJ_JSON_ParseInt64(data: CPointer<UInt8>, start: Int64, end: Int64): Int64
-
-@FastNative
 foreign func CJ_JSON_ParseFloat64(data: CPointer<UInt8>, start: Int64, end: Int64): Float64
 
 /**
