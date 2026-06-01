@@ -201,12 +201,10 @@ private class NodeLoader {
         unsupportedNodeMessage: String): (CPointer<UInt8>, CPointer<UInt8>) {
         if (resPtr.isNull()) {
             throw Exception("the parsing result is empty.")
-            return (CPointer<UInt8>(), CPointer<UInt8>())
         }
         let res = resPtr.read()
         if (res.node.isNull() && res.errMsg.isNull()) {
             throw Exception(unsupportedNodeMessage)
-            return (CPointer<UInt8>(), CPointer<UInt8>())
         }
         return (res.node, res.errMsg)
     }

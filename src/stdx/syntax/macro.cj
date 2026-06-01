@@ -10,13 +10,9 @@ package stdx.syntax
 
 import std.collection.ArrayList
 
-private func createMacroTokenRange(pos: CodePosition, size: Int64): CodePositionRange {
-    return CodePositionRange(pos, pos + size)
-}
-
 private func createMacroOptionalTokenRange(pos: Option<CodePosition>, size: Int64): Option<CodePositionRange> {
     if (let Some(v) <- pos) {
-        return createMacroTokenRange(v, size)
+        return CodePositionRange(v, v + size)
     }
     return None
 }
@@ -87,7 +83,7 @@ public class MacroExpandDecl <: Decl {
      * @brief Get the position range of the 'at' token.
      */
     public func getAtPos(): CodePositionRange {
-        return createMacroTokenRange(posInfos.atPos, SyntaxNodeKind.AtToken.size)
+        return CodePositionRange(posInfos.atPos, posInfos.atPos + SyntaxNodeKind.AtToken.size)
     }
 
     /**
@@ -214,7 +210,7 @@ public class MacroExpandExpr <: Expr {
      * @brief Get the position range of the 'at' token.
      */
     public func getAtPos(): CodePositionRange {
-        return createMacroTokenRange(posInfos.atPos, SyntaxNodeKind.AtToken.size)
+        return CodePositionRange(posInfos.atPos, posInfos.atPos + SyntaxNodeKind.AtToken.size)
     }
 
     /**
@@ -356,7 +352,7 @@ public class MacroExpandParam <: Parameter {
      * @brief Get the position range of the 'at' token.
      */
     public func getAtPos(): CodePositionRange {
-        return createMacroTokenRange(posInfos.atPos, SyntaxNodeKind.AtToken.size)
+        return CodePositionRange(posInfos.atPos, posInfos.atPos + SyntaxNodeKind.AtToken.size)
     }
 
     /**
