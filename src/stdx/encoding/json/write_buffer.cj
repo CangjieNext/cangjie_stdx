@@ -307,6 +307,8 @@ func jsonWriteArray(json: JsonArray, buff: WriteBuffer, depth: Int64, bracketInN
     buff.append(b']')
 }
 
+// Keep container capacity estimation recomputed on each serialization. JsonArray and JsonObject expose
+// mutable backing collections, so a persistent cached capacity could become stale after external mutation.
 func estimateCapacityWithDepth(json: JsonValue, depth: Int64): Int64 {
     checkJsonWriteDepth(depth)
     match (json) {

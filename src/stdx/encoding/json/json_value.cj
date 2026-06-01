@@ -99,7 +99,8 @@ sealed abstract class JsonValue <: ToString {
     protected func calculateCapacity(): Int64
 
     /**
-     * Invalidate cached capacity when structure changes
+     * Capacity is not cached because JsonArray and JsonObject expose their mutable backing collections.
+     * External mutations through getItems(), getFields(), or constructor arguments cannot be tracked here.
      */
     protected func invalidateCapacity(): Unit {
         return
