@@ -389,6 +389,7 @@ function(add_cangjie_library target_name
     set(COMPILE_BC_CMD
         ${COMPILE_CMD}
         --lto=full
+        $<$<BOOL:${APPLE}>:--experimental>
         ${output_argument}
         ${output_lto_bc_full_name})
     set(COMPILE_CMD ${COMPILE_CMD} ${output_argument} ${output_full_name})
@@ -469,19 +470,18 @@ function(add_cangjie_library target_name
         set(bc_cangjie_path ${CMAKE_BINARY_DIR}/modules/${output_cj_lib_dir})
     endif()
     if(CANGJIE_CODEGEN_CJNATIVE_BACKEND
-       AND NOT WIN32
-       AND NOT DARWIN)
+       AND NOT WIN32)
         if(CMAKE_BUILD_STAGE STREQUAL "postBuild")
-            add_custom_target(	 
-                ${target_name}_bc ALL	 
-                COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_BINARY_DIR}/${output_bc_dir}	 
-                COMMAND ${CMAKE_COMMAND} -E env "CANGJIE_PATH=${bc_cangjie_path}" "LIBRARY_PATH=${CMAKE_BINARY_DIR}/lib"	 
-                        ${COMPILE_BC_CMD}	 
-                BYPRODUCTS ${output_lto_bc_full_name}	 
-                # The ${target_name}_bc depends on ${target_name} so they will not run simultaneously. <target> and <target>_bc 
-                # compile the same package, which means they may write the same bc cache file. Running simultaneously	 
-                # may cause IO error on windows in some cases.	 
-                DEPENDS ${bc_depends}	 
+            add_custom_target(
+                ${target_name}_bc ALL
+                COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_BINARY_DIR}/${output_bc_dir}
+                COMMAND ${CMAKE_COMMAND} -E env "CANGJIE_PATH=${bc_cangjie_path}" "LIBRARY_PATH=${CMAKE_BINARY_DIR}/lib"
+                        ${COMPILE_BC_CMD}
+                BYPRODUCTS ${output_lto_bc_full_name}
+                # The ${target_name}_bc depends on ${target_name} so they will not run simultaneously. <target> and <target>_bc
+                # compile the same package, which means they may write the same bc cache file. Running simultaneously
+                # may cause IO error on windows in some cases.
+                DEPENDS ${bc_depends}
                 COMMENT "Generating ${target_name}_bc")
         else()
             add_custom_command(
@@ -558,8 +558,7 @@ function(add_cangjie_library target_name
     endif()
 
     if(CANGJIE_CODEGEN_CJNATIVE_BACKEND
-       AND NOT WIN32
-       AND NOT DARWIN)
+       AND NOT WIN32)
         list(APPEND install_files ${output_lto_bc_full_name})
     endif()
     if(CANGJIE_CODEGEN_CJNATIVE_BACKEND)
