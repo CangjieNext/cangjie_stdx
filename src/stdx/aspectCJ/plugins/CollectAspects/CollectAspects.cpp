@@ -11,9 +11,15 @@
 #include "cangjie/CHIR/IR/Type/CustomTypeDef.h"
 #include "cangjie/Mangle/CHIRTypeManglingUtils.h"
 #include "cangjie/MetaTransformation/MetaTransform.h"
-#include "cangjie/Utils/Macros.h"
+#include "cangjie/Utils/CheckUtils.h"
 
 #include <fstream>
+
+#ifndef SUPPRESS_WARNING
+#define DIAG_DO_PRAGMA(x) _Pragma(#x)
+#define SUPPRESS_WARNING(w) DIAG_DO_PRAGMA(clang diagnostic push) DIAG_DO_PRAGMA(clang diagnostic ignored w)
+#define UNSUPPRESS_WARNING() DIAG_DO_PRAGMA(clang diagnostic pop)
+#endif
 
 using namespace Cangjie;
 
