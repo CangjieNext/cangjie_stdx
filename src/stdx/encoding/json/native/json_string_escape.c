@@ -6,7 +6,12 @@
  * See https://cangjie-lang.cn/pages/LICENSE for license information.
  */
 
+#include <math.h>
+#include <stdlib.h>
+#include <string.h>
+
 #include "json_string_escape.h"
+#include "securec.h"
 
 int64_t CJ_JSON_ReplaceEscapeChar(const uint8_t* input, int64_t inputlen, uint8_t* buffer, bool htmlSafe)
 {
@@ -150,4 +155,39 @@ int64_t CJ_JSON_StringEscapeCharNumGet(const uint8_t* input, int64_t strlen, boo
         }
     }
     return escapeCharacters;
+}
+
+double CJ_JSON_ParseFloat64(const uint8_t* data, int64_t start, int64_t end)
+{
+    if (start >= end) {
+        return 0.0;
+    }
+
+    // Create a null-terminated temporary buffer
+    int64_t len = end - start;
+    char stackTemp[512];
+    char* temp = stackTemp;
+
+    if (len >= (int64_t)sizeof(stackTemp)) {
+        if ((uint64_t)len >= SIZE_MAX) {
+            return HUGE_VAL;
+        }
+        temp = (char*)malloc((size_t)len + 1);
+        if (temp == NULL) {
+            return HUGE_VAL;
+        }
+    }
+
+    if (memcpy_s(temp, (size_t)len + 1, data + start, (size_t)len) != EOK) {
+        if (temp != stackTemp) {
+            free(temp);
+        }
+        return HUGE_VAL;
+    }
+    temp[len] = '\0';
+    double result = strtod(temp, NULL);
+    if (temp != stackTemp) {
+        free(temp);
+    }
+    return result;
 }

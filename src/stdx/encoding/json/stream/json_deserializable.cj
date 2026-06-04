@@ -15,6 +15,7 @@
 package stdx.encoding.json.stream
 
 import std.collection.*
+import std.collection.concurrent.ConcurrentHashMap
 
 public interface JsonDeserializable<T> {
     static func fromJson(r: JsonReader): T
@@ -33,7 +34,7 @@ extend Bool <: JsonDeserializable<Bool> {
 
 extend<T> Option<T> <: JsonDeserializable<Option<T>> where T <: JsonDeserializable<T> {
     public static func fromJson(r: JsonReader): Option<T> {
-        if (r.peeked == PEEK_STATE_NULL || r.nextNonJsonWhitespace() == b'n') {
+        if (r.peeked == PEEK_STATE_NULL || r.nextNonJsonWhitespace() == b'n') { // cjlint-ignore !G.EXP.03
             r.readNull()
             return None
         }
@@ -183,9 +184,15 @@ extend<T> ArrayList<T> <: JsonDeserializable<ArrayList<T>> where T <: JsonDeseri
     public static func fromJson(r: JsonReader): ArrayList<T> {
         let result = ArrayList<T>()
         r.startArray()
-        while (r.peek() != EndArray) {
-            result.add(T.fromJson(r))
-            r.afterRead()
+        if (r.peek() == EndArray) {
+            r.endArray()
+            return result
+        }
+        while (true) {
+            result.add(r.readValue<T>())
+            if (r.peeked == PEEK_STATE_ARRAY_END) {
+                break
+            }
         }
         r.endArray()
         return result
@@ -196,13 +203,173 @@ extend<T> HashMap<String, T> <: JsonDeserializable<HashMap<String, T>> where T <
     public static func fromJson(r: JsonReader): HashMap<String, T> {
         let result = HashMap<String, T>()
         r.startObject()
-        var key: String
-        var value: T
-        while (r.peek() != EndObject) {
-            key = (r.readName() as String).getOrThrow()
-            value = T.fromJson(r)
-            r.afterRead()
+        if (r.peek() == EndObject) {
+            r.endObject()
+            return result
+        }
+        while (true) {
+            let key = (r.readName() as String).getOrThrow()
+            let value = r.readValue<T>()
             result.add(key, value)
+            if (r.peeked == PEEK_STATE_OBJECT_END) {
+                break
+            }
+        }
+        r.endObject()
+        return result
+    }
+}
+
+extend<T> HashSet<T> <: JsonDeserializable<HashSet<T>> where T <: JsonDeserializable<T> {
+    public static func fromJson(r: JsonReader): HashSet<T> {
+        let result = HashSet<T>()
+        r.startArray()
+        if (r.peek() == EndArray) {
+            r.endArray()
+            return result
+        }
+        while (true) {
+            result.add(r.readValue<T>())
+            if (r.peeked == PEEK_STATE_ARRAY_END) {
+                break
+            }
+        }
+        r.endArray()
+        return result
+    }
+}
+
+extend<T> LinkedList<T> <: JsonDeserializable<LinkedList<T>> where T <: JsonDeserializable<T> {
+    public static func fromJson(r: JsonReader): LinkedList<T> {
+        let result = LinkedList<T>()
+        r.startArray()
+        if (r.peek() == EndArray) {
+            r.endArray()
+            return result
+        }
+        while (true) {
+            result.addLast(r.readValue<T>())
+            if (r.peeked == PEEK_STATE_ARRAY_END) {
+                break
+            }
+        }
+        r.endArray()
+        return result
+    }
+}
+
+extend<T> ArrayQueue<T> <: JsonDeserializable<ArrayQueue<T>> where T <: JsonDeserializable<T> {
+    public static func fromJson(r: JsonReader): ArrayQueue<T> {
+        let result = ArrayQueue<T>()
+        r.startArray()
+        if (r.peek() == EndArray) {
+            r.endArray()
+            return result
+        }
+        while (true) {
+            result.add(r.readValue<T>())
+            if (r.peeked == PEEK_STATE_ARRAY_END) {
+                break
+            }
+        }
+        r.endArray()
+        return result
+    }
+}
+
+extend<T> ArrayDeque<T> <: JsonDeserializable<ArrayDeque<T>> where T <: JsonDeserializable<T> {
+    public static func fromJson(r: JsonReader): ArrayDeque<T> {
+        let result = ArrayDeque<T>()
+        r.startArray()
+        if (r.peek() == EndArray) {
+            r.endArray()
+            return result
+        }
+        while (true) {
+            result.addLast(r.readValue<T>())
+            if (r.peeked == PEEK_STATE_ARRAY_END) {
+                break
+            }
+        }
+        r.endArray()
+        return result
+    }
+}
+
+extend<T> ArrayStack<T> <: JsonDeserializable<ArrayStack<T>> where T <: JsonDeserializable<T> {
+    public static func fromJson(r: JsonReader): ArrayStack<T> {
+        let result = ArrayStack<T>()
+        r.startArray()
+        if (r.peek() == EndArray) {
+            r.endArray()
+            return result
+        }
+        while (true) {
+            result.add(r.readValue<T>())
+            if (r.peeked == PEEK_STATE_ARRAY_END) {
+                break
+            }
+        }
+        r.endArray()
+        return result
+    }
+}
+
+extend<T> TreeSet<T> <: JsonDeserializable<TreeSet<T>> where T <: JsonDeserializable<T> {
+    public static func fromJson(r: JsonReader): TreeSet<T> {
+        let result = TreeSet<T>()
+        r.startArray()
+        if (r.peek() == EndArray) {
+            r.endArray()
+            return result
+        }
+        while (true) {
+            result.add(r.readValue<T>())
+            if (r.peeked == PEEK_STATE_ARRAY_END) {
+                break
+            }
+        }
+        r.endArray()
+        return result
+    }
+}
+
+extend<T> TreeMap<String, T> <: JsonDeserializable<TreeMap<String, T>> where T <: JsonDeserializable<T> {
+    public static func fromJson(r: JsonReader): TreeMap<String, T> {
+        let result = TreeMap<String, T>()
+        r.startObject()
+        if (r.peek() == EndObject) {
+            r.endObject()
+            return result
+        }
+        while (true) {
+            let key = (r.readName() as String).getOrThrow()
+            let value = r.readValue<T>()
+            result.add(key, value)
+            if (r.peeked == PEEK_STATE_OBJECT_END) {
+                break
+            }
+        }
+        r.endObject()
+        return result
+    }
+}
+
+extend<T> ConcurrentHashMap<String, T> <: JsonDeserializable<ConcurrentHashMap<String, T>> where T <: JsonDeserializable<T> {
+    public static func fromJson(r: JsonReader): ConcurrentHashMap<String, T> {
+        let result = ConcurrentHashMap<String, T>()
+        r.startObject()
+        if (r.peek() == EndObject) {
+            r.endObject()
+            return result
+        }
+        while (true) {
+            let key = (r.readName() as String).getOrThrow()
+            let value = r.readValue<T>()
+            result.add(key, value)
+            if (r.peeked == PEEK_STATE_OBJECT_END) {
+                break
+            }
         }
         r.endObject()
         return result
@@ -224,3 +391,7 @@ const HEXADECIMAL_OVERFLOW_LIMIT_UI64 = MAXVAL_UI64 / 16
 const OCTAL_OVERFLOW_LIMIT_UI64 = MAXVAL_UI64 / 8
 const BINARY_OVERFLOW_LIMIT_UI64 = MAXVAL_UI64 / 2
 const DECIMAL_OVERFLOW_LIMIT_UI64 = MAXVAL_UI64 / 10
+
+func isDecimalDigit(byte: Byte): Bool {
+    return byte >= b'0' && byte <= b'9'
+}

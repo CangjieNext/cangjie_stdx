@@ -83,6 +83,7 @@ make_cangjie_lib(
         std-convert
         std-sort
         std-math
+        std-sync
     OBJECTS ${output_cj_object_dir}/stdx/encoding.json.o
     FLAGS -lstdx.encoding.jsonFFI)
 get_target_property(JSONFFI_OBJS stdx.encoding.jsonFFI SOURCES)
@@ -99,6 +100,7 @@ make_cangjie_lib(
     CANGJIE_STD_LIB_LINK
         std-core
         std-collection
+        std-collection.concurrent
         std-io
         std-math.numeric
         std-math
