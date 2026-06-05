@@ -1,16 +1,17 @@
 # 类
 
-## class Annotation
+## class CustomAnnoInstance
 
 ```cangjie
-public class Annotation <: ToString
+public class CustomAnnoInstance <: ToString & Equatable<CustomAnnoInstance>
 ```
 
-功能：表示 CHIR 中**一处**注解实例，对应源码形态 `@ClassName[k1=v1, k2=v2]`：保存注解类名及参数字段名到字符串值的映射。
+功能：自定义注解实例，表示一条 `@Anno[...]` 注解的具体参数值与位置信息。
 
 父类型：
 
 - ToString
+- Equatable\<CustomAnnoInstance>
 
 ### prop classSrcCodeName
 
@@ -18,27 +19,23 @@ public class Annotation <: ToString
 public prop classSrcCodeName: String
 ```
 
-功能：注解类在源码中的名称。
+功能：获取注解类的源码名称。
 
-类型：String
+### prop location
 
-示例：
-
-<!-- verify -->
 ```cangjie
-import stdx.chir.*
-
-main() {
-    let a = Annotation("MyAnno")
-    println(a.classSrcCodeName)
-}
+public prop location: DebugLocation
 ```
 
-运行结果：
+功能：获取注解实例的源码位置。
 
-```text
-MyAnno
+### prop argValues
+
+```cangjie
+public mut prop argValues: Array<String>
 ```
+
+功能：获取/设置注解的参数值列表。
 
 ### init(String)
 
@@ -46,94 +43,24 @@ MyAnno
 public init(classSrcCodeName: String)
 ```
 
-功能：构造一个 `Annotation` 对象，指定注解类名且**参数表初始为空**；可通过 [`setFieldValue`](#func-setfieldvaluestring-string) 写入键值。
+功能：创建自定义注解实例，指定注解类源码名称。
 
 参数：
 
-- classSrcCodeName: String - 源码中的注解类名（如 `MyAnno`）。
+- classSrcCodeName: String - 注解类的源码名称。
 
-示例：
-
-<!-- verify -->
-```cangjie
-import stdx.chir.*
-
-main() {
-    let a = Annotation("Fresh")
-    println(a.toString())
-}
-```
-
-运行结果：
-
-```text
-@Fresh[]
-```
-
-### func getFieldValue(String)
+### init(String, DebugLocation)
 
 ```cangjie
-public func getFieldValue(fieldName: String): ?String
+public init(classSrcCodeName: String, loc: DebugLocation)
 ```
 
-功能：按键名查找注解参数；若不存在则返回 `None`。
+功能：创建自定义注解实例，指定注解类源码名称与源码位置。
 
 参数：
 
-- fieldName: String - 参数字段名（与 `toString()` 中 `key=value` 的键一致）。
-
-返回值：
-
-- ?String - 有则 `Some(字符串值)`，否则 `None`。
-
-示例：
-
-<!-- verify -->
-```cangjie
-import stdx.chir.*
-
-main() {
-    let a = Annotation("A")
-    println(a.classSrcCodeName)
-}
-```
-
-运行结果：
-
-```text
-A
-```
-
-### func setFieldValue(String, String)
-
-```cangjie
-public func setFieldValue(fieldName: String, value: String): Unit
-```
-
-功能：设置或覆盖某一参数字段的字符串值（构建或测试 CHIR 时使用）。
-
-参数：
-
-- fieldName: String - 参数名。
-- value: String - 参数值（字符串形式）。
-
-示例：
-
-<!-- verify -->
-```cangjie
-import stdx.chir.*
-
-main() {
-    let a = Annotation("S")
-    println(a.toString())
-}
-```
-
-运行结果：
-
-```text
-@S[]
-```
+- classSrcCodeName: String - 注解类的源码名称。
+- loc: DebugLocation - 源码位置。
 
 ### func toString()
 
@@ -141,29 +68,27 @@ main() {
 public func toString(): String
 ```
 
-功能：格式化为 `@ClassName[k1=v1, k2=v2]`，便于日志与调试。
+功能：将注解实例转为字符串表示。
 
 返回值：
 
-- String - 注解的文本形式。
+- String - 注解实例的字符串表示。
 
-示例：
+### operator func==(CustomAnnoInstance)
 
-<!-- verify -->
 ```cangjie
-import stdx.chir.*
-
-main() {
-    let a = Annotation("T")
-    println(a.toString())
-}
+public operator func ==(other: CustomAnnoInstance): Bool
 ```
 
-运行结果：
+功能：引用比较，判断两个 CustomAnnoInstance 是否为同一实例。
 
-```text
-@T[]
-```
+参数：
+
+- other: CustomAnnoInstance - 另一自定义注解实例。
+
+返回值：
+
+- Bool - 是否为同一引用。
 
 ---
 
@@ -2384,6 +2309,46 @@ main() {
 0
 ```
 
+### prop customAnnoInstances
+
+```cangjie
+public mut prop customAnnoInstances: Array<CustomAnnoInstance>
+```
+
+功能：获取/设置自定义注解实例列表。
+
+### prop methods
+
+```cangjie
+public prop methods: Array<Function>
+```
+
+功能：获取成员方法列表。
+
+### prop staticVars
+
+```cangjie
+public prop staticVars: Array<GlobalVar>
+```
+
+功能：获取静态变量列表。
+
+### func appendMethod(Function)
+
+```cangjie
+public func appendMethod(method: Function): Unit
+```
+
+功能：追加成员方法到类型定义。
+
+### func appendStaticVar(GlobalVar)
+
+```cangjie
+public func appendStaticVar(staticVar: GlobalVar): Unit
+```
+
+功能：追加静态变量到类型定义。
+
 ---
 
 ## class DebugLocation
@@ -2654,15 +2619,15 @@ main() {
 A
 ```
 
-### prop annotations
+### prop customAnnoInstances
 
 ```cangjie
-public mut prop annotations: Array<Annotation>
+public mut prop customAnnoInstances: Array<CustomAnnoInstance>
 ```
 
-功能：挂在此枚举构造器上的注解实例列表（内部由 `AnnoInfo` 存储，对外为 `Array<Annotation>`）；`set` 时整体替换。
+功能：挂在此枚举构造器上的自定义注解实例列表；`set` 时整体替换。
 
-类型：Array\<[Annotation](#class-annotation)>
+类型：Array\<[CustomAnnoInstance](#class-customannoinstance)>
 
 示例：
 
@@ -2674,9 +2639,9 @@ main() {
     let pkg = Package("demo", AccessLevel.Public)
     let e = pkg.addEnum("E_m", "E", true)
     let ctor = e.appendEnumCtorInfo("A_m", "A")
-    let ann = Annotation("Marker")
-    ctor.annotations = [ann]
-    println("${ctor.annotations.size}")
+    let ann = CustomAnnoInstance("Marker")
+    ctor.customAnnoInstances = [ann]
+    println("${ctor.customAnnoInstances.size}")
 }
 ```
 
@@ -4092,15 +4057,15 @@ main() {
 false
 ```
 
-### prop annotations
+### prop customAnnoInstances
 
 ```cangjie
-public mut prop annotations: Array<Annotation>
+public mut prop customAnnoInstances: Array<CustomAnnoInstance>
 ```
 
-功能：成员上的注解实例列表（内部由 `AnnoInfo` 存储，对外为 `Array<Annotation>`）；`set` 时整体替换。
+功能：成员上的自定义注解实例列表；`set` 时整体替换。
 
-类型：Array\<[Annotation](#class-annotation)>
+类型：Array\<[CustomAnnoInstance](#class-customannoinstance)>
 
 示例：
 
@@ -4112,7 +4077,7 @@ main() {
     let pkg = Package("p", AccessLevel.Public)
     let st = pkg.addStruct("S_m", "S")
     let mv = st.appendInstanceMemberVar("x", IntType.getInt32())
-    println("${mv.annotations.size}")
+    println("${mv.customAnnoInstances.size}")
 }
 ```
 
@@ -5226,6 +5191,84 @@ packageAccessLevel: public
 [pluginAdded]class @C1 { // srcCodeName: C, packageName: my.pkg
 }
 ```
+
+### prop allCustomTypeDefs
+
+```cangjie
+public prop allCustomTypeDefs: Array<CustomTypeDef>
+```
+
+功能：获取包中所有自定义类型定义（类、接口、结构体、枚举、扩展）。
+
+### prop globalVars
+
+```cangjie
+public prop globalVars: Array<GlobalVar>
+```
+
+功能：获取包中所有全局变量。
+
+### prop functions
+
+```cangjie
+public prop functions: Array<Function>
+```
+
+功能：获取包中所有函数。
+
+### func addFunction(FuncType, String, String, String)
+
+```cangjie
+public func addFunction(ty: FuncType, identifier: String, srcCodeName: String, packageName: String): Function
+```
+
+功能：向包中添加函数定义。
+
+参数：
+
+- ty: FuncType - 函数类型。
+- identifier: String - 混淆名。
+- srcCodeName: String - 源码名。
+- packageName: String - 包名。
+
+返回值：
+
+- Function - 新创建的函数定义。
+
+### func addGlobalVar(Type, String, String, String)
+
+```cangjie
+public func addGlobalVar(ty: Type, identifier: String, srcCodeName: String, packageName: String): GlobalVar
+```
+
+功能：向包中添加全局变量定义。
+
+参数：
+
+- ty: Type - 全局变量类型。
+- identifier: String - 混淆名。
+- srcCodeName: String - 源码名。
+- packageName: String - 包名。
+
+返回值：
+
+- GlobalVar - 新创建的全局变量定义。
+
+### func getSpecifiedFunction(String)
+
+```cangjie
+public func getSpecifiedFunction(mangledName: String): ?Function
+```
+
+功能：按混淆名查找包中指定函数。
+
+参数：
+
+- mangledName: String - 函数的混淆名。
+
+返回值：
+
+- ?Function - 找到的函数，或 None。
 
 ---
 
@@ -6581,41 +6624,331 @@ type1 == type2: true
 type1 == type3: false
 ```
 
-### func stripAllRefs()
+### func isAnyTypeInStd()
 
 ```cangjie
-public func stripAllRefs(): Type
+public func isAnyTypeInStd(): Bool
 ```
 
-功能：去除该类型的所有引用包装。
-
-递归地移除所有 Ref 类型包装，直到到达非引用类型。
+功能：检查该类型是否为 std 中的 Any 类型。
 
 返回值：
 
-- Type - 去除所有引用包装后的基类型。
+- Bool - 是 Any 类型则为 true，否则为 false。
 
-示例：
+### func isBoxRefTypeOf(Type)
 
-<!-- verify -->
 ```cangjie
-import stdx.chir.*
-
-main() {
-    let intType = IntType.getInt32()
-    let refType = RefType.get(intType)
-    let baseType = refType.stripAllRefs()
-    println("引用类型: ${refType.toString()}")
-    println("去除引用后: ${baseType.toString()}")
-}
+public func isBoxRefTypeOf(other: Type): Bool
 ```
 
-运行结果：
+功能：检查该类型是否为另一类型的 Box 引用类型。
 
-```text
-引用类型: Int32&
-去除引用后: Int32
+参数：
+
+- other: Type - 目标类型。
+
+返回值：
+
+- Bool - 是 Box 引用类型则为 true，否则为 false。
+
+### func isBoxType()
+
+```cangjie
+public func isBoxType(): Bool
 ```
+
+功能：检查该类型是否为 Box 类型。
+
+返回值：
+
+- Bool - 是 Box 类型则为 true，否则为 false。
+
+### func isCFuncType()
+
+```cangjie
+public func isCFuncType(): Bool
+```
+
+功能：检查该类型是否为 C 函数类型。
+
+返回值：
+
+- Bool - 是 C 函数类型则为 true，否则为 false。
+
+### func isCPointerType()
+
+```cangjie
+public func isCPointerType(): Bool
+```
+
+功能：检查该类型是否为 C 指针类型。
+
+返回值：
+
+- Bool - 是 C 指针类型则为 true，否则为 false。
+
+### func isCStringType()
+
+```cangjie
+public func isCStringType(): Bool
+```
+
+功能：检查该类型是否为 C 字符串类型。
+
+返回值：
+
+- Bool - 是 C 字符串类型则为 true，否则为 false。
+
+### func isCTypeInStd()
+
+```cangjie
+public func isCTypeInStd(): Bool
+```
+
+功能：检查该类型是否为 std 中的 C 类型。
+
+返回值：
+
+- Bool - 是 C 类型则为 true，否则为 false。
+
+### func isClassLikeType()
+
+```cangjie
+public func isClassLikeType(): Bool
+```
+
+功能：检查该类型是否为类/接口类型。
+
+返回值：
+
+- Bool - 是类/接口类型则为 true，否则为 false。
+
+### func isClosureBaseType()
+
+```cangjie
+public func isClosureBaseType(): Bool
+```
+
+功能：检查该类型是否为闭包基类型。
+
+返回值：
+
+- Bool - 是闭包基类型则为 true，否则为 false。
+
+### func isClosureGenericBaseType()
+
+```cangjie
+public func isClosureGenericBaseType(): Bool
+```
+
+功能：检查该类型是否为闭包泛型基类型。
+
+返回值：
+
+- Bool - 是闭包泛型基类型则为 true，否则为 false。
+
+### func isClosureInstBaseType()
+
+```cangjie
+public func isClosureInstBaseType(): Bool
+```
+
+功能：检查该类型是否为闭包实例基类型。
+
+返回值：
+
+- Bool - 是闭包实例基类型则为 true，否则为 false。
+
+### func isClosureType()
+
+```cangjie
+public func isClosureType(): Bool
+```
+
+功能：检查该类型是否为闭包类型。
+
+返回值：
+
+- Bool - 是闭包类型则为 true，否则为 false。
+
+### func isCustomType()
+
+```cangjie
+public func isCustomType(): Bool
+```
+
+功能：检查该类型是否为自定义类型。
+
+返回值：
+
+- Bool - 是自定义类型则为 true，否则为 false。
+
+### func isEnumType()
+
+```cangjie
+public func isEnumType(): Bool
+```
+
+功能：检查该类型是否为枚举类型。
+
+返回值：
+
+- Bool - 是枚举类型则为 true，否则为 false。
+
+### func isEqualOrInstantiatedTypeOf(Type, ArrayList<(Type, Type)>)
+
+```cangjie
+public func isEqualOrInstantiatedTypeOf(genericRelatedType: Type, visited!: ArrayList<(Type, Type)>): Bool
+```
+
+功能：检查该类型是否等于或为指定泛型关联类型的实例化类型。
+
+参数：
+
+- genericRelatedType: Type - 泛型关联类型。
+- visited!: ArrayList\<(Type, Type)> - 已访问的类型对列表（默认为空）。
+
+返回值：
+
+- Bool - 是则返回 true，否则为 false。
+
+### func isEqualOrSubTypeOf(Type, ArrayList<(Type, Type)>)
+
+```cangjie
+public func isEqualOrSubTypeOf(parent: Type, visited!: ArrayList<(Type, Type)>): Bool
+```
+
+功能：检查该类型是否等于或为指定父类型的子类型。
+
+参数：
+
+- parent: Type - 父类型。
+- visited!: ArrayList\<(Type, Type)> - 已访问的类型对列表（默认为空）。
+
+返回值：
+
+- Bool - 是则返回 true，否则为 false。
+
+### func isFuncType()
+
+```cangjie
+public func isFuncType(): Bool
+```
+
+功能：检查该类型是否为函数类型。
+
+返回值：
+
+- Bool - 是函数类型则为 true，否则为 false。
+
+### func isGenericRelated()
+
+```cangjie
+public func isGenericRelated(): Bool
+```
+
+功能：检查该类型是否与泛型关联。
+
+返回值：
+
+- Bool - 是泛型关联则为 true，否则为 false。
+
+### func isGenericType()
+
+```cangjie
+public func isGenericType(): Bool
+```
+
+功能：检查该类型是否为泛型类型。
+
+返回值：
+
+- Bool - 是泛型类型则为 true，否则为 false。
+
+### func isRawArrayType()
+
+```cangjie
+public func isRawArrayType(): Bool
+```
+
+功能：检查该类型是否为原始数组类型。
+
+返回值：
+
+- Bool - 是原始数组类型则为 true，否则为 false。
+
+### func isReferenceType()
+
+```cangjie
+public func isReferenceType(): Bool
+```
+
+功能：检查该类型是否为引用类型（类/接口/闭包等）。
+
+返回值：
+
+- Bool - 是引用类型则为 true，否则为 false。
+
+### func isStructType()
+
+```cangjie
+public func isStructType(): Bool
+```
+
+功能：检查该类型是否为结构体类型。
+
+返回值：
+
+- Bool - 是结构体类型则为 true，否则为 false。
+
+### func isThisType()
+
+```cangjie
+public func isThisType(): Bool
+```
+
+功能：检查该类型是否为 This 类型。
+
+返回值：
+
+- Bool - 是 This 类型则为 true，否则为 false。
+
+### func isTupleType()
+
+```cangjie
+public func isTupleType(): Bool
+```
+
+功能：检查该类型是否为元组类型。
+
+返回值：
+
+- Bool - 是元组类型则为 true，否则为 false。
+
+### func isValueType()
+
+```cangjie
+public func isValueType(): Bool
+```
+
+功能：检查该类型是否为值类型（结构体/枚举等）。
+
+返回值：
+
+- Bool - 是值类型则为 true，否则为 false。
+
+### func satisfyCType()
+
+```cangjie
+public func satisfyCType(): Bool
+```
+
+功能：检查该类型是否满足 C 类型约束。
+
+返回值：
+
+- Bool - 满足则为 true，否则为 false。
 
 ### func toString()
 
@@ -8578,6 +8911,391 @@ op_eq_FloatLiteral: true
 
 ---
 
+## class Value
+
+```cangjie
+sealed abstract class Value <: Base & ToString & Hashable & Equatable<Value>
+```
+
+功能：所有 CHIR 值的密封抽象基类。
+
+父类型：
+
+- Base
+- ToString
+- Hashable
+- Equatable\<Value>
+
+### prop identifierWithoutPrefix
+
+```cangjie
+public prop identifierWithoutPrefix: String
+```
+
+功能：获取不带前缀的标识符。
+
+### prop users
+
+```cangjie
+public prop users: Array<Expression>
+```
+
+功能：获取使用此值的所有表达式列表。
+
+### func isBlock()
+
+```cangjie
+public func isBlock(): Bool
+```
+
+功能：判断此值是否为基本块。
+
+返回值：
+
+- Bool - 是基本块则为 true，否则为 false。
+
+### func isBlockGroup()
+
+```cangjie
+public func isBlockGroup(): Bool
+```
+
+功能：判断此值是否为基本块组。
+
+返回值：
+
+- Bool - 是基本块组则为 true，否则为 false。
+
+### func isFunction()
+
+```cangjie
+public func isFunction(): Bool
+```
+
+功能：判断此值是否为函数。
+
+返回值：
+
+- Bool - 是函数则为 true，否则为 false。
+
+### func isGlobalVar()
+
+```cangjie
+public func isGlobalVar(): Bool
+```
+
+功能：判断此值是否为全局变量。
+
+返回值：
+
+- Bool - 是全局变量则为 true，否则为 false。
+
+### func isLiteral()
+
+```cangjie
+public func isLiteral(): Bool
+```
+
+功能：判断此值是否为字面量。
+
+返回值：
+
+- Bool - 是字面量则为 true，否则为 false。
+
+### func isLocalVar()
+
+```cangjie
+public func isLocalVar(): Bool
+```
+
+功能：判断此值是否为局部变量。
+
+返回值：
+
+- Bool - 是局部变量则为 true，否则为 false。
+
+### func isParameter()
+
+```cangjie
+public func isParameter(): Bool
+```
+
+功能：判断此值是否为参数。
+
+返回值：
+
+- Bool - 是参数则为 true，否则为 false。
+
+### func replaceWith(Value)
+
+```cangjie
+public func replaceWith(other: Value): Unit
+```
+
+功能：将此值替换为另一个值。
+
+参数：
+
+- other: Value - 替换后的新值。
+
+---
+
+## class GlobalValue
+
+```cangjie
+sealed abstract class GlobalValue <: Value & Equatable<GlobalValue> & Hashable
+```
+
+功能：全局值（函数、全局变量）的密封抽象基类，包含名称、包名、源码名、注解实例等公共信息。
+
+父类型：
+
+- Value
+- Equatable\<GlobalValue>
+- Hashable
+
+### prop customAnnoInstances
+
+```cangjie
+public mut prop customAnnoInstances: Array<CustomAnnoInstance>
+```
+
+功能：获取/设置自定义注解实例列表。
+
+### prop declaredParent
+
+```cangjie
+public prop declaredParent: ?CustomTypeDef
+```
+
+功能：获取声明所在的父类型定义（如成员方法所属的类定义）。
+
+### prop features
+
+```cangjie
+public prop features: Array<String>
+```
+
+功能：获取特性列表。
+
+### prop packageName
+
+```cangjie
+public prop packageName: String
+```
+
+功能：获取所属包名。
+
+### prop outerType
+
+```cangjie
+public prop outerType: ?Type
+```
+
+功能：获取外层类型（如成员方法所属的类型）。
+
+### prop srcCodeName
+
+```cangjie
+public prop srcCodeName: String
+```
+
+功能：获取源码名称。
+
+### func isPublic()
+
+```cangjie
+public func isPublic(): Bool
+```
+
+功能：是否带 `public` 属性。
+
+返回值：
+
+- Bool - 是否为 public。
+
+### func isPrivate()
+
+```cangjie
+public func isPrivate(): Bool
+```
+
+功能：是否带 `private` 属性。
+
+返回值：
+
+- Bool - 是否为 private。
+
+### func isInternal()
+
+```cangjie
+public func isInternal(): Bool
+```
+
+功能：是否带 `internal` 属性。
+
+返回值：
+
+- Bool - 是否为 internal。
+
+### func isProtected()
+
+```cangjie
+public func isProtected(): Bool
+```
+
+功能：是否带 `protected` 属性。
+
+返回值：
+
+- Bool - 是否为 protected。
+
+### func setPublic()
+
+```cangjie
+public func setPublic(): Unit
+```
+
+功能：标记为 `public` 可见性。
+
+### func setPrivate()
+
+```cangjie
+public func setPrivate(): Unit
+```
+
+功能：标记为 `private` 可见性。
+
+### func setInternal()
+
+```cangjie
+public func setInternal(): Unit
+```
+
+功能：标记为 `internal` 可见性。
+
+### func setProtected()
+
+```cangjie
+public func setProtected(): Unit
+```
+
+功能：标记为 `protected` 可见性。
+
+### func isOpen()
+
+```cangjie
+public func isOpen(): Bool
+```
+
+功能：是否可继承/实现（`virtual` 或 `abstract`）。
+
+返回值：
+
+- Bool - 是否为 open。
+
+### func isAbstract()
+
+```cangjie
+public func isAbstract(): Bool
+```
+
+功能：是否为 `abstract`。
+
+返回值：
+
+- Bool - 是否为 abstract。
+
+### func setOpen()
+
+```cangjie
+public func setOpen(): Unit
+```
+
+功能：标记为 `open`。
+
+### func isStatic()
+
+```cangjie
+public func isStatic(): Bool
+```
+
+功能：是否为 `static`。
+
+返回值：
+
+- Bool - 是否为 static。
+
+### func setStatic()
+
+```cangjie
+public func setStatic(): Unit
+```
+
+功能：标记为 `static`。
+
+### func isReassign()
+
+```cangjie
+public func isReassign(): Bool
+```
+
+功能：是否可重新赋值（`var` 语义）。
+
+返回值：
+
+- Bool - 是否可重新赋值。
+
+### func setReassign()
+
+```cangjie
+public func setReassign(): Unit
+```
+
+功能：标记为可重新赋值。
+
+### func isInit()
+
+```cangjie
+public func isInit(): Bool
+```
+
+功能：是否为构造函数 `init`。
+
+返回值：
+
+- Bool - 是否为 init。
+
+### func setInit()
+
+```cangjie
+public func setInit(): Unit
+```
+
+功能：标记为构造函数 `init`。
+
+### func hashCode()
+
+```cangjie
+public func hashCode(): Int64
+```
+
+功能：获取哈希值。
+
+返回值：
+
+- Int64 - 哈希值。
+
+### operator func==(GlobalValue)
+
+```cangjie
+public operator func ==(other: GlobalValue): Bool
+```
+
+功能：引用比较，判断两个 GlobalValue 是否为同一实例。
+
+---
+
 ## class Function
 
 ```cangjie
@@ -9996,15 +10714,15 @@ public class Parameter <: Value & Equatable<Parameter>
 - Value
 - Equatable\<Parameter>
 
-### prop annotations
+### prop customAnnoInstances
 
 ```cangjie
-public mut prop annotations: Array<Annotation>
+public mut prop customAnnoInstances: Array<CustomAnnoInstance>
 ```
 
-功能：参数注解列表；`set` 时整体替换。
+功能：参数自定义注解实例列表；`set` 时整体替换。
 
-类型：Array\<[Annotation](#class-annotation)>
+类型：Array\<[CustomAnnoInstance](#class-customannoinstance)>
 
 示例：
 
@@ -10016,14 +10734,14 @@ main() {
     let pkg = Package("demo", AccessLevel.Public)
     let f = pkg.addFunction(FuncType.get([IntType.getInt32()], UnitType.get()), "f_m", "f", "demo")
     let param = f.parameters[0]
-    println("mut_prop_annotations: ${param.annotations.size}")
+    println("mut_prop_customAnnoInstances: ${param.customAnnoInstances.size}")
 }
 ```
 
 运行结果：
 
 ```text
-mut_prop_annotations: 0
+mut_prop_customAnnoInstances: 0
 ```
 
 ### prop srcCodeName
@@ -10552,6 +11270,255 @@ op_eq_UnitLiteral: true
 
 ---
 
+## class Expression
+
+```cangjie
+sealed abstract class Expression <: Base & ToString & Hashable & Equatable<Expression>
+```
+
+功能：所有 CHIR 表达式的密封抽象基类。
+
+父类型：
+
+- Base
+- ToString
+- Hashable
+- Equatable\<Expression>
+
+### prop result
+
+```cangjie
+public prop result: LocalVar
+```
+
+功能：获取表达式的结果局部变量。
+
+### prop operands
+
+```cangjie
+public prop operands: Array<Value>
+```
+
+功能：获取表达式的所有操作数。
+
+### prop owner
+
+```cangjie
+public prop owner: Block
+```
+
+功能：获取表达式所属的基本块。
+
+### prop blockGroups
+
+```cangjie
+public prop blockGroups: Array<BlockGroup>
+```
+
+功能：获取表达式关联的基本块组列表。
+
+### prop successors
+
+```cangjie
+public prop successors: Array<Block>
+```
+
+功能：获取表达式的后继基本块列表。
+
+### prop topLevelFunc
+
+```cangjie
+public prop topLevelFunc: Function
+```
+
+功能：获取表达式所属的顶层函数。
+
+### func isTerminator()
+
+```cangjie
+public func isTerminator(): Bool
+```
+
+功能：判断表达式是否为终止器表达式。
+
+返回值：
+
+- Bool - 是终止器则为 true，否则为 false。
+
+### func hasExceptionBranch()
+
+```cangjie
+public func hasExceptionBranch(): Bool
+```
+
+功能：判断表达式是否包含异常分支。
+
+返回值：
+
+- Bool - 包含异常分支则为 true，否则为 false。
+
+### func isLambda()
+
+```cangjie
+public func isLambda(): Bool
+```
+
+功能：判断表达式是否为 Lambda 表达式。
+
+返回值：
+
+- Bool - 是 Lambda 则为 true，否则为 false。
+
+### func isExit()
+
+```cangjie
+public func isExit(): Bool
+```
+
+功能：判断表达式是否为 Exit 终止器。
+
+返回值：
+
+- Bool - 是 Exit 则为 true，否则为 false。
+
+### func tryGetResult()
+
+```cangjie
+public func tryGetResult(): Option<LocalVar>
+```
+
+功能：尝试获取表达式的结果局部变量。
+
+返回值：
+
+- Option\<LocalVar> - 结果局部变量，或 None。
+
+### func moveAfter(Expression)
+
+```cangjie
+public func moveAfter(other: Expression): Unit
+```
+
+功能：将当前表达式移动到指定表达式之后。
+
+参数：
+
+- other: Expression - 目标表达式。
+
+### func moveBefore(Expression)
+
+```cangjie
+public func moveBefore(other: Expression): Unit
+```
+
+功能：将当前表达式移动到指定表达式之前。
+
+参数：
+
+- other: Expression - 目标表达式。
+
+### func replaceOperand(Value, Value)
+
+```cangjie
+public func replaceOperand(operand: Value, other: Value): Unit
+```
+
+功能：将表达式中的指定操作数替换为另一个值。
+
+参数：
+
+- operand: Value - 要替换的操作数。
+- other: Value - 替换后的新值。
+
+### func destroySelf()
+
+```cangjie
+public func destroySelf(): Unit
+```
+
+功能：销毁表达式自身，释放相关资源。
+
+### func dump()
+
+```cangjie
+public func dump(): Unit
+```
+
+功能：打印表达式的调试信息。
+
+### func hashCode()
+
+```cangjie
+public func hashCode(): Int64
+```
+
+功能：获取表达式的哈希值。
+
+返回值：
+
+- Int64 - 哈希值。
+
+### func toString()
+
+```cangjie
+public open func toString(): String
+```
+
+功能：将表达式转为字符串表示。
+
+返回值：
+
+- String - 表达式的字符串表示。
+
+### operator func==(Expression)
+
+```cangjie
+public operator func ==(other: Expression): Bool
+```
+
+功能：引用比较，判断两个 Expression 是否为同一实例。
+
+参数：
+
+- other: Expression - 另一表达式。
+
+返回值：
+
+- Bool - 是否为同一引用。
+
+---
+
+## class AllocateBase
+
+```cangjie
+sealed abstract class AllocateBase <: Expression & Equatable<AllocateBase>
+```
+
+功能：内存分配表达式的密封抽象基类。
+
+父类型：
+
+- Expression
+- Equatable\<AllocateBase>
+
+### prop allocatedType
+
+```cangjie
+public prop allocatedType: Type
+```
+
+功能：获取分配的目标类型。
+
+### operator func==(AllocateBase)
+
+```cangjie
+public operator func ==(other: AllocateBase): Bool
+```
+
+功能：引用比较，判断两个 AllocateBase 是否为同一实例。
+
+---
+
 ## class Allocate
 
 ```cangjie
@@ -10815,6 +11782,37 @@ main() {
 ```text
 op_eq_TryAllocate: true
 ```
+
+---
+
+## class BinaryExpressionBase
+
+```cangjie
+sealed abstract class BinaryExpressionBase <: Expression & Equatable<BinaryExpressionBase>
+```
+
+功能：二元运算表达式的密封抽象基类。
+
+父类型：
+
+- Expression
+- Equatable\<BinaryExpressionBase>
+
+### prop overflow
+
+```cangjie
+public mut prop overflow: OverflowStrategy
+```
+
+功能：获取/设置溢出处理策略。
+
+### operator func==(BinaryExpressionBase)
+
+```cangjie
+public operator func ==(other: BinaryExpressionBase): Bool
+```
+
+功能：引用比较，判断两个 BinaryExpressionBase 是否为同一实例。
 
 ---
 
@@ -11918,6 +12916,88 @@ op_eq_FieldByName: true
 
 ---
 
+## class FuncCall
+
+```cangjie
+sealed abstract class FuncCall <: Expression & Equatable<FuncCall>
+```
+
+功能：函数调用表达式的密封抽象基类。
+
+父类型：
+
+- Expression
+- Equatable\<FuncCall>
+
+### prop instantiatedTypeArgs
+
+```cangjie
+public prop instantiatedTypeArgs: Array<Type>
+```
+
+功能：获取实例化泛型类型参数列表。
+
+### prop objType
+
+```cangjie
+public prop objType: ?Type
+```
+
+功能：获取对象类型（方法调用时为接收者类型，静态调用时为 None）。
+
+### func getArgs()
+
+```cangjie
+public func getArgs(): Array<Value>
+```
+
+功能：获取函数调用的实参列表。
+
+返回值：
+
+- Array\<Value> - 实参列表。
+
+### operator func==(FuncCall)
+
+```cangjie
+public operator func ==(other: FuncCall): Bool
+```
+
+功能：引用比较，判断两个 FuncCall 是否为同一实例。
+
+---
+
+## class ApplyBase
+
+```cangjie
+sealed abstract class ApplyBase <: FuncCall & Equatable<ApplyBase>
+```
+
+功能：函数 Apply 调用表达式的密封抽象基类。
+
+父类型：
+
+- FuncCall
+- Equatable\<ApplyBase>
+
+### prop callee
+
+```cangjie
+public prop callee: Value
+```
+
+功能：获取被调用函数值。
+
+### operator func==(ApplyBase)
+
+```cangjie
+public operator func ==(other: ApplyBase): Bool
+```
+
+功能：引用比较，判断两个 ApplyBase 是否为同一实例。
+
+---
+
 ## class Apply
 
 ```cangjie
@@ -12279,6 +13359,29 @@ op_eq_TryApply: true
 
 ---
 
+## class IntrinsicBase
+
+```cangjie
+sealed abstract class IntrinsicBase <: FuncCall & Equatable<IntrinsicBase>
+```
+
+功能：内建函数调用表达式的密封抽象基类。
+
+父类型：
+
+- FuncCall
+- Equatable\<IntrinsicBase>
+
+### operator func==(IntrinsicBase)
+
+```cangjie
+public operator func ==(other: IntrinsicBase): Bool
+```
+
+功能：引用比较，判断两个 IntrinsicBase 是否为同一实例。
+
+---
+
 ## class Intrinsic
 
 ```cangjie
@@ -12384,6 +13487,53 @@ public operator func==(other: TryIntrinsic): Bool
 返回值：
 
 - Bool - 是否为同一引用。
+
+---
+
+## class InvokeBase
+
+```cangjie
+sealed abstract class InvokeBase <: FuncCall & Equatable<InvokeBase>
+```
+
+功能：虚方法调用表达式的密封抽象基类。
+
+父类型：
+
+- FuncCall
+- Equatable\<InvokeBase>
+
+### prop methodGenericTypeParams
+
+```cangjie
+public prop methodGenericTypeParams: Array<GenericType>
+```
+
+功能：获取方法泛型类型参数列表。
+
+### prop methodName
+
+```cangjie
+public prop methodName: String
+```
+
+功能：获取方法名称。
+
+### prop methodType
+
+```cangjie
+public prop methodType: FuncType
+```
+
+功能：获取方法函数类型。
+
+### operator func==(InvokeBase)
+
+```cangjie
+public operator func ==(other: InvokeBase): Bool
+```
+
+功能：引用比较，判断两个 InvokeBase 是否为同一实例。
 
 ---
 
@@ -14640,6 +15790,37 @@ op_eq_MultiBranch: true
 
 ---
 
+## class NumericCastBase
+
+```cangjie
+sealed abstract class NumericCastBase <: Expression & Equatable<NumericCastBase>
+```
+
+功能：数值类型转换表达式的密封抽象基类。
+
+父类型：
+
+- Expression
+- Equatable\<NumericCastBase>
+
+### prop overflow
+
+```cangjie
+public mut prop overflow: OverflowStrategy
+```
+
+功能：获取/设置溢出处理策略。
+
+### operator func==(NumericCastBase)
+
+```cangjie
+public operator func ==(other: NumericCastBase): Bool
+```
+
+功能：引用比较，判断两个 NumericCastBase 是否为同一实例。
+
+---
+
 ## class NumericCast
 
 ```cangjie
@@ -15036,6 +16217,37 @@ main() {
 ```text
 op_eq_RaiseException: true
 ```
+
+---
+
+## class RawArrayAllocateBase
+
+```cangjie
+sealed abstract class RawArrayAllocateBase <: Expression & Equatable<RawArrayAllocateBase>
+```
+
+功能：原始数组分配表达式的密封抽象基类。
+
+父类型：
+
+- Expression
+- Equatable\<RawArrayAllocateBase>
+
+### prop elementType
+
+```cangjie
+public prop elementType: Type
+```
+
+功能：获取原始数组的元素类型。
+
+### operator func==(RawArrayAllocateBase)
+
+```cangjie
+public operator func ==(other: RawArrayAllocateBase): Bool
+```
+
+功能：引用比较，判断两个 RawArrayAllocateBase 是否为同一实例。
 
 ---
 
@@ -15495,6 +16707,49 @@ main() {
 ```text
 op_eq_RawArrayLiteralInit: true
 ```
+
+---
+
+## class SpawnBase
+
+```cangjie
+sealed abstract class SpawnBase <: Expression & Equatable<SpawnBase>
+```
+
+功能：并发 Spawn 表达式的密封抽象基类。
+
+父类型：
+
+- Expression
+- Equatable\<SpawnBase>
+
+### prop executeClosure
+
+```cangjie
+public mut prop executeClosure: Function
+```
+
+功能：获取/设置 Spawn 执行的闭包函数。
+
+### func needExecuteClosure()
+
+```cangjie
+public func needExecuteClosure(): Bool
+```
+
+功能：判断是否需要执行闭包函数。
+
+返回值：
+
+- Bool - 需要执行则为 true，否则为 false。
+
+### operator func==(SpawnBase)
+
+```cangjie
+public operator func ==(other: SpawnBase): Bool
+```
+
+功能：引用比较，判断两个 SpawnBase 是否为同一实例。
 
 ---
 
@@ -16414,6 +17669,53 @@ op_eq_Tuple: true
 
 ---
 
+## class TypeCast
+
+```cangjie
+sealed abstract class TypeCast <: Expression & Equatable<TypeCast>
+```
+
+功能：类型转换表达式的密封抽象基类。
+
+父类型：
+
+- Expression
+- Equatable\<TypeCast>
+
+### prop sourceType
+
+```cangjie
+public prop sourceType: Type
+```
+
+功能：获取源类型。
+
+### prop srcValue
+
+```cangjie
+public prop srcValue: Value
+```
+
+功能：获取源值。
+
+### prop targetType
+
+```cangjie
+public prop targetType: Type
+```
+
+功能：获取目标类型。
+
+### operator func==(TypeCast)
+
+```cangjie
+public operator func ==(other: TypeCast): Bool
+```
+
+功能：引用比较，判断两个 TypeCast 是否为同一实例。
+
+---
+
 ## class Box
 
 ```cangjie
@@ -16967,6 +18269,37 @@ main() {
 ```text
 op_eq_UnboxToValue: true
 ```
+
+---
+
+## class UnaryExpressionBase
+
+```cangjie
+sealed abstract class UnaryExpressionBase <: Expression & Equatable<UnaryExpressionBase>
+```
+
+功能：一元运算表达式的密封抽象基类。
+
+父类型：
+
+- Expression
+- Equatable\<UnaryExpressionBase>
+
+### prop overflow
+
+```cangjie
+public mut prop overflow: OverflowStrategy
+```
+
+功能：获取/设置溢出处理策略。
+
+### operator func==(UnaryExpressionBase)
+
+```cangjie
+public operator func ==(other: UnaryExpressionBase): Bool
+```
+
+功能：引用比较，判断两个 UnaryExpressionBase 是否为同一实例。
 
 ---
 
@@ -20801,5 +22134,48 @@ main() {
 ```text
 createVArrayBuilder: true
 ```
+
+---
+
+## func serializePackage
+
+```cangjie
+public func serializePackage(pkg: Package): (CPointer<UInt8>, Int64)
+```
+
+功能：将 Package 序列化为二进制数据，返回数据指针与长度。
+
+参数：
+
+- pkg: Package - 要序列化的包。
+
+返回值：
+
+- (CPointer\<UInt8>, Int64) - 二进制数据指针与长度。
+
+## func deserializePackage
+
+```cangjie
+public func deserializePackage(root: CPointer<UInt8>, length: Int64): Package
+```
+
+功能：从二进制数据反序列化 Package。
+
+参数：
+
+- root: CPointer\<UInt8> - 二进制数据指针。
+- length: Int64 - 数据长度。
+
+返回值：
+
+- Package - 反序列化的包。
+
+## func freeSerializedMemory
+
+```cangjie
+public func freeSerializedMemory(): Unit
+```
+
+功能：释放序列化产生的内存。
 
 ---
