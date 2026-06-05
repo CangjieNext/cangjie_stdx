@@ -1403,18 +1403,24 @@ exprs count: 2
 ## enum IRActionMode
 
 ```cangjie
-public enum IRActionMode {
-    CONTINUE
-    | STOP
+public enum IRActionMode <: Equatable<IRActionMode> {
+    Continue
+    | Stop
+    | Skip
+    | ...
 }
 ```
 
 Function: Controls the **behavior mode** of CHIRVisitor when traversing expressions, determining whether to continue traversing subsequent expressions.
 
-### CONTINUE
+Parent Types:
+
+- Equatable\<[IRActionMode](#enum-iractionmode)>
+
+### Continue
 
 ```cangjie
-CONTINUE
+Continue
 ```
 
 Function: Continue traversal; CHIRVisitor will keep visiting subsequent expressions and nested BlockGroups.
@@ -1426,10 +1432,12 @@ Example:
 import stdx.chir.*
 
 main() {
-    let mode = IRActionMode.CONTINUE
+    let mode = IRActionMode.Continue
     match (mode) {
-        case CONTINUE => println("continue")
-        case STOP => println("stop")
+        case Continue => println("continue")
+        case Stop => println("stop")
+        case Skip => println("skip")
+        case _ => println("other")
     }
 }
 ```
@@ -1440,10 +1448,10 @@ Output:
 continue
 ```
 
-### STOP
+### Stop
 
 ```cangjie
-STOP
+Stop
 ```
 
 Function: Stop traversal; CHIRVisitor will terminate the current traversal and will not visit subsequent expressions.
@@ -1455,10 +1463,12 @@ Example:
 import stdx.chir.*
 
 main() {
-    let mode = IRActionMode.STOP
+    let mode = IRActionMode.Stop
     match (mode) {
-        case CONTINUE => println("continue")
-        case STOP => println("stop")
+        case Continue => println("continue")
+        case Stop => println("stop")
+        case Skip => println("skip")
+        case _ => println("other")
     }
 }
 ```
@@ -1468,3 +1478,66 @@ Output:
 ```text
 stop
 ```
+
+### Skip
+
+```cangjie
+Skip
+```
+
+Function: Skip the current expression; CHIRVisitor will skip the current expression without terminating the overall traversal.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let mode = IRActionMode.Skip
+    match (mode) {
+        case Continue => println("continue")
+        case Stop => println("stop")
+        case Skip => println("skip")
+        case _ => println("other")
+    }
+}
+```
+
+Output:
+
+```text
+skip
+```
+
+### operator func==(IRActionMode)
+
+```cangjie
+public operator func ==(rhs: IRActionMode): Bool
+```
+
+Function: Compares whether two traversal behavior modes are the same variant.
+
+Parameters:
+
+- rhs: IRActionMode - The other traversal behavior mode.
+
+Return Value:
+
+- Bool - `true` if equal, otherwise `false`.
+
+### operator func!=(IRActionMode)
+
+```cangjie
+public operator func !=(rhs: IRActionMode): Bool
+```
+
+Function: Compares whether two traversal behavior modes are different variants; `true` when the two modes differ, `false` when they are equal (equivalent to `!(this == rhs)`).
+
+Parameters:
+
+- rhs: IRActionMode - The other traversal behavior mode.
+
+Return Value:
+
+- Bool - `true` if not equal, otherwise `false`.
