@@ -1,5 +1,9 @@
 # stdx.aspect_cj
 
+> **Note:**
+>
+> Under active development; functionality is not yet complete.
+
 ## Feature Description
 
 The `stdx.aspect_cj` package provides annotations for Aspect-Oriented Programming (AOP) in Cangjie. When used in conjunction with the libstdx.collect_aspects and libstdx.wave_aspects compilation plugins, it enables function instrumentation (before/after) and implementation replacement.
