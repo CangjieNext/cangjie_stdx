@@ -1,5 +1,9 @@
 # stdx.aspect_cj
 
+> **说明：**
+>
+> 当前处于开发阶段，尚不具备完整功能。
+
 ## 功能介绍
 
 `stdx.aspect_cj` 包提供了仓颉中面向切面编程（Aspect Oriented Programming, AOP）的相关注解，配合 libstdx.collect_aspects 和 libstdx.wave_aspects 两个编译插件使用，可以对函数进行前后插桩以及替换实现。
