@@ -124,7 +124,7 @@ main() {
 public
 ```
 
-### operator func==(AccessLevel)
+### operator func ==(AccessLevel)
 
 ```cangjie
 public operator func ==(other: AccessLevel): Bool
@@ -159,7 +159,7 @@ op_eq_AccessLevel same: true
 op_eq_AccessLevel diff: false
 ```
 
-### operator func!=(AccessLevel)
+### operator func !=(AccessLevel)
 
 ```cangjie
 public operator func !=(other: AccessLevel): Bool
@@ -355,7 +355,7 @@ Throwing
 Saturating
 ```
 
-### operator func==(OverflowStrategy)
+### operator func ==(OverflowStrategy)
 
 ```cangjie
 public operator func ==(other: OverflowStrategy): Bool
@@ -390,7 +390,7 @@ op_eq_OverflowStrategy same: true
 op_eq_OverflowStrategy diff: false
 ```
 
-### operator func!=(OverflowStrategy)
+### operator func !=(OverflowStrategy)
 
 ```cangjie
 public operator func !=(other: OverflowStrategy): Bool
@@ -553,7 +553,7 @@ Not
 BitNot
 ```
 
-### operator func==(UnaryExprKind)
+### operator func ==(UnaryExprKind)
 
 ```cangjie
 public operator func ==(other: UnaryExprKind): Bool
@@ -588,7 +588,7 @@ op_eq_UnaryExprKind same: true
 op_eq_UnaryExprKind diff: false
 ```
 
-### operator func!=(UnaryExprKind)
+### operator func !=(UnaryExprKind)
 
 ```cangjie
 public operator func !=(other: UnaryExprKind): Bool
@@ -1173,7 +1173,7 @@ LT
 And
 ```
 
-### operator func==(BinaryExprKind)
+### operator func ==(BinaryExprKind)
 
 ```cangjie
 public operator func ==(other: BinaryExprKind): Bool
@@ -1208,7 +1208,7 @@ op_eq_BinaryExprKind same: true
 op_eq_BinaryExprKind diff: false
 ```
 
-### operator func!=(BinaryExprKind)
+### operator func !=(BinaryExprKind)
 
 ```cangjie
 public operator func !=(other: BinaryExprKind): Bool
@@ -1404,18 +1404,24 @@ exprs count: 2
 ## enum IRActionMode
 
 ```cangjie
-public enum IRActionMode {
-    CONTINUE
-    | STOP
+public enum IRActionMode <: Equatable<IRActionMode> {
+    | Continue
+    | Stop
+    | Skip
+    | ...
 }
 ```
 
 功能：控制 CHIRVisitor 遍历表达式时的**行为模式**，决定是否继续遍历后续表达式。
 
-### CONTINUE
+父类型：
+
+- Equatable\<IRActionMode>
+
+### Continue
 
 ```cangjie
-CONTINUE
+Continue
 ```
 
 功能：继续遍历，CHIRVisitor 将继续访问后续表达式和嵌套 BlockGroup。
@@ -1427,10 +1433,12 @@ CONTINUE
 import stdx.chir.*
 
 main() {
-    let mode = IRActionMode.CONTINUE
+    let mode = IRActionMode.Continue
     match (mode) {
-        case CONTINUE => println("continue")
-        case STOP => println("stop")
+        case Continue => println("continue")
+        case Stop => println("stop")
+        case Skip => println("skip")
+        case _ => println("other")
     }
 }
 ```
@@ -1441,10 +1449,10 @@ main() {
 continue
 ```
 
-### STOP
+### Stop
 
 ```cangjie
-STOP
+Stop
 ```
 
 功能：停止遍历，CHIRVisitor 将终止当前遍历流程，不再访问后续表达式。
@@ -1456,9 +1464,160 @@ STOP
 import stdx.chir.*
 
 main() {
-    let mode = IRActionMode.STOP
+    let mode = IRActionMode.Stop
+    match (mode) {
+        case Continue => println("continue")
+        case Stop => println("stop")
+        case Skip => println("skip")
+        case _ => println("other")
+    }
+}
+```
+
+运行结果：
+
+```text
+stop
+```
+
+### Skip
+
+```cangjie
+Skip
+```
+
+功能：跳过当前表达式的嵌套 BlockGroup，但继续遍历后续表达式。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let mode = IRActionMode.Skip
+    match (mode) {
+        case Continue => println("continue")
+        case Stop => println("stop")
+        case Skip => println("skip")
+        case _ => println("other")
+    }
+}
+```
+
+运行结果：
+
+```text
+skip
+```
+
+### operator func ==(IRActionMode)
+
+```cangjie
+public operator func ==(other: IRActionMode): Bool
+```
+
+功能：判断两个 IRActionMode 是否相等。
+
+### operator func !=(IRActionMode)
+
+```cangjie
+public operator func !=(other: IRActionMode): Bool
+```
+
+功能：判断两个 IRActionMode 是否不相等。
+
+## enum TypeActionMode
+
+```cangjie
+public enum TypeActionMode {
+    | CONTINUE
+    | SKIP
+    | STOP
+}
+```
+
+功能：控制 TypeVisitor 遍历类型时的**行为模式**，决定是否继续遍历后续类型。
+
+### CONTINUE
+
+```cangjie
+CONTINUE
+```
+
+功能：继续遍历，TypeVisitor 将继续访问后续类型。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let mode = TypeActionMode.CONTINUE
     match (mode) {
         case CONTINUE => println("continue")
+        case SKIP => println("skip")
+        case STOP => println("stop")
+    }
+}
+```
+
+运行结果：
+
+```text
+continue
+```
+
+### SKIP
+
+```cangjie
+SKIP
+```
+
+功能：跳过当前类型，TypeVisitor 将跳过此类型继续遍历后续类型。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let mode = TypeActionMode.SKIP
+    match (mode) {
+        case CONTINUE => println("continue")
+        case SKIP => println("skip")
+        case STOP => println("stop")
+    }
+}
+```
+
+运行结果：
+
+```text
+skip
+```
+
+### STOP
+
+```cangjie
+STOP
+```
+
+功能：停止遍历，TypeVisitor 将终止当前遍历流程。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let mode = TypeActionMode.STOP
+    match (mode) {
+        case CONTINUE => println("continue")
+        case SKIP => println("skip")
         case STOP => println("stop")
     }
 }
