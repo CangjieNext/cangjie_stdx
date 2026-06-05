@@ -1404,18 +1404,24 @@ exprs count: 2
 ## enum IRActionMode
 
 ```cangjie
-public enum IRActionMode {
-    CONTINUE
-    | STOP
+public enum IRActionMode <: Equatable<IRActionMode> {
+    Continue
+    | Stop
+    | Skip
+    | ...
 }
 ```
 
 功能：控制 CHIRVisitor 遍历表达式时的**行为模式**，决定是否继续遍历后续表达式。
 
-### CONTINUE
+父类型：
+
+- Equatable\<[IRActionMode](#enum-iractionmode)>
+
+### Continue
 
 ```cangjie
-CONTINUE
+Continue
 ```
 
 功能：继续遍历，CHIRVisitor 将继续访问后续表达式和嵌套 BlockGroup。
@@ -1427,10 +1433,10 @@ CONTINUE
 import stdx.chir.*
 
 main() {
-    let mode = IRActionMode.CONTINUE
+    let mode = IRActionMode.Continue
     match (mode) {
-        case CONTINUE => println("continue")
-        case STOP => println("stop")
+        case Continue => println("continue")
+        case Stop => println("stop")
     }
 }
 ```
@@ -1441,10 +1447,10 @@ main() {
 continue
 ```
 
-### STOP
+### Stop
 
 ```cangjie
-STOP
+Stop
 ```
 
 功能：停止遍历，CHIRVisitor 将终止当前遍历流程，不再访问后续表达式。
@@ -1456,10 +1462,10 @@ STOP
 import stdx.chir.*
 
 main() {
-    let mode = IRActionMode.STOP
+    let mode = IRActionMode.Stop
     match (mode) {
-        case CONTINUE => println("continue")
-        case STOP => println("stop")
+        case Continue => println("continue")
+        case Stop => println("stop")
     }
 }
 ```
@@ -1469,3 +1475,49 @@ main() {
 ```text
 stop
 ```
+
+### Skip
+
+```cangjie
+Skip
+```
+
+功能：跳过当前表达式的嵌套遍历。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let mode = IRActionMode.Skip
+    match (mode) {
+        case Continue => println("continue")
+        case Stop => println("stop")
+        case Skip => println("skip")
+    }
+}
+```
+
+运行结果：
+
+```text
+skip
+```
+
+### operator func==(IRActionMode)
+
+```cangjie
+public operator func ==(rhs: IRActionMode): Bool
+```
+
+功能：判断两个 IRActionMode 是否相等。
+
+参数：
+
+- rhs: IRActionMode - 另一个行为模式。
+
+返回值：
+
+- Bool - 相等则为 `true`，否则为 `false`。

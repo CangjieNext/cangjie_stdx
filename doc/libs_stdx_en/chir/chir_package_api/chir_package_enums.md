@@ -1403,18 +1403,24 @@ exprs count: 2
 ## enum IRActionMode
 
 ```cangjie
-public enum IRActionMode {
-    CONTINUE
-    | STOP
+public enum IRActionMode <: Equatable<IRActionMode> {
+    Continue
+    | Stop
+    | Skip
+    | ...
 }
 ```
 
 Function: Controls the **behavior mode** of CHIRVisitor when traversing expressions, determining whether to continue traversing subsequent expressions.
 
-### CONTINUE
+Parent Types:
+
+- Equatable\<[IRActionMode](#enum-iractionmode)>
+
+### Continue
 
 ```cangjie
-CONTINUE
+Continue
 ```
 
 Function: Continue traversal; CHIRVisitor will keep visiting subsequent expressions and nested BlockGroups.
@@ -1426,10 +1432,10 @@ Example:
 import stdx.chir.*
 
 main() {
-    let mode = IRActionMode.CONTINUE
+    let mode = IRActionMode.Continue
     match (mode) {
-        case CONTINUE => println("continue")
-        case STOP => println("stop")
+        case Continue => println("continue")
+        case Stop => println("stop")
     }
 }
 ```
@@ -1440,10 +1446,10 @@ Output:
 continue
 ```
 
-### STOP
+### Stop
 
 ```cangjie
-STOP
+Stop
 ```
 
 Function: Stop traversal; CHIRVisitor will terminate the current traversal and will not visit subsequent expressions.
@@ -1455,10 +1461,10 @@ Example:
 import stdx.chir.*
 
 main() {
-    let mode = IRActionMode.STOP
+    let mode = IRActionMode.Stop
     match (mode) {
-        case CONTINUE => println("continue")
-        case STOP => println("stop")
+        case Continue => println("continue")
+        case Stop => println("stop")
     }
 }
 ```
@@ -1468,3 +1474,49 @@ Output:
 ```text
 stop
 ```
+
+### Skip
+
+```cangjie
+Skip
+```
+
+Function: Skip the nested traversal of the current expression.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let mode = IRActionMode.Skip
+    match (mode) {
+        case Continue => println("continue")
+        case Stop => println("stop")
+        case Skip => println("skip")
+    }
+}
+```
+
+Output:
+
+```text
+skip
+```
+
+### operator func==(IRActionMode)
+
+```cangjie
+public operator func ==(rhs: IRActionMode): Bool
+```
+
+Function: Determines whether two IRActionMode values are equal.
+
+Parameters:
+
+- rhs: IRActionMode - The other action mode.
+
+Return Value:
+
+- Bool - `true` if equal, otherwise `false`.
