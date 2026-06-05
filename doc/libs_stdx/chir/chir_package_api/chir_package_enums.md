@@ -1404,33 +1404,39 @@ exprs count: 2
 ## enum IRActionMode
 
 ```cangjie
-public enum IRActionMode {
-    CONTINUE
-    | STOP
+public enum IRActionMode <: Equatable<IRActionMode> {
+    Continue
+    | Stop
+    | Skip
+    | ...
 }
 ```
 
 功能：控制 CHIRVisitor 遍历表达式时的**行为模式**，决定是否继续遍历后续表达式。
 
-### CONTINUE
+父类型：
+
+- Equatable\<IRActionMode>
+
+### Continue
 
 ```cangjie
-CONTINUE
+Continue
 ```
 
 功能：继续遍历，CHIRVisitor 将继续访问后续表达式和嵌套 BlockGroup。
 
 示例：
-
 <!-- verify -->
 ```cangjie
 import stdx.chir.*
 
 main() {
-    let mode = IRActionMode.CONTINUE
+    let mode = IRActionMode.Continue
     match (mode) {
-        case CONTINUE => println("continue")
-        case STOP => println("stop")
+        case Continue => println("continue")
+        case Stop => println("stop")
+        case Skip => println("skip")
     }
 }
 ```
@@ -1441,25 +1447,25 @@ main() {
 continue
 ```
 
-### STOP
+### Stop
 
 ```cangjie
-STOP
+Stop
 ```
 
 功能：停止遍历，CHIRVisitor 将终止当前遍历流程，不再访问后续表达式。
 
 示例：
-
 <!-- verify -->
 ```cangjie
 import stdx.chir.*
 
 main() {
-    let mode = IRActionMode.STOP
+    let mode = IRActionMode.Stop
     match (mode) {
-        case CONTINUE => println("continue")
-        case STOP => println("stop")
+        case Continue => println("continue")
+        case Stop => println("stop")
+        case Skip => println("skip")
     }
 }
 ```
@@ -1469,3 +1475,64 @@ main() {
 ```text
 stop
 ```
+
+### Skip
+
+```cangjie
+Skip
+```
+
+功能：跳过当前表达式，CHIRVisitor 将跳过当前表达式但不终止整体遍历。
+
+示例：
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let mode = IRActionMode.Skip
+    match (mode) {
+        case Continue => println("continue")
+        case Stop => println("stop")
+        case Skip => println("skip")
+    }
+}
+```
+
+运行结果：
+
+```text
+skip
+```
+
+### operator func==(IRActionMode)
+
+```cangjie
+public operator func ==(rhs: IRActionMode): Bool
+```
+
+功能：比较两个遍历行为模式是否为同一变体。
+
+参数：
+
+- rhs: IRActionMode - 另一遍历行为模式。
+
+返回值：
+
+- Bool - 相等则为 true，否则为 false。
+
+### operator func!=(IRActionMode)
+
+```cangjie
+public operator func !=(other: IRActionMode): Bool
+```
+
+功能：与 `==` 相反，两个遍历行为模式不同时为 `true`，相同时为 `false`（等价于 `!(this == other)`）。
+
+参数：
+
+- other: IRActionMode - 另一遍历行为模式。
+
+返回值：
+
+- Bool - 不相等则为 `true`，否则为 `false`。
