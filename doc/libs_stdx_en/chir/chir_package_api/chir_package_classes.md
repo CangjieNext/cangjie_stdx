@@ -1,16 +1,44 @@
 # Classes
 
-## class Annotation
+## class CustomAnnoInstance
 
 ```cangjie
-public class Annotation <: ToString
+public class CustomAnnoInstance <: ToString
 ```
 
-Function: Represents **one** annotation instance in CHIR, corresponding to the source form `@ClassName[k1=v1, k2=v2]`: stores the annotation class name and a mapping from parameter field names to string values.
+Function: Represents **one** annotation instance in CHIR, corresponding to the source form `@ClassName[v1, v2, ...]`: stores the annotation class name and a list of argument values.
 
 Parent Types:
 
 - ToString
+
+### prop argValues
+
+```cangjie
+public mut prop argValues: Array<String>
+```
+
+Function: Gets or sets the annotation argument values. Getter returns the current list of argument values; setter replaces the entire list.
+
+Type: Array\<String>
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let a = CustomAnnoInstance("MyAnno")
+    println(a.argValues.size)
+}
+```
+
+Output:
+
+```text
+0
+```
 
 ### prop classSrcCodeName
 
@@ -29,7 +57,7 @@ Example:
 import stdx.chir.*
 
 main() {
-    let a = Annotation("MyAnno")
+    let a = CustomAnnoInstance("MyAnno")
     println(a.classSrcCodeName)
 }
 ```
@@ -40,13 +68,41 @@ Output:
 MyAnno
 ```
 
+### prop location
+
+```cangjie
+public prop location: DebugLocation
+```
+
+Function: Source location where this annotation appeared.
+
+Type: [DebugLocation](#class-debuglocation)
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let a = CustomAnnoInstance("MyAnno")
+    println(a.location.isValid())
+}
+```
+
+Output:
+
+```text
+false
+```
+
 ### init(String)
 
 ```cangjie
 public init(classSrcCodeName: String)
 ```
 
-Function: Constructs an `Annotation` object with the given annotation class name and an **initially empty** parameter list; use [`setFieldValue`](#func-setfieldvalue-string-string) to add key-value pairs.
+Function: Constructs a `CustomAnnoInstance` object with the given annotation class name, an **initially empty** argument values list, and an invalid location.
 
 Parameters:
 
@@ -59,7 +115,7 @@ Example:
 import stdx.chir.*
 
 main() {
-    let a = Annotation("Fresh")
+    let a = CustomAnnoInstance("Fresh")
     println(a.toString())
 }
 ```
@@ -70,21 +126,18 @@ Output:
 @Fresh[]
 ```
 
-### func getFieldValue(String)
+### init(String, DebugLocation)
 
 ```cangjie
-public func getFieldValue(fieldName: String): ?String
+public init(classSrcCodeName: String, loc: DebugLocation)
 ```
 
-Function: Looks up an annotation parameter by key; returns `None` if it does not exist.
+Function: Constructs a `CustomAnnoInstance` object with the given annotation class name and source location.
 
 Parameters:
 
-- fieldName: String - The parameter field name (same as the key in `key=value` from `toString()`).
-
-Return Value:
-
-- ?String - `Some(string value)` if present, otherwise `None`.
+- classSrcCodeName: String - The annotation class name in source code (e.g. `MyAnno`).
+- loc: [DebugLocation](#class-debuglocation) - Source location where this annotation appeared.
 
 Example:
 
@@ -93,38 +146,7 @@ Example:
 import stdx.chir.*
 
 main() {
-    let a = Annotation("A")
-    println(a.classSrcCodeName)
-}
-```
-
-Output:
-
-```text
-A
-```
-
-### func setFieldValue(String, String)
-
-```cangjie
-public func setFieldValue(fieldName: String, value: String): Unit
-```
-
-Function: Sets or overrides the string value of a parameter field (used when building or testing CHIR).
-
-Parameters:
-
-- fieldName: String - Parameter name.
-- value: String - Parameter value (as a string).
-
-Example:
-
-<!-- verify -->
-```cangjie
-import stdx.chir.*
-
-main() {
-    let a = Annotation("S")
+    let a = CustomAnnoInstance("Fresh", DebugLocation.invalid())
     println(a.toString())
 }
 ```
@@ -132,7 +154,7 @@ main() {
 Output:
 
 ```text
-@S[]
+@Fresh[]
 ```
 
 ### func toString()
@@ -141,7 +163,7 @@ Output:
 public func toString(): String
 ```
 
-Function: Formats as `@ClassName[k1=v1, k2=v2]` for logging and debugging.
+Function: Formats as `@ClassName[v1, v2, ...]` for logging and debugging.
 
 Return Value:
 
@@ -154,7 +176,7 @@ Example:
 import stdx.chir.*
 
 main() {
-    let a = Annotation("T")
+    let a = CustomAnnoInstance("T")
     println(a.toString())
 }
 ```
@@ -756,7 +778,7 @@ prop_classType: true
 ### prop isAnnotation
 
 ```cangjie
-public mut prop isAnnotation: Bool
+public prop isAnnotation: Bool
 ```
 
 Function: Whether this is an annotation class.
@@ -1694,6 +1716,122 @@ Output:
 ```text
 0
 ```
+
+
+### prop customAnnoInstances
+
+```cangjie
+public mut prop customAnnoInstances: Array<CustomAnnoInstance>
+```
+
+Function: Annotation instance list; getter returns the current instances, setter replaces the entire list.
+
+Type: Array\<[CustomAnnoInstance](#class-customannoinstance)>
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let c = pkg.addClass("C_m", "C", true)
+    println("${c.customAnnoInstances.size}")
+}
+```
+
+Output:
+
+```text
+0
+```
+
+
+### prop methods
+
+```cangjie
+public prop methods: Array<Function>
+```
+
+Function: Methods declared on this custom type.
+
+Type: Array\<[Function](#class-function)>
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let c = pkg.addClass("C_m", "C", true)
+    println("${c.methods.size}")
+}
+```
+
+Output:
+
+```text
+0
+```
+
+
+### prop staticVars
+
+```cangjie
+public prop staticVars: Array<GlobalVar>
+```
+
+Function: Static variables declared on this custom type.
+
+Type: Array\<[GlobalVar](#class-globalvar)>
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let c = pkg.addClass("C_m", "C", true)
+    println("${c.staticVars.size}")
+}
+```
+
+Output:
+
+```text
+0
+```
+
+
+### func appendMethod(Function)
+
+```cangjie
+public func appendMethod(method: Function): Unit
+```
+
+Function: Appends a method to this type definition's method list.
+
+Parameters:
+
+- method: [Function](#class-function) - The method to append.
+
+
+### func appendStaticVar(GlobalVar)
+
+```cangjie
+public func appendStaticVar(staticVar: GlobalVar): Unit
+```
+
+Function: Appends a static variable to this type definition, automatically marking it as a static member.
+
+Parameters:
+
+- staticVar: [GlobalVar](#class-globalvar) - The static variable to append.
 
 
 ### func setPublic()
@@ -2683,15 +2821,15 @@ Output:
 A
 ```
 
-### prop annotations
+### prop customAnnoInstances
 
 ```cangjie
-public mut prop annotations: Array<Annotation>
+public mut prop customAnnoInstances: Array<CustomAnnoInstance>
 ```
 
-Function: List of annotation instances attached to this enum constructor (stored internally as `AnnoInfo`, exposed as `Array<Annotation>`); `set` replaces the whole list.
+Function: List of annotation instances attached to this enum constructor; getter returns the current list, setter replaces the whole list.
 
-Type: Array\<[Annotation](#class-annotation)>
+Type: Array\<[CustomAnnoInstance](#class-customannoinstance)>
 
 Example:
 
@@ -2703,9 +2841,9 @@ main() {
     let pkg = Package("demo", AccessLevel.Public)
     let e = pkg.addEnum("E_m", "E", true)
     let ctor = e.appendEnumCtorInfo("A_m", "A")
-    let ann = Annotation("Marker")
-    ctor.annotations = [ann]
-    println("${ctor.annotations.size}")
+    let ann = CustomAnnoInstance("Marker")
+    ctor.customAnnoInstances = [ann]
+    println("${ctor.customAnnoInstances.size}")
 }
 ```
 
@@ -4121,15 +4259,15 @@ Output:
 false
 ```
 
-### prop annotations
+### prop customAnnoInstances
 
 ```cangjie
-public mut prop annotations: Array<Annotation>
+public mut prop customAnnoInstances: Array<CustomAnnoInstance>
 ```
 
-Function: List of annotation instances on the member (stored internally as `AnnoInfo`, exposed as `Array<Annotation>`); `set` replaces the whole list.
+Function: List of annotation instances on the member; getter returns the current list, setter replaces the whole list.
 
-Type: Array\<[Annotation](#class-annotation)>
+Type: Array\<[CustomAnnoInstance](#class-customannoinstance)>
 
 Example:
 
@@ -4141,7 +4279,7 @@ main() {
     let pkg = Package("p", AccessLevel.Public)
     let st = pkg.addStruct("S_m", "S")
     let mv = st.appendInstanceMemberVar("x", IntType.getInt32())
-    println("${mv.annotations.size}")
+    println("${mv.customAnnoInstances.size}")
 }
 ```
 
@@ -4803,6 +4941,64 @@ Function: Extend definitions declared in this package.
 
 Type: Array\<[ExtendDef](#class-extenddef)>
 
+### prop globalVars
+
+```cangjie
+public prop globalVars: Array<GlobalVar>
+```
+
+Function: List of global variable definitions declared in this package.
+
+Type: Array\<[GlobalVar](#class-globalvar)>
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    println("${pkg.globalVars.size}")
+}
+```
+
+Output:
+
+```text
+0
+```
+
+### prop functions
+
+```cangjie
+public prop functions: Array<Function>
+```
+
+Function: List of function definitions declared in this package.
+
+Type: Array\<[Function](#class-function)>
+
+### prop allCustomTypeDefs
+
+```cangjie
+public prop allCustomTypeDefs: Array<CustomTypeDef>
+```
+
+Function: All custom type definitions in this package (including imported and locally declared classes, enums, extends, structs).
+
+Type: Array\<[CustomTypeDef](#class-customtypedef)>
+
+### prop packageInitFunc
+
+```cangjie
+public prop packageInitFunc: ?Function
+```
+
+Function: Package initialization function; `None` when not set.
+
+Type: ?[Function](#class-function)
+
 ### init(String, AccessLevel)
 
 ```cangjie
@@ -5098,6 +5294,86 @@ Output:
 Int32
 ```
 
+### func addFunction(FuncType, String, String, String)
+
+```cangjie
+public func addFunction(ty: FuncType, identifier: String, srcCodeName: String, packageName: String): Function
+```
+
+Function: Adds a function definition to this package, returning the created Function (parameters auto-filled from ty).
+
+Parameters:
+
+- ty: FuncType - Function type.
+- identifier: String - Internal identifier.
+- srcCodeName: String - Source code name.
+- packageName: String - Owning package name.
+
+Return Value:
+
+- [Function](#class-function) - The newly created function definition.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    println("${pkg.functions.size}")
+    println(f.srcCodeName)
+}
+```
+
+Output:
+
+```text
+1
+f
+```
+
+### func addGlobalVar(Type, String, String, String)
+
+```cangjie
+public func addGlobalVar(ty: Type, identifier: String, srcCodeName: String, packageName: String): GlobalVar
+```
+
+Function: Adds a global variable definition to this package, returning the created GlobalVar.
+
+Parameters:
+
+- ty: Type - Variable type.
+- identifier: String - Internal identifier.
+- srcCodeName: String - Source code name.
+- packageName: String - Owning package name.
+
+Return Value:
+
+- [GlobalVar](#class-globalvar) - The newly created global variable definition.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let gv = pkg.addGlobalVar(IntType.getInt32(), "gv_m", "gv", "demo")
+    println("${pkg.globalVars.size}")
+    println(gv.srcCodeName)
+}
+```
+
+Output:
+
+```text
+1
+gv
+```
+
 ### func getSpecifiedClassDef(String, String)
 
 ```cangjie
@@ -5192,6 +5468,42 @@ Output:
 
 ```text
 fn_getSpecifiedEnumDef: true
+```
+
+### func getSpecifiedFunction(String)
+
+```cangjie
+public func getSpecifiedFunction(mangledName: String): ?Function
+```
+
+Function: Looks up a function definition by its mangled name.
+
+Parameters:
+
+- mangledName: String - The function's mangled name (without global prefix).
+
+Return Value:
+
+- ?[Function](#class-function) - `Some` if found, `None` otherwise.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let _ = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    let r = pkg.getSpecifiedFunction("f_m")
+    println("fn_getSpecifiedFunction: ${r.isSome()}")
+}
+```
+
+Output:
+
+```text
+fn_getSpecifiedFunction: true
 ```
 
 ### func toString()
@@ -6239,6 +6551,14 @@ BoolType is boolean type: true
 Int32 is boolean type: false
 ```
 
+### func isBuiltinType()
+
+```cangjie
+public func isBuiltinType(): Bool
+```
+
+Function: Whether this is a builtin type (Int, Float, Bool, Rune, Unit, Nothing, RawArray, VArray, CPointer, CString, etc.).
+
 ### func isFloatType()
 
 ```cangjie
@@ -6572,10 +6892,254 @@ Int32 is unsigned integer: false
 UInt32 is unsigned integer: true
 ```
 
+### func isAnyTypeInStd()
+
+```cangjie
+public func isAnyTypeInStd(): Bool
+```
+
+Function: Whether this is the Any type in the std package.
+
+### func isBoxType()
+
+```cangjie
+public func isBoxType(): Bool
+```
+
+Function: Whether this is a BoxType.
+
+### func isBoxRefTypeOf(Type)
+
+```cangjie
+public func isBoxRefTypeOf(other: Type): Bool
+```
+
+Function: Whether this is the Box reference type of other.
+
+Parameters:
+
+- other: Type - The type to compare with.
+
+### func isCFuncType()
+
+```cangjie
+public func isCFuncType(): Bool
+```
+
+Function: Whether this is a C function type.
+
+### func isCPointerType()
+
+```cangjie
+public func isCPointerType(): Bool
+```
+
+Function: Whether this is a CPointer type.
+
+### func isCStringType()
+
+```cangjie
+public func isCStringType(): Bool
+```
+
+Function: Whether this is a CString type.
+
+### func isCTypeInStd()
+
+```cangjie
+public func isCTypeInStd(): Bool
+```
+
+Function: Whether this is a C type in the std package.
+
+### func isClassLikeType()
+
+```cangjie
+public func isClassLikeType(): Bool
+```
+
+Function: Whether this is a ClassLikeType.
+
+### func isClosureType()
+
+```cangjie
+public func isClosureType(): Bool
+```
+
+Function: Whether this is a closure type.
+
+### func isClosureBaseType()
+
+```cangjie
+public func isClosureBaseType(): Bool
+```
+
+Function: Whether this is a closure base type.
+
+### func isClosureGenericBaseType()
+
+```cangjie
+public func isClosureGenericBaseType(): Bool
+```
+
+Function: Whether this is a closure generic base type.
+
+### func isClosureInstBaseType()
+
+```cangjie
+public func isClosureInstBaseType(): Bool
+```
+
+Function: Whether this is a closure instantiated base type.
+
+### func isCustomType()
+
+```cangjie
+public func isCustomType(): Bool
+```
+
+Function: Whether this is a CustomType.
+
+### func isEnumType()
+
+```cangjie
+public func isEnumType(): Bool
+```
+
+Function: Whether this is an EnumType.
+
+### func isFuncType()
+
+```cangjie
+public func isFuncType(): Bool
+```
+
+Function: Whether this is a FuncType.
+
+### func isGenericType()
+
+```cangjie
+public func isGenericType(): Bool
+```
+
+Function: Whether this is a GenericType.
+
+### func isGenericRelated()
+
+```cangjie
+public func isGenericRelated(): Bool
+```
+
+Function: Whether this is related to generics.
+
+### func isReferenceType()
+
+```cangjie
+public func isReferenceType(): Bool
+```
+
+Function: Whether this is a reference type (ClassLikeType, RawArrayType, BoxType, or ThisType).
+
+### func isRawArrayType()
+
+```cangjie
+public func isRawArrayType(): Bool
+```
+
+Function: Whether this is a RawArray type.
+
+### func isStructType()
+
+```cangjie
+public func isStructType(): Bool
+```
+
+Function: Whether this is a StructType.
+
+### func isThisType()
+
+```cangjie
+public func isThisType(): Bool
+```
+
+Function: Whether this is a ThisType.
+
+### func isTupleType()
+
+```cangjie
+public func isTupleType(): Bool
+```
+
+Function: Whether this is a TupleType.
+
+### func isValueType()
+
+```cangjie
+public func isValueType(): Bool
+```
+
+Function: Whether this is a value type.
+
+### func isVArrayType()
+
+```cangjie
+public func isVArrayType(): Bool
+```
+
+Function: Whether this is a VArrayType.
+
+### func satisfyCType()
+
+```cangjie
+public func satisfyCType(): Bool
+```
+
+Function: Whether this satisfies the C type constraint.
+
+### func isEqualOrSubTypeOf(Type, ArrayList<(Type, Type)>)
+
+```cangjie
+public func isEqualOrSubTypeOf(parent: Type, visited!: ArrayList<(Type, Type)> = ArrayList<(Type, Type)>()): Bool
+```
+
+Function: Determines whether this is an equal or subtype of parent.
+
+Parameters:
+
+- parent: Type - The parent type to compare with.
+- visited!: ArrayList<(Type, Type)> - Visitation table for cycle detection; usually pass the default empty table.
+
+### func isEqualOrInstantiatedTypeOf(Type, ArrayList<(Type, Type)>)
+
+```cangjie
+public func isEqualOrInstantiatedTypeOf(genericRelatedType: Type, visited!: ArrayList<(Type, Type)> = ArrayList<(Type, Type)>()): Bool
+```
+
+Function: Determines whether this is an equal or instantiated type of genericRelatedType.
+
+Parameters:
+
+- genericRelatedType: Type - The generic-related type to compare with.
+- visited!: ArrayList<(Type, Type)> - Visitation table for cycle detection; usually pass the default empty table.
+
+### func satisfyGenericConstraints(GenericType, HashMap<GenericType, Type>, ArrayList<(Type, Type)>)
+
+```cangjie
+public func satisfyGenericConstraints(gType: GenericType, instMap: HashMap<GenericType, Type>, visited!: ArrayList<(Type, Type)> = ArrayList<(Type, Type)>()): Bool
+```
+
+Function: Determines whether this satisfies the generic constraints.
+
+Parameters:
+
+- gType: GenericType - The generic type.
+- instMap: HashMap<GenericType, Type> - The generic instantiation mapping.
+- visited!: ArrayList<(Type, Type)> - Visitation table for cycle detection; usually pass the default empty table.
+
 ### operator func==(Type)
 
 ```cangjie
-public open operator func==(other: Type): Bool
+public operator func ==(other: Type): Bool
 ```
 
 Function: Checks whether this type equals another type.
@@ -7221,7 +7785,7 @@ h<Generic-pkg:T>(Int32) -> Unit
 public abstract class CHIRVisitor
 ```
 
-Function: **Abstract visitor** for CHIR functions, block groups, basic blocks, and nested expressions. Subclasses can override [`action`](#func-actionexpression) to observe each expression node; `walk` methods recursively traverse until `IRActionMode.STOP` is returned.
+Function: **Abstract visitor** for CHIR functions, block groups, basic blocks, and nested expressions. Subclasses can override [`action`](#func-actionexpression) to observe each expression node; `walk` methods recursively traverse until `IRActionMode.Stop` is returned.
 
 ### func walk(Function)
 
@@ -7334,7 +7898,7 @@ Output:
 public open func action(ty: Expression): IRActionMode
 ```
 
-Function: Called for each visited expression node, determining whether to continue traversal. Defaults to returning `IRActionMode.CONTINUE`; subclasses can override to implement custom observation logic or early termination.
+Function: Called for each visited expression node, determining whether to continue traversal. Defaults to returning `IRActionMode.Continue`; subclasses can override to implement custom observation logic or early termination.
 
 Parameters:
 
@@ -7342,7 +7906,7 @@ Parameters:
 
 Return Value:
 
-- [IRActionMode](chir_package_enums.md#enum-iractionmode) - Visitor control mode (`CONTINUE` to continue traversal, `STOP` to terminate traversal).
+- [IRActionMode](chir_package_enums.md#enum-iractionmode) - Visitor control mode (`Continue` to continue traversal, `Stop` to terminate traversal, `Skip` to skip nested BlockGroups).
 
 Example:
 
@@ -7353,7 +7917,7 @@ import stdx.chir.*
 class MyVisitor <: CHIRVisitor {
     public open func action(ty: Expression): IRActionMode {
         println(ty.toString().size > 0)
-        return IRActionMode.CONTINUE
+        return IRActionMode.Continue
     }
 }
 
@@ -7497,6 +8061,32 @@ Output:
 ```text
 prop_objType: true
 ```
+
+### func setArg(Int64, Value)
+
+```cangjie
+public func setArg(index: Int64, arg: Value): Unit
+```
+
+Function: Sets the argument value at the specified position.
+
+Parameters:
+
+- index: Int64 - Argument position index.
+- arg: Value - New argument value.
+
+### func setInstTypeArg(Int64, Type)
+
+```cangjie
+public func setInstTypeArg(index: Int64, arg: Type): Unit
+```
+
+Function: Sets the instantiation type argument at the specified position.
+
+Parameters:
+
+- index: Int64 - Argument position index.
+- arg: [Type](#class-type) - New instantiation type argument.
 
 ---
 
@@ -10025,15 +10615,15 @@ Parent Types:
 - Value
 - Equatable\<Parameter>
 
-### prop annotations
+### prop customAnnoInstances
 
 ```cangjie
-public mut prop annotations: Array<Annotation>
+public mut prop customAnnoInstances: Array<CustomAnnoInstance>
 ```
 
-Function: Parameter annotation list; `set` replaces the entire list.
+Function: Parameter annotation instance list; getter returns the current list, setter replaces the entire list.
 
-Type: Array\<[Annotation](#class-annotation)>
+Type: Array\<[CustomAnnoInstance](#class-customannoinstance)>
 
 Example:
 
@@ -10045,14 +10635,14 @@ main() {
     let pkg = Package("demo", AccessLevel.Public)
     let f = pkg.addFunction(FuncType.get([IntType.getInt32()], UnitType.get()), "f_m", "f", "demo")
     let param = f.parameters[0]
-    println("mut_prop_annotations: ${param.annotations.size}")
+    println("mut_prop_customAnnoInstances: ${param.customAnnoInstances.size}")
 }
 ```
 
 Output:
 
 ```text
-mut_prop_annotations: 0
+mut_prop_customAnnoInstances: 0
 ```
 
 ### prop srcCodeName
@@ -12008,40 +12598,14 @@ static_func_create: 1
 ### func getArgs()
 
 ```cangjie
-public func getArgs(): Array<Value>
+public override func getArgs(): Array<Value>
 ```
 
-Function: Gets the call argument list.
+Function: Returns the actual argument list of this call expression.
 
 Return Value:
 
-- Array\<Value> - Call argument list.
-
-Example:
-
-<!-- verify -->
-```cangjie
-import stdx.chir.*
-
-main() {
-    let pkg = Package("demo", AccessLevel.Public)
-    let calleeFunc = pkg.addFunction(FuncType.get([IntType.getInt32()], UnitType.get()), "callee_m", "callee", "demo")
-    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
-    f.initBody()
-    let block = f.body.getOrThrow().entryBlock
-    let arg = IntLiteral.get(IntType.getInt32(), 1)
-    let ctx = FuncCallContext([arg], [], None)
-    let expr = Apply.create(calleeFunc, ctx)
-    block.appendExpr(expr)
-    println("func_getArgs: ${expr.getArgs().size}")
-}
-```
-
-Output:
-
-```text
-func_getArgs: 1
-```
+- Array\<Value> - Array of argument values.
 
 ### operator func==(Apply)
 
@@ -12225,43 +12789,14 @@ static_func_create: 1
 ### func getArgs()
 
 ```cangjie
-public func getArgs(): Array<Value>
+public override func getArgs(): Array<Value>
 ```
 
-Function: Gets the call argument list (excluding normal and error branch operands).
+Function: Returns the actual argument list of this call expression.
 
 Return Value:
 
-- Array\<Value> - Call argument list.
-
-Example:
-
-<!-- verify -->
-```cangjie
-import stdx.chir.*
-
-main() {
-    let pkg = Package("demo", AccessLevel.Public)
-    let calleeFunc = pkg.addFunction(FuncType.get([IntType.getInt32()], UnitType.get()), "callee_m", "callee", "demo")
-    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
-    f.initBody()
-    let bg = f.body.getOrThrow()
-    let block = bg.entryBlock
-    let normalBlock = bg.appendBlock()
-    let errorBlock = bg.appendBlock()
-    let arg = IntLiteral.get(IntType.getInt32(), 1)
-    let ctx = FuncCallContext([arg], [], None)
-    let expr = TryApply.create(calleeFunc, ctx, normalBlock, errorBlock)
-    block.appendExpr(expr)
-    println("func_getArgs: ${expr.getArgs().size}")
-}
-```
-
-Output:
-
-```text
-func_getArgs: 1
-```
+- Array\<Value> - Array of argument values.
 
 ### operator func==(TryApply)
 
@@ -12325,14 +12860,14 @@ Parent Types:
 ### func getArgs()
 
 ```cangjie
-public func getArgs(): Array<Value>
+public override func getArgs(): Array<Value>
 ```
 
-Function: Gets the intrinsic function call argument list.
+Function: Returns the actual argument list of this call expression.
 
 Return Value:
 
-- Array\<Value> - Call argument list.
+- Array\<Value> - Array of argument values.
 
 ### operator func==(Intrinsic)
 
@@ -12388,14 +12923,14 @@ Type: Block
 ### func getArgs()
 
 ```cangjie
-public func getArgs(): Array<Value>
+public override func getArgs(): Array<Value>
 ```
 
-Function: Gets the intrinsic function call argument list (excluding normal and error branch operands).
+Function: Returns the actual argument list of this call expression.
 
 Return Value:
 
-- Array\<Value> - Call argument list.
+- Array\<Value> - Array of argument values.
 
 ### operator func==(TryIntrinsic)
 
@@ -12472,45 +13007,17 @@ Output:
 static_func_create: 1
 ```
 
-### func getArgs(
-
+### func getArgs()
 
 ```cangjie
-public func getArgs(): Array<Value>
+public override func getArgs(): Array<Value>
 ```
 
-Function: Gets the virtual method call argument list.
+Function: Returns the actual argument list of this call expression.
 
 Return Value:
 
-- Array\<Value> - Call argument list.
-
-Example:
-
-<!-- verify -->
-```cangjie
-import stdx.chir.*
-
-main() {
-    let pkg = Package("demo", AccessLevel.Public)
-    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
-    f.initBody()
-    let block = f.body.getOrThrow().entryBlock
-    let ft = FuncType.get([], UnitType.get())
-    let sig = FuncSigInfo("method", ft)
-    let fcc = FuncCallContext([], [], None)
-    let ctx = InvokeCallContext(BoolLiteral.get(false), sig, fcc)
-    let expr = Invoke.create(UnitType.get(), ctx)
-    block.appendExpr(expr)
-    println("func_getArgs: ${expr.getArgs().size}")
-}
-```
-
-Output:
-
-```text
-func_getArgs: 1
-```
+- Array\<Value> - Array of argument values.
 
 ### operator func==(Invoke)
 
@@ -12699,48 +13206,17 @@ Output:
 static_func_create: 1
 ```
 
-### func getArgs
+### func getArgs()
 
-)
 ```cangjie
-public func getArgs(): Array<Value>
+public override func getArgs(): Array<Value>
 ```
 
-Function: Gets the virtual method call argument list (excluding normal and error branch operands).
+Function: Returns the actual argument list of this call expression.
 
 Return Value:
 
-- Array\<Value> - Call argument list.
-
-Example:
-
-<!-- verify -->
-```cangjie
-import stdx.chir.*
-
-main() {
-    let pkg = Package("demo", AccessLevel.Public)
-    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
-    f.initBody()
-    let bg = f.body.getOrThrow()
-    let block = bg.entryBlock
-    let normalBlock = bg.appendBlock()
-    let errorBlock = bg.appendBlock()
-    let ft = FuncType.get([], UnitType.get())
-    let sig = FuncSigInfo("method", ft)
-    let fcc = FuncCallContext([], [], None)
-    let ctx = InvokeCallContext(BoolLiteral.get(false), sig, fcc)
-    let expr = TryInvoke.create(UnitType.get(), ctx, normalBlock, errorBlock)
-    block.appendExpr(expr)
-    println("func_getArgs: ${expr.getArgs().size}")
-}
-```
-
-Output:
-
-```text
-func_getArgs: 1
-```
+- Array\<Value> - Array of argument values.
 
 ### operator func==(TryInvoke)
 
@@ -13973,43 +14449,15 @@ Output:
 prop_body: true
 ```
 
-### prop returnValue
+### prop isCompileTimeValue
 
 ```cangjie
-public mut prop returnValue: LocalVar
+public mut prop isCompileTimeValue: Bool
 ```
 
-Function: Return value local variable.
+Function: Whether this lambda is a compile-time value; getter returns the current flag, setter can modify it.
 
-Type: [LocalVar](#class-localvar)
-
-Example:
-
-<!-- verify -->
-```cangjie
-import stdx.chir.*
-import std.collection.*
-
-main() {
-    let pkg = Package("demo", AccessLevel.Public)
-    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
-    f.initBody()
-    let block = f.body.getOrThrow().entryBlock
-    let lambdaType = FuncType.get([], IntType.getInt32())
-    let expr = Lambda.create(lambdaType, "lambda_m", "myLambda", ArrayList<GenericType>())
-    block.appendExpr(expr)
-    expr.initBody()
-    let lit = IntLiteral.get(IntType.getInt32(), 42)
-    expr.returnValue = Constant.create(lit).result
-    println("mut_prop_returnValue: ${expr.returnValue.toString().size > 0}")
-}
-```
-
-Output:
-
-```text
-mut_prop_returnValue: true
-```
+Type: Bool
 
 ### prop isLocalFunc
 
@@ -14017,69 +14465,19 @@ mut_prop_returnValue: true
 public mut prop isLocalFunc: Bool
 ```
 
-Function: Whether it is a local function.
+Function: Whether this lambda is a local function; getter returns the current flag, setter can modify it.
 
 Type: Bool
 
-Example:
-
-<!-- verify -->
-```cangjie
-import stdx.chir.*
-import std.collection.*
-
-main() {
-    let pkg = Package("demo", AccessLevel.Public)
-    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
-    f.initBody()
-    let block = f.body.getOrThrow().entryBlock
-    let lambdaType = FuncType.get([], UnitType.get())
-    let expr = Lambda.create(lambdaType, "lambda_m", "myLambda", ArrayList<GenericType>())
-    block.appendExpr(expr)
-    println("mut_prop_isLocalFunc: ${expr.isLocalFunc}")
-}
-```
-
-Output:
-
-```text
-mut_prop_isLocalFunc: false
-```
-
-### prop isCompileTimeValue
+### prop returnValue
 
 ```cangjie
-public mut prop isCompileTimeValue: Bool
+public mut prop returnValue: LocalVar
 ```
 
-Function: Whether it is a compile-time value.
+Function: The return value variable of the Lambda.
 
-Type: Bool
-
-Example:
-
-<!-- verify -->
-```cangjie
-import stdx.chir.*
-import std.collection.*
-
-main() {
-    let pkg = Package("demo", AccessLevel.Public)
-    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
-    f.initBody()
-    let block = f.body.getOrThrow().entryBlock
-    let lambdaType = FuncType.get([], UnitType.get())
-    let expr = Lambda.create(lambdaType, "lambda_m", "myLambda", ArrayList<GenericType>())
-    block.appendExpr(expr)
-    println("mut_prop_isCompileTimeValue: ${expr.isCompileTimeValue}")
-}
-```
-
-Output:
-
-```text
-mut_prop_isCompileTimeValue: false
-```
+Type: [LocalVar](#class-localvar)
 
 ### static func create(FuncType, String, String, ArrayList\<GenericType>)
 
@@ -20830,4 +21228,69 @@ Output:
 ```text
 createVArrayBuilder: true
 ```
+
+---
+
+## func serializePackage
+
+```cangjie
+public func serializePackage(pkg: Package): (CPointer<UInt8>, Int64)
+```
+
+Function: Serializes an in-memory [Package](#class-package) into a CHIR FlatBuffers binary blob, returning the pointer to the serialized result and its byte length.
+
+Parameters:
+
+- pkg: [Package](#class-package) - The CHIR package to serialize.
+
+Return Value:
+
+- (CPointer\<UInt8>, Int64) - Pointer to the serialized result and its byte length. The caller should call [freeSerializedMemory](#func-freeserializedmemory) to release the memory after use.
+
+Example:
+
+<!-- run -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let (data, length) = serializePackage(pkg)
+    println("length: ${length}")
+    freeSerializedMemory()
+}
+```
+
+---
+
+## func deserializePackage
+
+```cangjie
+public func deserializePackage(root: CPointer<UInt8>, length: Int64): Package
+```
+
+Function: Deserializes a CHIR [Package](#class-package) from a FlatBuffers binary buffer.
+
+Parameters:
+
+- root: CPointer\<UInt8> - Pointer to the first byte of the serialized data; must not be null.
+- length: Int64 - Byte length of the buffer.
+
+Return Value:
+
+- [Package](#class-package) - The deserialized CHIR package.
+
+Exceptions:
+
+- [CHIRException](#class-chirexception) - Thrown when root is null.
+
+---
+
+## func freeSerializedMemory
+
+```cangjie
+public func freeSerializedMemory(): Unit
+```
+
+Function: Resets the shared FlatBuffers builder state produced by the last serialization.
 </task_result>

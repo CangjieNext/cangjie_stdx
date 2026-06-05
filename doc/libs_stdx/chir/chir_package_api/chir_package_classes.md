@@ -1,16 +1,44 @@
 # 类
 
-## class Annotation
+## class CustomAnnoInstance
 
 ```cangjie
-public class Annotation <: ToString
+public class CustomAnnoInstance <: ToString
 ```
 
-功能：表示 CHIR 中**一处**注解实例，对应源码形态 `@ClassName[k1=v1, k2=v2]`：保存注解类名及参数字段名到字符串值的映射。
+功能：表示 CHIR 中**一处**注解实例，对应源码形态 `@ClassName[v1, v2, ...]`：保存注解类名及参数值列表。
 
 父类型：
 
 - ToString
+
+### prop argValues
+
+```cangjie
+public mut prop argValues: Array<String>
+```
+
+功能：获取或设置注解参数值列表。getter 返回当前所有参数值；setter 替换整个列表。
+
+类型：Array\<String>
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let a = CustomAnnoInstance("MyAnno")
+    println(a.argValues.size)
+}
+```
+
+运行结果：
+
+```text
+0
+```
 
 ### prop classSrcCodeName
 
@@ -29,7 +57,7 @@ public prop classSrcCodeName: String
 import stdx.chir.*
 
 main() {
-    let a = Annotation("MyAnno")
+    let a = CustomAnnoInstance("MyAnno")
     println(a.classSrcCodeName)
 }
 ```
@@ -40,13 +68,41 @@ main() {
 MyAnno
 ```
 
+### prop location
+
+```cangjie
+public prop location: DebugLocation
+```
+
+功能：注解在源码中出现的位置。
+
+类型：[DebugLocation](#class-debuglocation)
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let a = CustomAnnoInstance("MyAnno")
+    println(a.location.isValid())
+}
+```
+
+运行结果：
+
+```text
+false
+```
+
 ### init(String)
 
 ```cangjie
 public init(classSrcCodeName: String)
 ```
 
-功能：构造一个 `Annotation` 对象，指定注解类名且**参数表初始为空**；可通过 [`setFieldValue`](#func-setfieldvaluestring-string) 写入键值。
+功能：构造一个 `CustomAnnoInstance` 对象，指定注解类名且**参数值列表初始为空**、位置为无效位置。
 
 参数：
 
@@ -59,7 +115,7 @@ public init(classSrcCodeName: String)
 import stdx.chir.*
 
 main() {
-    let a = Annotation("Fresh")
+    let a = CustomAnnoInstance("Fresh")
     println(a.toString())
 }
 ```
@@ -70,21 +126,18 @@ main() {
 @Fresh[]
 ```
 
-### func getFieldValue(String)
+### init(String, DebugLocation)
 
 ```cangjie
-public func getFieldValue(fieldName: String): ?String
+public init(classSrcCodeName: String, loc: DebugLocation)
 ```
 
-功能：按键名查找注解参数；若不存在则返回 `None`。
+功能：构造一个 `CustomAnnoInstance` 对象，指定注解类名和源码位置。
 
 参数：
 
-- fieldName: String - 参数字段名（与 `toString()` 中 `key=value` 的键一致）。
-
-返回值：
-
-- ?String - 有则 `Some(字符串值)`，否则 `None`。
+- classSrcCodeName: String - 源码中的注解类名（如 `MyAnno`）。
+- loc: [DebugLocation](#class-debuglocation) - 注解在源码中出现的位置。
 
 示例：
 
@@ -93,38 +146,7 @@ public func getFieldValue(fieldName: String): ?String
 import stdx.chir.*
 
 main() {
-    let a = Annotation("A")
-    println(a.classSrcCodeName)
-}
-```
-
-运行结果：
-
-```text
-A
-```
-
-### func setFieldValue(String, String)
-
-```cangjie
-public func setFieldValue(fieldName: String, value: String): Unit
-```
-
-功能：设置或覆盖某一参数字段的字符串值（构建或测试 CHIR 时使用）。
-
-参数：
-
-- fieldName: String - 参数名。
-- value: String - 参数值（字符串形式）。
-
-示例：
-
-<!-- verify -->
-```cangjie
-import stdx.chir.*
-
-main() {
-    let a = Annotation("S")
+    let a = CustomAnnoInstance("Fresh", DebugLocation.invalid())
     println(a.toString())
 }
 ```
@@ -132,7 +154,7 @@ main() {
 运行结果：
 
 ```text
-@S[]
+@Fresh[]
 ```
 
 ### func toString()
@@ -141,7 +163,7 @@ main() {
 public func toString(): String
 ```
 
-功能：格式化为 `@ClassName[k1=v1, k2=v2]`，便于日志与调试。
+功能：格式化为 `@ClassName[v1, v2, ...]`，便于日志与调试。
 
 返回值：
 
@@ -154,7 +176,7 @@ public func toString(): String
 import stdx.chir.*
 
 main() {
-    let a = Annotation("T")
+    let a = CustomAnnoInstance("T")
     println(a.toString())
 }
 ```
@@ -756,7 +778,7 @@ prop_classType: true
 ### prop isAnnotation
 
 ```cangjie
-public mut prop isAnnotation: Bool
+public prop isAnnotation: Bool
 ```
 
 功能：是否为注解类。
@@ -1686,6 +1708,117 @@ main() {
 ```text
 0
 ```
+
+### prop customAnnoInstances
+
+```cangjie
+public mut prop customAnnoInstances: Array<CustomAnnoInstance>
+```
+
+功能：注解实例列表；getter 返回当前所有实例，setter 整体替换。
+
+类型：Array\<[CustomAnnoInstance](#class-customannoinstance)>
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let c = pkg.addClass("C_m", "C", true)
+    println("${c.customAnnoInstances.size}")
+}
+```
+
+运行结果：
+
+```text
+0
+```
+
+### prop methods
+
+```cangjie
+public prop methods: Array<Function>
+```
+
+功能：此自定义类型上声明的方法列表。
+
+类型：Array\<[Function](#class-function)>
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let c = pkg.addClass("C_m", "C", true)
+    println("${c.methods.size}")
+}
+```
+
+运行结果：
+
+```text
+0
+```
+
+### prop staticVars
+
+```cangjie
+public prop staticVars: Array<GlobalVar>
+```
+
+功能：此自定义类型上声明的静态变量列表。
+
+类型：Array\<[GlobalVar](#class-globalvar)>
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let c = pkg.addClass("C_m", "C", true)
+    println("${c.staticVars.size}")
+}
+```
+
+运行结果：
+
+```text
+0
+```
+
+### func appendMethod(Function)
+
+```cangjie
+public func appendMethod(method: Function): Unit
+```
+
+功能：将方法添加到此类型定义的方法列表中。
+
+参数：
+
+- method: [Function](#class-function) - 待添加的方法。
+
+### func appendStaticVar(GlobalVar)
+
+```cangjie
+public func appendStaticVar(staticVar: GlobalVar): Unit
+```
+
+功能：将静态变量添加到此类型定义中，并自动标记为静态成员。
+
+参数：
+
+- staticVar: [GlobalVar](#class-globalvar) - 待添加的静态变量。
 
 ### func setPublic()
 
@@ -2654,15 +2787,15 @@ main() {
 A
 ```
 
-### prop annotations
+### prop customAnnoInstances
 
 ```cangjie
-public mut prop annotations: Array<Annotation>
+public mut prop customAnnoInstances: Array<CustomAnnoInstance>
 ```
 
-功能：挂在此枚举构造器上的注解实例列表（内部由 `AnnoInfo` 存储，对外为 `Array<Annotation>`）；`set` 时整体替换。
+功能：挂在此枚举构造器上的注解实例列表；getter 返回当前所有实例，setter 整体替换。
 
-类型：Array\<[Annotation](#class-annotation)>
+类型：Array\<[CustomAnnoInstance](#class-customannoinstance)>
 
 示例：
 
@@ -2674,9 +2807,9 @@ main() {
     let pkg = Package("demo", AccessLevel.Public)
     let e = pkg.addEnum("E_m", "E", true)
     let ctor = e.appendEnumCtorInfo("A_m", "A")
-    let ann = Annotation("Marker")
-    ctor.annotations = [ann]
-    println("${ctor.annotations.size}")
+    let ann = CustomAnnoInstance("Marker")
+    ctor.customAnnoInstances = [ann]
+    println("${ctor.customAnnoInstances.size}")
 }
 ```
 
@@ -4092,15 +4225,15 @@ main() {
 false
 ```
 
-### prop annotations
+### prop customAnnoInstances
 
 ```cangjie
-public mut prop annotations: Array<Annotation>
+public mut prop customAnnoInstances: Array<CustomAnnoInstance>
 ```
 
-功能：成员上的注解实例列表（内部由 `AnnoInfo` 存储，对外为 `Array<Annotation>`）；`set` 时整体替换。
+功能：成员上的注解实例列表；getter 返回当前所有实例，setter 整体替换。
 
-类型：Array\<[Annotation](#class-annotation)>
+类型：Array\<[CustomAnnoInstance](#class-customannoinstance)>
 
 示例：
 
@@ -4112,7 +4245,7 @@ main() {
     let pkg = Package("p", AccessLevel.Public)
     let st = pkg.addStruct("S_m", "S")
     let mv = st.appendInstanceMemberVar("x", IntType.getInt32())
-    println("${mv.annotations.size}")
+    println("${mv.customAnnoInstances.size}")
 }
 ```
 
@@ -4774,6 +4907,64 @@ public prop extendDefs: Array<ExtendDef>
 
 类型：Array\<[ExtendDef](#class-extenddef)>
 
+### prop globalVars
+
+```cangjie
+public prop globalVars: Array<GlobalVar>
+```
+
+功能：包中定义的全局变量列表。
+
+类型：Array\<[GlobalVar](#class-globalvar)>
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    println("${pkg.globalVars.size}")
+}
+```
+
+运行结果：
+
+```text
+0
+```
+
+### prop functions
+
+```cangjie
+public prop functions: Array<Function>
+```
+
+功能：包中定义的函数列表。
+
+类型：Array\<[Function](#class-function)>
+
+### prop allCustomTypeDefs
+
+```cangjie
+public prop allCustomTypeDefs: Array<CustomTypeDef>
+```
+
+功能：包中所有自定义类型定义（包括导入和本地定义的类、枚举、扩展、结构体）。
+
+类型：Array\<[CustomTypeDef](#class-customtypedef)>
+
+### prop packageInitFunc
+
+```cangjie
+public prop packageInitFunc: ?Function
+```
+
+功能：包初始化函数；未设置时为 None。
+
+类型：?[Function](#class-function)
+
 ### init(String, AccessLevel)
 
 ```cangjie
@@ -5069,6 +5260,86 @@ main() {
 Int32
 ```
 
+### func addFunction(FuncType, String, String, String)
+
+```cangjie
+public func addFunction(ty: FuncType, identifier: String, srcCodeName: String, packageName: String): Function
+```
+
+功能：向此包添加函数定义，返回创建的 Function（参数从 ty 自动填充）。
+
+参数：
+
+- ty: FuncType - 函数类型。
+- identifier: String - 内部标识。
+- srcCodeName: String - 源码名称。
+- packageName: String - 所属包名。
+
+返回值：
+
+- [Function](#class-function) - 新创建的函数定义。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    println("${pkg.functions.size}")
+    println(f.srcCodeName)
+}
+```
+
+运行结果：
+
+```text
+1
+f
+```
+
+### func addGlobalVar(Type, String, String, String)
+
+```cangjie
+public func addGlobalVar(ty: Type, identifier: String, srcCodeName: String, packageName: String): GlobalVar
+```
+
+功能：向此包添加全局变量定义，返回创建的 GlobalVar。
+
+参数：
+
+- ty: Type - 变量类型。
+- identifier: String - 内部标识。
+- srcCodeName: String - 源码名称。
+- packageName: String - 所属包名。
+
+返回值：
+
+- [GlobalVar](#class-globalvar) - 新创建的全局变量定义。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let gv = pkg.addGlobalVar(IntType.getInt32(), "gv_m", "gv", "demo")
+    println("${pkg.globalVars.size}")
+    println(gv.srcCodeName)
+}
+```
+
+运行结果：
+
+```text
+1
+gv
+```
+
 ### func getSpecifiedClassDef(String, String)
 
 ```cangjie
@@ -5163,6 +5434,42 @@ main() {
 
 ```text
 fn_getSpecifiedEnumDef: true
+```
+
+### func getSpecifiedFunction(String)
+
+```cangjie
+public func getSpecifiedFunction(mangledName: String): ?Function
+```
+
+功能：按混淆名查找函数定义。
+
+参数：
+
+- mangledName: String - 函数的混淆名（不含全局前缀）。
+
+返回值：
+
+- ?[Function](#class-function) - 找到则 Some，否则 None。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let _ = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    let r = pkg.getSpecifiedFunction("f_m")
+    println("fn_getSpecifiedFunction: ${r.isSome()}")
+}
+```
+
+运行结果：
+
+```text
+fn_getSpecifiedFunction: true
 ```
 
 ### func toString()
@@ -6210,6 +6517,14 @@ BoolType 是布尔类型: true
 Int32 是布尔类型: false
 ```
 
+### func isBuiltinType()
+
+```cangjie
+public func isBuiltinType(): Bool
+```
+
+功能：是否为内建类型（Int、Float、Bool、Rune、Unit、Nothing、RawArray、VArray、CPointer、CString 等）。
+
 ### func isFloatType()
 
 ```cangjie
@@ -6543,10 +6858,254 @@ Int32 是无符号整数: false
 UInt32 是无符号整数: true
 ```
 
+### func isAnyTypeInStd()
+
+```cangjie
+public func isAnyTypeInStd(): Bool
+```
+
+功能：是否为 std 包中的 Any 类型。
+
+### func isBoxType()
+
+```cangjie
+public func isBoxType(): Bool
+```
+
+功能：是否为 BoxType。
+
+### func isBoxRefTypeOf(Type)
+
+```cangjie
+public func isBoxRefTypeOf(other: Type): Bool
+```
+
+功能：是否为 other 的 Box 引用类型。
+
+参数：
+
+- other: Type - 待比较的类型。
+
+### func isCFuncType()
+
+```cangjie
+public func isCFuncType(): Bool
+```
+
+功能：是否为 C 函数类型。
+
+### func isCPointerType()
+
+```cangjie
+public func isCPointerType(): Bool
+```
+
+功能：是否为 CPointer 类型。
+
+### func isCStringType()
+
+```cangjie
+public func isCStringType(): Bool
+```
+
+功能：是否为 CString 类型。
+
+### func isCTypeInStd()
+
+```cangjie
+public func isCTypeInStd(): Bool
+```
+
+功能：是否为 std 包中的 C 类型。
+
+### func isClassLikeType()
+
+```cangjie
+public func isClassLikeType(): Bool
+```
+
+功能：是否为 ClassLikeType。
+
+### func isClosureType()
+
+```cangjie
+public func isClosureType(): Bool
+```
+
+功能：是否为闭包类型。
+
+### func isClosureBaseType()
+
+```cangjie
+public func isClosureBaseType(): Bool
+```
+
+功能：是否为闭包基类型。
+
+### func isClosureGenericBaseType()
+
+```cangjie
+public func isClosureGenericBaseType(): Bool
+```
+
+功能：是否为闭包泛型基类型。
+
+### func isClosureInstBaseType()
+
+```cangjie
+public func isClosureInstBaseType(): Bool
+```
+
+功能：是否为闭包实例化基类型。
+
+### func isCustomType()
+
+```cangjie
+public func isCustomType(): Bool
+```
+
+功能：是否为 CustomType。
+
+### func isEnumType()
+
+```cangjie
+public func isEnumType(): Bool
+```
+
+功能：是否为 EnumType。
+
+### func isFuncType()
+
+```cangjie
+public func isFuncType(): Bool
+```
+
+功能：是否为 FuncType。
+
+### func isGenericType()
+
+```cangjie
+public func isGenericType(): Bool
+```
+
+功能：是否为 GenericType。
+
+### func isGenericRelated()
+
+```cangjie
+public func isGenericRelated(): Bool
+```
+
+功能：是否与泛型相关。
+
+### func isReferenceType()
+
+```cangjie
+public func isReferenceType(): Bool
+```
+
+功能：是否为引用类型（ClassLikeType、RawArrayType、BoxType 或 ThisType）。
+
+### func isRawArrayType()
+
+```cangjie
+public func isRawArrayType(): Bool
+```
+
+功能：是否为 RawArray 类型。
+
+### func isStructType()
+
+```cangjie
+public func isStructType(): Bool
+```
+
+功能：是否为 StructType。
+
+### func isThisType()
+
+```cangjie
+public func isThisType(): Bool
+```
+
+功能：是否为 ThisType。
+
+### func isTupleType()
+
+```cangjie
+public func isTupleType(): Bool
+```
+
+功能：是否为 TupleType。
+
+### func isValueType()
+
+```cangjie
+public func isValueType(): Bool
+```
+
+功能：是否为值类型。
+
+### func isVArrayType()
+
+```cangjie
+public func isVArrayType(): Bool
+```
+
+功能：是否为 VArrayType。
+
+### func satisfyCType()
+
+```cangjie
+public func satisfyCType(): Bool
+```
+
+功能：是否满足 C 类型约束。
+
+### func isEqualOrSubTypeOf(Type, ArrayList<(Type, Type)>)
+
+```cangjie
+public func isEqualOrSubTypeOf(parent: Type, visited!: ArrayList<(Type, Type)> = ArrayList<(Type, Type)>()): Bool
+```
+
+功能：判断是否为 parent 的相等或子类型。
+
+参数：
+
+- parent: Type - 待比较的父类型。
+- visited!: ArrayList<(Type, Type)> - 环检测用访问表；一般可传默认空表。
+
+### func isEqualOrInstantiatedTypeOf(Type, ArrayList<(Type, Type)>)
+
+```cangjie
+public func isEqualOrInstantiatedTypeOf(genericRelatedType: Type, visited!: ArrayList<(Type, Type)> = ArrayList<(Type, Type)>()): Bool
+```
+
+功能：判断是否为 genericRelatedType 的相等或实例化类型。
+
+参数：
+
+- genericRelatedType: Type - 待比较的泛型关联类型。
+- visited!: ArrayList<(Type, Type)> - 环检测用访问表；一般可传默认空表。
+
+### func satisfyGenericConstraints(GenericType, HashMap<GenericType, Type>, ArrayList<(Type, Type)>)
+
+```cangjie
+public func satisfyGenericConstraints(gType: GenericType, instMap: HashMap<GenericType, Type>, visited!: ArrayList<(Type, Type)> = ArrayList<(Type, Type)>()): Bool
+```
+
+功能：判断是否满足泛型约束。
+
+参数：
+
+- gType: GenericType - 泛型类型。
+- instMap: HashMap<GenericType, Type> - 泛型实例化映射表。
+- visited!: ArrayList<(Type, Type)> - 环检测用访问表；一般可传默认空表。
+
 ### operator func==(Type)
 
 ```cangjie
-public open operator func==(other: Type): Bool
+public operator func ==(other: Type): Bool
 ```
 
 功能：检查该类型是否与另一个类型相等。
@@ -7192,7 +7751,7 @@ h<Generic-pkg:T>(Int32) -> Unit
 public abstract class CHIRVisitor
 ```
 
-功能：CHIR 函数、块组、基本块与嵌套表达式的**抽象访问器**。子类可重写 [`action`](#func-actionexpression) 以观察每个表达式节点；`walk` 方法递归遍历直至返回 `IRActionMode.STOP`。
+功能：CHIR 函数、块组、基本块与嵌套表达式的**抽象访问器**。子类可重写 [`action`](#func-actionexpression) 以观察每个表达式节点；`walk` 方法递归遍历直至返回 `IRActionMode.Stop`。
 
 ### func walk(Function)
 
@@ -7305,7 +7864,7 @@ main() {
 public open func action(ty: Expression): IRActionMode
 ```
 
-功能：对每个访问到的表达式节点调用，决定是否继续遍历。默认返回 `IRActionMode.CONTINUE`；子类可重写以实现自定义观察逻辑或提前终止。
+功能：对每个访问到的表达式节点调用，决定是否继续遍历。默认返回 `IRActionMode.Continue`；子类可重写以实现自定义观察逻辑或提前终止。
 
 参数：
 
@@ -7313,7 +7872,7 @@ public open func action(ty: Expression): IRActionMode
 
 返回值：
 
-- [IRActionMode](chir_package_enums.md#enum-iractionmode) - 访问器控制模式（`CONTINUE` 继续遍历，`STOP` 终止遍历）。
+- [IRActionMode](chir_package_enums.md#enum-iractionmode) - 访问器控制模式（`Continue` 继续遍历，`Stop` 终止遍历，`Skip` 跳过嵌套 BlockGroup）。
 
 示例：
 
@@ -7324,7 +7883,7 @@ import stdx.chir.*
 class MyVisitor <: CHIRVisitor {
     public open func action(ty: Expression): IRActionMode {
         println(ty.toString().size > 0)
-        return IRActionMode.CONTINUE
+        return IRActionMode.Continue
     }
 }
 
@@ -7468,6 +8027,32 @@ main() {
 ```text
 prop_objType: true
 ```
+
+### func setArg(Int64, Value)
+
+```cangjie
+public func setArg(index: Int64, arg: Value): Unit
+```
+
+功能：设置指定位置的参数值。
+
+参数：
+
+- index: Int64 - 参数位置索引。
+- arg: Value - 新的参数值。
+
+### func setInstTypeArg(Int64, Type)
+
+```cangjie
+public func setInstTypeArg(index: Int64, arg: Type): Unit
+```
+
+功能：设置指定位置的实例化类型参数。
+
+参数：
+
+- index: Int64 - 参数位置索引。
+- arg: [Type](#class-type) - 新的实例化类型参数。
 
 ---
 
@@ -9996,15 +10581,15 @@ public class Parameter <: Value & Equatable<Parameter>
 - Value
 - Equatable\<Parameter>
 
-### prop annotations
+### prop customAnnoInstances
 
 ```cangjie
-public mut prop annotations: Array<Annotation>
+public mut prop customAnnoInstances: Array<CustomAnnoInstance>
 ```
 
-功能：参数注解列表；`set` 时整体替换。
+功能：参数注解实例列表；getter 返回当前所有实例，setter 整体替换。
 
-类型：Array\<[Annotation](#class-annotation)>
+类型：Array\<[CustomAnnoInstance](#class-customannoinstance)>
 
 示例：
 
@@ -10016,14 +10601,14 @@ main() {
     let pkg = Package("demo", AccessLevel.Public)
     let f = pkg.addFunction(FuncType.get([IntType.getInt32()], UnitType.get()), "f_m", "f", "demo")
     let param = f.parameters[0]
-    println("mut_prop_annotations: ${param.annotations.size}")
+    println("mut_prop_customAnnoInstances: ${param.customAnnoInstances.size}")
 }
 ```
 
 运行结果：
 
 ```text
-mut_prop_annotations: 0
+mut_prop_customAnnoInstances: 0
 ```
 
 ### prop srcCodeName
@@ -11973,44 +12558,17 @@ main() {
 static_func_create: 1
 ```
 
-### override func getArgs()
+### func getArgs()
 
-<!-- compile -->
 ```cangjie
 public override func getArgs(): Array<Value>
 ```
 
-功能：获取调用参数列表。
+功能：返回此调用表达式的实际参数列表。
 
 返回值：
 
-- Array\<Value> - 调用参数列表。
-
-示例：
-
-<!-- verify -->
-```cangjie
-import stdx.chir.*
-
-main() {
-    let pkg = Package("demo", AccessLevel.Public)
-    let calleeFunc = pkg.addFunction(FuncType.get([IntType.getInt32()], UnitType.get()), "callee_m", "callee", "demo")
-    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
-    f.initBody()
-    let block = f.body.getOrThrow().entryBlock
-    let arg = IntLiteral.get(IntType.getInt32(), 1)
-    let ctx = FuncCallContext([arg], [], None)
-    let expr = Apply.create(calleeFunc, ctx)
-    block.appendExpr(expr)
-    println("func_getArgs: ${expr.getArgs().size}")
-}
-```
-
-运行结果：
-
-```text
-func_getArgs: 1
-```
+- Array\<Value> - 参数值数组。
 
 ### operator func==(Apply)
 
@@ -12191,47 +12749,17 @@ main() {
 static_func_create: 1
 ```
 
-### override func getArgs()
+### func getArgs()
 
-<!-- compile -->
 ```cangjie
 public override func getArgs(): Array<Value>
 ```
 
-功能：获取调用参数列表（不含正常和异常分支操作数）。
+功能：返回此调用表达式的实际参数列表。
 
 返回值：
 
-- Array\<Value> - 调用参数列表。
-
-示例：
-
-<!-- verify -->
-```cangjie
-import stdx.chir.*
-
-main() {
-    let pkg = Package("demo", AccessLevel.Public)
-    let calleeFunc = pkg.addFunction(FuncType.get([IntType.getInt32()], UnitType.get()), "callee_m", "callee", "demo")
-    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
-    f.initBody()
-    let bg = f.body.getOrThrow()
-    let block = bg.entryBlock
-    let normalBlock = bg.appendBlock()
-    let errorBlock = bg.appendBlock()
-    let arg = IntLiteral.get(IntType.getInt32(), 1)
-    let ctx = FuncCallContext([arg], [], None)
-    let expr = TryApply.create(calleeFunc, ctx, normalBlock, errorBlock)
-    block.appendExpr(expr)
-    println("func_getArgs: ${expr.getArgs().size}")
-}
-```
-
-运行结果：
-
-```text
-func_getArgs: 1
-```
+- Array\<Value> - 参数值数组。
 
 ### operator func==(TryApply)
 
@@ -12292,18 +12820,17 @@ public class Intrinsic <: IntrinsicBase & Equatable<Intrinsic>
 - IntrinsicBase
 - Equatable\<Intrinsic>
 
-### override func getArgs()
+### func getArgs()
 
-<!-- compile -->
 ```cangjie
 public override func getArgs(): Array<Value>
 ```
 
-功能：获取内建函数调用参数列表。
+功能：返回此调用表达式的实际参数列表。
 
 返回值：
 
-- Array\<Value> - 调用参数列表。
+- Array\<Value> - 参数值数组。
 
 ### operator func==(Intrinsic)
 
@@ -12356,18 +12883,17 @@ public prop errorBranch: Block
 
 类型：Block
 
-### override func getArgs()
+### func getArgs()
 
-<!-- compile -->
 ```cangjie
 public override func getArgs(): Array<Value>
 ```
 
-功能：获取内建函数调用参数列表（不含正常和异常分支操作数）。
+功能：返回此调用表达式的实际参数列表。
 
 返回值：
 
-- Array\<Value> - 调用参数列表。
+- Array\<Value> - 参数值数组。
 
 ### operator func==(TryIntrinsic)
 
@@ -12444,45 +12970,17 @@ main() {
 static_func_create: 1
 ```
 
-### override func getArgs()
+### func getArgs()
 
-<!-- compile -->
 ```cangjie
 public override func getArgs(): Array<Value>
 ```
 
-功能：获取虚方法调用参数列表。
+功能：返回此调用表达式的实际参数列表。
 
 返回值：
 
-- Array\<Value> - 调用参数列表。
-
-示例：
-
-<!-- verify -->
-```cangjie
-import stdx.chir.*
-
-main() {
-    let pkg = Package("demo", AccessLevel.Public)
-    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
-    f.initBody()
-    let block = f.body.getOrThrow().entryBlock
-    let ft = FuncType.get([], UnitType.get())
-    let sig = FuncSigInfo("method", ft)
-    let fcc = FuncCallContext([], [], None)
-    let ctx = InvokeCallContext(BoolLiteral.get(false), sig, fcc)
-    let expr = Invoke.create(UnitType.get(), ctx)
-    block.appendExpr(expr)
-    println("func_getArgs: ${expr.getArgs().size}")
-}
-```
-
-运行结果：
-
-```text
-func_getArgs: 1
-```
+- Array\<Value> - 参数值数组。
 
 ### operator func==(Invoke)
 
@@ -12671,48 +13169,17 @@ main() {
 static_func_create: 1
 ```
 
-### override func getArgs()
+### func getArgs()
 
-<!-- compile -->
 ```cangjie
 public override func getArgs(): Array<Value>
 ```
 
-功能：获取虚方法调用参数列表（不含正常和异常分支操作数）。
+功能：返回此调用表达式的实际参数列表。
 
 返回值：
 
-- Array\<Value> - 调用参数列表。
-
-示例：
-
-<!-- verify -->
-```cangjie
-import stdx.chir.*
-
-main() {
-    let pkg = Package("demo", AccessLevel.Public)
-    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
-    f.initBody()
-    let bg = f.body.getOrThrow()
-    let block = bg.entryBlock
-    let normalBlock = bg.appendBlock()
-    let errorBlock = bg.appendBlock()
-    let ft = FuncType.get([], UnitType.get())
-    let sig = FuncSigInfo("method", ft)
-    let fcc = FuncCallContext([], [], None)
-    let ctx = InvokeCallContext(BoolLiteral.get(false), sig, fcc)
-    let expr = TryInvoke.create(UnitType.get(), ctx, normalBlock, errorBlock)
-    block.appendExpr(expr)
-    println("func_getArgs: ${expr.getArgs().size}")
-}
-```
-
-运行结果：
-
-```text
-func_getArgs: 1
-```
+- Array\<Value> - 参数值数组。
 
 ### operator func==(TryInvoke)
 
@@ -13945,116 +14412,35 @@ main() {
 prop_body: true
 ```
 
-### mut prop returnValue
+### prop isCompileTimeValue
 
-<!-- compile -->
-```cangjie
-public mut prop returnValue: LocalVar
-```
-
-功能：返回值局部变量。
-
-类型：[LocalVar](#class-localvar)
-
-示例：
-
-<!-- verify -->
-```cangjie
-import stdx.chir.*
-import std.collection.*
-
-main() {
-    let pkg = Package("demo", AccessLevel.Public)
-    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
-    f.initBody()
-    let block = f.body.getOrThrow().entryBlock
-    let lambdaType = FuncType.get([], IntType.getInt32())
-    let expr = Lambda.create(lambdaType, "lambda_m", "myLambda", ArrayList<GenericType>())
-    block.appendExpr(expr)
-    expr.initBody()
-    let lit = IntLiteral.get(IntType.getInt32(), 42)
-    expr.returnValue = Constant.create(lit).result
-    println("mut_prop_returnValue: ${expr.returnValue.toString().size > 0}")
-}
-```
-
-运行结果：
-
-```text
-mut_prop_returnValue: true
-```
-
-### mut prop isLocalFunc
-
-<!-- compile -->
-```cangjie
-public mut prop isLocalFunc: Bool
-```
-
-功能：是否为局部函数。
-
-类型：Bool
-
-示例：
-
-<!-- verify -->
-```cangjie
-import stdx.chir.*
-import std.collection.*
-
-main() {
-    let pkg = Package("demo", AccessLevel.Public)
-    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
-    f.initBody()
-    let block = f.body.getOrThrow().entryBlock
-    let lambdaType = FuncType.get([], UnitType.get())
-    let expr = Lambda.create(lambdaType, "lambda_m", "myLambda", ArrayList<GenericType>())
-    block.appendExpr(expr)
-    println("mut_prop_isLocalFunc: ${expr.isLocalFunc}")
-}
-```
-
-运行结果：
-
-```text
-mut_prop_isLocalFunc: false
-```
-
-### mut prop isCompileTimeValue
-
-<!-- compile -->
 ```cangjie
 public mut prop isCompileTimeValue: Bool
 ```
 
-功能：是否为编译期值。
+功能：是否为编译期值；getter 返回当前标记，setter 可修改。
 
 类型：Bool
 
-示例：
+### prop isLocalFunc
 
-<!-- verify -->
 ```cangjie
-import stdx.chir.*
-import std.collection.*
-
-main() {
-    let pkg = Package("demo", AccessLevel.Public)
-    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
-    f.initBody()
-    let block = f.body.getOrThrow().entryBlock
-    let lambdaType = FuncType.get([], UnitType.get())
-    let expr = Lambda.create(lambdaType, "lambda_m", "myLambda", ArrayList<GenericType>())
-    block.appendExpr(expr)
-    println("mut_prop_isCompileTimeValue: ${expr.isCompileTimeValue}")
-}
+public mut prop isLocalFunc: Bool
 ```
 
-运行结果：
+功能：是否为局部函数；getter 返回当前标记，setter 可修改。
 
-```text
-mut_prop_isCompileTimeValue: false
+类型：Bool
+
+### prop returnValue
+
+```cangjie
+public mut prop returnValue: LocalVar
 ```
+
+功能：Lambda 的返回值变量。
+
+类型：[LocalVar](#class-localvar)
 
 ### static func create(FuncType, String, String, ArrayList\<GenericType>)
 
@@ -20803,3 +21189,66 @@ createVArrayBuilder: true
 ```
 
 ---
+
+## func serializePackage
+
+```cangjie
+public func serializePackage(pkg: Package): (CPointer<UInt8>, Int64)
+```
+
+功能：将内存中的 [Package](#class-package) 序列化为 CHIR FlatBuffers 二进制数据，返回指向序列化结果的指针及字节长度。
+
+参数：
+
+- pkg: [Package](#class-package) - 待序列化的 CHIR 包。
+
+返回值：
+
+- (CPointer\<UInt8>, Int64) - 序列化结果的指针及字节长度。调用方应在使用完毕后调用 [freeSerializedMemory](#func-freeserializedmemory) 释放内存。
+
+示例：
+
+<!-- run -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let (data, length) = serializePackage(pkg)
+    println("length: ${length}")
+    freeSerializedMemory()
+}
+```
+
+---
+
+## func deserializePackage
+
+```cangjie
+public func deserializePackage(root: CPointer<UInt8>, length: Int64): Package
+```
+
+功能：从 FlatBuffers 二进制缓冲区反序列化 CHIR [Package](#class-package)。
+
+参数：
+
+- root: CPointer\<UInt8> - 指向序列化数据首字节的指针；不可为 null。
+- length: Int64 - 缓冲区的字节长度。
+
+返回值：
+
+- [Package](#class-package) - 反序列化得到的 CHIR 包。
+
+异常：
+
+- [CHIRException](#class-chirexception) - 当 root 为 null 时抛出异常。
+
+---
+
+## func freeSerializedMemory
+
+```cangjie
+public func freeSerializedMemory(): Unit
+```
+
+功能：释放上次序列化产生的共享 FlatBuffers 构建器状态。
