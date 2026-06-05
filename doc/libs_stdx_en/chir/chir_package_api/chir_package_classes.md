@@ -1,16 +1,44 @@
 # Classes
 
-## class Annotation
+## class CustomAnnoInstance
 
 ```cangjie
-public class Annotation <: ToString
+public class CustomAnnoInstance <: ToString
 ```
 
-Function: Represents **one** annotation instance in CHIR, corresponding to the source form `@ClassName[k1=v1, k2=v2]`: stores the annotation class name and a mapping from parameter field names to string values.
+Function: Represents **one** annotation instance in CHIR, corresponding to the source form `@ClassName[v1, v2, ...]`: stores the annotation class name and a list of argument values.
 
 Parent Types:
 
 - ToString
+
+### prop argValues
+
+```cangjie
+public mut prop argValues: Array<String>
+```
+
+Function: Gets or sets the annotation argument values. Getter returns the current list of argument values; setter replaces the entire list.
+
+Type: Array\<String>
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let a = CustomAnnoInstance("MyAnno")
+    println(a.argValues.size)
+}
+```
+
+Output:
+
+```text
+0
+```
 
 ### prop classSrcCodeName
 
@@ -29,7 +57,7 @@ Example:
 import stdx.chir.*
 
 main() {
-    let a = Annotation("MyAnno")
+    let a = CustomAnnoInstance("MyAnno")
     println(a.classSrcCodeName)
 }
 ```
@@ -40,13 +68,41 @@ Output:
 MyAnno
 ```
 
+### prop location
+
+```cangjie
+public prop location: DebugLocation
+```
+
+Function: Source location where this annotation appeared.
+
+Type: [DebugLocation](#class-debuglocation)
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let a = CustomAnnoInstance("MyAnno")
+    println(a.location.isValid())
+}
+```
+
+Output:
+
+```text
+false
+```
+
 ### init(String)
 
 ```cangjie
 public init(classSrcCodeName: String)
 ```
 
-Function: Constructs an `Annotation` object with the given annotation class name and an **initially empty** parameter list; use [`setFieldValue`](#func-setfieldvalue-string-string) to add key-value pairs.
+Function: Constructs a `CustomAnnoInstance` object with the given annotation class name, an **initially empty** argument values list, and an invalid location.
 
 Parameters:
 
@@ -59,7 +115,7 @@ Example:
 import stdx.chir.*
 
 main() {
-    let a = Annotation("Fresh")
+    let a = CustomAnnoInstance("Fresh")
     println(a.toString())
 }
 ```
@@ -70,21 +126,18 @@ Output:
 @Fresh[]
 ```
 
-### func getFieldValue(String)
+### init(String, DebugLocation)
 
 ```cangjie
-public func getFieldValue(fieldName: String): ?String
+public init(classSrcCodeName: String, loc: DebugLocation)
 ```
 
-Function: Looks up an annotation parameter by key; returns `None` if it does not exist.
+Function: Constructs a `CustomAnnoInstance` object with the given annotation class name and source location.
 
 Parameters:
 
-- fieldName: String - The parameter field name (same as the key in `key=value` from `toString()`).
-
-Return Value:
-
-- ?String - `Some(string value)` if present, otherwise `None`.
+- classSrcCodeName: String - The annotation class name in source code (e.g. `MyAnno`).
+- loc: [DebugLocation](#class-debuglocation) - Source location where this annotation appeared.
 
 Example:
 
@@ -93,38 +146,10 @@ Example:
 import stdx.chir.*
 
 main() {
-    let a = Annotation("A")
-    println(a.classSrcCodeName)
-}
-```
-
-Output:
-
-```text
-A
-```
-
-### func setFieldValue(String, String)
-
-```cangjie
-public func setFieldValue(fieldName: String, value: String): Unit
-```
-
-Function: Sets or overrides the string value of a parameter field (used when building or testing CHIR).
-
-Parameters:
-
-- fieldName: String - Parameter name.
-- value: String - Parameter value (as a string).
-
-Example:
-
-<!-- verify -->
-```cangjie
-import stdx.chir.*
-
-main() {
-    let a = Annotation("S")
+    let pkg = Package("p", AccessLevel.Public)
+    let st = pkg.addStruct("S_m", "S")
+    let mv = st.appendInstanceMemberVar("x", IntType.getInt32())
+    let a = CustomAnnoInstance("Fresh", mv.location)
     println(a.toString())
 }
 ```
@@ -132,7 +157,7 @@ main() {
 Output:
 
 ```text
-@S[]
+@Fresh[]
 ```
 
 ### func toString()
@@ -141,7 +166,7 @@ Output:
 public func toString(): String
 ```
 
-Function: Formats as `@ClassName[k1=v1, k2=v2]` for logging and debugging.
+Function: Formats as `@ClassName[v1, v2, ...]` for logging and debugging.
 
 Return Value:
 
@@ -154,7 +179,7 @@ Example:
 import stdx.chir.*
 
 main() {
-    let a = Annotation("T")
+    let a = CustomAnnoInstance("T")
     println(a.toString())
 }
 ```
@@ -210,10 +235,10 @@ Output:
 Boolean type: Bool
 ```
 
-### operator func==(BoolType)
+### operator func ==(BoolType)
 
 ```cangjie
-public operator func==(_: BoolType): Bool
+public operator func ==(_: BoolType): Bool
 ```
 
 Function: Checks whether this BoolType is equal to another BoolType.
@@ -336,7 +361,7 @@ Output:
 Box<UInt32>
 ```
 
-### operator func==(BoxType)
+### operator func ==(BoxType)
 
 ```cangjie
 public operator func ==(other: BoxType): Bool
@@ -447,10 +472,10 @@ Output:
 0
 ```
 
-### operator func==(BuiltinType)
+### operator func ==(BuiltinType)
 
 ```cangjie
-public operator func==(other: BuiltinType): Bool
+public operator func ==(other: BuiltinType): Bool
 ```
 
 Function: Compares whether two built-in types denote the same class and identical type arguments.
@@ -597,10 +622,10 @@ Output:
 CPointer<UInt32>
 ```
 
-### operator func==(CPointerType)
+### operator func ==(CPointerType)
 
 ```cangjie
-public operator func==(other: CPointerType): Bool
+public operator func ==(other: CPointerType): Bool
 ```
 
 Function: Checks whether this CPointerType equals another CPointerType.
@@ -676,10 +701,10 @@ Output:
 CString
 ```
 
-### operator func==(CStringType)
+### operator func ==(CStringType)
 
 ```cangjie
-public operator func==(_: CStringType): Bool
+public operator func ==(_: CStringType): Bool
 ```
 
 Function: Checks whether this CStringType equals another CStringType.
@@ -756,7 +781,7 @@ prop_classType: true
 ### prop isAnnotation
 
 ```cangjie
-public mut prop isAnnotation: Bool
+public prop isAnnotation: Bool
 ```
 
 Function: Whether this is an annotation class.
@@ -895,10 +920,10 @@ Output:
 fn_setSealed: true
 ```
 
-### operator func==(ClassLikeDef)
+### operator func ==(ClassLikeDef)
 
 ```cangjie
-public operator func==(other: ClassLikeDef): Bool
+public operator func ==(other: ClassLikeDef): Bool
 ```
 
 Function: Compares whether two class/interface definitions are the same.
@@ -1012,10 +1037,10 @@ Output:
 static_get: true
 ```
 
-### operator func==(ClassLikeType)
+### operator func ==(ClassLikeType)
 
 ```cangjie
-public operator func==(other: ClassLikeType): Bool
+public operator func ==(other: ClassLikeType): Bool
 ```
 
 Function: Compares whether two instantiated class/interface types are the same.
@@ -1375,10 +1400,10 @@ Output:
 fn_toString: true
 ```
 
-### operator func==(CustomType)
+### operator func ==(CustomType)
 
 ```cangjie
-public operator func==(other: CustomType): Bool
+public operator func ==(other: CustomType): Bool
 ```
 
 Function: Compares whether kind, definition, and generic arguments match.
@@ -1694,6 +1719,122 @@ Output:
 ```text
 0
 ```
+
+
+### prop customAnnoInstances
+
+```cangjie
+public mut prop customAnnoInstances: Array<CustomAnnoInstance>
+```
+
+Function: Annotation instance list; getter returns the current instances, setter replaces the entire list.
+
+Type: Array\<[CustomAnnoInstance](#class-customannoinstance)>
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let c = pkg.addClass("C_m", "C", true)
+    println("${c.customAnnoInstances.size}")
+}
+```
+
+Output:
+
+```text
+0
+```
+
+
+### prop methods
+
+```cangjie
+public prop methods: Array<Function>
+```
+
+Function: Methods declared on this custom type.
+
+Type: Array\<[Function](#class-function)>
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let c = pkg.addClass("C_m", "C", true)
+    println("${c.methods.size}")
+}
+```
+
+Output:
+
+```text
+0
+```
+
+
+### prop staticVars
+
+```cangjie
+public prop staticVars: Array<GlobalVar>
+```
+
+Function: Static variables declared on this custom type.
+
+Type: Array\<[GlobalVar](#class-globalvar)>
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let c = pkg.addClass("C_m", "C", true)
+    println("${c.staticVars.size}")
+}
+```
+
+Output:
+
+```text
+0
+```
+
+
+### func appendMethod(Function)
+
+```cangjie
+public func appendMethod(method: Function): Unit
+```
+
+Function: Appends a method to this type definition's method list.
+
+Parameters:
+
+- method: [Function](#class-function) - The method to append.
+
+
+### func appendStaticVar(GlobalVar)
+
+```cangjie
+public func appendStaticVar(staticVar: GlobalVar): Unit
+```
+
+Function: Appends a static variable to this type definition, automatically marking it as a static member.
+
+Parameters:
+
+- staticVar: [GlobalVar](#class-globalvar) - The static variable to append.
 
 
 ### func setPublic()
@@ -2264,10 +2405,10 @@ Output:
 fn_hashCode: true
 ```
 
-### operator func==(CustomTypeDef)
+### operator func ==(CustomTypeDef)
 
 ```cangjie
-public operator func==(other: CustomTypeDef): Bool
+public operator func ==(other: CustomTypeDef): Bool
 ```
 
 Function: Compares by kind, identifier, source name, and package name.
@@ -2683,15 +2824,15 @@ Output:
 A
 ```
 
-### prop annotations
+### prop customAnnoInstances
 
 ```cangjie
-public mut prop annotations: Array<Annotation>
+public mut prop customAnnoInstances: Array<CustomAnnoInstance>
 ```
 
-Function: List of annotation instances attached to this enum constructor (stored internally as `AnnoInfo`, exposed as `Array<Annotation>`); `set` replaces the whole list.
+Function: List of annotation instances attached to this enum constructor; getter returns the current list, setter replaces the whole list.
 
-Type: Array\<[Annotation](#class-annotation)>
+Type: Array\<[CustomAnnoInstance](#class-customannoinstance)>
 
 Example:
 
@@ -2703,9 +2844,9 @@ main() {
     let pkg = Package("demo", AccessLevel.Public)
     let e = pkg.addEnum("E_m", "E", true)
     let ctor = e.appendEnumCtorInfo("A_m", "A")
-    let ann = Annotation("Marker")
-    ctor.annotations = [ann]
-    println("${ctor.annotations.size}")
+    let ann = CustomAnnoInstance("Marker")
+    ctor.customAnnoInstances = [ann]
+    println("${ctor.customAnnoInstances.size}")
 }
 ```
 
@@ -2888,10 +3029,10 @@ Output:
 A
 ```
 
-### operator func==(EnumDef)
+### operator func ==(EnumDef)
 
 ```cangjie
-public operator func==(other: EnumDef): Bool
+public operator func ==(other: EnumDef): Bool
 ```
 
 Function: Compares whether two enum definitions are the same by definition id.
@@ -3005,10 +3146,10 @@ Output:
 E
 ```
 
-### operator func==(EnumType)
+### operator func ==(EnumType)
 
 ```cangjie
-public operator func==(other: EnumType): Bool
+public operator func ==(other: EnumType): Bool
 ```
 
 Function: Compares whether two instantiated enum types are the same.
@@ -3190,10 +3331,10 @@ Output:
 Float64 type: Float64
 ```
 
-### operator func==(FloatType)
+### operator func ==(FloatType)
 
 ```cangjie
-public operator func==(other: FloatType): Bool
+public operator func ==(other: FloatType): Bool
 ```
 
 Function: Checks whether this FloatType equals another FloatType.
@@ -3426,10 +3567,10 @@ Output:
 (UInt32) -> Unit
 ```
 
-### operator func==(FuncType)
+### operator func ==(FuncType)
 
 ```cangjie
-public operator func==(other: FuncType): Bool
+public operator func ==(other: FuncType): Bool
 ```
 
 Function: Compares whether signature, `varArg`, and `cFunc` match.
@@ -3598,10 +3739,10 @@ Output:
 fn_toString: true
 ```
 
-### operator func==(GenericType)
+### operator func ==(GenericType)
 
 ```cangjie
-public operator func==(other: GenericType): Bool
+public operator func ==(other: GenericType): Bool
 ```
 
 Function: Compares whether two generic parameter nodes are the same.
@@ -3948,10 +4089,10 @@ Output:
 UIntNative type: UIntNative
 ```
 
-### operator func==(IntType)
+### operator func ==(IntType)
 
 ```cangjie
-public operator func==(other: IntType): Bool
+public operator func ==(other: IntType): Bool
 ```
 
 Function: Checks whether this IntType equals another IntType.
@@ -4121,15 +4262,15 @@ Output:
 false
 ```
 
-### prop annotations
+### prop customAnnoInstances
 
 ```cangjie
-public mut prop annotations: Array<Annotation>
+public mut prop customAnnoInstances: Array<CustomAnnoInstance>
 ```
 
-Function: List of annotation instances on the member (stored internally as `AnnoInfo`, exposed as `Array<Annotation>`); `set` replaces the whole list.
+Function: List of annotation instances on the member; getter returns the current list, setter replaces the whole list.
 
-Type: Array\<[Annotation](#class-annotation)>
+Type: Array\<[CustomAnnoInstance](#class-customannoinstance)>
 
 Example:
 
@@ -4141,7 +4282,7 @@ main() {
     let pkg = Package("p", AccessLevel.Public)
     let st = pkg.addStruct("S_m", "S")
     let mv = st.appendInstanceMemberVar("x", IntType.getInt32())
-    println("${mv.annotations.size}")
+    println("${mv.customAnnoInstances.size}")
 }
 ```
 
@@ -4569,10 +4710,10 @@ Output:
 Nothing type: Nothing
 ```
 
-### operator func==(NothingType)
+### operator func ==(NothingType)
 
 ```cangjie
-public operator func==(_: NothingType): Bool
+public operator func ==(_: NothingType): Bool
 ```
 
 Function: Checks whether this NothingType equals another NothingType.
@@ -4617,10 +4758,10 @@ Parent Types:
 - [BuiltinType](#class-builtintype)
 - Equatable\<[NumericType](#class-numerictype)>
 
-### operator func==(NumericType)
+### operator func ==(NumericType)
 
 ```cangjie
-public operator func==(other: NumericType): Bool
+public operator func ==(other: NumericType): Bool
 ```
 
 Function: Checks whether this numeric type equals another numeric type.
@@ -4802,6 +4943,64 @@ public prop extendDefs: Array<ExtendDef>
 Function: Extend definitions declared in this package.
 
 Type: Array\<[ExtendDef](#class-extenddef)>
+
+### prop globalVars
+
+```cangjie
+public prop globalVars: Array<GlobalVar>
+```
+
+Function: List of global variable definitions declared in this package.
+
+Type: Array\<[GlobalVar](#class-globalvar)>
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    println("${pkg.globalVars.size}")
+}
+```
+
+Output:
+
+```text
+0
+```
+
+### prop functions
+
+```cangjie
+public prop functions: Array<Function>
+```
+
+Function: List of function definitions declared in this package.
+
+Type: Array\<[Function](#class-function)>
+
+### prop allCustomTypeDefs
+
+```cangjie
+public prop allCustomTypeDefs: Array<CustomTypeDef>
+```
+
+Function: All custom type definitions in this package (including imported and locally declared classes, enums, extends, structs).
+
+Type: Array\<[CustomTypeDef](#class-customtypedef)>
+
+### prop packageInitFunc
+
+```cangjie
+public prop packageInitFunc: ?Function
+```
+
+Function: Package initialization function; `None` when not set.
+
+Type: ?[Function](#class-function)
 
 ### init(String, AccessLevel)
 
@@ -5098,6 +5297,86 @@ Output:
 Int32
 ```
 
+### func addFunction(FuncType, String, String, String)
+
+```cangjie
+public func addFunction(ty: FuncType, identifier: String, srcCodeName: String, packageName: String): Function
+```
+
+Function: Adds a function definition to this package, returning the created Function (parameters auto-filled from ty).
+
+Parameters:
+
+- ty: FuncType - Function type.
+- identifier: String - Internal identifier.
+- srcCodeName: String - Source code name.
+- packageName: String - Owning package name.
+
+Return Value:
+
+- [Function](#class-function) - The newly created function definition.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    println("${pkg.functions.size}")
+    println(f.srcCodeName)
+}
+```
+
+Output:
+
+```text
+1
+f
+```
+
+### func addGlobalVar(Type, String, String, String)
+
+```cangjie
+public func addGlobalVar(ty: Type, identifier: String, srcCodeName: String, packageName: String): GlobalVar
+```
+
+Function: Adds a global variable definition to this package, returning the created GlobalVar.
+
+Parameters:
+
+- ty: Type - Variable type.
+- identifier: String - Internal identifier.
+- srcCodeName: String - Source code name.
+- packageName: String - Owning package name.
+
+Return Value:
+
+- [GlobalVar](#class-globalvar) - The newly created global variable definition.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let gv = pkg.addGlobalVar(IntType.getInt32(), "gv_m", "gv", "demo")
+    println("${pkg.globalVars.size}")
+    println(gv.srcCodeName)
+}
+```
+
+Output:
+
+```text
+1
+gv
+```
+
 ### func getSpecifiedClassDef(String, String)
 
 ```cangjie
@@ -5192,6 +5471,42 @@ Output:
 
 ```text
 fn_getSpecifiedEnumDef: true
+```
+
+### func getSpecifiedFunction(String)
+
+```cangjie
+public func getSpecifiedFunction(mangledName: String): ?Function
+```
+
+Function: Looks up a function definition by its mangled name.
+
+Parameters:
+
+- mangledName: String - The function's mangled name (without global prefix).
+
+Return Value:
+
+- ?[Function](#class-function) - `Some` if found, `None` otherwise.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let _ = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    let r = pkg.getSpecifiedFunction("f_m")
+    println("fn_getSpecifiedFunction: ${r.isSome()}")
+}
+```
+
+Output:
+
+```text
+fn_getSpecifiedFunction: true
 ```
 
 ### func toString()
@@ -5383,10 +5698,10 @@ Output:
 RawArray<RawArray<Int32>>
 ```
 
-### operator func==(RawArrayType)
+### operator func ==(RawArrayType)
 
 ```cangjie
-public operator func==(other: RawArrayType): Bool
+public operator func ==(other: RawArrayType): Bool
 ```
 
 Function: Compares whether element type and dimension count match.
@@ -5531,10 +5846,10 @@ Output:
 UInt32&
 ```
 
-### operator func==(RefType)
+### operator func ==(RefType)
 
 ```cangjie
-public operator func==(other: RefType): Bool
+public operator func ==(other: RefType): Bool
 ```
 
 Function: Checks whether this RefType equals another RefType.
@@ -5610,10 +5925,10 @@ Output:
 Rune type: Rune
 ```
 
-### operator func==(RuneType)
+### operator func ==(RuneType)
 
 ```cangjie
-public operator func==(_: RuneType): Bool
+public operator func ==(_: RuneType): Bool
 ```
 
 Function: Checks whether this RuneType equals another RuneType.
@@ -5717,10 +6032,10 @@ Output:
 mut_prop_isCStruct: true
 ```
 
-### operator func==(StructDef)
+### operator func ==(StructDef)
 
 ```cangjie
-public operator func==(other: StructDef): Bool
+public operator func ==(other: StructDef): Bool
 ```
 
 Function: Compares whether two struct definitions are the same.
@@ -5834,10 +6149,10 @@ Output:
 S
 ```
 
-### operator func==(StructType)
+### operator func ==(StructType)
 
 ```cangjie
-public operator func==(other: StructType): Bool
+public operator func ==(other: StructType): Bool
 ```
 
 Function: Compares whether two instantiated struct types are the same.
@@ -5915,10 +6230,10 @@ Output:
 static_get: true
 ```
 
-### operator func==(ThisType)
+### operator func ==(ThisType)
 
 ```cangjie
-public operator func==(_: ThisType): Bool
+public operator func ==(_: ThisType): Bool
 ```
 
 Function: Compares with another `ThisType` (singleton identity).
@@ -6058,10 +6373,10 @@ Output:
 Tuple(UInt32)
 ```
 
-### operator func==(TupleType)
+### operator func ==(TupleType)
 
 ```cangjie
-public operator func==(other: TupleType): Bool
+public operator func ==(other: TupleType): Bool
 ```
 
 Function: Compares whether two tuple types have the same element type sequence.
@@ -6238,6 +6553,14 @@ Output:
 BoolType is boolean type: true
 Int32 is boolean type: false
 ```
+
+### func isBuiltinType()
+
+```cangjie
+public func isBuiltinType(): Bool
+```
+
+Function: Whether this is a builtin type (Int, Float, Bool, Rune, Unit, Nothing, RawArray, VArray, CPointer, CString, etc.).
 
 ### func isFloatType()
 
@@ -6572,10 +6895,254 @@ Int32 is unsigned integer: false
 UInt32 is unsigned integer: true
 ```
 
-### operator func==(Type)
+### func isAnyTypeInStd()
 
 ```cangjie
-public open operator func==(other: Type): Bool
+public func isAnyTypeInStd(): Bool
+```
+
+Function: Whether this is the Any type in the std package.
+
+### func isBoxType()
+
+```cangjie
+public func isBoxType(): Bool
+```
+
+Function: Whether this is a BoxType.
+
+### func isBoxRefTypeOf(Type)
+
+```cangjie
+public func isBoxRefTypeOf(other: Type): Bool
+```
+
+Function: Whether this is the Box reference type of other.
+
+Parameters:
+
+- other: Type - The type to compare with.
+
+### func isCFuncType()
+
+```cangjie
+public func isCFuncType(): Bool
+```
+
+Function: Whether this is a C function type.
+
+### func isCPointerType()
+
+```cangjie
+public func isCPointerType(): Bool
+```
+
+Function: Whether this is a CPointer type.
+
+### func isCStringType()
+
+```cangjie
+public func isCStringType(): Bool
+```
+
+Function: Whether this is a CString type.
+
+### func isCTypeInStd()
+
+```cangjie
+public func isCTypeInStd(): Bool
+```
+
+Function: Whether this is a C type in the std package.
+
+### func isClassLikeType()
+
+```cangjie
+public func isClassLikeType(): Bool
+```
+
+Function: Whether this is a ClassLikeType.
+
+### func isClosureType()
+
+```cangjie
+public func isClosureType(): Bool
+```
+
+Function: Whether this is a closure type.
+
+### func isClosureBaseType()
+
+```cangjie
+public func isClosureBaseType(): Bool
+```
+
+Function: Whether this is a closure base type.
+
+### func isClosureGenericBaseType()
+
+```cangjie
+public func isClosureGenericBaseType(): Bool
+```
+
+Function: Whether this is a closure generic base type.
+
+### func isClosureInstBaseType()
+
+```cangjie
+public func isClosureInstBaseType(): Bool
+```
+
+Function: Whether this is a closure instantiated base type.
+
+### func isCustomType()
+
+```cangjie
+public func isCustomType(): Bool
+```
+
+Function: Whether this is a CustomType.
+
+### func isEnumType()
+
+```cangjie
+public func isEnumType(): Bool
+```
+
+Function: Whether this is an EnumType.
+
+### func isFuncType()
+
+```cangjie
+public func isFuncType(): Bool
+```
+
+Function: Whether this is a FuncType.
+
+### func isGenericType()
+
+```cangjie
+public func isGenericType(): Bool
+```
+
+Function: Whether this is a GenericType.
+
+### func isGenericRelated()
+
+```cangjie
+public func isGenericRelated(): Bool
+```
+
+Function: Whether this is related to generics.
+
+### func isReferenceType()
+
+```cangjie
+public func isReferenceType(): Bool
+```
+
+Function: Whether this is a reference type (ClassLikeType, RawArrayType, BoxType, or ThisType).
+
+### func isRawArrayType()
+
+```cangjie
+public func isRawArrayType(): Bool
+```
+
+Function: Whether this is a RawArray type.
+
+### func isStructType()
+
+```cangjie
+public func isStructType(): Bool
+```
+
+Function: Whether this is a StructType.
+
+### func isThisType()
+
+```cangjie
+public func isThisType(): Bool
+```
+
+Function: Whether this is a ThisType.
+
+### func isTupleType()
+
+```cangjie
+public func isTupleType(): Bool
+```
+
+Function: Whether this is a TupleType.
+
+### func isValueType()
+
+```cangjie
+public func isValueType(): Bool
+```
+
+Function: Whether this is a value type.
+
+### func isVArrayType()
+
+```cangjie
+public func isVArrayType(): Bool
+```
+
+Function: Whether this is a VArrayType.
+
+### func satisfyCType()
+
+```cangjie
+public func satisfyCType(): Bool
+```
+
+Function: Whether this satisfies the C type constraint.
+
+### func isEqualOrSubTypeOf(Type, ArrayList<(Type, Type)>)
+
+```cangjie
+public func isEqualOrSubTypeOf(parent: Type, visited!: ArrayList<(Type, Type)> = ArrayList<(Type, Type)>()): Bool
+```
+
+Function: Determines whether this is an equal or subtype of parent.
+
+Parameters:
+
+- parent: Type - The parent type to compare with.
+- visited!: ArrayList<(Type, Type)> - Visitation table for cycle detection; usually pass the default empty table.
+
+### func isEqualOrInstantiatedTypeOf(Type, ArrayList<(Type, Type)>)
+
+```cangjie
+public func isEqualOrInstantiatedTypeOf(genericRelatedType: Type, visited!: ArrayList<(Type, Type)> = ArrayList<(Type, Type)>()): Bool
+```
+
+Function: Determines whether this is an equal or instantiated type of genericRelatedType.
+
+Parameters:
+
+- genericRelatedType: Type - The generic-related type to compare with.
+- visited!: ArrayList<(Type, Type)> - Visitation table for cycle detection; usually pass the default empty table.
+
+### func satisfyGenericConstraints(GenericType, HashMap<GenericType, Type>, ArrayList<(Type, Type)>)
+
+```cangjie
+public func satisfyGenericConstraints(gType: GenericType, instMap: HashMap<GenericType, Type>, visited!: ArrayList<(Type, Type)> = ArrayList<(Type, Type)>()): Bool
+```
+
+Function: Determines whether this satisfies the generic constraints.
+
+Parameters:
+
+- gType: GenericType - The generic type.
+- instMap: HashMap<GenericType, Type> - The generic instantiation mapping.
+- visited!: ArrayList<(Type, Type)> - Visitation table for cycle detection; usually pass the default empty table.
+
+### operator func ==(Type)
+
+```cangjie
+public operator func ==(other: Type): Bool
 ```
 
 Function: Checks whether this type equals another type.
@@ -6719,10 +7286,10 @@ Output:
 Unit type: Unit
 ```
 
-### operator func==(UnitType)
+### operator func ==(UnitType)
 
 ```cangjie
-public operator func==(_: UnitType): Bool
+public operator func ==(_: UnitType): Bool
 ```
 
 Function: Checks whether this UnitType equals another UnitType.
@@ -6879,10 +7446,10 @@ Output:
 VArray<Int32, $2>
 ```
 
-### operator func==(VArrayType)
+### operator func ==(VArrayType)
 
 ```cangjie
-public operator func==(other: VArrayType): Bool
+public operator func ==(other: VArrayType): Bool
 ```
 
 Function: Compares whether element type and length match.
@@ -7221,7 +7788,7 @@ h<Generic-pkg:T>(Int32) -> Unit
 public abstract class CHIRVisitor
 ```
 
-Function: **Abstract visitor** for CHIR functions, block groups, basic blocks, and nested expressions. Subclasses can override [`action`](#func-actionexpression) to observe each expression node; `walk` methods recursively traverse until `IRActionMode.STOP` is returned.
+Function: **Abstract visitor** for CHIR functions, block groups, basic blocks, and nested expressions. Subclasses can override [`action`](#func-actionexpression) to observe each expression node; `walk` methods recursively traverse until `IRActionMode.Stop` is returned.
 
 ### func walk(Function)
 
@@ -7334,7 +7901,7 @@ Output:
 public open func action(ty: Expression): IRActionMode
 ```
 
-Function: Called for each visited expression node, determining whether to continue traversal. Defaults to returning `IRActionMode.CONTINUE`; subclasses can override to implement custom observation logic or early termination.
+Function: Called for each visited expression node, determining whether to continue traversal. Defaults to returning `IRActionMode.Continue`; subclasses can override to implement custom observation logic or early termination.
 
 Parameters:
 
@@ -7342,7 +7909,7 @@ Parameters:
 
 Return Value:
 
-- [IRActionMode](chir_package_enums.md#enum-iractionmode) - Visitor control mode (`CONTINUE` to continue traversal, `STOP` to terminate traversal).
+- [IRActionMode](chir_package_enums.md#enum-iractionmode) - Visitor control mode (`Continue` to continue traversal, `Stop` to terminate traversal, `Skip` to skip nested BlockGroups).
 
 Example:
 
@@ -7353,7 +7920,7 @@ import stdx.chir.*
 class MyVisitor <: CHIRVisitor {
     public open func action(ty: Expression): IRActionMode {
         println(ty.toString().size > 0)
-        return IRActionMode.CONTINUE
+        return IRActionMode.Continue
     }
 }
 
@@ -7497,6 +8064,32 @@ Output:
 ```text
 prop_objType: true
 ```
+
+### func setArg(Int64, Value)
+
+```cangjie
+public func setArg(index: Int64, arg: Value): Unit
+```
+
+Function: Sets the argument value at the specified position.
+
+Parameters:
+
+- index: Int64 - Argument position index.
+- arg: Value - New argument value.
+
+### func setInstTypeArg(Int64, Type)
+
+```cangjie
+public func setInstTypeArg(index: Int64, arg: Type): Unit
+```
+
+Function: Sets the instantiation type argument at the specified position.
+
+Parameters:
+
+- index: Int64 - Argument position index.
+- arg: [Type](#class-type) - New instantiation type argument.
 
 ---
 
@@ -7977,10 +8570,10 @@ Output:
 fn_toString: true
 ```
 
-### operator func==(Block)
+### operator func ==(Block)
 
 ```cangjie
-public operator func==(other: Block): Bool
+public operator func ==(other: Block): Bool
 ```
 
 Function: Reference comparison, determines whether two Blocks are the same instance.
@@ -8283,10 +8876,10 @@ Output:
 fn_toString: true
 ```
 
-### operator func==(BlockGroup)
+### operator func ==(BlockGroup)
 
 ```cangjie
-public operator func==(other: BlockGroup): Bool
+public operator func ==(other: BlockGroup): Bool
 ```
 
 Function: Reference comparison, determines whether two BlockGroups are the same instance.
@@ -8427,10 +9020,10 @@ Output:
 true
 ```
 
-### operator func==(BoolLiteral)
+### operator func ==(BoolLiteral)
 
 ```cangjie
-public operator func==(other: BoolLiteral): Bool
+public operator func ==(other: BoolLiteral): Bool
 ```
 
 Function: Reference comparison, determines whether two BoolLiterals are the same instance.
@@ -8570,10 +9163,10 @@ Output:
 2.000000f
 ```
 
-### operator func==(FloatLiteral)
+### operator func ==(FloatLiteral)
 
 ```cangjie
-public operator func==(other: FloatLiteral): Bool
+public operator func ==(other: FloatLiteral): Bool
 ```
 
 Function: Reference comparison, determines whether two FloatLiterals are the same instance.
@@ -9232,10 +9825,10 @@ Output:
 fn_toString: true
 ```
 
-### operator func==(Function)
+### operator func ==(Function)
 
 ```cangjie
-public operator func==(other: Function): Bool
+public operator func ==(other: Function): Bool
 ```
 
 Function: Reference comparison, determines whether two Functions are the same instance.
@@ -9468,10 +10061,10 @@ Output:
 fn_toString: true
 ```
 
-### operator func==(GlobalVar)
+### operator func ==(GlobalVar)
 
 ```cangjie
-public operator func==(other: GlobalVar): Bool
+public operator func ==(other: GlobalVar): Bool
 ```
 
 Function: Reference comparison, determines whether two GlobalVars are the same instance.
@@ -9669,10 +10262,10 @@ Output:
 7u
 ```
 
-### operator func==(IntLiteral)
+### operator func ==(IntLiteral)
 
 ```cangjie
-public operator func==(other: IntLiteral): Bool
+public operator func ==(other: IntLiteral): Bool
 ```
 
 Function: Reference comparison, determines whether two IntLiterals are the same instance.
@@ -9856,10 +10449,10 @@ Output:
 fn_toString: true
 ```
 
-### operator func==(LocalVar)
+### operator func ==(LocalVar)
 
 ```cangjie
-public operator func==(other: LocalVar): Bool
+public operator func ==(other: LocalVar): Bool
 ```
 
 Function: Reference comparison, determines whether two LocalVars are the same instance.
@@ -9975,10 +10568,10 @@ Output:
 Null
 ```
 
-### operator func==(NullLiteral)
+### operator func ==(NullLiteral)
 
 ```cangjie
-public operator func==(other: NullLiteral): Bool
+public operator func ==(other: NullLiteral): Bool
 ```
 
 Function: Reference comparison, determines whether two NullLiterals are the same instance.
@@ -10025,15 +10618,15 @@ Parent Types:
 - Value
 - Equatable\<Parameter>
 
-### prop annotations
+### prop customAnnoInstances
 
 ```cangjie
-public mut prop annotations: Array<Annotation>
+public mut prop customAnnoInstances: Array<CustomAnnoInstance>
 ```
 
-Function: Parameter annotation list; `set` replaces the entire list.
+Function: Parameter annotation instance list; getter returns the current list, setter replaces the entire list.
 
-Type: Array\<[Annotation](#class-annotation)>
+Type: Array\<[CustomAnnoInstance](#class-customannoinstance)>
 
 Example:
 
@@ -10045,14 +10638,14 @@ main() {
     let pkg = Package("demo", AccessLevel.Public)
     let f = pkg.addFunction(FuncType.get([IntType.getInt32()], UnitType.get()), "f_m", "f", "demo")
     let param = f.parameters[0]
-    println("mut_prop_annotations: ${param.annotations.size}")
+    println("mut_prop_customAnnoInstances: ${param.customAnnoInstances.size}")
 }
 ```
 
 Output:
 
 ```text
-mut_prop_annotations: 0
+mut_prop_customAnnoInstances: 0
 ```
 
 ### prop srcCodeName
@@ -10148,10 +10741,10 @@ Output:
 fn_toString: true
 ```
 
-### operator func==(Parameter)
+### operator func ==(Parameter)
 
 ```cangjie
-public operator func==(other: Parameter): Bool
+public operator func ==(other: Parameter): Bool
 ```
 
 Function: Reference comparison, determines whether two Parameters are the same instance.
@@ -10291,10 +10884,10 @@ Output:
 '0'
 ```
 
-### operator func==(RuneLiteral)
+### operator func ==(RuneLiteral)
 
 ```cangjie
-public operator func==(other: RuneLiteral): Bool
+public operator func ==(other: RuneLiteral): Bool
 ```
 
 Function: Reference comparison, determines whether two RuneLiterals are the same instance.
@@ -10434,10 +11027,10 @@ Output:
 "abc"
 ```
 
-### operator func==(StringLiteral)
+### operator func ==(StringLiteral)
 
 ```cangjie
-public operator func==(other: StringLiteral): Bool
+public operator func ==(other: StringLiteral): Bool
 ```
 
 Function: Reference comparison, determines whether two StringLiterals are the same instance.
@@ -10544,10 +11137,10 @@ Output:
 Unit
 ```
 
-### operator func==(UnitLiteral)
+### operator func ==(UnitLiteral)
 
 ```cangjie
-public operator func==(other: UnitLiteral): Bool
+public operator func ==(other: UnitLiteral): Bool
 ```
 
 Function: Reference comparison, determines whether two UnitLiterals are the same instance.
@@ -10636,10 +11229,10 @@ Output:
 static_func_create: 1
 ```
 
-### operator func==(Allocate)
+### operator func ==(Allocate)
 
 ```cangjie
-public operator func==(other: Allocate): Bool
+public operator func ==(other: Allocate): Bool
 ```
 
 Function: Reference comparison, determines whether two Allocate instances are the same.
@@ -10806,10 +11399,10 @@ Output:
 static_func_create: 1
 ```
 
-### operator func==(TryAllocate)
+### operator func ==(TryAllocate)
 
 ```cangjie
-public operator func==(other: TryAllocate): Bool
+public operator func ==(other: TryAllocate): Bool
 ```
 
 Function: Reference comparison, determines whether two TryAllocate instances are the same.
@@ -10906,10 +11499,10 @@ Output:
 static_func_create: 1
 ```
 
-### operator func==(BinaryExpression)
+### operator func ==(BinaryExpression)
 
 ```cangjie
-public operator func==(other: BinaryExpression): Bool
+public operator func ==(other: BinaryExpression): Bool
 ```
 
 Function: Reference comparison, determines whether two BinaryExpression instances are the same.
@@ -11086,10 +11679,10 @@ Output:
 static_func_create: 1
 ```
 
-### operator func==(TryBinaryExpression)
+### operator func ==(TryBinaryExpression)
 
 ```cangjie
-public operator func==(other: TryBinaryExpression): Bool
+public operator func ==(other: TryBinaryExpression): Bool
 ```
 
 Function: Reference comparison, determines whether two TryBinaryExpression instances are the same.
@@ -11305,10 +11898,10 @@ Output:
 static_func_create: 2
 ```
 
-### operator func==(Branch)
+### operator func ==(Branch)
 
 ```cangjie
-public operator func==(other: Branch): Bool
+public operator func ==(other: Branch): Bool
 ```
 
 Function: Reference comparison, determines whether two Branch instances are the same.
@@ -11403,10 +11996,10 @@ Output:
 static_func_create: 1
 ```
 
-### operator func==(Constant)
+### operator func ==(Constant)
 
 ```cangjie
-public operator func==(other: Constant): Bool
+public operator func ==(other: Constant): Bool
 ```
 
 Function: Reference comparison, determines whether two Constant instances are the same.
@@ -11534,10 +12127,10 @@ Output:
 static_func_create: 2
 ```
 
-### operator func==(Debug)
+### operator func ==(Debug)
 
 ```cangjie
-public operator func==(other: Debug): Bool
+public operator func ==(other: Debug): Bool
 ```
 
 Function: Reference comparison, determines whether two Debug instances are the same.
@@ -11625,10 +12218,10 @@ Output:
 static_func_create: 1
 ```
 
-### operator func==(Exit)
+### operator func ==(Exit)
 
 ```cangjie
-public operator func==(other: Exit): Bool
+public operator func ==(other: Exit): Bool
 ```
 
 Function: Reference comparison, determines whether two Exit instances are the same.
@@ -11762,10 +12355,10 @@ Output:
 static_func_create: 2
 ```
 
-### operator func==(Field)
+### operator func ==(Field)
 
 ```cangjie
-public operator func==(other: Field): Bool
+public operator func ==(other: Field): Bool
 ```
 
 Function: Reference comparison, determines whether two Field instances are the same.
@@ -11904,10 +12497,10 @@ Output:
 static_func_create: 2
 ```
 
-### operator func==(FieldByName)
+### operator func ==(FieldByName)
 
 ```cangjie
-public operator func==(other: FieldByName): Bool
+public operator func ==(other: FieldByName): Bool
 ```
 
 Function: Reference comparison, determines whether two FieldByName instances are the same.
@@ -12008,45 +12601,19 @@ static_func_create: 1
 ### func getArgs()
 
 ```cangjie
-public func getArgs(): Array<Value>
+public override func getArgs(): Array<Value>
 ```
 
-Function: Gets the call argument list.
+Function: Returns the actual argument list of this call expression.
 
 Return Value:
 
-- Array\<Value> - Call argument list.
+- Array\<Value> - Array of argument values.
 
-Example:
-
-<!-- verify -->
-```cangjie
-import stdx.chir.*
-
-main() {
-    let pkg = Package("demo", AccessLevel.Public)
-    let calleeFunc = pkg.addFunction(FuncType.get([IntType.getInt32()], UnitType.get()), "callee_m", "callee", "demo")
-    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
-    f.initBody()
-    let block = f.body.getOrThrow().entryBlock
-    let arg = IntLiteral.get(IntType.getInt32(), 1)
-    let ctx = FuncCallContext([arg], [], None)
-    let expr = Apply.create(calleeFunc, ctx)
-    block.appendExpr(expr)
-    println("func_getArgs: ${expr.getArgs().size}")
-}
-```
-
-Output:
-
-```text
-func_getArgs: 1
-```
-
-### operator func==(Apply)
+### operator func ==(Apply)
 
 ```cangjie
-public operator func==(other: Apply): Bool
+public operator func ==(other: Apply): Bool
 ```
 
 Function: Reference comparison, determines whether two Apply instances are the same.
@@ -12225,48 +12792,19 @@ static_func_create: 1
 ### func getArgs()
 
 ```cangjie
-public func getArgs(): Array<Value>
+public override func getArgs(): Array<Value>
 ```
 
-Function: Gets the call argument list (excluding normal and error branch operands).
+Function: Returns the actual argument list of this call expression.
 
 Return Value:
 
-- Array\<Value> - Call argument list.
+- Array\<Value> - Array of argument values.
 
-Example:
-
-<!-- verify -->
-```cangjie
-import stdx.chir.*
-
-main() {
-    let pkg = Package("demo", AccessLevel.Public)
-    let calleeFunc = pkg.addFunction(FuncType.get([IntType.getInt32()], UnitType.get()), "callee_m", "callee", "demo")
-    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
-    f.initBody()
-    let bg = f.body.getOrThrow()
-    let block = bg.entryBlock
-    let normalBlock = bg.appendBlock()
-    let errorBlock = bg.appendBlock()
-    let arg = IntLiteral.get(IntType.getInt32(), 1)
-    let ctx = FuncCallContext([arg], [], None)
-    let expr = TryApply.create(calleeFunc, ctx, normalBlock, errorBlock)
-    block.appendExpr(expr)
-    println("func_getArgs: ${expr.getArgs().size}")
-}
-```
-
-Output:
-
-```text
-func_getArgs: 1
-```
-
-### operator func==(TryApply)
+### operator func ==(TryApply)
 
 ```cangjie
-public operator func==(other: TryApply): Bool
+public operator func ==(other: TryApply): Bool
 ```
 
 Function: Reference comparison, determines whether two TryApply instances are the same.
@@ -12325,19 +12863,19 @@ Parent Types:
 ### func getArgs()
 
 ```cangjie
-public func getArgs(): Array<Value>
+public override func getArgs(): Array<Value>
 ```
 
-Function: Gets the intrinsic function call argument list.
+Function: Returns the actual argument list of this call expression.
 
 Return Value:
 
-- Array\<Value> - Call argument list.
+- Array\<Value> - Array of argument values.
 
-### operator func==(Intrinsic)
+### operator func ==(Intrinsic)
 
 ```cangjie
-public operator func==(other: Intrinsic): Bool
+public operator func ==(other: Intrinsic): Bool
 ```
 
 Function: Reference comparison, determines whether two Intrinsic instances are the same.
@@ -12388,19 +12926,19 @@ Type: Block
 ### func getArgs()
 
 ```cangjie
-public func getArgs(): Array<Value>
+public override func getArgs(): Array<Value>
 ```
 
-Function: Gets the intrinsic function call argument list (excluding normal and error branch operands).
+Function: Returns the actual argument list of this call expression.
 
 Return Value:
 
-- Array\<Value> - Call argument list.
+- Array\<Value> - Array of argument values.
 
-### operator func==(TryIntrinsic)
+### operator func ==(TryIntrinsic)
 
 ```cangjie
-public operator func==(other: TryIntrinsic): Bool
+public operator func ==(other: TryIntrinsic): Bool
 ```
 
 Function: Reference comparison, determines whether two TryIntrinsic instances are the same.
@@ -12472,50 +13010,22 @@ Output:
 static_func_create: 1
 ```
 
-### func getArgs(
-
+### func getArgs()
 
 ```cangjie
-public func getArgs(): Array<Value>
+public override func getArgs(): Array<Value>
 ```
 
-Function: Gets the virtual method call argument list.
+Function: Returns the actual argument list of this call expression.
 
 Return Value:
 
-- Array\<Value> - Call argument list.
+- Array\<Value> - Array of argument values.
 
-Example:
-
-<!-- verify -->
-```cangjie
-import stdx.chir.*
-
-main() {
-    let pkg = Package("demo", AccessLevel.Public)
-    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
-    f.initBody()
-    let block = f.body.getOrThrow().entryBlock
-    let ft = FuncType.get([], UnitType.get())
-    let sig = FuncSigInfo("method", ft)
-    let fcc = FuncCallContext([], [], None)
-    let ctx = InvokeCallContext(BoolLiteral.get(false), sig, fcc)
-    let expr = Invoke.create(UnitType.get(), ctx)
-    block.appendExpr(expr)
-    println("func_getArgs: ${expr.getArgs().size}")
-}
-```
-
-Output:
-
-```text
-func_getArgs: 1
-```
-
-### operator func==(Invoke)
+### operator func ==(Invoke)
 
 ```cangjie
-public operator func==(other: Invoke): Bool
+public operator func ==(other: Invoke): Bool
 ```
 
 Function: Reference comparison, determines whether two Invoke instances are the same.
@@ -12699,53 +13209,22 @@ Output:
 static_func_create: 1
 ```
 
-### func getArgs
+### func getArgs()
 
-)
 ```cangjie
-public func getArgs(): Array<Value>
+public override func getArgs(): Array<Value>
 ```
 
-Function: Gets the virtual method call argument list (excluding normal and error branch operands).
+Function: Returns the actual argument list of this call expression.
 
 Return Value:
 
-- Array\<Value> - Call argument list.
+- Array\<Value> - Array of argument values.
 
-Example:
-
-<!-- verify -->
-```cangjie
-import stdx.chir.*
-
-main() {
-    let pkg = Package("demo", AccessLevel.Public)
-    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
-    f.initBody()
-    let bg = f.body.getOrThrow()
-    let block = bg.entryBlock
-    let normalBlock = bg.appendBlock()
-    let errorBlock = bg.appendBlock()
-    let ft = FuncType.get([], UnitType.get())
-    let sig = FuncSigInfo("method", ft)
-    let fcc = FuncCallContext([], [], None)
-    let ctx = InvokeCallContext(BoolLiteral.get(false), sig, fcc)
-    let expr = TryInvoke.create(UnitType.get(), ctx, normalBlock, errorBlock)
-    block.appendExpr(expr)
-    println("func_getArgs: ${expr.getArgs().size}")
-}
-```
-
-Output:
-
-```text
-func_getArgs: 1
-```
-
-### operator func==(TryInvoke)
+### operator func ==(TryInvoke)
 
 ```cangjie
-public operator func==(other: TryInvoke): Bool
+public operator func ==(other: TryInvoke): Bool
 ```
 
 Function: Reference comparison, determines whether two TryInvoke instances are the same.
@@ -12886,10 +13365,10 @@ Output:
 static_func_create: 2
 ```
 
-### operator func==(GetElementByName)
+### operator func ==(GetElementByName)
 
 ```cangjie
-public operator func==(other: GetElementByName): Bool
+public operator func ==(other: GetElementByName): Bool
 ```
 
 Function: Reference comparison, determines whether two GetElementByName instances are the same.
@@ -13028,10 +13507,10 @@ Output:
 static_func_create: 2
 ```
 
-### operator func==(GetElementRef)
+### operator func ==(GetElementRef)
 
 ```cangjie
-public operator func==(other: GetElementRef): Bool
+public operator func ==(other: GetElementRef): Bool
 ```
 
 Function: Reference comparison, determines whether two GetElementRef instances are the same.
@@ -13126,10 +13605,10 @@ Output:
 static_func_create: 1
 ```
 
-### operator func==(GetException)
+### operator func ==(GetException)
 
 ```cangjie
-public operator func==(other: GetException): Bool
+public operator func ==(other: GetException): Bool
 ```
 
 Function: Reference comparison, determines whether two GetException instances are the same.
@@ -13257,10 +13736,10 @@ Output:
 static_func_create: 1
 ```
 
-### operator func==(GetInstantiateValue)
+### operator func ==(GetInstantiateValue)
 
 ```cangjie
-public operator func==(other: GetInstantiateValue): Bool
+public operator func ==(other: GetInstantiateValue): Bool
 ```
 
 Function: Reference comparison, determines whether two GetInstantiateValue instances are the same.
@@ -13353,10 +13832,10 @@ Output:
 static_func_create: 1
 ```
 
-### operator func==(GetRTTI)
+### operator func ==(GetRTTI)
 
 ```cangjie
-public operator func==(other: GetRTTI): Bool
+public operator func ==(other: GetRTTI): Bool
 ```
 
 Function: Reference comparison, determines whether two GetRTTI instances are the same.
@@ -13480,10 +13959,10 @@ Output:
 static_func_create: 1
 ```
 
-### operator func==(GetRTTIStatic)
+### operator func ==(GetRTTIStatic)
 
 ```cangjie
-public operator func==(other: GetRTTIStatic): Bool
+public operator func ==(other: GetRTTIStatic): Bool
 ```
 
 Function: Reference comparison, determines whether two GetRTTIStatic instances are the same.
@@ -13575,10 +14054,10 @@ Output:
 static_func_create: 1
 ```
 
-### operator func==(GoTo)
+### operator func ==(GoTo)
 
 ```cangjie
-public operator func==(other: GoTo): Bool
+public operator func ==(other: GoTo): Bool
 ```
 
 Function: Reference comparison, determines whether two GoTo instances are the same.
@@ -13706,10 +14185,10 @@ Output:
 static_func_create: 1
 ```
 
-### operator func==(InstanceOf)
+### operator func ==(InstanceOf)
 
 ```cangjie
-public operator func==(other: InstanceOf): Bool
+public operator func ==(other: InstanceOf): Bool
 ```
 
 Function: Reference comparison, determines whether two InstanceOf instances are the same.
@@ -13973,43 +14452,15 @@ Output:
 prop_body: true
 ```
 
-### prop returnValue
+### prop isCompileTimeValue
 
 ```cangjie
-public mut prop returnValue: LocalVar
+public mut prop isCompileTimeValue: Bool
 ```
 
-Function: Return value local variable.
+Function: Whether this lambda is a compile-time value; getter returns the current flag, setter can modify it.
 
-Type: [LocalVar](#class-localvar)
-
-Example:
-
-<!-- verify -->
-```cangjie
-import stdx.chir.*
-import std.collection.*
-
-main() {
-    let pkg = Package("demo", AccessLevel.Public)
-    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
-    f.initBody()
-    let block = f.body.getOrThrow().entryBlock
-    let lambdaType = FuncType.get([], IntType.getInt32())
-    let expr = Lambda.create(lambdaType, "lambda_m", "myLambda", ArrayList<GenericType>())
-    block.appendExpr(expr)
-    expr.initBody()
-    let lit = IntLiteral.get(IntType.getInt32(), 42)
-    expr.returnValue = Constant.create(lit).result
-    println("mut_prop_returnValue: ${expr.returnValue.toString().size > 0}")
-}
-```
-
-Output:
-
-```text
-mut_prop_returnValue: true
-```
+Type: Bool
 
 ### prop isLocalFunc
 
@@ -14017,69 +14468,19 @@ mut_prop_returnValue: true
 public mut prop isLocalFunc: Bool
 ```
 
-Function: Whether it is a local function.
+Function: Whether this lambda is a local function; getter returns the current flag, setter can modify it.
 
 Type: Bool
 
-Example:
-
-<!-- verify -->
-```cangjie
-import stdx.chir.*
-import std.collection.*
-
-main() {
-    let pkg = Package("demo", AccessLevel.Public)
-    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
-    f.initBody()
-    let block = f.body.getOrThrow().entryBlock
-    let lambdaType = FuncType.get([], UnitType.get())
-    let expr = Lambda.create(lambdaType, "lambda_m", "myLambda", ArrayList<GenericType>())
-    block.appendExpr(expr)
-    println("mut_prop_isLocalFunc: ${expr.isLocalFunc}")
-}
-```
-
-Output:
-
-```text
-mut_prop_isLocalFunc: false
-```
-
-### prop isCompileTimeValue
+### prop returnValue
 
 ```cangjie
-public mut prop isCompileTimeValue: Bool
+public mut prop returnValue: LocalVar
 ```
 
-Function: Whether it is a compile-time value.
+Function: The return value variable of the Lambda.
 
-Type: Bool
-
-Example:
-
-<!-- verify -->
-```cangjie
-import stdx.chir.*
-import std.collection.*
-
-main() {
-    let pkg = Package("demo", AccessLevel.Public)
-    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
-    f.initBody()
-    let block = f.body.getOrThrow().entryBlock
-    let lambdaType = FuncType.get([], UnitType.get())
-    let expr = Lambda.create(lambdaType, "lambda_m", "myLambda", ArrayList<GenericType>())
-    block.appendExpr(expr)
-    println("mut_prop_isCompileTimeValue: ${expr.isCompileTimeValue}")
-}
-```
-
-Output:
-
-```text
-mut_prop_isCompileTimeValue: false
-```
+Type: [LocalVar](#class-localvar)
 
 ### static func create(FuncType, String, String, ArrayList\<GenericType>)
 
@@ -14231,10 +14632,10 @@ Output:
 fn_toString: true
 ```
 
-### operator func==(Lambda)
+### operator func ==(Lambda)
 
 ```cangjie
-public operator func==(other: Lambda): Bool
+public operator func ==(other: Lambda): Bool
 ```
 
 Function: Reference comparison, determines whether two Lambda instances are the same.
@@ -14357,10 +14758,10 @@ Output:
 static_create: true
 ```
 
-### operator func==(Load)
+### operator func ==(Load)
 
 ```cangjie
-public operator func==(other: Load): Bool
+public operator func ==(other: Load): Bool
 ```
 
 Function: Reference comparison, determines whether two Load instances are the same.
@@ -14618,10 +15019,10 @@ Output:
 static_create: true
 ```
 
-### operator func==(MultiBranch)
+### operator func ==(MultiBranch)
 
 ```cangjie
-public operator func==(other: MultiBranch): Bool
+public operator func ==(other: MultiBranch): Bool
 ```
 
 Function: Reference comparison, determines whether two MultiBranch instances are the same.
@@ -14718,10 +15119,10 @@ Output:
 static_create: true
 ```
 
-### operator func==(NumericCast)
+### operator func ==(NumericCast)
 
 ```cangjie
-public operator func==(other: NumericCast): Bool
+public operator func ==(other: NumericCast): Bool
 ```
 
 Function: Reference comparison, determines whether two NumericCast instances are the same.
@@ -14882,10 +15283,10 @@ Output:
 static_create: true
 ```
 
-### operator func==(TryNumericCast)
+### operator func ==(TryNumericCast)
 
 ```cangjie
-public operator func==(other: TryNumericCast): Bool
+public operator func ==(other: TryNumericCast): Bool
 ```
 
 Function: Reference comparison, determines whether two TryNumericCast instances are the same.
@@ -15021,10 +15422,10 @@ Output:
 static_create_withSuccessor: done
 ```
 
-### operator func==(RaiseException)
+### operator func ==(RaiseException)
 
 ```cangjie
-public operator func==(other: RaiseException): Bool
+public operator func ==(other: RaiseException): Bool
 ```
 
 Function: Reference comparison, determines whether two RaiseException instances are the same.
@@ -15117,10 +15518,10 @@ Output:
 static_create: true
 ```
 
-### operator func==(RawArrayAllocate)
+### operator func ==(RawArrayAllocate)
 
 ```cangjie
-public operator func==(other: RawArrayAllocate): Bool
+public operator func ==(other: RawArrayAllocate): Bool
 ```
 
 Function: Reference comparison, determines whether two RawArrayAllocate instances are the same instance.
@@ -15281,10 +15682,10 @@ Output:
 static_create: true
 ```
 
-### operator func==(TryRawArrayAllocate)
+### operator func ==(TryRawArrayAllocate)
 
 ```cangjie
-public operator func==(other: TryRawArrayAllocate): Bool
+public operator func ==(other: TryRawArrayAllocate): Bool
 ```
 
 Function: Reference comparison, determines whether two TryRawArrayAllocate instances are the same instance.
@@ -15378,10 +15779,10 @@ Output:
 static_create: done
 ```
 
-### operator func==(RawArrayInitByValue)
+### operator func ==(RawArrayInitByValue)
 
 ```cangjie
-public operator func==(other: RawArrayInitByValue): Bool
+public operator func ==(other: RawArrayInitByValue): Bool
 ```
 
 Function: Reference comparison, determines whether two RawArrayInitByValue instances are the same instance.
@@ -15478,10 +15879,10 @@ Output:
 static_create: done
 ```
 
-### operator func==(RawArrayLiteralInit)
+### operator func ==(RawArrayLiteralInit)
 
 ```cangjie
-public operator func==(other: RawArrayLiteralInit): Bool
+public operator func ==(other: RawArrayLiteralInit): Bool
 ```
 
 Function: Reference comparison, determines whether two RawArrayLiteralInit instances are the same instance.
@@ -15617,10 +16018,10 @@ Output:
 static_create_withArg: true
 ```
 
-### operator func==(Spawn)
+### operator func ==(Spawn)
 
 ```cangjie
-public operator func==(other: Spawn): Bool
+public operator func ==(other: Spawn): Bool
 ```
 
 Function: Reference comparison, determines whether two Spawn instances are the same instance.
@@ -15826,10 +16227,10 @@ Output:
 static_create_withArg: true
 ```
 
-### operator func==(TrySpawn)
+### operator func ==(TrySpawn)
 
 ```cangjie
-public operator func==(other: TrySpawn): Bool
+public operator func ==(other: TrySpawn): Bool
 ```
 
 Function: Reference comparison, determines whether two TrySpawn instances are the same instance.
@@ -15987,10 +16388,10 @@ Output:
 static_create: true
 ```
 
-### operator func==(Store)
+### operator func ==(Store)
 
 ```cangjie
-public operator func==(other: Store): Bool
+public operator func ==(other: Store): Bool
 ```
 
 Function: Reference comparison, determines whether two Store instances are the same instance.
@@ -16121,10 +16522,10 @@ Output:
 static_create: 1
 ```
 
-### operator func==(StoreElementByName)
+### operator func ==(StoreElementByName)
 
 ```cangjie
-public operator func==(other: StoreElementByName): Bool
+public operator func ==(other: StoreElementByName): Bool
 ```
 
 Function: Reference comparison, determines whether two StoreElementByName instances are the same instance.
@@ -16258,10 +16659,10 @@ Output:
 static_create: 1
 ```
 
-### operator func==(StoreElementRef)
+### operator func ==(StoreElementRef)
 
 ```cangjie
-public operator func==(other: StoreElementRef): Bool
+public operator func ==(other: StoreElementRef): Bool
 ```
 
 Function: Reference comparison, determines whether two StoreElementRef instances are the same instance.
@@ -16395,10 +16796,10 @@ Output:
 static_create: 2
 ```
 
-### operator func==(Tuple)
+### operator func ==(Tuple)
 
 ```cangjie
-public operator func==(other: Tuple): Bool
+public operator func ==(other: Tuple): Bool
 ```
 
 Function: Reference comparison, determines whether two Tuple instances are the same instance.
@@ -16493,10 +16894,10 @@ Output:
 static_create: true
 ```
 
-### operator func==(Box)
+### operator func ==(Box)
 
 ```cangjie
-public operator func==(other: Box): Bool
+public operator func ==(other: Box): Bool
 ```
 
 Function: Reference comparison, determines whether two Box instances are the same instance.
@@ -16586,10 +16987,10 @@ Output:
 static_create: true
 ```
 
-### operator func==(StaticCast)
+### operator func ==(StaticCast)
 
 ```cangjie
-public operator func==(other: StaticCast): Bool
+public operator func ==(other: StaticCast): Bool
 ```
 
 Function: Reference comparison, determines whether two StaticCast instances are the same instance.
@@ -16678,10 +17079,10 @@ Output:
 static_create: true
 ```
 
-### operator func==(CastToConcrete)
+### operator func ==(CastToConcrete)
 
 ```cangjie
-public operator func==(other: CastToConcrete): Bool
+public operator func ==(other: CastToConcrete): Bool
 ```
 
 Function: Reference comparison, determines whether two CastToConcrete instances are the same instance.
@@ -16771,10 +17172,10 @@ Output:
 static_create: true
 ```
 
-### operator func==(CastToGeneric)
+### operator func ==(CastToGeneric)
 
 ```cangjie
-public operator func==(other: CastToGeneric): Bool
+public operator func ==(other: CastToGeneric): Bool
 ```
 
 Function: Reference comparison, determines whether two CastToGeneric instances are the same instance.
@@ -16864,10 +17265,10 @@ Output:
 static_create: true
 ```
 
-### operator func==(UnboxToRef)
+### operator func ==(UnboxToRef)
 
 ```cangjie
-public operator func==(other: UnboxToRef): Bool
+public operator func ==(other: UnboxToRef): Bool
 ```
 
 Function: Reference comparison, determines whether two UnboxToRef instances are the same instance.
@@ -16956,10 +17357,10 @@ Output:
 static_create: true
 ```
 
-### operator func==(UnboxToValue)
+### operator func ==(UnboxToValue)
 
 ```cangjie
-public operator func==(other: UnboxToValue): Bool
+public operator func ==(other: UnboxToValue): Bool
 ```
 
 Function: Reference comparison, determines whether two UnboxToValue instances are the same instance.
@@ -17048,10 +17449,10 @@ Output:
 static_create: true
 ```
 
-### operator func==(UnaryExpression)
+### operator func ==(UnaryExpression)
 
 ```cangjie
-public operator func==(other: UnaryExpression): Bool
+public operator func ==(other: UnaryExpression): Bool
 ```
 
 Function: Reference comparison, determines whether two UnaryExpression instances are the same instance.
@@ -17211,10 +17612,10 @@ Output:
 static_create: true
 ```
 
-### operator func==(TryUnaryExpression)
+### operator func ==(TryUnaryExpression)
 
 ```cangjie
-public operator func==(other: TryUnaryExpression): Bool
+public operator func ==(other: TryUnaryExpression): Bool
 ```
 
 Function: Reference comparison, determines whether two TryUnaryExpression instances are the same instance.
@@ -17309,10 +17710,10 @@ Output:
 static_create: true
 ```
 
-### operator func==(VArrayBuilder)
+### operator func ==(VArrayBuilder)
 
 ```cangjie
-public operator func==(other: VArrayBuilder): Bool
+public operator func ==(other: VArrayBuilder): Bool
 ```
 
 Function: Reference comparison, determines whether two VArrayBuilder instances are the same instance.
@@ -17409,10 +17810,10 @@ Output:
 static_create: true
 ```
 
-### operator func==(VArrayExpr)
+### operator func ==(VArrayExpr)
 
 ```cangjie
-public operator func==(other: VArrayExpr): Bool
+public operator func ==(other: VArrayExpr): Bool
 ```
 
 Function: Reference comparison, determines whether two VArrayExpr instances are the same instance.
@@ -20830,4 +21231,69 @@ Output:
 ```text
 createVArrayBuilder: true
 ```
+
+---
+
+## func serializePackage
+
+```cangjie
+public func serializePackage(pkg: Package): (CPointer<UInt8>, Int64)
+```
+
+Function: Serializes an in-memory [Package](#class-package) into a CHIR FlatBuffers binary blob, returning the pointer to the serialized result and its byte length.
+
+Parameters:
+
+- pkg: [Package](#class-package) - The CHIR package to serialize.
+
+Return Value:
+
+- (CPointer\<UInt8>, Int64) - Pointer to the serialized result and its byte length. The caller should call [freeSerializedMemory](#func-freeserializedmemory) to release the memory after use.
+
+Example:
+
+<!-- run -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let (data, length) = serializePackage(pkg)
+    println("length: ${length}")
+    unsafe { freeSerializedMemory() }
+}
+```
+
+---
+
+## func deserializePackage
+
+```cangjie
+public func deserializePackage(root: CPointer<UInt8>, length: Int64): Package
+```
+
+Function: Deserializes a CHIR [Package](#class-package) from a FlatBuffers binary buffer.
+
+Parameters:
+
+- root: CPointer\<UInt8> - Pointer to the first byte of the serialized data; must not be null.
+- length: Int64 - Byte length of the buffer.
+
+Return Value:
+
+- [Package](#class-package) - The deserialized CHIR package.
+
+Exceptions:
+
+- [CHIRException](#class-chirexception) - Thrown when root is null.
+
+---
+
+## func freeSerializedMemory
+
+```cangjie
+public func freeSerializedMemory(): Unit
+```
+
+Function: Resets the shared FlatBuffers builder state produced by the last serialization.
 </task_result>
