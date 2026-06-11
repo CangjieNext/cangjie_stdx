@@ -1,0 +1,9 @@
+*.md text eol=lf
+*.py text eol=lf
+*.cj text eol=lf
+*.toml text eol=lf
+*.json text eol=lf
+*.xml text eol=lf
+*.ps1 text eol=lf
+*.sh text eol=lf
+*.txt text eol=lf
