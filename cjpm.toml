@@ -55,6 +55,21 @@
 [package.package-configuration."stdx.net.http"]
   compile-option = "-lcangjie-dynamicLoader-opensslFFI"
 
+[package.package-configuration."stdx.syntax"]
+  compile-option = "-lstdx.syntaxFFI"
+
+[package.package-configuration."stdx.plugin.manager"]
+  compile-option = "-lstdx.chir"
+
+[package.package-configuration."stdx.aspect_cj"]
+  compile-option = "-lstdx.chir"
+
+[package.package-configuration."stdx.aspect_cj.plugins.collect_aspects"]
+  compile-option = "-l:lib-macro_stdx.plugin.so -lstdx.chir -lstdx.aspect_cj -lstdx.plugin.manager"
+
+[package.package-configuration."stdx.aspect_cj.plugins.wave_aspects"]
+  compile-option = "-l:lib-macro_stdx.plugin.so -lstdx.chir -lstdx.aspect_cj -lstdx.plugin.manager"
+
 [target.x86_64-unknown-linux-gnu]
   link-option = "-L target/linux_ohos_aarch64_cjnative/static/stdx -L target/linux_x86_64_cjnative/static/stdx -L target/mock/linux_x86_64_cjnative/static/stdx -lstdx.fuzzFFI"
 

@@ -290,12 +290,28 @@ def find_ancestor_and_cwd(target_name="cjpm"):
     return None
 
 
-CJPM_DIR = find_ancestor_and_cwd("cjpm")
+CJPM_DIR = find_ancestor_and_cwd("cjpm") or os.path.dirname(os.path.abspath(__file__))
 
 STDX_DIR = os.path.dirname(os.path.abspath(__file__))
 BUILD_DIR = os.path.join(STDX_DIR, "build_temp")
 SYNTAX_DIR = os.path.join(STDX_DIR, "src/stdx/syntax")
 CHIR_DIR = os.path.join(STDX_DIR, "src/stdx/chir")
+SYNTAX_SCHEMA_SRC = os.path.join(SYNTAX_DIR, "native/NodeFormat.fbs")
+CHIR_FB_GEN_SCRIPT = os.path.join(CHIR_DIR, "GenerateFlatbuffers.cmake")
+SYNTAX_FB_GEN_SCRIPT = os.path.join(SYNTAX_DIR, "GenerateFlatbuffers.cmake")
+FLATBUFFERS_SRC = os.path.join(STDX_DIR, "third_party/flatbuffers")
+FLATBUFFER_GENERATED_BASENAMES = [
+    "builder.cj",
+    "constants.cj",
+    "decode.cj",
+    "exception.cj",
+    "flatbuffer_object.cj",
+    "table.cj",
+]
+FLATBUFFER_GENERATED_FILES = {
+    CHIR_DIR: FLATBUFFER_GENERATED_BASENAMES + ["PackageFormat_generated.cj"],
+    SYNTAX_DIR: FLATBUFFER_GENERATED_BASENAMES + ["NodeFormat_generated.cj"],
+}
 PLUGIN_DIR = os.path.join(STDX_DIR, "src/stdx/plugin")
 FUZZ_DIR = os.path.join(STDX_DIR, "src/stdx/fuzz")
 ASPECT_CJ_DIR = os.path.join(STDX_DIR, "src/stdx/aspect_cj")
@@ -540,6 +556,7 @@ def build(args):
     if args.build_stage.value == "preBuild":
         clean(args)
         cleanLibs()
+        run_flatbuffer_generation(args)
     
     if DEVECO_OH_NATIVE_HOME:
         if IS_WINDOWS:
@@ -900,6 +917,129 @@ def redo_with_write(redo_func, path, err):
         raise
 
 
+def get_cmake_build_dir(args):
+    if args.target:
+        return os.path.join(BUILD_DIR, "build-libs-{}".format(args.target))
+    return CMAKE_BUILD_DIR
+
+
+def resolve_chir_schema_src():
+    schema_dir = os.environ.get("CANGJIE_SCHEMA_DIR")
+    if schema_dir:
+        schema_path = os.path.join(schema_dir, "PackageFormat.fbs")
+        if os.path.isfile(schema_path):
+            return os.path.abspath(schema_path)
+    candidates = [
+        os.path.join(STDX_DIR, "../cangjie_compiler/schema/PackageFormat.fbs"),
+        os.path.join(STDX_DIR, "../cangjie_runtime/stdlib/schema/PackageFormat.fbs"),
+    ]
+    for candidate in candidates:
+        if os.path.isfile(candidate):
+            return os.path.abspath(candidate)
+    return None
+
+
+def ensure_flatc(cmake_build_dir):
+    flatc_name = "flatc.exe" if IS_WINDOWS else "flatc"
+    flatc = os.path.join(cmake_build_dir, "bin", flatc_name)
+    if os.path.isfile(flatc):
+        return flatc
+
+    LOG.info("flatc not found, building flatbuffers...\n")
+    flatbuffers_build = os.path.join(cmake_build_dir, "flatbuffers")
+    os.makedirs(flatbuffers_build, exist_ok=True)
+    os.makedirs(os.path.join(cmake_build_dir, "bin"), exist_ok=True)
+
+    cmake_configure = [
+        "cmake",
+        FLATBUFFERS_SRC,
+        "-G",
+        "Ninja",
+        "-DFLATBUFFERS_BUILD_TESTS=OFF",
+        "-DFLATBUFFERS_BUILD_FLATHASH=OFF",
+    ]
+    if not IS_WINDOWS:
+        cmake_configure.extend(["-DCMAKE_C_COMPILER=cc", "-DCMAKE_CXX_COMPILER=c++"])
+    cmake_configure.extend(["-B", flatbuffers_build])
+
+    output = subprocess.Popen(cmake_configure, stdout=PIPE, stderr=PIPE)
+    log_output(output)
+
+    build_cmd = [
+        "cmake",
+        "--build",
+        flatbuffers_build,
+        "--target",
+        "flatc",
+        "-j",
+        str(MAKE_JOBS),
+    ]
+    output = subprocess.Popen(build_cmd, stdout=PIPE, stderr=PIPE)
+    log_output(output)
+
+    built_flatc = os.path.join(flatbuffers_build, flatc_name)
+    if not os.path.isfile(built_flatc):
+        built_flatc = os.path.join(flatbuffers_build, "flatc")
+    if not os.path.isfile(built_flatc):
+        LOG.error("flatc build succeeded but binary not found under " + flatbuffers_build + "\n")
+        sys.exit(1)
+
+    shutil.copy2(built_flatc, flatc)
+    return flatc
+
+
+def run_flatbuffer_generation(args):
+    cmake_build_dir = get_cmake_build_dir(args)
+    os.makedirs(cmake_build_dir, exist_ok=True)
+    ensure_flatc(cmake_build_dir)
+
+    chir_schema = resolve_chir_schema_src()
+    if not chir_schema:
+        LOG.error(
+            "Cannot find PackageFormat.fbs; set CANGJIE_SCHEMA_DIR or place cangjie_compiler sibling repo.\n"
+        )
+        sys.exit(1)
+
+    if not os.path.isfile(SYNTAX_SCHEMA_SRC):
+        LOG.error("Syntax schema not found: " + SYNTAX_SCHEMA_SRC + "\n")
+        sys.exit(1)
+
+    LOG.info("generating chir flatbuffer files...\n")
+    chir_cmd = [
+        "cmake",
+        "-DCHIR_SOURCE_DIR=" + CHIR_DIR,
+        "-DCHIR_BUILD_DIR=" + cmake_build_dir,
+        "-DCHIR_REPO_DIR=" + STDX_DIR,
+        "-DCHIR_SCHEMA_SRC=" + chir_schema,
+        "-P",
+        CHIR_FB_GEN_SCRIPT,
+    ]
+    output = subprocess.Popen(chir_cmd, stdout=PIPE, stderr=PIPE)
+    log_output(output)
+
+    LOG.info("generating syntax flatbuffer files...\n")
+    syntax_cmd = [
+        "cmake",
+        "-DSYNTAX_SOURCE_DIR=" + SYNTAX_DIR,
+        "-DSYNTAX_BUILD_DIR=" + cmake_build_dir,
+        "-DSYNTAX_REPO_DIR=" + STDX_DIR,
+        "-DSYNTAX_SCHEMA_SRC=" + SYNTAX_SCHEMA_SRC,
+        "-P",
+        SYNTAX_FB_GEN_SCRIPT,
+    ]
+    output = subprocess.Popen(syntax_cmd, stdout=PIPE, stderr=PIPE)
+    log_output(output)
+
+
+def clean_flatbuffer_generated_files():
+    for dir_path, filenames in FLATBUFFER_GENERATED_FILES.items():
+        for name in filenames:
+            file_path = os.path.join(dir_path, name)
+            if os.path.isfile(file_path):
+                os.remove(file_path)
+                LOG.info("removed flatbuffer generated file: " + file_path + "\n")
+
+
 def clean(args):
     """clean build outputs and logs"""
     LOG.info("begin clean...\n")
@@ -921,16 +1061,13 @@ def clean(args):
             shutil.rmtree(abs_file_path, ignore_errors=False, onerror=redo_with_write)
         if os.path.isfile(abs_file_path):
             os.remove(abs_file_path)
+    clean_flatbuffer_generated_files()
     LOG.info("end clean\n")
 
 
 def cleanLibs():
     LOG.info("begin clean libs...\n")
     output_dirs = []
-    output_dirs.append(ASPECT_CJ_DIR)
-    output_dirs.append(SYNTAX_DIR)
-    output_dirs.append(CHIR_DIR)
-    output_dirs.append(PLUGIN_DIR)
     if IS_WINDOWS and not DEVECO_OH_NATIVE_HOME:
         output_dirs.append(FUZZ_DIR)
     for file_path in output_dirs:
