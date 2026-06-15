@@ -15,7 +15,7 @@ OAT.xml @xuanjz
 /src/stdx/log/ @ChaosJohn
 /src/stdx/logger/ @ChaosJohn
 
-/src/stdx/net/ @ovy
+/src/stdx/net/ @PigHardWorking
 
 #stdx docs
 /doc/ @luojianing
@@ -28,4 +28,4 @@ OAT.xml @xuanjz
 /doc/libs_stdx/log/ @ChaosJohn @luojianing
 /doc/libs_stdx/logger/ @ChaosJohn @luojianing
 
-/doc/libs_stdx/net/ @ovy @luojianing
+/doc/libs_stdx/net/ @PigHardWorking @luojianing
