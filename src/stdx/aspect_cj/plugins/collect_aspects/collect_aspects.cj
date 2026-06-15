@@ -35,7 +35,7 @@ class CollectAspects {
         println(msg)
     }
 
-    private func GlobalVarsArePrimitiveLiterals(pkg: Package): Bool {
+    private func globalVarsArePrimitiveLiterals(pkg: Package): Bool {
         if (isGlobalVarsChecked) {
             return true
         }
@@ -76,7 +76,7 @@ class CollectAspects {
             if (!isInsertAnno && !isReplaceBodyAnno) {
                 continue
             }
-            if (!GlobalVarsArePrimitiveLiterals(pkg)) {
+            if (!globalVarsArePrimitiveLiterals(pkg)) {
                 printError("In `${pkg.name}` package where AOP annotations are used, all global variables must be initialized with literals of primitive types only.")
                 return false
             }
