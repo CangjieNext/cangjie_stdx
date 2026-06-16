@@ -156,16 +156,12 @@ public class SM4 <: BlockCipher {
     }
     public prop key: Array<Byte> {
         get() {
-            unsafe {
-                return _key
-            }
+            return _key.clone()
         }
     }
     public prop iv: Array<Byte> {
         get() {
-            unsafe {
-                return _iv
-            }
+            return _iv.clone()
         }
     }
 
@@ -179,9 +175,7 @@ public class SM4 <: BlockCipher {
 
     public prop aad: Array<Byte> {
         get() {
-            unsafe {
-                return _aad
-            }
+            return _aad.clone()
         }
     }
 
