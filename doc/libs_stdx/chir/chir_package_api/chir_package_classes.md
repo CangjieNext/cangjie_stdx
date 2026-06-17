@@ -3,7 +3,10 @@
 ## class CustomAnnoInstance
 
 ```cangjie
-public class CustomAnnoInstance <: ToString
+public class CustomAnnoInstance <: ToString {
+    public init(classSrcCodeName: String)
+    public init(classSrcCodeName: String, loc: DebugLocation)
+}
 ```
 
 功能：表示 CHIR 中**一处**注解实例，对应源码形态 `@ClassName[v1, v2, ...]`：保存注解类名及参数值列表。
@@ -193,7 +196,7 @@ main() {
 ## class BoolType
 
 ```cangjie
-public class BoolType <: BuiltinType & Equatable<BoolType>
+public class BoolType <: BuiltinType & Equatable<BoolType> {}
 ```
 
 功能：表示类型系统中的布尔类型。这是一个单例类型，表示 Bool 类型。
@@ -271,7 +274,7 @@ main() {
 ## class BoxType
 
 ```cangjie
-public class BoxType <: Type & Equatable<BoxType>
+public class BoxType <: Type & Equatable<BoxType> {}
 ```
 
 功能：表示**装箱类型** `Box<T>`，对值进行装箱包装。通过缓存保证同一 `baseType` 对应唯一实例。
@@ -390,7 +393,7 @@ op_eq_BoxType: true
 ## class BuiltinType
 
 ```cangjie
-sealed abstract class BuiltinType <: Type & Equatable<BuiltinType>
+sealed abstract class BuiltinType <: Type & Equatable<BuiltinType> {}
 ```
 
 功能：内置类型（数值、Bool、Unit、指针、数组等）的公共基类；可附加 `ExtendDef`（`addExtend`），并通过 `getSuperTypesRecusively` 收集由 extend 实现的接口父类型。
@@ -509,7 +512,7 @@ op_eq_BuiltinType int32vsInt64: false
 ## class CPointerType
 
 ```cangjie
-public class CPointerType <: BuiltinType & Equatable<CPointerType>
+public class CPointerType <: BuiltinType & Equatable<CPointerType> {}
 ```
 
 功能：表示类型系统中的 C 指针类型。该类型表示指向 C 类型的指针，用于与 C 代码互操作。该类维护所有 C 指针类型的缓存以确保唯一性。
@@ -657,7 +660,7 @@ op_eq_CPointerType: true
 ## class CStringType
 
 ```cangjie
-public class CStringType <: BuiltinType & Equatable<CStringType>
+public class CStringType <: BuiltinType & Equatable<CStringType> {}
 ```
 
 功能：表示类型系统中的 C 字符串类型。该类型表示 C 风格的空终止字符串，用于与 C 代码互操作。这是一个单例类型，表示内置的 C 字符串类型。
@@ -735,7 +738,7 @@ op_eq_CStringType: true
 ## class ClassLikeDef
 
 ```cangjie
-public class ClassLikeDef <: CustomTypeDef & Equatable<ClassLikeDef>
+public class ClassLikeDef <: CustomTypeDef & Equatable<ClassLikeDef> {}
 ```
 
 功能：**类或接口**的定义。
@@ -954,7 +957,7 @@ op_eq_ClassLikeDef: true
 ## class ClassLikeType
 
 ```cangjie
-public class ClassLikeType <: CustomType & Equatable<ClassLikeType>
+public class ClassLikeType <: CustomType & Equatable<ClassLikeType> {}
 ```
 
 功能：类或接口的**实例化类型**。`get(def, genericTypeParams)` 缓存唯一实例。
@@ -1071,7 +1074,7 @@ op_eq_ClassLikeType: true
 ## class CustomType
 
 ```cangjie
-sealed abstract class CustomType <: Type & Equatable<CustomType>
+sealed abstract class CustomType <: Type & Equatable<CustomType> {}
 ```
 
 功能：用户自定义类型（类/接口/结构体/枚举）实例化类型的公共基类，持有 `CustomTypeDef` 与泛型实参。
@@ -1431,7 +1434,7 @@ op_eq_CustomType: true
 ## class CustomTypeDef
 
 ```cangjie
-sealed abstract class CustomTypeDef <: Base & Equatable<CustomTypeDef> & Hashable
+sealed abstract class CustomTypeDef <: Base & Equatable<CustomTypeDef> & Hashable {}
 ```
 
 功能：类/接口/结构体/枚举/扩展的**定义**公共基类（与 `Base` 组合，含属性、CHIR 注解、调试位置等）。
@@ -2513,7 +2516,7 @@ main() {
 ## class DebugLocation
 
 ```cangjie
-public class DebugLocation <: ToString
+public class DebugLocation <: ToString {}
 ```
 
 功能：源码中的**区间位置**（起止 `Position` 与文件路径），用于调试与打印。
@@ -2679,7 +2682,7 @@ main() {
 ## class EnumCtorInfo
 
 ```cangjie
-public class EnumCtorInfo <: ToString
+public class EnumCtorInfo <: ToString {}
 ```
 
 功能：枚举的一个**构造器/变体**（名称、内部标识、函数类型、注解）。
@@ -2845,7 +2848,7 @@ A
 ## class EnumDef
 
 ```cangjie
-public class EnumDef <: CustomTypeDef & Equatable<EnumDef>
+public class EnumDef <: CustomTypeDef & Equatable<EnumDef> {}
 ```
 
 功能：**枚举**定义；含是否穷尽、构造器列表等。
@@ -3019,7 +3022,7 @@ op_eq_EnumDef: true
 ## class EnumType
 
 ```cangjie
-public class EnumType <: CustomType & Equatable<EnumType>
+public class EnumType <: CustomType & Equatable<EnumType> {}
 ```
 
 功能：枚举的实例化类型；`get(def, genericTypeParams)` 缓存。
@@ -3136,7 +3139,7 @@ op_eq_EnumType: true
 ## class ExtendDef
 
 ```cangjie
-public class ExtendDef <: CustomTypeDef
+public class ExtendDef <: CustomTypeDef {}
 ```
 
 功能：**扩展（extend）**定义：对某类型增加实现等，带 `extendedType` 与泛型参数。
@@ -3177,7 +3180,7 @@ Int32
 ## class FloatType
 
 ```cangjie
-public class FloatType <: NumericType & Equatable<FloatType>
+public class FloatType <: NumericType & Equatable<FloatType> {}
 ```
 
 功能：表示类型系统中的浮点类型。该类表示三种浮点类型：Float16、Float32 和 Float64。
@@ -3318,7 +3321,7 @@ Float32 和 Float64 相等: false
 ## class FuncType
 
 ```cangjie
-public class FuncType <: Type & Equatable<FuncType>
+public class FuncType <: Type & Equatable<FuncType> {}
 ```
 
 功能：函数类型（参数类型列表 + 返回类型），可选可变参数与 C 函数标记；按签名缓存。
@@ -3552,7 +3555,7 @@ op_eq_FuncType: true
 ## class GenericType
 
 ```cangjie
-public class GenericType <: Type & Equatable<GenericType>
+public class GenericType <: Type & Equatable<GenericType> {}
 ```
 
 功能：泛型**形参**（如 `T`），可设置上界 `upperBounds`。按内部 `identifier` 缓存。
@@ -3721,7 +3724,7 @@ op_eq_GenericType: true
 ## class IntType
 
 ```cangjie
-public class IntType <: NumericType & Equatable<IntType>
+public class IntType <: NumericType & Equatable<IntType> {}
 ```
 
 功能：表示类型系统中的整数类型。该类表示各种大小的有符号和无符号整数类型。
@@ -4105,7 +4108,7 @@ UInt32 是有符号的: false
 ## class MemberVar
 
 ```cangjie
-public class MemberVar <: ToString
+public class MemberVar <: ToString {}
 ```
 
 功能：描述自定义类型上的**实例成员变量**（名称、类型、调试位置、注解与访问修饰等）。
@@ -4612,7 +4615,7 @@ main() {
 ## class NothingType
 
 ```cangjie
-public class NothingType <: BuiltinType & Equatable<NothingType>
+public class NothingType <: BuiltinType & Equatable<NothingType> {}
 ```
 
 功能：表示类型系统中的 Nothing 类型（底部类型）。该类型用于表示永远不会返回的表达式。
@@ -4690,7 +4693,7 @@ main() {
 ## class NumericType
 
 ```cangjie
-sealed abstract class NumericType <: BuiltinType & Equatable<NumericType>
+sealed abstract class NumericType <: BuiltinType & Equatable<NumericType> {}
 ```
 
 功能：数值类型的抽象基类。该类表示数值类型，包括整数类型和浮点类型。
@@ -4741,7 +4744,9 @@ Int32 和 Float32 相等: false
 ## class Package
 
 ```cangjie
-public class Package <: ToString
+public class Package <: ToString {
+    public init(name: String, accessLevel: AccessLevel)
+}
 ```
 
 功能：表示一个 **CHIR 包**：名称、访问级别、导入与本包内的类型定义集合。
@@ -5516,7 +5521,7 @@ packageAccessLevel: public
 ## class RawArrayType
 
 ```cangjie
-public class RawArrayType <: BuiltinType & Equatable<RawArrayType>
+public class RawArrayType <: BuiltinType & Equatable<RawArrayType> {}
 ```
 
 功能：**原始数组**类型，带元素类型与维度数 `dims`。使用缓存按 `(elementType, dims)` 唯一化。
@@ -5676,7 +5681,7 @@ op_eq_RawArrayType: true
 ## class RefType
 
 ```cangjie
-public class RefType <: Type & Equatable<RefType>
+public class RefType <: Type & Equatable<RefType> {}
 ```
 
 功能：表示类型系统中的引用类型。该类型包装另一个类型以表示对该类型的引用。该类维护所有引用类型的缓存以确保唯一性。
@@ -5823,7 +5828,7 @@ op_eq_RefType: true
 ## class RuneType
 
 ```cangjie
-public class RuneType <: BuiltinType & Equatable<RuneType>
+public class RuneType <: BuiltinType & Equatable<RuneType> {}
 ```
 
 功能：表示类型系统中的 Rune 类型。该类型表示字符类型。
@@ -5901,7 +5906,7 @@ main() {
 ## class StructDef
 
 ```cangjie
-public class StructDef <: CustomTypeDef & Equatable<StructDef>
+public class StructDef <: CustomTypeDef & Equatable<StructDef> {}
 ```
 
 功能：**结构体**定义；`isCStruct` 表示 C 互操作结构体。
@@ -6008,7 +6013,7 @@ op_eq_StructDef: true
 ## class StructType
 
 ```cangjie
-public class StructType <: CustomType & Equatable<StructType>
+public class StructType <: CustomType & Equatable<StructType> {}
 ```
 
 功能：结构体的实例化类型；`get(def, genericTypeParams)` 缓存。
@@ -6125,7 +6130,7 @@ op_eq_StructType: true
 ## class ThisType
 
 ```cangjie
-public class ThisType <: Type & Equatable<ThisType>
+public class ThisType <: Type & Equatable<ThisType> {}
 ```
 
 功能：类/结构体体内的 **`This`** 类型，单例。
@@ -6202,7 +6207,7 @@ op_eq_ThisType: true
 ## class TupleType
 
 ```cangjie
-public class TupleType <: Type & Equatable<TupleType>
+public class TupleType <: Type & Equatable<TupleType> {}
 ```
 
 功能：元组类型；按元素类型序列签名缓存。
@@ -6344,7 +6349,7 @@ op_eq_TupleType: true
 ## class Type
 
 ```cangjie
-sealed abstract class Type <: ToString & Hashable & Equatable<Type>
+sealed abstract class Type <: ToString & Hashable & Equatable<Type> {}
 ```
 
 功能：类型系统中所有类型的抽象基类。该类提供了类型的基础功能，包括相等性比较、哈希计算和字符串转换。
@@ -7176,7 +7181,7 @@ main() {
 ## class UnitType
 
 ```cangjie
-public class UnitType <: BuiltinType & Equatable<UnitType>
+public class UnitType <: BuiltinType & Equatable<UnitType> {}
 ```
 
 功能：表示类型系统中的 Unit 类型。该类型表示没有有意义的值，类似于 C 语言中的 void。
@@ -7254,7 +7259,7 @@ main() {
 ## class VArrayType
 
 ```cangjie
-public class VArrayType <: BuiltinType & Equatable<VArrayType>
+public class VArrayType <: BuiltinType & Equatable<VArrayType> {}
 ```
 
 功能：**定长 VArray** 类型 `VArray<T, $n>`，编译期固定长度。按 `(elementType, size)` 缓存唯一实例。
@@ -7414,7 +7419,10 @@ op_eq_VArrayType: true
 ## class CHIRException
 
 ```cangjie
-public class CHIRException <: Exception
+public class CHIRException <: Exception {
+    public init()
+    public init(message: String)
+}
 ```
 
 功能：CHIR 构建或 IR 状态不一致时抛出的检查型异常。
@@ -7482,7 +7490,10 @@ init_with_msg: true
 ## class FuncSigInfo
 
 ```cangjie
-public class FuncSigInfo
+public class FuncSigInfo {
+    public init(name: String, ty: FuncType)
+    public init(name: String, ty: FuncType, genericTypeParams: Array<GenericType>)
+}
 ```
 
 功能：函数符号的轻量签名包（名称、函数类型、泛型形参），用于描述函数调用的目标签名信息。
@@ -7709,7 +7720,7 @@ h<Generic-pkg:T>(Int32) -> Unit
 ## class CHIRVisitor
 
 ```cangjie
-public abstract class CHIRVisitor
+public abstract class CHIRVisitor {}
 ```
 
 功能：CHIR 函数、块组、基本块与嵌套表达式的**抽象访问器**。子类可重写 [`action`](#func-actionexpression) 以观察每个表达式节点；`walk` 方法递归遍历直至返回 `IRActionMode.Stop`。
@@ -7866,7 +7877,9 @@ visitor_done
 ## class FuncCallContext
 
 ```cangjie
-public class FuncCallContext
+public class FuncCallContext {
+    public init(args: Array<Value>, instTypeArgs: Array<Type>, objType: ?Type)
+}
 ```
 
 功能：函数调用上下文，封装实参值列表、实例化类型实参以及可选的调用对象类型。
@@ -8016,7 +8029,9 @@ public func setInstTypeArg(index: Int64, arg: Type): Unit
 ## class InvokeCallContext
 
 ```cangjie
-public class InvokeCallContext
+public class InvokeCallContext {
+    public init(caller: Value, virMethodCtx: FuncSigInfo, funcCallCtx: FuncCallContext)
+}
 ```
 
 功能：虚方法调用上下文，封装调用者值、虚方法签名信息以及函数调用上下文。
@@ -8152,7 +8167,7 @@ prop_funcCallCtx: 0
 ## class Block
 
 ```cangjie
-public class Block <: Value & Equatable<Block>
+public class Block <: Value & Equatable<Block> {}
 ```
 
 功能：表示 CHIR 中的**基本块**，是函数体内控制流的基本单元。每个基本块包含一系列表达式，并可与前驱基本块形成控制流图；设置 `exceptions` 后可标记为异常处理 landing pad 块。
@@ -8528,7 +8543,7 @@ op_eq_Block: true
 ## class BlockGroup
 
 ```cangjie
-public class BlockGroup <: Value & Equatable<BlockGroup>
+public class BlockGroup <: Value & Equatable<BlockGroup> {}
 ```
 
 功能：表示 CHIR 中的**基本块组**，即函数体或 lambda 体的控制流图容器，包含若干基本块并维护入口块指针。
@@ -8832,7 +8847,7 @@ op_eq_BlockGroup: true
 ## class BoolLiteral
 
 ```cangjie
-public class BoolLiteral <: LiteralValue & Equatable<BoolLiteral>
+public class BoolLiteral <: LiteralValue & Equatable<BoolLiteral> {}
 ```
 
 功能：表示布尔字面量（`true` 或 `false`），按值缓存保证同一布尔值对应唯一实例。
@@ -8972,7 +8987,7 @@ op_eq_BoolLiteral: true
 ## class FloatLiteral
 
 ```cangjie
-public class FloatLiteral <: LiteralValue & Equatable<FloatLiteral>
+public class FloatLiteral <: LiteralValue & Equatable<FloatLiteral> {}
 ```
 
 功能：表示浮点字面量，按 `(FloatType, Float64)` 缓存保证同一类型与值对应唯一实例。
@@ -9113,7 +9128,7 @@ op_eq_FloatLiteral: true
 ## class Function
 
 ```cangjie
-public class Function <: GlobalValue & Equatable<Function>
+public class Function <: GlobalValue & Equatable<Function> {}
 ```
 
 功能：表示 CHIR 中的**函数定义**，包含函数类型、参数、函数体（BlockGroup）、泛型形参以及抽象/open 等属性标记。
@@ -9773,7 +9788,7 @@ op_eq_Function: true
 ## class GlobalVar
 
 ```cangjie
-public class GlobalVar <: GlobalValue & Equatable<GlobalVar>
+public class GlobalVar <: GlobalValue & Equatable<GlobalVar> {}
 ```
 
 功能：表示 CHIR 中的**全局变量定义**，包含类型、初始化值及只读标记。
@@ -10007,7 +10022,7 @@ op_eq_GlobalVar: true
 ## class IntLiteral
 
 ```cangjie
-public class IntLiteral <: LiteralValue & Equatable<IntLiteral>
+public class IntLiteral <: LiteralValue & Equatable<IntLiteral> {}
 ```
 
 功能：表示整数字面量，按 `(IntType, UInt64)` 缓存保证同一类型与值对应唯一实例。
@@ -10206,7 +10221,7 @@ op_eq_IntLiteral: true
 ## class LocalVar
 
 ```cangjie
-public class LocalVar <: Value & Equatable<LocalVar>
+public class LocalVar <: Value & Equatable<LocalVar> {}
 ```
 
 功能：表示 CHIR 中的**局部变量**，由表达式结果产生，也可作为函数返回值。
@@ -10396,7 +10411,7 @@ op_eq_LocalVar: true
 ## class NullLiteral
 
 ```cangjie
-public class NullLiteral <: LiteralValue & Equatable<NullLiteral>
+public class NullLiteral <: LiteralValue & Equatable<NullLiteral> {}
 ```
 
 功能：表示 Null 字面量，按类型缓存保证同一类型对应唯一实例。
@@ -10508,7 +10523,7 @@ op_eq_NullLiteral: true
 ## class Parameter
 
 ```cangjie
-public class Parameter <: Value & Equatable<Parameter>
+public class Parameter <: Value & Equatable<Parameter> {}
 ```
 
 功能：表示 CHIR 中的**函数参数**，包含类型、源码名、注解等信息。
@@ -10680,7 +10695,7 @@ op_eq_Parameter: true
 ## class RuneLiteral
 
 ```cangjie
-public class RuneLiteral <: LiteralValue & Equatable<RuneLiteral>
+public class RuneLiteral <: LiteralValue & Equatable<RuneLiteral> {}
 ```
 
 功能：表示 Rune（字符）字面量，按值缓存保证同一 Rune 值对应唯一实例。
@@ -10820,7 +10835,7 @@ op_eq_RuneLiteral: true
 ## class StringLiteral
 
 ```cangjie
-public class StringLiteral <: LiteralValue & Equatable<StringLiteral>
+public class StringLiteral <: LiteralValue & Equatable<StringLiteral> {}
 ```
 
 功能：表示字符串字面量，按值缓存保证同一字符串值对应唯一实例。
@@ -10961,7 +10976,7 @@ op_eq_StringLiteral: true
 ## class UnitLiteral
 
 ```cangjie
-public class UnitLiteral <: LiteralValue & Equatable<UnitLiteral>
+public class UnitLiteral <: LiteralValue & Equatable<UnitLiteral> {}
 ```
 
 功能：表示 Unit 字面量（单例，表示无返回值）。
@@ -11069,7 +11084,7 @@ op_eq_UnitLiteral: true
 ## class Allocate
 
 ```cangjie
-public class Allocate <: AllocateBase & Equatable<Allocate>
+public class Allocate <: AllocateBase & Equatable<Allocate> {}
 ```
 
 功能：内存分配表达式，分配指定类型的空间但不带异常处理。
@@ -11160,7 +11175,7 @@ op_eq_Allocate: true
 ## class TryAllocate
 
 ```cangjie
-public class TryAllocate <: AllocateBase & Equatable<TryAllocate>
+public class TryAllocate <: AllocateBase & Equatable<TryAllocate> {}
 ```
 
 功能：带异常处理的内存分配表达式，分配成功时跳转到正常分支，失败时跳转到异常分支。
@@ -11331,7 +11346,7 @@ op_eq_TryAllocate: true
 ## class BinaryExpression
 
 ```cangjie
-public class BinaryExpression <: BinaryExpressionBase & Equatable<BinaryExpression>
+public class BinaryExpression <: BinaryExpressionBase & Equatable<BinaryExpression> {}
 ```
 
 功能：二元运算表达式（不带异常处理），支持数学运算、位运算、比较运算和逻辑运算。
@@ -11428,7 +11443,7 @@ op_eq_BinaryExpression: true
 ## class TryBinaryExpression
 
 ```cangjie
-public class TryBinaryExpression <: BinaryExpressionBase & Equatable<TryBinaryExpression>
+public class TryBinaryExpression <: BinaryExpressionBase & Equatable<TryBinaryExpression> {}
 ```
 
 功能：带异常处理的二元运算表达式，运算成功时跳转到正常分支，溢出或出错时跳转到异常分支。
@@ -11609,7 +11624,7 @@ op_eq_TryBinaryExpression: true
 ## class Branch
 
 ```cangjie
-public class Branch <: Expression & Equatable<Branch>
+public class Branch <: Expression & Equatable<Branch> {}
 ```
 
 功能：条件分支（if-else）终止器表达式，根据条件值跳转到真分支或假分支目标块。
@@ -11826,7 +11841,7 @@ op_eq_Branch: true
 ## class Constant
 
 ```cangjie
-public class Constant <: Expression & Equatable<Constant>
+public class Constant <: Expression & Equatable<Constant> {}
 ```
 
 功能：字面量常量表达式，表示一个编译期确定的常量值。
@@ -11917,7 +11932,7 @@ op_eq_Constant: true
 ## class Debug
 
 ```cangjie
-public class Debug <: Expression & Equatable<Debug>
+public class Debug <: Expression & Equatable<Debug> {}
 ```
 
 功能：调试标记表达式，保存源码位置映射信息，用于将 IR 中的值与源码中的变量名关联。
@@ -12048,7 +12063,7 @@ op_eq_Debug: true
 ## class Exit
 
 ```cangjie
-public class Exit <: Expression & Equatable<Exit>
+public class Exit <: Expression & Equatable<Exit> {}
 ```
 
 功能：函数退出终止器表达式，表示函数正常执行结束。
@@ -12135,7 +12150,7 @@ op_eq_Exit: true
 ## class Field
 
 ```cangjie
-public class Field <: Expression & Equatable<Field>
+public class Field <: Expression & Equatable<Field> {}
 ```
 
 功能：按数字索引路径访问字段的表达式，通过数值索引序列定位聚合体中的子字段。
@@ -12275,7 +12290,7 @@ op_eq_Field: true
 ## class FieldByName
 
 ```cangjie
-public class FieldByName <: Expression & Equatable<FieldByName>
+public class FieldByName <: Expression & Equatable<FieldByName> {}
 ```
 
 功能：按字段名路径访问字段的表达式，通过字符串字段名序列定位聚合体中的子字段。
@@ -12415,7 +12430,7 @@ op_eq_FieldByName: true
 ## class Apply
 
 ```cangjie
-public class Apply <: ApplyBase & Equatable<Apply>
+public class Apply <: ApplyBase & Equatable<Apply> {}
 ```
 
 功能：函数调用（Apply）表达式，表示对函数的直接调用。
@@ -12523,7 +12538,7 @@ op_eq_Apply: true
 ## class TryApply
 
 ```cangjie
-public class TryApply <: ApplyBase & Equatable<TryApply>
+public class TryApply <: ApplyBase & Equatable<TryApply> {}
 ```
 
 功能：带异常处理的函数调用表达式，调用成功时跳转到正常分支，抛出异常时跳转到异常分支。
@@ -12715,7 +12730,7 @@ op_eq_TryApply: true
 ## class Intrinsic
 
 ```cangjie
-public class Intrinsic <: IntrinsicBase & Equatable<Intrinsic>
+public class Intrinsic <: IntrinsicBase & Equatable<Intrinsic> {}
 ```
 
 功能：内建函数调用表达式（不带异常处理），表示对编译器内建函数（如 `sizeof`、`alignof` 等）的调用。Intrinsic 实例由编译器内部流程创建，可通过遍历 Block 的 `exprs` 列表访问已有的 Intrinsic 表达式。
@@ -12756,7 +12771,7 @@ public operator func ==(other: Intrinsic): Bool
 ## class TryIntrinsic
 
 ```cangjie
-public class TryIntrinsic <: IntrinsicBase & Equatable<TryIntrinsic>
+public class TryIntrinsic <: IntrinsicBase & Equatable<TryIntrinsic> {}
 ```
 
 功能：带异常处理的内建函数调用表达式。TryIntrinsic 实例由编译器内部流程创建，可通过遍历 Block 的 `exprs` 列表访问已有的 TryIntrinsic 表达式。
@@ -12817,7 +12832,7 @@ public operator func ==(other: TryIntrinsic): Bool
 ## class Invoke
 
 ```cangjie
-public class Invoke <: InvokeBase & Equatable<Invoke>
+public class Invoke <: InvokeBase & Equatable<Invoke> {}
 ```
 
 功能：虚方法调用（Invoke）表达式，表示对实例方法的虚调用。
@@ -12929,7 +12944,7 @@ op_eq_Invoke: true
 ## class TryInvoke
 
 ```cangjie
-public class TryInvoke <: InvokeBase & Equatable<TryInvoke>
+public class TryInvoke <: InvokeBase & Equatable<TryInvoke> {}
 ```
 
 功能：带异常处理的虚方法调用表达式，调用成功时跳转到正常分支，抛出异常时跳转到异常分支。
@@ -13129,7 +13144,7 @@ op_eq_TryInvoke: true
 ## class GetElementByName
 
 ```cangjie
-public class GetElementByName <: Expression & Equatable<GetElementByName>
+public class GetElementByName <: Expression & Equatable<GetElementByName> {}
 ```
 
 功能：按字段名读取聚合体元素的表达式，返回元素的引用。
@@ -13269,7 +13284,7 @@ op_eq_GetElementByName: true
 ## class GetElementRef
 
 ```cangjie
-public class GetElementRef <: Expression & Equatable<GetElementRef>
+public class GetElementRef <: Expression & Equatable<GetElementRef> {}
 ```
 
 功能：按数字索引读取聚合体元素引用的表达式，返回元素的引用。
@@ -13409,7 +13424,7 @@ op_eq_GetElementRef: true
 ## class GetException
 
 ```cangjie
-public class GetException <: Expression & Equatable<GetException>
+public class GetException <: Expression & Equatable<GetException> {}
 ```
 
 功能：获取异常值的表达式，在异常处理 landing pad 块中用于读取捕获到的异常对象。
@@ -13500,7 +13515,7 @@ op_eq_GetException: true
 ## class GetInstantiateValue
 
 ```cangjie
-public class GetInstantiateValue <: Expression & Equatable<GetInstantiateValue>
+public class GetInstantiateValue <: Expression & Equatable<GetInstantiateValue> {}
 ```
 
 功能：获取泛型函数实例化值的表达式，用于表示泛型函数的单态化实例。
@@ -13631,7 +13646,7 @@ op_eq_GetInstantiateValue: true
 ## class GetRTTI
 
 ```cangjie
-public class GetRTTI <: Expression & Equatable<GetRTTI>
+public class GetRTTI <: Expression & Equatable<GetRTTI> {}
 ```
 
 功能：获取运行时类型信息的表达式，从值中提取 RTTI 数据。
@@ -13724,7 +13739,7 @@ op_eq_GetRTTI: true
 ## class GetRTTIStatic
 
 ```cangjie
-public class GetRTTIStatic <: Expression & Equatable<GetRTTIStatic>
+public class GetRTTIStatic <: Expression & Equatable<GetRTTIStatic> {}
 ```
 
 功能：静态获取运行时类型信息的表达式，从类型直接提取 RTTI 数据（不依赖值实例）。
@@ -13848,7 +13863,7 @@ op_eq_GetRTTIStatic: true
 ## class GoTo
 
 ```cangjie
-public class GoTo <: Expression & Equatable<GoTo>
+public class GoTo <: Expression & Equatable<GoTo> {}
 ```
 
 功能：无条件跳转终止器表达式，直接跳转到目标基本块。
@@ -13943,7 +13958,7 @@ op_eq_GoTo: true
 ## class InstanceOf
 
 ```cangjie
-public class InstanceOf <: Expression & Equatable<InstanceOf>
+public class InstanceOf <: Expression & Equatable<InstanceOf> {}
 ```
 
 功能：类型检查表达式，判断源值是否属于目标类型，返回布尔结果。
@@ -14071,7 +14086,7 @@ op_eq_InstanceOf: true
 ## class Lambda
 
 ```cangjie
-public class Lambda <: Expression & Equatable<Lambda>
+public class Lambda <: Expression & Equatable<Lambda> {}
 ```
 
 功能：Lambda / 局部函数表达式，表示一个嵌套的匿名函数或局部函数定义。
@@ -14517,7 +14532,7 @@ op_eq_Lambda: true
 ## class Load
 
 ```cangjie
-public class Load <: Expression & Equatable<Load>
+public class Load <: Expression & Equatable<Load> {}
 ```
 
 功能：内存加载表达式。
@@ -14638,7 +14653,7 @@ op_eq_Load: true
 ## class MultiBranch
 
 ```cangjie
-public class MultiBranch <: Expression & Equatable<MultiBranch>
+public class MultiBranch <: Expression & Equatable<MultiBranch> {}
 ```
 
 功能：多分支（switch-case）终止器表达式。
@@ -14904,7 +14919,7 @@ op_eq_MultiBranch: true
 ## class NumericCast
 
 ```cangjie
-public class NumericCast <: NumericCastBase & Equatable<NumericCast>
+public class NumericCast <: NumericCastBase & Equatable<NumericCast> {}
 ```
 
 功能：数值类型转换表达式。
@@ -14995,7 +15010,7 @@ op_eq_NumericCast: true
 ## class TryNumericCast
 
 ```cangjie
-public class TryNumericCast <: NumericCastBase & Equatable<TryNumericCast>
+public class TryNumericCast <: NumericCastBase & Equatable<TryNumericCast> {}
 ```
 
 功能：带异常处理的数值类型转换表达式。
@@ -15159,7 +15174,7 @@ op_eq_TryNumericCast: true
 ## class RaiseException
 
 ```cangjie
-public class RaiseException <: Expression & Equatable<RaiseException>
+public class RaiseException <: Expression & Equatable<RaiseException> {}
 ```
 
 功能：抛出异常终止器表达式。
@@ -15297,7 +15312,7 @@ op_eq_RaiseException: true
 ## class RawArrayAllocate
 
 ```cangjie
-public class RawArrayAllocate <: RawArrayAllocateBase & Equatable<RawArrayAllocate>
+public class RawArrayAllocate <: RawArrayAllocateBase & Equatable<RawArrayAllocate> {}
 ```
 
 功能：原始数组分配表达式。
@@ -15387,7 +15402,7 @@ op_eq_RawArrayAllocate: true
 ## class TryRawArrayAllocate
 
 ```cangjie
-public class TryRawArrayAllocate <: RawArrayAllocateBase & Equatable<TryRawArrayAllocate>
+public class TryRawArrayAllocate <: RawArrayAllocateBase & Equatable<TryRawArrayAllocate> {}
 ```
 
 功能：带异常处理的原始数组分配表达式。
@@ -15551,7 +15566,7 @@ op_eq_TryRawArrayAllocate: true
 ## class RawArrayInitByValue
 
 ```cangjie
-public class RawArrayInitByValue <: Expression & Equatable<RawArrayInitByValue>
+public class RawArrayInitByValue <: Expression & Equatable<RawArrayInitByValue> {}
 ```
 
 功能：按值初始化原始数组表达式。
@@ -15646,7 +15661,7 @@ op_eq_RawArrayInitByValue: true
 ## class RawArrayLiteralInit
 
 ```cangjie
-public class RawArrayLiteralInit <: Expression & Equatable<RawArrayLiteralInit>
+public class RawArrayLiteralInit <: Expression & Equatable<RawArrayLiteralInit> {}
 ```
 
 功能：字面量初始化原始数组表达式。
@@ -15748,7 +15763,7 @@ op_eq_RawArrayLiteralInit: true
 ## class Spawn
 
 ```cangjie
-public class Spawn <: SpawnBase & Equatable<Spawn>
+public class Spawn <: SpawnBase & Equatable<Spawn> {}
 ```
 
 功能：并发 Spawn 表达式（不带异常处理）。
@@ -15879,7 +15894,7 @@ op_eq_Spawn: true
 ## class TrySpawn
 
 ```cangjie
-public class TrySpawn <: SpawnBase & Equatable<TrySpawn>
+public class TrySpawn <: SpawnBase & Equatable<TrySpawn> {}
 ```
 
 功能：带异常处理的并发 Spawn 表达式。
@@ -16088,7 +16103,7 @@ op_eq_TrySpawn: true
 ## class Store
 
 ```cangjie
-public class Store <: Expression & Equatable<Store>
+public class Store <: Expression & Equatable<Store> {}
 ```
 
 功能：内存存储表达式。
@@ -16246,7 +16261,7 @@ op_eq_Store: true
 ## class StoreElementByName
 
 ```cangjie
-public class StoreElementByName <: Expression & Equatable<StoreElementByName>
+public class StoreElementByName <: Expression & Equatable<StoreElementByName> {}
 ```
 
 功能：按字段名存储聚合体元素的表达式。
@@ -16381,7 +16396,7 @@ op_eq_StoreElementByName: true
 ## class StoreElementRef
 
 ```cangjie
-public class StoreElementRef <: Expression & Equatable<StoreElementRef>
+public class StoreElementRef <: Expression & Equatable<StoreElementRef> {}
 ```
 
 功能：按数字索引存储聚合体元素的表达式。
@@ -16516,7 +16531,7 @@ op_eq_StoreElementRef: true
 ## class Tuple
 
 ```cangjie
-public class Tuple <: Expression & Equatable<Tuple>
+public class Tuple <: Expression & Equatable<Tuple> {}
 ```
 
 功能：元组构造表达式。
@@ -16652,7 +16667,7 @@ op_eq_Tuple: true
 ## class Box
 
 ```cangjie
-public class Box <: TypeCast & Equatable<Box>
+public class Box <: TypeCast & Equatable<Box> {}
 ```
 
 功能：装箱类型转换表达式。
@@ -16744,7 +16759,7 @@ op_eq_Box: true
 ## class StaticCast
 
 ```cangjie
-public class StaticCast <: TypeCast & Equatable<StaticCast>
+public class StaticCast <: TypeCast & Equatable<StaticCast> {}
 ```
 
 功能：静态类型转换表达式。
@@ -16834,7 +16849,7 @@ op_eq_StaticCast: true
 ## class CastToConcrete
 
 ```cangjie
-public class CastToConcrete <: TypeCast & Equatable<CastToConcrete>
+public class CastToConcrete <: TypeCast & Equatable<CastToConcrete> {}
 ```
 
 功能：向具体类型转换表达式。
@@ -16924,7 +16939,7 @@ op_eq_CastToConcrete: true
 ## class CastToGeneric
 
 ```cangjie
-public class CastToGeneric <: TypeCast & Equatable<CastToGeneric>
+public class CastToGeneric <: TypeCast & Equatable<CastToGeneric> {}
 ```
 
 功能：向泛型类型转换表达式。
@@ -17016,7 +17031,7 @@ op_eq_CastToGeneric: true
 ## class UnboxToRef
 
 ```cangjie
-public class UnboxToRef <: TypeCast & Equatable<UnboxToRef>
+public class UnboxToRef <: TypeCast & Equatable<UnboxToRef> {}
 ```
 
 功能：拆箱为引用的类型转换表达式。
@@ -17106,7 +17121,7 @@ op_eq_UnboxToRef: true
 ## class UnboxToValue
 
 ```cangjie
-public class UnboxToValue <: TypeCast & Equatable<UnboxToValue>
+public class UnboxToValue <: TypeCast & Equatable<UnboxToValue> {}
 ```
 
 功能：拆箱为值的类型转换表达式。
@@ -17196,7 +17211,7 @@ op_eq_UnboxToValue: true
 ## class UnaryExpression
 
 ```cangjie
-public class UnaryExpression <: UnaryExpressionBase & Equatable<UnaryExpression>
+public class UnaryExpression <: UnaryExpressionBase & Equatable<UnaryExpression> {}
 ```
 
 功能：一元运算表达式（不带异常处理）。
@@ -17286,7 +17301,7 @@ op_eq_UnaryExpression: true
 ## class TryUnaryExpression
 
 ```cangjie
-public class TryUnaryExpression <: UnaryExpressionBase & Equatable<TryUnaryExpression>
+public class TryUnaryExpression <: UnaryExpressionBase & Equatable<TryUnaryExpression> {}
 ```
 
 功能：带异常处理的一元运算表达式。
@@ -17449,7 +17464,7 @@ op_eq_TryUnaryExpression: true
 ## class VArrayBuilder
 
 ```cangjie
-public class VArrayBuilder <: Expression & Equatable<VArrayBuilder>
+public class VArrayBuilder <: Expression & Equatable<VArrayBuilder> {}
 ```
 
 功能：VArray 构建器表达式。
@@ -17545,7 +17560,7 @@ op_eq_VArrayBuilder: true
 ## class VArrayExpr
 
 ```cangjie
-public class VArrayExpr <: Expression & Equatable<VArrayExpr>
+public class VArrayExpr <: Expression & Equatable<VArrayExpr> {}
 ```
 
 功能：VArray 字面量表达式。
@@ -17646,7 +17661,10 @@ op_eq_VArrayExpr: true
 ## class CHIRBuilder
 
 ```cangjie
-public class CHIRBuilder
+public class CHIRBuilder {
+    public init(parent: Block)
+    public init(position: InsertPosition)
+}
 ```
 
 功能：CHIR 表达式构建器，用于在基本块中按指定位置插入各类 CHIR 表达式（算术、内存、控制流、类型转换等）。
