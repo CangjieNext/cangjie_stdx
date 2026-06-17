@@ -11,6 +11,7 @@ package stdx.syntax
 public import std.ast.{Tokens, Token, TokenKind}
 import std.ast.getTokenKind
 import std.collection.{ArrayStack, ArrayList}
+import std.fs.*
 
 foreign func CJ_ParseFile(path: CString): CPointer<ParseRes>
 
@@ -36,7 +37,8 @@ class ParserImpl {
         let (node, msg) = NodeLoader.load(filePath)
         // build impl tree by NodeFormat_Node
         let file: ?SyntaxNodeImpl = if (let Some(root) <- node) {
-            FlatbufferNodeTranslator.translate(root)
+            let sourceText = String.fromUtf8(File.readFrom(filePath))
+            FlatbufferNodeTranslator.translate(root, sourceText: sourceText)
         } else {
             None
         }
@@ -81,7 +83,7 @@ class ParserImpl {
                 throw Exception("unsupported node type or parse error in parseText function:\n${errMsg}")
             }
             let preChildren = getPreChildren(text)
-            FlatbufferNodeTranslator.translate(root, preChildren: preChildren.toArray())
+            FlatbufferNodeTranslator.translate(root, preChildren: preChildren.toArray(), sourceText: text)
         } else {
             None
         }
@@ -328,9 +330,14 @@ private class FlatbufferNodeTranslator {
     private var innerComments = Array<Option<NodeFormat_CommentGroup>>()
     private var leadCommentNodes = ArrayList<SyntaxNodeImpl>()
     private var trailComments = Array<Option<NodeFormat_CommentGroup>>()
+    private let sourceText: String
 
-    static func translate(root: NodeFormat_Node, preChildren!: Array<SyntaxNodeImpl> = []): ?SyntaxNodeImpl {
-        FlatbufferNodeTranslator().transRoot(root, preChildren)
+    private init(sourceText!: String = "") {
+        this.sourceText = sourceText
+    }
+
+    static func translate(root: NodeFormat_Node, preChildren!: Array<SyntaxNodeImpl> = [], sourceText!: String = ""): ?SyntaxNodeImpl {
+        FlatbufferNodeTranslator(sourceText: sourceText).transRoot(root, preChildren)
     }
 
     private func transRoot(root: NodeFormat_Node, preChildren: Array<SyntaxNodeImpl>): ?SyntaxNodeImpl {
@@ -1129,6 +1136,13 @@ private class FlatbufferNodeTranslator {
         let (leadCmts, innerCmts, trailCmts) = getCommentGroups(nodeBase)
         addLeadingComments(nodeBase, ret, leadCmts)
         innerComments = innerCmts
+
+        if (leadCmts.size == 0 && sourceText.size > 0) {
+            let firstChildBegin = getFirstChildBegin(file)
+            if (let Some(fcb) <- firstChildBegin) {
+                addMissingLeadingCommentsFromSource(ret, fcb)
+            }
+        }
 
         if (let Some(featuresNode) <- file.GetFeature()) {
             addChild(ret, transFeaturesDirective(featuresNode))
@@ -5186,5 +5200,129 @@ private class FlatbufferNodeTranslator {
                 delimiterNum: v.GetDelimiterNum(), isSingleQuote: v.GetIsSingleQuote(), hasEscape: v.GetHasEscape())
         }
         builder.buildNonTerminal(SyntaxNodeKind.Comment, ret.toArray())
+    }
+
+    private func getFirstChildBegin(file: NodeFormat_File): ?NodeFormat_Position {
+        if (let Some(ftr) <- file.GetFeature()) {
+            if (let Some(base) <- ftr.GetBase()) {
+                return base.GetBegin()
+            }
+        }
+        if (let Some(pkg) <- file.GetPackage()) {
+            if (let Some(base) <- pkg.GetBase()) {
+                return base.GetBegin()
+            }
+        }
+        let imports = file.GetImports()
+        if (imports.size > 0) {
+            if (let Some(imp) <- imports[0]) {
+                if (let Some(base) <- imp.GetBase()) {
+                    return base.GetBegin()
+                }
+            }
+        }
+        let decls = file.GetDecls()
+        if (decls.size > 0) {
+            if (let Some(decl) <- decls[0]) {
+                if (let Some(declBase) <- decl.GetBase()) {
+                    if (let Some(nodeBase) <- declBase.GetBase()) {
+                        return nodeBase.GetBegin()
+                    }
+                }
+            }
+        }
+        None
+    }
+
+    private func addMissingLeadingCommentsFromSource(ret: ArrayList<SyntaxNodeImpl>, firstChildBegin: NodeFormat_Position): Unit {
+        let targetLine = Int64(firstChildBegin.line)
+        let targetColumn = Int64(firstChildBegin.column)
+        if (Int64(cursorLine) > targetLine || (Int64(cursorLine) == targetLine && Int64(cursorColumn) >= targetColumn)) {
+            return
+        }
+        let lines = sourceText.replace("\r\n", "\n").split("\n")
+        let commentList = ArrayList<String>()
+        var firstCommentLine: Int64 = -1
+        var firstCommentColumn: Int64 = -1
+        var lastCommentEndLine: Int32 = cursorLine
+        var lastCommentEndColumn: Int32 = cursorColumn
+        var scanLine: Int64 = Int64(cursorLine) - 1
+        var inBlockComment = false
+        var blockCommentContent = StringBuilder()
+        while (scanLine < targetLine - 1 && scanLine < lines.size) {
+            let line = lines[scanLine]
+            let trimmed = line.trimAsciiStart()
+            let leadingSpaces = line.size - trimmed.size
+            if (inBlockComment) {
+                blockCommentContent.append("\n")
+                if (let Some(endIdx) <- line.indexOf("*/")) {
+                    blockCommentContent.append(line[0..endIdx + 2])
+                    commentList.add(blockCommentContent.toString())
+                    lastCommentEndLine = Int32(scanLine + 1)
+                    lastCommentEndColumn = Int32(endIdx + 3)
+                    blockCommentContent = StringBuilder()
+                    inBlockComment = false
+                } else {
+                    blockCommentContent.append(line)
+                }
+            } else if (trimmed.startsWith("/*")) {
+                if (firstCommentLine < 0) {
+                    firstCommentLine = scanLine + 1
+                    firstCommentColumn = leadingSpaces + 1
+                }
+                let blockStartInLine = leadingSpaces
+                if (let Some(endIdx) <- line.indexOf("*/")) {
+                    if (endIdx >= blockStartInLine) {
+                        commentList.add(line[blockStartInLine..endIdx + 2])
+                        lastCommentEndLine = Int32(scanLine + 1)
+                        lastCommentEndColumn = Int32(endIdx + 3)
+                    }
+                } else {
+                    inBlockComment = true
+                    blockCommentContent = StringBuilder()
+                    blockCommentContent.append(line[blockStartInLine..])
+                }
+            } else if (trimmed.startsWith("//")) {
+                if (firstCommentLine < 0) {
+                    firstCommentLine = scanLine + 1
+                    firstCommentColumn = leadingSpaces + 1
+                }
+                commentList.add(trimmed)
+                lastCommentEndLine = Int32(scanLine + 1)
+                lastCommentEndColumn = Int32(line.size) + 1
+            }
+            scanLine++
+        }
+        if (inBlockComment && scanLine < lines.size) {
+            blockCommentContent.append("\n")
+            let line = lines[scanLine]
+            if (let Some(endIdx) <- line.indexOf("*/")) {
+                blockCommentContent.append(line[0..endIdx + 2])
+                commentList.add(blockCommentContent.toString())
+                lastCommentEndLine = Int32(scanLine + 1)
+                lastCommentEndColumn = Int32(endIdx + 3)
+            }
+        }
+        if (commentList.size == 0) {
+            return
+        }
+        if (firstCommentLine > 0) {
+            addWhitespace(Int32(firstCommentLine), Int32(firstCommentColumn))
+        }
+        let commentGroupRet = ArrayList<SyntaxNodeImpl>()
+        for (i in 0..commentList.size) {
+            if (i > 0) {
+                commentGroupRet.add(builder.buildNewline(1))
+            }
+            let cmtRet = ArrayList<SyntaxNodeImpl>()
+            cmtRet.add(builder.buildTokenTerminal(TokenKind.COMMENT, commentList[i], hasEscape: false))
+            commentGroupRet.add(builder.buildNonTerminal(SyntaxNodeKind.Comment, cmtRet.toArray()))
+        }
+        let commentGroupListNode = builder.buildNonTerminal(SyntaxNodeKind.CommentGroupList,
+            [builder.buildNonTerminal(SyntaxNodeKind.CommentGroup, commentGroupRet.toArray())])
+        addChild(ret, commentGroupListNode)
+        curChildren = ret
+        cursorLine = lastCommentEndLine
+        cursorColumn = lastCommentEndColumn
     }
 }
