@@ -4944,6 +4944,34 @@ public prop packageInitFunc: ?Function
 
 类型：?[Function](#class-function)
 
+### prop packageLiteralInitFunc
+
+```cangjie
+public prop packageLiteralInitFunc: ?Function
+```
+
+功能：包字面量初始化函数；未设置时为 None。
+
+类型：?[Function](#class-function)
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    println("prop_packageLiteralInitFunc: ${pkg.packageLiteralInitFunc.isNone()}")
+}
+```
+
+运行结果：
+
+```text
+prop_packageLiteralInitFunc: true
+```
+
 ### init(String, AccessLevel)
 
 ```cangjie
@@ -9108,6 +9136,80 @@ main() {
 
 ```text
 op_eq_FloatLiteral: true
+```
+
+## class GlobalValue
+
+```cangjie
+sealed abstract class GlobalValue <: Value & Equatable<GlobalValue>
+```
+
+功能：包级全局值的密封抽象基类；[Function](#class-function) 与 [GlobalVar](#class-globalvar) 的公共父类型。
+
+父类型：
+
+- Value
+- Equatable\<GlobalValue>
+
+子类型：
+
+- [Function](#class-function)
+- [GlobalVar](#class-globalvar)
+
+### func destroySelf()
+
+```cangjie
+public func destroySelf(): Unit
+```
+
+功能：销毁此全局值自身及其关联子图，并将 `_kind` 标记为无效。
+
+- **Function**：若存在 `declaredParent`，从父类型的 `methods` 中移除；销毁函数体（`BlockGroup`）；清空参数、返回值与泛型形参。
+- **GlobalVar**：若存在 `declaredParent`，从父类型的 `staticVars` 中移除；若 `initializer` 为 [Function](#class-function)，对其调用 `destroySelf()`；清空 `initializer`。
+
+不会修改 [Package](#class-package) 的 `functions` / `globalVars` 列表；需从包中删除时由调用方自行处理。
+
+示例（Function）：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    f.destroySelf()
+    println("fn_destroySelf_func: ${f.body.isNone()}")
+}
+```
+
+运行结果：
+
+```text
+fn_destroySelf_func: true
+```
+
+示例（GlobalVar，含函数初始化）：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let gv = pkg.addGlobalVar(IntType.getInt32(), "gv_m", "gv", "demo")
+    let init = pkg.addFunction(FuncType.get([], IntType.getInt32()), "init_m", "init", "demo")
+    gv.setInitializer(init)
+    gv.destroySelf()
+    println("fn_destroySelf_gv: ${gv.initializer.isNone()}")
+}
+```
+
+运行结果：
+
+```text
+fn_destroySelf_gv: true
 ```
 
 ## class Function

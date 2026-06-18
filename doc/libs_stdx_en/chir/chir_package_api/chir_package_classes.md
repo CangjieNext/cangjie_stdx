@@ -4944,6 +4944,34 @@ Function: Package initialization function; `None` when not set.
 
 Type: ?[Function](#class-function)
 
+### prop packageLiteralInitFunc
+
+```cangjie
+public prop packageLiteralInitFunc: ?Function
+```
+
+Function: Package literal initialization function; `None` when not set.
+
+Type: ?[Function](#class-function)
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    println("prop_packageLiteralInitFunc: ${pkg.packageLiteralInitFunc.isNone()}")
+}
+```
+
+Output:
+
+```text
+prop_packageLiteralInitFunc: true
+```
+
 ### init(String, AccessLevel)
 
 ```cangjie
@@ -9108,6 +9136,80 @@ Output:
 
 ```text
 op_eq_FloatLiteral: true
+```
+
+## class GlobalValue
+
+```cangjie
+sealed abstract class GlobalValue <: Value & Equatable<GlobalValue>
+```
+
+Function: Sealed abstract base class for package-level global values; common parent of [Function](#class-function) and [GlobalVar](#class-globalvar).
+
+Parent Types:
+
+- Value
+- Equatable\<GlobalValue>
+
+Subtypes:
+
+- [Function](#class-function)
+- [GlobalVar](#class-globalvar)
+
+### func destroySelf()
+
+```cangjie
+public func destroySelf(): Unit
+```
+
+Function: Destroys this global value and its associated subgraph, then marks `_kind` as invalid.
+
+- **Function**: If `declaredParent` is set, removes this function from the parent's `methods`; destroys the function body (`BlockGroup`); clears parameters, return value, and generic type parameters.
+- **GlobalVar**: If `declaredParent` is set, removes this variable from the parent's `staticVars`; if `initializer` is a [Function](#class-function), calls `destroySelf()` on it; clears `initializer`.
+
+Does not modify [Package](#class-package) `functions` / `globalVars` lists; callers must remove entries from the package separately when needed.
+
+Example (Function):
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    f.destroySelf()
+    println("fn_destroySelf_func: ${f.body.isNone()}")
+}
+```
+
+Output:
+
+```text
+fn_destroySelf_func: true
+```
+
+Example (GlobalVar with function initializer):
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let gv = pkg.addGlobalVar(IntType.getInt32(), "gv_m", "gv", "demo")
+    let init = pkg.addFunction(FuncType.get([], IntType.getInt32()), "init_m", "init", "demo")
+    gv.setInitializer(init)
+    gv.destroySelf()
+    println("fn_destroySelf_gv: ${gv.initializer.isNone()}")
+}
+```
+
+Output:
+
+```text
+fn_destroySelf_gv: true
 ```
 
 ## class Function
