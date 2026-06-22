@@ -318,6 +318,10 @@ public static func get(baseType: Type): BoxType
 
 功能：获取或创建指定基类型的 `BoxType`。
 
+返回值：
+
+- BoxType - 给定基类型的 BoxType 实例。
+
 示例：
 
 <!-- verify -->
@@ -344,6 +348,10 @@ public func toString(): String
 
 功能：字符串形式，一般为 `Box<...>` 风格。
 
+返回值：
+
+- String - 装箱类型的字符串表示。
+
 示例：
 
 <!-- verify -->
@@ -369,6 +377,10 @@ public operator func ==(other: BoxType): Bool
 ```
 
 功能：比较两个 `BoxType` 是否相同。
+
+返回值：
+
+- Bool - 相等则为 `true`，否则为 `false`。
 
 示例：
 
@@ -1185,6 +1197,10 @@ public func getExtendDefs(visited!: ArrayList<(Type, Type)> = ArrayList<(Type, T
 
 功能：返回 `def.extends` 中 `extendedType` 与当前类型可匹配的 extend 定义。
 
+返回值：
+
+- Array\<ExtendDef> - 适用的 ExtendDef 节点。
+
 示例：
 
 <!-- verify -->
@@ -1213,6 +1229,10 @@ public func getExtendImplementedInterfaceTypes(visited!: ArrayList<(Type, Type)>
 
 功能：收集适用于当前实例的 `extend` 块所实现的接口（已代入泛型）。
 
+返回值：
+
+- Array\<ClassLikeType> - 实例化后的接口 ClassLikeType 节点。
+
 示例：
 
 <!-- verify -->
@@ -1240,6 +1260,10 @@ public func getImplementedInterfaceTypes(visited!: ArrayList<(Type, Type)> = Arr
 ```
 
 功能：`extend` 实现的接口与定义上 `implementedInterfaceTypes` 的并集（已实例化）。
+
+返回值：
+
+- Array\<ClassLikeType> - 合并后的实例化接口类型列表。
 
 示例：
 
@@ -1342,6 +1366,10 @@ public func getSuperTypesRecusively(visited!: ArrayList<(Type, Type)> = ArrayLis
 ```
 
 功能：递归收集父类与接口父类型（已实例化）。
+
+返回值：
+
+- Array\<ClassLikeType> - 父类与接口父类型。
 
 示例：
 
@@ -1936,6 +1964,10 @@ public func isImported(): Bool
 
 功能：是否为从其它包导入的定义。
 
+返回值：
+
+- Bool - Imported 属性已设置则为 `true`，否则为 `false`。
+
 示例：
 
 <!-- verify -->
@@ -1962,6 +1994,10 @@ public func isPublic(): Bool
 ```
 
 功能：是否带 `public` 属性。
+
+返回值：
+
+- Bool - Public 属性已设置则为 `true`，否则为 `false`。
 
 示例：
 
@@ -1990,6 +2026,10 @@ public func isPrivate(): Bool
 
 功能：是否带 `private` 属性。
 
+返回值：
+
+- Bool - Private 属性已设置则为 `true`，否则为 `false`。
+
 示例：
 
 <!-- verify -->
@@ -2016,6 +2056,10 @@ public func isInternal(): Bool
 ```
 
 功能：是否带 `internal` 属性。
+
+返回值：
+
+- Bool - Internal 属性已设置则为 `true`，否则为 `false`。
 
 示例：
 
@@ -2044,6 +2088,10 @@ public func isProtected(): Bool
 
 功能：是否带 `protected` 属性。
 
+返回值：
+
+- Bool - Protected 属性已设置则为 `true`，否则为 `false`。
+
 示例：
 
 <!-- verify -->
@@ -2070,6 +2118,10 @@ public func isAbstract(): Bool
 ```
 
 功能：是否为 `abstract`。
+
+返回值：
+
+- Bool - Abstract 属性已设置则为 `true`，否则为 `false`。
 
 示例：
 
@@ -2098,6 +2150,10 @@ public func isOpen(): Bool
 
 功能：是否可继承/实现（`virtual` 或 `abstract`）。
 
+返回值：
+
+- Bool - Virtual 或 Abstract 属性已设置则为 `true`，否则为 `false`。
+
 示例：
 
 <!-- verify -->
@@ -2124,6 +2180,10 @@ public func isSealed(): Bool
 ```
 
 功能：是否为 `sealed`。
+
+返回值：
+
+- Bool - Sealed 属性已设置则为 `true`，否则为 `false`。
 
 示例：
 
@@ -2152,6 +2212,10 @@ public func isGeneric(): Bool
 
 功能：是否为泛型定义。
 
+返回值：
+
+- Bool - Generic 属性已设置则为 `true`，否则为 `false`。
+
 示例：
 
 <!-- verify -->
@@ -2178,6 +2242,10 @@ public func isClassLike(): Bool
 ```
 
 功能：种类是否为类/接口。
+
+返回值：
+
+- Bool - 种类为 ClassLike 则为 `true`，否则为 `false`。
 
 示例：
 
@@ -2206,6 +2274,10 @@ public func isClass(): Bool
 
 功能：是否为类（非接口）。
 
+返回值：
+
+- Bool - 是类则为 `true`，否则为 `false`。
+
 示例：
 
 <!-- verify -->
@@ -2232,6 +2304,10 @@ public func isInterface(): Bool
 ```
 
 功能：是否为接口。
+
+返回值：
+
+- Bool - 是接口则为 `true`，否则为 `false`。
 
 示例：
 
@@ -2260,6 +2336,10 @@ public func isEnum(): Bool
 
 功能：是否为枚举定义。
 
+返回值：
+
+- Bool - 种类为 Enum 则为 `true`，否则为 `false`。
+
 示例：
 
 <!-- verify -->
@@ -2287,6 +2367,10 @@ public func isExtend(): Bool
 
 功能：是否为 extend 定义。
 
+返回值：
+
+- Bool - 种类为 Extend 则为 `true`，否则为 `false`。
+
 示例：
 
 <!-- verify -->
@@ -2313,6 +2397,10 @@ public func isStruct(): Bool
 ```
 
 功能：是否为结构体定义。
+
+返回值：
+
+- Bool - 种类为 Struct 则为 `true`，否则为 `false`。
 
 示例：
 
@@ -2371,6 +2459,10 @@ public operator func ==(other: CustomTypeDef): Bool
 ```
 
 功能：按种类、标识、源码名与包名比较。
+
+返回值：
+
+- Bool - 相等则为 `true`，否则为 `false`。
 
 示例：
 
@@ -4420,6 +4512,10 @@ public func isReadOnly(): Bool
 
 功能：是否为只读成员。
 
+返回值：
+
+- Bool - READONLY 属性已设置则为 `true`，否则为 `false`。
+
 示例：
 
 <!-- verify -->
@@ -4447,6 +4543,10 @@ public func isInternal(): Bool
 ```
 
 功能：是否为 `internal`。
+
+返回值：
+
+- Bool - INTERNAL 属性已设置则为 `true`，否则为 `false`。
 
 示例：
 
@@ -4476,6 +4576,10 @@ public func isPublic(): Bool
 
 功能：是否为 `public`。
 
+返回值：
+
+- Bool - PUBLIC 属性已设置则为 `true`，否则为 `false`。
+
 示例：
 
 <!-- verify -->
@@ -4504,6 +4608,10 @@ public func isPrivate(): Bool
 
 功能：是否为 `private`。
 
+返回值：
+
+- Bool - PRIVATE 属性已设置则为 `true`，否则为 `false`。
+
 示例：
 
 <!-- verify -->
@@ -4531,6 +4639,10 @@ public func isProtected(): Bool
 ```
 
 功能：是否为 `protected`。
+
+返回值：
+
+- Bool - PROTECTED 属性已设置则为 `true`，否则为 `false`。
 
 示例：
 
@@ -5594,6 +5706,10 @@ public static func get(elementType: Type, dims: UInt32): RawArrayType
 ```
 
 功能：获取或创建原始数组类型。
+
+返回值：
+
+- RawArrayType - RawArrayType 实例。
 
 示例：
 
@@ -6838,6 +6954,10 @@ public func isAnyTypeInStd(): Bool
 
 功能：是否为 std 包中的 Any 类型。
 
+返回值：
+
+- Bool - 是则为 `true`，否则为 `false`。
+
 ### func isBoxType()
 
 ```cangjie
@@ -6845,6 +6965,10 @@ public func isBoxType(): Bool
 ```
 
 功能：是否为 BoxType。
+
+返回值：
+
+- Bool - 是则为 `true`，否则为 `false`。
 
 ### func isBoxRefTypeOf(Type)
 
@@ -6858,6 +6982,10 @@ public func isBoxRefTypeOf(other: Type): Bool
 
 - other: Type - 待比较的类型。
 
+返回值：
+
+- Bool - 是 other 的 Box 引用类型则为 `true`，否则为 `false`。
+
 ### func isCFuncType()
 
 ```cangjie
@@ -6865,6 +6993,10 @@ public func isCFuncType(): Bool
 ```
 
 功能：是否为 C 函数类型。
+
+返回值：
+
+- Bool - 是则为 `true`，否则为 `false`。
 
 ### func isCPointerType()
 
@@ -6874,6 +7006,10 @@ public func isCPointerType(): Bool
 
 功能：是否为 CPointer 类型。
 
+返回值：
+
+- Bool - 是则为 `true`，否则为 `false`。
+
 ### func isCStringType()
 
 ```cangjie
@@ -6881,6 +7017,10 @@ public func isCStringType(): Bool
 ```
 
 功能：是否为 CString 类型。
+
+返回值：
+
+- Bool - 是则为 `true`，否则为 `false`。
 
 ### func isCTypeInStd()
 
@@ -6890,6 +7030,10 @@ public func isCTypeInStd(): Bool
 
 功能：是否为 std 包中的 C 类型。
 
+返回值：
+
+- Bool - 是则为 `true`，否则为 `false`。
+
 ### func isClassLikeType()
 
 ```cangjie
@@ -6897,6 +7041,10 @@ public func isClassLikeType(): Bool
 ```
 
 功能：是否为 ClassLikeType。
+
+返回值：
+
+- Bool - 是则为 `true`，否则为 `false`。
 
 ### func isClosureType()
 
@@ -6906,6 +7054,10 @@ public func isClosureType(): Bool
 
 功能：是否为闭包类型。
 
+返回值：
+
+- Bool - 是则为 `true`，否则为 `false`。
+
 ### func isClosureBaseType()
 
 ```cangjie
@@ -6913,6 +7065,10 @@ public func isClosureBaseType(): Bool
 ```
 
 功能：是否为闭包基类型。
+
+返回值：
+
+- Bool - 是则为 `true`，否则为 `false`。
 
 ### func isClosureGenericBaseType()
 
@@ -6922,6 +7078,10 @@ public func isClosureGenericBaseType(): Bool
 
 功能：是否为闭包泛型基类型。
 
+返回值：
+
+- Bool - 是则为 `true`，否则为 `false`。
+
 ### func isClosureInstBaseType()
 
 ```cangjie
@@ -6929,6 +7089,10 @@ public func isClosureInstBaseType(): Bool
 ```
 
 功能：是否为闭包实例化基类型。
+
+返回值：
+
+- Bool - 是则为 `true`，否则为 `false`。
 
 ### func isCustomType()
 
@@ -6938,6 +7102,10 @@ public func isCustomType(): Bool
 
 功能：是否为 CustomType。
 
+返回值：
+
+- Bool - 是则为 `true`，否则为 `false`。
+
 ### func isEnumType()
 
 ```cangjie
@@ -6945,6 +7113,10 @@ public func isEnumType(): Bool
 ```
 
 功能：是否为 EnumType。
+
+返回值：
+
+- Bool - 是则为 `true`，否则为 `false`。
 
 ### func isFuncType()
 
@@ -6954,6 +7126,10 @@ public func isFuncType(): Bool
 
 功能：是否为 FuncType。
 
+返回值：
+
+- Bool - 是则为 `true`，否则为 `false`。
+
 ### func isGenericType()
 
 ```cangjie
@@ -6961,6 +7137,10 @@ public func isGenericType(): Bool
 ```
 
 功能：是否为 GenericType。
+
+返回值：
+
+- Bool - 是则为 `true`，否则为 `false`。
 
 ### func isGenericRelated()
 
@@ -6970,6 +7150,10 @@ public func isGenericRelated(): Bool
 
 功能：是否与泛型相关。
 
+返回值：
+
+- Bool - 是则为 `true`，否则为 `false`。
+
 ### func isReferenceType()
 
 ```cangjie
@@ -6977,6 +7161,10 @@ public func isReferenceType(): Bool
 ```
 
 功能：是否为引用类型（ClassLikeType、RawArrayType、BoxType 或 ThisType）。
+
+返回值：
+
+- Bool - 是则为 `true`，否则为 `false`。
 
 ### func isRawArrayType()
 
@@ -6986,6 +7174,10 @@ public func isRawArrayType(): Bool
 
 功能：是否为 RawArray 类型。
 
+返回值：
+
+- Bool - 是则为 `true`，否则为 `false`。
+
 ### func isStructType()
 
 ```cangjie
@@ -6993,6 +7185,10 @@ public func isStructType(): Bool
 ```
 
 功能：是否为 StructType。
+
+返回值：
+
+- Bool - 是则为 `true`，否则为 `false`。
 
 ### func isThisType()
 
@@ -7002,6 +7198,10 @@ public func isThisType(): Bool
 
 功能：是否为 ThisType。
 
+返回值：
+
+- Bool - 是则为 `true`，否则为 `false`。
+
 ### func isTupleType()
 
 ```cangjie
@@ -7009,6 +7209,10 @@ public func isTupleType(): Bool
 ```
 
 功能：是否为 TupleType。
+
+返回值：
+
+- Bool - 是则为 `true`，否则为 `false`。
 
 ### func isValueType()
 
@@ -7018,6 +7222,10 @@ public func isValueType(): Bool
 
 功能：是否为值类型。
 
+返回值：
+
+- Bool - 是则为 `true`，否则为 `false`。
+
 ### func isVArrayType()
 
 ```cangjie
@@ -7026,6 +7234,10 @@ public func isVArrayType(): Bool
 
 功能：是否为 VArrayType。
 
+返回值：
+
+- Bool - 是则为 `true`，否则为 `false`。
+
 ### func satisfyCType()
 
 ```cangjie
@@ -7033,6 +7245,10 @@ public func satisfyCType(): Bool
 ```
 
 功能：是否满足 C 类型约束。
+
+返回值：
+
+- Bool - 满足则为 `true`，否则为 `false`。
 
 ### func isEqualOrSubTypeOf(Type, ArrayList<(Type, Type)>)
 
@@ -7047,6 +7263,10 @@ public func isEqualOrSubTypeOf(parent: Type, visited!: ArrayList<(Type, Type)> =
 - parent: Type - 待比较的父类型。
 - visited!: ArrayList<(Type, Type)> - 环检测用访问表；一般可传默认空表。
 
+返回值：
+
+- Bool - 是 parent 的相等或子类型则为 `true`，否则为 `false`。
+
 ### func isEqualOrInstantiatedTypeOf(Type, ArrayList<(Type, Type)>)
 
 ```cangjie
@@ -7059,6 +7279,10 @@ public func isEqualOrInstantiatedTypeOf(genericRelatedType: Type, visited!: Arra
 
 - genericRelatedType: Type - 待比较的泛型关联类型。
 - visited!: ArrayList<(Type, Type)> - 环检测用访问表；一般可传默认空表。
+
+返回值：
+
+- Bool - 是 genericRelatedType 的相等或实例化类型则为 `true`，否则为 `false`。
 
 ### func satisfyGenericConstraints(GenericType, HashMap<GenericType, Type>, ArrayList<(Type, Type)>)
 
@@ -7073,6 +7297,10 @@ public func satisfyGenericConstraints(gType: GenericType, instMap: HashMap<Gener
 - gType: GenericType - 泛型类型。
 - instMap: HashMap<GenericType, Type> - 泛型实例化映射表。
 - visited!: ArrayList<(Type, Type)> - 环检测用访问表；一般可传默认空表。
+
+返回值：
+
+- Bool - 满足泛型约束则为 `true`，否则为 `false`。
 
 ### operator func ==(Type)
 
@@ -7332,6 +7560,10 @@ public static func get(elementType: Type, size: Int64): VArrayType
 ```
 
 功能：获取或创建 VArray 类型。
+
+返回值：
+
+- VArrayType - VArrayType 实例。
 
 示例：
 

@@ -1515,6 +1515,10 @@ public operator func ==(other: IRActionMode): Bool
 
 功能：判断两个 IRActionMode 是否相等。
 
+返回值：
+
+- Bool - 相等则为 `true`，否则为 `false`。
+
 ### operator func !=(IRActionMode)
 
 ```cangjie
@@ -1522,6 +1526,10 @@ public operator func !=(other: IRActionMode): Bool
 ```
 
 功能：判断两个 IRActionMode 是否不相等。
+
+返回值：
+
+- Bool - 不相等则为 `true`，否则为 `false`。
 
 ## enum TypeActionMode
 
