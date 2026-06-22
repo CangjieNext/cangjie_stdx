@@ -180,199 +180,104 @@ extend<T> Array<T> <: JsonDeserializable<Array<T>> where T <: JsonDeserializable
     }
 }
 
-extend<T> ArrayList<T> <: JsonDeserializable<ArrayList<T>> where T <: JsonDeserializable<T> {
-    public static func fromJson(r: JsonReader): ArrayList<T> {
-        let result = ArrayList<T>()
-        r.startArray()
-        if (r.peek() == EndArray) {
-            r.endArray()
-            return result
-        }
-        while (true) {
-            result.add(r.readValue<T>())
-            if (r.peeked == PEEK_STATE_ARRAY_END) {
-                break
-            }
-        }
+func readArrayContainer<T, C>(r: JsonReader, result: C, addValue: (C, T) -> Unit): C where T <: JsonDeserializable<T> {
+    r.startArray()
+    if (r.peek() == EndArray) {
         r.endArray()
         return result
+    }
+    while (true) {
+        addValue(result, r.readValue<T>())
+        if (r.peeked == PEEK_STATE_ARRAY_END) {
+            break
+        }
+    }
+    r.endArray()
+    return result
+}
+
+func readObjectContainer<T, C>(
+    r: JsonReader,
+    result: C,
+    addValue: (C, String, T) -> Unit
+): C where T <: JsonDeserializable<T> {
+    r.startObject()
+    if (r.peek() == EndObject) {
+        r.endObject()
+        return result
+    }
+    while (true) {
+        let key = (r.readName() as String).getOrThrow()
+        let value = r.readValue<T>()
+        addValue(result, key, value)
+        if (r.peeked == PEEK_STATE_OBJECT_END) {
+            break
+        }
+    }
+    r.endObject()
+    return result
+}
+
+extend<T> ArrayList<T> <: JsonDeserializable<ArrayList<T>> where T <: JsonDeserializable<T> {
+    public static func fromJson(r: JsonReader): ArrayList<T> {
+        return readArrayContainer<T, ArrayList<T>>(r, ArrayList<T>(), {result, value => result.add(value)})
     }
 }
 
 extend<T> HashMap<String, T> <: JsonDeserializable<HashMap<String, T>> where T <: JsonDeserializable<T> {
     public static func fromJson(r: JsonReader): HashMap<String, T> {
-        let result = HashMap<String, T>()
-        r.startObject()
-        if (r.peek() == EndObject) {
-            r.endObject()
-            return result
-        }
-        while (true) {
-            let key = (r.readName() as String).getOrThrow()
-            let value = r.readValue<T>()
-            result.add(key, value)
-            if (r.peeked == PEEK_STATE_OBJECT_END) {
-                break
-            }
-        }
-        r.endObject()
-        return result
+        return readObjectContainer<T, HashMap<String, T>>(r, HashMap<String, T>(),
+            {result, key, value => result.add(key, value)})
     }
 }
 
 extend<T> HashSet<T> <: JsonDeserializable<HashSet<T>> where T <: JsonDeserializable<T> {
     public static func fromJson(r: JsonReader): HashSet<T> {
-        let result = HashSet<T>()
-        r.startArray()
-        if (r.peek() == EndArray) {
-            r.endArray()
-            return result
-        }
-        while (true) {
-            result.add(r.readValue<T>())
-            if (r.peeked == PEEK_STATE_ARRAY_END) {
-                break
-            }
-        }
-        r.endArray()
-        return result
+        return readArrayContainer<T, HashSet<T>>(r, HashSet<T>(), {result, value => result.add(value)})
     }
 }
 
 extend<T> LinkedList<T> <: JsonDeserializable<LinkedList<T>> where T <: JsonDeserializable<T> {
     public static func fromJson(r: JsonReader): LinkedList<T> {
-        let result = LinkedList<T>()
-        r.startArray()
-        if (r.peek() == EndArray) {
-            r.endArray()
-            return result
-        }
-        while (true) {
-            result.addLast(r.readValue<T>())
-            if (r.peeked == PEEK_STATE_ARRAY_END) {
-                break
-            }
-        }
-        r.endArray()
-        return result
+        return readArrayContainer<T, LinkedList<T>>(r, LinkedList<T>(), {result, value => result.addLast(value)})
     }
 }
 
 extend<T> ArrayQueue<T> <: JsonDeserializable<ArrayQueue<T>> where T <: JsonDeserializable<T> {
     public static func fromJson(r: JsonReader): ArrayQueue<T> {
-        let result = ArrayQueue<T>()
-        r.startArray()
-        if (r.peek() == EndArray) {
-            r.endArray()
-            return result
-        }
-        while (true) {
-            result.add(r.readValue<T>())
-            if (r.peeked == PEEK_STATE_ARRAY_END) {
-                break
-            }
-        }
-        r.endArray()
-        return result
+        return readArrayContainer<T, ArrayQueue<T>>(r, ArrayQueue<T>(), {result, value => result.add(value)})
     }
 }
 
 extend<T> ArrayDeque<T> <: JsonDeserializable<ArrayDeque<T>> where T <: JsonDeserializable<T> {
     public static func fromJson(r: JsonReader): ArrayDeque<T> {
-        let result = ArrayDeque<T>()
-        r.startArray()
-        if (r.peek() == EndArray) {
-            r.endArray()
-            return result
-        }
-        while (true) {
-            result.addLast(r.readValue<T>())
-            if (r.peeked == PEEK_STATE_ARRAY_END) {
-                break
-            }
-        }
-        r.endArray()
-        return result
+        return readArrayContainer<T, ArrayDeque<T>>(r, ArrayDeque<T>(), {result, value => result.addLast(value)})
     }
 }
 
 extend<T> ArrayStack<T> <: JsonDeserializable<ArrayStack<T>> where T <: JsonDeserializable<T> {
     public static func fromJson(r: JsonReader): ArrayStack<T> {
-        let result = ArrayStack<T>()
-        r.startArray()
-        if (r.peek() == EndArray) {
-            r.endArray()
-            return result
-        }
-        while (true) {
-            result.add(r.readValue<T>())
-            if (r.peeked == PEEK_STATE_ARRAY_END) {
-                break
-            }
-        }
-        r.endArray()
-        return result
+        return readArrayContainer<T, ArrayStack<T>>(r, ArrayStack<T>(), {result, value => result.add(value)})
     }
 }
 
 extend<T> TreeSet<T> <: JsonDeserializable<TreeSet<T>> where T <: JsonDeserializable<T> {
     public static func fromJson(r: JsonReader): TreeSet<T> {
-        let result = TreeSet<T>()
-        r.startArray()
-        if (r.peek() == EndArray) {
-            r.endArray()
-            return result
-        }
-        while (true) {
-            result.add(r.readValue<T>())
-            if (r.peeked == PEEK_STATE_ARRAY_END) {
-                break
-            }
-        }
-        r.endArray()
-        return result
+        return readArrayContainer<T, TreeSet<T>>(r, TreeSet<T>(), {result, value => result.add(value)})
     }
 }
 
 extend<T> TreeMap<String, T> <: JsonDeserializable<TreeMap<String, T>> where T <: JsonDeserializable<T> {
     public static func fromJson(r: JsonReader): TreeMap<String, T> {
-        let result = TreeMap<String, T>()
-        r.startObject()
-        if (r.peek() == EndObject) {
-            r.endObject()
-            return result
-        }
-        while (true) {
-            let key = (r.readName() as String).getOrThrow()
-            let value = r.readValue<T>()
-            result.add(key, value)
-            if (r.peeked == PEEK_STATE_OBJECT_END) {
-                break
-            }
-        }
-        r.endObject()
-        return result
+        return readObjectContainer<T, TreeMap<String, T>>(r, TreeMap<String, T>(),
+            {result, key, value => result.add(key, value)})
     }
 }
 
 extend<T> ConcurrentHashMap<String, T> <: JsonDeserializable<ConcurrentHashMap<String, T>> where T <: JsonDeserializable<T> {
     public static func fromJson(r: JsonReader): ConcurrentHashMap<String, T> {
-        let result = ConcurrentHashMap<String, T>()
-        r.startObject()
-        if (r.peek() == EndObject) {
-            r.endObject()
-            return result
-        }
-        while (true) {
-            let key = (r.readName() as String).getOrThrow()
-            let value = r.readValue<T>()
-            result.add(key, value)
-            if (r.peeked == PEEK_STATE_OBJECT_END) {
-                break
-            }
-        }
-        r.endObject()
-        return result
+        return readObjectContainer<T, ConcurrentHashMap<String, T>>(r, ConcurrentHashMap<String, T>(),
+            {result, key, value => result.add(key, value)})
     }
 }
 

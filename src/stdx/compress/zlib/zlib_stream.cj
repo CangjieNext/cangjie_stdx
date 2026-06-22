@@ -118,23 +118,25 @@ public class CompressInputStream <: InputStream {
                 deflater.deflate(outBuf.slice(outBufCursor, singleOutLen), NoFlush)
             }
         }
-        return outBufCursor
+        outBufCursor
     }
 
     private func getInput(): Bool {
-        var readRet = 0
-        if (inBufEnd == inBufCursor) {
-            readRet = inputStream.read(inBuf)
-            if (readRet <= 0) {
-                readEnd = true
-                if (!readStarted) {
-                    return false
-                }
-            }
-            readStarted = true
-            inBufCursor = 0
-            inBufEnd = readRet
+        if (inBufEnd != inBufCursor) {
+            return true
         }
+
+        var readRet = inputStream.read(inBuf)
+        if (readRet <= 0) {
+             readEnd = true
+             if (!readStarted) {
+                return false
+            }
+        }
+
+        readStarted = true
+        inBufCursor = 0
+        inBufEnd = readRet
         return true
     }
 
@@ -232,17 +234,6 @@ public class CompressOutputStream <: OutputStream {
     }
 
     /**
-     * Flushes compressed data from the internal buffer and writes to the bound output stream.
-     * Then refreshes the bound output stream.
-     *
-     * @throws ZlibException if the CompressOutputStream is closed or failed to encode stream.
-     */
-    public func flush(): Unit {
-        flushOutBuf()
-        outputStream.flush()
-    }
-
-    /**
      * Closes this stream and release internal compressor resources.
      *
      * @throws ZlibException if the CompressOutputStream is closed, or failed to encode stream,
@@ -260,6 +251,17 @@ public class CompressOutputStream <: OutputStream {
             deflater.deflateEnd()
             closed = true
         }
+    }
+
+    /**
+     * Flushes compressed data from the internal buffer and writes to the bound output stream.
+     * Then refreshes the bound output stream.
+     *
+     * @throws ZlibException if the CompressOutputStream is closed or failed to encode stream.
+     */
+    public func flush(): Unit {
+        flushOutBuf()
+        outputStream.flush()
     }
 
     private func finishDeflate(): Unit {
@@ -310,9 +312,7 @@ public class DecompressInputStream <: InputStream {
 
     private var inBufEnd: Int64
 
-    private var totalInputBytes: Int64 = 0
-
-    private var totalOutputBytes: Int64 = 0
+    private let ratioGuard = DecompressionRatioGuard()
 
     /**
      * Create a input stream for decompressing data from inputStream.
@@ -383,7 +383,7 @@ public class DecompressInputStream <: InputStream {
                     return false
                 }
             } else {
-                totalInputBytes += readRet
+                ratioGuard.addInputBytes(readRet)
             }
             readStarted = true
             inBufCursor = 0
@@ -406,20 +406,7 @@ public class DecompressInputStream <: InputStream {
     }
 
     private func onOutputProduced(produced: Int64): Unit {
-        if (produced <= 0) {
-            return
-        }
-        totalOutputBytes += produced
-        enforceDecompressionRatio()
-    }
-
-    private func enforceDecompressionRatio(): Unit {
-        if (totalOutputBytes < MIN_OUTPUT_BYTES_FOR_RATIO_CHECK || totalInputBytes <= 0) {
-            return
-        }
-        if (totalOutputBytes / totalInputBytes > MAX_DECOMPRESSION_RATIO) {
-            throw ZlibException("Decompressed output exceeds safety compression ratio ${MAX_DECOMPRESSION_RATIO}:1.")
-        }
+        ratioGuard.addOutputBytes(produced)
     }
 }
 
@@ -445,9 +432,7 @@ public class DecompressOutputStream <: OutputStream {
     /* Flag whether the current class is closed */
     private var closed: Bool
 
-    private var totalInputBytes: Int64 = 0
-
-    private var totalOutputBytes: Int64 = 0
+    private let ratioGuard = DecompressionRatioGuard()
 
     /**
      * @throws ZlibException if bufLen <= 0 or failed to malloc memory for zlib stream,
@@ -480,7 +465,7 @@ public class DecompressOutputStream <: OutputStream {
         var inBufCursor = 0
         var singleInLen = min(inBuf.size, MAX_BUFFER_LENGTH_IN)
         while (singleInLen > 0) {
-            totalInputBytes += singleInLen
+            ratioGuard.addInputBytes(singleInLen)
             inflater.addInputBytes(inBuf.slice(inBufCursor, singleInLen), singleInLen)
             inBufCursor += singleInLen
             while (!inflater.needsInput() && !inflater.isFinished()) {
@@ -551,19 +536,6 @@ public class DecompressOutputStream <: OutputStream {
     }
 
     private func onOutputProduced(produced: Int64): Unit {
-        if (produced <= 0) {
-            return
-        }
-        totalOutputBytes += produced
-        enforceDecompressionRatio()
-    }
-
-    private func enforceDecompressionRatio(): Unit {
-        if (totalOutputBytes < MIN_OUTPUT_BYTES_FOR_RATIO_CHECK || totalInputBytes <= 0) {
-            return
-        }
-        if (totalOutputBytes / totalInputBytes > MAX_DECOMPRESSION_RATIO) {
-            throw ZlibException("Decompressed output exceeds safety compression ratio ${MAX_DECOMPRESSION_RATIO}:1.")
-        }
+        ratioGuard.addOutputBytes(produced)
     }
 }
