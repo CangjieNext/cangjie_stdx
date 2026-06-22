@@ -20,13 +20,7 @@ package stdx.compress.zlib
 class Deflate {
     private var zlibStreamCPtr: CPointer<ZlibStream>
 
-    private var inBuf: Array<UInt8> = Array<UInt8>()
-
-    private var inBufOffset: Int64 = 0
-
-    private var availIn: Int64 = 0
-
-    private var finished: Bool = false
+    private let state = ZlibStreamState()
 
     /**
      * initialize Deflate based on the compression parameters.
@@ -79,9 +73,7 @@ class Deflate {
      * @param availIn Number of bytes of available data in the input buffer.
      */
     func addInputBytes(inBuf: Array<UInt8>, availIn: Int64): Unit {
-        this.inBuf = inBuf
-        this.inBufOffset = 0
-        this.availIn = availIn
+        state.addInputBytes(inBuf, availIn)
     }
 
     /**
@@ -95,8 +87,8 @@ class Deflate {
      */
     func deflate(outBuf: Array<UInt8>, flush: FlushType): Int64 {
         unsafe {
-            let nextIn: CPointerHandle<UInt8> = acquireArrayRawData(this.inBuf)
-            CJ_SetInput(nextIn.pointer + inBufOffset, UInt32(availIn), zlibStreamCPtr)
+            let nextIn: CPointerHandle<UInt8> = acquireArrayRawData(state.inBuf)
+            CJ_SetInput(nextIn.pointer + state.inBufOffset, UInt32(state.availIn), zlibStreamCPtr)
 
             let outBufSize: Int64 = outBuf.size
             let nextOut: CPointerHandle<UInt8> = acquireArrayRawData(outBuf)
@@ -110,11 +102,7 @@ class Deflate {
                 throw ZlibException(ret)
             }
             var zlibStream: ZlibStream = zlibStreamCPtr.read()
-            var nextAvailIn: Int64 = Int64(zlibStream.availIn)
-            inBufOffset += availIn - nextAvailIn
-            availIn = nextAvailIn
-            finished = ret == ZLIB_STREAM_END
-            return outBufSize - Int64(zlibStream.availOut)
+            return state.updateAfterProcess(zlibStream, ret, outBufSize)
         }
     }
 
@@ -125,7 +113,7 @@ class Deflate {
      * @return false The input buffer does not need to be set.
      */
     func needsInput(): Bool {
-        return !finished && availIn == 0
+        return state.needsInput()
     }
 
     /**
@@ -135,7 +123,7 @@ class Deflate {
      * @return false The compression is not complete.
      */
     func isFinished(): Bool {
-        return finished
+        return state.isFinished()
     }
 
     /**
