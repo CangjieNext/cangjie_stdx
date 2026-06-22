@@ -806,6 +806,14 @@ public class URL <: ToString {
             if (!isDigit(v)) {
                 throw UrlSyntaxException("The range of port number string is limited to numeric symbols: 0 ~ 9")
             }
+            try {
+                let portNum = Int64.parse(v)
+                if (portNum <= 0 || portNum > 65535) {
+                    throw UrlSyntaxException("Port out of range.")
+                }
+            } catch (_: Exception) {
+                throw UrlSyntaxException("Port out of range.")
+            }
             newUrl._port = v
         }
         if (let Some(v) <- path) {
