@@ -20,7 +20,7 @@ chir（Cangjie High-level IR）包提供类型系统与 CHIR 声明表示，包�
 - **类型转换**（`Box`、`StaticCast`、`CastToConcrete`、`CastToGeneric`、`UnboxToRef`、`UnboxToValue`、`NumericCast`、`TryNumericCast`）；
 - **构建器**（`CHIRBuilder`）用于在基本块中按指定位置插入各类 CHIR 表达式；
 - **访问器**（`CHIRVisitor`）用于遍历 CHIR 函数体中的表达式节点；**类型访问器**（`TypeVisitor`）用于遍历类型节点及其类型参数；
-- **调用上下文**（`FuncCallContext`、`InvokeCallContext`、`FuncSigInfo`）；
+- **调用上下文**（`FuncCallContext`、`InvokeCallContext`、`FuncSigInfo`）；其中 `InvokeCallContext` 持有虚方法 `Function` 与可选的 `OverflowStrategy`；
 - **序列化**（`serializePackage`、`deserializePackage`、`freeSerializedMemory`）；
 - **溢出策略**（`OverflowStrategy`）、**运算类别**（`UnaryExprKind`、`BinaryExprKind`）、**插入位置**（`InsertPosition`）与**遍历行为**（`IRActionMode`、`TypeActionMode`）。
 
@@ -90,8 +90,8 @@ chir（Cangjie High-level IR）包提供类型系统与 CHIR 声明表示，包�
 | [Intrinsic](./chir_package_api/chir_package_classes.md#class-intrinsic) | 内建函数调用表达式。 |
 | [IntrinsicBase](./chir_package_api/chir_package_classes.md) | 内建函数调用表达式的密封抽象基类。 |
 | [Invoke](./chir_package_api/chir_package_classes.md#class-invoke) | 虚方法调用（Invoke）表达式。 |
-| [InvokeBase](./chir_package_api/chir_package_classes.md) | 虚方法调用表达式的密封抽象基类。 |
-| [InvokeCallContext](./chir_package_api/chir_package_classes.md#class-invokecallcontext) | 虚方法调用上下文。 |
+| [InvokeBase](./chir_package_api/chir_package_classes.md#class-invokebase) | 虚方法调用表达式的密封抽象基类，提供 `callee`、`methodName` 等属性。 |
+| [InvokeCallContext](./chir_package_api/chir_package_classes.md#class-invokecallcontext) | 虚方法调用上下文，含 caller、method 与 overflow strategy。 |
 | [Lambda](./chir_package_api/chir_package_classes.md#class-lambda) | Lambda / 局部函数表达式，提供 `isCompileTimeValue`、`isLocalFunc`、`returnValue` 等查询接口。 |
 | [LocalVar](./chir_package_api/chir_package_classes.md#class-localvar) | CHIR 中的局部变量。 |
 | [Load](./chir_package_api/chir_package_classes.md#class-load) | 内存加载表达式。 |
