@@ -202,6 +202,7 @@ public enum OverflowStrategy <: ToString & Equatable<OverflowStrategy> {
     | Wrapping
     | Throwing
     | Saturating
+    | ...
 }
 ```
 
@@ -431,6 +432,7 @@ public enum UnaryExprKind <: ToString & Equatable<UnaryExprKind> {
     | Neg
     | Not
     | BitNot
+    | ...
 }
 ```
 
@@ -644,6 +646,7 @@ public enum BinaryExprKind <: ToString & Equatable<BinaryExprKind> {
     | NotEqual
     | And
     | Or
+    | ...
 }
 ```
 
@@ -1248,12 +1251,13 @@ public enum InsertPosition {
     | AtStart(Block)
     | Before(Expression)
     | After(Expression)
+    | ...
 }
 ```
 
 功能：CHIRBuilder 构建表达式时的**插入位置**，指定新表达式在基本块中的插入方式。
 
-### AtEnd
+### AtEnd(Block)
 
 ```cangjie
 AtEnd(Block)
@@ -1288,7 +1292,7 @@ main() {
 exprs count: 1
 ```
 
-### AtStart
+### AtStart(Block)
 
 ```cangjie
 AtStart(Block)
@@ -1323,7 +1327,7 @@ main() {
 exprs count: 1
 ```
 
-### Before
+### Before(Expression)
 
 ```cangjie
 Before(Expression)
@@ -1360,7 +1364,7 @@ main() {
 exprs count: 2
 ```
 
-### After
+### After(Expression)
 
 ```cangjie
 After(Expression)
@@ -1518,18 +1522,6 @@ public operator func ==(other: IRActionMode): Bool
 返回值：
 
 - Bool - 相等则为 `true`，否则为 `false`。
-
-### operator func !=(IRActionMode)
-
-```cangjie
-public operator func !=(other: IRActionMode): Bool
-```
-
-功能：判断两个 IRActionMode 是否不相等。
-
-返回值：
-
-- Bool - 不相等则为 `true`，否则为 `false`。
 
 ## enum TypeActionMode
 
