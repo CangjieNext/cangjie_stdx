@@ -21272,7 +21272,7 @@ Output:
 createVArrayBuilder: true
 ```
 
-## func serializePackage
+## func serializePackage(Package)
 
 ```cangjie
 public func serializePackage(pkg: Package): (CPointer<UInt8>, Int64)
@@ -21302,7 +21302,7 @@ main() {
 }
 ```
 
-## func deserializePackage
+## func deserializePackage(Package)
 
 ```cangjie
 public func deserializePackage(root: CPointer<UInt8>, length: Int64): Package
@@ -21323,7 +21323,7 @@ Exceptions:
 
 - [CHIRException](#class-chirexception) - Thrown when root is null.
 
-## func freeSerializedMemory
+## func freeSerializedMemory(Package)
 
 ```cangjie
 public func freeSerializedMemory(): Unit
