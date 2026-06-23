@@ -8298,21 +8298,23 @@ public class InvokeCallContext {
 }
 ```
 
-Function: Virtual method call context, encapsulating the caller value, virtual method signature information, and function call context.
+Function: Virtual method call context that wraps the caller value, the virtual method `Function`, and the function call context; optionally carries an overflow strategy for interface overflow operator calls.
 
-### init(Value, FuncSigInfo, FuncCallContext)
+### init(Value, FuncCallContext, Function, OverflowStrategy)
 
 ```cangjie
-public init(caller: Value, virMethodCtx: FuncSigInfo, funcCallCtx: FuncCallContext)
+public init(caller: Value, funcCallCtx: FuncCallContext, method: Function,
+    overflowStrategy!: OverflowStrategy = OverflowStrategy.NA)
 ```
 
-Function: Constructs an `InvokeCallContext`, specifying the caller, virtual method signature information, and function call context.
+Function: Constructs an `InvokeCallContext` with the caller, function call context, and virtual method.
 
 Parameters:
 
-- caller: Value - The caller value (i.e., the receiver object).
-- virMethodCtx: [FuncSigInfo](#class-funcsiginfo) - Signature information of the invoked virtual method.
+- caller: Value - Receiver for instance calls; RTTI value (e.g. result of `GetRTTIStatic`) for static virtual calls.
 - funcCallCtx: [FuncCallContext](#class-funccallcontext) - Function call context for arguments and type arguments.
+- method: [Function](#class-function) - The virtual method being invoked, analogous to `callee` in `Apply`.
+- overflowStrategy!: [OverflowStrategy](#enum-overflowstrategy) - Overflow strategy, default `NA`; when not `NA`, affects the prefix of `InvokeBase.methodName`.
 
 Example:
 
@@ -8321,10 +8323,10 @@ Example:
 import stdx.chir.*
 
 main() {
-    let ft = FuncType.get([], UnitType.get())
-    let sig = FuncSigInfo("method", ft)
+    let pkg = Package("demo", AccessLevel.Public)
+    let methodFn = pkg.addFunction(FuncType.get([], UnitType.get()), "method_m", "method", "demo")
     let fcc = FuncCallContext([], [], None)
-    let ctx = InvokeCallContext(BoolLiteral.get(false), sig, fcc)
+    let ctx = InvokeCallContext(BoolLiteral.get(false), fcc, methodFn)
     println("init_InvokeCallContext: done")
 }
 ```
@@ -8341,7 +8343,7 @@ init_InvokeCallContext: done
 public prop caller: Value
 ```
 
-Function: The caller value (i.e., the receiver object of the virtual method call).
+Function: Caller value. Receiver for instance virtual calls; RTTI value for static virtual calls.
 
 Type: Value
 
@@ -8352,10 +8354,10 @@ Example:
 import stdx.chir.*
 
 main() {
-    let ft = FuncType.get([], UnitType.get())
-    let sig = FuncSigInfo("m", ft)
+    let pkg = Package("demo", AccessLevel.Public)
+    let methodFn = pkg.addFunction(FuncType.get([], UnitType.get()), "m_m", "m", "demo")
     let fcc = FuncCallContext([], [], None)
-    let ctx = InvokeCallContext(BoolLiteral.get(false), sig, fcc)
+    let ctx = InvokeCallContext(BoolLiteral.get(false), fcc, methodFn)
     println("prop_caller: ${ctx.caller.toString().size > 0}")
 }
 ```
@@ -8366,15 +8368,15 @@ Output:
 prop_caller: true
 ```
 
-### prop virMethodCtx
+### prop method
 
 ```cangjie
-public prop virMethodCtx: FuncSigInfo
+public prop method: Function
 ```
 
-Function: Signature information of the invoked virtual method.
+Function: The virtual method being invoked, same as the `method` argument passed to the constructor.
 
-Type: [FuncSigInfo](#class-funcsiginfo)
+Type: [Function](#class-function)
 
 Example:
 
@@ -8383,18 +8385,18 @@ Example:
 import stdx.chir.*
 
 main() {
-    let ft = FuncType.get([], UnitType.get())
-    let sig = FuncSigInfo("m", ft)
+    let pkg = Package("demo", AccessLevel.Public)
+    let methodFn = pkg.addFunction(FuncType.get([], UnitType.get()), "m_m", "m", "demo")
     let fcc = FuncCallContext([], [], None)
-    let ctx = InvokeCallContext(BoolLiteral.get(false), sig, fcc)
-    println("prop_virMethodCtx: ${ctx.virMethodCtx.name}")
+    let ctx = InvokeCallContext(BoolLiteral.get(false), fcc, methodFn)
+    println("prop_method: ${ctx.method.srcCodeName}")
 }
 ```
 
 Output:
 
 ```text
-prop_virMethodCtx: m
+prop_method: m
 ```
 
 ### prop funcCallCtx
@@ -8414,10 +8416,10 @@ Example:
 import stdx.chir.*
 
 main() {
-    let ft = FuncType.get([], UnitType.get())
-    let sig = FuncSigInfo("m", ft)
+    let pkg = Package("demo", AccessLevel.Public)
+    let methodFn = pkg.addFunction(FuncType.get([], UnitType.get()), "m_m", "m", "demo")
     let fcc = FuncCallContext([], [], None)
-    let ctx = InvokeCallContext(BoolLiteral.get(false), sig, fcc)
+    let ctx = InvokeCallContext(BoolLiteral.get(false), fcc, methodFn)
     println("prop_funcCallCtx: ${ctx.funcCallCtx.args.size}")
 }
 ```
@@ -15736,10 +15738,9 @@ main() {
     let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
     f.initBody()
     let block = f.body.getOrThrow().entryBlock
-    let ft = FuncType.get([], UnitType.get())
-    let sig = FuncSigInfo("method", ft)
+    let methodFn = pkg.addFunction(FuncType.get([], UnitType.get()), "method_m", "method", "demo")
     let fcc = FuncCallContext([], [], None)
-    let ctx = InvokeCallContext(BoolLiteral.get(false), sig, fcc)
+    let ctx = InvokeCallContext(BoolLiteral.get(false), fcc, methodFn)
     let expr = Invoke.create(UnitType.get(), ctx)
     block.appendExpr(expr)
     println("static_func_create: ${block.exprs.size}")
@@ -15758,7 +15759,7 @@ static_func_create: 1
 public override func getArgs(): Array<Value>
 ```
 
-Function: Returns the actual argument list of this call expression.
+Function: Returns the argument list of this virtual method call. If `callee.isStatic()` is true, returns `operands[2..]` (skipping method and RTTI caller); otherwise returns `operands[1..]` (including receiver and arguments).
 
 Return Value:
 
@@ -15791,10 +15792,9 @@ main() {
     let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
     f.initBody()
     let block = f.body.getOrThrow().entryBlock
-    let ft = FuncType.get([], UnitType.get())
-    let sig = FuncSigInfo("method", ft)
+    let methodFn = pkg.addFunction(FuncType.get([], UnitType.get()), "method_m", "method", "demo")
     let fcc = FuncCallContext([], [], None)
-    let ctx = InvokeCallContext(BoolLiteral.get(false), sig, fcc)
+    let ctx = InvokeCallContext(BoolLiteral.get(false), fcc, methodFn)
     let expr = Invoke.create(UnitType.get(), ctx)
     block.appendExpr(expr)
     println("op_eq_Invoke: ${expr == expr}")
@@ -15844,10 +15844,9 @@ main() {
     let block = bg.entryBlock
     let normalBlock = bg.appendBlock()
     let errorBlock = bg.appendBlock()
-    let ft = FuncType.get([], UnitType.get())
-    let sig = FuncSigInfo("method", ft)
+    let methodFn = pkg.addFunction(FuncType.get([], UnitType.get()), "method_m", "method", "demo")
     let fcc = FuncCallContext([], [], None)
-    let ctx = InvokeCallContext(BoolLiteral.get(false), sig, fcc)
+    let ctx = InvokeCallContext(BoolLiteral.get(false), fcc, methodFn)
     let expr = TryInvoke.create(UnitType.get(), ctx, normalBlock, errorBlock)
     block.appendExpr(expr)
     println("prop_normalBranch: ${expr.normalBranch == normalBlock}")
@@ -15884,10 +15883,9 @@ main() {
     let block = bg.entryBlock
     let normalBlock = bg.appendBlock()
     let errorBlock = bg.appendBlock()
-    let ft = FuncType.get([], UnitType.get())
-    let sig = FuncSigInfo("method", ft)
+    let methodFn = pkg.addFunction(FuncType.get([], UnitType.get()), "method_m", "method", "demo")
     let fcc = FuncCallContext([], [], None)
-    let ctx = InvokeCallContext(BoolLiteral.get(false), sig, fcc)
+    let ctx = InvokeCallContext(BoolLiteral.get(false), fcc, methodFn)
     let expr = TryInvoke.create(UnitType.get(), ctx, normalBlock, errorBlock)
     block.appendExpr(expr)
     println("prop_errorBranch: ${expr.errorBranch == errorBlock}")
@@ -15933,10 +15931,9 @@ main() {
     let block = bg.entryBlock
     let normalBlock = bg.appendBlock()
     let errorBlock = bg.appendBlock()
-    let ft = FuncType.get([], UnitType.get())
-    let sig = FuncSigInfo("method", ft)
+    let methodFn = pkg.addFunction(FuncType.get([], UnitType.get()), "method_m", "method", "demo")
     let fcc = FuncCallContext([], [], None)
-    let ctx = InvokeCallContext(BoolLiteral.get(false), sig, fcc)
+    let ctx = InvokeCallContext(BoolLiteral.get(false), fcc, methodFn)
     let expr = TryInvoke.create(UnitType.get(), ctx, normalBlock, errorBlock)
     block.appendExpr(expr)
     println("static_func_create: ${block.exprs.size}")
@@ -15955,7 +15952,7 @@ static_func_create: 1
 public override func getArgs(): Array<Value>
 ```
 
-Function: Returns the actual argument list of this call expression.
+Function: Returns the argument list of this virtual method call (excluding trailing normal/error branch blocks). If `callee.isStatic()` is true, returns `operands[2..operands.size - 2]`; otherwise returns `operands[1..operands.size - 2]`.
 
 Return Value:
 
@@ -15991,10 +15988,9 @@ main() {
     let block = bg.entryBlock
     let normalBlock = bg.appendBlock()
     let errorBlock = bg.appendBlock()
-    let ft = FuncType.get([], UnitType.get())
-    let sig = FuncSigInfo("method", ft)
+    let methodFn = pkg.addFunction(FuncType.get([], UnitType.get()), "method_m", "method", "demo")
     let fcc = FuncCallContext([], [], None)
-    let ctx = InvokeCallContext(BoolLiteral.get(false), sig, fcc)
+    let ctx = InvokeCallContext(BoolLiteral.get(false), fcc, methodFn)
     let expr = TryInvoke.create(UnitType.get(), ctx, normalBlock, errorBlock)
     block.appendExpr(expr)
     println("op_eq_TryInvoke: ${expr == expr}")
@@ -22731,10 +22727,9 @@ main() {
     f.initBody()
     let block = f.body.getOrThrow().entryBlock
     let builder = CHIRBuilder(InsertPosition.AtEnd(block))
-    let ft = FuncType.get([], UnitType.get())
-    let sig = FuncSigInfo("method", ft)
+    let methodFn = pkg.addFunction(FuncType.get([], UnitType.get()), "method_m", "method", "demo")
     let fcc = FuncCallContext([], [], None)
-    let ctx = InvokeCallContext(BoolLiteral.get(false), sig, fcc)
+    let ctx = InvokeCallContext(BoolLiteral.get(false), fcc, methodFn)
     let expr = builder.createInvoke(UnitType.get(), ctx)
     println("createInvoke: ${expr.toString().size > 0}")
 }
@@ -23869,10 +23864,9 @@ main() {
     let normalBlock = bg.appendBlock()
     let errBlock = bg.appendBlock()
     let builder = CHIRBuilder(InsertPosition.AtEnd(entryBlock))
-    let ft = FuncType.get([], UnitType.get())
-    let sig = FuncSigInfo("method", ft)
+    let methodFn = pkg.addFunction(FuncType.get([], UnitType.get()), "method_m", "method", "demo")
     let fcc = FuncCallContext([], [], None)
-    let ctx = InvokeCallContext(BoolLiteral.get(false), sig, fcc)
+    let ctx = InvokeCallContext(BoolLiteral.get(false), fcc, methodFn)
     let expr = builder.createTryInvoke(UnitType.get(), ctx, normalBlock, errBlock)
     println("createTryInvoke: ${expr.toString().size > 0}")
 }

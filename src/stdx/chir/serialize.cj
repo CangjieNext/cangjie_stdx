@@ -1211,8 +1211,8 @@ class CHIRSerializerImpl {
             case e: InvokeBase =>
                 exprKind[Int64(exprId) - 1] = EnumPackageFormat_ExpressionElemValues(PackageFormat_ExpressionElem.ExpressionElem_INVOKEBASE)
                 let funcCallBase = serializeFuncCall(base, exprId, e)
-                let virMethodCtx = serializeFuncSigInfo(e._virMethodCtx)
-                PackageFormat_InvokeBase.createInvokeBase(fbBuilder, funcCallBase, virMethodCtx)
+                let overflowStrategy = serializeOverflowStrategy(e._overflowStrategy)
+                PackageFormat_InvokeBase.createInvokeBase(fbBuilder, funcCallBase, overflowStrategy)
             case e: Lambda =>
                 exprKind[Int64(exprId) - 1] = EnumPackageFormat_ExpressionElemValues(PackageFormat_ExpressionElem.ExpressionElem_LAMBDA)
                 let funcTy = getId(e._funcType)

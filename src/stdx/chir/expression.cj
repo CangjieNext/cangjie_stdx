@@ -1803,7 +1803,18 @@ public class TryIntrinsic <: IntrinsicBase & Equatable<TryIntrinsic> {
 }
 
 sealed abstract class InvokeBase <: FuncCall & Equatable<InvokeBase> {
-    internal let _virMethodCtx: FuncSigInfo
+    internal var _overflowStrategy: OverflowStrategy = OverflowStrategy.NA
+
+    /**
+     * Gets the `callee` property.
+     * @type { Function }
+     */
+    public prop callee: Function {
+        get() {
+            assert(!_operands.isEmpty(), "InvokeBase: method is not set")
+            return (_operands[0] as Function).getOrThrow()
+        }
+    }
 
     /**
      * Gets the `methodGenericTypeParams` property.
@@ -1811,17 +1822,21 @@ sealed abstract class InvokeBase <: FuncCall & Equatable<InvokeBase> {
      */
     public prop methodGenericTypeParams: Array<GenericType> {
         get() {
-            return _virMethodCtx._genericTypeParams.toArray()
+            return callee.genericTypeParams
         }
     }
 
     /**
-     * Gets the `methodName` property.
+     * Gets the `methodName` property, including overflow strategy prefix when set.
      * @type { String }
      */
     public prop methodName: String {
         get() {
-            return _virMethodCtx._name
+            let name = callee.srcCodeName
+            if (_overflowStrategy != OverflowStrategy.NA) {
+                return overflowStrategyPrefix(_overflowStrategy) + name
+            }
+            return name
         }
     }
 
@@ -1831,14 +1846,15 @@ sealed abstract class InvokeBase <: FuncCall & Equatable<InvokeBase> {
      */
     public prop methodType: FuncType {
         get() {
-            return _virMethodCtx._type
+            return callee.funcType
         }
     }
 
     internal init(kind: ExprKind, callContext: InvokeCallContext) {
         super(kind, callContext.funcCallCtx)
+        _overflowStrategy = callContext._overflowStrategy
         _operands.add(callContext.caller, at: 0)
-        _virMethodCtx = callContext.virMethodCtx
+        _operands.add(callContext.method, at: 0)
     }
 
     protected override func operandsToString(): String {
@@ -1846,21 +1862,13 @@ sealed abstract class InvokeBase <: FuncCall & Equatable<InvokeBase> {
         if (let Some(ty) <- objType) {
             opStr.append(ty.toString() + "->")
         }
-        opStr.append(methodName)
+        opStr.append(callee.identifier)
         opStr.append(typeVecToString("<", instantiatedTypeArgs, ">"))
-        opStr.append(": " + methodType.toString())
-        if (let temp <- baseOpsToString() && !temp.isEmpty()) {
+        let ops = _operands[1..]
+        if (let temp <- valueIdVecToString("", ops, "", hasExceptionBranch()) && !temp.isEmpty()) {
             opStr.append(", " + temp)
         }
         return opStr.toString()
-    }
-
-    internal func calleeIsStatic(): Bool {
-        assert(!operands.isEmpty(), "Invoke: caller is not set")
-        if (let Some(caller) <- (operands[0] as LocalVar)) {
-            return caller.expr._kind == ExprKind.GetRttiStatic || caller.expr._kind == ExprKind.GetRtti
-        }
-        return false
     }
 
     /**
@@ -1901,11 +1909,11 @@ public class Invoke <: InvokeBase & Equatable<Invoke> {
      * @return The `Array<Value>` result.
      */
     public override func getArgs(): Array<Value> {
-        assert(operands.size >= 1, "Invoke: args are not set")
-        if (calleeIsStatic()) {
-            return operands[1..].toArray()
+        assert(operands.size >= 2, "Invoke: args are not set")
+        if (callee.isStatic()) {
+            return operands[2..].toArray()
         } else {
-            return operands.toArray()
+            return operands[1..].toArray()
         }
     }
 
@@ -1979,11 +1987,11 @@ public class TryInvoke <: InvokeBase & Equatable<TryInvoke> {
      * @return The `Array<Value>` result.
      */
     public override func getArgs(): Array<Value> {
-        assert(operands.size >= 3, "TryInvoke: args are not set")
-        if (calleeIsStatic()) {
-            return operands[1..operands.size - 2].toArray()
+        assert(operands.size >= 4, "TryInvoke: args are not set")
+        if (callee.isStatic()) {
+            return operands[2..operands.size - 2].toArray()
         } else {
-            return operands[0..operands.size - 2].toArray()
+            return operands[1..operands.size - 2].toArray()
         }
     }
 
@@ -3967,7 +3975,8 @@ public class FuncCallContext {
 public class InvokeCallContext {
     internal let _caller: Value
     internal let _funcCallCtx: FuncCallContext
-    internal let _virMethodCtx: FuncSigInfo
+    internal let _method: Function
+    internal let _overflowStrategy: OverflowStrategy
 
     /**
      * Gets the `caller` property.
@@ -3990,24 +3999,27 @@ public class InvokeCallContext {
     }
 
     /**
-     * Gets the `virMethodCtx` property.
-     * @type { FuncSigInfo }
+     * Gets the `method` property.
+     * @type { Function }
      */
-    public prop virMethodCtx: FuncSigInfo {
+    public prop method: Function {
         get() {
-            return _virMethodCtx
+            return _method
         }
     }
 
     /**
      * Performs the public behavior of `func`.
-     * @param caller The `caller` parameter.
-     * @param virMethodCtx The `virMethodCtx` parameter.
+     * @param caller The object in Invoke, or the rtti in InvokeStatic.
      * @param funcCallCtx The `funcCallCtx` parameter.
+     * @param method The virtual method, like callee in Apply.
+     * @param overflowStrategy Overflow strategy for interface overflow operator calls.
      */
-    public init(caller: Value, virMethodCtx: FuncSigInfo, funcCallCtx: FuncCallContext) {
+    public init(caller: Value, funcCallCtx: FuncCallContext, method: Function,
+        overflowStrategy!: OverflowStrategy = OverflowStrategy.NA) {
         this._caller = caller
-        this._virMethodCtx = virMethodCtx
         this._funcCallCtx = funcCallCtx
+        this._method = method
+        this._overflowStrategy = overflowStrategy
     }
 }

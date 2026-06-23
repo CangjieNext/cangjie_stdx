@@ -974,10 +974,10 @@ class CHIRDeserializerImpl {
 
     private func convertOverflowStrategy(strategy: PackageFormat_OverflowStrategy): OverflowStrategy {
         return match (strategy) {
+            case PackageFormat_OverflowStrategy.OverflowStrategy_NA => OverflowStrategy.NA
             case PackageFormat_OverflowStrategy.OverflowStrategy_WRAPPING => OverflowStrategy.Wrapping
             case PackageFormat_OverflowStrategy.OverflowStrategy_THROWING => OverflowStrategy.Throwing
             case PackageFormat_OverflowStrategy.OverflowStrategy_SATURATING => OverflowStrategy.Saturating
-            case PackageFormat_OverflowStrategy.OverflowStrategy_NA => OverflowStrategy.NA
             case _ => throw CHIRException("Unsupported OverflowStrategy")
         }
     }
@@ -1585,21 +1585,23 @@ class CHIRDeserializerImpl {
         let base = funcCall.GetBase().getOrThrow()
         let kind = convertExprKind(base.GetKind())
         let operands = base.GetOperands()
-        let caller = getValue(operands[0])
+        assert(operands.size >= 2, "Invoke operands must include method and caller")
+        let method = getValueAs<Function>(operands[0])
+        let caller = getValue(operands[1])
         let instantiatedTypeArgs = getType(funcCall.GetInstantiatedTypeArgs())
         let objType: ?Type = if (let Some(v) <- tryGetType(funcCall.GetObjType())) { v } else { None }
-        let virMethodCtx = deserializeFuncSigInfo(exprFormat.GetVirMethodCtx().getOrThrow())
+        let overflowStrategy = convertOverflowStrategy(exprFormat.GetOverflowStrategy())
         if (kind.isTerminator()) {
-            let args = getValue(operands.slice(1, operands.size - 3))
+            let args = getValue(operands.slice(2, operands.size - 4))
             let normal = getValueAs<Block>(operands[operands.size - 2])
             let err = getValueAs<Block>(operands[operands.size - 1])
             let funcCallCtx = FuncCallContext(args, instantiatedTypeArgs, objType)
-            let invokeCallCtx = InvokeCallContext(caller, virMethodCtx, funcCallCtx)
+            let invokeCallCtx = InvokeCallContext(caller, funcCallCtx, method, overflowStrategy: overflowStrategy)
             return TryInvoke(invokeCallCtx, normal, err)
         } else {
-            let args = getValue(operands.slice(1, operands.size - 1))
+            let args = getValue(operands.slice(2, operands.size - 2))
             let funcCallCtx = FuncCallContext(args, instantiatedTypeArgs, objType)
-            let invokeCallCtx = InvokeCallContext(caller, virMethodCtx, funcCallCtx)
+            let invokeCallCtx = InvokeCallContext(caller, funcCallCtx, method, overflowStrategy: overflowStrategy)
             return Invoke(invokeCallCtx)
         }
     }
