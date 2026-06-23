@@ -202,6 +202,7 @@ public enum OverflowStrategy <: ToString & Equatable<OverflowStrategy> {
     | Wrapping
     | Throwing
     | Saturating
+    | ...
 }
 ```
 
@@ -431,6 +432,7 @@ public enum UnaryExprKind <: ToString & Equatable<UnaryExprKind> {
     | Neg
     | Not
     | BitNot
+    | ...
 }
 ```
 
@@ -644,6 +646,7 @@ public enum BinaryExprKind <: ToString & Equatable<BinaryExprKind> {
     | NotEqual
     | And
     | Or
+    | ...
 }
 ```
 
@@ -1247,6 +1250,7 @@ public enum InsertPosition {
     | AtStart(Block)
     | Before(Expression)
     | After(Expression)
+    | ...
 }
 ```
 
