@@ -21272,7 +21272,7 @@ Output:
 createVArrayBuilder: true
 ```
 
-## func serializePackage
+## serializePackage
 
 ```cangjie
 public func serializePackage(pkg: Package): (CPointer<UInt8>, Int64)
@@ -21286,7 +21286,7 @@ Parameters:
 
 Return Value:
 
-- (CPointer\<UInt8>, Int64) - Pointer to the serialized result and its byte length. The caller should call [freeSerializedMemory](#func-freeserializedmemory) to release the memory after use.
+- (CPointer\<UInt8>, Int64) - Pointer to the serialized result and its byte length. The caller should call [freeSerializedMemory](#freeserializedmemory) to release the memory after use.
 
 Example:
 
@@ -21302,7 +21302,7 @@ main() {
 }
 ```
 
-## func deserializePackage
+## deserializePackage
 
 ```cangjie
 public func deserializePackage(root: CPointer<UInt8>, length: Int64): Package
@@ -21323,7 +21323,7 @@ Exceptions:
 
 - [CHIRException](#class-chirexception) - Thrown when root is null.
 
-## func freeSerializedMemory
+## freeSerializedMemory
 
 ```cangjie
 public func freeSerializedMemory(): Unit

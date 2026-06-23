@@ -21267,7 +21267,7 @@ main() {
 createVArrayBuilder: true
 ```
 
-## func serializePackage
+## serializePackage
 
 ```cangjie
 public func serializePackage(pkg: Package): (CPointer<UInt8>, Int64)
@@ -21281,7 +21281,7 @@ public func serializePackage(pkg: Package): (CPointer<UInt8>, Int64)
 
 返回值：
 
-- (CPointer\<UInt8>, Int64) - 序列化结果的指针及字节长度。调用方应在使用完毕后调用 [freeSerializedMemory](#func-freeserializedmemory) 释放内存。
+- (CPointer\<UInt8>, Int64) - 序列化结果的指针及字节长度。调用方应在使用完毕后调用 [freeSerializedMemory](#freeserializedmemory) 释放内存。
 
 示例：
 
@@ -21297,7 +21297,7 @@ main() {
 }
 ```
 
-## func deserializePackage
+## deserializePackage
 
 ```cangjie
 public func deserializePackage(root: CPointer<UInt8>, length: Int64): Package
@@ -21318,7 +21318,7 @@ public func deserializePackage(root: CPointer<UInt8>, length: Int64): Package
 
 - [CHIRException](#class-chirexception) - 当 root 为 null 时抛出异常。
 
-## func freeSerializedMemory
+## freeSerializedMemory
 
 ```cangjie
 public func freeSerializedMemory(): Unit

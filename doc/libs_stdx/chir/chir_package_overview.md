@@ -152,9 +152,9 @@ chir（Cangjie High-level IR）包提供类型系统与 CHIR 声明表示，包�
 
 | 函数名 | 功能 |
 | --- | --- |
-| [serializePackage](./chir_package_api/chir_package_classes.md#func-serializepackage) | 将 Package 序列化为二进制数据。 |
-| [deserializePackage](./chir_package_api/chir_package_classes.md#func-deserializepackage) | 从二进制数据反序列化 Package。 |
-| [freeSerializedMemory](./chir_package_api/chir_package_classes.md#func-freeserializedmemory) | 释放序列化产生的内存。 |
+| [serializePackage](./chir_package_api/chir_package_classes.md#serializepackage) | 将 Package 序列化为二进制数据。 |
+| [deserializePackage](./chir_package_api/chir_package_classes.md#deserializepackage) | 从二进制数据反序列化 Package。 |
+| [freeSerializedMemory](./chir_package_api/chir_package_classes.md#freeserializedmemory) | 释放序列化产生的内存。 |
 
 ### 枚举
 
