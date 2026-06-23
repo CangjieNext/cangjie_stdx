@@ -355,6 +355,16 @@ internal func paramTypeIsEquivalent(paramType: Type, argType: Type): Bool {
     return meetClosureType(argType.stripAllRefs(), paramType.stripAllRefs())
 }
 
+internal func overflowStrategyPrefix(strategy: OverflowStrategy): String {
+    return match (strategy) {
+        case OverflowStrategy.NA => ""
+        case OverflowStrategy.Wrapping => "&"
+        case OverflowStrategy.Throwing => "~"
+        case OverflowStrategy.Saturating => "%"
+        case _ => throw CHIRException("Unsupported OverflowStrategy")
+    }
+}
+
 internal func updateLocalVarIdAndHashCode(v: LocalVar): Unit {
     if (v._identifier.isEmpty()) {
         let id = LOCAL_VAR_PREFIX + v.topLevelFunc.generateLocalId().toString()

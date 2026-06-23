@@ -20,7 +20,7 @@ The **chir** (Cangjie High-level IR) package provides the type system and CHIR d
 - **Type conversions** (`Box`, `StaticCast`, `CastToConcrete`, `CastToGeneric`, `UnboxToRef`, `UnboxToValue`, `NumericCast`, `TryNumericCast`);
 - **Builder** (`CHIRBuilder`) for inserting CHIR expressions into basic blocks at specified positions;
 - **Visitor** (`CHIRVisitor`) for traversing expression nodes in CHIR function bodies; **Type Visitor** (`TypeVisitor`) for traversing type nodes and their type arguments;
-- **Call contexts** (`FuncCallContext`, `InvokeCallContext`, `FuncSigInfo`);
+- **Call contexts** (`FuncCallContext`, `InvokeCallContext`, `FuncSigInfo`); `InvokeCallContext` holds the virtual method `Function` and an optional `OverflowStrategy`;
 - **Serialization** (`serializePackage`, `deserializePackage`, `freeSerializedMemory`);
 - **Overflow strategies** (`OverflowStrategy`), **operator categories** (`UnaryExprKind`, `BinaryExprKind`), **insertion positions** (`InsertPosition`), and **traversal behaviors** (`IRActionMode`, `TypeActionMode`).
 
@@ -90,8 +90,8 @@ The **chir** (Cangjie High-level IR) package provides the type system and CHIR d
 | [Intrinsic](./chir_package_api/chir_package_classes.md#class-intrinsic) | Intrinsic function call expression. |
 | [IntrinsicBase](./chir_package_api/chir_package_classes.md) | Sealed abstract base for intrinsic function call expressions. |
 | [Invoke](./chir_package_api/chir_package_classes.md#class-invoke) | Virtual method call (Invoke) expression. |
-| [InvokeBase](./chir_package_api/chir_package_classes.md) | Sealed abstract base for virtual method call expressions. |
-| [InvokeCallContext](./chir_package_api/chir_package_classes.md#class-invokecallcontext) | Virtual method call context. |
+| [InvokeBase](./chir_package_api/chir_package_classes.md#class-invokebase) | Sealed abstract base for virtual method call expressions; provides `callee`, `methodName`, etc. |
+| [InvokeCallContext](./chir_package_api/chir_package_classes.md#class-invokecallcontext) | Virtual method call context with caller, method, and overflow strategy. |
 | [Lambda](./chir_package_api/chir_package_classes.md#class-lambda) | Lambda / local function expression, with `isCompileTimeValue`, `isLocalFunc`, and `returnValue` properties. |
 | [LocalVar](./chir_package_api/chir_package_classes.md#class-localvar) | Local variable in CHIR. |
 | [Load](./chir_package_api/chir_package_classes.md#class-load) | Memory load expression. |
