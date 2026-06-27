@@ -306,7 +306,8 @@ LOG_FILE = os.path.join(LOG_DIR, "cangjie.log")
 
 IS_WINDOWS = get_platform() == "windows"
 IS_MACOS = get_platform() == "macos"
-IS_ARM = platform.uname().processor in ["arm","aarch64","arm64"]
+ARM_PROCESSORS = ["arm", "aarch64", "arm64"]
+IS_ARM = platform.machine() in ARM_PROCESSORS or platform.uname().processor in ARM_PROCESSORS
 # Wait for the version of aarch64 libcore to be ready.
 MAKE_JOBS = multiprocessing.cpu_count() + 2
 

@@ -33,7 +33,8 @@ LOG_FILE = os.path.join(LOG_DIR, "cangjie.log")
 
 IS_WINDOWS = platform.system() == "Windows"
 IS_MACOS = platform.system() == "Darwin"
-IS_ARM = platform.uname().processor in ["aarch64", "arm", "arm64"]
+ARM_PROCESSORS = ["aarch64", "arm", "arm64"]
+IS_ARM = platform.machine() in ARM_PROCESSORS or platform.uname().processor in ARM_PROCESSORS
 # Wait for the version of aarch64 libcore to be ready.
 MAKE_JOBS = multiprocessing.cpu_count() + 2
 TARGET_DICTIONARY = {
