@@ -226,8 +226,11 @@ class ClientStream {
             path = ASTERISK
         } else {
             path = canonicalPath(req.url.path)
-            if (let Some(query) <- req.url.query && !query.isEmpty()) {
-                path += "?${query}"
+            // 访问 query 触发 percent-escape 解码校验（非法时抛 UrlSyntaxException）；
+            // request-target 使用原始编码 rawQuery，避免对已解码值再次编码传输。
+            if (let Some(raw) <- req.url.rawQuery && !raw.isEmpty()) {
+                let _ = req.url.query
+                path += "?${raw}"
             }
         }
         headers.add((":authority", authority))

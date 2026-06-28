@@ -872,9 +872,12 @@ class ConnNode <: BodyProviderConn {
         // absolute-path ["?" query]
         } else {
             requestTarget.append(canonicalPath(request.url.path))
-            if (let Some(query) <- request.url.query && !query.isEmpty()) {
+            // 访问 query 触发 percent-escape 解码校验（非法时抛 UrlSyntaxException）；
+            // request-target 使用原始编码 rawQuery，避免对已解码值再次编码传输。
+            if (let Some(raw) <- request.url.rawQuery && !raw.isEmpty()) {
+                let _ = request.url.query
                 requestTarget.append("?")
-                requestTarget.append(query)
+                requestTarget.append(raw)
             }
         }
         return requestTarget
