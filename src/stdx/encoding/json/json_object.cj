@@ -15,6 +15,55 @@ package stdx.encoding.json
 
 import std.collection.*
 
+func validateJsonStringFormat(depth: Int64, indent: String): Unit {
+    if (depth < 0) {
+        throw IllegalArgumentException("Depth cannot be negative.")
+    }
+    if (!indent.isContainOnlySpaceAndTab()) {
+        throw IllegalArgumentException("Indent must be an empty string or any combination of spaces and tabs.")
+    }
+}
+
+func bufferToString(buff: WriteBuffer): String {
+    unsafe { String.fromUtf8Unchecked(buff.getAndClear()) }
+}
+
+func jsonValueToCompactString(value: JsonValue, htmlSafe!: Bool = true): String {
+    let buff = WriteBuffer(asumecapacity(value))
+    jsonWriteWithoutFormat(value, buff, htmlSafe: htmlSafe)
+    return bufferToString(buff)
+}
+
+func jsonPrimitiveToString<T>(value: T): String where T <: ToString {
+    value.toString()
+}
+
+func jsonArrayToFormattedString(
+    value: JsonArray,
+    depth: Int64,
+    bracketInNewLine: Bool,
+    indent: String,
+    htmlSafe!: Bool = true
+): String {
+    validateJsonStringFormat(depth, indent)
+    let buff = WriteBuffer(asumecapacity(value, depth))
+    jsonWriteArray(value, buff, depth, bracketInNewLine, indent, htmlSafe: htmlSafe)
+    return bufferToString(buff)
+}
+
+func jsonObjectToFormattedString(
+    value: JsonObject,
+    depth: Int64,
+    bracketInNewLine: Bool,
+    indent: String,
+    htmlSafe!: Bool = true
+): String {
+    validateJsonStringFormat(depth, indent)
+    let buff = WriteBuffer(asumecapacity(value, depth))
+    jsonWriteObject(value, buff, depth, bracketInNewLine, indent, htmlSafe: htmlSafe)
+    return bufferToString(buff)
+}
+
 /**
  * JsonNull class used for encapsulate JSON data: null.
  */
@@ -29,13 +78,6 @@ public class JsonNull <: JsonValue { // cjlint-ignore !G.ENU.01
      */
     public func kind(): JsonKind {
         return JsNull
-    }
-
-    /**
-     * Optimized: Calculate capacity for null
-     */
-    protected func calculateCapacity(): Int64 {
-        return 4  // "null"
     }
 
     /**
@@ -121,13 +163,6 @@ public class JsonBool <: JsonValue { // cjlint-ignore !G.ENU.01
     }
 
     /**
-     * Optimized: Calculate capacity for bool
-     */
-    protected func calculateCapacity(): Int64 {
-        return 5  // max of "true" and "false"
-    }
-
-    /**
      * Convert JsonBool to String.
      *
      * @return json-converted String is value string data: true or false.
@@ -135,7 +170,7 @@ public class JsonBool <: JsonValue { // cjlint-ignore !G.ENU.01
      * @since 0.17.4
      */
     public func toString(): String {
-        return value.toString()
+        return jsonPrimitiveToString(value)
     }
 
     /**
@@ -155,7 +190,7 @@ public class JsonBool <: JsonValue { // cjlint-ignore !G.ENU.01
      * @return json-converted String is value string data: true or false Without Escaping.
      */
     public func toStringWithoutEscaping(): String {
-        return value.toString()
+        return jsonPrimitiveToString(value)
     }
 
     /**
@@ -210,13 +245,6 @@ public class JsonInt <: JsonValue {
     }
 
     /**
-     * Optimized: Calculate capacity for int
-     */
-    protected func calculateCapacity(): Int64 {
-        return 22  // max length of Int64 string
-    }
-
-    /**
      * Convert JsonInt to String.
      *
      * @return json-converted String is value string data.
@@ -224,7 +252,7 @@ public class JsonInt <: JsonValue {
      * @since 0.17.4
      */
     public func toString(): String {
-        return value.toString()
+        return jsonPrimitiveToString(value)
     }
 
     /**
@@ -244,7 +272,7 @@ public class JsonInt <: JsonValue {
      * @return json-converted String is value string data.
      */
     public func toStringWithoutEscaping(): String {
-        return value.toString()
+        return jsonPrimitiveToString(value)
     }
 
     /**
@@ -311,13 +339,6 @@ public class JsonFloat <: JsonValue {
     }
 
     /**
-     * Optimized: Calculate capacity for float
-     */
-    protected func calculateCapacity(): Int64 {
-        return 200  // conservative estimate for float representation
-    }
-
-    /**
      * Convert JsonFloat to String.
      *
      * @return json-converted String is value string data.
@@ -325,7 +346,7 @@ public class JsonFloat <: JsonValue {
      * @since 0.17.4
      */
     public func toString(): String {
-        return value.toString()
+        return jsonPrimitiveToString(value)
     }
 
     /**
@@ -345,7 +366,7 @@ public class JsonFloat <: JsonValue {
      * @return json-converted String is value string data.
      */
     public func toStringWithoutEscaping(): String {
-        return value.toString()
+        return jsonPrimitiveToString(value)
     }
 
     /**
@@ -400,13 +421,6 @@ public class JsonString <: JsonValue { // cjlint-ignore !G.ENU.01
     }
 
     /**
-     * Optimized: Calculate capacity for string
-     */
-    protected func calculateCapacity(): Int64 {
-        return value.size + 2  // 2 bytes for the surrounding JSON quotes
-    }
-
-    /**
      * Convert JsonString to String.
      *
      * @return json-converted String is value string data.
@@ -416,7 +430,7 @@ public class JsonString <: JsonValue { // cjlint-ignore !G.ENU.01
     public func toString(): String {
         let buff = WriteBuffer(value.size + 2)
         jsonWriteWithoutFormat(this, buff)
-        return unsafe { String.fromUtf8Unchecked(buff.getAndClear()) }
+        return bufferToString(buff)
     }
 
     /**
@@ -429,7 +443,7 @@ public class JsonString <: JsonValue { // cjlint-ignore !G.ENU.01
     public func toJsonString(): String {
         let buff = WriteBuffer(value.size + 2)
         jsonWriteWithoutFormat(this, buff)
-        return unsafe { String.fromUtf8Unchecked(buff.getAndClear()) }
+        return bufferToString(buff)
     }
 
     /**
@@ -440,7 +454,7 @@ public class JsonString <: JsonValue { // cjlint-ignore !G.ENU.01
     public func toStringWithoutEscaping(): String {
         let buff = WriteBuffer(value.size + 2)
         jsonWriteWithoutFormat(this, buff, htmlSafe: false)
-        return unsafe { String.fromUtf8Unchecked(buff.getAndClear()) }
+        return bufferToString(buff)
     }
 
     /**
@@ -451,7 +465,7 @@ public class JsonString <: JsonValue { // cjlint-ignore !G.ENU.01
     public func toJsonStringWithoutEscaping(): String {
         let buff = WriteBuffer(value.size + 2)
         jsonWriteWithoutFormat(this, buff, htmlSafe: false)
-        return unsafe { String.fromUtf8Unchecked(buff.getAndClear()) }
+        return bufferToString(buff)
     }
 }
 
@@ -511,17 +525,6 @@ public class JsonArray <: JsonValue {
     }
 
     /**
-     * Optimized: Calculate capacity for array
-     */
-    protected func calculateCapacity(): Int64 {
-        var sum: Int64 = 2  // []
-        for (v in items) {
-            sum += v.estimateCapacity() + 1  // value + comma
-        }
-        return sum
-    }
-
-    /**
      * Convert JsonArray to Json-String.
      *
      * @return json-converted String is items string data.
@@ -568,15 +571,7 @@ public class JsonArray <: JsonValue {
      * @throws JsonException if there exists JsonValue which cannot be converted to String.
      */
     func toJsonStringBase(depth: Int64, bracketInNewLine!: Bool = false, indent!: String = "  ", htmlSafe!: Bool = true): String {
-        if (depth < 0) {
-            throw IllegalArgumentException("Depth cannot be negative.")
-        }
-        if (!indent.isContainOnlySpaceAndTab()) {
-            throw IllegalArgumentException("Indent must be an empty string or any combination of spaces and tabs.")
-        }
-        let buff = WriteBuffer(asumecapacity(this, depth))
-        jsonWriteArray(this, buff, depth, bracketInNewLine, indent, htmlSafe: htmlSafe)
-        return unsafe { String.fromUtf8Unchecked(buff.getAndClear()) }
+        return jsonArrayToFormattedString(this, depth, bracketInNewLine, indent, htmlSafe: htmlSafe)
     }
 
     /**
@@ -601,9 +596,7 @@ public class JsonArray <: JsonValue {
      * @throws JsonException if there exists JsonValue which cannot be converted to String.
      */
     public func toString(): String {
-        let buff = WriteBuffer(asumecapacity(this))
-        jsonWriteWithoutFormat(this, buff)
-        return unsafe { String.fromUtf8Unchecked(buff.getAndClear()) }
+        return jsonValueToCompactString(this)
     }
 
     /**
@@ -614,9 +607,7 @@ public class JsonArray <: JsonValue {
      * @throws JsonException if there exists JsonValue which cannot be converted to String.
      */
     public func toStringWithoutEscaping(): String {
-        let buff = WriteBuffer(asumecapacity(this))
-        jsonWriteWithoutFormat(this, buff, htmlSafe: false)
-        return unsafe { String.fromUtf8Unchecked(buff.getAndClear()) }
+        return jsonValueToCompactString(this, htmlSafe: false)
     }
 
     /**
@@ -639,7 +630,6 @@ public class JsonArray <: JsonValue {
      */
     public func add(jv: JsonValue): JsonArray {
         items.add(jv)
-        invalidateCapacity()
         return this
     }
 
@@ -729,18 +719,6 @@ public class JsonObject <: JsonValue {
     }
 
     /**
-     * Optimized: Calculate capacity for object
-     */
-    protected func calculateCapacity(): Int64 {
-        var sum: Int64 = 2  // {}
-        for ((k, v) in fields) {
-            sum += k.size + 4  // "key": ,
-            sum += v.estimateCapacity()
-        }
-        return sum
-    }
-
-    /**
      * Convert JsonObject to Json-String.
      *
      * @return json-converted String is fields string data.
@@ -787,15 +765,7 @@ public class JsonObject <: JsonValue {
      * @throws JsonException if there exists JsonValue which cannot be converted to String.
      */
     func toJsonStringBase(depth: Int64, bracketInNewLine!: Bool = false, indent!: String = "  ", htmlSafe!: Bool = true): String {
-        if (depth < 0) {
-            throw IllegalArgumentException("Depth cannot be negative.")
-        }
-        if (!indent.isContainOnlySpaceAndTab()) {
-            throw IllegalArgumentException("Indent must be an empty string or any combination of spaces and tabs.")
-        }
-        let buff = WriteBuffer(asumecapacity(this, depth))
-        jsonWriteObject(this, buff, depth, bracketInNewLine, indent, htmlSafe: htmlSafe)
-        return unsafe { String.fromUtf8Unchecked(buff.getAndClear()) }
+        return jsonObjectToFormattedString(this, depth, bracketInNewLine, indent, htmlSafe: htmlSafe)
     }
 
     /**
@@ -820,9 +790,7 @@ public class JsonObject <: JsonValue {
      * @throws JsonException if there exists JsonValue which cannot be converted to String.
      */
     public func toString(): String {
-        let buff = WriteBuffer(asumecapacity(this))
-        jsonWriteWithoutFormat(this, buff)
-        return unsafe { String.fromUtf8Unchecked(buff.getAndClear()) }
+        return jsonValueToCompactString(this)
     }
 
     /**
@@ -833,9 +801,7 @@ public class JsonObject <: JsonValue {
      * @throws JsonException if there exists JsonValue which cannot be converted to String.
      */
     public func toStringWithoutEscaping(): String {
-        let buff = WriteBuffer(asumecapacity(this))
-        jsonWriteWithoutFormat(this, buff, htmlSafe: false)
-        return unsafe { String.fromUtf8Unchecked(buff.getAndClear()) }
+        return jsonValueToCompactString(this, htmlSafe: false)
     }
 
     /**
@@ -871,7 +837,6 @@ public class JsonObject <: JsonValue {
      */
     public func put(key: String, v: JsonValue): Unit {
         fields.add(key, v)
-        invalidateCapacity()
     }
 
     /**

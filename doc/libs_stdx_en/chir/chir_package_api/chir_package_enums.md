@@ -4,7 +4,7 @@
 
 ```cangjie
 public enum AccessLevel <: ToString & Equatable<AccessLevel> {
-    Internal
+    | Internal
     | Protected
     | Public
 }
@@ -124,7 +124,7 @@ Output:
 public
 ```
 
-### operator func==(AccessLevel)
+### operator func ==(AccessLevel)
 
 ```cangjie
 public operator func ==(other: AccessLevel): Bool
@@ -159,7 +159,7 @@ op_eq_AccessLevel same: true
 op_eq_AccessLevel diff: false
 ```
 
-### operator func!=(AccessLevel)
+### operator func !=(AccessLevel)
 
 ```cangjie
 public operator func !=(other: AccessLevel): Bool
@@ -198,7 +198,7 @@ op_ne_AccessLevel same: false
 
 ```cangjie
 public enum OverflowStrategy <: ToString & Equatable<OverflowStrategy> {
-    NA
+    | NA
     | Wrapping
     | Throwing
     | Saturating
@@ -355,7 +355,7 @@ Throwing
 Saturating
 ```
 
-### operator func==(OverflowStrategy)
+### operator func ==(OverflowStrategy)
 
 ```cangjie
 public operator func ==(other: OverflowStrategy): Bool
@@ -390,7 +390,7 @@ op_eq_OverflowStrategy same: true
 op_eq_OverflowStrategy diff: false
 ```
 
-### operator func!=(OverflowStrategy)
+### operator func !=(OverflowStrategy)
 
 ```cangjie
 public operator func !=(other: OverflowStrategy): Bool
@@ -429,7 +429,7 @@ op_ne_OverflowStrategy same: false
 
 ```cangjie
 public enum UnaryExprKind <: ToString & Equatable<UnaryExprKind> {
-    Neg
+    | Neg
     | Not
     | BitNot
     | ...
@@ -553,7 +553,7 @@ Not
 BitNot
 ```
 
-### operator func==(UnaryExprKind)
+### operator func ==(UnaryExprKind)
 
 ```cangjie
 public operator func ==(other: UnaryExprKind): Bool
@@ -588,7 +588,7 @@ op_eq_UnaryExprKind same: true
 op_eq_UnaryExprKind diff: false
 ```
 
-### operator func!=(UnaryExprKind)
+### operator func !=(UnaryExprKind)
 
 ```cangjie
 public operator func !=(other: UnaryExprKind): Bool
@@ -627,7 +627,7 @@ op_ne_UnaryExprKind same: false
 
 ```cangjie
 public enum BinaryExprKind <: ToString & Equatable<BinaryExprKind> {
-    Add
+    | Add
     | Sub
     | Mul
     | Div
@@ -1172,7 +1172,7 @@ LT
 And
 ```
 
-### operator func==(BinaryExprKind)
+### operator func ==(BinaryExprKind)
 
 ```cangjie
 public operator func ==(other: BinaryExprKind): Bool
@@ -1207,7 +1207,7 @@ op_eq_BinaryExprKind same: true
 op_eq_BinaryExprKind diff: false
 ```
 
-### operator func!=(BinaryExprKind)
+### operator func !=(BinaryExprKind)
 
 ```cangjie
 public operator func !=(other: BinaryExprKind): Bool
@@ -1246,7 +1246,7 @@ op_ne_BinaryExprKind same: false
 
 ```cangjie
 public enum InsertPosition {
-    AtEnd(Block)
+    | AtEnd(Block)
     | AtStart(Block)
     | Before(Expression)
     | After(Expression)
@@ -1256,7 +1256,7 @@ public enum InsertPosition {
 
 Function: **Insertion position** when building expressions with CHIRBuilder, specifying how new expressions are inserted into a basic block.
 
-### AtEnd
+### AtEnd(Block)
 
 ```cangjie
 AtEnd(Block)
@@ -1291,7 +1291,7 @@ Output:
 exprs count: 1
 ```
 
-### AtStart
+### AtStart(Block)
 
 ```cangjie
 AtStart(Block)
@@ -1326,7 +1326,7 @@ Output:
 exprs count: 1
 ```
 
-### Before
+### Before(Expression)
 
 ```cangjie
 Before(Expression)
@@ -1363,7 +1363,7 @@ Output:
 exprs count: 2
 ```
 
-### After
+### After(Expression)
 
 ```cangjie
 After(Expression)
@@ -1403,18 +1403,24 @@ exprs count: 2
 ## enum IRActionMode
 
 ```cangjie
-public enum IRActionMode {
-    CONTINUE
-    | STOP
+public enum IRActionMode <: Equatable<IRActionMode> {
+    | Continue
+    | Stop
+    | Skip
+    | ...
 }
 ```
 
 Function: Controls the **behavior mode** of CHIRVisitor when traversing expressions, determining whether to continue traversing subsequent expressions.
 
-### CONTINUE
+Parent Types:
+
+- Equatable\<IRActionMode>
+
+### Continue
 
 ```cangjie
-CONTINUE
+Continue
 ```
 
 Function: Continue traversal; CHIRVisitor will keep visiting subsequent expressions and nested BlockGroups.
@@ -1426,10 +1432,12 @@ Example:
 import stdx.chir.*
 
 main() {
-    let mode = IRActionMode.CONTINUE
+    let mode = IRActionMode.Continue
     match (mode) {
-        case CONTINUE => println("continue")
-        case STOP => println("stop")
+        case Continue => println("continue")
+        case Stop => println("stop")
+        case Skip => println("skip")
+        case _ => println("other")
     }
 }
 ```
@@ -1440,10 +1448,10 @@ Output:
 continue
 ```
 
-### STOP
+### Stop
 
 ```cangjie
-STOP
+Stop
 ```
 
 Function: Stop traversal; CHIRVisitor will terminate the current traversal and will not visit subsequent expressions.
@@ -1455,9 +1463,214 @@ Example:
 import stdx.chir.*
 
 main() {
-    let mode = IRActionMode.STOP
+    let mode = IRActionMode.Stop
+    match (mode) {
+        case Continue => println("continue")
+        case Stop => println("stop")
+        case Skip => println("skip")
+        case _ => println("other")
+    }
+}
+```
+
+Output:
+
+```text
+stop
+```
+
+### Skip
+
+```cangjie
+Skip
+```
+
+Function: Skip nested BlockGroups of the current expression, but continue traversing subsequent expressions.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let mode = IRActionMode.Skip
+    match (mode) {
+        case Continue => println("continue")
+        case Stop => println("stop")
+        case Skip => println("skip")
+        case _ => println("other")
+    }
+}
+```
+
+Output:
+
+```text
+skip
+```
+
+### operator func ==(IRActionMode)
+
+```cangjie
+public operator func ==(rhs: IRActionMode): Bool
+```
+
+Function: Determines whether two IRActionMode values are equal.
+
+Parameters:
+
+- rhs: IRActionMode - The other IRActionMode.
+
+Return Value:
+
+- Bool - true if the two IRActionMode values are equal, false otherwise.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    println("op_eq_IRActionMode same: ${IRActionMode.Continue == IRActionMode.Continue}")
+    println("op_eq_IRActionMode diff: ${IRActionMode.Continue == IRActionMode.Stop}")
+}
+```
+
+Output:
+
+```text
+op_eq_IRActionMode same: true
+op_eq_IRActionMode diff: false
+```
+
+### operator func !=(IRActionMode)
+
+```cangjie
+public operator func !=(rhs: IRActionMode): Bool
+```
+
+Function: Opposite of `==` in the previous section: `true` when the two IRActionMode values differ, `false` when they are equal (equivalent to `!(this == rhs)`).
+
+Parameters:
+
+- rhs: IRActionMode - The other IRActionMode.
+
+Return Value:
+
+- Bool - `true` if not equal, otherwise `false`.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    println("op_ne_IRActionMode diff: ${IRActionMode.Continue != IRActionMode.Stop}")
+    println("op_ne_IRActionMode same: ${IRActionMode.Continue != IRActionMode.Continue}")
+}
+```
+
+Output:
+
+```text
+op_ne_IRActionMode diff: true
+op_ne_IRActionMode same: false
+```
+
+## enum TypeActionMode
+
+```cangjie
+public enum TypeActionMode {
+    | CONTINUE
+    | SKIP
+    | STOP
+}
+```
+
+Function: Controls the **behavior mode** of TypeVisitor when traversing types, determining whether to continue traversing subsequent types.
+
+### CONTINUE
+
+```cangjie
+CONTINUE
+```
+
+Function: Continue traversal; TypeVisitor will keep visiting subsequent types.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let mode = TypeActionMode.CONTINUE
     match (mode) {
         case CONTINUE => println("continue")
+        case SKIP => println("skip")
+        case STOP => println("stop")
+    }
+}
+```
+
+Output:
+
+```text
+continue
+```
+
+### SKIP
+
+```cangjie
+SKIP
+```
+
+Function: Skip the current type; TypeVisitor will skip this type and continue traversing subsequent types.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let mode = TypeActionMode.SKIP
+    match (mode) {
+        case CONTINUE => println("continue")
+        case SKIP => println("skip")
+        case STOP => println("stop")
+    }
+}
+```
+
+Output:
+
+```text
+skip
+```
+
+### STOP
+
+```cangjie
+STOP
+```
+
+Function: Stop traversal; TypeVisitor will terminate the current traversal process.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let mode = TypeActionMode.STOP
+    match (mode) {
+        case CONTINUE => println("continue")
+        case SKIP => println("skip")
         case STOP => println("stop")
     }
 }

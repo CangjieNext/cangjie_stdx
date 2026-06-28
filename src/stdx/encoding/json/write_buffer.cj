@@ -309,30 +309,31 @@ func jsonWriteArray(json: JsonArray, buff: WriteBuffer, depth: Int64, bracketInN
 
 // Keep container capacity estimation recomputed on each serialization. JsonArray and JsonObject expose
 // mutable backing collections, so a persistent cached capacity could become stale after external mutation.
-func estimateCapacityWithDepth(json: JsonValue, depth: Int64): Int64 {
+func asumecapacity(json: JsonValue, depth: Int64): Int64 {
     checkJsonWriteDepth(depth)
     match (json) {
         case jo: JsonObject =>
             var sum: Int64 = 2  // {}
             for ((k, v) in jo.getFields()) {
                 sum += k.size + 4  // "key": ,
-                sum += estimateCapacityWithDepth(v, depth + 1)
+                sum += asumecapacity(v, depth + 1)
             }
             return sum
         case ja: JsonArray =>
             var sum: Int64 = 2  // []
             for (v in ja.getItems()) {
-                sum += estimateCapacityWithDepth(v, depth + 1) + 1  // value + comma
+                sum += asumecapacity(v, depth + 1) + 1  // value + comma
             }
             return sum
-        case _ => return json.estimateCapacity()
+        case js: JsonString => return js.getValue().size + 2  // "value"
+        case _: JsonBool => return 5  // max of "false" and "true"
+        case _: JsonInt => return 22  // max len is 22
+        case _: JsonFloat => return 200  // not precision
+        case _: JsonNull => return 4  // "null"
+        case _ => return 0
     }
 }
 
 func asumecapacity(json: JsonValue): Int64 {
-    return estimateCapacityWithDepth(json, 0)
-}
-
-func asumecapacity(json: JsonValue, depth: Int64): Int64 {
-    return estimateCapacityWithDepth(json, depth)
+    return asumecapacity(json, 0)
 }

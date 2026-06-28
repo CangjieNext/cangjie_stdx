@@ -1,16 +1,47 @@
 # 类
 
-## class Annotation
+## class CustomAnnoInstance
 
 ```cangjie
-public class Annotation <: ToString
+public class CustomAnnoInstance <: ToString {
+    public init(classSrcCodeName: String)
+    public init(classSrcCodeName: String, loc: DebugLocation)
+}
 ```
 
-功能：表示 CHIR 中**一处**注解实例，对应源码形态 `@ClassName[k1=v1, k2=v2]`：保存注解类名及参数字段名到字符串值的映射。
+功能：表示 CHIR 中**一处**注解实例，对应源码形态 `@ClassName[v1, v2, ...]`：保存注解类名及参数值列表。
 
 父类型：
 
 - ToString
+
+### prop argValues
+
+```cangjie
+public mut prop argValues: Array<String>
+```
+
+功能：获取或设置注解参数值列表。getter 返回当前所有参数值；setter 替换整个列表。
+
+类型：Array\<String>
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let a = CustomAnnoInstance("MyAnno")
+    println(a.argValues.size)
+}
+```
+
+运行结果：
+
+```text
+0
+```
 
 ### prop classSrcCodeName
 
@@ -29,7 +60,7 @@ public prop classSrcCodeName: String
 import stdx.chir.*
 
 main() {
-    let a = Annotation("MyAnno")
+    let a = CustomAnnoInstance("MyAnno")
     println(a.classSrcCodeName)
 }
 ```
@@ -40,13 +71,41 @@ main() {
 MyAnno
 ```
 
+### prop location
+
+```cangjie
+public prop location: DebugLocation
+```
+
+功能：注解在源码中出现的位置。
+
+类型：[DebugLocation](#class-debuglocation)
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let a = CustomAnnoInstance("MyAnno")
+    println(a.location.isValid())
+}
+```
+
+运行结果：
+
+```text
+false
+```
+
 ### init(String)
 
 ```cangjie
 public init(classSrcCodeName: String)
 ```
 
-功能：构造一个 `Annotation` 对象，指定注解类名且**参数表初始为空**；可通过 [`setFieldValue`](#func-setfieldvaluestring-string) 写入键值。
+功能：构造一个 `CustomAnnoInstance` 对象，指定注解类名且**参数值列表初始为空**、位置为无效位置。
 
 参数：
 
@@ -59,7 +118,7 @@ public init(classSrcCodeName: String)
 import stdx.chir.*
 
 main() {
-    let a = Annotation("Fresh")
+    let a = CustomAnnoInstance("Fresh")
     println(a.toString())
 }
 ```
@@ -70,21 +129,18 @@ main() {
 @Fresh[]
 ```
 
-### func getFieldValue(String)
+### init(String, DebugLocation)
 
 ```cangjie
-public func getFieldValue(fieldName: String): ?String
+public init(classSrcCodeName: String, loc: DebugLocation)
 ```
 
-功能：按键名查找注解参数；若不存在则返回 `None`。
+功能：构造一个 `CustomAnnoInstance` 对象，指定注解类名和源码位置。
 
 参数：
 
-- fieldName: String - 参数字段名（与 `toString()` 中 `key=value` 的键一致）。
-
-返回值：
-
-- ?String - 有则 `Some(字符串值)`，否则 `None`。
+- classSrcCodeName: String - 源码中的注解类名（如 `MyAnno`）。
+- loc: [DebugLocation](#class-debuglocation) - 注解在源码中出现的位置。
 
 示例：
 
@@ -93,38 +149,10 @@ public func getFieldValue(fieldName: String): ?String
 import stdx.chir.*
 
 main() {
-    let a = Annotation("A")
-    println(a.classSrcCodeName)
-}
-```
-
-运行结果：
-
-```text
-A
-```
-
-### func setFieldValue(String, String)
-
-```cangjie
-public func setFieldValue(fieldName: String, value: String): Unit
-```
-
-功能：设置或覆盖某一参数字段的字符串值（构建或测试 CHIR 时使用）。
-
-参数：
-
-- fieldName: String - 参数名。
-- value: String - 参数值（字符串形式）。
-
-示例：
-
-<!-- verify -->
-```cangjie
-import stdx.chir.*
-
-main() {
-    let a = Annotation("S")
+    let pkg = Package("p", AccessLevel.Public)
+    let st = pkg.addStruct("S_m", "S")
+    let mv = st.appendInstanceMemberVar("x", IntType.getInt32())
+    let a = CustomAnnoInstance("Fresh", mv.location)
     println(a.toString())
 }
 ```
@@ -132,7 +160,7 @@ main() {
 运行结果：
 
 ```text
-@S[]
+@Fresh[]
 ```
 
 ### func toString()
@@ -141,7 +169,7 @@ main() {
 public func toString(): String
 ```
 
-功能：格式化为 `@ClassName[k1=v1, k2=v2]`，便于日志与调试。
+功能：格式化为 `@ClassName[v1, v2, ...]`，便于日志与调试。
 
 返回值：
 
@@ -154,7 +182,7 @@ public func toString(): String
 import stdx.chir.*
 
 main() {
-    let a = Annotation("T")
+    let a = CustomAnnoInstance("T")
     println(a.toString())
 }
 ```
@@ -165,12 +193,10 @@ main() {
 @T[]
 ```
 
----
-
 ## class BoolType
 
 ```cangjie
-public class BoolType <: BuiltinType & Equatable<BoolType>
+public class BoolType <: BuiltinType & Equatable<BoolType> {}
 ```
 
 功能：表示类型系统中的布尔类型。这是一个单例类型，表示 Bool 类型。
@@ -190,7 +216,7 @@ public static func get(): BoolType
 
 返回值：
 
-- BoolType - BoolType 实例。
+- [BoolType](#class-booltype) - BoolType 实例。
 
 示例：
 
@@ -210,10 +236,10 @@ main() {
 布尔类型: Bool
 ```
 
-### operator func==(BoolType)
+### operator func ==(BoolType)
 
 ```cangjie
-public operator func==(_: BoolType): Bool
+public operator func ==(_: BoolType): Bool
 ```
 
 功能：检查该 BoolType 是否与另一个 BoolType 相等。
@@ -248,7 +274,7 @@ main() {
 ## class BoxType
 
 ```cangjie
-public class BoxType <: Type & Equatable<BoxType>
+public class BoxType <: Type & Equatable<BoxType> {}
 ```
 
 功能：表示**装箱类型** `Box<T>`，对值进行装箱包装。通过缓存保证同一 `baseType` 对应唯一实例。
@@ -292,6 +318,10 @@ public static func get(baseType: Type): BoxType
 
 功能：获取或创建指定基类型的 `BoxType`。
 
+返回值：
+
+- [BoxType](#class-boxtype) - 给定基类型的 BoxType 实例。
+
 示例：
 
 <!-- verify -->
@@ -318,6 +348,10 @@ public func toString(): String
 
 功能：字符串形式，一般为 `Box<...>` 风格。
 
+返回值：
+
+- String - 装箱类型的字符串表示。
+
 示例：
 
 <!-- verify -->
@@ -336,13 +370,17 @@ main() {
 Box<UInt32>
 ```
 
-### operator func==(BoxType)
+### operator func ==(BoxType)
 
 ```cangjie
 public operator func ==(other: BoxType): Bool
 ```
 
 功能：比较两个 `BoxType` 是否相同。
+
+返回值：
+
+- Bool - 相等则为 `true`，否则为 `false`。
 
 示例：
 
@@ -364,12 +402,10 @@ main() {
 op_eq_BoxType: true
 ```
 
----
-
 ## class BuiltinType
 
 ```cangjie
-sealed abstract class BuiltinType <: Type & Equatable<BuiltinType>
+sealed abstract class BuiltinType <: Type & Equatable<BuiltinType> {}
 ```
 
 功能：内置类型（数值、Bool、Unit、指针、数组等）的公共基类；可附加 `ExtendDef`（`addExtend`），并通过 `getSuperTypesRecusively` 收集由 extend 实现的接口父类型。
@@ -427,7 +463,7 @@ public func getSuperTypesRecusively(visited!: ArrayList<(Type, Type)> = ArrayLis
 
 返回值：
 
-- Array\<ClassLikeType> - 收集到的类型序列。
+- Array\<[ClassLikeType](#class-classliketype)> - 收集到的类型序列。
 
 示例：
 
@@ -447,10 +483,10 @@ main() {
 0
 ```
 
-### operator func==(BuiltinType)
+### operator func ==(BuiltinType)
 
 ```cangjie
-public operator func==(other: BuiltinType): Bool
+public operator func ==(other: BuiltinType): Bool
 ```
 
 功能：比较两个内置类型是否表示同一类及相同类型实参。
@@ -488,7 +524,7 @@ op_eq_BuiltinType int32vsInt64: false
 ## class CPointerType
 
 ```cangjie
-public class CPointerType <: BuiltinType & Equatable<CPointerType>
+public class CPointerType <: BuiltinType & Equatable<CPointerType> {}
 ```
 
 功能：表示类型系统中的 C 指针类型。该类型表示指向 C 类型的指针，用于与 C 代码互操作。该类维护所有 C 指针类型的缓存以确保唯一性。
@@ -508,7 +544,7 @@ public prop elementType: Type
 
 返回值：
 
-- Type - 元素类型。
+- [Type](#class-type) - 元素类型。
 
 示例：
 
@@ -545,7 +581,7 @@ public static func get(elementType: Type): CPointerType
 
 返回值：
 
-- CPointerType - 给定元素类型的 CPointerType 实例。
+- [CPointerType](#class-cpointertype) - 给定元素类型的 CPointerType 实例。
 
 示例：
 
@@ -597,10 +633,10 @@ main() {
 CPointer<UInt32>
 ```
 
-### operator func==(CPointerType)
+### operator func ==(CPointerType)
 
 ```cangjie
-public operator func==(other: CPointerType): Bool
+public operator func ==(other: CPointerType): Bool
 ```
 
 功能：检查该 CPointerType 是否与另一个 CPointerType 相等。
@@ -636,7 +672,7 @@ op_eq_CPointerType: true
 ## class CStringType
 
 ```cangjie
-public class CStringType <: BuiltinType & Equatable<CStringType>
+public class CStringType <: BuiltinType & Equatable<CStringType> {}
 ```
 
 功能：表示类型系统中的 C 字符串类型。该类型表示 C 风格的空终止字符串，用于与 C 代码互操作。这是一个单例类型，表示内置的 C 字符串类型。
@@ -656,7 +692,7 @@ public static func get(): CStringType
 
 返回值：
 
-- CStringType - CStringType 实例。
+- [CStringType](#class-cstringtype) - CStringType 实例。
 
 示例：
 
@@ -676,10 +712,10 @@ main() {
 CString
 ```
 
-### operator func==(CStringType)
+### operator func ==(CStringType)
 
 ```cangjie
-public operator func==(_: CStringType): Bool
+public operator func ==(_: CStringType): Bool
 ```
 
 功能：检查该 CStringType 是否与另一个 CStringType 相等。
@@ -714,7 +750,7 @@ op_eq_CStringType: true
 ## class ClassLikeDef
 
 ```cangjie
-public class ClassLikeDef <: CustomTypeDef & Equatable<ClassLikeDef>
+public class ClassLikeDef <: CustomTypeDef & Equatable<ClassLikeDef> {}
 ```
 
 功能：**类或接口**的定义。
@@ -756,7 +792,7 @@ prop_classType: true
 ### prop isAnnotation
 
 ```cangjie
-public mut prop isAnnotation: Bool
+public prop isAnnotation: Bool
 ```
 
 功能：是否为注解类。
@@ -895,10 +931,10 @@ main() {
 fn_setSealed: true
 ```
 
-### operator func==(ClassLikeDef)
+### operator func ==(ClassLikeDef)
 
 ```cangjie
-public operator func==(other: ClassLikeDef): Bool
+public operator func ==(other: ClassLikeDef): Bool
 ```
 
 功能：比较是否同一类/接口定义。
@@ -930,12 +966,10 @@ main() {
 op_eq_ClassLikeDef: true
 ```
 
----
-
 ## class ClassLikeType
 
 ```cangjie
-public class ClassLikeType <: CustomType & Equatable<ClassLikeType>
+public class ClassLikeType <: CustomType & Equatable<ClassLikeType> {}
 ```
 
 功能：类或接口的**实例化类型**。`get(def, genericTypeParams)` 缓存唯一实例。
@@ -990,7 +1024,7 @@ public static func get(def: ClassLikeDef, genericTypeParams: Array<Type>): Class
 
 返回值：
 
-- ClassLikeType - 实例化类型。
+- [ClassLikeType](#class-classliketype) - 实例化类型。
 
 示例：
 
@@ -1012,10 +1046,10 @@ main() {
 static_get: true
 ```
 
-### operator func==(ClassLikeType)
+### operator func ==(ClassLikeType)
 
 ```cangjie
-public operator func==(other: ClassLikeType): Bool
+public operator func ==(other: ClassLikeType): Bool
 ```
 
 功能：比较是否为同一实例化类/接口类型。
@@ -1049,12 +1083,10 @@ main() {
 op_eq_ClassLikeType: true
 ```
 
----
-
 ## class CustomType
 
 ```cangjie
-sealed abstract class CustomType <: Type & Equatable<CustomType>
+sealed abstract class CustomType <: Type & Equatable<CustomType> {}
 ```
 
 功能：用户自定义类型（类/接口/结构体/枚举）实例化类型的公共基类，持有 `CustomTypeDef` 与泛型实参。
@@ -1165,6 +1197,10 @@ public func getExtendDefs(visited!: ArrayList<(Type, Type)> = ArrayList<(Type, T
 
 功能：返回 `def.extends` 中 `extendedType` 与当前类型可匹配的 extend 定义。
 
+返回值：
+
+- Array\<[ExtendDef](#class-extenddef)> - 适用的 ExtendDef 节点。
+
 示例：
 
 <!-- verify -->
@@ -1193,6 +1229,10 @@ public func getExtendImplementedInterfaceTypes(visited!: ArrayList<(Type, Type)>
 
 功能：收集适用于当前实例的 `extend` 块所实现的接口（已代入泛型）。
 
+返回值：
+
+- Array\<[ClassLikeType](#class-classliketype)> - 实例化后的接口 ClassLikeType 节点。
+
 示例：
 
 <!-- verify -->
@@ -1220,6 +1260,10 @@ public func getImplementedInterfaceTypes(visited!: ArrayList<(Type, Type)> = Arr
 ```
 
 功能：`extend` 实现的接口与定义上 `implementedInterfaceTypes` 的并集（已实例化）。
+
+返回值：
+
+- Array\<[ClassLikeType](#class-classliketype)> - 合并后的实例化接口类型列表。
 
 示例：
 
@@ -1251,7 +1295,7 @@ public func getInstantiatedMemberVarTypes(): Array<Type>
 
 返回值：
 
-- Array\<Type> - 成员实例化类型序列。
+- Array\<[Type](#class-type)> - 成员实例化类型序列。
 
 示例：
 
@@ -1288,7 +1332,7 @@ public func getMemberVarInstantiatedType(name: String): Type
 
 返回值：
 
-- Type - 成员类型。
+- [Type](#class-type) - 成员类型。
 
 异常：
 
@@ -1322,6 +1366,10 @@ public func getSuperTypesRecusively(visited!: ArrayList<(Type, Type)> = ArrayLis
 ```
 
 功能：递归收集父类与接口父类型（已实例化）。
+
+返回值：
+
+- Array\<[ClassLikeType](#class-classliketype)> - 父类与接口父类型。
 
 示例：
 
@@ -1375,10 +1423,10 @@ main() {
 fn_toString: true
 ```
 
-### operator func==(CustomType)
+### operator func ==(CustomType)
 
 ```cangjie
-public operator func==(other: CustomType): Bool
+public operator func ==(other: CustomType): Bool
 ```
 
 功能：比较种类、定义与泛型实参是否一致。
@@ -1411,12 +1459,10 @@ main() {
 op_eq_CustomType: true
 ```
 
----
-
 ## class CustomTypeDef
 
 ```cangjie
-sealed abstract class CustomTypeDef <: Base & Equatable<CustomTypeDef> & Hashable
+sealed abstract class CustomTypeDef <: Equatable<CustomTypeDef> & Hashable {}
 ```
 
 功能：类/接口/结构体/枚举/扩展的**定义**公共基类（与 `Base` 组合，含属性、CHIR 注解、调试位置等）。
@@ -1687,6 +1733,117 @@ main() {
 0
 ```
 
+### prop customAnnoInstances
+
+```cangjie
+public mut prop customAnnoInstances: Array<CustomAnnoInstance>
+```
+
+功能：注解实例列表；getter 返回当前所有实例，setter 整体替换。
+
+类型：Array\<[CustomAnnoInstance](#class-customannoinstance)>
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let c = pkg.addClass("C_m", "C", true)
+    println("${c.customAnnoInstances.size}")
+}
+```
+
+运行结果：
+
+```text
+0
+```
+
+### prop methods
+
+```cangjie
+public prop methods: Array<Function>
+```
+
+功能：此自定义类型上声明的方法列表。
+
+类型：Array\<[Function](#class-function)>
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let c = pkg.addClass("C_m", "C", true)
+    println("${c.methods.size}")
+}
+```
+
+运行结果：
+
+```text
+0
+```
+
+### prop staticVars
+
+```cangjie
+public prop staticVars: Array<GlobalVar>
+```
+
+功能：此自定义类型上声明的静态变量列表。
+
+类型：Array\<[GlobalVar](#class-globalvar)>
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let c = pkg.addClass("C_m", "C", true)
+    println("${c.staticVars.size}")
+}
+```
+
+运行结果：
+
+```text
+0
+```
+
+### func appendMethod(Function)
+
+```cangjie
+public func appendMethod(method: Function): Unit
+```
+
+功能：将方法添加到此类型定义的方法列表中。
+
+参数：
+
+- method: [Function](#class-function) - 待添加的方法。
+
+### func appendStaticVar(GlobalVar)
+
+```cangjie
+public func appendStaticVar(staticVar: GlobalVar): Unit
+```
+
+功能：将静态变量添加到此类型定义中，并自动标记为静态成员。
+
+参数：
+
+- staticVar: [GlobalVar](#class-globalvar) - 待添加的静态变量。
+
 ### func setPublic()
 
 ```cangjie
@@ -1807,6 +1964,10 @@ public func isImported(): Bool
 
 功能：是否为从其它包导入的定义。
 
+返回值：
+
+- Bool - Imported 属性已设置则为 `true`，否则为 `false`。
+
 示例：
 
 <!-- verify -->
@@ -1833,6 +1994,10 @@ public func isPublic(): Bool
 ```
 
 功能：是否带 `public` 属性。
+
+返回值：
+
+- Bool - Public 属性已设置则为 `true`，否则为 `false`。
 
 示例：
 
@@ -1861,6 +2026,10 @@ public func isPrivate(): Bool
 
 功能：是否带 `private` 属性。
 
+返回值：
+
+- Bool - Private 属性已设置则为 `true`，否则为 `false`。
+
 示例：
 
 <!-- verify -->
@@ -1887,6 +2056,10 @@ public func isInternal(): Bool
 ```
 
 功能：是否带 `internal` 属性。
+
+返回值：
+
+- Bool - Internal 属性已设置则为 `true`，否则为 `false`。
 
 示例：
 
@@ -1915,6 +2088,10 @@ public func isProtected(): Bool
 
 功能：是否带 `protected` 属性。
 
+返回值：
+
+- Bool - Protected 属性已设置则为 `true`，否则为 `false`。
+
 示例：
 
 <!-- verify -->
@@ -1941,6 +2118,10 @@ public func isAbstract(): Bool
 ```
 
 功能：是否为 `abstract`。
+
+返回值：
+
+- Bool - Abstract 属性已设置则为 `true`，否则为 `false`。
 
 示例：
 
@@ -1969,6 +2150,10 @@ public func isOpen(): Bool
 
 功能：是否可继承/实现（`virtual` 或 `abstract`）。
 
+返回值：
+
+- Bool - Virtual 或 Abstract 属性已设置则为 `true`，否则为 `false`。
+
 示例：
 
 <!-- verify -->
@@ -1995,6 +2180,10 @@ public func isSealed(): Bool
 ```
 
 功能：是否为 `sealed`。
+
+返回值：
+
+- Bool - Sealed 属性已设置则为 `true`，否则为 `false`。
 
 示例：
 
@@ -2023,6 +2212,10 @@ public func isGeneric(): Bool
 
 功能：是否为泛型定义。
 
+返回值：
+
+- Bool - Generic 属性已设置则为 `true`，否则为 `false`。
+
 示例：
 
 <!-- verify -->
@@ -2049,6 +2242,10 @@ public func isClassLike(): Bool
 ```
 
 功能：种类是否为类/接口。
+
+返回值：
+
+- Bool - 种类为 ClassLike 则为 `true`，否则为 `false`。
 
 示例：
 
@@ -2077,6 +2274,10 @@ public func isClass(): Bool
 
 功能：是否为类（非接口）。
 
+返回值：
+
+- Bool - 是类则为 `true`，否则为 `false`。
+
 示例：
 
 <!-- verify -->
@@ -2103,6 +2304,10 @@ public func isInterface(): Bool
 ```
 
 功能：是否为接口。
+
+返回值：
+
+- Bool - 是接口则为 `true`，否则为 `false`。
 
 示例：
 
@@ -2131,6 +2336,10 @@ public func isEnum(): Bool
 
 功能：是否为枚举定义。
 
+返回值：
+
+- Bool - 种类为 Enum 则为 `true`，否则为 `false`。
+
 示例：
 
 <!-- verify -->
@@ -2158,6 +2367,10 @@ public func isExtend(): Bool
 
 功能：是否为 extend 定义。
 
+返回值：
+
+- Bool - 种类为 Extend 则为 `true`，否则为 `false`。
+
 示例：
 
 <!-- verify -->
@@ -2184,6 +2397,10 @@ public func isStruct(): Bool
 ```
 
 功能：是否为结构体定义。
+
+返回值：
+
+- Bool - 种类为 Struct 则为 `true`，否则为 `false`。
 
 示例：
 
@@ -2235,13 +2452,17 @@ main() {
 fn_hashCode: true
 ```
 
-### operator func==(CustomTypeDef)
+### operator func ==(CustomTypeDef)
 
 ```cangjie
-public operator func==(other: CustomTypeDef): Bool
+public operator func ==(other: CustomTypeDef): Bool
 ```
 
 功能：按种类、标识、源码名与包名比较。
+
+返回值：
+
+- Bool - 相等则为 `true`，否则为 `false`。
 
 示例：
 
@@ -2363,7 +2584,7 @@ public func getSuperTypesRecusively(): Array<ClassLikeType>
 
 返回值：
 
-- Array\<ClassLikeType> - 收集到的父类型；**不保证顺序**。
+- Array\<[ClassLikeType](#class-classliketype)> - 收集到的父类型；**不保证顺序**。
 
 示例：
 
@@ -2384,12 +2605,10 @@ main() {
 0
 ```
 
----
-
 ## class DebugLocation
 
 ```cangjie
-public class DebugLocation <: ToString
+public class DebugLocation <: ToString {}
 ```
 
 功能：源码中的**区间位置**（起止 `Position` 与文件路径），用于调试与打印。
@@ -2555,7 +2774,7 @@ main() {
 ## class EnumCtorInfo
 
 ```cangjie
-public class EnumCtorInfo <: ToString
+public class EnumCtorInfo <: ToString {}
 ```
 
 功能：枚举的一个**构造器/变体**（名称、内部标识、函数类型、注解）。
@@ -2654,15 +2873,15 @@ main() {
 A
 ```
 
-### prop annotations
+### prop customAnnoInstances
 
 ```cangjie
-public mut prop annotations: Array<Annotation>
+public mut prop customAnnoInstances: Array<CustomAnnoInstance>
 ```
 
-功能：挂在此枚举构造器上的注解实例列表（内部由 `AnnoInfo` 存储，对外为 `Array<Annotation>`）；`set` 时整体替换。
+功能：挂在此枚举构造器上的注解实例列表；getter 返回当前所有实例，setter 整体替换。
 
-类型：Array\<[Annotation](#class-annotation)>
+类型：Array\<[CustomAnnoInstance](#class-customannoinstance)>
 
 示例：
 
@@ -2674,9 +2893,9 @@ main() {
     let pkg = Package("demo", AccessLevel.Public)
     let e = pkg.addEnum("E_m", "E", true)
     let ctor = e.appendEnumCtorInfo("A_m", "A")
-    let ann = Annotation("Marker")
-    ctor.annotations = [ann]
-    println("${ctor.annotations.size}")
+    let ann = CustomAnnoInstance("Marker")
+    ctor.customAnnoInstances = [ann]
+    println("${ctor.customAnnoInstances.size}")
 }
 ```
 
@@ -2718,12 +2937,10 @@ main() {
 A
 ```
 
----
-
 ## class EnumDef
 
 ```cangjie
-public class EnumDef <: CustomTypeDef & Equatable<EnumDef>
+public class EnumDef <: CustomTypeDef & Equatable<EnumDef> {}
 ```
 
 功能：**枚举**定义；含是否穷尽、构造器列表等。
@@ -2859,10 +3076,10 @@ main() {
 A
 ```
 
-### operator func==(EnumDef)
+### operator func ==(EnumDef)
 
 ```cangjie
-public operator func==(other: EnumDef): Bool
+public operator func ==(other: EnumDef): Bool
 ```
 
 功能：按定义标识比较是否同一枚举定义。
@@ -2894,12 +3111,10 @@ main() {
 op_eq_EnumDef: true
 ```
 
----
-
 ## class EnumType
 
 ```cangjie
-public class EnumType <: CustomType & Equatable<EnumType>
+public class EnumType <: CustomType & Equatable<EnumType> {}
 ```
 
 功能：枚举的实例化类型；`get(def, genericTypeParams)` 缓存。
@@ -2954,7 +3169,7 @@ public static func get(def: EnumDef, genericTypeParams: Array<Type>): EnumType
 
 返回值：
 
-- EnumType - 实例化枚举类型。
+- [EnumType](#class-enumtype) - 实例化枚举类型。
 
 示例：
 
@@ -2976,10 +3191,10 @@ main() {
 E
 ```
 
-### operator func==(EnumType)
+### operator func ==(EnumType)
 
 ```cangjie
-public operator func==(other: EnumType): Bool
+public operator func ==(other: EnumType): Bool
 ```
 
 功能：比较是否为同一实例化枚举类型。
@@ -3013,12 +3228,10 @@ main() {
 op_eq_EnumType: true
 ```
 
----
-
 ## class ExtendDef
 
 ```cangjie
-public class ExtendDef <: CustomTypeDef
+public class ExtendDef <: CustomTypeDef {}
 ```
 
 功能：**扩展（extend）**定义：对某类型增加实现等，带 `extendedType` 与泛型参数。
@@ -3056,12 +3269,10 @@ main() {
 Int32
 ```
 
----
-
 ## class FloatType
 
 ```cangjie
-public class FloatType <: NumericType & Equatable<FloatType>
+public class FloatType <: NumericType & Equatable<FloatType> {}
 ```
 
 功能：表示类型系统中的浮点类型。该类表示三种浮点类型：Float16、Float32 和 Float64。
@@ -3081,7 +3292,7 @@ public static func getFloat16(): FloatType
 
 返回值：
 
-- FloatType - Float16 类型。
+- [FloatType](#class-floattype) - Float16 类型。
 
 示例：
 
@@ -3111,7 +3322,7 @@ public static func getFloat32(): FloatType
 
 返回值：
 
-- FloatType - Float32 类型。
+- [FloatType](#class-floattype) - Float32 类型。
 
 示例：
 
@@ -3141,7 +3352,7 @@ public static func getFloat64(): FloatType
 
 返回值：
 
-- FloatType - Float64 类型。
+- [FloatType](#class-floattype) - Float64 类型。
 
 示例：
 
@@ -3161,10 +3372,10 @@ main() {
 Float64 类型: Float64
 ```
 
-### operator func==(FloatType)
+### operator func ==(FloatType)
 
 ```cangjie
-public operator func==(other: FloatType): Bool
+public operator func ==(other: FloatType): Bool
 ```
 
 功能：检查该 FloatType 是否与另一个 FloatType 相等。
@@ -3202,7 +3413,7 @@ Float32 和 Float64 相等: false
 ## class FuncType
 
 ```cangjie
-public class FuncType <: Type & Equatable<FuncType>
+public class FuncType <: Type & Equatable<FuncType> {}
 ```
 
 功能：函数类型（参数类型列表 + 返回类型），可选可变参数与 C 函数标记；按签名缓存。
@@ -3345,7 +3556,7 @@ public static func get(paramTypes: Array<Type>, retType: Type, varArg!: Bool = f
 
 返回值：
 
-- FuncType - 函数类型实例。
+- [FuncType](#class-functype) - 函数类型实例。
 
 示例：
 
@@ -3397,10 +3608,10 @@ main() {
 (UInt32) -> Unit
 ```
 
-### operator func==(FuncType)
+### operator func ==(FuncType)
 
 ```cangjie
-public operator func==(other: FuncType): Bool
+public operator func ==(other: FuncType): Bool
 ```
 
 功能：比较签名、`varArg`、`cFunc` 是否一致。
@@ -3433,12 +3644,10 @@ main() {
 op_eq_FuncType: true
 ```
 
----
-
 ## class GenericType
 
 ```cangjie
-public class GenericType <: Type & Equatable<GenericType>
+public class GenericType <: Type & Equatable<GenericType> {}
 ```
 
 功能：泛型**形参**（如 `T`），可设置上界 `upperBounds`。按内部 `identifier` 缓存。
@@ -3519,7 +3728,7 @@ public static func get(identifier: String, srcCodeName: String): GenericType
 
 返回值：
 
-- GenericType - 泛型形参类型。
+- [GenericType](#class-generictype) - 泛型形参类型。
 
 示例：
 
@@ -3569,10 +3778,10 @@ main() {
 fn_toString: true
 ```
 
-### operator func==(GenericType)
+### operator func ==(GenericType)
 
 ```cangjie
-public operator func==(other: GenericType): Bool
+public operator func ==(other: GenericType): Bool
 ```
 
 功能：比较是否为同一泛型形参节点。
@@ -3604,12 +3813,10 @@ main() {
 op_eq_GenericType: true
 ```
 
----
-
 ## class IntType
 
 ```cangjie
-public class IntType <: NumericType & Equatable<IntType>
+public class IntType <: NumericType & Equatable<IntType> {}
 ```
 
 功能：表示类型系统中的整数类型。该类表示各种大小的有符号和无符号整数类型。
@@ -3629,7 +3836,7 @@ public static func getInt16(): IntType
 
 返回值：
 
-- IntType - Int16 类型。
+- [IntType](#class-inttype) - Int16 类型。
 
 示例：
 
@@ -3659,7 +3866,7 @@ public static func getInt32(): IntType
 
 返回值：
 
-- IntType - Int32 类型。
+- [IntType](#class-inttype) - Int32 类型。
 
 示例：
 
@@ -3689,7 +3896,7 @@ public static func getInt64(): IntType
 
 返回值：
 
-- IntType - Int64 类型。
+- [IntType](#class-inttype) - Int64 类型。
 
 示例：
 
@@ -3719,7 +3926,7 @@ public static func getInt8(): IntType
 
 返回值：
 
-- IntType - Int8 类型。
+- [IntType](#class-inttype) - Int8 类型。
 
 示例：
 
@@ -3749,7 +3956,7 @@ public static func getIntNative(): IntType
 
 返回值：
 
-- IntType - IntNative 类型。
+- [IntType](#class-inttype) - IntNative 类型。
 
 示例：
 
@@ -3779,7 +3986,7 @@ public static func getUInt16(): IntType
 
 返回值：
 
-- IntType - UInt16 类型。
+- [IntType](#class-inttype) - UInt16 类型。
 
 示例：
 
@@ -3809,7 +4016,7 @@ public static func getUInt32(): IntType
 
 返回值：
 
-- IntType - UInt32 类型。
+- [IntType](#class-inttype) - UInt32 类型。
 
 示例：
 
@@ -3839,7 +4046,7 @@ public static func getUInt64(): IntType
 
 返回值：
 
-- IntType - UInt64 类型。
+- [IntType](#class-inttype) - UInt64 类型。
 
 示例：
 
@@ -3869,7 +4076,7 @@ public static func getUInt8(): IntType
 
 返回值：
 
-- IntType - UInt8 类型。
+- [IntType](#class-inttype) - UInt8 类型。
 
 示例：
 
@@ -3899,7 +4106,7 @@ public static func getUIntNative(): IntType
 
 返回值：
 
-- IntType - UIntNative 类型。
+- [IntType](#class-inttype) - UIntNative 类型。
 
 示例：
 
@@ -3919,10 +4126,10 @@ main() {
 UIntNative 类型: UIntNative
 ```
 
-### operator func==(IntType)
+### operator func ==(IntType)
 
 ```cangjie
-public operator func==(other: IntType): Bool
+public operator func ==(other: IntType): Bool
 ```
 
 功能：检查该 IntType 是否与另一个 IntType 相等。
@@ -3993,7 +4200,7 @@ UInt32 是有符号的: false
 ## class MemberVar
 
 ```cangjie
-public class MemberVar <: ToString
+public class MemberVar <: ToString {}
 ```
 
 功能：描述自定义类型上的**实例成员变量**（名称、类型、调试位置、注解与访问修饰等）。
@@ -4092,15 +4299,15 @@ main() {
 false
 ```
 
-### prop annotations
+### prop customAnnoInstances
 
 ```cangjie
-public mut prop annotations: Array<Annotation>
+public mut prop customAnnoInstances: Array<CustomAnnoInstance>
 ```
 
-功能：成员上的注解实例列表（内部由 `AnnoInfo` 存储，对外为 `Array<Annotation>`）；`set` 时整体替换。
+功能：成员上的注解实例列表；getter 返回当前所有实例，setter 整体替换。
 
-类型：Array\<[Annotation](#class-annotation)>
+类型：Array\<[CustomAnnoInstance](#class-customannoinstance)>
 
 示例：
 
@@ -4112,7 +4319,7 @@ main() {
     let pkg = Package("p", AccessLevel.Public)
     let st = pkg.addStruct("S_m", "S")
     let mv = st.appendInstanceMemberVar("x", IntType.getInt32())
-    println("${mv.annotations.size}")
+    println("${mv.customAnnoInstances.size}")
 }
 ```
 
@@ -4305,6 +4512,10 @@ public func isReadOnly(): Bool
 
 功能：是否为只读成员。
 
+返回值：
+
+- Bool - READONLY 属性已设置则为 `true`，否则为 `false`。
+
 示例：
 
 <!-- verify -->
@@ -4332,6 +4543,10 @@ public func isInternal(): Bool
 ```
 
 功能：是否为 `internal`。
+
+返回值：
+
+- Bool - INTERNAL 属性已设置则为 `true`，否则为 `false`。
 
 示例：
 
@@ -4361,6 +4576,10 @@ public func isPublic(): Bool
 
 功能：是否为 `public`。
 
+返回值：
+
+- Bool - PUBLIC 属性已设置则为 `true`，否则为 `false`。
+
 示例：
 
 <!-- verify -->
@@ -4389,6 +4608,10 @@ public func isPrivate(): Bool
 
 功能：是否为 `private`。
 
+返回值：
+
+- Bool - PRIVATE 属性已设置则为 `true`，否则为 `false`。
+
 示例：
 
 <!-- verify -->
@@ -4416,6 +4639,10 @@ public func isProtected(): Bool
 ```
 
 功能：是否为 `protected`。
+
+返回值：
+
+- Bool - PROTECTED 属性已设置则为 `true`，否则为 `false`。
 
 示例：
 
@@ -4500,7 +4727,7 @@ main() {
 ## class NothingType
 
 ```cangjie
-public class NothingType <: BuiltinType & Equatable<NothingType>
+public class NothingType <: BuiltinType & Equatable<NothingType> {}
 ```
 
 功能：表示类型系统中的 Nothing 类型（底部类型）。该类型用于表示永远不会返回的表达式。
@@ -4520,7 +4747,7 @@ public static func get(): NothingType
 
 返回值：
 
-- NothingType - NothingType 实例。
+- [NothingType](#class-nothingtype) - NothingType 实例。
 
 示例：
 
@@ -4540,10 +4767,10 @@ main() {
 Nothing 类型: Nothing
 ```
 
-### operator func==(NothingType)
+### operator func ==(NothingType)
 
 ```cangjie
-public operator func==(_: NothingType): Bool
+public operator func ==(_: NothingType): Bool
 ```
 
 功能：检查该 NothingType 是否与另一个 NothingType 相等。
@@ -4578,7 +4805,7 @@ main() {
 ## class NumericType
 
 ```cangjie
-sealed abstract class NumericType <: BuiltinType & Equatable<NumericType>
+sealed abstract class NumericType <: BuiltinType & Equatable<NumericType> {}
 ```
 
 功能：数值类型的抽象基类。该类表示数值类型，包括整数类型和浮点类型。
@@ -4588,10 +4815,10 @@ sealed abstract class NumericType <: BuiltinType & Equatable<NumericType>
 - [BuiltinType](#class-builtintype)
 - Equatable\<[NumericType](#class-numerictype)>
 
-### operator func==(NumericType)
+### operator func ==(NumericType)
 
 ```cangjie
-public operator func==(other: NumericType): Bool
+public operator func ==(other: NumericType): Bool
 ```
 
 功能：检查该数值类型是否与另一个数值类型相等。
@@ -4629,7 +4856,9 @@ Int32 和 Float32 相等: false
 ## class Package
 
 ```cangjie
-public class Package <: ToString
+public class Package <: ToString {
+    public init(name: String, accessLevel: AccessLevel)
+}
 ```
 
 功能：表示一个 **CHIR 包**：名称、访问级别、导入与本包内的类型定义集合。
@@ -4773,6 +5002,64 @@ public prop extendDefs: Array<ExtendDef>
 功能：本包内定义的 extend。
 
 类型：Array\<[ExtendDef](#class-extenddef)>
+
+### prop globalVars
+
+```cangjie
+public prop globalVars: Array<GlobalVar>
+```
+
+功能：包中定义的全局变量列表。
+
+类型：Array\<[GlobalVar](#class-globalvar)>
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    println("${pkg.globalVars.size}")
+}
+```
+
+运行结果：
+
+```text
+0
+```
+
+### prop functions
+
+```cangjie
+public prop functions: Array<Function>
+```
+
+功能：包中定义的函数列表。
+
+类型：Array\<[Function](#class-function)>
+
+### prop allCustomTypeDefs
+
+```cangjie
+public prop allCustomTypeDefs: Array<CustomTypeDef>
+```
+
+功能：包中所有自定义类型定义（包括导入和本地定义的类、枚举、扩展、结构体）。
+
+类型：Array\<[CustomTypeDef](#class-customtypedef)>
+
+### prop packageInitFunc
+
+```cangjie
+public prop packageInitFunc: ?Function
+```
+
+功能：包初始化函数；未设置时为 None。
+
+类型：?[Function](#class-function)
 
 ### init(String, AccessLevel)
 
@@ -5069,6 +5356,86 @@ main() {
 Int32
 ```
 
+### func addFunction(FuncType, String, String, String)
+
+```cangjie
+public func addFunction(ty: FuncType, identifier: String, srcCodeName: String, packageName: String): Function
+```
+
+功能：向此包添加函数定义，返回创建的 Function（参数从 ty 自动填充）。
+
+参数：
+
+- ty: FuncType - 函数类型。
+- identifier: String - 内部标识。
+- srcCodeName: String - 源码名称。
+- packageName: String - 所属包名。
+
+返回值：
+
+- [Function](#class-function) - 新创建的函数定义。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    println("${pkg.functions.size}")
+    println(f.srcCodeName)
+}
+```
+
+运行结果：
+
+```text
+1
+f
+```
+
+### func addGlobalVar(Type, String, String, String)
+
+```cangjie
+public func addGlobalVar(ty: Type, identifier: String, srcCodeName: String, packageName: String): GlobalVar
+```
+
+功能：向此包添加全局变量定义，返回创建的 GlobalVar。
+
+参数：
+
+- ty: Type - 变量类型。
+- identifier: String - 内部标识。
+- srcCodeName: String - 源码名称。
+- packageName: String - 所属包名。
+
+返回值：
+
+- [GlobalVar](#class-globalvar) - 新创建的全局变量定义。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let gv = pkg.addGlobalVar(IntType.getInt32(), "gv_m", "gv", "demo")
+    println("${pkg.globalVars.size}")
+    println(gv.srcCodeName)
+}
+```
+
+运行结果：
+
+```text
+1
+gv
+```
+
 ### func getSpecifiedClassDef(String, String)
 
 ```cangjie
@@ -5079,7 +5446,7 @@ public func getSpecifiedClassDef(packageName: String, srcCodeName: String): ?Cla
 
 返回值：
 
-- ?ClassLikeDef - 命中则 `Some`，否则 `None`。
+- ?[ClassLikeDef](#class-classlikedef) - 命中则 `Some`，否则 `None`。
 
 示例：
 
@@ -5111,7 +5478,7 @@ public func getSpecifiedStructDef(packageName: String, srcCodeName: String): ?St
 
 返回值：
 
-- ?StructDef - 可选结果。
+- ?[StructDef](#class-structdef) - 可选结果。
 
 示例：
 
@@ -5143,7 +5510,7 @@ public func getSpecifiedEnumDef(packageName: String, srcCodeName: String): ?Enum
 
 返回值：
 
-- ?EnumDef - 可选结果。
+- ?[EnumDef](#class-enumdef) - 可选结果。
 
 示例：
 
@@ -5163,6 +5530,42 @@ main() {
 
 ```text
 fn_getSpecifiedEnumDef: true
+```
+
+### func getSpecifiedFunction(String)
+
+```cangjie
+public func getSpecifiedFunction(mangledName: String): ?Function
+```
+
+功能：按混淆名查找函数定义。
+
+参数：
+
+- mangledName: String - 函数的混淆名（不含全局前缀）。
+
+返回值：
+
+- ?[Function](#class-function) - 找到则 Some，否则 None。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let _ = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    let r = pkg.getSpecifiedFunction("f_m")
+    println("fn_getSpecifiedFunction: ${r.isSome()}")
+}
+```
+
+运行结果：
+
+```text
+fn_getSpecifiedFunction: true
 ```
 
 ### func toString()
@@ -5227,12 +5630,10 @@ packageAccessLevel: public
 }
 ```
 
----
-
 ## class RawArrayType
 
 ```cangjie
-public class RawArrayType <: BuiltinType & Equatable<RawArrayType>
+public class RawArrayType <: BuiltinType & Equatable<RawArrayType> {}
 ```
 
 功能：**原始数组**类型，带元素类型与维度数 `dims`。使用缓存按 `(elementType, dims)` 唯一化。
@@ -5306,6 +5707,10 @@ public static func get(elementType: Type, dims: UInt32): RawArrayType
 
 功能：获取或创建原始数组类型。
 
+返回值：
+
+- [RawArrayType](#class-rawarraytype) - RawArrayType 实例。
+
 示例：
 
 <!-- verify -->
@@ -5354,10 +5759,10 @@ main() {
 RawArray<RawArray<Int32>>
 ```
 
-### operator func==(RawArrayType)
+### operator func ==(RawArrayType)
 
 ```cangjie
-public operator func==(other: RawArrayType): Bool
+public operator func ==(other: RawArrayType): Bool
 ```
 
 功能：比较元素类型与维数是否相同。
@@ -5389,12 +5794,10 @@ main() {
 op_eq_RawArrayType: true
 ```
 
----
-
 ## class RefType
 
 ```cangjie
-public class RefType <: Type & Equatable<RefType>
+public class RefType <: Type & Equatable<RefType> {}
 ```
 
 功能：表示类型系统中的引用类型。该类型包装另一个类型以表示对该类型的引用。该类维护所有引用类型的缓存以确保唯一性。
@@ -5414,7 +5817,7 @@ public prop baseType: Type
 
 返回值：
 
-- Type - 基类型。
+- [Type](#class-type) - 基类型。
 
 示例：
 
@@ -5451,7 +5854,7 @@ public static func get(baseType: Type): RefType
 
 返回值：
 
-- RefType - 给定基类型的 RefType 实例。
+- [RefType](#class-reftype) - 给定基类型的 RefType 实例。
 
 示例：
 
@@ -5502,10 +5905,10 @@ main() {
 UInt32&
 ```
 
-### operator func==(RefType)
+### operator func ==(RefType)
 
 ```cangjie
-public operator func==(other: RefType): Bool
+public operator func ==(other: RefType): Bool
 ```
 
 功能：检查该 RefType 是否与另一个 RefType 相等。
@@ -5541,7 +5944,7 @@ op_eq_RefType: true
 ## class RuneType
 
 ```cangjie
-public class RuneType <: BuiltinType & Equatable<RuneType>
+public class RuneType <: BuiltinType & Equatable<RuneType> {}
 ```
 
 功能：表示类型系统中的 Rune 类型。该类型表示字符类型。
@@ -5561,7 +5964,7 @@ public static func get(): RuneType
 
 返回值：
 
-- RuneType - RuneType 实例。
+- [RuneType](#class-runetype) - RuneType 实例。
 
 示例：
 
@@ -5581,10 +5984,10 @@ main() {
 Rune 类型: Rune
 ```
 
-### operator func==(RuneType)
+### operator func ==(RuneType)
 
 ```cangjie
-public operator func==(_: RuneType): Bool
+public operator func ==(_: RuneType): Bool
 ```
 
 功能：检查该 RuneType 是否与另一个 RuneType 相等。
@@ -5619,7 +6022,7 @@ main() {
 ## class StructDef
 
 ```cangjie
-public class StructDef <: CustomTypeDef & Equatable<StructDef>
+public class StructDef <: CustomTypeDef & Equatable<StructDef> {}
 ```
 
 功能：**结构体**定义；`isCStruct` 表示 C 互操作结构体。
@@ -5688,10 +6091,10 @@ main() {
 mut_prop_isCStruct: true
 ```
 
-### operator func==(StructDef)
+### operator func ==(StructDef)
 
 ```cangjie
-public operator func==(other: StructDef): Bool
+public operator func ==(other: StructDef): Bool
 ```
 
 功能：比较是否同一结构体定义。
@@ -5723,12 +6126,10 @@ main() {
 op_eq_StructDef: true
 ```
 
----
-
 ## class StructType
 
 ```cangjie
-public class StructType <: CustomType & Equatable<StructType>
+public class StructType <: CustomType & Equatable<StructType> {}
 ```
 
 功能：结构体的实例化类型；`get(def, genericTypeParams)` 缓存。
@@ -5783,7 +6184,7 @@ public static func get(def: StructDef, genericTypeParams: Array<Type>): StructTy
 
 返回值：
 
-- StructType - 实例化结构体类型。
+- [StructType](#class-structtype) - 实例化结构体类型。
 
 示例：
 
@@ -5805,10 +6206,10 @@ main() {
 S
 ```
 
-### operator func==(StructType)
+### operator func ==(StructType)
 
 ```cangjie
-public operator func==(other: StructType): Bool
+public operator func ==(other: StructType): Bool
 ```
 
 功能：比较是否为同一实例化结构体类型。
@@ -5842,12 +6243,10 @@ main() {
 op_eq_StructType: true
 ```
 
----
-
 ## class ThisType
 
 ```cangjie
-public class ThisType <: Type & Equatable<ThisType>
+public class ThisType <: Type & Equatable<ThisType> {}
 ```
 
 功能：类/结构体体内的 **`This`** 类型，单例。
@@ -5867,7 +6266,7 @@ public static func get(): ThisType
 
 返回值：
 
-- ThisType - 单例。
+- [ThisType](#class-thistype) - 单例。
 
 示例：
 
@@ -5886,10 +6285,10 @@ main() {
 static_get: true
 ```
 
-### operator func==(ThisType)
+### operator func ==(ThisType)
 
 ```cangjie
-public operator func==(_: ThisType): Bool
+public operator func ==(_: ThisType): Bool
 ```
 
 功能：与另一 `ThisType` 比较（单例恒等）。
@@ -5921,12 +6320,10 @@ main() {
 op_eq_ThisType: true
 ```
 
----
-
 ## class TupleType
 
 ```cangjie
-public class TupleType <: Type & Equatable<TupleType>
+public class TupleType <: Type & Equatable<TupleType> {}
 ```
 
 功能：元组类型；按元素类型序列签名缓存。
@@ -5979,7 +6376,7 @@ public static func get(elementTypes: Array<Type>): TupleType
 
 返回值：
 
-- TupleType - 元组类型实例。
+- [TupleType](#class-tupletype) - 元组类型实例。
 
 示例：
 
@@ -6029,10 +6426,10 @@ main() {
 Tuple(UInt32)
 ```
 
-### operator func==(TupleType)
+### operator func ==(TupleType)
 
 ```cangjie
-public operator func==(other: TupleType): Bool
+public operator func ==(other: TupleType): Bool
 ```
 
 功能：按元素类型序列比较是否相同。
@@ -6065,12 +6462,10 @@ main() {
 op_eq_TupleType: true
 ```
 
----
-
 ## class Type
 
 ```cangjie
-sealed abstract class Type <: ToString & Hashable & Equatable<Type>
+sealed abstract class Type <: ToString & Hashable & Equatable<Type> {}
 ```
 
 功能：类型系统中所有类型的抽象基类。该类提供了类型的基础功能，包括相等性比较、哈希计算和字符串转换。
@@ -6101,7 +6496,7 @@ public prop typeArgs: Array<Type>
 
 返回值：
 
-- Array\<Type> - 类型参数数组。
+- Array\<[Type](#class-type)> - 类型参数数组。
 
 示例：
 
@@ -6209,6 +6604,18 @@ main() {
 BoolType 是布尔类型: true
 Int32 是布尔类型: false
 ```
+
+### func isBuiltinType()
+
+```cangjie
+public func isBuiltinType(): Bool
+```
+
+功能：是否为内建类型（Int、Float、Bool、Rune、Unit、Nothing、RawArray、VArray、CPointer、CString 等）。
+
+返回值：
+
+- Bool - 为内建类型时返回 true，否则返回 false。
 
 ### func isFloatType()
 
@@ -6543,10 +6950,366 @@ Int32 是无符号整数: false
 UInt32 是无符号整数: true
 ```
 
-### operator func==(Type)
+### func isAnyTypeInStd()
 
 ```cangjie
-public open operator func==(other: Type): Bool
+public func isAnyTypeInStd(): Bool
+```
+
+功能：是否为 std 包中的 Any 类型。
+
+返回值：
+
+- Bool - 是则为 `true`，否则为 `false`。
+
+### func isBoxType()
+
+```cangjie
+public func isBoxType(): Bool
+```
+
+功能：是否为 BoxType。
+
+返回值：
+
+- Bool - 是则为 `true`，否则为 `false`。
+
+### func isBoxRefTypeOf(Type)
+
+```cangjie
+public func isBoxRefTypeOf(other: Type): Bool
+```
+
+功能：是否为 other 的 Box 引用类型。
+
+参数：
+
+- other: Type - 待比较的类型。
+
+返回值：
+
+- Bool - 是 other 的 Box 引用类型则为 `true`，否则为 `false`。
+
+### func isCFuncType()
+
+```cangjie
+public func isCFuncType(): Bool
+```
+
+功能：是否为 C 函数类型。
+
+返回值：
+
+- Bool - 是则为 `true`，否则为 `false`。
+
+### func isCPointerType()
+
+```cangjie
+public func isCPointerType(): Bool
+```
+
+功能：是否为 CPointer 类型。
+
+返回值：
+
+- Bool - 是则为 `true`，否则为 `false`。
+
+### func isCStringType()
+
+```cangjie
+public func isCStringType(): Bool
+```
+
+功能：是否为 CString 类型。
+
+返回值：
+
+- Bool - 是则为 `true`，否则为 `false`。
+
+### func isCTypeInStd()
+
+```cangjie
+public func isCTypeInStd(): Bool
+```
+
+功能：是否为 std 包中的 C 类型。
+
+返回值：
+
+- Bool - 是则为 `true`，否则为 `false`。
+
+### func isClassLikeType()
+
+```cangjie
+public func isClassLikeType(): Bool
+```
+
+功能：是否为 ClassLikeType。
+
+返回值：
+
+- Bool - 是则为 `true`，否则为 `false`。
+
+### func isClosureType()
+
+```cangjie
+public func isClosureType(): Bool
+```
+
+功能：是否为闭包类型。
+
+返回值：
+
+- Bool - 是则为 `true`，否则为 `false`。
+
+### func isClosureBaseType()
+
+```cangjie
+public func isClosureBaseType(): Bool
+```
+
+功能：是否为闭包基类型。
+
+返回值：
+
+- Bool - 是则为 `true`，否则为 `false`。
+
+### func isClosureGenericBaseType()
+
+```cangjie
+public func isClosureGenericBaseType(): Bool
+```
+
+功能：是否为闭包泛型基类型。
+
+返回值：
+
+- Bool - 是则为 `true`，否则为 `false`。
+
+### func isClosureInstBaseType()
+
+```cangjie
+public func isClosureInstBaseType(): Bool
+```
+
+功能：是否为闭包实例化基类型。
+
+返回值：
+
+- Bool - 是则为 `true`，否则为 `false`。
+
+### func isCustomType()
+
+```cangjie
+public func isCustomType(): Bool
+```
+
+功能：是否为 CustomType。
+
+返回值：
+
+- Bool - 是则为 `true`，否则为 `false`。
+
+### func isEnumType()
+
+```cangjie
+public func isEnumType(): Bool
+```
+
+功能：是否为 EnumType。
+
+返回值：
+
+- Bool - 是则为 `true`，否则为 `false`。
+
+### func isFuncType()
+
+```cangjie
+public func isFuncType(): Bool
+```
+
+功能：是否为 FuncType。
+
+返回值：
+
+- Bool - 是则为 `true`，否则为 `false`。
+
+### func isGenericType()
+
+```cangjie
+public func isGenericType(): Bool
+```
+
+功能：是否为 GenericType。
+
+返回值：
+
+- Bool - 是则为 `true`，否则为 `false`。
+
+### func isGenericRelated()
+
+```cangjie
+public func isGenericRelated(): Bool
+```
+
+功能：是否与泛型相关。
+
+返回值：
+
+- Bool - 是则为 `true`，否则为 `false`。
+
+### func isReferenceType()
+
+```cangjie
+public func isReferenceType(): Bool
+```
+
+功能：是否为引用类型（ClassLikeType、RawArrayType、BoxType 或 ThisType）。
+
+返回值：
+
+- Bool - 是则为 `true`，否则为 `false`。
+
+### func isRawArrayType()
+
+```cangjie
+public func isRawArrayType(): Bool
+```
+
+功能：是否为 RawArray 类型。
+
+返回值：
+
+- Bool - 是则为 `true`，否则为 `false`。
+
+### func isStructType()
+
+```cangjie
+public func isStructType(): Bool
+```
+
+功能：是否为 StructType。
+
+返回值：
+
+- Bool - 是则为 `true`，否则为 `false`。
+
+### func isThisType()
+
+```cangjie
+public func isThisType(): Bool
+```
+
+功能：是否为 ThisType。
+
+返回值：
+
+- Bool - 是则为 `true`，否则为 `false`。
+
+### func isTupleType()
+
+```cangjie
+public func isTupleType(): Bool
+```
+
+功能：是否为 TupleType。
+
+返回值：
+
+- Bool - 是则为 `true`，否则为 `false`。
+
+### func isValueType()
+
+```cangjie
+public func isValueType(): Bool
+```
+
+功能：是否为值类型。
+
+返回值：
+
+- Bool - 是则为 `true`，否则为 `false`。
+
+### func isVArrayType()
+
+```cangjie
+public func isVArrayType(): Bool
+```
+
+功能：是否为 VArrayType。
+
+返回值：
+
+- Bool - 是则为 `true`，否则为 `false`。
+
+### func satisfyCType()
+
+```cangjie
+public func satisfyCType(): Bool
+```
+
+功能：是否满足 C 类型约束。
+
+返回值：
+
+- Bool - 满足则为 `true`，否则为 `false`。
+
+### func isEqualOrSubTypeOf(Type, ArrayList<(Type, Type)>)
+
+```cangjie
+public func isEqualOrSubTypeOf(parent: Type, visited!: ArrayList<(Type, Type)> = ArrayList<(Type, Type)>()): Bool
+```
+
+功能：判断是否为 parent 的相等或子类型。
+
+参数：
+
+- parent: Type - 待比较的父类型。
+- visited!: ArrayList<(Type, Type)> - 环检测用访问表；一般可传默认空表。
+
+返回值：
+
+- Bool - 是 parent 的相等或子类型则为 `true`，否则为 `false`。
+
+### func isEqualOrInstantiatedTypeOf(Type, ArrayList<(Type, Type)>)
+
+```cangjie
+public func isEqualOrInstantiatedTypeOf(genericRelatedType: Type, visited!: ArrayList<(Type, Type)> = ArrayList<(Type, Type)>()): Bool
+```
+
+功能：判断是否为 genericRelatedType 的相等或实例化类型。
+
+参数：
+
+- genericRelatedType: Type - 待比较的泛型关联类型。
+- visited!: ArrayList<(Type, Type)> - 环检测用访问表；一般可传默认空表。
+
+返回值：
+
+- Bool - 是 genericRelatedType 的相等或实例化类型则为 `true`，否则为 `false`。
+
+### func satisfyGenericConstraints(GenericType, HashMap<GenericType, Type>, ArrayList<(Type, Type)>)
+
+```cangjie
+public func satisfyGenericConstraints(gType: GenericType, instMap: HashMap<GenericType, Type>, visited!: ArrayList<(Type, Type)> = ArrayList<(Type, Type)>()): Bool
+```
+
+功能：判断是否满足泛型约束。
+
+参数：
+
+- gType: GenericType - 泛型类型。
+- instMap: HashMap<GenericType, Type> - 泛型实例化映射表。
+- visited!: ArrayList<(Type, Type)> - 环检测用访问表；一般可传默认空表。
+
+返回值：
+
+- Bool - 满足泛型约束则为 `true`，否则为 `false`。
+
+### operator func ==(Type)
+
+```cangjie
+public operator func ==(other: Type): Bool
 ```
 
 功能：检查该类型是否与另一个类型相等。
@@ -6593,7 +7356,7 @@ public func stripAllRefs(): Type
 
 返回值：
 
-- Type - 去除所有引用包装后的基类型。
+- [Type](#class-type) - 去除所有引用包装后的基类型。
 
 示例：
 
@@ -6650,7 +7413,7 @@ main() {
 ## class UnitType
 
 ```cangjie
-public class UnitType <: BuiltinType & Equatable<UnitType>
+public class UnitType <: BuiltinType & Equatable<UnitType> {}
 ```
 
 功能：表示类型系统中的 Unit 类型。该类型表示没有有意义的值，类似于 C 语言中的 void。
@@ -6670,7 +7433,7 @@ public static func get(): UnitType
 
 返回值：
 
-- UnitType - UnitType 实例。
+- [UnitType](#class-unittype) - UnitType 实例。
 
 示例：
 
@@ -6690,10 +7453,10 @@ main() {
 Unit 类型: Unit
 ```
 
-### operator func==(UnitType)
+### operator func ==(UnitType)
 
 ```cangjie
-public operator func==(_: UnitType): Bool
+public operator func ==(_: UnitType): Bool
 ```
 
 功能：检查该 UnitType 是否与另一个 UnitType 相等。
@@ -6728,7 +7491,7 @@ main() {
 ## class VArrayType
 
 ```cangjie
-public class VArrayType <: BuiltinType & Equatable<VArrayType>
+public class VArrayType <: BuiltinType & Equatable<VArrayType> {}
 ```
 
 功能：**定长 VArray** 类型 `VArray<T, $n>`，编译期固定长度。按 `(elementType, size)` 缓存唯一实例。
@@ -6802,6 +7565,10 @@ public static func get(elementType: Type, size: Int64): VArrayType
 
 功能：获取或创建 VArray 类型。
 
+返回值：
+
+- [VArrayType](#class-varraytype) - VArrayType 实例。
+
 示例：
 
 <!-- verify -->
@@ -6850,10 +7617,10 @@ main() {
 VArray<Int32, $2>
 ```
 
-### operator func==(VArrayType)
+### operator func ==(VArrayType)
 
 ```cangjie
-public operator func==(other: VArrayType): Bool
+public operator func ==(other: VArrayType): Bool
 ```
 
 功能：比较元素类型与长度是否一致。
@@ -6885,12 +7652,13 @@ main() {
 op_eq_VArrayType: true
 ```
 
----
-
 ## class CHIRException
 
 ```cangjie
-public class CHIRException <: Exception
+public class CHIRException <: Exception {
+    public init()
+    public init(message: String)
+}
 ```
 
 功能：CHIR 构建或 IR 状态不一致时抛出的检查型异常。
@@ -6955,12 +7723,13 @@ main() {
 init_with_msg: true
 ```
 
----
-
 ## class FuncSigInfo
 
 ```cangjie
-public class FuncSigInfo
+public class FuncSigInfo {
+    public init(name: String, ty: FuncType)
+    public init(name: String, ty: FuncType, genericTypeParams: Array<GenericType>)
+}
 ```
 
 功能：函数符号的轻量签名包（名称、函数类型、泛型形参），用于描述函数调用的目标签名信息。
@@ -7184,15 +7953,13 @@ main() {
 h<Generic-pkg:T>(Int32) -> Unit
 ```
 
----
-
 ## class CHIRVisitor
 
 ```cangjie
-public abstract class CHIRVisitor
+public abstract class CHIRVisitor {}
 ```
 
-功能：CHIR 函数、块组、基本块与嵌套表达式的**抽象访问器**。子类可重写 [`action`](#func-actionexpression) 以观察每个表达式节点；`walk` 方法递归遍历直至返回 `IRActionMode.STOP`。
+功能：CHIR 函数、块组、基本块与嵌套表达式的**抽象访问器**。子类可重写 [`action`](#func-actionexpression) 以观察每个表达式节点；`walk` 方法递归遍历直至返回 `IRActionMode.Stop`。
 
 ### func walk(Function)
 
@@ -7305,7 +8072,7 @@ main() {
 public open func action(ty: Expression): IRActionMode
 ```
 
-功能：对每个访问到的表达式节点调用，决定是否继续遍历。默认返回 `IRActionMode.CONTINUE`；子类可重写以实现自定义观察逻辑或提前终止。
+功能：对每个访问到的表达式节点调用，决定是否继续遍历。默认返回 `IRActionMode.Continue`；子类可重写以实现自定义观察逻辑或提前终止。
 
 参数：
 
@@ -7313,7 +8080,7 @@ public open func action(ty: Expression): IRActionMode
 
 返回值：
 
-- [IRActionMode](chir_package_enums.md#enum-iractionmode) - 访问器控制模式（`CONTINUE` 继续遍历，`STOP` 终止遍历）。
+- [IRActionMode](chir_package_enums.md#enum-iractionmode) - 访问器控制模式（`Continue` 继续遍历，`Stop` 终止遍历，`Skip` 跳过嵌套 BlockGroup）。
 
 示例：
 
@@ -7324,7 +8091,7 @@ import stdx.chir.*
 class MyVisitor <: CHIRVisitor {
     public open func action(ty: Expression): IRActionMode {
         println(ty.toString().size > 0)
-        return IRActionMode.CONTINUE
+        return IRActionMode.Continue
     }
 }
 
@@ -7343,12 +8110,12 @@ main() {
 visitor_done
 ```
 
----
-
 ## class FuncCallContext
 
 ```cangjie
-public class FuncCallContext
+public class FuncCallContext {
+    public init(args: Array<Value>, instTypeArgs: Array<Type>, objType: ?Type)
+}
 ```
 
 功能：函数调用上下文，封装实参值列表、实例化类型实参以及可选的调用对象类型。
@@ -7469,12 +8236,38 @@ main() {
 prop_objType: true
 ```
 
----
+### func setArg(Int64, Value)
+
+```cangjie
+public func setArg(index: Int64, arg: Value): Unit
+```
+
+功能：设置指定位置的参数值。
+
+参数：
+
+- index: Int64 - 参数位置索引。
+- arg: Value - 新的参数值。
+
+### func setInstTypeArg(Int64, Type)
+
+```cangjie
+public func setInstTypeArg(index: Int64, arg: Type): Unit
+```
+
+功能：设置指定位置的实例化类型参数。
+
+参数：
+
+- index: Int64 - 参数位置索引。
+- arg: [Type](#class-type) - 新的实例化类型参数。
 
 ## class InvokeCallContext
 
 ```cangjie
-public class InvokeCallContext
+public class InvokeCallContext {
+    public init(caller: Value, virMethodCtx: FuncSigInfo, funcCallCtx: FuncCallContext)
+}
 ```
 
 功能：虚方法调用上下文，封装调用者值、虚方法签名信息以及函数调用上下文。
@@ -7607,12 +8400,484 @@ main() {
 prop_funcCallCtx: 0
 ```
 
----
+## class Value
+
+```cangjie
+sealed abstract class Value <: ToString & Hashable & Equatable<Value> {}
+```
+
+功能：CHIR 中所有值的抽象基类，涵盖基本块、基本块组、函数、全局变量、局部变量、参数与字面量等。提供标识符、类型、使用者列表等公共信息，以及判等、哈希与类型判断能力。
+
+父类型：
+
+- ToString
+- Hashable
+- Equatable\<[Value](#class-value)>
+
+### prop identifier
+
+```cangjie
+public mut prop identifier: String
+```
+
+功能：值的标识符（可包含前缀，如全局符号前缀、基本块前缀、局部变量前缀等）；可读可写。
+
+类型：String
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    println("prop_identifier: ${f.identifier}")
+}
+```
+
+运行结果：
+
+```text
+prop_identifier: @f_m
+```
+
+### prop identifierWithoutPrefix
+
+```cangjie
+public prop identifierWithoutPrefix: String
+```
+
+功能：去除内置前缀（全局符号前缀、基本块前缀、局部变量前缀）后的标识符。
+
+类型：String
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    println("prop_identifierWithoutPrefix: ${f.identifierWithoutPrefix}")
+}
+```
+
+运行结果：
+
+```text
+prop_identifierWithoutPrefix: f_m
+```
+
+### prop ty
+
+```cangjie
+public mut prop ty: Type
+```
+
+功能：值的类型；可读可写。
+
+类型：[Type](#class-type)
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    println("prop_ty: ${f.ty.qualifiedName}")
+}
+```
+
+运行结果：
+
+```text
+prop_ty: ()->Unit
+```
+
+### prop users
+
+```cangjie
+public prop users: Array<Expression>
+```
+
+功能：引用该值作为操作数的表达式列表（使用者列表）。
+
+类型：Array\<[Expression](#class-expression)>
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    println("prop_users: ${f.users.size}")
+}
+```
+
+运行结果：
+
+```text
+prop_users: 0
+```
+
+### func dump()
+
+```cangjie
+public func dump(): Unit
+```
+
+功能：将该值的字符串表示打印到标准输出。
+
+示例：
+
+<!-- run -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.dump()
+}
+```
+
+### func hashCode()
+
+```cangjie
+public func hashCode(): Int64
+```
+
+功能：获取该值的哈希码。
+
+返回值：
+
+- Int64 - 值的哈希码。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    println("func_hashCode: ${f.hashCode() == f.hashCode()}")
+}
+```
+
+运行结果：
+
+```text
+func_hashCode: true
+```
+
+### func isBlock()
+
+```cangjie
+public func isBlock(): Bool
+```
+
+功能：判断该值是否为基本块（[Block](#class-block)）。
+
+返回值：
+
+- Bool - 为基本块时返回 true，否则返回 false。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    println("func_isBlock: ${f.isBlock()}")
+}
+```
+
+运行结果：
+
+```text
+func_isBlock: false
+```
+
+### func isBlockGroup()
+
+```cangjie
+public func isBlockGroup(): Bool
+```
+
+功能：判断该值是否为基本块组（[BlockGroup](#class-blockgroup)）。
+
+返回值：
+
+- Bool - 为基本块组时返回 true，否则返回 false。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    println("func_isBlockGroup: ${f.isBlockGroup()}")
+}
+```
+
+运行结果：
+
+```text
+func_isBlockGroup: false
+```
+
+### func isFunction()
+
+```cangjie
+public func isFunction(): Bool
+```
+
+功能：判断该值是否为函数（[Function](#class-function)）。
+
+返回值：
+
+- Bool - 为函数时返回 true，否则返回 false。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    println("func_isFunction: ${f.isFunction()}")
+}
+```
+
+运行结果：
+
+```text
+func_isFunction: true
+```
+
+### func isGlobalVar()
+
+```cangjie
+public func isGlobalVar(): Bool
+```
+
+功能：判断该值是否为全局变量（[GlobalVar](#class-globalvar)）。
+
+返回值：
+
+- Bool - 为全局变量时返回 true，否则返回 false。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    println("func_isGlobalVar: ${f.isGlobalVar()}")
+}
+```
+
+运行结果：
+
+```text
+func_isGlobalVar: false
+```
+
+### func isLiteral()
+
+```cangjie
+public func isLiteral(): Bool
+```
+
+功能：判断该值是否为字面量（[LiteralValue](#class-literalvalue) 的子类）。
+
+返回值：
+
+- Bool - 为字面量时返回 true，否则返回 false。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    println("func_isLiteral: ${f.isLiteral()}")
+}
+```
+
+运行结果：
+
+```text
+func_isLiteral: false
+```
+
+### func isLocalVar()
+
+```cangjie
+public func isLocalVar(): Bool
+```
+
+功能：判断该值是否为局部变量（[LocalVar](#class-localvar)）。
+
+返回值：
+
+- Bool - 为局部变量时返回 true，否则返回 false。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    println("func_isLocalVar: ${f.isLocalVar()}")
+}
+```
+
+运行结果：
+
+```text
+func_isLocalVar: false
+```
+
+### func isParameter()
+
+```cangjie
+public func isParameter(): Bool
+```
+
+功能：判断该值是否为函数参数（[Parameter](#class-parameter)）。
+
+返回值：
+
+- Bool - 为参数时返回 true，否则返回 false。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    println("func_isParameter: ${f.isParameter()}")
+}
+```
+
+运行结果：
+
+```text
+func_isParameter: false
+```
+
+### func replaceWith(Value)
+
+```cangjie
+public func replaceWith(other: Value): Unit
+```
+
+功能：在所有使用该值的表达式中，将该值替换为另一值。
+
+参数：
+
+- other: [Value](#class-value) - 替换后的新值。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([IntType.getInt64()], IntType.getInt64()), "f_m", "f", "demo")
+    f.initBody()
+    let bg = f.body.getOrThrow()
+    let block = bg.entryBlock
+    let builder = CHIRBuilder(InsertPosition.AtEnd(block))
+    let p0 = f.parameters[0]
+    let lit = IntLiteral.get(IntType.getInt64(), 1)
+    builder.createBinaryAdd(p0, lit, OverflowStrategy.NA)
+    let lit2 = IntLiteral.get(IntType.getInt64(), 2)
+    p0.replaceWith(lit2)
+    println("func_replaceWith: ${block.exprs.size}")
+}
+```
+
+运行结果：
+
+```text
+func_replaceWith: 1
+```
+
+### operator func ==(Value)
+
+```cangjie
+public operator func ==(other: Value): Bool
+```
+
+功能：引用比较，判断两个 Value 是否为同一实例。
+
+参数：
+
+- other: [Value](#class-value) - 另一值。
+
+返回值：
+
+- Bool - 是否为同一引用。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    println("op_eq_Value: ${f == f}")
+}
+```
+
+运行结果：
+
+```text
+op_eq_Value: true
+```
 
 ## class Block
 
 ```cangjie
-public class Block <: Value & Equatable<Block>
+public class Block <: Value & Equatable<Block> {}
 ```
 
 功能：表示 CHIR 中的**基本块**，是函数体内控制流的基本单元。每个基本块包含一系列表达式，并可与前驱基本块形成控制流图；设置 `exceptions` 后可标记为异常处理 landing pad 块。
@@ -7948,10 +9213,10 @@ main() {
 fn_toString: true
 ```
 
-### operator func==(Block)
+### operator func ==(Block)
 
 ```cangjie
-public operator func==(other: Block): Bool
+public operator func ==(other: Block): Bool
 ```
 
 功能：引用比较，判断两个 Block 是否为同一实例。
@@ -7985,12 +9250,10 @@ main() {
 op_eq_Block: true
 ```
 
----
-
 ## class BlockGroup
 
 ```cangjie
-public class BlockGroup <: Value & Equatable<BlockGroup>
+public class BlockGroup <: Value & Equatable<BlockGroup> {}
 ```
 
 功能：表示 CHIR 中的**基本块组**，即函数体或 lambda 体的控制流图容器，包含若干基本块并维护入口块指针。
@@ -8134,7 +9397,7 @@ public func appendBlock(): Block
 
 返回值：
 
-- Block - 新创建的基本块。
+- [Block](#class-block) - 新创建的基本块。
 
 示例：
 
@@ -8254,10 +9517,10 @@ main() {
 fn_toString: true
 ```
 
-### operator func==(BlockGroup)
+### operator func ==(BlockGroup)
 
 ```cangjie
-public operator func==(other: BlockGroup): Bool
+public operator func ==(other: BlockGroup): Bool
 ```
 
 功能：引用比较，判断两个 BlockGroup 是否为同一实例。
@@ -8291,12 +9554,57 @@ main() {
 op_eq_BlockGroup: true
 ```
 
----
+## class LiteralValue
+
+```cangjie
+sealed abstract class LiteralValue <: Value & Equatable<LiteralValue> {}
+```
+
+功能：CHIR 中编译期字面量值的抽象基类，是各类字面量（[BoolLiteral](#class-boolliteral)、[IntLiteral](#class-intliteral)、[FloatLiteral](#class-floatliteral) 等）的父类型。
+
+父类型：
+
+- [Value](#class-value)
+- Equatable\<[LiteralValue](#class-literalvalue)>
+
+### operator func ==(LiteralValue)
+
+```cangjie
+public operator func ==(other: LiteralValue): Bool
+```
+
+功能：引用比较，判断两个 LiteralValue 是否为同一实例。
+
+参数：
+
+- other: [LiteralValue](#class-literalvalue) - 另一字面量值。
+
+返回值：
+
+- Bool - 是否为同一引用。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let lit = IntLiteral.get(IntType.getInt64(), 1)
+    println("op_eq_LiteralValue: ${lit == lit}")
+}
+```
+
+运行结果：
+
+```text
+op_eq_LiteralValue: true
+```
 
 ## class BoolLiteral
 
 ```cangjie
-public class BoolLiteral <: LiteralValue & Equatable<BoolLiteral>
+public class BoolLiteral <: LiteralValue & Equatable<BoolLiteral> {}
 ```
 
 功能：表示布尔字面量（`true` 或 `false`），按值缓存保证同一布尔值对应唯一实例。
@@ -8348,7 +9656,7 @@ public static func get(value: Bool): BoolLiteral
 
 返回值：
 
-- BoolLiteral - 对应的布尔字面量。
+- [BoolLiteral](#class-boolliteral) - 对应的布尔字面量。
 
 示例：
 
@@ -8398,10 +9706,10 @@ main() {
 true
 ```
 
-### operator func==(BoolLiteral)
+### operator func ==(BoolLiteral)
 
 ```cangjie
-public operator func==(other: BoolLiteral): Bool
+public operator func ==(other: BoolLiteral): Bool
 ```
 
 功能：引用比较，判断两个 BoolLiteral 是否为同一实例。
@@ -8433,12 +9741,10 @@ main() {
 op_eq_BoolLiteral: true
 ```
 
----
-
 ## class FloatLiteral
 
 ```cangjie
-public class FloatLiteral <: LiteralValue & Equatable<FloatLiteral>
+public class FloatLiteral <: LiteralValue & Equatable<FloatLiteral> {}
 ```
 
 功能：表示浮点字面量，按 `(FloatType, Float64)` 缓存保证同一类型与值对应唯一实例。
@@ -8491,7 +9797,7 @@ public static func get(ty: FloatType, value: Float64): FloatLiteral
 
 返回值：
 
-- FloatLiteral - 对应的浮点字面量。
+- [FloatLiteral](#class-floatliteral) - 对应的浮点字面量。
 
 示例：
 
@@ -8541,10 +9847,10 @@ main() {
 2.000000f
 ```
 
-### operator func==(FloatLiteral)
+### operator func ==(FloatLiteral)
 
 ```cangjie
-public operator func==(other: FloatLiteral): Bool
+public operator func ==(other: FloatLiteral): Bool
 ```
 
 功能：引用比较，判断两个 FloatLiteral 是否为同一实例。
@@ -8576,12 +9882,750 @@ main() {
 op_eq_FloatLiteral: true
 ```
 
----
+## class GlobalValue
+
+```cangjie
+sealed abstract class GlobalValue <: Value & Equatable<GlobalValue> {}
+```
+
+功能：包级全局值（函数与全局变量）的抽象基类，提供所属包名、源码名、声明父类型、特性列表、自定义注解实例，以及访问级别、静态/常量/外部链接等属性标记的查询与设置能力。
+
+父类型：
+
+- [Value](#class-value)
+- Equatable\<[GlobalValue](#class-globalvalue)>
+
+### prop customAnnoInstances
+
+```cangjie
+public mut prop customAnnoInstances: Array<CustomAnnoInstance>
+```
+
+功能：附加在该全局值上的自定义注解实例列表；可读可写。
+
+类型：Array\<[CustomAnnoInstance](#class-customannoinstance)>
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    println("prop_customAnnoInstances: ${f.customAnnoInstances.size}")
+}
+```
+
+运行结果：
+
+```text
+prop_customAnnoInstances: 0
+```
+
+### prop declaredParent
+
+```cangjie
+public prop declaredParent: ?CustomTypeDef
+```
+
+功能：声明该全局值的外层类型定义；独立声明的全局值为 `None`。
+
+类型：?[CustomTypeDef](#class-customtypedef)
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    println("prop_declaredParent: ${f.declaredParent.isNone()}")
+}
+```
+
+运行结果：
+
+```text
+prop_declaredParent: true
+```
+
+### prop features
+
+```cangjie
+public prop features: Array<String>
+```
+
+功能：该全局值携带的特性（feature）字符串列表。
+
+类型：Array\<String>
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    println("prop_features: ${f.features.size}")
+}
+```
+
+运行结果：
+
+```text
+prop_features: 0
+```
+
+### prop packageName
+
+```cangjie
+public prop packageName: String
+```
+
+功能：该全局值所属的包名。
+
+类型：String
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    println("prop_packageName: ${f.packageName}")
+}
+```
+
+运行结果：
+
+```text
+prop_packageName: demo
+```
+
+### prop outerType
+
+```cangjie
+public prop outerType: ?Type
+```
+
+功能：声明该全局值的外层类型；无外层类型时为 `None`。
+
+类型：?[Type](#class-type)
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    println("prop_outerType: ${f.outerType.isNone()}")
+}
+```
+
+运行结果：
+
+```text
+prop_outerType: true
+```
+
+### prop srcCodeName
+
+```cangjie
+public prop srcCodeName: String
+```
+
+功能：该全局值在源码中的名称。
+
+类型：String
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    println("prop_srcCodeName: ${f.srcCodeName}")
+}
+```
+
+运行结果：
+
+```text
+prop_srcCodeName: f
+```
+
+### func isCompilerAdd()
+
+```cangjie
+public func isCompilerAdd(): Bool
+```
+
+功能：判断该全局值是否由编译器自动添加。
+
+返回值：
+
+- Bool - 由编译器添加时返回 true，否则返回 false。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    println("func_isCompilerAdd: ${f.isCompilerAdd()}")
+}
+```
+
+运行结果：
+
+```text
+func_isCompilerAdd: false
+```
+
+### func isConst()
+
+```cangjie
+public func isConst(): Bool
+```
+
+功能：判断该全局值是否标记为常量。
+
+返回值：
+
+- Bool - 标记为常量时返回 true，否则返回 false。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    println("func_isConst: ${f.isConst()}")
+}
+```
+
+运行结果：
+
+```text
+func_isConst: false
+```
+
+### func isExternalLinkage()
+
+```cangjie
+public func isExternalLinkage(): Bool
+```
+
+功能：判断该全局值是否具有外部链接（`LinkType.External`）。
+
+返回值：
+
+- Bool - 具有外部链接时返回 true，否则返回 false。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    println("func_isExternalLinkage: ${f.isExternalLinkage()}")
+}
+```
+
+运行结果：
+
+```text
+func_isExternalLinkage: true
+```
+
+### func isForeign()
+
+```cangjie
+public func isForeign(): Bool
+```
+
+功能：判断该全局值是否为外部函数（foreign）。
+
+返回值：
+
+- Bool - 为外部函数时返回 true，否则返回 false。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    println("func_isForeign: ${f.isForeign()}")
+}
+```
+
+运行结果：
+
+```text
+func_isForeign: false
+```
+
+### func isImported()
+
+```cangjie
+public func isImported(): Bool
+```
+
+功能：判断该全局值是否从其他包导入。
+
+返回值：
+
+- Bool - 为导入时返回 true，否则返回 false。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    println("func_isImported: ${f.isImported()}")
+}
+```
+
+运行结果：
+
+```text
+func_isImported: false
+```
+
+### func isInternal()
+
+```cangjie
+public func isInternal(): Bool
+```
+
+功能：判断该全局值的访问级别是否为 internal。
+
+返回值：
+
+- Bool - 为 internal 时返回 true，否则返回 false。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    println("func_isInternal: ${f.isInternal()}")
+}
+```
+
+运行结果：
+
+```text
+func_isInternal: false
+```
+
+### func isPrivate()
+
+```cangjie
+public func isPrivate(): Bool
+```
+
+功能：判断该全局值的访问级别是否为 private。
+
+返回值：
+
+- Bool - 为 private 时返回 true，否则返回 false。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    println("func_isPrivate: ${f.isPrivate()}")
+}
+```
+
+运行结果：
+
+```text
+func_isPrivate: false
+```
+
+### func isProtected()
+
+```cangjie
+public func isProtected(): Bool
+```
+
+功能：判断该全局值的访问级别是否为 protected。
+
+返回值：
+
+- Bool - 为 protected 时返回 true，否则返回 false。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    println("func_isProtected: ${f.isProtected()}")
+}
+```
+
+运行结果：
+
+```text
+func_isProtected: false
+```
+
+### func isPublic()
+
+```cangjie
+public func isPublic(): Bool
+```
+
+功能：判断该全局值的访问级别是否为 public。
+
+返回值：
+
+- Bool - 为 public 时返回 true，否则返回 false。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    println("func_isPublic: ${f.isPublic()}")
+}
+```
+
+运行结果：
+
+```text
+func_isPublic: false
+```
+
+### func isStatic()
+
+```cangjie
+public func isStatic(): Bool
+```
+
+功能：判断该全局值是否为静态成员。
+
+返回值：
+
+- Bool - 为静态成员时返回 true，否则返回 false。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    println("func_isStatic: ${f.isStatic()}")
+}
+```
+
+运行结果：
+
+```text
+func_isStatic: false
+```
+
+### func setConst(Bool)
+
+```cangjie
+public func setConst(enable: Bool): Unit
+```
+
+功能：设置该全局值的常量标记。
+
+参数：
+
+- enable: Bool - true 表示标记为常量，false 表示取消标记。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.setConst(true)
+    println("func_setConst: ${f.isConst()}")
+}
+```
+
+运行结果：
+
+```text
+func_setConst: true
+```
+
+### func setImported(Bool)
+
+```cangjie
+public func setImported(enable: Bool): Unit
+```
+
+功能：设置该全局值的导入标记。
+
+参数：
+
+- enable: Bool - true 表示标记为导入，false 表示取消标记。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.setImported(true)
+    println("func_setImported: ${f.isImported()}")
+}
+```
+
+运行结果：
+
+```text
+func_setImported: true
+```
+
+### func setInternal()
+
+```cangjie
+public func setInternal(): Unit
+```
+
+功能：将该全局值的访问级别设置为 internal。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.setInternal()
+    println("func_setInternal: ${f.isInternal()}")
+}
+```
+
+运行结果：
+
+```text
+func_setInternal: true
+```
+
+### func setPrivate()
+
+```cangjie
+public func setPrivate(): Unit
+```
+
+功能：将该全局值的访问级别设置为 private。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.setPrivate()
+    println("func_setPrivate: ${f.isPrivate()}")
+}
+```
+
+运行结果：
+
+```text
+func_setPrivate: true
+```
+
+### func setProtected()
+
+```cangjie
+public func setProtected(): Unit
+```
+
+功能：将该全局值的访问级别设置为 protected。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.setProtected()
+    println("func_setProtected: ${f.isProtected()}")
+}
+```
+
+运行结果：
+
+```text
+func_setProtected: true
+```
+
+### func setPublic()
+
+```cangjie
+public func setPublic(): Unit
+```
+
+功能：将该全局值的访问级别设置为 public。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.setPublic()
+    println("func_setPublic: ${f.isPublic()}")
+}
+```
+
+运行结果：
+
+```text
+func_setPublic: true
+```
+
+### func setStatic(Bool)
+
+```cangjie
+public func setStatic(enable: Bool): Unit
+```
+
+功能：设置该全局值的静态成员标记。
+
+参数：
+
+- enable: Bool - true 表示标记为静态成员，false 表示取消标记。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.setStatic(true)
+    println("func_setStatic: ${f.isStatic()}")
+}
+```
+
+运行结果：
+
+```text
+func_setStatic: true
+```
+
+### operator func ==(GlobalValue)
+
+```cangjie
+public operator func ==(other: GlobalValue): Bool
+```
+
+功能：引用比较，判断两个 GlobalValue 是否为同一实例。
+
+参数：
+
+- other: [GlobalValue](#class-globalvalue) - 另一全局值。
+
+返回值：
+
+- Bool - 是否为同一引用。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    println("op_eq_GlobalValue: ${f == f}")
+}
+```
+
+运行结果：
+
+```text
+op_eq_GlobalValue: true
+```
 
 ## class Function
 
 ```cangjie
-public class Function <: GlobalValue & Equatable<Function>
+public class Function <: GlobalValue & Equatable<Function> {}
 ```
 
 功能：表示 CHIR 中的**函数定义**，包含函数类型、参数、函数体（BlockGroup）、泛型形参以及抽象/open 等属性标记。
@@ -9203,10 +11247,10 @@ main() {
 fn_toString: true
 ```
 
-### operator func==(Function)
+### operator func ==(Function)
 
 ```cangjie
-public operator func==(other: Function): Bool
+public operator func ==(other: Function): Bool
 ```
 
 功能：引用比较，判断两个 Function 是否为同一实例。
@@ -9238,12 +11282,10 @@ main() {
 op_eq_Function: true
 ```
 
----
-
 ## class GlobalVar
 
 ```cangjie
-public class GlobalVar <: GlobalValue & Equatable<GlobalVar>
+public class GlobalVar <: GlobalValue & Equatable<GlobalVar> {}
 ```
 
 功能：表示 CHIR 中的**全局变量定义**，包含类型、初始化值及只读标记。
@@ -9439,10 +11481,10 @@ main() {
 fn_toString: true
 ```
 
-### operator func==(GlobalVar)
+### operator func ==(GlobalVar)
 
 ```cangjie
-public operator func==(other: GlobalVar): Bool
+public operator func ==(other: GlobalVar): Bool
 ```
 
 功能：引用比较，判断两个 GlobalVar 是否为同一实例。
@@ -9474,12 +11516,10 @@ main() {
 op_eq_GlobalVar: true
 ```
 
----
-
 ## class IntLiteral
 
 ```cangjie
-public class IntLiteral <: LiteralValue & Equatable<IntLiteral>
+public class IntLiteral <: LiteralValue & Equatable<IntLiteral> {}
 ```
 
 功能：表示整数字面量，按 `(IntType, UInt64)` 缓存保证同一类型与值对应唯一实例。
@@ -9560,7 +11600,7 @@ public static func get(ty: IntType, value: UInt64): IntLiteral
 
 返回值：
 
-- IntLiteral - 对应的整数字面量。
+- [IntLiteral](#class-intliteral) - 对应的整数字面量。
 
 示例：
 
@@ -9640,10 +11680,10 @@ main() {
 7u
 ```
 
-### operator func==(IntLiteral)
+### operator func ==(IntLiteral)
 
 ```cangjie
-public operator func==(other: IntLiteral): Bool
+public operator func ==(other: IntLiteral): Bool
 ```
 
 功能：引用比较，判断两个 IntLiteral 是否为同一实例。
@@ -9675,12 +11715,10 @@ main() {
 op_eq_IntLiteral: true
 ```
 
----
-
 ## class LocalVar
 
 ```cangjie
-public class LocalVar <: Value & Equatable<LocalVar>
+public class LocalVar <: Value & Equatable<LocalVar> {}
 ```
 
 功能：表示 CHIR 中的**局部变量**，由表达式结果产生，也可作为函数返回值。
@@ -9827,10 +11865,10 @@ main() {
 fn_toString: true
 ```
 
-### operator func==(LocalVar)
+### operator func ==(LocalVar)
 
 ```cangjie
-public operator func==(other: LocalVar): Bool
+public operator func ==(other: LocalVar): Bool
 ```
 
 功能：引用比较，判断两个 LocalVar 是否为同一实例。
@@ -9867,12 +11905,10 @@ main() {
 op_eq_LocalVar: true
 ```
 
----
-
 ## class NullLiteral
 
 ```cangjie
-public class NullLiteral <: LiteralValue & Equatable<NullLiteral>
+public class NullLiteral <: LiteralValue & Equatable<NullLiteral> {}
 ```
 
 功能：表示 Null 字面量，按类型缓存保证同一类型对应唯一实例。
@@ -9896,7 +11932,7 @@ public static func get(ty: Type): NullLiteral
 
 返回值：
 
-- NullLiteral - Null 字面量实例。
+- [NullLiteral](#class-nullliteral) - Null 字面量实例。
 
 示例：
 
@@ -9946,10 +11982,10 @@ main() {
 Null
 ```
 
-### operator func==(NullLiteral)
+### operator func ==(NullLiteral)
 
 ```cangjie
-public operator func==(other: NullLiteral): Bool
+public operator func ==(other: NullLiteral): Bool
 ```
 
 功能：引用比较，判断两个 NullLiteral 是否为同一实例。
@@ -9981,12 +12017,10 @@ main() {
 op_eq_NullLiteral: true
 ```
 
----
-
 ## class Parameter
 
 ```cangjie
-public class Parameter <: Value & Equatable<Parameter>
+public class Parameter <: Value & Equatable<Parameter> {}
 ```
 
 功能：表示 CHIR 中的**函数参数**，包含类型、源码名、注解等信息。
@@ -9996,15 +12030,15 @@ public class Parameter <: Value & Equatable<Parameter>
 - Value
 - Equatable\<Parameter>
 
-### prop annotations
+### prop customAnnoInstances
 
 ```cangjie
-public mut prop annotations: Array<Annotation>
+public mut prop customAnnoInstances: Array<CustomAnnoInstance>
 ```
 
-功能：参数注解列表；`set` 时整体替换。
+功能：参数注解实例列表；getter 返回当前所有实例，setter 整体替换。
 
-类型：Array\<[Annotation](#class-annotation)>
+类型：Array\<[CustomAnnoInstance](#class-customannoinstance)>
 
 示例：
 
@@ -10016,14 +12050,14 @@ main() {
     let pkg = Package("demo", AccessLevel.Public)
     let f = pkg.addFunction(FuncType.get([IntType.getInt32()], UnitType.get()), "f_m", "f", "demo")
     let param = f.parameters[0]
-    println("mut_prop_annotations: ${param.annotations.size}")
+    println("mut_prop_customAnnoInstances: ${param.customAnnoInstances.size}")
 }
 ```
 
 运行结果：
 
 ```text
-mut_prop_annotations: 0
+mut_prop_customAnnoInstances: 0
 ```
 
 ### prop srcCodeName
@@ -10119,10 +12153,10 @@ main() {
 fn_toString: true
 ```
 
-### operator func==(Parameter)
+### operator func ==(Parameter)
 
 ```cangjie
-public operator func==(other: Parameter): Bool
+public operator func ==(other: Parameter): Bool
 ```
 
 功能：引用比较，判断两个 Parameter 是否为同一实例。
@@ -10155,12 +12189,10 @@ main() {
 op_eq_Parameter: true
 ```
 
----
-
 ## class RuneLiteral
 
 ```cangjie
-public class RuneLiteral <: LiteralValue & Equatable<RuneLiteral>
+public class RuneLiteral <: LiteralValue & Equatable<RuneLiteral> {}
 ```
 
 功能：表示 Rune（字符）字面量，按值缓存保证同一 Rune 值对应唯一实例。
@@ -10212,7 +12244,7 @@ public static func get(value: Rune): RuneLiteral
 
 返回值：
 
-- RuneLiteral - 对应的 Rune 字面量。
+- [RuneLiteral](#class-runeliteral) - 对应的 Rune 字面量。
 
 示例：
 
@@ -10262,10 +12294,10 @@ main() {
 '0'
 ```
 
-### operator func==(RuneLiteral)
+### operator func ==(RuneLiteral)
 
 ```cangjie
-public operator func==(other: RuneLiteral): Bool
+public operator func ==(other: RuneLiteral): Bool
 ```
 
 功能：引用比较，判断两个 RuneLiteral 是否为同一实例。
@@ -10297,12 +12329,10 @@ main() {
 op_eq_RuneLiteral: true
 ```
 
----
-
 ## class StringLiteral
 
 ```cangjie
-public class StringLiteral <: LiteralValue & Equatable<StringLiteral>
+public class StringLiteral <: LiteralValue & Equatable<StringLiteral> {}
 ```
 
 功能：表示字符串字面量，按值缓存保证同一字符串值对应唯一实例。
@@ -10355,7 +12385,7 @@ public static func get(ty: Type, value: String): StringLiteral
 
 返回值：
 
-- StringLiteral - 对应的字符串字面量。
+- [StringLiteral](#class-stringliteral) - 对应的字符串字面量。
 
 示例：
 
@@ -10405,10 +12435,10 @@ main() {
 "abc"
 ```
 
-### operator func==(StringLiteral)
+### operator func ==(StringLiteral)
 
 ```cangjie
-public operator func==(other: StringLiteral): Bool
+public operator func ==(other: StringLiteral): Bool
 ```
 
 功能：引用比较，判断两个 StringLiteral 是否为同一实例。
@@ -10440,12 +12470,10 @@ main() {
 op_eq_StringLiteral: true
 ```
 
----
-
 ## class UnitLiteral
 
 ```cangjie
-public class UnitLiteral <: LiteralValue & Equatable<UnitLiteral>
+public class UnitLiteral <: LiteralValue & Equatable<UnitLiteral> {}
 ```
 
 功能：表示 Unit 字面量（单例，表示无返回值）。
@@ -10465,7 +12493,7 @@ public static func get(): UnitLiteral
 
 返回值：
 
-- UnitLiteral - Unit 字面量实例。
+- [UnitLiteral](#class-unitliteral) - Unit 字面量实例。
 
 示例：
 
@@ -10515,10 +12543,10 @@ main() {
 Unit
 ```
 
-### operator func==(UnitLiteral)
+### operator func ==(UnitLiteral)
 
 ```cangjie
-public operator func==(other: UnitLiteral): Bool
+public operator func ==(other: UnitLiteral): Bool
 ```
 
 功能：引用比较，判断两个 UnitLiteral 是否为同一实例。
@@ -10550,12 +12578,762 @@ main() {
 op_eq_UnitLiteral: true
 ```
 
----
+## class Expression
+
+```cangjie
+sealed abstract class Expression <: ToString & Hashable & Equatable<Expression> {}
+```
+
+功能：CHIR 中所有表达式的抽象基类。表达式是基本块内的指令单元，持有操作数列表、所属基本块、结果局部变量及附属基本块组等信息，并提供移动、销毁、结果查询及类型判断等能力。
+
+父类型：
+
+- ToString
+- Hashable
+- Equatable\<[Expression](#class-expression)>
+
+### prop blockGroups
+
+```cangjie
+public prop blockGroups: Array<BlockGroup>
+```
+
+功能：附属在该表达式上的基本块组列表。
+
+类型：Array\<[BlockGroup](#class-blockgroup)>
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let expr = Allocate.create(IntType.getInt32())
+    block.appendExpr(expr)
+    println("prop_blockGroups: ${expr.blockGroups.size}")
+}
+```
+
+运行结果：
+
+```text
+prop_blockGroups: 0
+```
+
+### prop operands
+
+```cangjie
+public prop operands: Array<Value>
+```
+
+功能：该表达式的有序操作数列表。
+
+类型：Array\<[Value](#class-value)>
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let expr = Allocate.create(IntType.getInt32())
+    block.appendExpr(expr)
+    println("prop_operands: ${expr.operands.size}")
+}
+```
+
+运行结果：
+
+```text
+prop_operands: 0
+```
+
+### prop owner
+
+```cangjie
+public prop owner: Block
+```
+
+功能：包含该表达式的基本块；未设置时抛出异常。
+
+类型：[Block](#class-block)
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let expr = Allocate.create(IntType.getInt32())
+    block.appendExpr(expr)
+    println("prop_owner: ${expr.owner == block}")
+}
+```
+
+运行结果：
+
+```text
+prop_owner: true
+```
+
+### prop result
+
+```cangjie
+public prop result: LocalVar
+```
+
+功能：该表达式产生的结果局部变量；未设置时抛出异常。
+
+类型：[LocalVar](#class-localvar)
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let expr = Allocate.create(IntType.getInt32())
+    block.appendExpr(expr)
+    println("prop_result: ${expr.result.ty.qualifiedName}")
+}
+```
+
+运行结果：
+
+```text
+prop_result: Int32
+```
+
+### prop successors
+
+```cangjie
+public prop successors: Array<Block>
+```
+
+功能：该表达式的操作数中引用的后继基本块列表。
+
+类型：Array\<[Block](#class-block)>
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let expr = Allocate.create(IntType.getInt32())
+    block.appendExpr(expr)
+    println("prop_successors: ${expr.successors.size}")
+}
+```
+
+运行结果：
+
+```text
+prop_successors: 0
+```
+
+### prop topLevelFunc
+
+```cangjie
+public prop topLevelFunc: Function
+```
+
+功能：该表达式所属的顶层函数。
+
+类型：[Function](#class-function)
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let expr = Allocate.create(IntType.getInt32())
+    block.appendExpr(expr)
+    println("prop_topLevelFunc: ${expr.topLevelFunc == f}")
+}
+```
+
+运行结果：
+
+```text
+prop_topLevelFunc: true
+```
+
+### func destroySelf()
+
+```cangjie
+public func destroySelf(): Unit
+```
+
+功能：销毁该表达式，解除其与操作数、所属基本块及附属基本块组之间的使用/归属关系。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let expr = Allocate.create(IntType.getInt32())
+    block.appendExpr(expr)
+    expr.destroySelf()
+    println("func_destroySelf: ${block.exprs.size}")
+}
+```
+
+运行结果：
+
+```text
+func_destroySelf: 0
+```
+
+### func dump()
+
+```cangjie
+public func dump(): Unit
+```
+
+功能：将该表达式的字符串表示打印到标准输出。
+
+示例：
+
+<!-- run -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let expr = Allocate.create(IntType.getInt32())
+    block.appendExpr(expr)
+    expr.dump()
+}
+```
+
+### func hasExceptionBranch()
+
+```cangjie
+public func hasExceptionBranch(): Bool
+```
+
+功能：判断该表达式是否携带正常/异常分支操作数（如 TryApply、TryInvoke 等）。
+
+返回值：
+
+- Bool - 携带异常分支时返回 true，否则返回 false。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let expr = Allocate.create(IntType.getInt32())
+    block.appendExpr(expr)
+    println("func_hasExceptionBranch: ${expr.hasExceptionBranch()}")
+}
+```
+
+运行结果：
+
+```text
+func_hasExceptionBranch: false
+```
+
+### func hashCode()
+
+```cangjie
+public func hashCode(): Int64
+```
+
+功能：基于结果值计算该表达式的哈希码。
+
+返回值：
+
+- Int64 - 表达式的哈希码。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let expr = Allocate.create(IntType.getInt32())
+    block.appendExpr(expr)
+    println("func_hashCode: ${expr.hashCode() == expr.hashCode()}")
+}
+```
+
+运行结果：
+
+```text
+func_hashCode: true
+```
+
+### func isTerminator()
+
+```cangjie
+public func isTerminator(): Bool
+```
+
+功能：判断该表达式是否为终止指令（如 Branch、Exit、GoTo 等）。
+
+返回值：
+
+- Bool - 为终止指令时返回 true，否则返回 false。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let expr = Allocate.create(IntType.getInt32())
+    block.appendExpr(expr)
+    println("func_isTerminator: ${expr.isTerminator()}")
+}
+```
+
+运行结果：
+
+```text
+func_isTerminator: false
+```
+
+### func isLambda()
+
+```cangjie
+public func isLambda(): Bool
+```
+
+功能：判断该表达式是否为 Lambda 表达式。
+
+返回值：
+
+- Bool - 为 Lambda 表达式时返回 true，否则返回 false。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let expr = Allocate.create(IntType.getInt32())
+    block.appendExpr(expr)
+    println("func_isLambda: ${expr.isLambda()}")
+}
+```
+
+运行结果：
+
+```text
+func_isLambda: false
+```
+
+### func isExit()
+
+```cangjie
+public func isExit(): Bool
+```
+
+功能：判断该表达式是否为 Exit 表达式。
+
+返回值：
+
+- Bool - 为 Exit 表达式时返回 true，否则返回 false。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let expr = Allocate.create(IntType.getInt32())
+    block.appendExpr(expr)
+    println("func_isExit: ${expr.isExit()}")
+}
+```
+
+运行结果：
+
+```text
+func_isExit: false
+```
+
+### func moveAfter(Expression)
+
+```cangjie
+public func moveAfter(other: Expression): Unit
+```
+
+功能：将该表达式移动到另一表达式之后；不能移动到终止指令之后。
+
+参数：
+
+- other: [Expression](#class-expression) - 锚点表达式。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let builder = CHIRBuilder(InsertPosition.AtEnd(block))
+    let e1 = builder.createBinaryAdd(IntLiteral.get(IntType.getInt64(), 1), IntLiteral.get(IntType.getInt64(), 2), OverflowStrategy.NA)
+    let e2 = builder.createBinarySub(IntLiteral.get(IntType.getInt64(), 5), IntLiteral.get(IntType.getInt64(), 3), OverflowStrategy.NA)
+    e2.moveAfter(e1)
+    println("func_moveAfter: ${block.exprs[0] == e1}")
+}
+```
+
+运行结果：
+
+```text
+func_moveAfter: true
+```
+
+### func moveBefore(Expression)
+
+```cangjie
+public func moveBefore(other: Expression): Unit
+```
+
+功能：将该表达式移动到另一表达式之前；终止指令不能移动到其他表达式之前。
+
+参数：
+
+- other: [Expression](#class-expression) - 锚点表达式。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let builder = CHIRBuilder(InsertPosition.AtEnd(block))
+    let e1 = builder.createBinaryAdd(IntLiteral.get(IntType.getInt64(), 1), IntLiteral.get(IntType.getInt64(), 2), OverflowStrategy.NA)
+    let e2 = builder.createBinarySub(IntLiteral.get(IntType.getInt64(), 5), IntLiteral.get(IntType.getInt64(), 3), OverflowStrategy.NA)
+    e1.moveBefore(e2)
+    println("func_moveBefore: ${block.exprs[0] == e1}")
+}
+```
+
+运行结果：
+
+```text
+func_moveBefore: true
+```
+
+### func replaceOperand(Value, Value)
+
+```cangjie
+public func replaceOperand(operand: Value, other: Value): Unit
+```
+
+功能：将该表达式中指定的操作数替换为另一值。
+
+参数：
+
+- operand: [Value](#class-value) - 待替换的操作数。
+- other: [Value](#class-value) - 替换后的新值。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let builder = CHIRBuilder(InsertPosition.AtEnd(block))
+    let l1 = IntLiteral.get(IntType.getInt64(), 1)
+    let l2 = IntLiteral.get(IntType.getInt64(), 2)
+    let l3 = IntLiteral.get(IntType.getInt64(), 3)
+    let expr = builder.createBinaryAdd(l1, l2, OverflowStrategy.NA)
+    expr.replaceOperand(l1, l3)
+    println("func_replaceOperand: ${expr.operands[0] == l3}")
+}
+```
+
+运行结果：
+
+```text
+func_replaceOperand: true
+```
+
+### func toString()
+
+```cangjie
+public open func toString(): String
+```
+
+功能：构建该表达式的可读字符串表示。
+
+返回值：
+
+- String - 表达式的可读文本。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let builder = CHIRBuilder(InsertPosition.AtEnd(block))
+    let expr = builder.createBinaryAdd(IntLiteral.get(IntType.getInt64(), 1), IntLiteral.get(IntType.getInt64(), 2), OverflowStrategy.NA)
+    println("func_toString: ${expr.toString().isEmpty()}")
+}
+```
+
+运行结果：
+
+```text
+func_toString: false
+```
+
+### func tryGetResult()
+
+```cangjie
+public func tryGetResult(): Option<LocalVar>
+```
+
+功能：尝试获取该表达式的结果局部变量；未设置时返回 `None`。
+
+返回值：
+
+- Option\<[LocalVar](#class-localvar)> - 结果局部变量，未设置时为 `None`。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let expr = Allocate.create(IntType.getInt32())
+    block.appendExpr(expr)
+    println("func_tryGetResult: ${expr.tryGetResult().isSome()}")
+}
+```
+
+运行结果：
+
+```text
+func_tryGetResult: true
+```
+
+### operator func ==(Expression)
+
+```cangjie
+public operator func ==(other: Expression): Bool
+```
+
+功能：引用比较，判断两个 Expression 是否为同一实例。
+
+参数：
+
+- other: [Expression](#class-expression) - 另一表达式。
+
+返回值：
+
+- Bool - 是否为同一引用。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let expr = Allocate.create(IntType.getInt32())
+    block.appendExpr(expr)
+    println("op_eq_Expression: ${expr == expr}")
+}
+```
+
+运行结果：
+
+```text
+op_eq_Expression: true
+```
+
+## class AllocateBase
+
+```cangjie
+sealed abstract class AllocateBase <: Expression & Equatable<AllocateBase> {}
+```
+
+功能：内存分配类表达式的抽象基类，提供所分配类型信息的查询能力，是 [Allocate](#class-allocate)、[TryAllocate](#class-tryallocate) 等的父类型。
+
+父类型：
+
+- [Expression](#class-expression)
+- Equatable\<[AllocateBase](#class-allocatebase)>
+
+### prop allocatedType
+
+```cangjie
+public prop allocatedType: Type
+```
+
+功能：该分配表达式所分配的类型。
+
+类型：[Type](#class-type)
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let expr = Allocate.create(IntType.getInt32())
+    block.appendExpr(expr)
+    println("prop_allocatedType: ${expr.allocatedType.qualifiedName}")
+}
+```
+
+运行结果：
+
+```text
+prop_allocatedType: Int32
+```
+
+### operator func ==(AllocateBase)
+
+```cangjie
+public operator func ==(other: AllocateBase): Bool
+```
+
+功能：引用比较，判断两个 AllocateBase 是否为同一实例。
+
+参数：
+
+- other: [AllocateBase](#class-allocatebase) - 另一内存分配基类表达式。
+
+返回值：
+
+- Bool - 是否为同一引用。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let expr = Allocate.create(IntType.getInt32())
+    block.appendExpr(expr)
+    println("op_eq_AllocateBase: ${expr == expr}")
+}
+```
+
+运行结果：
+
+```text
+op_eq_AllocateBase: true
+```
 
 ## class Allocate
 
 ```cangjie
-public class Allocate <: AllocateBase & Equatable<Allocate>
+public class Allocate <: AllocateBase & Equatable<Allocate> {}
 ```
 
 功能：内存分配表达式，分配指定类型的空间但不带异常处理。
@@ -10579,7 +13357,7 @@ public static func create(allocatedType: Type): Allocate
 
 返回值：
 
-- Allocate - 创建的内存分配表达式。
+- [Allocate](#class-allocate) - 创建的内存分配表达式。
 
 示例：
 
@@ -10604,10 +13382,10 @@ main() {
 static_func_create: 1
 ```
 
-### operator func==(Allocate)
+### operator func ==(Allocate)
 
 ```cangjie
-public operator func==(other: Allocate): Bool
+public operator func ==(other: Allocate): Bool
 ```
 
 功能：引用比较，判断两个 Allocate 是否为同一实例。
@@ -10643,12 +13421,10 @@ main() {
 op_eq_Allocate: true
 ```
 
----
-
 ## class TryAllocate
 
 ```cangjie
-public class TryAllocate <: AllocateBase & Equatable<TryAllocate>
+public class TryAllocate <: AllocateBase & Equatable<TryAllocate> {}
 ```
 
 功能：带异常处理的内存分配表达式，分配成功时跳转到正常分支，失败时跳转到异常分支。
@@ -10746,7 +13522,7 @@ public static func create(allocatedType: Type, normal: Block, err: Block): TryAl
 
 返回值：
 
-- TryAllocate - 创建的带异常处理的内存分配表达式。
+- [TryAllocate](#class-tryallocate) - 创建的带异常处理的内存分配表达式。
 
 示例：
 
@@ -10774,10 +13550,10 @@ main() {
 static_func_create: 1
 ```
 
-### operator func==(TryAllocate)
+### operator func ==(TryAllocate)
 
 ```cangjie
-public operator func==(other: TryAllocate): Bool
+public operator func ==(other: TryAllocate): Bool
 ```
 
 功能：引用比较，判断两个 TryAllocate 是否为同一实例。
@@ -10816,12 +13592,96 @@ main() {
 op_eq_TryAllocate: true
 ```
 
----
+## class BinaryExpressionBase
+
+```cangjie
+sealed abstract class BinaryExpressionBase <: Expression & Equatable<BinaryExpressionBase> {}
+```
+
+功能：二元表达式（[BinaryExpression](#class-binaryexpression)、[TryBinaryExpression](#class-trybinaryexpression) 等）的抽象基类，提供溢出策略的查询与设置能力。
+
+父类型：
+
+- [Expression](#class-expression)
+- Equatable\<[BinaryExpressionBase](#class-binaryexpressionbase)>
+
+### prop overflow
+
+```cangjie
+public mut prop overflow: OverflowStrategy
+```
+
+功能：该二元表达式使用的溢出策略；可读可写，默认为 [OverflowStrategy](./chir_package_enums.md#enum-overflowstrategy).NA。
+
+类型：[OverflowStrategy](./chir_package_enums.md#enum-overflowstrategy)
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let builder = CHIRBuilder(InsertPosition.AtEnd(block))
+    let expr = builder.createBinaryAdd(IntLiteral.get(IntType.getInt64(), 1), IntLiteral.get(IntType.getInt64(), 2), OverflowStrategy.NA)
+    expr.overflow = OverflowStrategy.Throwing
+    println("prop_overflow: ${expr.overflow}")
+}
+```
+
+运行结果：
+
+```text
+prop_overflow: Throwing
+```
+
+### operator func ==(BinaryExpressionBase)
+
+```cangjie
+public operator func ==(other: BinaryExpressionBase): Bool
+```
+
+功能：引用比较，判断两个 BinaryExpressionBase 是否为同一实例。
+
+参数：
+
+- other: [BinaryExpressionBase](#class-binaryexpressionbase) - 另一二元表达式基类表达式。
+
+返回值：
+
+- Bool - 是否为同一引用。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let builder = CHIRBuilder(InsertPosition.AtEnd(block))
+    let expr = builder.createBinaryAdd(IntLiteral.get(IntType.getInt64(), 1), IntLiteral.get(IntType.getInt64(), 2), OverflowStrategy.NA)
+    println("op_eq_BinaryExpressionBase: ${expr == expr}")
+}
+```
+
+运行结果：
+
+```text
+op_eq_BinaryExpressionBase: true
+```
 
 ## class BinaryExpression
 
 ```cangjie
-public class BinaryExpression <: BinaryExpressionBase & Equatable<BinaryExpression>
+public class BinaryExpression <: BinaryExpressionBase & Equatable<BinaryExpression> {}
 ```
 
 功能：二元运算表达式（不带异常处理），支持数学运算、位运算、比较运算和逻辑运算。
@@ -10847,7 +13707,7 @@ public static func create(kind: BinaryExprKind, leftOp: Value, rightOp: Value): 
 
 返回值：
 
-- BinaryExpression - 创建的二元运算表达式。
+- [BinaryExpression](#class-binaryexpression) - 创建的二元运算表达式。
 
 示例：
 
@@ -10874,10 +13734,10 @@ main() {
 static_func_create: 1
 ```
 
-### operator func==(BinaryExpression)
+### operator func ==(BinaryExpression)
 
 ```cangjie
-public operator func==(other: BinaryExpression): Bool
+public operator func ==(other: BinaryExpression): Bool
 ```
 
 功能：引用比较，判断两个 BinaryExpression 是否为同一实例。
@@ -10915,12 +13775,10 @@ main() {
 op_eq_BinaryExpression: true
 ```
 
----
-
 ## class TryBinaryExpression
 
 ```cangjie
-public class TryBinaryExpression <: BinaryExpressionBase & Equatable<TryBinaryExpression>
+public class TryBinaryExpression <: BinaryExpressionBase & Equatable<TryBinaryExpression> {}
 ```
 
 功能：带异常处理的二元运算表达式，运算成功时跳转到正常分支，溢出或出错时跳转到异常分支。
@@ -11024,7 +13882,7 @@ public static func create(kind: BinaryExprKind, leftOp: Value, rightOp: Value, n
 
 返回值：
 
-- TryBinaryExpression - 创建的带异常处理的二元运算表达式。
+- [TryBinaryExpression](#class-trybinaryexpression) - 创建的带异常处理的二元运算表达式。
 
 示例：
 
@@ -11054,10 +13912,10 @@ main() {
 static_func_create: 1
 ```
 
-### operator func==(TryBinaryExpression)
+### operator func ==(TryBinaryExpression)
 
 ```cangjie
-public operator func==(other: TryBinaryExpression): Bool
+public operator func ==(other: TryBinaryExpression): Bool
 ```
 
 功能：引用比较，判断两个 TryBinaryExpression 是否为同一实例。
@@ -11098,12 +13956,10 @@ main() {
 op_eq_TryBinaryExpression: true
 ```
 
----
-
 ## class Branch
 
 ```cangjie
-public class Branch <: Expression & Equatable<Branch>
+public class Branch <: Expression & Equatable<Branch> {}
 ```
 
 功能：条件分支（if-else）终止器表达式，根据条件值跳转到真分支或假分支目标块。
@@ -11243,7 +14099,7 @@ public static func create(condition: Value, trueTarget: Block, falseTarget: Bloc
 
 返回值：
 
-- Branch - 创建的条件分支表达式。
+- [Branch](#class-branch) - 创建的条件分支表达式。
 
 示例：
 
@@ -11273,10 +14129,10 @@ main() {
 static_func_create: 2
 ```
 
-### operator func==(Branch)
+### operator func ==(Branch)
 
 ```cangjie
-public operator func==(other: Branch): Bool
+public operator func ==(other: Branch): Bool
 ```
 
 功能：引用比较，判断两个 Branch 是否为同一实例。
@@ -11317,12 +14173,10 @@ main() {
 op_eq_Branch: true
 ```
 
----
-
 ## class Constant
 
 ```cangjie
-public class Constant <: Expression & Equatable<Constant>
+public class Constant <: Expression & Equatable<Constant> {}
 ```
 
 功能：字面量常量表达式，表示一个编译期确定的常量值。
@@ -11346,7 +14200,7 @@ public static func create(val: LiteralValue): Constant
 
 返回值：
 
-- Constant - 创建的常量表达式。
+- [Constant](#class-constant) - 创建的常量表达式。
 
 示例：
 
@@ -11371,10 +14225,10 @@ main() {
 static_func_create: 1
 ```
 
-### operator func==(Constant)
+### operator func ==(Constant)
 
 ```cangjie
-public operator func==(other: Constant): Bool
+public operator func ==(other: Constant): Bool
 ```
 
 功能：引用比较，判断两个 Constant 是否为同一实例。
@@ -11410,12 +14264,10 @@ main() {
 op_eq_Constant: true
 ```
 
----
-
 ## class Debug
 
 ```cangjie
-public class Debug <: Expression & Equatable<Debug>
+public class Debug <: Expression & Equatable<Debug> {}
 ```
 
 功能：调试标记表达式，保存源码位置映射信息，用于将 IR 中的值与源码中的变量名关联。
@@ -11475,7 +14327,7 @@ public static func create(location: Value, srcName: String): Debug
 
 返回值：
 
-- Debug - 创建的调试标记表达式。
+- [Debug](#class-debug) - 创建的调试标记表达式。
 
 示例：
 
@@ -11502,10 +14354,10 @@ main() {
 static_func_create: 2
 ```
 
-### operator func==(Debug)
+### operator func ==(Debug)
 
 ```cangjie
-public operator func==(other: Debug): Bool
+public operator func ==(other: Debug): Bool
 ```
 
 功能：引用比较，判断两个 Debug 是否为同一实例。
@@ -11543,12 +14395,10 @@ main() {
 op_eq_Debug: true
 ```
 
----
-
 ## class Exit
 
 ```cangjie
-public class Exit <: Expression & Equatable<Exit>
+public class Exit <: Expression & Equatable<Exit> {}
 ```
 
 功能：函数退出终止器表达式，表示函数正常执行结束。
@@ -11568,7 +14418,7 @@ public static func create(): Exit
 
 返回值：
 
-- Exit - 创建的退出表达式。
+- [Exit](#class-exit) - 创建的退出表达式。
 
 示例：
 
@@ -11593,10 +14443,10 @@ main() {
 static_func_create: 1
 ```
 
-### operator func==(Exit)
+### operator func ==(Exit)
 
 ```cangjie
-public operator func==(other: Exit): Bool
+public operator func ==(other: Exit): Bool
 ```
 
 功能：引用比较，判断两个 Exit 是否为同一实例。
@@ -11632,12 +14482,10 @@ main() {
 op_eq_Exit: true
 ```
 
----
-
 ## class Field
 
 ```cangjie
-public class Field <: Expression & Equatable<Field>
+public class Field <: Expression & Equatable<Field> {}
 ```
 
 功能：按数字索引路径访问字段的表达式，通过数值索引序列定位聚合体中的子字段。
@@ -11700,7 +14548,7 @@ public static func create(location: Value, path: ArrayList<UInt64>): Field
 
 返回值：
 
-- Field - 创建的字段访问表达式。
+- [Field](#class-field) - 创建的字段访问表达式。
 
 示例：
 
@@ -11730,10 +14578,10 @@ main() {
 static_func_create: 2
 ```
 
-### operator func==(Field)
+### operator func ==(Field)
 
 ```cangjie
-public operator func==(other: Field): Bool
+public operator func ==(other: Field): Bool
 ```
 
 功能：引用比较，判断两个 Field 是否为同一实例。
@@ -11774,12 +14622,10 @@ main() {
 op_eq_Field: true
 ```
 
----
-
 ## class FieldByName
 
 ```cangjie
-public class FieldByName <: Expression & Equatable<FieldByName>
+public class FieldByName <: Expression & Equatable<FieldByName> {}
 ```
 
 功能：按字段名路径访问字段的表达式，通过字符串字段名序列定位聚合体中的子字段。
@@ -11842,7 +14688,7 @@ public static func create(location: Value, fieldNames: ArrayList<String>): Field
 
 返回值：
 
-- FieldByName - 创建的字段名访问表达式。
+- [FieldByName](#class-fieldbyname) - 创建的字段名访问表达式。
 
 示例：
 
@@ -11872,10 +14718,10 @@ main() {
 static_func_create: 2
 ```
 
-### operator func==(FieldByName)
+### operator func ==(FieldByName)
 
 ```cangjie
-public operator func==(other: FieldByName): Bool
+public operator func ==(other: FieldByName): Bool
 ```
 
 功能：引用比较，判断两个 FieldByName 是否为同一实例。
@@ -11916,12 +14762,266 @@ main() {
 op_eq_FieldByName: true
 ```
 
----
+## class FuncCall
+
+```cangjie
+sealed abstract class FuncCall <: Expression & Equatable<FuncCall> {}
+```
+
+功能：函数调用类表达式的抽象基类，是 [ApplyBase](#class-applybase)、[IntrinsicBase](#class-intrinsicbase)、[InvokeBase](#class-invokebase) 的父类型，提供实例化类型参数、对象类型及实参列表的查询能力。
+
+父类型：
+
+- [Expression](#class-expression)
+- Equatable\<[FuncCall](#class-funccall)>
+
+### prop instantiatedTypeArgs
+
+```cangjie
+public prop instantiatedTypeArgs: Array<Type>
+```
+
+功能：该函数调用表达式的实例化类型参数列表。
+
+类型：Array\<[Type](#class-type)>
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let fType = FuncType.get([], UnitType.get())
+    let f = pkg.addFunction(fType, "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let builder = CHIRBuilder(InsertPosition.AtEnd(block))
+    let callCtx = FuncCallContext([], [], None)
+    let expr = Apply.create(f, callCtx)
+    block.appendExpr(expr)
+    println("prop_instantiatedTypeArgs: ${expr.instantiatedTypeArgs.size}")
+}
+```
+
+运行结果：
+
+```text
+prop_instantiatedTypeArgs: 0
+```
+
+### prop objType
+
+```cangjie
+public prop objType: ?Type
+```
+
+功能：该函数调用表达式的对象类型（成员方法调用时的对象类型）；非成员方法调用时为 `None`。
+
+类型：?[Type](#class-type)
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let fType = FuncType.get([], UnitType.get())
+    let f = pkg.addFunction(fType, "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let builder = CHIRBuilder(InsertPosition.AtEnd(block))
+    let callCtx = FuncCallContext([], [], None)
+    let expr = Apply.create(f, callCtx)
+    block.appendExpr(expr)
+    println("prop_objType: ${expr.objType.isNone()}")
+}
+```
+
+运行结果：
+
+```text
+prop_objType: true
+```
+
+### func getArgs()
+
+```cangjie
+public func getArgs(): Array<Value>
+```
+
+功能：获取该函数调用表达式的实参列表。
+
+返回值：
+
+- Array\<[Value](#class-value)> - 实参数组。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let fType = FuncType.get([], UnitType.get())
+    let f = pkg.addFunction(fType, "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let builder = CHIRBuilder(InsertPosition.AtEnd(block))
+    let callCtx = FuncCallContext([], [], None)
+    let expr = Apply.create(f, callCtx)
+    block.appendExpr(expr)
+    println("func_getArgs: ${expr.getArgs().size}")
+}
+```
+
+运行结果：
+
+```text
+func_getArgs: 0
+```
+
+### operator func ==(FuncCall)
+
+```cangjie
+public operator func ==(other: FuncCall): Bool
+```
+
+功能：引用比较，判断两个 FuncCall 是否为同一实例。
+
+参数：
+
+- other: [FuncCall](#class-funccall) - 另一函数调用基类表达式。
+
+返回值：
+
+- Bool - 是否为同一引用。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let fType = FuncType.get([], UnitType.get())
+    let f = pkg.addFunction(fType, "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let builder = CHIRBuilder(InsertPosition.AtEnd(block))
+    let callCtx = FuncCallContext([], [], None)
+    let expr = Apply.create(f, callCtx)
+    block.appendExpr(expr)
+    println("op_eq_FuncCall: ${expr == expr}")
+}
+```
+
+运行结果：
+
+```text
+op_eq_FuncCall: true
+```
+
+## class ApplyBase
+
+```cangjie
+sealed abstract class ApplyBase <: FuncCall & Equatable<ApplyBase> {}
+```
+
+功能：Apply（普通函数调用）类表达式的抽象基类，是 [Apply](#class-apply)、[TryApply](#class-tryapply) 的父类型，提供被调用函数值（callee）的查询能力。
+
+父类型：
+
+- [FuncCall](#class-funccall)
+- Equatable\<[ApplyBase](#class-applybase)>
+
+### prop callee
+
+```cangjie
+public prop callee: Value
+```
+
+功能：被调用的函数值。
+
+类型：[Value](#class-value)
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let fType = FuncType.get([], UnitType.get())
+    let f = pkg.addFunction(fType, "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let builder = CHIRBuilder(InsertPosition.AtEnd(block))
+    let callCtx = FuncCallContext([], [], None)
+    let expr = Apply.create(f, callCtx)
+    block.appendExpr(expr)
+    println("prop_callee: ${expr.callee == f}")
+}
+```
+
+运行结果：
+
+```text
+prop_callee: true
+```
+
+### operator func ==(ApplyBase)
+
+```cangjie
+public operator func ==(other: ApplyBase): Bool
+```
+
+功能：引用比较，判断两个 ApplyBase 是否为同一实例。
+
+参数：
+
+- other: [ApplyBase](#class-applybase) - 另一 Apply 基类表达式。
+
+返回值：
+
+- Bool - 是否为同一引用。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let fType = FuncType.get([], UnitType.get())
+    let f = pkg.addFunction(fType, "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let builder = CHIRBuilder(InsertPosition.AtEnd(block))
+    let callCtx = FuncCallContext([], [], None)
+    let expr = Apply.create(f, callCtx)
+    block.appendExpr(expr)
+    println("op_eq_ApplyBase: ${expr == expr}")
+}
+```
+
+运行结果：
+
+```text
+op_eq_ApplyBase: true
+```
 
 ## class Apply
 
 ```cangjie
-public class Apply <: ApplyBase & Equatable<Apply>
+public class Apply <: ApplyBase & Equatable<Apply> {}
 ```
 
 功能：函数调用（Apply）表达式，表示对函数的直接调用。
@@ -11946,7 +15046,7 @@ public static func create(callee: Value, funcCallCtx: FuncCallContext): Apply
 
 返回值：
 
-- Apply - 创建的函数调用表达式。
+- [Apply](#class-apply) - 创建的函数调用表达式。
 
 示例：
 
@@ -11973,49 +15073,22 @@ main() {
 static_func_create: 1
 ```
 
-### override func getArgs()
+### func getArgs()
 
-<!-- compile -->
 ```cangjie
 public override func getArgs(): Array<Value>
 ```
 
-功能：获取调用参数列表。
+功能：返回此调用表达式的实际参数列表。
 
 返回值：
 
-- Array\<Value> - 调用参数列表。
+- Array\<Value> - 参数值数组。
 
-示例：
-
-<!-- verify -->
-```cangjie
-import stdx.chir.*
-
-main() {
-    let pkg = Package("demo", AccessLevel.Public)
-    let calleeFunc = pkg.addFunction(FuncType.get([IntType.getInt32()], UnitType.get()), "callee_m", "callee", "demo")
-    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
-    f.initBody()
-    let block = f.body.getOrThrow().entryBlock
-    let arg = IntLiteral.get(IntType.getInt32(), 1)
-    let ctx = FuncCallContext([arg], [], None)
-    let expr = Apply.create(calleeFunc, ctx)
-    block.appendExpr(expr)
-    println("func_getArgs: ${expr.getArgs().size}")
-}
-```
-
-运行结果：
-
-```text
-func_getArgs: 1
-```
-
-### operator func==(Apply)
+### operator func ==(Apply)
 
 ```cangjie
-public operator func==(other: Apply): Bool
+public operator func ==(other: Apply): Bool
 ```
 
 功能：引用比较，判断两个 Apply 是否为同一实例。
@@ -12053,12 +15126,10 @@ main() {
 op_eq_Apply: true
 ```
 
----
-
 ## class TryApply
 
 ```cangjie
-public class TryApply <: ApplyBase & Equatable<TryApply>
+public class TryApply <: ApplyBase & Equatable<TryApply> {}
 ```
 
 功能：带异常处理的函数调用表达式，调用成功时跳转到正常分支，抛出异常时跳转到异常分支。
@@ -12161,7 +15232,7 @@ public static func create(callee: Value, funcCallCtx: FuncCallContext, normal: B
 
 返回值：
 
-- TryApply - 创建的带异常处理的函数调用表达式。
+- [TryApply](#class-tryapply) - 创建的带异常处理的函数调用表达式。
 
 示例：
 
@@ -12191,52 +15262,22 @@ main() {
 static_func_create: 1
 ```
 
-### override func getArgs()
+### func getArgs()
 
-<!-- compile -->
 ```cangjie
 public override func getArgs(): Array<Value>
 ```
 
-功能：获取调用参数列表（不含正常和异常分支操作数）。
+功能：返回此调用表达式的实际参数列表。
 
 返回值：
 
-- Array\<Value> - 调用参数列表。
+- Array\<Value> - 参数值数组。
 
-示例：
-
-<!-- verify -->
-```cangjie
-import stdx.chir.*
-
-main() {
-    let pkg = Package("demo", AccessLevel.Public)
-    let calleeFunc = pkg.addFunction(FuncType.get([IntType.getInt32()], UnitType.get()), "callee_m", "callee", "demo")
-    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
-    f.initBody()
-    let bg = f.body.getOrThrow()
-    let block = bg.entryBlock
-    let normalBlock = bg.appendBlock()
-    let errorBlock = bg.appendBlock()
-    let arg = IntLiteral.get(IntType.getInt32(), 1)
-    let ctx = FuncCallContext([arg], [], None)
-    let expr = TryApply.create(calleeFunc, ctx, normalBlock, errorBlock)
-    block.appendExpr(expr)
-    println("func_getArgs: ${expr.getArgs().size}")
-}
-```
-
-运行结果：
-
-```text
-func_getArgs: 1
-```
-
-### operator func==(TryApply)
+### operator func ==(TryApply)
 
 ```cangjie
-public operator func==(other: TryApply): Bool
+public operator func ==(other: TryApply): Bool
 ```
 
 功能：引用比较，判断两个 TryApply 是否为同一实例。
@@ -12277,12 +15318,39 @@ main() {
 op_eq_TryApply: true
 ```
 
----
+## class IntrinsicBase
+
+```cangjie
+sealed abstract class IntrinsicBase <: FuncCall & Equatable<IntrinsicBase> {}
+```
+
+功能：内置函数（Intrinsic）调用类表达式的抽象基类，是 [Intrinsic](#class-intrinsic)、[TryIntrinsic](#class-tryintrinsic) 的父类型。
+
+父类型：
+
+- [FuncCall](#class-funccall)
+- Equatable\<[IntrinsicBase](#class-intrinsicbase)>
+
+### operator func ==(IntrinsicBase)
+
+```cangjie
+public operator func ==(other: IntrinsicBase): Bool
+```
+
+功能：引用比较，判断两个 IntrinsicBase 是否为同一实例。
+
+参数：
+
+- other: [IntrinsicBase](#class-intrinsicbase) - 另一 Intrinsic 基类表达式。
+
+返回值：
+
+- Bool - 是否为同一引用。
 
 ## class Intrinsic
 
 ```cangjie
-public class Intrinsic <: IntrinsicBase & Equatable<Intrinsic>
+public class Intrinsic <: IntrinsicBase & Equatable<Intrinsic> {}
 ```
 
 功能：内建函数调用表达式（不带异常处理），表示对编译器内建函数（如 `sizeof`、`alignof` 等）的调用。Intrinsic 实例由编译器内部流程创建，可通过遍历 Block 的 `exprs` 列表访问已有的 Intrinsic 表达式。
@@ -12292,23 +15360,22 @@ public class Intrinsic <: IntrinsicBase & Equatable<Intrinsic>
 - IntrinsicBase
 - Equatable\<Intrinsic>
 
-### override func getArgs()
+### func getArgs()
 
-<!-- compile -->
 ```cangjie
 public override func getArgs(): Array<Value>
 ```
 
-功能：获取内建函数调用参数列表。
+功能：返回此调用表达式的实际参数列表。
 
 返回值：
 
-- Array\<Value> - 调用参数列表。
+- Array\<Value> - 参数值数组。
 
-### operator func==(Intrinsic)
+### operator func ==(Intrinsic)
 
 ```cangjie
-public operator func==(other: Intrinsic): Bool
+public operator func ==(other: Intrinsic): Bool
 ```
 
 功能：引用比较，判断两个 Intrinsic 是否为同一实例。
@@ -12321,12 +15388,10 @@ public operator func==(other: Intrinsic): Bool
 
 - Bool - 是否为同一引用。
 
----
-
 ## class TryIntrinsic
 
 ```cangjie
-public class TryIntrinsic <: IntrinsicBase & Equatable<TryIntrinsic>
+public class TryIntrinsic <: IntrinsicBase & Equatable<TryIntrinsic> {}
 ```
 
 功能：带异常处理的内建函数调用表达式。TryIntrinsic 实例由编译器内部流程创建，可通过遍历 Block 的 `exprs` 列表访问已有的 TryIntrinsic 表达式。
@@ -12356,23 +15421,22 @@ public prop errorBranch: Block
 
 类型：Block
 
-### override func getArgs()
+### func getArgs()
 
-<!-- compile -->
 ```cangjie
 public override func getArgs(): Array<Value>
 ```
 
-功能：获取内建函数调用参数列表（不含正常和异常分支操作数）。
+功能：返回此调用表达式的实际参数列表。
 
 返回值：
 
-- Array\<Value> - 调用参数列表。
+- Array\<Value> - 参数值数组。
 
-### operator func==(TryIntrinsic)
+### operator func ==(TryIntrinsic)
 
 ```cangjie
-public operator func==(other: TryIntrinsic): Bool
+public operator func ==(other: TryIntrinsic): Bool
 ```
 
 功能：引用比较，判断两个 TryIntrinsic 是否为同一实例。
@@ -12385,12 +15449,173 @@ public operator func==(other: TryIntrinsic): Bool
 
 - Bool - 是否为同一引用。
 
----
+## class InvokeBase
+
+```cangjie
+sealed abstract class InvokeBase <: FuncCall & Equatable<InvokeBase> {}
+```
+
+功能：成员方法调用（Invoke）类表达式的抽象基类，是 [Invoke](#class-invoke)、[TryInvoke](#class-tryinvoke) 的父类型，提供方法名、方法类型及方法泛型形参的查询能力。
+
+父类型：
+
+- [FuncCall](#class-funccall)
+- Equatable\<[InvokeBase](#class-invokebase)>
+
+### prop methodGenericTypeParams
+
+```cangjie
+public prop methodGenericTypeParams: Array<GenericType>
+```
+
+功能：该成员方法调用的方法泛型形参列表。
+
+类型：Array\<[GenericType](#class-generictype)>
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let builder = CHIRBuilder(InsertPosition.AtEnd(block))
+    let virMethodCtx = FuncSigInfo("m", FuncType.get([], UnitType.get()))
+    let invokeCtx = InvokeCallContext(f, virMethodCtx, FuncCallContext([], [], None))
+    let expr = Invoke.create(UnitType.get(), invokeCtx)
+    block.appendExpr(expr)
+    println("prop_methodGenericTypeParams: ${expr.methodGenericTypeParams.size}")
+}
+```
+
+运行结果：
+
+```text
+prop_methodGenericTypeParams: 0
+```
+
+### prop methodName
+
+```cangjie
+public prop methodName: String
+```
+
+功能：该成员方法调用的方法名。
+
+类型：String
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let builder = CHIRBuilder(InsertPosition.AtEnd(block))
+    let virMethodCtx = FuncSigInfo("m", FuncType.get([], UnitType.get()))
+    let invokeCtx = InvokeCallContext(f, virMethodCtx, FuncCallContext([], [], None))
+    let expr = Invoke.create(UnitType.get(), invokeCtx)
+    block.appendExpr(expr)
+    println("prop_methodName: ${expr.methodName}")
+}
+```
+
+运行结果：
+
+```text
+prop_methodName: m
+```
+
+### prop methodType
+
+```cangjie
+public prop methodType: FuncType
+```
+
+功能：该成员方法调用的方法类型。
+
+类型：[FuncType](#class-functype)
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let builder = CHIRBuilder(InsertPosition.AtEnd(block))
+    let virMethodCtx = FuncSigInfo("m", FuncType.get([], UnitType.get()))
+    let invokeCtx = InvokeCallContext(f, virMethodCtx, FuncCallContext([], [], None))
+    let expr = Invoke.create(UnitType.get(), invokeCtx)
+    block.appendExpr(expr)
+    println("prop_methodType: ${expr.methodType.qualifiedName}")
+}
+```
+
+运行结果：
+
+```text
+prop_methodType: ()->Unit
+```
+
+### operator func ==(InvokeBase)
+
+```cangjie
+public operator func ==(other: InvokeBase): Bool
+```
+
+功能：引用比较，判断两个 InvokeBase 是否为同一实例。
+
+参数：
+
+- other: [InvokeBase](#class-invokebase) - 另一 Invoke 基类表达式。
+
+返回值：
+
+- Bool - 是否为同一引用。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let builder = CHIRBuilder(InsertPosition.AtEnd(block))
+    let virMethodCtx = FuncSigInfo("m", FuncType.get([], UnitType.get()))
+    let invokeCtx = InvokeCallContext(f, virMethodCtx, FuncCallContext([], [], None))
+    let expr = Invoke.create(UnitType.get(), invokeCtx)
+    block.appendExpr(expr)
+    println("op_eq_InvokeBase: ${expr == expr}")
+}
+```
+
+运行结果：
+
+```text
+op_eq_InvokeBase: true
+```
 
 ## class Invoke
 
 ```cangjie
-public class Invoke <: InvokeBase & Equatable<Invoke>
+public class Invoke <: InvokeBase & Equatable<Invoke> {}
 ```
 
 功能：虚方法调用（Invoke）表达式，表示对实例方法的虚调用。
@@ -12415,7 +15640,7 @@ public static func create(retTy: Type, callContext: InvokeCallContext): Invoke
 
 返回值：
 
-- Invoke - 创建的虚方法调用表达式。
+- [Invoke](#class-invoke) - 创建的虚方法调用表达式。
 
 示例：
 
@@ -12444,50 +15669,22 @@ main() {
 static_func_create: 1
 ```
 
-### override func getArgs()
+### func getArgs()
 
-<!-- compile -->
 ```cangjie
 public override func getArgs(): Array<Value>
 ```
 
-功能：获取虚方法调用参数列表。
+功能：返回此调用表达式的实际参数列表。
 
 返回值：
 
-- Array\<Value> - 调用参数列表。
+- Array\<Value> - 参数值数组。
 
-示例：
-
-<!-- verify -->
-```cangjie
-import stdx.chir.*
-
-main() {
-    let pkg = Package("demo", AccessLevel.Public)
-    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
-    f.initBody()
-    let block = f.body.getOrThrow().entryBlock
-    let ft = FuncType.get([], UnitType.get())
-    let sig = FuncSigInfo("method", ft)
-    let fcc = FuncCallContext([], [], None)
-    let ctx = InvokeCallContext(BoolLiteral.get(false), sig, fcc)
-    let expr = Invoke.create(UnitType.get(), ctx)
-    block.appendExpr(expr)
-    println("func_getArgs: ${expr.getArgs().size}")
-}
-```
-
-运行结果：
-
-```text
-func_getArgs: 1
-```
-
-### operator func==(Invoke)
+### operator func ==(Invoke)
 
 ```cangjie
-public operator func==(other: Invoke): Bool
+public operator func ==(other: Invoke): Bool
 ```
 
 功能：引用比较，判断两个 Invoke 是否为同一实例。
@@ -12527,12 +15724,10 @@ main() {
 op_eq_Invoke: true
 ```
 
----
-
 ## class TryInvoke
 
 ```cangjie
-public class TryInvoke <: InvokeBase & Equatable<TryInvoke>
+public class TryInvoke <: InvokeBase & Equatable<TryInvoke> {}
 ```
 
 功能：带异常处理的虚方法调用表达式，调用成功时跳转到正常分支，抛出异常时跳转到异常分支。
@@ -12639,7 +15834,7 @@ public static func create(retTy: Type, callContext: InvokeCallContext, normal: B
 
 返回值：
 
-- TryInvoke - 创建的带异常处理的虚方法调用表达式。
+- [TryInvoke](#class-tryinvoke) - 创建的带异常处理的虚方法调用表达式。
 
 示例：
 
@@ -12671,53 +15866,22 @@ main() {
 static_func_create: 1
 ```
 
-### override func getArgs()
+### func getArgs()
 
-<!-- compile -->
 ```cangjie
 public override func getArgs(): Array<Value>
 ```
 
-功能：获取虚方法调用参数列表（不含正常和异常分支操作数）。
+功能：返回此调用表达式的实际参数列表。
 
 返回值：
 
-- Array\<Value> - 调用参数列表。
+- Array\<Value> - 参数值数组。
 
-示例：
-
-<!-- verify -->
-```cangjie
-import stdx.chir.*
-
-main() {
-    let pkg = Package("demo", AccessLevel.Public)
-    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
-    f.initBody()
-    let bg = f.body.getOrThrow()
-    let block = bg.entryBlock
-    let normalBlock = bg.appendBlock()
-    let errorBlock = bg.appendBlock()
-    let ft = FuncType.get([], UnitType.get())
-    let sig = FuncSigInfo("method", ft)
-    let fcc = FuncCallContext([], [], None)
-    let ctx = InvokeCallContext(BoolLiteral.get(false), sig, fcc)
-    let expr = TryInvoke.create(UnitType.get(), ctx, normalBlock, errorBlock)
-    block.appendExpr(expr)
-    println("func_getArgs: ${expr.getArgs().size}")
-}
-```
-
-运行结果：
-
-```text
-func_getArgs: 1
-```
-
-### operator func==(TryInvoke)
+### operator func ==(TryInvoke)
 
 ```cangjie
-public operator func==(other: TryInvoke): Bool
+public operator func ==(other: TryInvoke): Bool
 ```
 
 功能：引用比较，判断两个 TryInvoke 是否为同一实例。
@@ -12760,12 +15924,10 @@ main() {
 op_eq_TryInvoke: true
 ```
 
----
-
 ## class GetElementByName
 
 ```cangjie
-public class GetElementByName <: Expression & Equatable<GetElementByName>
+public class GetElementByName <: Expression & Equatable<GetElementByName> {}
 ```
 
 功能：按字段名读取聚合体元素的表达式，返回元素的引用。
@@ -12828,7 +15990,7 @@ public static func create(location: Value, fieldNames: ArrayList<String>): GetEl
 
 返回值：
 
-- GetElementByName - 创建的元素读取表达式。
+- [GetElementByName](#class-getelementbyname) - 创建的元素读取表达式。
 
 示例：
 
@@ -12858,10 +16020,10 @@ main() {
 static_func_create: 2
 ```
 
-### operator func==(GetElementByName)
+### operator func ==(GetElementByName)
 
 ```cangjie
-public operator func==(other: GetElementByName): Bool
+public operator func ==(other: GetElementByName): Bool
 ```
 
 功能：引用比较，判断两个 GetElementByName 是否为同一实例。
@@ -12902,12 +16064,10 @@ main() {
 op_eq_GetElementByName: true
 ```
 
----
-
 ## class GetElementRef
 
 ```cangjie
-public class GetElementRef <: Expression & Equatable<GetElementRef>
+public class GetElementRef <: Expression & Equatable<GetElementRef> {}
 ```
 
 功能：按数字索引读取聚合体元素引用的表达式，返回元素的引用。
@@ -12970,7 +16130,7 @@ public static func create(location: Value, path: ArrayList<UInt64>): GetElementR
 
 返回值：
 
-- GetElementRef - 创建的元素引用读取表达式。
+- [GetElementRef](#class-getelementref) - 创建的元素引用读取表达式。
 
 示例：
 
@@ -13000,10 +16160,10 @@ main() {
 static_func_create: 2
 ```
 
-### operator func==(GetElementRef)
+### operator func ==(GetElementRef)
 
 ```cangjie
-public operator func==(other: GetElementRef): Bool
+public operator func ==(other: GetElementRef): Bool
 ```
 
 功能：引用比较，判断两个 GetElementRef 是否为同一实例。
@@ -13044,12 +16204,10 @@ main() {
 op_eq_GetElementRef: true
 ```
 
----
-
 ## class GetException
 
 ```cangjie
-public class GetException <: Expression & Equatable<GetException>
+public class GetException <: Expression & Equatable<GetException> {}
 ```
 
 功能：获取异常值的表达式，在异常处理 landing pad 块中用于读取捕获到的异常对象。
@@ -13073,7 +16231,7 @@ public static func create(retTy: Type): GetException
 
 返回值：
 
-- GetException - 创建的获取异常值表达式。
+- [GetException](#class-getexception) - 创建的获取异常值表达式。
 
 示例：
 
@@ -13098,10 +16256,10 @@ main() {
 static_func_create: 1
 ```
 
-### operator func==(GetException)
+### operator func ==(GetException)
 
 ```cangjie
-public operator func==(other: GetException): Bool
+public operator func ==(other: GetException): Bool
 ```
 
 功能：引用比较，判断两个 GetException 是否为同一实例。
@@ -13137,12 +16295,10 @@ main() {
 op_eq_GetException: true
 ```
 
----
-
 ## class GetInstantiateValue
 
 ```cangjie
-public class GetInstantiateValue <: Expression & Equatable<GetInstantiateValue>
+public class GetInstantiateValue <: Expression & Equatable<GetInstantiateValue> {}
 ```
 
 功能：获取泛型函数实例化值的表达式，用于表示泛型函数的单态化实例。
@@ -13202,7 +16358,7 @@ public static func create(val: Function, instantiateTypes: ArrayList<Type>): Get
 
 返回值：
 
-- GetInstantiateValue - 创建的实例化值表达式。
+- [GetInstantiateValue](#class-getinstantiatevalue) - 创建的实例化值表达式。
 
 示例：
 
@@ -13229,10 +16385,10 @@ main() {
 static_func_create: 1
 ```
 
-### operator func==(GetInstantiateValue)
+### operator func ==(GetInstantiateValue)
 
 ```cangjie
-public operator func==(other: GetInstantiateValue): Bool
+public operator func ==(other: GetInstantiateValue): Bool
 ```
 
 功能：引用比较，判断两个 GetInstantiateValue 是否为同一实例。
@@ -13270,12 +16426,10 @@ main() {
 op_eq_GetInstantiateValue: true
 ```
 
----
-
 ## class GetRTTI
 
 ```cangjie
-public class GetRTTI <: Expression & Equatable<GetRTTI>
+public class GetRTTI <: Expression & Equatable<GetRTTI> {}
 ```
 
 功能：获取运行时类型信息的表达式，从值中提取 RTTI 数据。
@@ -13299,7 +16453,7 @@ public static func create(val: Value): GetRTTI
 
 返回值：
 
-- GetRTTI - 创建的 RTTI 获取表达式。
+- [GetRTTI](#class-getrtti) - 创建的 RTTI 获取表达式。
 
 示例：
 
@@ -13325,10 +16479,10 @@ main() {
 static_func_create: 1
 ```
 
-### operator func==(GetRTTI)
+### operator func ==(GetRTTI)
 
 ```cangjie
-public operator func==(other: GetRTTI): Bool
+public operator func ==(other: GetRTTI): Bool
 ```
 
 功能：引用比较，判断两个 GetRTTI 是否为同一实例。
@@ -13365,12 +16519,10 @@ main() {
 op_eq_GetRTTI: true
 ```
 
----
-
 ## class GetRTTIStatic
 
 ```cangjie
-public class GetRTTIStatic <: Expression & Equatable<GetRTTIStatic>
+public class GetRTTIStatic <: Expression & Equatable<GetRTTIStatic> {}
 ```
 
 功能：静态获取运行时类型信息的表达式，从类型直接提取 RTTI 数据（不依赖值实例）。
@@ -13427,7 +16579,7 @@ public static func create(ty: Type): GetRTTIStatic
 
 返回值：
 
-- GetRTTIStatic - 创建的静态 RTTI 获取表达式。
+- [GetRTTIStatic](#class-getrttistatic) - 创建的静态 RTTI 获取表达式。
 
 示例：
 
@@ -13452,10 +16604,10 @@ main() {
 static_func_create: 1
 ```
 
-### operator func==(GetRTTIStatic)
+### operator func ==(GetRTTIStatic)
 
 ```cangjie
-public operator func==(other: GetRTTIStatic): Bool
+public operator func ==(other: GetRTTIStatic): Bool
 ```
 
 功能：引用比较，判断两个 GetRTTIStatic 是否为同一实例。
@@ -13491,12 +16643,10 @@ main() {
 op_eq_GetRTTIStatic: true
 ```
 
----
-
 ## class GoTo
 
 ```cangjie
-public class GoTo <: Expression & Equatable<GoTo>
+public class GoTo <: Expression & Equatable<GoTo> {}
 ```
 
 功能：无条件跳转终止器表达式，直接跳转到目标基本块。
@@ -13520,7 +16670,7 @@ public static func create(target: Block): GoTo
 
 返回值：
 
-- GoTo - 创建的无条件跳转表达式。
+- [GoTo](#class-goto) - 创建的无条件跳转表达式。
 
 示例：
 
@@ -13547,10 +16697,10 @@ main() {
 static_func_create: 1
 ```
 
-### operator func==(GoTo)
+### operator func ==(GoTo)
 
 ```cangjie
-public operator func==(other: GoTo): Bool
+public operator func ==(other: GoTo): Bool
 ```
 
 功能：引用比较，判断两个 GoTo 是否为同一实例。
@@ -13588,12 +16738,10 @@ main() {
 op_eq_GoTo: true
 ```
 
----
-
 ## class InstanceOf
 
 ```cangjie
-public class InstanceOf <: Expression & Equatable<InstanceOf>
+public class InstanceOf <: Expression & Equatable<InstanceOf> {}
 ```
 
 功能：类型检查表达式，判断源值是否属于目标类型，返回布尔结果。
@@ -13652,7 +16800,7 @@ public static func create(srcVal: Value, targetTy: Type): InstanceOf
 
 返回值：
 
-- InstanceOf - 创建的类型检查表达式。
+- [InstanceOf](#class-instanceof) - 创建的类型检查表达式。
 
 示例：
 
@@ -13678,10 +16826,10 @@ main() {
 static_func_create: 1
 ```
 
-### operator func==(InstanceOf)
+### operator func ==(InstanceOf)
 
 ```cangjie
-public operator func==(other: InstanceOf): Bool
+public operator func ==(other: InstanceOf): Bool
 ```
 
 功能：引用比较，判断两个 InstanceOf 是否为同一实例。
@@ -13718,12 +16866,10 @@ main() {
 op_eq_InstanceOf: true
 ```
 
----
-
 ## class Lambda
 
 ```cangjie
-public class Lambda <: Expression & Equatable<Lambda>
+public class Lambda <: Expression & Equatable<Lambda> {}
 ```
 
 功能：Lambda / 局部函数表达式，表示一个嵌套的匿名函数或局部函数定义。
@@ -13945,116 +17091,35 @@ main() {
 prop_body: true
 ```
 
-### mut prop returnValue
+### prop isCompileTimeValue
 
-<!-- compile -->
-```cangjie
-public mut prop returnValue: LocalVar
-```
-
-功能：返回值局部变量。
-
-类型：[LocalVar](#class-localvar)
-
-示例：
-
-<!-- verify -->
-```cangjie
-import stdx.chir.*
-import std.collection.*
-
-main() {
-    let pkg = Package("demo", AccessLevel.Public)
-    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
-    f.initBody()
-    let block = f.body.getOrThrow().entryBlock
-    let lambdaType = FuncType.get([], IntType.getInt32())
-    let expr = Lambda.create(lambdaType, "lambda_m", "myLambda", ArrayList<GenericType>())
-    block.appendExpr(expr)
-    expr.initBody()
-    let lit = IntLiteral.get(IntType.getInt32(), 42)
-    expr.returnValue = Constant.create(lit).result
-    println("mut_prop_returnValue: ${expr.returnValue.toString().size > 0}")
-}
-```
-
-运行结果：
-
-```text
-mut_prop_returnValue: true
-```
-
-### mut prop isLocalFunc
-
-<!-- compile -->
-```cangjie
-public mut prop isLocalFunc: Bool
-```
-
-功能：是否为局部函数。
-
-类型：Bool
-
-示例：
-
-<!-- verify -->
-```cangjie
-import stdx.chir.*
-import std.collection.*
-
-main() {
-    let pkg = Package("demo", AccessLevel.Public)
-    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
-    f.initBody()
-    let block = f.body.getOrThrow().entryBlock
-    let lambdaType = FuncType.get([], UnitType.get())
-    let expr = Lambda.create(lambdaType, "lambda_m", "myLambda", ArrayList<GenericType>())
-    block.appendExpr(expr)
-    println("mut_prop_isLocalFunc: ${expr.isLocalFunc}")
-}
-```
-
-运行结果：
-
-```text
-mut_prop_isLocalFunc: false
-```
-
-### mut prop isCompileTimeValue
-
-<!-- compile -->
 ```cangjie
 public mut prop isCompileTimeValue: Bool
 ```
 
-功能：是否为编译期值。
+功能：是否为编译期值；getter 返回当前标记，setter 可修改。
 
 类型：Bool
 
-示例：
+### prop isLocalFunc
 
-<!-- verify -->
 ```cangjie
-import stdx.chir.*
-import std.collection.*
-
-main() {
-    let pkg = Package("demo", AccessLevel.Public)
-    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
-    f.initBody()
-    let block = f.body.getOrThrow().entryBlock
-    let lambdaType = FuncType.get([], UnitType.get())
-    let expr = Lambda.create(lambdaType, "lambda_m", "myLambda", ArrayList<GenericType>())
-    block.appendExpr(expr)
-    println("mut_prop_isCompileTimeValue: ${expr.isCompileTimeValue}")
-}
+public mut prop isLocalFunc: Bool
 ```
 
-运行结果：
+功能：是否为局部函数；getter 返回当前标记，setter 可修改。
 
-```text
-mut_prop_isCompileTimeValue: false
+类型：Bool
+
+### prop returnValue
+
+```cangjie
+public mut prop returnValue: LocalVar
 ```
+
+功能：Lambda 的返回值变量。
+
+类型：[LocalVar](#class-localvar)
 
 ### static func create(FuncType, String, String, ArrayList\<GenericType>)
 
@@ -14073,7 +17138,7 @@ public static func create(ty: FuncType, identifier: String, srcName: String, gen
 
 返回值：
 
-- Lambda - 创建的 Lambda 表达式。
+- [Lambda](#class-lambda) - 创建的 Lambda 表达式。
 
 示例：
 
@@ -14206,10 +17271,10 @@ main() {
 fn_toString: true
 ```
 
-### operator func==(Lambda)
+### operator func ==(Lambda)
 
 ```cangjie
-public operator func==(other: Lambda): Bool
+public operator func ==(other: Lambda): Bool
 ```
 
 功能：引用比较，判断两个 Lambda 是否为同一实例。
@@ -14247,12 +17312,10 @@ main() {
 op_eq_Lambda: true
 ```
 
----
-
 ## class Load
 
 ```cangjie
-public class Load <: Expression & Equatable<Load>
+public class Load <: Expression & Equatable<Load> {}
 ```
 
 功能：内存加载表达式。
@@ -14308,7 +17371,7 @@ public static func create(location: Value): Load
 
 返回值：
 
-- Load - 内存加载表达式实例。
+- [Load](#class-load) - 内存加载表达式实例。
 
 示例：
 
@@ -14332,10 +17395,10 @@ main() {
 static_create: true
 ```
 
-### operator func==(Load)
+### operator func ==(Load)
 
 ```cangjie
-public operator func==(other: Load): Bool
+public operator func ==(other: Load): Bool
 ```
 
 功能：引用比较，判断两个 Load 是否为同一实例。
@@ -14370,12 +17433,10 @@ main() {
 op_eq_Load: true
 ```
 
----
-
 ## class MultiBranch
 
 ```cangjie
-public class MultiBranch <: Expression & Equatable<MultiBranch>
+public class MultiBranch <: Expression & Equatable<MultiBranch> {}
 ```
 
 功能：多分支（switch-case）终止器表达式。
@@ -14562,7 +17623,7 @@ public static func create(condition: Value, default: Block, targets: ArrayList<B
 
 返回值：
 
-- MultiBranch - 多分支终止器表达式实例。
+- [MultiBranch](#class-multibranch) - 多分支终止器表达式实例。
 
 示例：
 
@@ -14593,10 +17654,10 @@ main() {
 static_create: true
 ```
 
-### operator func==(MultiBranch)
+### operator func ==(MultiBranch)
 
 ```cangjie
-public operator func==(other: MultiBranch): Bool
+public operator func ==(other: MultiBranch): Bool
 ```
 
 功能：引用比较，判断两个 MultiBranch 是否为同一实例。
@@ -14638,12 +17699,95 @@ main() {
 op_eq_MultiBranch: true
 ```
 
----
+## class NumericCastBase
+
+```cangjie
+sealed abstract class NumericCastBase <: Expression & Equatable<NumericCastBase> {}
+```
+
+功能：数值类型转换表达式的抽象基类，是 [NumericCast](#class-numericcast)、[TryNumericCast](#class-trynumericcast) 的父类型，提供溢出策略的查询与设置能力。
+
+父类型：
+
+- [Expression](#class-expression)
+- Equatable\<[NumericCastBase](#class-numericcastbase)>
+
+### prop overflow
+
+```cangjie
+public mut prop overflow: OverflowStrategy
+```
+
+功能：该数值转换表达式使用的溢出策略；可读可写。
+
+类型：[OverflowStrategy](./chir_package_enums.md#enum-overflowstrategy)
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let builder = CHIRBuilder(InsertPosition.AtEnd(block))
+    let expr = builder.createNumericCast(IntLiteral.get(IntType.getInt64(), 1), IntType.getInt32(), OverflowStrategy.NA)
+    println("prop_overflow: ${expr.overflow}")
+}
+```
+
+运行结果：
+
+```text
+prop_overflow: NA
+```
+
+### operator func ==(NumericCastBase)
+
+```cangjie
+public operator func ==(other: NumericCastBase): Bool
+```
+
+功能：引用比较，判断两个 NumericCastBase 是否为同一实例。
+
+参数：
+
+- other: [NumericCastBase](#class-numericcastbase) - 另一数值转换基类表达式。
+
+返回值：
+
+- Bool - 是否为同一引用。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let builder = CHIRBuilder(InsertPosition.AtEnd(block))
+    let expr = builder.createNumericCast(IntLiteral.get(IntType.getInt64(), 1), IntType.getInt32(), OverflowStrategy.NA)
+    println("op_eq_NumericCastBase: ${expr == expr}")
+}
+```
+
+运行结果：
+
+```text
+op_eq_NumericCastBase: true
+```
 
 ## class NumericCast
 
 ```cangjie
-public class NumericCast <: NumericCastBase & Equatable<NumericCast>
+public class NumericCast <: NumericCastBase & Equatable<NumericCast> {}
 ```
 
 功能：数值类型转换表达式。
@@ -14669,7 +17813,7 @@ public static func create(srcVal: Value, targetType: Type, overflow: OverflowStr
 
 返回值：
 
-- NumericCast - 数值类型转换表达式实例。
+- [NumericCast](#class-numericcast) - 数值类型转换表达式实例。
 
 示例：
 
@@ -14693,10 +17837,10 @@ main() {
 static_create: true
 ```
 
-### operator func==(NumericCast)
+### operator func ==(NumericCast)
 
 ```cangjie
-public operator func==(other: NumericCast): Bool
+public operator func ==(other: NumericCast): Bool
 ```
 
 功能：引用比较，判断两个 NumericCast 是否为同一实例。
@@ -14731,12 +17875,10 @@ main() {
 op_eq_NumericCast: true
 ```
 
----
-
 ## class TryNumericCast
 
 ```cangjie
-public class TryNumericCast <: NumericCastBase & Equatable<TryNumericCast>
+public class TryNumericCast <: NumericCastBase & Equatable<TryNumericCast> {}
 ```
 
 功能：带异常处理的数值类型转换表达式。
@@ -14831,7 +17973,7 @@ public static func create(srcVal: Value, targetType: Type, normal: Block, err: B
 
 返回值：
 
-- TryNumericCast - 带异常处理的数值类型转换表达式实例。
+- [TryNumericCast](#class-trynumericcast) - 带异常处理的数值类型转换表达式实例。
 
 示例：
 
@@ -14857,10 +17999,10 @@ main() {
 static_create: true
 ```
 
-### operator func==(TryNumericCast)
+### operator func ==(TryNumericCast)
 
 ```cangjie
-public operator func==(other: TryNumericCast): Bool
+public operator func ==(other: TryNumericCast): Bool
 ```
 
 功能：引用比较，判断两个 TryNumericCast 是否为同一实例。
@@ -14897,12 +18039,10 @@ main() {
 op_eq_TryNumericCast: true
 ```
 
----
-
 ## class RaiseException
 
 ```cangjie
-public class RaiseException <: Expression & Equatable<RaiseException>
+public class RaiseException <: Expression & Equatable<RaiseException> {}
 ```
 
 功能：抛出异常终止器表达式。
@@ -14926,7 +18066,7 @@ public static func create(value: Value): RaiseException
 
 返回值：
 
-- RaiseException - 抛出异常终止器表达式实例。
+- [RaiseException](#class-raiseexception) - 抛出异常终止器表达式实例。
 
 示例：
 
@@ -14968,7 +18108,7 @@ public static func create(value: Value, successor: Block): RaiseException
 
 返回值：
 
-- RaiseException - 抛出异常终止器表达式实例。
+- [RaiseException](#class-raiseexception) - 抛出异常终止器表达式实例。
 
 示例：
 
@@ -14996,10 +18136,10 @@ main() {
 static_create_withSuccessor: done
 ```
 
-### operator func==(RaiseException)
+### operator func ==(RaiseException)
 
 ```cangjie
-public operator func==(other: RaiseException): Bool
+public operator func ==(other: RaiseException): Bool
 ```
 
 功能：引用比较，判断两个 RaiseException 是否为同一实例。
@@ -15037,12 +18177,95 @@ main() {
 op_eq_RaiseException: true
 ```
 
----
+## class RawArrayAllocateBase
+
+```cangjie
+sealed abstract class RawArrayAllocateBase <: Expression & Equatable<RawArrayAllocateBase> {}
+```
+
+功能：原始数组分配表达式的抽象基类，是 [RawArrayAllocate](#class-rawarrayallocate)、[TryRawArrayAllocate](#class-tryrawarrayallocate) 的父类型，提供所分配元素类型的查询能力。
+
+父类型：
+
+- [Expression](#class-expression)
+- Equatable\<[RawArrayAllocateBase](#class-rawarrayallocatebase)>
+
+### prop elementType
+
+```cangjie
+public prop elementType: Type
+```
+
+功能：该分配表达式所分配的元素类型。
+
+类型：[Type](#class-type)
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let expr = RawArrayAllocate.create(IntType.getInt32(), IntLiteral.get(IntType.getInt64(), 4))
+    block.appendExpr(expr)
+    println("prop_elementType: ${expr.elementType.qualifiedName}")
+}
+```
+
+运行结果：
+
+```text
+prop_elementType: Int32
+```
+
+### operator func ==(RawArrayAllocateBase)
+
+```cangjie
+public operator func ==(other: RawArrayAllocateBase): Bool
+```
+
+功能：引用比较，判断两个 RawArrayAllocateBase 是否为同一实例。
+
+参数：
+
+- other: [RawArrayAllocateBase](#class-rawarrayallocatebase) - 另一原始数组分配基类表达式。
+
+返回值：
+
+- Bool - 是否为同一引用。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let expr = RawArrayAllocate.create(IntType.getInt32(), IntLiteral.get(IntType.getInt64(), 4))
+    block.appendExpr(expr)
+    println("op_eq_RawArrayAllocateBase: ${expr == expr}")
+}
+```
+
+运行结果：
+
+```text
+op_eq_RawArrayAllocateBase: true
+```
 
 ## class RawArrayAllocate
 
 ```cangjie
-public class RawArrayAllocate <: RawArrayAllocateBase & Equatable<RawArrayAllocate>
+public class RawArrayAllocate <: RawArrayAllocateBase & Equatable<RawArrayAllocate> {}
 ```
 
 功能：原始数组分配表达式。
@@ -15067,7 +18290,7 @@ public static func create(elementType: Type, size: Value): RawArrayAllocate
 
 返回值：
 
-- RawArrayAllocate - 原始数组分配表达式实例。
+- [RawArrayAllocate](#class-rawarrayallocate) - 原始数组分配表达式实例。
 
 示例：
 
@@ -15091,10 +18314,10 @@ main() {
 static_create: true
 ```
 
-### operator func==(RawArrayAllocate)
+### operator func ==(RawArrayAllocate)
 
 ```cangjie
-public operator func==(other: RawArrayAllocate): Bool
+public operator func ==(other: RawArrayAllocate): Bool
 ```
 
 功能：引用比较，判断两个 RawArrayAllocate 是否为同一实例。
@@ -15129,12 +18352,10 @@ main() {
 op_eq_RawArrayAllocate: true
 ```
 
----
-
 ## class TryRawArrayAllocate
 
 ```cangjie
-public class TryRawArrayAllocate <: RawArrayAllocateBase & Equatable<TryRawArrayAllocate>
+public class TryRawArrayAllocate <: RawArrayAllocateBase & Equatable<TryRawArrayAllocate> {}
 ```
 
 功能：带异常处理的原始数组分配表达式。
@@ -15229,7 +18450,7 @@ public static func create(elementType: Type, size: Value, normal: Block, err: Bl
 
 返回值：
 
-- TryRawArrayAllocate - 带异常处理的原始数组分配表达式实例。
+- [TryRawArrayAllocate](#class-tryrawarrayallocate) - 带异常处理的原始数组分配表达式实例。
 
 示例：
 
@@ -15255,10 +18476,10 @@ main() {
 static_create: true
 ```
 
-### operator func==(TryRawArrayAllocate)
+### operator func ==(TryRawArrayAllocate)
 
 ```cangjie
-public operator func==(other: TryRawArrayAllocate): Bool
+public operator func ==(other: TryRawArrayAllocate): Bool
 ```
 
 功能：引用比较，判断两个 TryRawArrayAllocate 是否为同一实例。
@@ -15295,12 +18516,10 @@ main() {
 op_eq_TryRawArrayAllocate: true
 ```
 
----
-
 ## class RawArrayInitByValue
 
 ```cangjie
-public class RawArrayInitByValue <: Expression & Equatable<RawArrayInitByValue>
+public class RawArrayInitByValue <: Expression & Equatable<RawArrayInitByValue> {}
 ```
 
 功能：按值初始化原始数组表达式。
@@ -15326,7 +18545,7 @@ public static func create(memory: Value, size: Value, initVal: Value): RawArrayI
 
 返回值：
 
-- RawArrayInitByValue - 按值初始化原始数组表达式实例。
+- [RawArrayInitByValue](#class-rawarrayinitbyvalue) - 按值初始化原始数组表达式实例。
 
 示例：
 
@@ -15352,10 +18571,10 @@ main() {
 static_create: done
 ```
 
-### operator func==(RawArrayInitByValue)
+### operator func ==(RawArrayInitByValue)
 
 ```cangjie
-public operator func==(other: RawArrayInitByValue): Bool
+public operator func ==(other: RawArrayInitByValue): Bool
 ```
 
 功能：引用比较，判断两个 RawArrayInitByValue 是否为同一实例。
@@ -15392,12 +18611,10 @@ main() {
 op_eq_RawArrayInitByValue: true
 ```
 
----
-
 ## class RawArrayLiteralInit
 
 ```cangjie
-public class RawArrayLiteralInit <: Expression & Equatable<RawArrayLiteralInit>
+public class RawArrayLiteralInit <: Expression & Equatable<RawArrayLiteralInit> {}
 ```
 
 功能：字面量初始化原始数组表达式。
@@ -15422,7 +18639,7 @@ public static func create(memory: Value, elements: ArrayList<Value>): RawArrayLi
 
 返回值：
 
-- RawArrayLiteralInit - 字面量初始化原始数组表达式实例。
+- [RawArrayLiteralInit](#class-rawarrayliteralinit) - 字面量初始化原始数组表达式实例。
 
 示例：
 
@@ -15452,10 +18669,10 @@ main() {
 static_create: done
 ```
 
-### operator func==(RawArrayLiteralInit)
+### operator func ==(RawArrayLiteralInit)
 
 ```cangjie
-public operator func==(other: RawArrayLiteralInit): Bool
+public operator func ==(other: RawArrayLiteralInit): Bool
 ```
 
 功能：引用比较，判断两个 RawArrayLiteralInit 是否为同一实例。
@@ -15496,12 +18713,130 @@ main() {
 op_eq_RawArrayLiteralInit: true
 ```
 
----
+## class SpawnBase
+
+```cangjie
+sealed abstract class SpawnBase <: Expression & Equatable<SpawnBase> {}
+```
+
+功能：协程创建（Spawn）表达式的抽象基类，是 [Spawn](#class-spawn)、[TrySpawn](#class-tryspawn) 的父类型，提供执行闭包的查询与设置能力。
+
+父类型：
+
+- [Expression](#class-expression)
+- Equatable\<[SpawnBase](#class-spawnbase)>
+
+### prop executeClosure
+
+```cangjie
+public mut prop executeClosure: Function
+```
+
+功能：该 Spawn 表达式关联的执行闭包；未设置时读取抛出异常。
+
+类型：[Function](#class-function)
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let builder = CHIRBuilder(InsertPosition.AtEnd(block))
+    let expr = builder.createSpawn(UnitType.get(), f)
+    println("prop_executeClosure: ${expr.needExecuteClosure()}")
+}
+```
+
+运行结果：
+
+```text
+prop_executeClosure: false
+```
+
+### func needExecuteClosure()
+
+```cangjie
+public func needExecuteClosure(): Bool
+```
+
+功能：判断该 Spawn 表达式是否已设置执行闭包。
+
+返回值：
+
+- Bool - 已设置执行闭包时返回 true，否则返回 false。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let builder = CHIRBuilder(InsertPosition.AtEnd(block))
+    let expr = builder.createSpawn(UnitType.get(), f)
+    println("func_needExecuteClosure: ${expr.needExecuteClosure()}")
+}
+```
+
+运行结果：
+
+```text
+func_needExecuteClosure: false
+```
+
+### operator func ==(SpawnBase)
+
+```cangjie
+public operator func ==(other: SpawnBase): Bool
+```
+
+功能：引用比较，判断两个 SpawnBase 是否为同一实例。
+
+参数：
+
+- other: [SpawnBase](#class-spawnbase) - 另一 Spawn 基类表达式。
+
+返回值：
+
+- Bool - 是否为同一引用。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let builder = CHIRBuilder(InsertPosition.AtEnd(block))
+    let expr = builder.createSpawn(UnitType.get(), f)
+    println("op_eq_SpawnBase: ${expr == expr}")
+}
+```
+
+运行结果：
+
+```text
+op_eq_SpawnBase: true
+```
 
 ## class Spawn
 
 ```cangjie
-public class Spawn <: SpawnBase & Equatable<Spawn>
+public class Spawn <: SpawnBase & Equatable<Spawn> {}
 ```
 
 功能：并发 Spawn 表达式（不带异常处理）。
@@ -15526,7 +18861,7 @@ public static func create(retTy: Type, lambda: Value): Spawn
 
 返回值：
 
-- Spawn - Spawn 表达式实例。
+- [Spawn](#class-spawn) - Spawn 表达式实例。
 
 示例：
 
@@ -15566,7 +18901,7 @@ public static func create(retTy: Type, lambda: Value, arg: Value): Spawn
 
 返回值：
 
-- Spawn - Spawn 表达式实例。
+- [Spawn](#class-spawn) - Spawn 表达式实例。
 
 示例：
 
@@ -15591,10 +18926,10 @@ main() {
 static_create_withArg: true
 ```
 
-### operator func==(Spawn)
+### operator func ==(Spawn)
 
 ```cangjie
-public operator func==(other: Spawn): Bool
+public operator func ==(other: Spawn): Bool
 ```
 
 功能：引用比较，判断两个 Spawn 是否为同一实例。
@@ -15629,12 +18964,10 @@ main() {
 op_eq_Spawn: true
 ```
 
----
-
 ## class TrySpawn
 
 ```cangjie
-public class TrySpawn <: SpawnBase & Equatable<TrySpawn>
+public class TrySpawn <: SpawnBase & Equatable<TrySpawn> {}
 ```
 
 功能：带异常处理的并发 Spawn 表达式。
@@ -15729,7 +19062,7 @@ public static func create(retTy: Type, lambda: Value, normal: Block, err: Block)
 
 返回值：
 
-- TrySpawn - 带异常处理的 Spawn 表达式实例。
+- [TrySpawn](#class-tryspawn) - 带异常处理的 Spawn 表达式实例。
 
 示例：
 
@@ -15773,7 +19106,7 @@ public static func create(retTy: Type, lambda: Value, arg: Value, normal: Block,
 
 返回值：
 
-- TrySpawn - 带异常处理的 Spawn 表达式实例。
+- [TrySpawn](#class-tryspawn) - 带异常处理的 Spawn 表达式实例。
 
 示例：
 
@@ -15800,10 +19133,10 @@ main() {
 static_create_withArg: true
 ```
 
-### operator func==(TrySpawn)
+### operator func ==(TrySpawn)
 
 ```cangjie
-public operator func==(other: TrySpawn): Bool
+public operator func ==(other: TrySpawn): Bool
 ```
 
 功能：引用比较，判断两个 TrySpawn 是否为同一实例。
@@ -15840,12 +19173,10 @@ main() {
 op_eq_TrySpawn: true
 ```
 
----
-
 ## class Store
 
 ```cangjie
-public class Store <: Expression & Equatable<Store>
+public class Store <: Expression & Equatable<Store> {}
 ```
 
 功能：内存存储表达式。
@@ -15936,7 +19267,7 @@ public static func create(val: Value, location: Value): Store
 
 返回值：
 
-- Store - 内存存储表达式实例。
+- [Store](#class-store) - 内存存储表达式实例。
 
 示例：
 
@@ -15961,10 +19292,10 @@ main() {
 static_create: true
 ```
 
-### operator func==(Store)
+### operator func ==(Store)
 
 ```cangjie
-public operator func==(other: Store): Bool
+public operator func ==(other: Store): Bool
 ```
 
 功能：引用比较，判断两个 Store 是否为同一实例。
@@ -16000,12 +19331,10 @@ main() {
 op_eq_Store: true
 ```
 
----
-
 ## class StoreElementByName
 
 ```cangjie
-public class StoreElementByName <: Expression & Equatable<StoreElementByName>
+public class StoreElementByName <: Expression & Equatable<StoreElementByName> {}
 ```
 
 功能：按字段名存储聚合体元素的表达式。
@@ -16067,7 +19396,7 @@ public static func create(val: Value, location: Value, fieldNames: ArrayList<Str
 
 返回值：
 
-- StoreElementByName - 按字段名存储聚合体元素表达式实例。
+- [StoreElementByName](#class-storeelementbyname) - 按字段名存储聚合体元素表达式实例。
 
 示例：
 
@@ -16095,10 +19424,10 @@ main() {
 static_create: 1
 ```
 
-### operator func==(StoreElementByName)
+### operator func ==(StoreElementByName)
 
 ```cangjie
-public operator func==(other: StoreElementByName): Bool
+public operator func ==(other: StoreElementByName): Bool
 ```
 
 功能：引用比较，判断两个 StoreElementByName 是否为同一实例。
@@ -16137,12 +19466,10 @@ main() {
 op_eq_StoreElementByName: true
 ```
 
----
-
 ## class StoreElementRef
 
 ```cangjie
-public class StoreElementRef <: Expression & Equatable<StoreElementRef>
+public class StoreElementRef <: Expression & Equatable<StoreElementRef> {}
 ```
 
 功能：按数字索引存储聚合体元素的表达式。
@@ -16204,7 +19531,7 @@ public static func create(val: Value, location: Value, path: ArrayList<UInt64>):
 
 返回值：
 
-- StoreElementRef - 按数字索引存储聚合体元素表达式实例。
+- [StoreElementRef](#class-storeelementref) - 按数字索引存储聚合体元素表达式实例。
 
 示例：
 
@@ -16232,10 +19559,10 @@ main() {
 static_create: 1
 ```
 
-### operator func==(StoreElementRef)
+### operator func ==(StoreElementRef)
 
 ```cangjie
-public operator func==(other: StoreElementRef): Bool
+public operator func ==(other: StoreElementRef): Bool
 ```
 
 功能：引用比较，判断两个 StoreElementRef 是否为同一实例。
@@ -16274,12 +19601,10 @@ main() {
 op_eq_StoreElementRef: true
 ```
 
----
-
 ## class Tuple
 
 ```cangjie
-public class Tuple <: Expression & Equatable<Tuple>
+public class Tuple <: Expression & Equatable<Tuple> {}
 ```
 
 功能：元组构造表达式。
@@ -16340,7 +19665,7 @@ public static func create(elements: ArrayList<Value>): Tuple
 
 返回值：
 
-- Tuple - 元组构造表达式实例。
+- [Tuple](#class-tuple) - 元组构造表达式实例。
 
 示例：
 
@@ -16369,10 +19694,10 @@ main() {
 static_create: 2
 ```
 
-### operator func==(Tuple)
+### operator func ==(Tuple)
 
 ```cangjie
-public operator func==(other: Tuple): Bool
+public operator func ==(other: Tuple): Bool
 ```
 
 功能：引用比较，判断两个 Tuple 是否为同一实例。
@@ -16412,12 +19737,166 @@ main() {
 op_eq_Tuple: true
 ```
 
----
+## class TypeCast
+
+```cangjie
+sealed abstract class TypeCast <: Expression & Equatable<TypeCast> {}
+```
+
+功能：类型转换表达式的抽象基类，是 [Box](#class-box)、[StaticCast](#class-staticcast)、[CastToConcrete](#class-casttoconcrete)、[CastToGeneric](#class-casttogeneric) 等的父类型，提供源值、源类型与目标类型的查询能力。
+
+父类型：
+
+- [Expression](#class-expression)
+- Equatable\<[TypeCast](#class-typecast)>
+
+### prop sourceType
+
+```cangjie
+public prop sourceType: Type
+```
+
+功能：该类型转换的源值类型。
+
+类型：[Type](#class-type)
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let builder = CHIRBuilder(InsertPosition.AtEnd(block))
+    let expr = builder.createBox(IntLiteral.get(IntType.getInt64(), 1), IntType.getInt64())
+    block.appendExpr(expr)
+    println("prop_sourceType: ${expr.sourceType.qualifiedName}")
+}
+```
+
+运行结果：
+
+```text
+prop_sourceType: Int64
+```
+
+### prop srcValue
+
+```cangjie
+public prop srcValue: Value
+```
+
+功能：该类型转换的源值。
+
+类型：[Value](#class-value)
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let builder = CHIRBuilder(InsertPosition.AtEnd(block))
+    let lit = IntLiteral.get(IntType.getInt64(), 1)
+    let expr = builder.createBox(lit, IntType.getInt64())
+    block.appendExpr(expr)
+    println("prop_srcValue: ${expr.srcValue == lit}")
+}
+```
+
+运行结果：
+
+```text
+prop_srcValue: true
+```
+
+### prop targetType
+
+```cangjie
+public prop targetType: Type
+```
+
+功能：该类型转换的目标类型。
+
+类型：[Type](#class-type)
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let builder = CHIRBuilder(InsertPosition.AtEnd(block))
+    let expr = builder.createBox(IntLiteral.get(IntType.getInt64(), 1), IntType.getInt64())
+    block.appendExpr(expr)
+    println("prop_targetType: ${expr.targetType.qualifiedName}")
+}
+```
+
+运行结果：
+
+```text
+prop_targetType: Int64
+```
+
+### operator func ==(TypeCast)
+
+```cangjie
+public operator func ==(other: TypeCast): Bool
+```
+
+功能：引用比较，判断两个 TypeCast 是否为同一实例。
+
+参数：
+
+- other: [TypeCast](#class-typecast) - 另一类型转换表达式。
+
+返回值：
+
+- Bool - 是否为同一引用。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let builder = CHIRBuilder(InsertPosition.AtEnd(block))
+    let expr = builder.createBox(IntLiteral.get(IntType.getInt64(), 1), IntType.getInt64())
+    block.appendExpr(expr)
+    println("op_eq_TypeCast: ${expr == expr}")
+}
+```
+
+运行结果：
+
+```text
+op_eq_TypeCast: true
+```
 
 ## class Box
 
 ```cangjie
-public class Box <: TypeCast & Equatable<Box>
+public class Box <: TypeCast & Equatable<Box> {}
 ```
 
 功能：装箱类型转换表达式。
@@ -16442,7 +19921,7 @@ public static func create(srcVal: Value, targetType: Type): Box
 
 返回值：
 
-- Box - 装箱类型转换表达式实例。
+- [Box](#class-box) - 装箱类型转换表达式实例。
 
 示例：
 
@@ -16467,10 +19946,10 @@ main() {
 static_create: true
 ```
 
-### operator func==(Box)
+### operator func ==(Box)
 
 ```cangjie
-public operator func==(other: Box): Bool
+public operator func ==(other: Box): Bool
 ```
 
 功能：引用比较，判断两个 Box 是否为同一实例。
@@ -16506,12 +19985,10 @@ main() {
 op_eq_Box: true
 ```
 
----
-
 ## class StaticCast
 
 ```cangjie
-public class StaticCast <: TypeCast & Equatable<StaticCast>
+public class StaticCast <: TypeCast & Equatable<StaticCast> {}
 ```
 
 功能：静态类型转换表达式。
@@ -16536,7 +20013,7 @@ public static func create(srcVal: Value, targetType: Type): StaticCast
 
 返回值：
 
-- StaticCast - 静态类型转换表达式实例。
+- [StaticCast](#class-staticcast) - 静态类型转换表达式实例。
 
 示例：
 
@@ -16560,10 +20037,10 @@ main() {
 static_create: true
 ```
 
-### operator func==(StaticCast)
+### operator func ==(StaticCast)
 
 ```cangjie
-public operator func==(other: StaticCast): Bool
+public operator func ==(other: StaticCast): Bool
 ```
 
 功能：引用比较，判断两个 StaticCast 是否为同一实例。
@@ -16598,12 +20075,10 @@ main() {
 op_eq_StaticCast: true
 ```
 
----
-
 ## class CastToConcrete
 
 ```cangjie
-public class CastToConcrete <: TypeCast & Equatable<CastToConcrete>
+public class CastToConcrete <: TypeCast & Equatable<CastToConcrete> {}
 ```
 
 功能：向具体类型转换表达式。
@@ -16628,7 +20103,7 @@ public static func create(srcVal: Value, targetType: Type): CastToConcrete
 
 返回值：
 
-- CastToConcrete - 向具体类型转换表达式实例。
+- [CastToConcrete](#class-casttoconcrete) - 向具体类型转换表达式实例。
 
 示例：
 
@@ -16652,10 +20127,10 @@ main() {
 static_create: true
 ```
 
-### operator func==(CastToConcrete)
+### operator func ==(CastToConcrete)
 
 ```cangjie
-public operator func==(other: CastToConcrete): Bool
+public operator func ==(other: CastToConcrete): Bool
 ```
 
 功能：引用比较，判断两个 CastToConcrete 是否为同一实例。
@@ -16690,12 +20165,10 @@ main() {
 op_eq_CastToConcrete: true
 ```
 
----
-
 ## class CastToGeneric
 
 ```cangjie
-public class CastToGeneric <: TypeCast & Equatable<CastToGeneric>
+public class CastToGeneric <: TypeCast & Equatable<CastToGeneric> {}
 ```
 
 功能：向泛型类型转换表达式。
@@ -16720,7 +20193,7 @@ public static func create(srcVal: Value, targetType: Type): CastToGeneric
 
 返回值：
 
-- CastToGeneric - 向泛型类型转换表达式实例。
+- [CastToGeneric](#class-casttogeneric) - 向泛型类型转换表达式实例。
 
 示例：
 
@@ -16745,10 +20218,10 @@ main() {
 static_create: true
 ```
 
-### operator func==(CastToGeneric)
+### operator func ==(CastToGeneric)
 
 ```cangjie
-public operator func==(other: CastToGeneric): Bool
+public operator func ==(other: CastToGeneric): Bool
 ```
 
 功能：引用比较，判断两个 CastToGeneric 是否为同一实例。
@@ -16784,12 +20257,10 @@ main() {
 op_eq_CastToGeneric: true
 ```
 
----
-
 ## class UnboxToRef
 
 ```cangjie
-public class UnboxToRef <: TypeCast & Equatable<UnboxToRef>
+public class UnboxToRef <: TypeCast & Equatable<UnboxToRef> {}
 ```
 
 功能：拆箱为引用的类型转换表达式。
@@ -16814,7 +20285,7 @@ public static func create(srcVal: Value, targetType: Type): UnboxToRef
 
 返回值：
 
-- UnboxToRef - 拆箱为引用的类型转换表达式实例。
+- [UnboxToRef](#class-unboxtoref) - 拆箱为引用的类型转换表达式实例。
 
 示例：
 
@@ -16838,10 +20309,10 @@ main() {
 static_create: true
 ```
 
-### operator func==(UnboxToRef)
+### operator func ==(UnboxToRef)
 
 ```cangjie
-public operator func==(other: UnboxToRef): Bool
+public operator func ==(other: UnboxToRef): Bool
 ```
 
 功能：引用比较，判断两个 UnboxToRef 是否为同一实例。
@@ -16876,12 +20347,10 @@ main() {
 op_eq_UnboxToRef: true
 ```
 
----
-
 ## class UnboxToValue
 
 ```cangjie
-public class UnboxToValue <: TypeCast & Equatable<UnboxToValue>
+public class UnboxToValue <: TypeCast & Equatable<UnboxToValue> {}
 ```
 
 功能：拆箱为值的类型转换表达式。
@@ -16906,7 +20375,7 @@ public static func create(srcVal: Value, targetType: Type): UnboxToValue
 
 返回值：
 
-- UnboxToValue - 拆箱为值的类型转换表达式实例。
+- [UnboxToValue](#class-unboxtovalue) - 拆箱为值的类型转换表达式实例。
 
 示例：
 
@@ -16930,10 +20399,10 @@ main() {
 static_create: true
 ```
 
-### operator func==(UnboxToValue)
+### operator func ==(UnboxToValue)
 
 ```cangjie
-public operator func==(other: UnboxToValue): Bool
+public operator func ==(other: UnboxToValue): Bool
 ```
 
 功能：引用比较，判断两个 UnboxToValue 是否为同一实例。
@@ -16968,12 +20437,96 @@ main() {
 op_eq_UnboxToValue: true
 ```
 
----
+## class UnaryExpressionBase
+
+```cangjie
+sealed abstract class UnaryExpressionBase <: Expression & Equatable<UnaryExpressionBase> {}
+```
+
+功能：一元表达式（[UnaryExpression](#class-unaryexpression)、[TryUnaryExpression](#class-tryunaryexpression) 等）的抽象基类，提供溢出策略的查询与设置能力。
+
+父类型：
+
+- [Expression](#class-expression)
+- Equatable\<[UnaryExpressionBase](#class-unaryexpressionbase)>
+
+### prop overflow
+
+```cangjie
+public mut prop overflow: OverflowStrategy
+```
+
+功能：该一元表达式使用的溢出策略；可读可写，默认为 [OverflowStrategy](./chir_package_enums.md#enum-overflowstrategy).NA。
+
+类型：[OverflowStrategy](./chir_package_enums.md#enum-overflowstrategy)
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let builder = CHIRBuilder(InsertPosition.AtEnd(block))
+    let expr = builder.createUnaryNeg(IntLiteral.get(IntType.getInt64(), 1), OverflowStrategy.NA)
+    expr.overflow = OverflowStrategy.Throwing
+    println("prop_overflow: ${expr.overflow}")
+}
+```
+
+运行结果：
+
+```text
+prop_overflow: Throwing
+```
+
+### operator func ==(UnaryExpressionBase)
+
+```cangjie
+public operator func ==(other: UnaryExpressionBase): Bool
+```
+
+功能：引用比较，判断两个 UnaryExpressionBase 是否为同一实例。
+
+参数：
+
+- other: [UnaryExpressionBase](#class-unaryexpressionbase) - 另一一元表达式基类表达式。
+
+返回值：
+
+- Bool - 是否为同一引用。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let builder = CHIRBuilder(InsertPosition.AtEnd(block))
+    let expr = builder.createUnaryNeg(IntLiteral.get(IntType.getInt64(), 1), OverflowStrategy.NA)
+    println("op_eq_UnaryExpressionBase: ${expr == expr}")
+}
+```
+
+运行结果：
+
+```text
+op_eq_UnaryExpressionBase: true
+```
 
 ## class UnaryExpression
 
 ```cangjie
-public class UnaryExpression <: UnaryExpressionBase & Equatable<UnaryExpression>
+public class UnaryExpression <: UnaryExpressionBase & Equatable<UnaryExpression> {}
 ```
 
 功能：一元运算表达式（不带异常处理）。
@@ -16998,7 +20551,7 @@ public static func create(kind: UnaryExprKind, op: Value): UnaryExpression
 
 返回值：
 
-- UnaryExpression - 一元运算表达式实例。
+- [UnaryExpression](#class-unaryexpression) - 一元运算表达式实例。
 
 示例：
 
@@ -17022,10 +20575,10 @@ main() {
 static_create: true
 ```
 
-### operator func==(UnaryExpression)
+### operator func ==(UnaryExpression)
 
 ```cangjie
-public operator func==(other: UnaryExpression): Bool
+public operator func ==(other: UnaryExpression): Bool
 ```
 
 功能：引用比较，判断两个 UnaryExpression 是否为同一实例。
@@ -17060,12 +20613,10 @@ main() {
 op_eq_UnaryExpression: true
 ```
 
----
-
 ## class TryUnaryExpression
 
 ```cangjie
-public class TryUnaryExpression <: UnaryExpressionBase & Equatable<TryUnaryExpression>
+public class TryUnaryExpression <: UnaryExpressionBase & Equatable<TryUnaryExpression> {}
 ```
 
 功能：带异常处理的一元运算表达式。
@@ -17159,7 +20710,7 @@ public static func create(op: Value, normal: Block, err: Block): TryUnaryExpress
 
 返回值：
 
-- TryUnaryExpression - 带异常处理的一元运算表达式实例。
+- [TryUnaryExpression](#class-tryunaryexpression) - 带异常处理的一元运算表达式实例。
 
 示例：
 
@@ -17185,10 +20736,10 @@ main() {
 static_create: true
 ```
 
-### operator func==(TryUnaryExpression)
+### operator func ==(TryUnaryExpression)
 
 ```cangjie
-public operator func==(other: TryUnaryExpression): Bool
+public operator func ==(other: TryUnaryExpression): Bool
 ```
 
 功能：引用比较，判断两个 TryUnaryExpression 是否为同一实例。
@@ -17225,12 +20776,10 @@ main() {
 op_eq_TryUnaryExpression: true
 ```
 
----
-
 ## class VArrayBuilder
 
 ```cangjie
-public class VArrayBuilder <: Expression & Equatable<VArrayBuilder>
+public class VArrayBuilder <: Expression & Equatable<VArrayBuilder> {}
 ```
 
 功能：VArray 构建器表达式。
@@ -17257,7 +20806,7 @@ public static func create(retTy: Type, size: Value, initVal: Value, initFunc: Va
 
 返回值：
 
-- VArrayBuilder - VArray 构建器表达式实例。
+- [VArrayBuilder](#class-varraybuilder) - VArray 构建器表达式实例。
 
 示例：
 
@@ -17283,10 +20832,10 @@ main() {
 static_create: true
 ```
 
-### operator func==(VArrayBuilder)
+### operator func ==(VArrayBuilder)
 
 ```cangjie
-public operator func==(other: VArrayBuilder): Bool
+public operator func ==(other: VArrayBuilder): Bool
 ```
 
 功能：引用比较，判断两个 VArrayBuilder 是否为同一实例。
@@ -17323,12 +20872,10 @@ main() {
 op_eq_VArrayBuilder: true
 ```
 
----
-
 ## class VArrayExpr
 
 ```cangjie
-public class VArrayExpr <: Expression & Equatable<VArrayExpr>
+public class VArrayExpr <: Expression & Equatable<VArrayExpr> {}
 ```
 
 功能：VArray 字面量表达式。
@@ -17352,7 +20899,7 @@ public static func create(elements: ArrayList<Value>): VArrayExpr
 
 返回值：
 
-- VArrayExpr - VArray 字面量表达式实例。
+- [VArrayExpr](#class-varrayexpr) - VArray 字面量表达式实例。
 
 示例：
 
@@ -17383,10 +20930,10 @@ main() {
 static_create: true
 ```
 
-### operator func==(VArrayExpr)
+### operator func ==(VArrayExpr)
 
 ```cangjie
-public operator func==(other: VArrayExpr): Bool
+public operator func ==(other: VArrayExpr): Bool
 ```
 
 功能：引用比较，判断两个 VArrayExpr 是否为同一实例。
@@ -17426,12 +20973,13 @@ main() {
 op_eq_VArrayExpr: true
 ```
 
----
-
 ## class CHIRBuilder
 
 ```cangjie
-public class CHIRBuilder
+public class CHIRBuilder {
+    public init(parent: Block)
+    public init(position: InsertPosition)
+}
 ```
 
 功能：CHIR 表达式构建器，用于在基本块中按指定位置插入各类 CHIR 表达式（算术、内存、控制流、类型转换等）。
@@ -17521,7 +21069,7 @@ public func createAllocate(ty: Type): Allocate
 
 返回值：
 
-- Allocate - 分配表达式。
+- [Allocate](#class-allocate) - 分配表达式。
 
 示例：
 
@@ -17561,7 +21109,7 @@ public func createApply(callee: Value, funcCallCtx: FuncCallContext): Apply
 
 返回值：
 
-- Apply - Apply 表达式。
+- [Apply](#class-apply) - Apply 表达式。
 
 示例：
 
@@ -17604,7 +21152,7 @@ public func createBinaryAdd(leftOp: Value, rightOp: Value, overflow: OverflowStr
 
 返回值：
 
-- BinaryExpression - 加法表达式。
+- [BinaryExpression](#class-binaryexpression) - 加法表达式。
 
 示例：
 
@@ -17644,7 +21192,7 @@ public func createBinaryAnd(leftOp: Value, rightOp: Value): BinaryExpression
 
 返回值：
 
-- BinaryExpression - 逻辑与表达式。
+- [BinaryExpression](#class-binaryexpression) - 逻辑与表达式。
 
 示例：
 
@@ -17684,7 +21232,7 @@ public func createBinaryBitAnd(leftOp: Value, rightOp: Value): BinaryExpression
 
 返回值：
 
-- BinaryExpression - 按位与表达式。
+- [BinaryExpression](#class-binaryexpression) - 按位与表达式。
 
 示例：
 
@@ -17724,7 +21272,7 @@ public func createBinaryBitOr(leftOp: Value, rightOp: Value): BinaryExpression
 
 返回值：
 
-- BinaryExpression - 按位或表达式。
+- [BinaryExpression](#class-binaryexpression) - 按位或表达式。
 
 示例：
 
@@ -17764,7 +21312,7 @@ public func createBinaryBitXor(leftOp: Value, rightOp: Value): BinaryExpression
 
 返回值：
 
-- BinaryExpression - 按位异或表达式。
+- [BinaryExpression](#class-binaryexpression) - 按位异或表达式。
 
 示例：
 
@@ -17805,7 +21353,7 @@ public func createBinaryDiv(leftOp: Value, rightOp: Value, overflow: OverflowStr
 
 返回值：
 
-- BinaryExpression - 除法表达式。
+- [BinaryExpression](#class-binaryexpression) - 除法表达式。
 
 示例：
 
@@ -17845,7 +21393,7 @@ public func createBinaryEqual(leftOp: Value, rightOp: Value): BinaryExpression
 
 返回值：
 
-- BinaryExpression - 等于比较表达式。
+- [BinaryExpression](#class-binaryexpression) - 等于比较表达式。
 
 示例：
 
@@ -17886,7 +21434,7 @@ public func createBinaryExp(leftOp: Value, rightOp: Value, overflow: OverflowStr
 
 返回值：
 
-- BinaryExpression - 指数表达式。
+- [BinaryExpression](#class-binaryexpression) - 指数表达式。
 
 示例：
 
@@ -17926,7 +21474,7 @@ public func createBinaryGreaterThan(leftOp: Value, rightOp: Value): BinaryExpres
 
 返回值：
 
-- BinaryExpression - 大于比较表达式。
+- [BinaryExpression](#class-binaryexpression) - 大于比较表达式。
 
 示例：
 
@@ -17966,7 +21514,7 @@ public func createBinaryGreaterThanOrEqual(leftOp: Value, rightOp: Value): Binar
 
 返回值：
 
-- BinaryExpression - 大于等于比较表达式。
+- [BinaryExpression](#class-binaryexpression) - 大于等于比较表达式。
 
 示例：
 
@@ -18007,7 +21555,7 @@ public func createBinaryLShift(leftOp: Value, rightOp: Value, overflow: Overflow
 
 返回值：
 
-- BinaryExpression - 左移表达式。
+- [BinaryExpression](#class-binaryexpression) - 左移表达式。
 
 示例：
 
@@ -18047,7 +21595,7 @@ public func createBinaryLessThan(leftOp: Value, rightOp: Value): BinaryExpressio
 
 返回值：
 
-- BinaryExpression - 小于比较表达式。
+- [BinaryExpression](#class-binaryexpression) - 小于比较表达式。
 
 示例：
 
@@ -18087,7 +21635,7 @@ public func createBinaryLessThanOrEqual(leftOp: Value, rightOp: Value): BinaryEx
 
 返回值：
 
-- BinaryExpression - 小于等于比较表达式。
+- [BinaryExpression](#class-binaryexpression) - 小于等于比较表达式。
 
 示例：
 
@@ -18128,7 +21676,7 @@ public func createBinaryMod(leftOp: Value, rightOp: Value, overflow: OverflowStr
 
 返回值：
 
-- BinaryExpression - 取模表达式。
+- [BinaryExpression](#class-binaryexpression) - 取模表达式。
 
 示例：
 
@@ -18169,7 +21717,7 @@ public func createBinaryMul(leftOp: Value, rightOp: Value, overflow: OverflowStr
 
 返回值：
 
-- BinaryExpression - 乘法表达式。
+- [BinaryExpression](#class-binaryexpression) - 乘法表达式。
 
 示例：
 
@@ -18209,7 +21757,7 @@ public func createBinaryNotEqual(leftOp: Value, rightOp: Value): BinaryExpressio
 
 返回值：
 
-- BinaryExpression - 不等于比较表达式。
+- [BinaryExpression](#class-binaryexpression) - 不等于比较表达式。
 
 示例：
 
@@ -18249,7 +21797,7 @@ public func createBinaryOr(leftOp: Value, rightOp: Value): BinaryExpression
 
 返回值：
 
-- BinaryExpression - 逻辑或表达式。
+- [BinaryExpression](#class-binaryexpression) - 逻辑或表达式。
 
 示例：
 
@@ -18290,7 +21838,7 @@ public func createBinaryRShift(leftOp: Value, rightOp: Value, overflow: Overflow
 
 返回值：
 
-- BinaryExpression - 右移表达式。
+- [BinaryExpression](#class-binaryexpression) - 右移表达式。
 
 示例：
 
@@ -18331,7 +21879,7 @@ public func createBinarySub(leftOp: Value, rightOp: Value, overflow: OverflowStr
 
 返回值：
 
-- BinaryExpression - 减法表达式。
+- [BinaryExpression](#class-binaryexpression) - 减法表达式。
 
 示例：
 
@@ -18371,7 +21919,7 @@ public func createBox(srcVal: Value, dstTy: Type): Box
 
 返回值：
 
-- Box - 装箱表达式。
+- [Box](#class-box) - 装箱表达式。
 
 示例：
 
@@ -18412,7 +21960,7 @@ public func createBranch(condition: Value, trueTarget: Block, falseTarget: Block
 
 返回值：
 
-- Branch - 条件分支表达式。
+- [Branch](#class-branch) - 条件分支表达式。
 
 示例：
 
@@ -18455,7 +22003,7 @@ public func createCastToConcrete(srcVal: Value, targetType: Type): CastToConcret
 
 返回值：
 
-- CastToConcrete - 向具体类型转换表达式。
+- [CastToConcrete](#class-casttoconcrete) - 向具体类型转换表达式。
 
 示例：
 
@@ -18495,7 +22043,7 @@ public func createCastToGeneric(srcVal: Value, targetType: Type): CastToGeneric
 
 返回值：
 
-- CastToGeneric - 向泛型类型转换表达式。
+- [CastToGeneric](#class-casttogeneric) - 向泛型类型转换表达式。
 
 示例：
 
@@ -18535,7 +22083,7 @@ public func createConstant(val: LiteralValue): Constant
 
 返回值：
 
-- Constant - 常量表达式。
+- [Constant](#class-constant) - 常量表达式。
 
 示例：
 
@@ -18575,7 +22123,7 @@ public func createDebug(location: Value, srcCodeName: String): Debug
 
 返回值：
 
-- Debug - 调试标记表达式。
+- [Debug](#class-debug) - 调试标记表达式。
 
 示例：
 
@@ -18611,7 +22159,7 @@ public func createExit(): Exit
 
 返回值：
 
-- Exit - 函数退出表达式。
+- [Exit](#class-exit) - 函数退出表达式。
 
 示例：
 
@@ -18651,7 +22199,7 @@ public func createField(val: Value, path: ArrayList<UInt64>): Field
 
 返回值：
 
-- Field - 字段访问表达式。
+- [Field](#class-field) - 字段访问表达式。
 
 示例：
 
@@ -18699,7 +22247,7 @@ public func createFieldByName(val: Value, fieldNames: ArrayList<String>): FieldB
 
 返回值：
 
-- FieldByName - 按字段名的字段访问表达式。
+- [FieldByName](#class-fieldbyname) - 按字段名的字段访问表达式。
 
 示例：
 
@@ -18746,7 +22294,7 @@ public func createGetElementByName(location: Value, fieldNames: ArrayList<String
 
 返回值：
 
-- GetElementByName - 元素读取表达式。
+- [GetElementByName](#class-getelementbyname) - 元素读取表达式。
 
 示例：
 
@@ -18793,7 +22341,7 @@ public func createGetElementRef(location: Value, path: ArrayList<UInt64>): GetEl
 
 返回值：
 
-- GetElementRef - 元素引用表达式。
+- [GetElementRef](#class-getelementref) - 元素引用表达式。
 
 示例：
 
@@ -18839,7 +22387,7 @@ public func createGetException(retTy: Type): GetException
 
 返回值：
 
-- GetException - 获取异常值表达式。
+- [GetException](#class-getexception) - 获取异常值表达式。
 
 示例：
 
@@ -18879,7 +22427,7 @@ public func createGetInstantiateValue(val: Function, instantiateTypes: ArrayList
 
 返回值：
 
-- GetInstantiateValue - 泛型实例化值表达式。
+- [GetInstantiateValue](#class-getinstantiatevalue) - 泛型实例化值表达式。
 
 示例：
 
@@ -18921,7 +22469,7 @@ public func createGetRTTI(val: Value): GetRTTI
 
 返回值：
 
-- GetRTTI - 运行时类型信息表达式。
+- [GetRTTI](#class-getrtti) - 运行时类型信息表达式。
 
 示例：
 
@@ -18961,7 +22509,7 @@ public func createGetRTTIStatic(rttiType: Type): GetRTTIStatic
 
 返回值：
 
-- GetRTTIStatic - 静态运行时类型信息表达式。
+- [GetRTTIStatic](#class-getrttistatic) - 静态运行时类型信息表达式。
 
 示例：
 
@@ -19000,7 +22548,7 @@ public func createGoTo(target: Block): GoTo
 
 返回值：
 
-- GoTo - 无条件跳转表达式。
+- [GoTo](#class-goto) - 无条件跳转表达式。
 
 示例：
 
@@ -19042,7 +22590,7 @@ public func createInstanceOf(srcVal: Value, targetTy: Type): InstanceOf
 
 返回值：
 
-- InstanceOf - 类型检查表达式。
+- [InstanceOf](#class-instanceof) - 类型检查表达式。
 
 示例：
 
@@ -19083,7 +22631,7 @@ public func createInvoke(retTy: Type, callContext: InvokeCallContext): Invoke
 
 返回值：
 
-- Invoke - Invoke 表达式。
+- [Invoke](#class-invoke) - Invoke 表达式。
 
 示例：
 
@@ -19129,7 +22677,7 @@ public func createLambda(ty: FuncType, mangledName: String, srcName: String, gen
 
 返回值：
 
-- Lambda - Lambda 表达式。
+- [Lambda](#class-lambda) - Lambda 表达式。
 
 示例：
 
@@ -19169,7 +22717,7 @@ public func createLoad(location: Value): Load
 
 返回值：
 
-- Load - 内存加载表达式。
+- [Load](#class-load) - 内存加载表达式。
 
 示例：
 
@@ -19212,7 +22760,7 @@ public func createMultiBranch(condition: Value, defaultBlock: Block, targets: Ar
 
 返回值：
 
-- MultiBranch - 多分支表达式。
+- [MultiBranch](#class-multibranch) - 多分支表达式。
 
 示例：
 
@@ -19261,7 +22809,7 @@ public func createNumericCast(srcVal: Value, dstTy: Type, overflow: OverflowStra
 
 返回值：
 
-- NumericCast - 数值类型转换表达式。
+- [NumericCast](#class-numericcast) - 数值类型转换表达式。
 
 示例：
 
@@ -19300,7 +22848,7 @@ public func createRaiseException(value: Value): RaiseException
 
 返回值：
 
-- RaiseException - 抛出异常表达式。
+- [RaiseException](#class-raiseexception) - 抛出异常表达式。
 
 示例：
 
@@ -19340,7 +22888,7 @@ public func createRaiseException(value: Value, successor: Block): RaiseException
 
 返回值：
 
-- RaiseException - 抛出异常表达式。
+- [RaiseException](#class-raiseexception) - 抛出异常表达式。
 
 示例：
 
@@ -19382,7 +22930,7 @@ public func createRawArrayAllocate(elementType: Type, size: Value): RawArrayAllo
 
 返回值：
 
-- RawArrayAllocate - 原始数组分配表达式。
+- [RawArrayAllocate](#class-rawarrayallocate) - 原始数组分配表达式。
 
 示例：
 
@@ -19423,7 +22971,7 @@ public func createRawArrayInitByValue(memory: Value, size: Value, initVal: Value
 
 返回值：
 
-- RawArrayInitByValue - 按值初始化表达式。
+- [RawArrayInitByValue](#class-rawarrayinitbyvalue) - 按值初始化表达式。
 
 示例：
 
@@ -19464,7 +23012,7 @@ public func createRawArrayLiteralInit(memory: Value, elements: ArrayList<Value>)
 
 返回值：
 
-- RawArrayLiteralInit - 字面量初始化表达式。
+- [RawArrayLiteralInit](#class-rawarrayliteralinit) - 字面量初始化表达式。
 
 示例：
 
@@ -19510,7 +23058,7 @@ public func createSpawn(retTy: Type, val: Value): Spawn
 
 返回值：
 
-- Spawn - Spawn 表达式。
+- [Spawn](#class-spawn) - Spawn 表达式。
 
 示例：
 
@@ -19552,7 +23100,7 @@ public func createSpawn(retTy: Type, val: Value, arg: Value): Spawn
 
 返回值：
 
-- Spawn - 带参数的 Spawn 表达式。
+- [Spawn](#class-spawn) - 带参数的 Spawn 表达式。
 
 示例：
 
@@ -19593,7 +23141,7 @@ public func createStaticCast(srcVal: Value, dstTy: Type): StaticCast
 
 返回值：
 
-- StaticCast - 静态类型转换表达式。
+- [StaticCast](#class-staticcast) - 静态类型转换表达式。
 
 示例：
 
@@ -19633,7 +23181,7 @@ public func createStore(val: Value, location: Value): Store
 
 返回值：
 
-- Store - 内存存储表达式。
+- [Store](#class-store) - 内存存储表达式。
 
 示例：
 
@@ -19675,7 +23223,7 @@ public func createStoreElementByName(val: Value, location: Value, fieldNames: Ar
 
 返回值：
 
-- StoreElementByName - 按字段名的元素存储表达式。
+- [StoreElementByName](#class-storeelementbyname) - 按字段名的元素存储表达式。
 
 示例：
 
@@ -19720,7 +23268,7 @@ public func createStoreElementRef(val: Value, location: Value, path: ArrayList<U
 
 返回值：
 
-- StoreElementRef - 按数字索引的元素存储表达式。
+- [StoreElementRef](#class-storeelementref) - 按数字索引的元素存储表达式。
 
 示例：
 
@@ -19765,7 +23313,7 @@ public func createTryAllocate(ty: Type, normal: Block, err: Block): TryAllocate
 
 返回值：
 
-- TryAllocate - 带异常处理的分配表达式。
+- [TryAllocate](#class-tryallocate) - 带异常处理的分配表达式。
 
 示例：
 
@@ -19810,7 +23358,7 @@ public func createTryApply(callee: Value, funcCallCtx: FuncCallContext, normal: 
 
 返回值：
 
-- TryApply - 带异常处理的函数调用表达式。
+- [TryApply](#class-tryapply) - 带异常处理的函数调用表达式。
 
 示例：
 
@@ -19857,7 +23405,7 @@ public func createTryBinaryAdd(leftOp: Value, rightOp: Value, normal: Block, err
 
 返回值：
 
-- TryBinaryExpression - 带异常处理的加法表达式。
+- [TryBinaryExpression](#class-trybinaryexpression) - 带异常处理的加法表达式。
 
 示例：
 
@@ -19903,7 +23451,7 @@ public func createTryBinaryDiv(leftOp: Value, rightOp: Value, overflow: Overflow
 
 返回值：
 
-- TryBinaryExpression - 带异常处理的除法表达式。
+- [TryBinaryExpression](#class-trybinaryexpression) - 带异常处理的除法表达式。
 
 示例：
 
@@ -19948,7 +23496,7 @@ public func createTryBinaryExp(leftOp: Value, rightOp: Value, normal: Block, err
 
 返回值：
 
-- TryBinaryExpression - 带异常处理的指数表达式。
+- [TryBinaryExpression](#class-trybinaryexpression) - 带异常处理的指数表达式。
 
 示例：
 
@@ -19993,7 +23541,7 @@ public func createTryBinaryLShift(leftOp: Value, rightOp: Value, normal: Block, 
 
 返回值：
 
-- TryBinaryExpression - 带异常处理的左移表达式。
+- [TryBinaryExpression](#class-trybinaryexpression) - 带异常处理的左移表达式。
 
 示例：
 
@@ -20038,7 +23586,7 @@ public func createTryBinaryMod(leftOp: Value, rightOp: Value, normal: Block, err
 
 返回值：
 
-- TryBinaryExpression - 带异常处理的取模表达式。
+- [TryBinaryExpression](#class-trybinaryexpression) - 带异常处理的取模表达式。
 
 示例：
 
@@ -20083,7 +23631,7 @@ public func createTryBinaryMul(leftOp: Value, rightOp: Value, normal: Block, err
 
 返回值：
 
-- TryBinaryExpression - 带异常处理的乘法表达式。
+- [TryBinaryExpression](#class-trybinaryexpression) - 带异常处理的乘法表达式。
 
 示例：
 
@@ -20128,7 +23676,7 @@ public func createTryBinaryRShift(leftOp: Value, rightOp: Value, normal: Block, 
 
 返回值：
 
-- TryBinaryExpression - 带异常处理的右移表达式。
+- [TryBinaryExpression](#class-trybinaryexpression) - 带异常处理的右移表达式。
 
 示例：
 
@@ -20173,7 +23721,7 @@ public func createTryBinarySub(leftOp: Value, rightOp: Value, normal: Block, err
 
 返回值：
 
-- TryBinaryExpression - 带异常处理的减法表达式。
+- [TryBinaryExpression](#class-trybinaryexpression) - 带异常处理的减法表达式。
 
 示例：
 
@@ -20218,7 +23766,7 @@ public func createTryInvoke(retTy: Type, callContext: InvokeCallContext, normal:
 
 返回值：
 
-- TryInvoke - 带异常处理的虚方法调用表达式。
+- [TryInvoke](#class-tryinvoke) - 带异常处理的虚方法调用表达式。
 
 示例：
 
@@ -20267,7 +23815,7 @@ public func createTryNumericCast(srcVal: Value, dstTy: Type, normal: Block, err:
 
 返回值：
 
-- TryNumericCast - 带异常处理的数值类型转换表达式。
+- [TryNumericCast](#class-trynumericcast) - 带异常处理的数值类型转换表达式。
 
 示例：
 
@@ -20312,7 +23860,7 @@ public func createTryRawArrayAllocate(elementType: Type, size: Value, normal: Bl
 
 返回值：
 
-- TryRawArrayAllocate - 带异常处理的原始数组分配表达式。
+- [TryRawArrayAllocate](#class-tryrawarrayallocate) - 带异常处理的原始数组分配表达式。
 
 示例：
 
@@ -20357,7 +23905,7 @@ public func createTrySpawn(retTy: Type, val: Value, normal: Block, err: Block): 
 
 返回值：
 
-- TrySpawn - 带异常处理的 Spawn 表达式。
+- [TrySpawn](#class-tryspawn) - 带异常处理的 Spawn 表达式。
 
 示例：
 
@@ -20404,7 +23952,7 @@ public func createTrySpawn(retTy: Type, val: Value, arg: Value, normal: Block, e
 
 返回值：
 
-- TrySpawn - 带参数和异常处理的 Spawn 表达式。
+- [TrySpawn](#class-tryspawn) - 带参数和异常处理的 Spawn 表达式。
 
 示例：
 
@@ -20449,7 +23997,7 @@ public func createTryUnaryNeg(op: Value, normal: Block, err: Block): TryUnaryExp
 
 返回值：
 
-- TryUnaryExpression - 带异常处理的取负表达式。
+- [TryUnaryExpression](#class-tryunaryexpression) - 带异常处理的取负表达式。
 
 示例：
 
@@ -20491,7 +24039,7 @@ public func createTuple(elements: Array<Value>): Tuple
 
 返回值：
 
-- Tuple - 元组表达式。
+- [Tuple](#class-tuple) - 元组表达式。
 
 示例：
 
@@ -20530,7 +24078,7 @@ public func createUnaryBitNot(op: Value): UnaryExpression
 
 返回值：
 
-- UnaryExpression - 按位取反表达式。
+- [UnaryExpression](#class-unaryexpression) - 按位取反表达式。
 
 示例：
 
@@ -20570,7 +24118,7 @@ public func createUnaryNeg(op: Value, overflow: OverflowStrategy): UnaryExpressi
 
 返回值：
 
-- UnaryExpression - 取负表达式。
+- [UnaryExpression](#class-unaryexpression) - 取负表达式。
 
 示例：
 
@@ -20609,7 +24157,7 @@ public func createUnaryNot(op: Value): UnaryExpression
 
 返回值：
 
-- UnaryExpression - 逻辑取反表达式。
+- [UnaryExpression](#class-unaryexpression) - 逻辑取反表达式。
 
 示例：
 
@@ -20649,7 +24197,7 @@ public func createUnboxToRef(srcVal: Value, dstTy: Type): UnboxToRef
 
 返回值：
 
-- UnboxToRef - 拆箱为引用表达式。
+- [UnboxToRef](#class-unboxtoref) - 拆箱为引用表达式。
 
 示例：
 
@@ -20690,7 +24238,7 @@ public func createUnboxToValue(srcVal: Value, dstTy: Type): UnboxToValue
 
 返回值：
 
-- UnboxToValue - 拆箱为值表达式。
+- [UnboxToValue](#class-unboxtovalue) - 拆箱为值表达式。
 
 示例：
 
@@ -20730,7 +24278,7 @@ public func createVArray(elements: ArrayList<Value>): VArrayExpr
 
 返回值：
 
-- VArrayExpr - VArray 表达式。
+- [VArrayExpr](#class-varrayexpr) - VArray 表达式。
 
 示例：
 
@@ -20776,7 +24324,7 @@ public func createVArrayBuilder(retTy: Type, size: Value, initVal: Value, initFu
 
 返回值：
 
-- VArrayBuilder - VArray 构建器表达式。
+- [VArrayBuilder](#class-varraybuilder) - VArray 构建器表达式。
 
 示例：
 
@@ -20802,4 +24350,61 @@ main() {
 createVArrayBuilder: true
 ```
 
----
+## func serializePackage(Package)
+
+```cangjie
+public func serializePackage(pkg: Package): (CPointer<UInt8>, Int64)
+```
+
+功能：将内存中的 [Package](#class-package) 序列化为 CHIR FlatBuffers 二进制数据，返回指向序列化结果的指针及字节长度。
+
+参数：
+
+- pkg: [Package](#class-package) - 待序列化的 CHIR 包。
+
+返回值：
+
+- (CPointer\<UInt8>, Int64) - 序列化结果的指针及字节长度。调用方应在使用完毕后调用 [freeSerializedMemory](#func-freeserializedmemory) 释放内存。
+
+示例：
+
+<!-- run -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let (data, length) = serializePackage(pkg)
+    println("length: ${length}")
+    unsafe { freeSerializedMemory() }
+}
+```
+
+## func deserializePackage(CPointer\<UInt8>, Int64)
+
+```cangjie
+public func deserializePackage(root: CPointer<UInt8>, length: Int64): Package
+```
+
+功能：从 FlatBuffers 二进制缓冲区反序列化 CHIR [Package](#class-package)。
+
+参数：
+
+- root: CPointer\<UInt8> - 指向序列化数据首字节的指针；不可为 null。
+- length: Int64 - 缓冲区的字节长度。
+
+返回值：
+
+- [Package](#class-package) - 反序列化得到的 CHIR 包。
+
+异常：
+
+- [CHIRException](#class-chirexception) - 当 root 为 null 时抛出异常。
+
+## func freeSerializedMemory()
+
+```cangjie
+public func freeSerializedMemory(): Unit
+```
+
+功能：释放上次序列化产生的共享 FlatBuffers 构建器状态。

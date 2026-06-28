@@ -89,23 +89,6 @@ sealed abstract class JsonValue <: ToString {
      */
     public func kind(): JsonKind
 
-    public func estimateCapacity(): Int64 {
-        return calculateCapacity()
-    }
-
-    /**
-     * Calculate capacity (to be overridden by subclasses)
-     */
-    protected func calculateCapacity(): Int64
-
-    /**
-     * Capacity is not cached because JsonArray and JsonObject expose their mutable backing collections.
-     * External mutations through getItems(), getFields(), or constructor arguments cannot be tracked here.
-     */
-    protected func invalidateCapacity(): Unit {
-        return
-    }
-
     /**
      * Convert JsonValue to JsonNull. If the failure occurs, Exception will be throwed.
      *
