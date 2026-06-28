@@ -229,9 +229,6 @@ class ClientStream {
             if (let Some(query) <- req.url.rawQuery && !query.isEmpty()) {
                 path += "?${query}"
             }
-            if (let Some(fragment) <- req.url.rawFragment && !fragment.isEmpty()) {
-                path += "#${fragment}"
-            }
         }
         headers.add((":authority", authority))
         headers.add((":method", req.method))
