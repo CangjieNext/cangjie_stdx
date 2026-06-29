@@ -816,14 +816,11 @@ class HttpEngineConn1 <: HttpEngineConn & BodyProviderConn {
             if (ctx.responseFlushedByUser) {
                 httpLogDebug(logger, "[HttpEngineConn1#writeResponse] response: ${response}")
                 if (ctx.request.method == "HEAD" && response.status / 100 == 2) {
+                    writeTimer.cancel()
                     return
                 }
-                // 1. write last-chunk
-                conn.write("0\r\n")
                 checkTrailer(response)
-
-                // 2. write trailer
-                conn.write(response.trailers.toString())
+                conn.write("0\r\n" + response.trailers.toString())
                 writeTimer.cancel()
                 return
             }
@@ -865,10 +862,42 @@ class HttpEngineConn1 <: HttpEngineConn & BodyProviderConn {
                 }
             )
 
-            writeWithoutBody(response)
             ctx.responseFlushedByUser = true
             ctx.responseFlushedWithChunked = chunked
+
+            if (bodyData.size == 0 || (request.method == "HEAD" && response.status / 100 == 2)) {
+                conn.write(buildHeaderBytes(response))
+                if (request.method == "HEAD" && response.status / 100 == 2) {
+                    writeTimer.cancel()
+                }
+                return
+            }
+
+            let headerBytes = buildHeaderBytes(response)
+            if (chunked) {
+                let sizeBytes = unsafe { (bodyData.size.toHexString() + "\r\n").rawData() }
+                let crlfBytes = "\r\n".toArray()
+                let totalSize = headerBytes.size + sizeBytes.size + bodyData.size + crlfBytes.size
+                let combined = Array<Byte>(totalSize, repeat: 0)
+                var offset = 0
+                combined[offset..offset + headerBytes.size] = headerBytes
+                offset += headerBytes.size
+                combined[offset..offset + sizeBytes.size] = sizeBytes
+                offset += sizeBytes.size
+                combined[offset..offset + bodyData.size] = bodyData
+                offset += bodyData.size
+                combined[offset..offset + crlfBytes.size] = crlfBytes
+                conn.write(combined)
+            } else {
+                let totalSize = headerBytes.size + bodyData.size
+                let combined = Array<Byte>(totalSize, repeat: 0)
+                combined[..headerBytes.size] = headerBytes
+                combined[headerBytes.size..] = bodyData
+                conn.write(combined)
+            }
+            return
         }
+
         if (bodyData.size == 0 || (request.method == "HEAD" && response.status / 100 == 2)) {
             return
         }
@@ -879,7 +908,6 @@ class HttpEngineConn1 <: HttpEngineConn & BodyProviderConn {
             // write body directly
             this.conn.write(bodyData)
         }
-        return
     }
 
     public func writeUpgradeResponse(ctx: HttpContext): Unit {
@@ -950,7 +978,7 @@ class HttpEngineConn1 <: HttpEngineConn & BodyProviderConn {
         }
     }
 
-    func writeWithoutBody(response: HttpResponse): Unit {
+    func buildHeaderBytes(response: HttpResponse): Array<Byte> {
         var buf = StringBuilder()
         buf.append(response.version)
         buf.append(" ")
@@ -959,17 +987,29 @@ class HttpEngineConn1 <: HttpEngineConn & BodyProviderConn {
         buf.append(response.phrase)
         buf.append("\r\n")
         response.headers.writeTo(buf)
-        conn.write(buf.toString())
+        return buf.toString().toArray()
+    }
+
+    func writeWithoutBody(response: HttpResponse): Unit {
+        conn.write(buildHeaderBytes(response))
     }
 
     func writeChunk(buf: Array<Byte>): Unit {
-        let sizeLine = buf.size.toHexString() + "\r\n"
-        // no chunk-extension
-        conn.write(sizeLine)
-        if (buf.size > 0) { // last-chunk without data
-            conn.write(buf)
-            conn.write("\r\n")
+        if (buf.size == 0) {
+            conn.write("0\r\n")
+            return
         }
+        let sizeBytes = unsafe { (buf.size.toHexString() + "\r\n").rawData() }
+        let crlfBytes = "\r\n".toArray()
+        let totalSize = sizeBytes.size + buf.size + crlfBytes.size
+        let combined = Array<Byte>(totalSize, repeat: 0)
+        var offset = 0
+        combined[offset..offset + sizeBytes.size] = sizeBytes
+        offset += sizeBytes.size
+        combined[offset..offset + buf.size] = buf
+        offset += buf.size
+        combined[offset..offset + crlfBytes.size] = crlfBytes
+        conn.write(combined)
     }
 
     /**
