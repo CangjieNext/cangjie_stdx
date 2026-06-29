@@ -66,9 +66,66 @@
 
 如果使用静态库，在导入 crypto 和 net 库时，由于需要依赖系统符号，所以 `Windows` 操作系统需要额外添加 `-lcrypt32`，`Linux` 操作系统需要额外添加 `-ldl`。在导入 syntax 库时，`Windows` 操作系统需要额外添加 `-lc++ -lunwind`，`macOS` 操作系统需要额外添加 `-lc++`，`Linux` 操作系统需要额外添加 `-lstdc++ -lgcc_s`，`Android` 操作系统需要额外添加 `-lc++ -lunwind`，`iOS` 操作系统需要额外添加 `-lc++`。
 
-### cjc 使用命令示例
+### 使用 cjc 编译
 
-cjc 的介绍和编译请查看 cangjie 用户手册
+cjc 的详细介绍请查看仓颉用户手册。使用 cjc 编译 stdx 项目需按以下步骤操作。
+
+#### 库类型说明
+
+stdx 发布时提供三种库类型，位于不同目录下：
+
+| 类型 | 目录 | 库文件格式 | 运行时是否需要配置动态库搜索路径 |
+| ---- | ---- | ---------- | -------------------------------- |
+| 动态库 | `dynamic/stdx` | `.so`（Linux/macOS）、`.dll`（Windows） | 是 |
+| 静态库 | `static/stdx` | `.a`（仓颉包），部分 FFI 依赖仍为 `.so` | 是（部分 FFI 依赖仍需动态加载） |
+| 全静态库 | `static-static-link-extern/stdx` | `.a`（所有包及 FFI 依赖） | 否 |
+
+> **说明：**
+>
+> - "静态库"类型将仓颉扩展包本身编译为静态库，但 openssl 等外部 C 依赖仍以动态库形式提供，运行时仍需找到这些动态库。
+> - "全静态库"类型将所有依赖（包括外部 C 依赖）均编译为静态库，生成的可执行文件无需任何额外的运行时依赖。
+
+#### 1. 设置环境变量
+
+**设置 stdx 路径**：`CANGJIE_STDX_PATH` 指向所需库类型对应的 stdx 目录。根据实际需求选择动态库或静态库路径：
+
+Linux/macOS（bash/zsh）：
+
+```shell
+# 动态库
+export CANGJIE_STDX_PATH=/target/linux_x86_64_cjnative/dynamic/stdx
+
+# 静态库
+export CANGJIE_STDX_PATH=/target/linux_x86_64_cjnative/static/stdx
+
+# 全静态库
+export CANGJIE_STDX_PATH=/target/linux_x86_64_cjnative/static-static-link-extern/stdx
+```
+
+Windows（cmd）：
+
+```shell
+# 动态库
+set CANGJIE_STDX_PATH=C:\target\windows_x86_64_cjnative\dynamic\stdx
+
+# 静态库
+set CANGJIE_STDX_PATH=C:\target\windows_x86_64_cjnative\static\stdx
+
+# 全静态库
+set CANGJIE_STDX_PATH=C:\target\windows_x86_64_cjnative\static-static-link-extern\stdx
+```
+
+**设置运行时动态库搜索路径**（动态库和静态库类型需要，全静态库类型无需设置）：
+
+| 操作系统 | 环境变量 | 设置方式 |
+| -------- | -------- | -------- |
+| Linux | `LD_LIBRARY_PATH` | `export LD_LIBRARY_PATH=$CANGJIE_STDX_PATH:$LD_LIBRARY_PATH` |
+| macOS | `DYLD_LIBRARY_PATH` | `export DYLD_LIBRARY_PATH=$CANGJIE_STDX_PATH:$DYLD_LIBRARY_PATH` |
+| Windows | `PATH` | `set PATH=%CANGJIE_STDX_PATH%;%PATH%` |
+
+#### 2. 编写源码
+
+根据需要导入 stdx 包即可，无需导入以下全部。
 
 <!-- code_no_check -->
 ```cangjie
@@ -98,32 +155,67 @@ main() {
 }
 ```
 
-Linux 和 mac 的编译命令：
+#### 3. 编译
+
+cjc 编译 stdx 项目需指定库搜索路径、链接依赖包、导入路径和输出文件，基本格式如下：
 
 ```shell
-cjc main.cj -L $CANGJIE_STDX_PATH -lstdx.actors -lstdx.aspect_cj -lstdx.effect -lstdx.encoding.json -lstdx.serialization.serialization -lstdx.net.http -lstdx.net.tls -lstdx.net.tls.common -lstdx.logger -lstdx.log -lstdx.encoding.url -lstdx.encoding.json.stream -lstdx.crypto.kit -lstdx.crypto.keys -lstdx.crypto.x509 -lstdx.encoding.hex -lstdx.crypto.crypto -lstdx.crypto.digest -lstdx.crypto.common -lstdx.encoding.base64 -lstdx.compress.zlib -lstdx.compress -lstdx.syntax -lstdx.syntaxFFI -ldl --import-path $CANGJIE_STDX_PATH -o main.out
+cjc <源文件> -L <stdx路径> -l<包1> -l<包2> ... --import-path <stdx路径> -o <输出文件>
 ```
 
-windows 编译命令（cmd）：
+其中：
+- `-L`：指定库搜索路径，设为 `$CANGJIE_STDX_PATH`
+- `-l`：指定链接的包，需根据导入的包及上表中的依赖关系确定
+- `--import-path`：指定导入路径，设为 `$CANGJIE_STDX_PATH`
+- `-o`：指定输出文件名
+
+> **注意：**
+>
+> `-l` 的顺序必须严格遵循上方"包依赖"表中的依赖顺序（上层包在前，底层依赖在后）。如果使用 cjpm 构建，则无需关注链接顺序。
+
+> **静态库链接额外要求：**
+>
+> 使用静态库或全静态库时，由于 `.a` 文件不携带外部依赖信息，需手动添加依赖的系统库链接选项（动态库无需添加）：
+>
+> | 导入的包 | Linux | macOS | Windows | Android | iOS |
+> | -------- | ----- | ----- | ------- | ------- | --- |
+> | `stdx.crypto.*`、`stdx.net.http`、`stdx.net.tls.*` | `-ldl` | — | `-lcrypt32` | — | — |
+> | `stdx.syntax` | `-lstdc++ -lgcc_s` | `-lc++` | `-lc++ -lunwind` | `-lc++ -lunwind` | `-lc++` |
+
+导入全部 stdx 包时的编译命令（仅作参考，实际只需链接自己导入的包及其依赖）：
+
+**动态库：**
+
+Linux/macOS：
 
 ```shell
-cjc main.cj -L %CANGJIE_STDX_PATH% -lstdx.actors -lstdx.aspect_cj -lstdx.effect -lstdx.encoding.json -lstdx.serialization.serialization -lstdx.net.http -lstdx.net.tls -lstdx.net.tls.common -lstdx.logger -lstdx.log -lstdx.encoding.url -lstdx.encoding.json.stream -lstdx.crypto.kit -lstdx.crypto.keys -lstdx.crypto.x509 -lstdx.encoding.hex -lstdx.crypto.crypto -lstdx.crypto.digest -lstdx.crypto.common -lstdx.encoding.base64 -lstdx.compress.zlib -lstdx.compress -lstdx.syntax -lstdx.syntaxFFI -lcrypt32 --import-path %CANGJIE_STDX_PATH% -o main.out
+cjc main.cj -L $CANGJIE_STDX_PATH -lstdx.actors -lstdx.aspect_cj -lstdx.effect -lstdx.encoding.json -lstdx.serialization.serialization -lstdx.net.http -lstdx.net.tls -lstdx.net.tls.common -lstdx.logger -lstdx.log -lstdx.encoding.url -lstdx.encoding.json.stream -lstdx.crypto.kit -lstdx.crypto.keys -lstdx.crypto.x509 -lstdx.encoding.hex -lstdx.crypto.crypto -lstdx.crypto.digest -lstdx.crypto.common -lstdx.encoding.base64 -lstdx.compress.zlib -lstdx.compress -lstdx.syntax -lstdx.syntaxFFI --import-path $CANGJIE_STDX_PATH -o main.out
 ```
 
-CANGJIE_STDX_PATH 是设置的 stdx 路径。
-
-例如在 linux 系统中设置：
+Windows（cmd）：
 
 ```shell
-export CANGJIE_STDX_PATH=/target/linux_x86_64_cjnative/dynamic/stdx
+cjc main.cj -L %CANGJIE_STDX_PATH% -lstdx.actors -lstdx.aspect_cj -lstdx.effect -lstdx.encoding.json -lstdx.serialization.serialization -lstdx.net.http -lstdx.net.tls -lstdx.net.tls.common -lstdx.logger -lstdx.log -lstdx.encoding.url -lstdx.encoding.json.stream -lstdx.crypto.kit -lstdx.crypto.keys -lstdx.crypto.x509 -lstdx.encoding.hex -lstdx.crypto.crypto -lstdx.crypto.digest -lstdx.crypto.common -lstdx.encoding.base64 -lstdx.compress.zlib -lstdx.compress -lstdx.syntax -lstdx.syntaxFFI --import-path %CANGJIE_STDX_PATH% -o main.out
 ```
 
-运行前 Linux 操作系统需要在 LD_LIBRARY_PATH 中设置扩展库的路径，Windows 操作系统需要在 PATH 中设置扩展库的路径，macOS 操作系统需要在 DYLD_LIBRARY_PATH 中设置扩展库的路径。
+**静态库 / 全静态库：**
 
-例如在 linux 系统中设置：
+Linux：
 
 ```shell
-export LD_LIBRARY_PATH=/target/linux_x86_64_cjnative/dynamic/stdx:$LD_LIBRARY_PATH
+cjc main.cj -L $CANGJIE_STDX_PATH -lstdx.actors -lstdx.aspect_cj -lstdx.effect -lstdx.encoding.json -lstdx.serialization.serialization -lstdx.net.http -lstdx.net.tls -lstdx.net.tls.common -lstdx.logger -lstdx.log -lstdx.encoding.url -lstdx.encoding.json.stream -lstdx.crypto.kit -lstdx.crypto.keys -lstdx.crypto.x509 -lstdx.encoding.hex -lstdx.crypto.crypto -lstdx.crypto.digest -lstdx.crypto.common -lstdx.encoding.base64 -lstdx.compress.zlib -lstdx.compress -lstdx.syntax -lstdx.syntaxFFI -ldl -lstdc++ -lgcc_s --import-path $CANGJIE_STDX_PATH -o main.out
+```
+
+macOS：
+
+```shell
+cjc main.cj -L $CANGJIE_STDX_PATH -lstdx.actors -lstdx.aspect_cj -lstdx.effect -lstdx.encoding.json -lstdx.serialization.serialization -lstdx.net.http -lstdx.net.tls -lstdx.net.tls.common -lstdx.logger -lstdx.log -lstdx.encoding.url -lstdx.encoding.json.stream -lstdx.crypto.kit -lstdx.crypto.keys -lstdx.crypto.x509 -lstdx.encoding.hex -lstdx.crypto.crypto -lstdx.crypto.digest -lstdx.crypto.common -lstdx.encoding.base64 -lstdx.compress.zlib -lstdx.compress -lstdx.syntax -lstdx.syntaxFFI -lc++ --import-path $CANGJIE_STDX_PATH -o main.out
+```
+
+Windows（cmd）：
+
+```shell
+cjc main.cj -L %CANGJIE_STDX_PATH% -lstdx.actors -lstdx.aspect_cj -lstdx.effect -lstdx.encoding.json -lstdx.serialization.serialization -lstdx.net.http -lstdx.net.tls -lstdx.net.tls.common -lstdx.logger -lstdx.log -lstdx.encoding.url -lstdx.encoding.json.stream -lstdx.crypto.kit -lstdx.crypto.keys -lstdx.crypto.x509 -lstdx.encoding.hex -lstdx.crypto.crypto -lstdx.crypto.digest -lstdx.crypto.common -lstdx.encoding.base64 -lstdx.compress.zlib -lstdx.compress -lstdx.syntax -lstdx.syntaxFFI -lcrypt32 -lc++ -lunwind --import-path %CANGJIE_STDX_PATH% -o main.out
 ```
 
 ### cjpm 使用示例
@@ -138,8 +230,9 @@ cjpm.toml 增加如下配置：
     path-option = ["${CANGJIE_STDX_PATH}"]
 ```
 
-上面配置中 x86_64-unknown-linux-gnu 表示的是系统架构信息，需要通过 cjc -v 获取，并替换成自己获取的系统架构信息。
-CANGJIE_STDX_PATH 是设置的 stdx 路径。
+其中：
+- `x86_64-unknown-linux-gnu` 表示系统架构信息，需通过 `cjc -v` 获取并替换为自己的架构信息。
+- `CANGJIE_STDX_PATH` 指向 stdx 库目录，根据所需库类型指向 `dynamic/stdx`、`static/stdx` 或 `static-static-link-extern/stdx`（详见上方"库类型说明"）。
 
 > **注意：**
 >
