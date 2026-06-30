@@ -22,6 +22,9 @@ tls 包用于进行安全加密的网络通信，提供创建 TLS 服务器、�
     - 如果无法通过上面的方式安装，可自行下载 `OpenSSL 3.x.x` 源码编译安装软件包，并确保安装目录下含有 `libcrypto.dylib` 和 `libcrypto.3.dylib` 这两个动态库文件，然后可选择下面任意一种方式来保证系统链接器可以找到这些文件：
         - 在系统未安装 OpenSSL 的场景，安装时选择直接安装到系统路径下；
         - 安装在自定义目录的场景，将这些文件所在目录设置到环境变量 `DYLD_LIBRARY_PATH` 以及 `LIBRARY_PATH` 中。
+    > **注意：**
+    >
+    > `macOS` 系统自带的 `OpenSSL` 库不完整，不符合 `stdx` 的需求，使用系统自带的库会导致未知错误。用户必须按照以上步骤正确安装完整的 `OpenSSL` 库并配置环境变量。
 - 对于 `Android` 操作系统，可参考以下方式：
     - 由于 `Android` 系统默认自带的 `OpenSSL` 是裁剪版本，部分接口可能找不到符号而抛出异常，因此需要用户自行编译安装完整的 `OpenSSL 3.x.x` 版本；
     - 可自行下载 `OpenSSL 3.x.x` 源码，使用 Android NDK 交叉编译生成对应架构（当前只支持 `arm64-v8a`）的动态库文件，确保编译产物中含有 `libssl.so`、`libssl.so.3`、`libcrypto.so` 和 `libcrypto.so.3` 这些动态库文件；
