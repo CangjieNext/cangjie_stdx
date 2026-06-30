@@ -27,9 +27,11 @@ http 包提供 HTTP/1.1、HTTP/2 和 WebSocket 协议的 server、client 端实�
     - 可自行下载 `OpenSSL 3.x.x` 源码，使用 Android NDK 交叉编译生成对应架构（当前只支持 `arm64-v8a`）的动态库文件，确保编译产物中含有 `libssl.so`、`libssl.so.3`、`libcrypto.so` 和 `libcrypto.so.3` 这些动态库文件；
     - 将这些文件所在目录设置到环境变量 `LD_LIBRARY_PATH` 中。
 - 对于 `HarmonyOS` 操作系统，可参考以下方式：
-    - 由于 `HarmonyOS` 6.0 及以上版本系统限制，`stdx` 无法直接调用系统内置的 `OpenSSL`，需要用户自行编译 `HarmonyOS` 的 `OpenSSL` 动态库并打包到应用中；
+    - 由于 `HarmonyOS 6.0` 及以上版本系统限制，`stdx` 无法直接调用系统内置的 `OpenSSL`，需要用户自行编译 `HarmonyOS` 的 `OpenSSL` 动态库并打包到应用中；
     - 编译 `HarmonyOS` 的 `OpenSSL` 可参考 [OHOS 仓颉 SDK 构建指导书](https://gitcode.com/Cangjie/cangjie_build/blob/main/docs/linux_ohos_toolchain.md)；
-    - 将编译好的动态库文件 `libcrypto_openssl.z.so` 和 `libssl_openssl.z.so` 打包到应用中，并确保应用运行时能够正确加载这些库文件。
+    - 将编译好的动态库文件 `libcrypto_openssl.z.so` 和 `libssl_openssl.z.so` 拷贝到应用模块的 `libs/arm64-v8a`（真机）或 `libs/x86_64`（模拟器）目录下，`Deveco Studio` 会将其打包到应用包的对应目录中，确保应用运行时能够正确加载这些库文件。
+    - 另外，对于 `HarmonyOS 7.0` 及以上版本，在动态链接 `stdx` 库的场景下，还需要把 `stdx` 模块中的 `libcangjie-dynamicLoader-opensslFFI.so` 打包到应用包中，该动态库用于链接 `OpenSSL`。
+    - 用户可将本地仓颉 stdx 库中的 `libcangjie-dynamicLoader-opensslFFI.so` 拷贝到应用模块的 `libs/arm64-v8a`（真机）或 `libs/x86_64`（模拟器）目录下， `Deveco Studio` 会将其打包到应用包的对应目录中。
 
 如果未安装 `OpenSSL 3`软件包或者安装低版本的软件包，程序可能无法使用并抛出 TLS 相关异常。
 
