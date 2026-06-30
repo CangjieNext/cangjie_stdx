@@ -31,7 +31,9 @@ x509 包提供处理数字证书功能，提供包括解析和序列化 X509 证
 - 对于 HarmonyOS 操作系统，可参考以下方式：
     - 由于 HarmonyOS 6.0 及以上版本系统限制，stdx 无法直接调用系统内置的 OpenSSL，需要用户自行编译 HarmonyOS 的 OpenSSL 动态库并打包到应用中；
     - 编译 HarmonyOS 的 OpenSSL 可参考 [OHOS 仓颉 SDK 构建指导书](https://gitcode.com/Cangjie/cangjie_build/blob/main/docs/linux_ohos_toolchain.md)；
-    - 将编译好的动态库文件 libcrypto_openssl.z.so 和 libssl_openssl.z.so 打包到应用中，并确保应用运行时能够正确加载这些库文件。
+    - 将编译好的动态库文件 libcrypto_openssl.z.so 和 libssl_openssl.z.so 拷贝到应用包的 libs/arm64-v8a 目录下，确保应用运行时能够正确加载这些库文件。
+    - 另外，在动态链接 stdx 库的场景下，还需要把 stdx 模块中的 libcangjie-dynamicLoader-opensslFFI.so 打包到应用包中，该动态库用于链接 OpenSSL。
+    - 用户可将本地仓颉 stdx 库中的 libcangjie-dynamicLoader-opensslFFI.so 拷贝到应用模块的 libs/arm64-v8a 目录下，Deveco Studio 就会将其打包到应用包的对应目录中。
 
 > **说明：**
 >
