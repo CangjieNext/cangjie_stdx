@@ -226,7 +226,7 @@ class ClientStream {
             path = ASTERISK
         } else {
             path = canonicalPath(req.url.path)
-            if (let Some(query) <- req.url.query && !query.isEmpty()) {
+            if (let Some(query) <- req.url.rawQuery && !query.isEmpty()) {
                 path += "?${query}"
             }
         }
