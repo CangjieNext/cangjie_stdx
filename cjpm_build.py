@@ -39,6 +39,7 @@ HAS_DEBUG_FLAG = False
 BUILD_TYPE_CJPM = "release"
 WMIC_PATH = "C:/Windows/System32/wbem/wmic.exe"
 IS_MOCK = False
+ARM_MACHINE_VALUES = ("arm", "aarch64", "arm64")
 
 def get_platform():
     if sys.platform.startswith("linux"):
@@ -306,7 +307,7 @@ LOG_FILE = os.path.join(LOG_DIR, "cangjie.log")
 
 IS_WINDOWS = get_platform() == "windows"
 IS_MACOS = get_platform() == "macos"
-IS_ARM = platform.uname().processor in ["arm","aarch64","arm64"]
+IS_ARM = platform.machine() in ARM_MACHINE_VALUES or platform.uname().processor in ARM_MACHINE_VALUES
 # Wait for the version of aarch64 libcore to be ready.
 MAKE_JOBS = multiprocessing.cpu_count() + 2
 
