@@ -131,7 +131,7 @@ class HttpServer1 <: ProtocolService {
                 .status(HttpStatusCode.STATUS_INTERNAL_SERVER_ERROR)
                 .setHeaders(headers)
                 .body("Internal Server Error")
-            httpConn.writeResponse(context.responseBuilder.build()) // 500 Internal Server Error
+            httpConn.writeResponse(context) // 500 Internal Server Error
 
             quitAndClose()
             return None
@@ -666,6 +666,7 @@ class HttpEngineConn1 <: HttpEngineConn & BodyProviderConn {
         // The header rule meets the HTTP header rule. For details, see HttpHeaders.
         writeWithoutBody(response)
         if (response.request?.method == "HEAD" && response.status / 100 == 2) {
+            conn.flush()
             return
         }
 
@@ -677,9 +678,11 @@ class HttpEngineConn1 <: HttpEngineConn & BodyProviderConn {
             checkTrailer(response)
             this.writeBodyByChunk(response.body)
             conn.write("0\r\n" + response.trailers.toString())
+            conn.flush()
             return
         }
         this.writeBodyByCl(response.body, contentLength)
+        conn.flush()
     }
 
     /*
@@ -816,14 +819,17 @@ class HttpEngineConn1 <: HttpEngineConn & BodyProviderConn {
             if (ctx.responseFlushedByUser) {
                 httpLogDebug(logger, "[HttpEngineConn1#writeResponse] response: ${response}")
                 if (ctx.request.method == "HEAD" && response.status / 100 == 2) {
+                    conn.flush()
                     return
                 }
-                // 1. write last-chunk
-                conn.write("0\r\n")
+                if (ctx.responseFlushedWithChunked) {
+                    // 1. write last-chunk
+                    conn.write("0\r\n")
+                }
                 checkTrailer(response)
-
                 // 2. write trailer
                 conn.write(response.trailers.toString())
+                conn.flush()
                 writeTimer.cancel()
                 return
             }
@@ -870,6 +876,7 @@ class HttpEngineConn1 <: HttpEngineConn & BodyProviderConn {
             ctx.responseFlushedWithChunked = chunked
         }
         if (bodyData.size == 0 || (request.method == "HEAD" && response.status / 100 == 2)) {
+            this.conn.flush()
             return
         }
 
@@ -879,6 +886,7 @@ class HttpEngineConn1 <: HttpEngineConn & BodyProviderConn {
             // write body directly
             this.conn.write(bodyData)
         }
+        this.conn.flush()
         return
     }
 
@@ -910,6 +918,7 @@ class HttpEngineConn1 <: HttpEngineConn & BodyProviderConn {
             }
             writeWithoutBody(response)
         }
+        conn.flush()
     }
 
     // @throws If the size of the body is known and the size of the body is smaller than the value of content-length in the header, throw this Exception.
@@ -979,6 +988,7 @@ class HttpEngineConn1 <: HttpEngineConn & BodyProviderConn {
         if (isClosed()) {
             return
         }
+        conn.flush()
         conn.close()
     }
 
