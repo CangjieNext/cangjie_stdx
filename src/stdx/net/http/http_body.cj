@@ -442,6 +442,7 @@ class HttpExpectBodyProvider <: InputStream {
                 // response 100-continue
                 let response = HttpResponseBuilder().version(request.version).status(100).build()
                 conn.writeWithoutBody(response)
+                conn.getBufferConn().bufferedWriter.flush()
                 respondedContinue = true
             }
         }

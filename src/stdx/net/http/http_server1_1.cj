@@ -131,7 +131,7 @@ class HttpServer1 <: ProtocolService {
                 .status(HttpStatusCode.STATUS_INTERNAL_SERVER_ERROR)
                 .setHeaders(headers)
                 .body("Internal Server Error")
-            httpConn.writeResponse(context.responseBuilder.build()) // 500 Internal Server Error
+            httpConn.writeResponse(context) // 500 Internal Server Error
 
             quitAndClose()
             return None
@@ -190,6 +190,7 @@ class HttpServer1 <: ProtocolService {
 
 class HttpEngineConn1 <: HttpEngineConn & BodyProviderConn {
     let conn: BufferedConn
+    let writer: BufferedWriter
     var _version = "HTTP/1.1"
     var _logger: ?Logger = None
     let _isReadTimeout = AtomicBool(false)
@@ -207,6 +208,7 @@ class HttpEngineConn1 <: HttpEngineConn & BodyProviderConn {
 
     init(socket: StreamingSocket) {
         conn = BufferedConn(socket)
+        writer = conn.bufferedWriter
     }
 
     public prop clientCertificate: ?Array<Certificate> {
@@ -666,6 +668,7 @@ class HttpEngineConn1 <: HttpEngineConn & BodyProviderConn {
         // The header rule meets the HTTP header rule. For details, see HttpHeaders.
         writeWithoutBody(response)
         if (response.request?.method == "HEAD" && response.status / 100 == 2) {
+            writer.flush()
             return
         }
 
@@ -676,10 +679,12 @@ class HttpEngineConn1 <: HttpEngineConn & BodyProviderConn {
             }
             checkTrailer(response)
             this.writeBodyByChunk(response.body)
-            conn.write("0\r\n" + response.trailers.toString())
+            writer.write("0\r\n" + response.trailers.toString())
+            writer.flush()
             return
         }
         this.writeBodyByCl(response.body, contentLength)
+        writer.flush()
     }
 
     /*
@@ -696,7 +701,7 @@ class HttpEngineConn1 <: HttpEngineConn & BodyProviderConn {
                     this.writeChunk(b.rawBody.slice(sendLen, len))
                     sendLen += len
                 }
-            case _: HttpEmptyBody => conn.write(Array<Byte>()) // no body data
+            case _: HttpEmptyBody => writer.write(Array<Byte>()) // no body data
             case _ =>
                 let chunkSize = CHUNK_SIZE
                 var data = Array<Byte>(chunkSize, repeat: 0)
@@ -710,15 +715,15 @@ class HttpEngineConn1 <: HttpEngineConn & BodyProviderConn {
 
     func writeBodyByCl(body: InputStream, contentLength: Int64): Unit {
         match (body) {
-            case b: HttpRawBody => conn.write(b.rawBody.slice(0, contentLength))
-            case _: HttpEmptyBody => conn.write(Array<Byte>()) // no body data
+            case b: HttpRawBody => writer.write(b.rawBody.slice(0, contentLength))
+            case _: HttpEmptyBody => writer.write(Array<Byte>()) // no body data
             case _ =>
                 let buff = Array<Byte>(4096, repeat: 0)
                 var readLen = body.read(buff)
                 var contentLen = contentLength
                 while (readLen > 0 && contentLen > 0) {
                     let sendLen = min(contentLen, readLen)
-                    conn.write(buff.slice(0, sendLen))
+                    writer.write(buff.slice(0, sendLen))
                     contentLen -= sendLen
                     readLen = body.read(buff)
                 }
@@ -816,14 +821,17 @@ class HttpEngineConn1 <: HttpEngineConn & BodyProviderConn {
             if (ctx.responseFlushedByUser) {
                 httpLogDebug(logger, "[HttpEngineConn1#writeResponse] response: ${response}")
                 if (ctx.request.method == "HEAD" && response.status / 100 == 2) {
+                    writer.flush()
                     return
                 }
-                // 1. write last-chunk
-                conn.write("0\r\n")
+                if (ctx.responseFlushedWithChunked) {
+                    // 1. write last-chunk
+                    writer.write("0\r\n")
+                }
                 checkTrailer(response)
-
                 // 2. write trailer
-                conn.write(response.trailers.toString())
+                writer.write(response.trailers.toString())
+                writer.flush()
                 writeTimer.cancel()
                 return
             }
@@ -870,6 +878,7 @@ class HttpEngineConn1 <: HttpEngineConn & BodyProviderConn {
             ctx.responseFlushedWithChunked = chunked
         }
         if (bodyData.size == 0 || (request.method == "HEAD" && response.status / 100 == 2)) {
+            this.writer.flush()
             return
         }
 
@@ -877,8 +886,9 @@ class HttpEngineConn1 <: HttpEngineConn & BodyProviderConn {
             this.writeBodyByChunk(HttpRawBody(bodyData))
         } else {
             // write body directly
-            this.conn.write(bodyData)
+            this.writer.write(bodyData)
         }
+        this.writer.flush()
         return
     }
 
@@ -910,6 +920,7 @@ class HttpEngineConn1 <: HttpEngineConn & BodyProviderConn {
             }
             writeWithoutBody(response)
         }
+        writer.flush()
     }
 
     // @throws If the size of the body is known and the size of the body is smaller than the value of content-length in the header, throw this Exception.
@@ -959,16 +970,16 @@ class HttpEngineConn1 <: HttpEngineConn & BodyProviderConn {
         buf.append(response.phrase)
         buf.append("\r\n")
         response.headers.writeTo(buf)
-        conn.write(buf.toString())
+        writer.write(buf.toString())
     }
 
     func writeChunk(buf: Array<Byte>): Unit {
         let sizeLine = buf.size.toHexString() + "\r\n"
         // no chunk-extension
-        conn.write(sizeLine)
+        writer.write(sizeLine)
         if (buf.size > 0) { // last-chunk without data
-            conn.write(buf)
-            conn.write("\r\n")
+            writer.write(buf)
+            writer.write("\r\n")
         }
     }
 
