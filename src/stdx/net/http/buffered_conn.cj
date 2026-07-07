@@ -300,8 +300,12 @@ class BufferedConn <: StreamingSocket {
 
     public func write(buffer: Array<Byte>): Unit {
         if (buffer.size > 0) {
-            socket.write(buffer)
+            bufferedWriter.write(buffer)
         }
+    }
+
+    public func flush(): Unit {
+        bufferedWriter.flush()
     }
 
     public func close(): Unit {
