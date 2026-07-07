@@ -131,16 +131,16 @@ class BufferedWriter {
     }
 
     func write(data: Array<Byte>): Unit {
-        if ((WRITE_CHUNK_SIZE - curWrite) < data.size) {
+        if (data.size >= WRITE_CHUNK_SIZE) {
             flush()
             socket.write(data)
             return
         }
-        data.copyTo(buf, 0, curWrite, data.size)
-        curWrite += data.size
-        if (curWrite == WRITE_CHUNK_SIZE) {
+        if ((WRITE_CHUNK_SIZE - curWrite) < data.size) {
             flush()
         }
+        data.copyTo(buf, 0, curWrite, data.size)
+        curWrite += data.size
     }
 
     func write(b: UInt8): Unit {
@@ -192,6 +192,9 @@ class BufferedWriter {
     }
 
     func flush(): Unit {
+        if (curWrite == 0) {
+            return
+        }
         socket.write(buf[..curWrite])
         curWrite = 0
     }
@@ -300,8 +303,12 @@ class BufferedConn <: StreamingSocket {
 
     public func write(buffer: Array<Byte>): Unit {
         if (buffer.size > 0) {
-            socket.write(buffer)
+            bufferedWriter.write(buffer)
         }
+    }
+
+    public func flush(): Unit {
+        bufferedWriter.flush()
     }
 
     public func close(): Unit {
