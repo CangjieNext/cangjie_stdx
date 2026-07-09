@@ -674,39 +674,104 @@ add_cangjie_library(
     SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/stdx
     DEPENDS ${STDX_DEPENDENCIES})
 
-if(NOT CANGJIE_CJPM_BUILD_TYPE AND NOT CANGJIE_BUILD_WITHOUT_CHIR)
-    add_cangjie_macro_library_in_local(
-        cangjie${BACKEND_TYPE}ChirToStringMacro
-        NO_SUB_PKG
-        PACKAGE_NAME "chir.to_string_macro"
-        MODULE_NAME "stdx"
-        SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/stdx/chir/to_string_macro
-        DEPENDS ${CHIR_TOSTRING_MACRO_DEPENDENCIES})
-
+# Shared flatbuffers runtime package (same model as std.ast).
+# Built when either chir or syntax needs it; cjo is not reinstalled (already in CANGJIE_HOME).
+if(NOT CANGJIE_CJPM_BUILD_TYPE
+    AND (NOT CANGJIE_BUILD_WITHOUT_CHIR OR NOT CANGJIE_BUILD_WITHOUT_SYNTAX))
     add_cangjie_library(
-        cangjie${BACKEND_TYPE}Chir
+        cangjie${BACKEND_TYPE}Flatbuffers
         NO_SUB_PKG
+        IS_STDXLIB
+        IS_PACKAGE
         IS_CJNATIVE_BACKEND
-        PACKAGE_NAME "chir"
-        MODULE_NAME "stdx"
-        SOURCES ${CHIR_SRCS}
-        SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/stdx/chir
-        DEPENDS ${CHIR_DEPENDENCIES})
-    if(TARGET CHIR_FLATC_OUTPUTS)
-        add_dependencies(cangjie${BACKEND_TYPE}Chir CHIR_FLATC_OUTPUTS)
+        NO_INSTALL_CJO
+        PACKAGE_NAME "flatbuffers"
+        SOURCE_DIR $ENV{CANGJIE_HOME}/third_party/flatbuffers/cangjie
+        DEPENDS ${FLATBUFFERS_DEPENDENCIES})
+    add_library(cangjie-flatbuffers STATIC ${output_cj_object_dir}/flatbuffers.o)
+    set_target_properties(cangjie-flatbuffers PROPERTIES LINKER_LANGUAGE C)
+    set_source_files_properties(${output_cj_object_dir}/flatbuffers.o PROPERTIES GENERATED TRUE)
+    add_dependencies(cangjie-flatbuffers cangjie${BACKEND_TYPE}Flatbuffers)
+elseif(CANGJIE_CJPM_BUILD_TYPE AND CMAKE_BUILD_STAGE STREQUAL "postBuild"
+    AND (NOT CANGJIE_BUILD_WITHOUT_CHIR OR NOT CANGJIE_BUILD_WITHOUT_SYNTAX))
+    # cjpm pre-build already compiled a private flatbuffers.a under build-script-cache/.
+    set(_cjpm_fb_a "${CMAKE_SOURCE_DIR}/build-script-cache/flatbuffers-private/flatbuffers/libflatbuffers.a")
+    if(NOT EXISTS "${_cjpm_fb_a}")
+        message(FATAL_ERROR "Private flatbuffers archive not found: ${_cjpm_fb_a}. Run cjpm build (pre-build) first.")
     endif()
+    add_library(cangjie-flatbuffers STATIC IMPORTED GLOBAL)
+    set_target_properties(cangjie-flatbuffers PROPERTIES
+        IMPORTED_LOCATION "${_cjpm_fb_a}"
+        # So cj_resolve_depends / FORCE_LINK can track the archive as a file dependency.
+        CJ_LIB_OUTPUT_FILE "${_cjpm_fb_a}")
+endif()
 
-    make_cangjie_lib(
-        chir IS_SHARED
-        DEPENDS cangjie${BACKEND_TYPE}Chir
-        CANGJIE_STD_LIB_LINK
-            std-core
-            std-collection
-            std-fs
-        OBJECTS ${output_cj_object_dir}/stdx/chir.o)
-    add_library(stdx.chir STATIC ${output_cj_object_dir}/stdx/chir.o)
-    set_target_properties(stdx.chir PROPERTIES LINKER_LANGUAGE C)
-    install(TARGETS stdx.chir DESTINATION ${output_triple_name}_${CJNATIVE_BACKEND}${SANITIZER_SUBPATH}/static/stdx)
+# Install .cjo produced by cjpm into the platform install tree (static/dynamic).
+function(install_cjpm_package_cjo package_leaf_name)
+    set(_cjo "${stdxo_path}/stdx.${package_leaf_name}.cjo")
+    if(EXISTS "${_cjo}")
+        install(FILES "${_cjo}" DESTINATION ${output_triple_name}_${CJNATIVE_BACKEND}${SANITIZER_SUBPATH}/static/stdx)
+        install(FILES "${_cjo}" DESTINATION ${output_triple_name}_${CJNATIVE_BACKEND}${SANITIZER_SUBPATH}/dynamic/stdx)
+    else()
+        message(WARNING "cjpm package cjo not found for install: ${_cjo}")
+    endif()
+endfunction()
+
+if(NOT CANGJIE_BUILD_WITHOUT_CHIR)
+    if(NOT CANGJIE_CJPM_BUILD_TYPE)
+        add_cangjie_macro_library_in_local(
+            cangjie${BACKEND_TYPE}ChirToStringMacro
+            NO_SUB_PKG
+            PACKAGE_NAME "chir.to_string_macro"
+            MODULE_NAME "stdx"
+            SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/stdx/chir/to_string_macro
+            DEPENDS ${CHIR_TOSTRING_MACRO_DEPENDENCIES})
+
+        add_cangjie_library(
+            cangjie${BACKEND_TYPE}Chir
+            NO_SUB_PKG
+                IS_CJNATIVE_BACKEND
+            PACKAGE_NAME "chir"
+            MODULE_NAME "stdx"
+            SOURCES ${CHIR_SRCS}
+            SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/stdx/chir
+            DEPENDS ${CHIR_DEPENDENCIES})
+        if(TARGET CHIR_FLATC_OUTPUTS)
+            add_dependencies(cangjie${BACKEND_TYPE}Chir CHIR_FLATC_OUTPUTS)
+        endif()
+
+        make_cangjie_lib(
+            chir IS_SHARED
+            DEPENDS cangjie${BACKEND_TYPE}Chir cangjie-flatbuffers cangjie${BACKEND_TYPE}Flatbuffers
+            CANGJIE_STD_LIB_LINK
+                std-core
+                std-collection
+                std-fs
+            OBJECTS ${output_cj_object_dir}/stdx/chir.o
+            FORCE_LINK_ARCHIVES cangjie-flatbuffers)
+        add_library(stdx.chir STATIC ${output_cj_object_dir}/stdx/chir.o)
+        set_target_properties(stdx.chir PROPERTIES LINKER_LANGUAGE C)
+        add_dependencies(stdx.chir cangjie${BACKEND_TYPE}Chir cangjie-flatbuffers)
+        install(TARGETS stdx.chir DESTINATION ${output_triple_name}_${CJNATIVE_BACKEND}${SANITIZER_SUBPATH}/static/stdx)
+    elseif(CMAKE_BUILD_STAGE STREQUAL "postBuild")
+        # cjpm already compiled chir; only link shared/static libs into the install tree.
+        make_cangjie_lib(
+            chir IS_SHARED
+            DEPENDS cangjie-flatbuffers
+            CANGJIE_STD_LIB_LINK
+                std-core
+                std-collection
+                std-fs
+            OBJECTS ${output_cj_object_dir}/stdx/chir.o
+            FORCE_LINK_ARCHIVES cangjie-flatbuffers)
+        add_library(stdx.chir STATIC ${output_cj_object_dir}/stdx/chir.o)
+        set_target_properties(stdx.chir PROPERTIES LINKER_LANGUAGE C)
+        set_source_files_properties(${output_cj_object_dir}/stdx/chir.o PROPERTIES GENERATED TRUE)
+        install(TARGETS stdx.chir DESTINATION ${output_triple_name}_${CJNATIVE_BACKEND}${SANITIZER_SUBPATH}/static/stdx)
+        install_cjpm_package_cjo(chir)
+        # chir.to_string_macro is an internal compile-time helper (same idea as private
+        # flatbuffers): needed while building stdx.chir, not shipped for end users.
+    endif()
 endif()
 
 # plugin / CHIR compiler plugins (also built for cross-compiled target packages).
@@ -714,23 +779,24 @@ endif()
 # so the shipped lib-macro_stdx.plugin.* is a real target-platform shared library.
 if(NOT CANGJIE_CJPM_BUILD_TYPE AND NOT CANGJIE_BUILD_WITHOUT_CHIR
     AND NOT CANGJIE_BUILD_WITHOUT_PLUGIN)
-    add_cangjie_library(
-        cangjie${BACKEND_TYPE}PluginManager
-        NO_SUB_PKG
-        IS_PACKAGE
-        IS_CJNATIVE_BACKEND
-        PACKAGE_NAME "plugin.manager"
-        MODULE_NAME "stdx"
-        SOURCES ${PLUGIN_MANAGER_SRCS}
-        SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/stdx/plugin/manager
-        DEPENDS ${PLUGIN_MANAGER_DEPENDENCIES})
+    if(NOT CANGJIE_CJPM_BUILD_TYPE)
+        add_cangjie_library(
+            cangjie${BACKEND_TYPE}PluginManager
+            NO_SUB_PKG
+                IS_PACKAGE
+            IS_CJNATIVE_BACKEND
+            PACKAGE_NAME "plugin.manager"
+            MODULE_NAME "stdx"
+            SOURCES ${PLUGIN_MANAGER_SRCS}
+            SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/stdx/plugin/manager
+            DEPENDS ${PLUGIN_MANAGER_DEPENDENCIES})
 
-    make_cangjie_lib(
-        plugin.manager IS_SHARED
-        DEPENDS cangjie${BACKEND_TYPE}PluginManager
-        CANGJIE_STDX_LIB_DEPENDS chir
-        CANGJIE_STD_LIB_LINK std-core std-collection
-        OBJECTS ${output_cj_object_dir}/stdx/plugin.manager.o)
+        make_cangjie_lib(
+            plugin.manager IS_SHARED
+            DEPENDS cangjie${BACKEND_TYPE}PluginManager
+            CANGJIE_STDX_LIB_DEPENDS chir
+            CANGJIE_STD_LIB_LINK std-core std-collection
+            OBJECTS ${output_cj_object_dir}/stdx/plugin.manager.o)
 
     add_cangjie_library(
         cangjie${BACKEND_TYPE}PluginMacro
@@ -788,6 +854,42 @@ if(NOT CANGJIE_CJPM_BUILD_TYPE AND NOT CANGJIE_BUILD_WITHOUT_CHIR
                 cangjie${BACKEND_TYPE}PluginMacroHost ALL
                 DEPENDS ${_plugin_macro_modules})
         endif()
+        if(NOT CMAKE_BUILD_STAGE STREQUAL "postBuild")
+            if(DARWIN)
+                set(_plugin_manager_link -lstdx.plugin.manager)
+            else()
+                set(_plugin_manager_link -l:libstdx.plugin.manager${CMAKE_SHARED_LIBRARY_SUFFIX})
+            endif()
+            add_cangjie_macro_library_in_local(
+                cangjie${BACKEND_TYPE}PluginMacro
+                NO_SUB_PKG
+                INSTALL
+                PACKAGE_NAME "plugin"
+                MODULE_NAME "stdx"
+                SOURCES ${PLUGIN_SRCS}
+                SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/stdx/plugin
+                DEPENDS cangjie${BACKEND_TYPE}PluginManager plugin.manager
+                LINK_LIBS ${_plugin_manager_link})
+        endif()
+    elseif(CMAKE_BUILD_STAGE STREQUAL "postBuild")
+        make_cangjie_lib(
+            plugin.manager IS_SHARED
+            DEPENDS chir
+            CANGJIE_STDX_LIB_DEPENDS chir
+            CANGJIE_STD_LIB_LINK std-core std-collection
+            OBJECTS ${output_cj_object_dir}/stdx/plugin.manager.o)
+        add_library(stdx.plugin.manager STATIC ${output_cj_object_dir}/stdx/plugin.manager.o)
+        set_target_properties(stdx.plugin.manager PROPERTIES LINKER_LANGUAGE C)
+        set_source_files_properties(${output_cj_object_dir}/stdx/plugin.manager.o PROPERTIES GENERATED TRUE)
+        install(TARGETS stdx.plugin.manager DESTINATION ${output_triple_name}_${CJNATIVE_BACKEND}${SANITIZER_SUBPATH}/static/stdx)
+        install_cjpm_package_cjo(plugin.manager)
+        install_cjpm_package_cjo(plugin)
+        if(EXISTS "${stdxo_path}/lib-macro_stdx.plugin${CMAKE_SHARED_LIBRARY_SUFFIX}")
+            install(FILES "${stdxo_path}/lib-macro_stdx.plugin${CMAKE_SHARED_LIBRARY_SUFFIX}"
+                DESTINATION ${output_triple_name}_${CJNATIVE_BACKEND}${SANITIZER_SUBPATH}/static/stdx)
+            install(FILES "${stdxo_path}/lib-macro_stdx.plugin${CMAKE_SHARED_LIBRARY_SUFFIX}"
+                DESTINATION ${output_triple_name}_${CJNATIVE_BACKEND}${SANITIZER_SUBPATH}/dynamic/stdx)
+        endif()
     endif()
 endif()
 
@@ -836,71 +938,137 @@ add_cangjie_library(
     SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/stdx/logger
     DEPENDS ${LOGGER_DEPENDENCIES})
 
-if(NOT CANGJIE_CJPM_BUILD_TYPE AND NOT CANGJIE_BUILD_WITHOUT_CHIR AND NOT CANGJIE_BUILD_WITHOUT_ASPECT_CJ)
-    add_cangjie_library(
-        cangjie${BACKEND_TYPE}AspectCj
-        NO_SUB_PKG
-        IS_PACKAGE
-        IS_CJNATIVE_BACKEND
-        PACKAGE_NAME "aspect_cj"
-        MODULE_NAME "stdx"
-        SOURCES ${ASPECT_CJ_SRCS}
-        SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/stdx/aspect_cj
-        DEPENDS ${ASPECT_CJ_DEPENDENCIES})
+if(NOT CANGJIE_BUILD_WITHOUT_CHIR AND NOT CANGJIE_BUILD_WITHOUT_ASPECT_CJ)
+    if(NOT CANGJIE_CJPM_BUILD_TYPE)
+        add_cangjie_library(
+            cangjie${BACKEND_TYPE}AspectCj
+            NO_SUB_PKG
+                IS_PACKAGE
+            IS_CJNATIVE_BACKEND
+            PACKAGE_NAME "aspect_cj"
+            MODULE_NAME "stdx"
+            SOURCES ${ASPECT_CJ_SRCS}
+            SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/stdx/aspect_cj
+            DEPENDS ${ASPECT_CJ_DEPENDENCIES})
 
-    make_cangjie_lib(
-        aspect_cj IS_SHARED
-        DEPENDS cangjie${BACKEND_TYPE}AspectCj
-        CANGJIE_STDX_LIB_DEPENDS chir
-        CANGJIE_STD_LIB_LINK std-core std-collection
-        OBJECTS ${output_cj_object_dir}/stdx/aspect_cj.o)
+        make_cangjie_lib(
+            aspect_cj IS_SHARED
+            DEPENDS cangjie${BACKEND_TYPE}AspectCj
+            CANGJIE_STDX_LIB_DEPENDS chir
+            CANGJIE_STD_LIB_LINK std-core std-collection
+            OBJECTS ${output_cj_object_dir}/stdx/aspect_cj.o)
 
-    add_library(stdx.aspect_cj STATIC ${output_cj_object_dir}/stdx/aspect_cj.o)
-    set_target_properties(stdx.aspect_cj PROPERTIES LINKER_LANGUAGE C)
-    install(TARGETS stdx.aspect_cj DESTINATION ${output_triple_name}_${CJNATIVE_BACKEND}${SANITIZER_SUBPATH}/static/stdx)
+        add_library(stdx.aspect_cj STATIC ${output_cj_object_dir}/stdx/aspect_cj.o)
+        set_target_properties(stdx.aspect_cj PROPERTIES LINKER_LANGUAGE C)
+        install(TARGETS stdx.aspect_cj DESTINATION ${output_triple_name}_${CJNATIVE_BACKEND}${SANITIZER_SUBPATH}/static/stdx)
 
     if(NOT CMAKE_BUILD_STAGE STREQUAL "postBuild" AND NOT CANGJIE_BUILD_WITHOUT_PLUGIN)
         # Host cjc loads macros from modules/; PluginMacroHost stages that .so
         # (native: copy from lib/; cross: --compile-macro).
         list(APPEND ASPECT_CJ_PLUGINS_DEPENDENCIES cangjie${BACKEND_TYPE}PluginMacroHost)
 
-        add_cangjie_library(
-            cangjie${BACKEND_TYPE}CollectAspects
-            NO_SUB_PKG
-            IS_PACKAGE
-            IS_CJNATIVE_BACKEND
-            PACKAGE_NAME "aspect_cj.plugins.collect_aspects"
-            MODULE_NAME "stdx"
-            SOURCES ${COLLECT_ASPECTS_SRCS}
-            SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/stdx/aspect_cj/plugins/collect_aspects
-            DEPENDS ${ASPECT_CJ_PLUGINS_DEPENDENCIES}
-            LINK_MACRO_LIBS -l-macro_stdx.plugin)
+            add_cangjie_library(
+                cangjie${BACKEND_TYPE}CollectAspects
+                NO_SUB_PKG
+                    IS_PACKAGE
+                IS_CJNATIVE_BACKEND
+                PACKAGE_NAME "aspect_cj.plugins.collect_aspects"
+                MODULE_NAME "stdx"
+                SOURCES ${COLLECT_ASPECTS_SRCS}
+                SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/stdx/aspect_cj/plugins/collect_aspects
+                DEPENDS ${ASPECT_CJ_PLUGINS_DEPENDENCIES}
+                LINK_MACRO_LIBS -l-macro_stdx.plugin)
 
+            make_cangjie_lib(
+                collect_aspects IS_SHARED
+                DEPENDS cangjie${BACKEND_TYPE}CollectAspects
+                CANGJIE_STDX_LIB_DEPENDS chir aspect_cj plugin.manager
+                CANGJIE_STD_LIB_LINK std-core std-collection std-fs std-convert
+                OBJECTS ${output_cj_object_dir}/stdx/aspect_cj.plugins.collect_aspects.o)
+
+            add_cangjie_library(
+                cangjie${BACKEND_TYPE}WeaveAspects
+                NO_SUB_PKG
+                    IS_PACKAGE
+                IS_CJNATIVE_BACKEND
+                PACKAGE_NAME "aspect_cj.plugins.weave_aspects"
+                MODULE_NAME "stdx"
+                SOURCES ${WEAVE_ASPECTS_SRCS}
+                SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/stdx/aspect_cj/plugins/weave_aspects
+                DEPENDS ${ASPECT_CJ_PLUGINS_DEPENDENCIES}
+                LINK_MACRO_LIBS -l-macro_stdx.plugin)
+
+            make_cangjie_lib(
+                weave_aspects IS_SHARED
+                DEPENDS cangjie${BACKEND_TYPE}WeaveAspects
+                CANGJIE_STDX_LIB_DEPENDS chir aspect_cj plugin.manager
+                CANGJIE_STD_LIB_LINK std-core std-collection std-fs std-convert std-io
+                OBJECTS ${output_cj_object_dir}/stdx/aspect_cj.plugins.weave_aspects.o)
+        endif()
+    elseif(CMAKE_BUILD_STAGE STREQUAL "postBuild")
         make_cangjie_lib(
-            collect_aspects IS_SHARED
-            DEPENDS cangjie${BACKEND_TYPE}CollectAspects
-            CANGJIE_STDX_LIB_DEPENDS chir aspect_cj plugin.manager
-            CANGJIE_STD_LIB_LINK std-core std-collection std-fs std-convert
-            OBJECTS ${output_cj_object_dir}/stdx/aspect_cj.plugins.collect_aspects.o)
+            aspect_cj IS_SHARED
+            DEPENDS chir
+            CANGJIE_STDX_LIB_DEPENDS chir
+            CANGJIE_STD_LIB_LINK std-core std-collection
+            OBJECTS ${output_cj_object_dir}/stdx/aspect_cj.o)
+        add_library(stdx.aspect_cj STATIC ${output_cj_object_dir}/stdx/aspect_cj.o)
+        set_target_properties(stdx.aspect_cj PROPERTIES LINKER_LANGUAGE C)
+        set_source_files_properties(${output_cj_object_dir}/stdx/aspect_cj.o PROPERTIES GENERATED TRUE)
+        install(TARGETS stdx.aspect_cj DESTINATION ${output_triple_name}_${CJNATIVE_BACKEND}${SANITIZER_SUBPATH}/static/stdx)
+        install_cjpm_package_cjo(aspect_cj)
 
-        add_cangjie_library(
-            cangjie${BACKEND_TYPE}WeaveAspects
-            NO_SUB_PKG
-            IS_PACKAGE
-            IS_CJNATIVE_BACKEND
-            PACKAGE_NAME "aspect_cj.plugins.weave_aspects"
-            MODULE_NAME "stdx"
-            SOURCES ${WEAVE_ASPECTS_SRCS}
-            SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/stdx/aspect_cj/plugins/weave_aspects
-            DEPENDS ${ASPECT_CJ_PLUGINS_DEPENDENCIES}
-            LINK_MACRO_LIBS -l-macro_stdx.plugin)
+        # cjpm does not scan aspect_cj/plugins/ (no .cj in that directory), so compile
+        # collect_aspects / wave_aspects here with FORCE_COMPILE, then link plugin .so.
+        if(NOT CMAKE_CROSSCOMPILING AND NOT CANGJIE_BUILD_WITHOUT_PLUGIN)
+            if(DARWIN)
+                set(_plugin_macro_compile_link -l-macro_stdx.plugin)
+            else()
+                set(_plugin_macro_compile_link -l-macro_stdx.plugin)
+            endif()
+            string(TOLOWER ${TARGET_TRIPLE_DIRECTORY_PREFIX}_${CJNATIVE_BACKEND} _modules_obj_root)
+            set(_aspect_plugin_obj_dir ${CMAKE_BINARY_DIR}/modules/${_modules_obj_root}/stdx)
 
-        make_cangjie_lib(
-            weave_aspects IS_SHARED
-            DEPENDS cangjie${BACKEND_TYPE}WeaveAspects
-            CANGJIE_STDX_LIB_DEPENDS chir aspect_cj plugin.manager
-            CANGJIE_STD_LIB_LINK std-core std-collection std-fs std-convert std-io
-            OBJECTS ${output_cj_object_dir}/stdx/aspect_cj.plugins.weave_aspects.o)
+            add_cangjie_library(
+                cangjie${BACKEND_TYPE}CollectAspects
+                NO_SUB_PKG
+                IS_STDXLIB
+                IS_PACKAGE
+                IS_CJNATIVE_BACKEND
+                FORCE_COMPILE
+                PACKAGE_NAME "aspect_cj.plugins.collect_aspects"
+                MODULE_NAME "stdx"
+                SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/stdx/aspect_cj/plugins/collect_aspects
+                DEPENDS chir aspect_cj plugin.manager
+                COMPILE_LINK_LIBS -L${stdxo_path} ${_plugin_macro_compile_link})
+
+            make_cangjie_lib(
+                collect_aspects IS_SHARED
+                DEPENDS cangjie${BACKEND_TYPE}CollectAspects chir aspect_cj plugin.manager
+                CANGJIE_STDX_LIB_DEPENDS chir aspect_cj plugin.manager
+                CANGJIE_STD_LIB_LINK std-core std-collection std-fs std-convert
+                OBJECTS ${_aspect_plugin_obj_dir}/aspect_cj.plugins.collect_aspects.o)
+
+            add_cangjie_library(
+                cangjie${BACKEND_TYPE}WaveAspects
+                NO_SUB_PKG
+                IS_STDXLIB
+                IS_PACKAGE
+                IS_CJNATIVE_BACKEND
+                FORCE_COMPILE
+                PACKAGE_NAME "aspect_cj.plugins.wave_aspects"
+                MODULE_NAME "stdx"
+                SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/stdx/aspect_cj/plugins/wave_aspects
+                DEPENDS chir aspect_cj plugin.manager
+                COMPILE_LINK_LIBS -L${stdxo_path} ${_plugin_macro_compile_link})
+
+            make_cangjie_lib(
+                wave_aspects IS_SHARED
+                DEPENDS cangjie${BACKEND_TYPE}WaveAspects chir aspect_cj plugin.manager
+                CANGJIE_STDX_LIB_DEPENDS chir aspect_cj plugin.manager
+                CANGJIE_STD_LIB_LINK std-core std-collection std-fs std-convert std-io
+                OBJECTS ${_aspect_plugin_obj_dir}/aspect_cj.plugins.wave_aspects.o)
+        endif()
     endif()
 endif()
 
@@ -1206,9 +1374,11 @@ if(NOT CANGJIE_CJPM_BUILD_TYPE AND NOT CANGJIE_BUILD_WITHOUT_SYNTAX)
         DEPENDS
             cangjie${BACKEND_TYPE}Syntax
             stdx.syntaxFFI
+            cangjie-flatbuffers
+            cangjie${BACKEND_TYPE}Flatbuffers
         CANGJIE_STD_LIB_LINK std-core std-collection std-sync std-convert std-fs std-sort std-ast
         OBJECTS ${output_cj_object_dir}/stdx/syntax.o
-        FORCE_LINK_ARCHIVES stdx.syntaxFFI
+        FORCE_LINK_ARCHIVES stdx.syntaxFFI cangjie-flatbuffers
         FLAGS ${syntaxFFI_flags}
             -lstdx.syntaxFFI
             $<$<BOOL:${OHOS}>:-lunwind>
@@ -1218,6 +1388,7 @@ if(NOT CANGJIE_CJPM_BUILD_TYPE AND NOT CANGJIE_BUILD_WITHOUT_SYNTAX)
     add_library(stdx.syntax STATIC ${SYNTAXFFI_OBJS} ${output_cj_object_dir}/stdx/syntax.o)
     target_link_libraries(stdx.syntax stdx.syntaxFFI)
     set_target_properties(stdx.syntax PROPERTIES LINKER_LANGUAGE C)
+    add_dependencies(stdx.syntax cangjie${BACKEND_TYPE}Syntax cangjie-flatbuffers)
     install(TARGETS stdx.syntax DESTINATION ${output_triple_name}_cjnative/static/stdx)
 
     add_cangjie_library(
