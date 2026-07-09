@@ -674,6 +674,26 @@ add_cangjie_library(
     SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/stdx
     DEPENDS ${STDX_DEPENDENCIES})
 
+# Shared flatbuffers runtime package (same model as std.ast).
+# Built when either chir or syntax needs it; cjo is not reinstalled (already in CANGJIE_HOME).
+if(NOT CANGJIE_CJPM_BUILD_TYPE
+    AND (NOT CANGJIE_BUILD_WITHOUT_CHIR OR NOT CANGJIE_BUILD_WITHOUT_SYNTAX))
+    add_cangjie_library(
+        cangjie${BACKEND_TYPE}Flatbuffers
+        NO_SUB_PKG
+        IS_STDXLIB
+        IS_PACKAGE
+        IS_CJNATIVE_BACKEND
+        NO_INSTALL_CJO
+        PACKAGE_NAME "flatbuffers"
+        SOURCE_DIR $ENV{CANGJIE_HOME}/third_party/flatbuffers/cangjie
+        DEPENDS ${FLATBUFFERS_DEPENDENCIES})
+    add_library(cangjie-flatbuffers STATIC ${output_cj_object_dir}/flatbuffers.o)
+    set_target_properties(cangjie-flatbuffers PROPERTIES LINKER_LANGUAGE C)
+    set_source_files_properties(${output_cj_object_dir}/flatbuffers.o PROPERTIES GENERATED TRUE)
+    add_dependencies(cangjie-flatbuffers cangjie${BACKEND_TYPE}Flatbuffers)
+endif()
+
 if(NOT CANGJIE_CJPM_BUILD_TYPE AND NOT CANGJIE_BUILD_WITHOUT_CHIR)
     add_cangjie_macro_library_in_local(
         cangjie${BACKEND_TYPE}ChirToStringMacro
@@ -699,14 +719,16 @@ if(NOT CANGJIE_CJPM_BUILD_TYPE AND NOT CANGJIE_BUILD_WITHOUT_CHIR)
 
     make_cangjie_lib(
         chir IS_SHARED
-        DEPENDS cangjie${BACKEND_TYPE}Chir
+        DEPENDS cangjie${BACKEND_TYPE}Chir cangjie-flatbuffers cangjie${BACKEND_TYPE}Flatbuffers
         CANGJIE_STD_LIB_LINK
             std-core
             std-collection
             std-fs
-        OBJECTS ${output_cj_object_dir}/stdx/chir.o)
+        OBJECTS ${output_cj_object_dir}/stdx/chir.o
+        FORCE_LINK_ARCHIVES cangjie-flatbuffers)
     add_library(stdx.chir STATIC ${output_cj_object_dir}/stdx/chir.o)
     set_target_properties(stdx.chir PROPERTIES LINKER_LANGUAGE C)
+    add_dependencies(stdx.chir cangjie${BACKEND_TYPE}Chir cangjie-flatbuffers)
     install(TARGETS stdx.chir DESTINATION ${output_triple_name}_${CJNATIVE_BACKEND}${SANITIZER_SUBPATH}/static/stdx)
 endif()
 
@@ -1201,9 +1223,11 @@ if(NOT CANGJIE_CJPM_BUILD_TYPE AND NOT CANGJIE_BUILD_WITHOUT_SYNTAX)
         DEPENDS
             cangjie${BACKEND_TYPE}Syntax
             stdx.syntaxFFI
+            cangjie-flatbuffers
+            cangjie${BACKEND_TYPE}Flatbuffers
         CANGJIE_STD_LIB_LINK std-core std-collection std-sync std-convert std-fs std-sort std-ast
         OBJECTS ${output_cj_object_dir}/stdx/syntax.o
-        FORCE_LINK_ARCHIVES stdx.syntaxFFI
+        FORCE_LINK_ARCHIVES stdx.syntaxFFI cangjie-flatbuffers
         FLAGS ${syntaxFFI_flags}
             -lstdx.syntaxFFI
             $<$<BOOL:${OHOS}>:-lunwind>
@@ -1213,6 +1237,7 @@ if(NOT CANGJIE_CJPM_BUILD_TYPE AND NOT CANGJIE_BUILD_WITHOUT_SYNTAX)
     add_library(stdx.syntax STATIC ${SYNTAXFFI_OBJS} ${output_cj_object_dir}/stdx/syntax.o)
     target_link_libraries(stdx.syntax stdx.syntaxFFI)
     set_target_properties(stdx.syntax PROPERTIES LINKER_LANGUAGE C)
+    add_dependencies(stdx.syntax cangjie${BACKEND_TYPE}Syntax cangjie-flatbuffers)
     install(TARGETS stdx.syntax DESTINATION ${output_triple_name}_cjnative/static/stdx)
 
     add_cangjie_library(

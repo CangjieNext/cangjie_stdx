@@ -234,7 +234,8 @@ function(add_cangjie_library target_name
         IS_PACKAGE
         IS_STDXLIB
         IS_CJNATIVE_BACKEND
-        NO_SUB_PKG)
+        NO_SUB_PKG
+        NO_INSTALL_CJO)
     set(one_value_args
         OUTPUT_NAME
         OUTPUT_DIR
@@ -531,6 +532,11 @@ function(add_cangjie_library target_name
                 COMMAND ${CMAKE_COMMAND} -E remove_directory tmp
                 BYPRODUCTS ${output_full_name_prefix}.o)
         endif()
+    endif()
+
+    # Skip installing package interface/bitcode into modules/ (still builds them for dependents).
+    if(CANGJIELIB_NO_INSTALL_CJO)
+        return()
     endif()
 
     # Install
