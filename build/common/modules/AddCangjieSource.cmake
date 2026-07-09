@@ -234,7 +234,9 @@ function(add_cangjie_library target_name
         IS_PACKAGE
         IS_STDXLIB
         IS_CJNATIVE_BACKEND
-        NO_SUB_PKG)
+        NO_SUB_PKG
+        NO_INSTALL_CJO
+        FORCE_COMPILE)
     set(one_value_args
         OUTPUT_NAME
         OUTPUT_DIR
@@ -417,9 +419,18 @@ function(add_cangjie_library target_name
     set(_cj_lib_compile_env
         "CANGJIE_PATH=${CMAKE_BINARY_DIR}/modules/${output_cj_lib_dir}"
         "LIBRARY_PATH=${CMAKE_BINARY_DIR}/lib")
+    # cjpm postBuild: import already-built stdx packages (chir/aspect_cj/plugin) from release/.
+    if(CANGJIELIB_FORCE_COMPILE AND CMAKE_BUILD_STAGE STREQUAL "postBuild" AND DEFINED stdxo_path)
+        set(_cj_lib_compile_env
+            "CANGJIE_PATH=${stdxo_path}"
+            "LIBRARY_PATH=${stdxo_path}:${CMAKE_BINARY_DIR}/lib")
+    endif()
     if(CANGJIELIB_COMPILE_LINK_LIBS)
         set(_cj_stdx_dylib_dir "${CMAKE_BINARY_DIR}/lib/${output_cj_lib_dir}${SANITIZER_SUBPATH}")
         set(_cj_runtime_lib_dir "$ENV{CANGJIE_HOME}/runtime/lib/${output_cj_lib_dir}${SANITIZER_SUBPATH}")
+        if(CANGJIELIB_FORCE_COMPILE AND CMAKE_BUILD_STAGE STREQUAL "postBuild" AND DEFINED stdxo_path)
+            set(_cj_stdx_dylib_dir "${stdxo_path}:${_cj_stdx_dylib_dir}")
+        endif()
         if(APPLE)
             list(APPEND _cj_lib_compile_env
                 "DYLD_LIBRARY_PATH=${_cj_stdx_dylib_dir}:${_cj_runtime_lib_dir}:$ENV{DYLD_LIBRARY_PATH}")
@@ -429,7 +440,7 @@ function(add_cangjie_library target_name
         endif()
     endif()
 
-    if(NOT CMAKE_BUILD_STAGE STREQUAL "postBuild")
+    if(NOT CMAKE_BUILD_STAGE STREQUAL "postBuild" OR CANGJIELIB_FORCE_COMPILE)
         if(CANGJIELIB_COMPILE_LINK_LIBS AND APPLE)
             set(_cj_plugin_manager_dylib
                 "${CMAKE_BINARY_DIR}/lib/${output_cj_lib_dir}${SANITIZER_SUBPATH}/libstdx.plugin.manager${CMAKE_SHARED_LIBRARY_SUFFIX}")
@@ -458,7 +469,7 @@ function(add_cangjie_library target_name
         
         set_target_properties(${target_name} PROPERTIES CJ_OUTPUT_FILE ${output_full_name})
     endif()
-    if(CMAKE_BUILD_STAGE STREQUAL "postBuild")
+    if(CMAKE_BUILD_STAGE STREQUAL "postBuild" AND NOT CANGJIELIB_FORCE_COMPILE)
         set(bc_depends ${CANGJIELIB_DEPENDS} ${CANGJIELIB_SOURCE_DIR})
         if(CMAKE_CROSSCOMPILING)
             set(bc_cangjie_path ${CMAKE_SOURCE_DIR}/${target_dir}/${TRIPLE}/${lowercase_build_type}/stdx)
@@ -472,7 +483,7 @@ function(add_cangjie_library target_name
     if(CANGJIE_CODEGEN_CJNATIVE_BACKEND
        AND NOT WIN32
        AND (NOT DARWIN OR IOS))
-        if(CMAKE_BUILD_STAGE STREQUAL "postBuild")
+        if(CMAKE_BUILD_STAGE STREQUAL "postBuild" AND NOT CANGJIELIB_FORCE_COMPILE)
             add_custom_target(
                 ${target_name}_bc ALL
                 COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_BINARY_DIR}/${output_bc_dir}
@@ -502,7 +513,7 @@ function(add_cangjie_library target_name
         endif()
     endif()
 
-    if(NOT CMAKE_BUILD_STAGE STREQUAL "postBuild")
+    if(NOT CMAKE_BUILD_STAGE STREQUAL "postBuild" OR CANGJIELIB_FORCE_COMPILE)
         if(CANGJIE_CODEGEN_CJNATIVE_BACKEND)
             set(TARGET_AR ar)
             if(CMAKE_CROSSCOMPILING)
@@ -533,13 +544,18 @@ function(add_cangjie_library target_name
         endif()
     endif()
 
+    # Skip installing package interface/bitcode into modules/ (still builds them for dependents).
+    if(CANGJIELIB_NO_INSTALL_CJO)
+        return()
+    endif()
+
     # Install
     if(NOT ("${CANGJIELIB_MODULE_NAME}" STREQUAL ""))
         set(file_name "${CANGJIELIB_MODULE_NAME}.${CANGJIELIB_PACKAGE_NAME}")
     else()
         set(file_name "${CANGJIELIB_PACKAGE_NAME}")
     endif()
-    if(CMAKE_BUILD_STAGE STREQUAL "postBuild")
+    if(CMAKE_BUILD_STAGE STREQUAL "postBuild" AND NOT CANGJIELIB_FORCE_COMPILE)
         if(CMAKE_CROSSCOMPILING)
             if(${CANGJIELIB_PACKAGE_NAME} STREQUAL "actors.macros")
                 set(install_files "${CANGJIE_CJPM_DIR}/${target_dir}/${lowercase_build_type}/stdx/${file_name}.cjo")

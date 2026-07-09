@@ -23,10 +23,3 @@ if(BUILD_GCC_TOOLCHAIN)
     message(STATUS "Set GCC toolchain: ${BUILD_GCC_TOOLCHAIN}")
     set(GCC_TOOLCHAIN_FLAG "${GCC_TOOLCHAIN_FLAG} --gcc-toolchain=\"${BUILD_GCC_TOOLCHAIN}\"")
 endif()
-
-# Handle third-party dependencies
-list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake/")
-
-if(NOT CANGJIE_CJPM_BUILD_TYPE)
-    include(Flatbuffer)
-endif()
