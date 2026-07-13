@@ -645,7 +645,7 @@ Entry user name: yourName
 ### init(Path)
 
 ```cangjie
-public init(path: Path)
+protected init(path: Path)
 ```
 
 功能：从文件、目录、软链接构造一个 tar 文件条目。
@@ -683,7 +683,7 @@ main(): Unit {
 ### init(String)
 
 ```cangjie
-public init(path: String)
+protected init(path: String)
 ```
 
 功能：从文件、目录、软链接构造一个 tar 文件条目。
@@ -2886,8 +2886,8 @@ UstarTarEntry written to stream successfully
 
 ```cangjie
 public class V7TarEntry <: TarEntry {
-    public init(filePath: String)
-    public init(filePath: Path)
+    public init(path: String)
+    public init(path: Path)
 }
 ```
 
@@ -2900,18 +2900,18 @@ public class V7TarEntry <: TarEntry {
 ### init(Path)
 
 ```cangjie
-public init(filePath: Path)
+public init(path: Path)
 ```
 
 功能：从文件、目录、软链接构造一个 V7 tar 文件条目。
 
 参数：
 
-- filePath: Path - 文件、目录、软链接的路径。
+- path: Path - 文件、目录、软链接的路径。
 
 异常：
 
-- [TarException](tar_package_exceptions.md#class-tarexception) - 如果 filePath 参数指定的目标不存在或不是文件、目录、软链接，则抛出异常。
+- [TarException](tar_package_exceptions.md#class-tarexception) - 如果 path 参数指定的目标不存在或不是文件、目录、软链接，则抛出异常。
 
 - FSException - 如果读取目标信息或创建目标文件流失败，则抛出异常。
 
@@ -2950,18 +2950,18 @@ Entry size: 11
 ### init(String)
 
 ```cangjie
-public init(filePath: String)
+public init(path: String)
 ```
 
 功能：从文件、目录、软链接构造一个 V7 tar 文件条目。
 
 参数：
 
-- filePath: String - 文件、目录、软链接的路径。
+- path: String - 文件、目录、软链接的路径。
 
 异常：
 
-- [TarException](tar_package_exceptions.md#class-tarexception) - 如果 filePath 参数指定的目标不存在或不是文件、目录、软链接，则抛出异常。
+- [TarException](tar_package_exceptions.md#class-tarexception) - 如果 path 参数指定的目标不存在或不是文件、目录、软链接，则抛出异常。
 
 - FSException - 如果读取目标信息或创建目标文件流失败，则抛出异常。
 
