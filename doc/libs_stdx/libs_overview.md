@@ -1,8 +1,8 @@
 # 仓颉编程语言扩展库概述
 
-仓颉编程语言扩展库（stdx）包含若干包，提供相关功能。
+仓颉编程语言扩展库（stdx）包含多个功能包，为开发者提供领域专用的扩展能力。
 
-标准库为开发者提供了最通用的 API，而扩展库则专注于某一领域。如 compress 包提供压缩与解压缩能力，crypto 包提供加解密相关能力，net 包则专注于提供高效的网络协议解析和网络通信能力。
+与标准库提供的通用 API 不同，扩展库专注于特定领域的功能实现。例如，compress 包提供压缩与解压缩能力，crypto 包提供加解密相关能力，net 包专注于网络协议解析和通信能力。
 
 > **说明：**
 >
@@ -39,6 +39,7 @@
 | import stdx.aspect_cj.*                    | stdx.aspect_cj                                                                                                                                                                                                                  |
 | import stdx.chir.*                         | stdx.chir                                                                                                                                                                                                                       |
 | import stdx.compress.zlib.*               | stdx.compress.zlib                                                                                                                                                                                                             |
+| import stdx.compress.tar.*               | stdx.compress.tar                                                                                                                                                                                                             |
 | import stdx.crypto.common.*               | stdx.crypto.common、stdx.encoding.base64                                                                                                                                                                                       |
 | import stdx.crypto.crypto.*               | stdx.crypto.crypto、stdx.crypto.digest、stdx.crypto.common、stdx.encoding.base64                                                                                                                                               |
 | import stdx.crypto.digest.*               | stdx.crypto.digest、stdx.crypto.common、stdx.encoding.base64                                                                                                                                                                   |
@@ -62,13 +63,18 @@
 | import stdx.plugin.manager.*              | stdx.plugin.manager                                                                                                                                                                                                             |
 | import stdx.unittest.data.*               | stdx.encoding.json、stdx.serialization.serialization                                                                                                                                                                           |
 
-代码中导入上述包，用 cjc 命令去编译代码，需要严格按照上述包的依赖的顺序去链接。 如果是用 cjpm 则无需关注。
+使用 cjc 编译时，需要按照上表列出的依赖顺序进行链接。如果使用 cjpm 管理项目，则无需关注依赖顺序。
 
-如果使用静态库，在导入 crypto 和 net 库时，由于需要依赖系统符号，所以 `Windows` 操作系统需要额外添加 `-lcrypt32`，`Linux` 操作系统需要额外添加 `-ldl`。在导入 syntax 库时，`Windows` 操作系统需要额外添加 `-lc++ -lunwind`，`macOS` 操作系统需要额外添加 `-lc++`，`Linux` 操作系统需要额外添加 `-lstdc++ -lgcc_s`，`Android` 操作系统需要额外添加 `-lc++ -lunwind`，`iOS` 操作系统需要额外添加 `-lc++`。
+使用静态库时，不同平台需要添加额外的系统库依赖：
+
+| 导入库 | Windows | Linux | macOS | Android | iOS |
+| ------ | ------- | ----- | ----- | ------- | --- |
+| crypto、net | `-lcrypt32` | `-ldl` | - | - | - |
+| syntax | `-lc++ -lunwind` | `-lstdc++ -lgcc_s` | `-lc++` | `-lc++ -lunwind` | `-lc++` |
 
 ### cjc 使用命令示例
 
-cjc 的介绍和编译请查看 cangjie 用户手册
+cjc 的介绍和编译请查看 cangjie 用户手册。
 
 <!-- code_no_check -->
 ```cangjie
@@ -76,6 +82,7 @@ import stdx.actors.*
 import stdx.actors.macros.*
 import stdx.aspect_cj.*
 import stdx.compress.zlib.*
+import stdx.compress.tar.*
 import stdx.crypto.crypto.*
 import stdx.crypto.digest.*
 import stdx.crypto.keys.*
@@ -98,39 +105,57 @@ main() {
 }
 ```
 
-Linux 和 mac 的编译命令：
+Linux 和 macOS 的编译命令：
 
 ```shell
-cjc main.cj -L $CANGJIE_STDX_PATH -lstdx.actors -lstdx.aspect_cj -lstdx.effect -lstdx.encoding.json -lstdx.serialization.serialization -lstdx.net.http -lstdx.net.tls -lstdx.net.tls.common -lstdx.logger -lstdx.log -lstdx.encoding.url -lstdx.encoding.json.stream -lstdx.crypto.kit -lstdx.crypto.keys -lstdx.crypto.x509 -lstdx.encoding.hex -lstdx.crypto.crypto -lstdx.crypto.digest -lstdx.crypto.common -lstdx.encoding.base64 -lstdx.compress.zlib -lstdx.compress -lstdx.syntax -lstdx.syntaxFFI -ldl --import-path $CANGJIE_STDX_PATH -o main.out
+cjc main.cj -L $CANGJIE_STDX_PATH -lstdx.actors -lstdx.aspect_cj -lstdx.effect -lstdx.encoding.json -lstdx.serialization.serialization -lstdx.net.http -lstdx.net.tls -lstdx.net.tls.common -lstdx.logger -lstdx.log -lstdx.encoding.url -lstdx.encoding.json.stream -lstdx.crypto.kit -lstdx.crypto.keys -lstdx.crypto.x509 -lstdx.encoding.hex -lstdx.crypto.crypto -lstdx.crypto.digest -lstdx.crypto.common -lstdx.encoding.base64 -lstdx.compress.zlib -lstdx.compress.tar -lstdx.syntax -lstdx.syntaxFFI -ldl --import-path $CANGJIE_STDX_PATH -o main.out
 ```
 
-windows 编译命令：
+Windows 编译命令（cmd）：
 
-```shell
-cjc main.cj -L $CANGJIE_STDX_PATH -lstdx.actors -lstdx.aspect_cj -lstdx.effect -lstdx.encoding.json -lstdx.serialization.serialization -lstdx.net.http -lstdx.net.tls -lstdx.net.tls.common -lstdx.logger -lstdx.log -lstdx.encoding.url -lstdx.encoding.json.stream -lstdx.crypto.kit -lstdx.crypto.keys -lstdx.crypto.x509 -lstdx.encoding.hex -lstdx.crypto.crypto -lstdx.crypto.digest -lstdx.crypto.common -lstdx.encoding.base64 -lstdx.compress.zlib -lstdx.compress -lstdx.syntax -lstdx.syntaxFFI -lcrypt32 --import-path $CANGJIE_STDX_PATH -o main.out
+```cmd
+cjc main.cj -L %CANGJIE_STDX_PATH% -lstdx.actors -lstdx.aspect_cj -lstdx.effect -lstdx.encoding.json -lstdx.serialization.serialization -lstdx.net.http -lstdx.net.tls -lstdx.net.tls.common -lstdx.logger -lstdx.log -lstdx.encoding.url -lstdx.encoding.json.stream -lstdx.crypto.kit -lstdx.crypto.keys -lstdx.crypto.x509 -lstdx.encoding.hex -lstdx.crypto.crypto -lstdx.crypto.digest -lstdx.crypto.common -lstdx.encoding.base64 -lstdx.compress.zlib -lstdx.compress.tar -lstdx.syntax -lstdx.syntaxFFI -lcrypt32 --import-path %CANGJIE_STDX_PATH% -o main.out
 ```
 
-CANGJIE_STDX_PATH 是设置的 stdx 路径。
+其中 `CANGJIE_STDX_PATH` 为扩展库的安装路径。不同系统设置示例：
 
-例如在 linux 系统中设置：
+Linux/macOS（bash）：
 
 ```shell
 export CANGJIE_STDX_PATH=/target/linux_x86_64_cjnative/dynamic/stdx
 ```
 
-运行前 Linux 操作系统需要在 LD_LIBRARY_PATH 中设置扩展库的路径，Windows 操作系统需要在 PATH 中设置扩展库的路径，macOS 操作系统需要在 DYLD_LIBRARY_PATH 中设置扩展库的路径。
+Windows（cmd）：
 
-例如在 linux 系统中设置：
+```cmd
+set CANGJIE_STDX_PATH=C:\target\windows_x86_64_cjnative\dynamic\stdx
+```
+
+运行程序前需要设置扩展库路径。不同系统设置示例：
+
+Linux：
 
 ```shell
 export LD_LIBRARY_PATH=/target/linux_x86_64_cjnative/dynamic/stdx:$LD_LIBRARY_PATH
+```
+
+macOS：
+
+```shell
+export DYLD_LIBRARY_PATH=/target/darwin_aarch64_cjnative/dynamic/stdx:$DYLD_LIBRARY_PATH
+```
+
+Windows（cmd）：
+
+```cmd
+set PATH=C:\target\windows_x86_64_cjnative\dynamic\stdx;%PATH%
 ```
 
 ### cjpm 使用示例
 
 cjpm 的介绍和使用请查看 cjpm 手册。
 
-cjpm.toml 增加如下配置：
+在 `cjpm.toml` 中添加以下配置：
 
 ```text
 [target.x86_64-unknown-linux-gnu]
@@ -138,8 +163,7 @@ cjpm.toml 增加如下配置：
     path-option = ["${CANGJIE_STDX_PATH}"]
 ```
 
-上面配置中 x86_64-unknown-linux-gnu 表示的是系统架构信息，需要通过 cjc -v 获取，并替换成自己获取的系统架构信息。
-CANGJIE_STDX_PATH 是设置的 stdx 路径。
+其中 `x86_64-unknown-linux-gnu` 为系统架构信息，可通过 `cjc -v` 命令获取，需要根据实际环境进行替换。`CANGJIE_STDX_PATH` 为扩展库的安装路径。
 
 > **注意：**
 >
@@ -147,7 +171,7 @@ CANGJIE_STDX_PATH 是设置的 stdx 路径。
 
 ## 包列表
 
-stdx 含若干包，提供了丰富的扩展功能：
+stdx 包含多个功能包，提供丰富的扩展能力：
 
 | 包名                                                                             | 功能                                                                                                                                                              |
 |--------------------------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------|
@@ -155,7 +179,8 @@ stdx 含若干包，提供了丰富的扩展功能：
 | [actors.macros](./actors/macros/macros_package_overview.md)                    | actors.macros 包提供把 class 变成 active object 的能力。                                                                                                                  |
 | [aspect_cj](./aspect_cj/aspect_cj_package_overview.md)                            | aspect_cj 包提供 Cangjie 中面向切面编程（Aspect Oriented Programming, AOP）相关的能力。                                                                                            |
 | [chir](./chir/chir_package_overview.md)                                        | chir 包提供类型系统与 CHIR 声明表示，用于构建和遍历 CHIR 中间表示。                                                                                                           |
-| [compress.zlib](./compress/zlib/zlib_package_overview.md)                      | compress 包提供压缩解压功能。                                                                                                                                             |
+| [compress.zlib](./compress/zlib/zlib_package_overview.md)                      | compress.zlib 包提供压缩与解压缩功能。                                                                                                                                             |
+| [compress.tar](./compress/tar/tar_package_overview.md)                      | compress.tar 包提供归档和读取功能。                                                                                                                                             |
 | [crypto.common](./crypto/common/crypto_common_package_overview.md)             | crypto.common 包提供了加解密相关接口。                                                                                                                                      |
 | [crypto.crypto](./crypto/crypto/crypto_package_overview.md)                    | crypto 包提供安全加密能力。                                                                                                                                               |
 | [crypto.digest](./crypto/digest/crypto_digest_package_overview.md)             | digest 包提供常用的消息摘要算法。                                                                                                                                            |
