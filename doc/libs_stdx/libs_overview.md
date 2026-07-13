@@ -111,9 +111,9 @@ Linux 和 macOS 的编译命令：
 cjc main.cj -L $CANGJIE_STDX_PATH -lstdx.actors -lstdx.aspect_cj -lstdx.effect -lstdx.encoding.json -lstdx.serialization.serialization -lstdx.net.http -lstdx.net.tls -lstdx.net.tls.common -lstdx.logger -lstdx.log -lstdx.encoding.url -lstdx.encoding.json.stream -lstdx.crypto.kit -lstdx.crypto.keys -lstdx.crypto.x509 -lstdx.encoding.hex -lstdx.crypto.crypto -lstdx.crypto.digest -lstdx.crypto.common -lstdx.encoding.base64 -lstdx.compress.zlib -lstdx.compress.tar -lstdx.syntax -lstdx.syntaxFFI -ldl --import-path $CANGJIE_STDX_PATH -o main.out
 ```
 
-Windows 编译命令（cmd）：
+Windows 编译命令：
 
-```cmd
+```bat
 cjc main.cj -L %CANGJIE_STDX_PATH% -lstdx.actors -lstdx.aspect_cj -lstdx.effect -lstdx.encoding.json -lstdx.serialization.serialization -lstdx.net.http -lstdx.net.tls -lstdx.net.tls.common -lstdx.logger -lstdx.log -lstdx.encoding.url -lstdx.encoding.json.stream -lstdx.crypto.kit -lstdx.crypto.keys -lstdx.crypto.x509 -lstdx.encoding.hex -lstdx.crypto.crypto -lstdx.crypto.digest -lstdx.crypto.common -lstdx.encoding.base64 -lstdx.compress.zlib -lstdx.compress.tar -lstdx.syntax -lstdx.syntaxFFI -lcrypt32 --import-path %CANGJIE_STDX_PATH% -o main.out
 ```
 
@@ -125,9 +125,9 @@ Linux/macOS（bash）：
 export CANGJIE_STDX_PATH=/target/linux_x86_64_cjnative/dynamic/stdx
 ```
 
-Windows（cmd）：
+Windows：
 
-```cmd
+```bat
 set CANGJIE_STDX_PATH=C:\target\windows_x86_64_cjnative\dynamic\stdx
 ```
 
@@ -145,9 +145,9 @@ macOS：
 export DYLD_LIBRARY_PATH=/target/darwin_aarch64_cjnative/dynamic/stdx:$DYLD_LIBRARY_PATH
 ```
 
-Windows（cmd）：
+Windows：
 
-```cmd
+```bat
 set PATH=C:\target\windows_x86_64_cjnative\dynamic\stdx;%PATH%
 ```
 
