@@ -9137,13 +9137,17 @@ Output:
 fn_appendExpr: 1
 ```
 
-### func destroySelf()
+### func destroySelf(Bool)
 
 ```cangjie
-public func destroySelf(): Unit
+public func destroySelf(removeFromOwner!: Bool = true): Unit
 ```
 
-Function: Destroys itself and removes all reference relationships; after destruction, the basic block is removed from the owning BlockGroup's `blocks` list, and its internal `kind` is marked as `Invalid`.
+Function: Destroys this block and all contained expressions, and detaches related reference relationships; marks the internal `kind` as `Invalid`.
+
+Parameters:
+
+- removeFromOwner!: Bool - Whether to remove this block from the owning BlockGroup's `blocks` list. Defaults to `true`. Pass `false` when the owner clears the list itself during cascading destruction.
 
 Example:
 
@@ -9449,13 +9453,17 @@ Output:
 fn_appendBlock: 2
 ```
 
-### func destroySelf()
+### func destroySelf(Bool)
 
 ```cangjie
-public func destroySelf(): Unit
+public func destroySelf(removeFromOwner!: Bool = true): Unit
 ```
 
-Function: Destroys itself and its subordinate basic blocks, and removes references from the owning function or lambda.
+Function: Destroys this block group and all contained blocks, and detaches related ownership relationships; marks the internal `kind` as `Invalid`.
+
+Parameters:
+
+- removeFromOwner!: Bool - Whether to detach this block group from its owner (clear `Function.body` or remove it from a lambda expression's blockGroups). Defaults to `true`. Pass `false` when the owner clears the reference itself during cascading destruction.
 
 Example:
 
@@ -12820,13 +12828,17 @@ Output:
 prop_topLevelFunc: true
 ```
 
-### func destroySelf()
+### func destroySelf(Bool)
 
 ```cangjie
-public func destroySelf(): Unit
+public func destroySelf(removeFromOwner!: Bool = true): Unit
 ```
 
-Function: Destroys this expression, detaching all use/ownership relations with its operands, owning block and attached block groups.
+Function: Destroys this expression, detaching all use/ownership relations with its operands, owning block and attached block groups; marks the internal `kind` as `Invalid`.
+
+Parameters:
+
+- removeFromOwner!: Bool - Whether to remove this expression from the owning block's `exprs` list. Defaults to `true`. Pass `false` when the owner clears the list itself during cascading destruction.
 
 Example:
 
