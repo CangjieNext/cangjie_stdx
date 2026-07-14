@@ -504,7 +504,7 @@ public class Package <: ToString {
         return temp
     }
 
-    private func filterClassDefs(imported: Bool): Array<ClassLikeDef> {
+    private func filterClassDefs(imported!: Bool): Array<ClassLikeDef> {
         let result = ArrayList<ClassLikeDef>()
         for (def in _classDefs) {
             if (def.isImported() == imported) {
@@ -514,7 +514,7 @@ public class Package <: ToString {
         return result.toArray()
     }
 
-    private func filterEnumDefs(imported: Bool): Array<EnumDef> {
+    private func filterEnumDefs(imported!: Bool): Array<EnumDef> {
         let result = ArrayList<EnumDef>()
         for (def in _enumDefs) {
             if (def.isImported() == imported) {
@@ -524,7 +524,7 @@ public class Package <: ToString {
         return result.toArray()
     }
 
-    private func filterExtendDefs(imported: Bool): Array<ExtendDef> {
+    private func filterExtendDefs(imported!: Bool): Array<ExtendDef> {
         let result = ArrayList<ExtendDef>()
         for (def in _extendDefs) {
             if (def.isImported() == imported) {
@@ -534,7 +534,7 @@ public class Package <: ToString {
         return result.toArray()
     }
 
-    private func filterStructDefs(imported: Bool): Array<StructDef> {
+    private func filterStructDefs(imported!: Bool): Array<StructDef> {
         let result = ArrayList<StructDef>()
         for (def in _structDefs) {
             if (def.isImported() == imported) {
