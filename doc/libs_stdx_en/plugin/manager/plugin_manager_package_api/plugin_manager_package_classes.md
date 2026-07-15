@@ -54,6 +54,10 @@ public abstract class CHIRPluginBase <: PluginBase {
 
 Description: Abstract base class for CHIR plugins. All CHIR plugins must inherit this class and implement the `run` method.
 
+> **Note:**
+>
+> Directly inheriting `CHIRPluginBase` is not recommended. Prefer the [CHIRPlugin](#macro-chirplugin) macro to implement plugins.
+
 Parent types:
 
 - PluginBase
@@ -159,6 +163,10 @@ public class PluginManager {}
 
 Description: Plugin manager, providing plugin registration functionality.
 
+> **Note:**
+>
+> Manually using `PluginManager` for plugin registration is not recommended. Prefer the [CHIRPlugin](#macro-chirplugin) macro.
+
 ### static func registerCHIRPlugin(() -> CHIRPluginBase)
 
 ```cangjie
@@ -202,10 +210,56 @@ Plugin registered
 ## func executeCHIRPlugins(CPointer<UInt8>, Int64)
 
 ```cangjie
-public func executeCHIRPlugins(data: CPointer<UInt8>, length: Int64): PluginResult
+public macro CHIRPlugin(input: Tokens): Tokens
+```
+
+Description: CHIR plugin registration macro that automatically transforms a class declaration into a CHIRPluginBase subclass and registers it with PluginManager. Classes annotated with this macro will automatically inherit CHIRPluginBase and be registered via PluginManager.registerCHIRPlugin.
+
+> **Note:**
+>
+> Classes annotated with `@CHIRPlugin` should not manually inherit `CHIRPluginBase`, otherwise a runtime exception will be thrown. The macro handles inheritance and registration automatically.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.plugin.*
+import stdx.chir.*
+
+@CHIRPlugin
+class MyPlugin {
+    public override func run(pkg: Package): Bool {
+        println("Macro plugin processed: ${pkg.name}")
+        return true
+    }
+}
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let plugin = MyPlugin()
+    let result = plugin.run(pkg)
+    println("result: ${result}")
+}
+```
+
+Output:
+
+```text
+Macro plugin processed: demo
+result: true
+```
+
+## func executeCHIRPlugins
+
+```cangjie
+@C public func executeCHIRPlugins(data: CPointer<UInt8>, length: Int64): PluginResult
 ```
 
 Description: Executes all registered CHIR plugins on CHIR package binary data sequentially.
+
+> **Note:**
+>
+> Manually calling `executeCHIRPlugins` to run plugins is not recommended. Prefer the [CHIRPlugin](#macro-chirplugin) macro.
 
 Parameters:
 
@@ -234,7 +288,6 @@ class MyPlugin <: CHIRPluginBase {
 
 main() {
     let pkg = Package("demo", AccessLevel.Public)
-    pkg.dump()
     let (data, length) = serializePackage(pkg)
     PluginManager.registerCHIRPlugin({ => MyPlugin() })
     unsafe {
@@ -249,9 +302,6 @@ main() {
 Output:
 
 ```text
-package: demo
-packageAccessLevel: public
-
 success: true
 length: 56
 ```
