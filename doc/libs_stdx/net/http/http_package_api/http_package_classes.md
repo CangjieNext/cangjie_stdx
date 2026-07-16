@@ -3731,9 +3731,16 @@ main(): Unit {
     // 发送GET请求
     let resp = client.get("http://127.0.0.1:8080/index")
 
-    // 必须先读取完 body 内容，trailers 才会被填充
+    // 循环调用直到返回 0，trailers 才会被填充
     let buffer = Array<Byte>(1024, repeat: 0)
-    let bytesRead = resp.body.read(buffer)
+    var bytesRead = 0
+    while (true) {
+        let len = resp.body.read(buffer[bytesRead..])
+        if (len == 0) {
+            break
+        }
+        bytesRead += len
+    }
     let bodyContent = String.fromUtf8(buffer[0..bytesRead])
     println("先读取完响应body, trailers 才会被填充: ${bodyContent}")
 
@@ -9341,6 +9348,9 @@ main(): Unit {
     let headers = HttpHeaders()
     headers.add("X-Client-Id", "demo-client")
 
+    // 设置 Origin 请求头，服务端可用于验证来源
+    headers.add("Origin", "http://127.0.0.1:8080")
+
     // 执行 WebSocket 握手升级。客户端提供支持的子协议列表
     // 服务端从中选择第一个匹配的（此处为 "chat"）
     let (clientWs, respHeaders) = WebSocket.upgradeFromClient(
@@ -9381,6 +9391,7 @@ func WebSocketHandler(ctx: HttpContext): Unit {
     // userFunc: 自定义处理函数，可读取请求头并设置响应头
     let serverWs = WebSocket.upgradeFromServer(
         ctx,
+        origins: ArrayList<String>(["http://127.0.0.1:8080"]),
         subProtocols: ArrayList<String>(["chat", "json", "xml"]),
         userFunc: {
             req =>
@@ -9632,6 +9643,7 @@ public func writePingFrame(byteArray: Array<UInt8>): Unit
 import stdx.net.http.*
 import stdx.encoding.url.*
 import stdx.log.*
+import std.collection.*
 import stdx.crypto.kit.*
 
 let server = ServerBuilder().addr("127.0.0.1").port(8080).build()
@@ -9650,7 +9662,9 @@ main(): Unit {
     // 客户端连接
     let client = ClientBuilder().build()
     let url = URL.parse("ws://127.0.0.1:8080/ping")
-    let (ws, _) = WebSocket.upgradeFromClient(client, url)
+    let headers = HttpHeaders()
+    headers.add("Origin", "http://127.0.0.1:8080")
+    let (ws, _) = WebSocket.upgradeFromClient(client, url, headers: headers)
     client.close()
 
     // 发送 Ping 帧
@@ -9671,7 +9685,8 @@ main(): Unit {
 
 // 服务端处理器：收到 Ping 后回复 Pong
 func PingHandler(ctx: HttpContext): Unit {
-    let serverWs = WebSocket.upgradeFromServer(ctx)
+    // 配置 origins 白名单，接受来自 http://127.0.0.1:8080 的连接
+    let serverWs = WebSocket.upgradeFromServer(ctx, origins: ArrayList<String>(["http://127.0.0.1:8080"]))
 
     // 读取 Ping 帧
     let frame = serverWs.read()
