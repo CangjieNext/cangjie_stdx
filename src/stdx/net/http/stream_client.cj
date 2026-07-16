@@ -220,8 +220,8 @@ class ClientStream {
         } else if (req.url.path.isEmpty() && req.method == "OPTIONS") {
             path = ASTERISK
         } else {
-            path = canonicalPath(req.url.path)
-            if (let Some(query) <- req.url.query) {
+            path = canonicalPath(req.url.rawPath)
+            if (let Some(query) <- req.url.rawQuery) {
                 path += "?${query}"
             }
             if (let Some(fragment) <- req.url.fragment) {
