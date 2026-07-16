@@ -46,10 +46,7 @@ main(): Unit {
 
 ## 应用程序开发场景日志打印
 
-下面是自定义 PasswordFilter 和 TextLogger 日志打印示例。该示例展示了如何：
-- 创建自定义的 Logger 过滤器（密码过滤器）
-- 实现自定义的 TextLogger 输出日志
-- 使用不同的日志级别和属性
+下面是自定义 PasswordFilter 和 TextLogger 日志打印示例。
 
 示例：
 

@@ -382,7 +382,6 @@ main() {
 
 更详细使用参见 [static func getPusher](./../http_package_api/http_package_classes.md#static-func-getpusherhttpcontext)
 
-
 示例：
 
 <!-- compile -->
