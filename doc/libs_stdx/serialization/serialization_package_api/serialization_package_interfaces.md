@@ -1,6 +1,6 @@
 # 接口
 
-## interface Serializable
+## interface Serializable\<T>
 
 ```cangjie
 public interface Serializable<T> {

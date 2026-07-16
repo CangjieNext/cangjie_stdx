@@ -414,7 +414,7 @@ public class WebSocket {
         writeCloseFrame(status: status)
         closeConn()
         // throw WebSocketException
-        throw WebSocketException("The websocket connection is failed, since ${message}." )
+        throw WebSocketException("The websocket connection is failed, since ${message}.")
     }
 
     /**
@@ -499,7 +499,7 @@ public class WebSocket {
      * @throws WebSocketException, if handshake failed, including get conn from pool failed, check response from server failed.
      */
     public static func upgradeFromClient(client: Client, url: URL, version!: Protocol = HTTP1_1,
-        subProtocols!: ArrayList<String> = ArrayList<String>(), headers!: HttpHeaders = HttpHeaders()): (WebSocket,
+        subProtocols!: ArrayList<String> = ArrayList<String>(), headers!: HttpHeaders = HttpHeaders()): (WebSocket, 
         HttpHeaders) {
 
         // a client opens a connection and sends a handshake
@@ -743,9 +743,10 @@ func parseUpgradeRequestCommon(ctx: HttpContext, origins: ArrayList<String>, sub
     // the server may use this information as part of a determination of whether to accept the incoming connection.
     // if the server does not validate the origin (origins.isEmpty() == true), it will accept connections from anywhere.
     if (origins.isEmpty()) {
-        httpLogWarn(mutexLogger(), "[WebSocket#upgradeFromServer] No origin restrictions configured. " +
-            "This enables Cross-Site WebSocket Hijacking (CSWSH) vulnerability. " +
-            "Consider setting allowed origins explicitly.")
+        httpLogWarn(mutexLogger(),
+            "[WebSocket#upgradeFromServer] No origin restrictions configured. " +
+                "This enables Cross-Site WebSocket Hijacking (CSWSH) vulnerability. " +
+                "Consider setting allowed origins explicitly.")
     } else {
         let originValues = ctx.request.headers.getInternal("origin") ?? responseAndThrows(ctx, // cjlint-ignore !G.EXP.03
             HttpStatusCode.STATUS_FORBIDDEN, "the upgrade request lacks Origin field")
@@ -851,7 +852,7 @@ func failTheWebSocketConnection(resp: HttpResponse, message: String) {
         case None => ()
     }
     // throw WebSocketException
-    throw WebSocketException("Upgrade to websocket failed, ${message}." )
+    throw WebSocketException("Upgrade to websocket failed, ${message}.")
 }
 
 func responseAndThrows(ctx: HttpContext, status: UInt16, message: String) {
