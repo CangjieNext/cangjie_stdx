@@ -860,7 +860,7 @@ class ConnNode <: BodyProviderConn {
             if (request.url.path.isEmpty()) {
                 requestTarget.append(ASTERISK)
             } else {
-                requestTarget.append(canonicalPath(request.url.path))
+                requestTarget.append(canonicalPath(request.url.rawPath))
             }
 
         // when making a request to a proxy, other than a CONNECT or server-wide OPTIONS request,
@@ -871,8 +871,8 @@ class ConnNode <: BodyProviderConn {
         // origin-form
         // absolute-path ["?" query]
         } else {
-            requestTarget.append(canonicalPath(request.url.path))
-            if (let Some(query) <- request.url.query && !query.isEmpty()) {
+            requestTarget.append(canonicalPath(request.url.rawPath))
+            if (let Some(query) <- request.url.rawQuery && !query.isEmpty()) {
                 requestTarget.append("?")
                 requestTarget.append(query)
             }
