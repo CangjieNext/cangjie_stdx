@@ -7,6 +7,7 @@
 
 include(AddAndCombineStaticLib)
 include(ExtractArchive)
+include(MakeHostCJNATIVESharedLib)
 
 set(BACKEND_TYPE CJNATIVE)
 
@@ -710,9 +711,10 @@ if(NOT CANGJIE_CJPM_BUILD_TYPE AND NOT CANGJIE_BUILD_WITHOUT_CHIR)
     install(TARGETS stdx.chir DESTINATION ${output_triple_name}_${CJNATIVE_BACKEND}${SANITIZER_SUBPATH}/static/stdx)
 endif()
 
-# plugin / CHIR compiler plugins are host tools (cjc --plugin). Do not build them when
-# cross-compiling target libs: host cjc cannot link target-arch libstdx.plugin.manager.so.
-if(NOT CANGJIE_CJPM_BUILD_TYPE AND NOT CMAKE_CROSSCOMPILING AND NOT CANGJIE_BUILD_WITHOUT_CHIR
+# plugin / CHIR compiler plugins (also built for cross-compiled target packages).
+# Macro packaging follows actors.macros: add_cangjie_library + make_cangjie_lib(IS_MACRO)
+# so the shipped lib-macro_stdx.plugin.* is a real target-platform shared library.
+if(NOT CANGJIE_CJPM_BUILD_TYPE AND NOT CANGJIE_BUILD_WITHOUT_CHIR
     AND NOT CANGJIE_BUILD_WITHOUT_PLUGIN)
     add_cangjie_library(
         cangjie${BACKEND_TYPE}PluginManager
@@ -733,22 +735,55 @@ if(NOT CANGJIE_CJPM_BUILD_TYPE AND NOT CMAKE_CROSSCOMPILING AND NOT CANGJIE_BUIL
         CANGJIE_STD_LIB_LINK std-core std-collection
         OBJECTS ${output_cj_object_dir}/stdx/plugin.manager.o)
 
+    add_cangjie_library(
+        cangjie${BACKEND_TYPE}PluginMacro
+        NO_SUB_PKG
+        IS_STDXLIB
+        IS_PACKAGE
+        IS_CJNATIVE_BACKEND
+        PACKAGE_NAME "plugin"
+        MODULE_NAME "stdx"
+        SOURCES ${PLUGIN_SRCS}
+        SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/stdx/plugin
+        DEPENDS ${PLUGIN_MACRO_DEPENDENCIES})
+
     if(NOT CMAKE_BUILD_STAGE STREQUAL "postBuild")
-        if(DARWIN)
-            set(_plugin_manager_link -lstdx.plugin.manager)
-        else()
-            set(_plugin_manager_link -l:libstdx.plugin.manager${CMAKE_SHARED_LIBRARY_SUFFIX})
+        make_cangjie_lib(
+            plugin IS_SHARED IS_MACRO
+            DEPENDS cangjie${BACKEND_TYPE}PluginMacro plugin.manager
+            CANGJIE_STDX_LIB_DEPENDS plugin.manager
+            CANGJIE_STD_LIB_LINK std-core std-ast std-collection std-convert
+            OBJECTS ${output_cj_object_dir}/stdx/plugin.o)
+
+        # Cross-compile: host cjc must dlopen a host-arch macro to expand @CHIRPlugin
+        # while compiling collect_aspects / weave_aspects. Keep a non-installed host macro.
+        if(STDX_HOST_STDX_LIB_DIR)
+            make_host_cangjie_shared_lib(
+                chir
+                SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/stdx/chir
+                STD_LINK std-core std-collection std-fs
+                DEPENDS cangjie${BACKEND_TYPE}Chir)
+            make_host_cangjie_shared_lib(
+                plugin.manager
+                SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/stdx/plugin/manager
+                STDX_DEP chir
+                STD_LINK std-core std-collection
+                DEPENDS cangjie${BACKEND_TYPE}PluginManager host_stdx_chir)
+            if(CMAKE_HOST_APPLE)
+                set(_plugin_manager_host_link -lstdx.plugin.manager)
+            else()
+                set(_plugin_manager_host_link -l:libstdx.plugin.manager${STDX_HOST_SHLIB_SUFFIX})
+            endif()
+            add_cangjie_macro_library_in_local(
+                cangjie${BACKEND_TYPE}PluginMacroHost
+                NO_SUB_PKG
+                PACKAGE_NAME "plugin"
+                MODULE_NAME "stdx"
+                SOURCES ${PLUGIN_SRCS}
+                SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/stdx/plugin
+                DEPENDS cangjie${BACKEND_TYPE}PluginManager host_stdx_plugin_manager
+                LINK_LIBS ${_plugin_manager_host_link})
         endif()
-        add_cangjie_macro_library_in_local(
-            cangjie${BACKEND_TYPE}PluginMacro
-            NO_SUB_PKG
-            INSTALL
-            PACKAGE_NAME "plugin"
-            MODULE_NAME "stdx"
-            SOURCES ${PLUGIN_SRCS}
-            SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/stdx/plugin
-            DEPENDS cangjie${BACKEND_TYPE}PluginManager plugin.manager
-            LINK_LIBS ${_plugin_manager_link})
     endif()
 endif()
 
@@ -825,9 +860,18 @@ if(NOT CANGJIE_CJPM_BUILD_TYPE AND NOT CANGJIE_BUILD_WITHOUT_CHIR AND NOT CANGJI
     set_target_properties(stdx.aspect_cj PROPERTIES LINKER_LANGUAGE C)
     install(TARGETS stdx.aspect_cj DESTINATION ${output_triple_name}_${CJNATIVE_BACKEND}${SANITIZER_SUBPATH}/static/stdx)
 
-    if(NOT CMAKE_BUILD_STAGE STREQUAL "postBuild" AND NOT CMAKE_CROSSCOMPILING
-        AND NOT CANGJIE_BUILD_WITHOUT_PLUGIN)
-        if(DARWIN)
+    if(NOT CMAKE_BUILD_STAGE STREQUAL "postBuild" AND NOT CANGJIE_BUILD_WITHOUT_PLUGIN)
+        # Host cjc loads macros at compile time: use host suffix when cross-compiling,
+        # otherwise the target lib-macro_stdx.plugin from make_cangjie_lib(IS_MACRO).
+        set(_collect_weave_plugin_depends ${COLLECT_ASPECTS_DEPENDENCIES} plugin)
+        if(STDX_HOST_STDX_LIB_DIR AND TARGET cangjie${BACKEND_TYPE}PluginMacroHost)
+            if(CMAKE_HOST_APPLE)
+                set(_plugin_macro_compile_link -l-macro_stdx.plugin)
+            else()
+                set(_plugin_macro_compile_link -l:lib-macro_stdx.plugin${STDX_HOST_SHLIB_SUFFIX})
+            endif()
+            list(APPEND _collect_weave_plugin_depends cangjie${BACKEND_TYPE}PluginMacroHost)
+        elseif(DARWIN)
             set(_plugin_macro_compile_link -l-macro_stdx.plugin)
         else()
             set(_plugin_macro_compile_link -l:lib-macro_stdx.plugin${CMAKE_SHARED_LIBRARY_SUFFIX})
@@ -843,7 +887,7 @@ if(NOT CANGJIE_CJPM_BUILD_TYPE AND NOT CANGJIE_BUILD_WITHOUT_CHIR AND NOT CANGJI
             MODULE_NAME "stdx"
             SOURCES ${COLLECT_ASPECTS_SRCS}
             SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/stdx/aspect_cj/plugins/collect_aspects
-            DEPENDS ${COLLECT_ASPECTS_DEPENDENCIES}
+            DEPENDS ${_collect_weave_plugin_depends}
             COMPILE_LINK_LIBS ${_plugin_macro_compile_link})
 
         make_cangjie_lib(
@@ -863,7 +907,7 @@ if(NOT CANGJIE_CJPM_BUILD_TYPE AND NOT CANGJIE_BUILD_WITHOUT_CHIR AND NOT CANGJI
             MODULE_NAME "stdx"
             SOURCES ${WEAVE_ASPECTS_SRCS}
             SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/stdx/aspect_cj/plugins/weave_aspects
-            DEPENDS ${WEAVE_ASPECTS_DEPENDENCIES}
+            DEPENDS ${_collect_weave_plugin_depends}
             COMPILE_LINK_LIBS ${_plugin_macro_compile_link})
 
         make_cangjie_lib(
