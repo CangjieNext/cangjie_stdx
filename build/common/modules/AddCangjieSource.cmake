@@ -101,8 +101,13 @@ function(add_cangjie_macro_library_in_local target_name)
         ${cangjie_compile_flags}
         -p ${CANGJIELIB_SOURCE_DIR})
     # Macro libraries are loaded by host cjc at compile time; never cross-compile them.
+    # When host OS != target OS, link against host-arch stdx shared libs (STDX_HOST_STDX_LIB_DIR).
     if(CANGJIELIB_LINK_LIBS)
-        list(APPEND COMPILE_CMD -L "${_stdx_dylib_dir}" ${CANGJIELIB_LINK_LIBS})
+        if(STDX_HOST_STDX_LIB_DIR)
+            list(APPEND COMPILE_CMD -L "${STDX_HOST_STDX_LIB_DIR}" ${CANGJIELIB_LINK_LIBS})
+        else()
+            list(APPEND COMPILE_CMD -L "${_stdx_dylib_dir}" ${CANGJIELIB_LINK_LIBS})
+        endif()
     endif()
 
     cj_resolve_depends(resolved_depends ${CANGJIELIB_DEPENDS})
@@ -178,8 +183,26 @@ endfunction()
 _copy_macro_output()
 ")
 
+    set(_macro_compile_env
+        "CANGJIE_PATH=${CMAKE_BINARY_DIR}/modules/${output_cj_lib_dir}"
+        "LIBRARY_PATH=${CMAKE_BINARY_DIR}/lib")
+    if(STDX_HOST_STDX_LIB_DIR AND CANGJIELIB_LINK_LIBS)
+        if(CMAKE_HOST_APPLE)
+            list(APPEND _macro_compile_env
+                "DYLD_LIBRARY_PATH=${STDX_HOST_STDX_LIB_DIR}:$ENV{DYLD_LIBRARY_PATH}")
+        else()
+            list(APPEND _macro_compile_env
+                "LD_LIBRARY_PATH=${STDX_HOST_STDX_LIB_DIR}:$ENV{LD_LIBRARY_PATH}")
+        endif()
+        list(APPEND _macro_compile_env "LIBRARY_PATH=${STDX_HOST_STDX_LIB_DIR}:${CMAKE_BINARY_DIR}/lib")
+    endif()
+
     if(DARWIN AND CANGJIELIB_LINK_LIBS)
-        set(_plugin_manager_dylib "${_stdx_dylib_dir}/libstdx.plugin.manager${CMAKE_SHARED_LIBRARY_SUFFIX}")
+        if(STDX_HOST_STDX_LIB_DIR)
+            set(_plugin_manager_dylib "${STDX_HOST_STDX_LIB_DIR}/libstdx.plugin.manager${STDX_HOST_SHLIB_SUFFIX}")
+        else()
+            set(_plugin_manager_dylib "${_stdx_dylib_dir}/libstdx.plugin.manager${CMAKE_SHARED_LIBRARY_SUFFIX}")
+        endif()
         set(_macro_rpath_runner "${CMAKE_CURRENT_BINARY_DIR}/macro_rpath_${target_name}.cmake")
         file(WRITE "${_macro_rpath_runner}" "
 cmake_minimum_required(VERSION 3.16.5)
@@ -190,7 +213,7 @@ execute_process(
         add_custom_command(
             OUTPUT ${output_full_name}
             COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_BINARY_DIR}/${output_dir}
-            COMMAND ${CMAKE_COMMAND} -E env "CANGJIE_PATH=${CMAKE_BINARY_DIR}/modules/${output_cj_lib_dir}"  "LIBRARY_PATH=${CMAKE_BINARY_DIR}/lib"
+            COMMAND ${CMAKE_COMMAND} -E env ${_macro_compile_env}
                     ${COMPILE_CMD}
             COMMAND ${CMAKE_COMMAND} -E copy_if_different "${_plugin_manager_dylib}" "${CMAKE_CURRENT_BINARY_DIR}/"
             COMMAND ${CMAKE_COMMAND} -P ${_macro_rpath_runner}
@@ -204,7 +227,7 @@ execute_process(
         add_custom_command(
             OUTPUT ${output_full_name}
             COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_BINARY_DIR}/${output_dir}
-            COMMAND ${CMAKE_COMMAND} -E env "CANGJIE_PATH=${CMAKE_BINARY_DIR}/modules/${output_cj_lib_dir}"  "LIBRARY_PATH=${CMAKE_BINARY_DIR}/lib"
+            COMMAND ${CMAKE_COMMAND} -E env ${_macro_compile_env}
                     ${COMPILE_CMD}
             COMMAND ${CMAKE_COMMAND} -P ${_copy_macro_runner}
             COMMAND ${CMAKE_COMMAND} -E copy_if_different
@@ -391,6 +414,10 @@ function(add_cangjie_library target_name
     string(TOLOWER ${TARGET_TRIPLE_DIRECTORY_PREFIX}_${BACKEND} output_cj_lib_dir)
     if(CANGJIELIB_COMPILE_LINK_LIBS)
         set(_compile_stdx_dylib_dir "${CMAKE_BINARY_DIR}/lib/${output_cj_lib_dir}${SANITIZER_SUBPATH}")
+        # Host macros live next to the compile cwd / modules; also search host lib dir when present.
+        if(STDX_HOST_STDX_LIB_DIR)
+            list(APPEND COMPILE_CMD -L "${STDX_HOST_STDX_LIB_DIR}")
+        endif()
         list(APPEND COMPILE_CMD
             -L "${_compile_stdx_dylib_dir}"
             -L "${CMAKE_BINARY_DIR}/modules/${output_cj_lib_dir}/stdx"
@@ -431,12 +458,16 @@ function(add_cangjie_library target_name
     if(CANGJIELIB_COMPILE_LINK_LIBS)
         set(_cj_stdx_dylib_dir "${CMAKE_BINARY_DIR}/lib/${output_cj_lib_dir}${SANITIZER_SUBPATH}")
         set(_cj_runtime_lib_dir "$ENV{CANGJIE_HOME}/runtime/lib/${output_cj_lib_dir}${SANITIZER_SUBPATH}")
+        set(_cj_host_lib_prefix "")
+        if(STDX_HOST_STDX_LIB_DIR)
+            set(_cj_host_lib_prefix "${STDX_HOST_STDX_LIB_DIR}:")
+        endif()
         if(APPLE)
             list(APPEND _cj_lib_compile_env
-                "DYLD_LIBRARY_PATH=${_cj_stdx_dylib_dir}:${_cj_runtime_lib_dir}:$ENV{DYLD_LIBRARY_PATH}")
+                "DYLD_LIBRARY_PATH=${_cj_host_lib_prefix}${_cj_stdx_dylib_dir}:${_cj_runtime_lib_dir}:$ENV{DYLD_LIBRARY_PATH}")
         else()
             list(APPEND _cj_lib_compile_env
-                "LD_LIBRARY_PATH=${_cj_stdx_dylib_dir}:${_cj_runtime_lib_dir}:$ENV{LD_LIBRARY_PATH}")
+                "LD_LIBRARY_PATH=${_cj_host_lib_prefix}${_cj_stdx_dylib_dir}:${_cj_runtime_lib_dir}:$ENV{LD_LIBRARY_PATH}")
         endif()
     endif()
 

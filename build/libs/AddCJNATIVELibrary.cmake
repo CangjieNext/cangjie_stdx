@@ -7,6 +7,7 @@
 
 include(AddAndCombineStaticLib)
 include(ExtractArchive)
+include(MakeHostCJNATIVESharedLib)
 
 set(BACKEND_TYPE CJNATIVE)
 
@@ -710,9 +711,8 @@ if(NOT CANGJIE_CJPM_BUILD_TYPE AND NOT CANGJIE_BUILD_WITHOUT_CHIR)
     install(TARGETS stdx.chir DESTINATION ${output_triple_name}_${CJNATIVE_BACKEND}${SANITIZER_SUBPATH}/static/stdx)
 endif()
 
-# plugin / CHIR compiler plugins are host tools (cjc --plugin). Do not build them when
-# cross-compiling target libs: host cjc cannot link target-arch libstdx.plugin.manager.so.
-if(NOT CANGJIE_CJPM_BUILD_TYPE AND NOT CMAKE_CROSSCOMPILING AND NOT CANGJIE_BUILD_WITHOUT_CHIR
+# plugin / CHIR compiler plugins (also built for cross-compiled target packages).
+if(NOT CANGJIE_CJPM_BUILD_TYPE AND NOT CANGJIE_BUILD_WITHOUT_CHIR
     AND NOT CANGJIE_BUILD_WITHOUT_PLUGIN)
     add_cangjie_library(
         cangjie${BACKEND_TYPE}PluginManager
@@ -734,7 +734,28 @@ if(NOT CANGJIE_CJPM_BUILD_TYPE AND NOT CMAKE_CROSSCOMPILING AND NOT CANGJIE_BUIL
         OBJECTS ${output_cj_object_dir}/stdx/plugin.manager.o)
 
     if(NOT CMAKE_BUILD_STAGE STREQUAL "postBuild")
-        if(DARWIN)
+        # Host cjc loads macros; when host OS != target OS, link against host-arch
+        # libstdx.plugin.manager (and host chir) instead of the target DLL.
+        set(_plugin_macro_depends cangjie${BACKEND_TYPE}PluginManager plugin.manager)
+        if(STDX_HOST_STDX_LIB_DIR)
+            make_host_cangjie_shared_lib(
+                chir
+                SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/stdx/chir
+                STD_LINK std-core std-collection std-fs
+                DEPENDS cangjie${BACKEND_TYPE}Chir)
+            make_host_cangjie_shared_lib(
+                plugin.manager
+                SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/stdx/plugin/manager
+                STDX_DEP chir
+                STD_LINK std-core std-collection
+                DEPENDS cangjie${BACKEND_TYPE}PluginManager host_stdx_chir)
+            if(CMAKE_HOST_APPLE)
+                set(_plugin_manager_link -lstdx.plugin.manager)
+            else()
+                set(_plugin_manager_link -l:libstdx.plugin.manager${STDX_HOST_SHLIB_SUFFIX})
+            endif()
+            list(APPEND _plugin_macro_depends host_stdx_plugin_manager)
+        elseif(DARWIN)
             set(_plugin_manager_link -lstdx.plugin.manager)
         else()
             set(_plugin_manager_link -l:libstdx.plugin.manager${CMAKE_SHARED_LIBRARY_SUFFIX})
@@ -747,7 +768,7 @@ if(NOT CANGJIE_CJPM_BUILD_TYPE AND NOT CMAKE_CROSSCOMPILING AND NOT CANGJIE_BUIL
             MODULE_NAME "stdx"
             SOURCES ${PLUGIN_SRCS}
             SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/stdx/plugin
-            DEPENDS cangjie${BACKEND_TYPE}PluginManager plugin.manager
+            DEPENDS ${_plugin_macro_depends}
             LINK_LIBS ${_plugin_manager_link})
     endif()
 endif()
@@ -825,9 +846,13 @@ if(NOT CANGJIE_CJPM_BUILD_TYPE AND NOT CANGJIE_BUILD_WITHOUT_CHIR AND NOT CANGJI
     set_target_properties(stdx.aspect_cj PROPERTIES LINKER_LANGUAGE C)
     install(TARGETS stdx.aspect_cj DESTINATION ${output_triple_name}_${CJNATIVE_BACKEND}${SANITIZER_SUBPATH}/static/stdx)
 
-    if(NOT CMAKE_BUILD_STAGE STREQUAL "postBuild" AND NOT CMAKE_CROSSCOMPILING
-        AND NOT CANGJIE_BUILD_WITHOUT_PLUGIN)
-        if(DARWIN)
+    if(NOT CMAKE_BUILD_STAGE STREQUAL "postBuild" AND NOT CANGJIE_BUILD_WITHOUT_PLUGIN)
+        # COMPILE_LINK_LIBS is loaded by host cjc; always use the host shared-library suffix.
+        if(CMAKE_HOST_APPLE)
+            set(_plugin_macro_compile_link -l-macro_stdx.plugin)
+        elseif(STDX_HOST_SHLIB_SUFFIX)
+            set(_plugin_macro_compile_link -l:lib-macro_stdx.plugin${STDX_HOST_SHLIB_SUFFIX})
+        elseif(DARWIN)
             set(_plugin_macro_compile_link -l-macro_stdx.plugin)
         else()
             set(_plugin_macro_compile_link -l:lib-macro_stdx.plugin${CMAKE_SHARED_LIBRARY_SUFFIX})
