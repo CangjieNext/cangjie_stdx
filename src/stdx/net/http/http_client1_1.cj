@@ -649,52 +649,65 @@ class ConnNode <: BodyProviderConn {
         // send request body
         let fut = spawn {sendRequestBodyTimeout(request, expectContinuation, shouldSendBody)}
 
-        // read response
-
-        // method is used to decide whether there is a response body
-        // the 1xx response will be discarded
-        setReadTimer(request.readTimeout ?? readTimeout)
-        var response = readResponse(request)
-        if (logger.enabled(LogLevel.DEBUG)) {
-            httpLogDebug(logger, "[ConnNode#sendRequestTimeout] Client1.1 read response ${response}")
-        }
-        // process 1xx response
-        response = process1xxResponse(response, request, expectContinuation, shouldSendBody)
-        shouldSendBody.swap(false)
-        if (expectContinuation.load()) {
-            synchronized(continueMonitor) {
-                continueMonitor.notifyAll()
-            }
-        }
-
-        // client will close the conn after reading the response message containing the "close" connection option
-        // upgrade and connect only depend on the status code
-        if (this.shouldClose.load() && !isUpgraded && request.method != "CONNECT") {
-            match (response.body) {
-                case body: HttpNormalBodyProvider =>
-                    response._body = HttpNormalBody(body)
-                    h1Engine.closeConnInUse(this)
-                case _: HttpEmptyBody => h1Engine.closeConnInUse(this)
-                case _ => ()
-            }
-        }
-        // wait until the sending is complete.
-        // when the sending fails, the sending coroutine generates a log
         try {
-            fut.get()
-        } catch (e: SocketException) {}
-        // the connNode will be returned or closed
-        // until the caller has finished consuming the body.
-        // h1Engine.returnConn() does this
-        response.connNode = this
-        if (response.body is HttpEmptyBody) {
-            if (isUpgraded || request.method == "CONNECT") {
-                httpLogDebug(logger, "[ConnNode#sendRequestTimeout] connection was not returned to connPool")
-            } else {
-                h1Engine.returnConn(this)
+            // read response
+
+            // method is used to decide whether there is a response body
+            // the 1xx response will be discarded
+            setReadTimer(request.readTimeout ?? readTimeout)
+            var response = readResponse(request)
+            if (logger.enabled(LogLevel.DEBUG)) {
+                httpLogDebug(logger, "[ConnNode#sendRequestTimeout] Client1.1 read response ${response}")
             }
+            // process 1xx response
+            response = process1xxResponse(response, request, expectContinuation, shouldSendBody)
+            shouldSendBody.swap(false)
+            if (expectContinuation.load()) {
+                synchronized(continueMonitor) {
+                    continueMonitor.notifyAll()
+                }
+            }
+
+            // client will close the conn after reading the response message containing the "close" connection option
+            // upgrade and connect only depend on the status code
+            if (this.shouldClose.load() && !isUpgraded && request.method != "CONNECT") {
+                match (response.body) {
+                    case body: HttpNormalBodyProvider =>
+                        response._body = HttpNormalBody(body)
+                        h1Engine.closeConnInUse(this)
+                    case _: HttpEmptyBody => h1Engine.closeConnInUse(this)
+                    case _ => ()
+                }
+            }
+
+            // wait until the sending is complete. 
+            // when the sending fails, the sending coroutine generates a log 
+            try {	 
+                fut.get()	 
+            } catch (_: SocketException) {}
+            // the connNode will be returned or closed
+            // until the caller has finished consuming the body.
+            // h1Engine.returnConn() does this
+            response.connNode = this
+            if (response.body is HttpEmptyBody) {
+                if (isUpgraded || request.method == "CONNECT") {
+                    httpLogDebug(logger, "[ConnNode#sendRequestTimeout] connection was not returned to connPool")
+                } else {
+                    h1Engine.returnConn(this)
+                }
+            }
+            return response
+        } finally {
+            // Always wait for the body coroutine to finish before propagating
+            // any exception. This prevents concurrent access to HttpBufferedBody
+            // when a retry uses the same request object.
+            try {
+                fut.get()
+            } catch (e: Exception) {
+                httpLogWarn(logger, "[ConnNode#sendRequestTimeout] Client1.1 send body coroutine failed: ${e}")
+            }
+            writeTimer.cancel()
         }
-        return response
     }
 
     private func checkUpgradeAndCloseInHeader(request: HttpRequest): Unit {
