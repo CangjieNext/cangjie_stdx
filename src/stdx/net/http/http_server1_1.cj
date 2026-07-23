@@ -827,10 +827,10 @@ class HttpEngineConn1 <: HttpEngineConn & BodyProviderConn {
                 if (ctx.responseFlushedWithChunked) {
                     // 1. write last-chunk
                     writer.write("0\r\n")
+                    checkTrailer(response)
+                    // 2. write trailer
+                    writer.write(response.trailers.toString())
                 }
-                checkTrailer(response)
-                // 2. write trailer
-                writer.write(response.trailers.toString())
                 writer.flush()
                 writeTimer.cancel()
                 return
@@ -852,10 +852,11 @@ class HttpEngineConn1 <: HttpEngineConn & BodyProviderConn {
         if (conn.isClosed()) {
             throw HttpException("The connection is disconnected response cannot be written.")
         }
-        let response = ctx.responseBuilder.build()
-        let request = response.request ?? return ()
+        
+        
 
         if (!ctx.responseFlushedByUser) {
+            let response = ctx.responseBuilder.build()
             let (cl, chunked) = checkResponseHeader(response, bodyData.size)
             if (cl.isNone() && !chunked) {
                 throw HttpException("Either Content-Length or chunked must be set.")
@@ -877,7 +878,9 @@ class HttpEngineConn1 <: HttpEngineConn & BodyProviderConn {
             ctx.responseFlushedByUser = true
             ctx.responseFlushedWithChunked = chunked
         }
-        if (bodyData.size == 0 || (request.method == "HEAD" && response.status / 100 == 2)) {
+        let request = ctx.responseBuilder._request ?? return ()
+        let status = ctx.responseBuilder._status ?? 200
+        if (bodyData.size == 0 || (request.method == "HEAD" && status / 100 == 2)) {
             this.writer.flush()
             return
         }
