@@ -417,6 +417,7 @@ make_cangjie_lib(
     CANGJIE_STD_LIB_LINK
         std-core
         std-crypto.digest
+        std-sync
     OBJECTS ${output_cj_object_dir}/stdx/crypto.digest.o
     FLAGS ${openssl_flags} $<$<BOOL:${MINGW}>:-lws2_32>
     $<$<NOT:$<BOOL:${WIN32}>>:-ldl>)
