@@ -9,11 +9,9 @@
 package stdx.crypto.digest
 
 import std.crypto.digest.Digest
-import std.sync.Mutex
 import stdx.crypto.common.CryptoException
 
 public class SM3 <: Digest {
-    private static let lock = Mutex()
     private var sm3Ctx = CPointer<Unit>()
     private var hasFinished = false
 
@@ -37,7 +35,7 @@ public class SM3 <: Digest {
         hasFinished = false
     }
     ~init() {
-        synchronized(lock) {
+        synchronized(this) {
             if (!sm3Ctx.isNull()) {
                 let ctx = sm3Ctx
                 sm3Ctx = CPointer<Unit>()
@@ -64,7 +62,7 @@ public class SM3 <: Digest {
     }
 
     public func write(buffer: Array<Byte>): Unit {
-        synchronized(lock) {
+        synchronized(this) {
             if (hasFinished) {
                 throw CryptoException("SM3 write failed, digest calculation has been completed.")
             }
@@ -79,7 +77,7 @@ public class SM3 <: Digest {
     }
 
     public func finish(to!: Array<Byte>): Unit {
-        synchronized(lock) {
+        synchronized(this) {
             if (hasFinished) {
                 throw CryptoException("SM3 finish failed, digest calculation has been completed.")
             }
@@ -92,7 +90,7 @@ public class SM3 <: Digest {
     }
 
     public func reset(): Unit {
-        synchronized(lock) {
+        synchronized(this) {
             unsafe {
                 let newCtx = mdCtxNew()
                 if (newCtx.isNull()) {
