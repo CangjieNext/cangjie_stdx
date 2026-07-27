@@ -31,6 +31,7 @@ public enum Curve {
 
 public class ECDSAPrivateKey <: PrivateKey {
     var pkey = CPointer<UInt64>()
+    // Retained for object layout compatibility. Signing uses an operation-local context.
     var evpKeyCtx: EVPKEYCTX
 
     init(blob: DerBlob) {
@@ -118,7 +119,7 @@ public class ECDSAPrivateKey <: PrivateKey {
 
     public func sign(digest: Array<Byte>): Array<Byte> {
         keepAlive(this)
-        sign(evpKeyCtx, pkey, digest)
+        sign(pkey, digest)
     }
 
     public override func toString(): String {
@@ -134,6 +135,7 @@ public class ECDSAPrivateKey <: PrivateKey {
 
 public class ECDSAPublicKey <: PublicKey {
     var pkey: CPointer<UInt64>
+    // Retained for object layout compatibility. Verification uses an operation-local context.
     var evpKeyCtx: EVPKEYCTX
 
     init(blob: DerBlob) {
@@ -173,7 +175,7 @@ public class ECDSAPublicKey <: PublicKey {
     }
 
     public func verify(digest: Array<Byte>, sig: Array<Byte>): Bool {
-        verify(evpKeyCtx, digest, sig)
+        verify(pkey, digest, sig)
     }
 
     public override func toString(): String {
@@ -221,54 +223,70 @@ unsafe func generateECDSA(curve: Curve) {
     pkey
 }
 
-func sign(ctx: EVPKEYCTX, pkey: CPointer<UInt64>, data: Array<Byte>) {
+func sign(pkey: CPointer<UInt64>, data: Array<Byte>) {
     unsafe {
-        var ecSize = Int64(getSize(pkey))
-        var sig: Array<UInt8> = Array<UInt8>(ecSize, repeat: 0)
-        let sigHandle: CPointerHandle<Byte> = acquireArrayRawData(sig)
-        let dataHandle: CPointerHandle<Byte> = acquireArrayRawData(data)
-        try (sizePtr = LibC.malloc<UIntNative>().asResource()) {
-            if (sizePtr.value.isNull()) {
-                throw CryptoException("Sign init error, malloc failed.")
-            }
-
-            sizePtr.value.write(UIntNative(ecSize))
-            var ret = signInit(ctx.ptr)
-            if (ret <= 0) {
-                throw CryptoException("Sign init error.")
-            }
-            ret = sign(ctx.ptr, sigHandle.pointer, sizePtr.value, dataHandle.pointer, UIntNative(data.size))
-            if (ret != 1 || ecSize < Int64(sizePtr.value.read())) {
-                throw CryptoException("Sign error.")
-            }
-            ecSize = Int64(sizePtr.value.read())
-        } finally {
-            releaseArrayRawData(sigHandle)
-            releaseArrayRawData(dataHandle)
+        let ctx = keyCtxNew(pkey, CPointer<UInt64>())
+        if (ctx.isNull()) {
+            throw CryptoException("Sign init error, create key ctx error.")
         }
-        sig[0..ecSize]
+        try {
+            var ecSize = Int64(getSize(pkey))
+            var sig: Array<UInt8> = Array<UInt8>(ecSize, repeat: 0)
+            let sigHandle: CPointerHandle<Byte> = acquireArrayRawData(sig)
+            let dataHandle: CPointerHandle<Byte> = acquireArrayRawData(data)
+            try (sizePtr = LibC.malloc<UIntNative>().asResource()) {
+                if (sizePtr.value.isNull()) {
+                    throw CryptoException("Sign init error, malloc failed.")
+                }
+
+                sizePtr.value.write(UIntNative(ecSize))
+                var ret = signInit(ctx)
+                if (ret <= 0) {
+                    throw CryptoException("Sign init error.")
+                }
+                ret = sign(ctx, sigHandle.pointer, sizePtr.value, dataHandle.pointer, UIntNative(data.size))
+                if (ret != 1 || ecSize < Int64(sizePtr.value.read())) {
+                    throw CryptoException("Sign error.")
+                }
+                ecSize = Int64(sizePtr.value.read())
+            } finally {
+                releaseArrayRawData(sigHandle)
+                releaseArrayRawData(dataHandle)
+            }
+            sig[0..ecSize]
+        } finally {
+            keyCtxFree(ctx)
+        }
     }
 }
 
-func verify(ctx: EVPKEYCTX, data: Array<Byte>, sig: Array<Byte>) {
+func verify(pkey: CPointer<UInt64>, data: Array<Byte>, sig: Array<Byte>) {
     unsafe {
-        let sigHandle: CPointerHandle<Byte> = acquireArrayRawData(sig)
-        let dataHandle: CPointerHandle<Byte> = acquireArrayRawData(data)
-        var result: Int32 = 0
-        try {
-            var ret = verifyInit(ctx.ptr)
-            if (ret <= 0) {
-                throw CryptoException("Verify init error.")
-            }
-            result = verify(ctx.ptr, sigHandle.pointer, UIntNative(sig.size), dataHandle.pointer, UIntNative(data.size))
-        } finally {
-            releaseArrayRawData(dataHandle)
-            releaseArrayRawData(sigHandle)
+        let ctx = keyCtxNew(pkey, CPointer<UInt64>())
+        if (ctx.isNull()) {
+            throw CryptoException("Verify init error, create key ctx error.")
         }
-        if (result != 1) {
-            return false
-        } else {
-            return true
+        try {
+            let sigHandle: CPointerHandle<Byte> = acquireArrayRawData(sig)
+            let dataHandle: CPointerHandle<Byte> = acquireArrayRawData(data)
+            var result: Int32 = 0
+            try {
+                var ret = verifyInit(ctx)
+                if (ret <= 0) {
+                    throw CryptoException("Verify init error.")
+                }
+                result = verify(ctx, sigHandle.pointer, UIntNative(sig.size), dataHandle.pointer, UIntNative(data.size))
+            } finally {
+                releaseArrayRawData(dataHandle)
+                releaseArrayRawData(sigHandle)
+            }
+            if (result != 1) {
+                return false
+            } else {
+                return true
+            }
+        } finally {
+            keyCtxFree(ctx)
         }
     }
 }
