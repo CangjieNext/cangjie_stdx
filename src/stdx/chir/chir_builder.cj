@@ -516,6 +516,18 @@ public class CHIRBuilder {
     }
 
     /**
+     * Performs the public behavior of `createInout`.
+     * @param retTy The `retTy` parameter.
+     * @param param The `param` parameter.
+     * @return The `Intrinsic` result.
+     */
+    public func createInout(retTy: Type, param: Value): Intrinsic {
+        let expr = Intrinsic.create(retTy, IntrinsicKind.InoutParam, FuncCallContext([param], [], None))
+        insertAndAdvance(expr)
+        return expr
+    }
+
+    /**
      * Performs the public behavior of `createInstanceOf`.
      * @param srcVal The `srcVal` parameter.
      * @param targetTy The `targetTy` parameter.
@@ -869,6 +881,20 @@ public class CHIRBuilder {
     }
 
     /**
+     * Performs the public behavior of `createTryInout`.
+     * @param retTy The `retTy` parameter.
+     * @param param The `param` parameter.
+     * @param normal The `normal` parameter.
+     * @param err The `err` parameter.
+     * @return The `TryIntrinsic` result.
+     */
+    public func createTryInout(retTy: Type, param: Value, normal: Block, err: Block): TryIntrinsic {
+        let expr = TryIntrinsic.create(retTy, IntrinsicKind.InoutParam, FuncCallContext([param], [], None), normal, err)
+        insertAndAdvance(expr)
+        return expr
+    }
+
+    /**
      * Performs the public behavior of `createTryInvoke`.
      * @param retTy The `retTy` parameter.
      * @param callContext The `callContext` parameter.
@@ -1043,18 +1069,6 @@ public class CHIRBuilder {
      */
     public func createVArrayBuilder(retTy: Type, size: Value, initVal: Value, initFunc: Value): VArrayBuilder {
         let expr = VArrayBuilder.create(retTy, size, initVal, initFunc)
-        insertAndAdvance(expr)
-        return expr
-    }
-
-    internal func createIntrinsic(retTy: Type, kind: IntrinsicKind, funcCallCtx: FuncCallContext): Intrinsic {
-        let expr = Intrinsic.create(retTy, kind, funcCallCtx)
-        insertAndAdvance(expr)
-        return expr
-    }
-
-    internal func createTryIntrinsic(retTy: Type, kind: IntrinsicKind, funcCallCtx: FuncCallContext, normal: Block, err: Block): TryIntrinsic {
-        let expr = TryIntrinsic.create(retTy, kind, funcCallCtx, normal, err)
         insertAndAdvance(expr)
         return expr
     }

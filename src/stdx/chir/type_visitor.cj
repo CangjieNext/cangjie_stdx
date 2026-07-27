@@ -20,7 +20,7 @@ public enum TypeActionMode {
  *
  * Subclasses override `action` to inspect each node; `walk` applies the returned mode.
  */
-abstract class TypeVisitor {
+public abstract class TypeVisitor {
     private var isStop = false
 
     /**

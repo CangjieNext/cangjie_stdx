@@ -136,7 +136,7 @@ The **chir** (Cangjie High-level IR) package provides the type system and CHIR d
 | [TupleType](./chir_package_api/chir_package_classes.md#class-tupletype) | Tuple type. |
 | [Type](./chir_package_api/chir_package_classes.md#class-type) | Sealed abstract base for all types, with `isXxx` type-checking methods. |
 | [TypeCast](./chir_package_api/chir_package_classes.md) | Sealed abstract base for type conversion expressions. |
-| [TypeVisitor](./chir_package_api/chir_package_classes.md) | Abstract visitor for CHIR type nodes. |
+| [TypeVisitor](./chir_package_api/chir_package_classes.md#class-typevisitor) | Abstract visitor for CHIR type nodes. |
 | [UnaryExpression](./chir_package_api/chir_package_classes.md#class-unaryexpression) | Unary operation expression. |
 | [UnaryExpressionBase](./chir_package_api/chir_package_classes.md) | Sealed abstract base for unary operation expressions. |
 | [UnboxToRef](./chir_package_api/chir_package_classes.md#class-unboxtoref) | Unbox-to-reference type conversion expression. |

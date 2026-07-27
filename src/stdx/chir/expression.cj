@@ -64,14 +64,17 @@ internal enum ExprKind {
             case Add | Sub | Mul | Div | Mod | Exp |
             LShift | RShift | BitAnd | BitOr | BitXor |
             LT | GT | LE | GE | Equal | NotEqual |
-            And | Or => true
+            And | Or |
+            TryAdd | TrySub | TryMul | TryDiv | TryMod | TryExp |
+            TryLShift | TryRShift => true
             case _ => false
         }
     }
 
     internal func isBitwiseOperator(): Bool {
         match (this) {
-            case LShift | RShift | BitAnd | BitOr | BitXor => true
+            case LShift | RShift | BitAnd | BitOr | BitXor |
+            TryLShift | TryRShift => true
             case _ => false
         }
     }
@@ -92,7 +95,8 @@ internal enum ExprKind {
 
     internal func isMathematicalOperator(): Bool {
         match (this) {
-            case Add | Sub | Mul | Div | Mod | Exp => true
+            case Add | Sub | Mul | Div | Mod | Exp |
+            TryAdd | TrySub | TryMul | TryDiv | TryMod | TryExp => true
             case _ => false
         }
     }
@@ -126,7 +130,7 @@ internal enum ExprKind {
 
     internal func isUnary(): Bool {
         match (this) {
-            case Neg | Not | BitNot => true
+            case Neg | Not | BitNot | TryNeg => true
             case _ => false
         }
     }
@@ -657,10 +661,12 @@ sealed abstract class Expression <: Base & ToString & Hashable & Equatable<Expre
      *        list itself during cascading destruction.
      */
     public func destroySelf(removeFromOwner!: Bool = true): Unit {
-        for (op in _operands) {
-            op._users.removeIf({ e => e == this })
-        }
+        // Clear operands first so Value.removeUser will actually detach us.
+        let ops = _operands.toArray()
         _operands.clear()
+        for (op in ops) {
+            op.removeUser(this)
+        }
         for (blockGroup in _blockGroups) {
             blockGroup.destroySelf(removeFromOwner: false)
         }
@@ -740,12 +746,8 @@ sealed abstract class Expression <: Base & ToString & Hashable & Equatable<Expre
         // 1. remove current expr from parent block
         this.owner._exprs.removeIf({ e => e == this })
 
-        // 2. update successor's predecessors
-        if (this.isTerminator()) {
-            for (successor in this.successors) {
-                successor._predecessors.removeIf({ bb => bb == this.owner })
-            }
-        }
+        // 2. update successor's predecessors for the old owner
+        unlinkFromSuccessorsPredecessors()
 
         // 3. get offset
         var index = -1
@@ -763,7 +765,10 @@ sealed abstract class Expression <: Base & ToString & Hashable & Equatable<Expre
         // 5. update current expr's owner
         this._owner = other.owner
 
-        // 6. update current expr's result identifier
+        // 6. register this terminator under the new owner in successors' predecessors
+        other.owner.linkTerminatorPredecessors(this)
+
+        // 7. update current expr's result identifier
         if (let Some(v) <- _result) {
             updateLocalVarIdAndHashCode(v)
         }
@@ -816,6 +821,19 @@ sealed abstract class Expression <: Base & ToString & Hashable & Equatable<Expre
         }
     }
 
+    // Remove this expression's owner from each successor's predecessor list.
+    // Used when relocating a terminator without changing its operands/users.
+    internal func unlinkFromSuccessorsPredecessors(): Unit {
+        if (!isTerminator()) {
+            return
+        }
+        if (let Some(bb) <- _owner) {
+            for (successor in successors) {
+                successor._predecessors.removeIf({ p => p == bb })
+            }
+        }
+    }
+
     /**
      * Builds the display string for this expression.
      * @return Human-readable expression text.
@@ -828,7 +846,7 @@ sealed abstract class Expression <: Base & ToString & Hashable & Equatable<Expre
             }
             res.append(v.identifier + ": " + v.ty.toString() + " = ")
         }
-        res.append(_kind.toString() + "(" + operandsToString() + ")")
+        res.append(kindToString() + "(" + operandsToString() + ")")
         res.append(getCommentString())
         return res.toString()
     }
@@ -847,13 +865,13 @@ sealed abstract class Expression <: Base & ToString & Hashable & Equatable<Expre
 
     internal func addOperandUsers(): Unit {
         for (op in _operands) {
-            op._users.add(this)
+            op.addUser(this)
         }
     }
 
     internal func addBlockGroup(v: BlockGroup) {
         _blockGroups.add(v)
-        v._users.add(this)
+        v.addUser(this)
     }
 
     internal func baseOpsToString(): String {
@@ -1078,12 +1096,17 @@ public class BinaryExpression <: BinaryExpressionBase & Equatable<BinaryExpressi
      * @return The created BinaryExpression.
      */
     public static func create(kind: BinaryExprKind, leftOp: Value, rightOp: Value): BinaryExpression {
-        let expr = BinaryExpression(kind.toExprKind(false), leftOp, rightOp)
+        let exprKind = kind.toExprKind(false)
+        if (!exprKind.isBinary() || exprKind.isTerminator()) {
+            throw CHIRException("BinaryExpression.create: Invalid kind for BinaryExpression: ${kind.toString()}")
+        }
+        let expr = BinaryExpression(exprKind, leftOp, rightOp)
         expr._attributes.setAttr(Attribute.PluginAdded, true)
-        let retType = match (kind) {
-            case Add | Sub | Mul | Div | Mod | Exp | LShift | RShift | BitAnd | BitOr | BitXor => leftOp.ty
-            case LT | GT | LE | GE | Equal | NotEqual | And | Or => BoolType.get()
-            case _ => throw CHIRException("BinaryExpression.create: Unknown BinaryExprKind")
+        // Comparison / logical operators yield Bool; arithmetic and bitwise keep the LHS type.
+        let retType = if (exprKind.isComparisonOperator() || exprKind.isLogicalOperator()) {
+            BoolType.get()
+        } else {
+            leftOp.ty
         }
         let result = LocalVar(retType, expr)
         expr._result = result
@@ -1150,7 +1173,11 @@ public class TryBinaryExpression <: BinaryExpressionBase & Equatable<TryBinaryEx
      * @return The created TryBinaryExpression.
      */
     public static func create(kind: BinaryExprKind, leftOp: Value, rightOp: Value, normal: Block, err: Block): TryBinaryExpression {
-        let expr = TryBinaryExpression(kind.toExprKind(true), leftOp, rightOp, normal, err)
+        let baseKind = kind.toExprKind(true)
+        if (!baseKind.isBinary() || !baseKind.isTerminator()) {
+            throw CHIRException("TryBinaryExpression.create: try form is not supported for ${kind.toString()}")
+        }
+        let expr = TryBinaryExpression(baseKind, leftOp, rightOp, normal, err)
         expr._attributes.setAttr(Attribute.PluginAdded, true)
         let result = LocalVar(leftOp.ty, expr)
         expr._result = result
@@ -1510,6 +1537,19 @@ sealed abstract class FuncCall <: Expression & Equatable<FuncCall> {
 
 sealed abstract class ApplyBase <: FuncCall & Equatable<ApplyBase> {
     internal var _isSuperCall: Bool = false
+
+    /**
+     * Whether this apply is a super-call (printed in dumps when true).
+     * @type { Bool }
+     */
+    public mut prop isSuperCall: Bool {
+        get() {
+            return _isSuperCall
+        }
+        set(v) {
+            _isSuperCall = v
+        }
+    }
 
     /**
      * Gets the `callee` property.
@@ -2450,7 +2490,11 @@ public class Lambda <: Expression & Equatable<Lambda> {
         }
     }
 
-    protected mut prop paramDftValHostFunc: Lambda {
+    /**
+     * Host lambda used for default-parameter evaluation, when present.
+     * @type { Lambda }
+     */
+    public mut prop paramDftValHostFunc: Lambda {
         get() {
             return _paramDftValHostFunc.getOrThrow()
         }
@@ -2690,7 +2734,7 @@ public class MultiBranch <: Expression & Equatable<MultiBranch> {
     }
 }
 
-sealed abstract class NumericCastBase <: Expression & Equatable<NumericCastBase> {
+sealed abstract class NumericCastBase <: TypeCast & Equatable<NumericCastBase> {
     internal var _overflow: OverflowStrategy
 
     /**
@@ -2707,7 +2751,7 @@ sealed abstract class NumericCastBase <: Expression & Equatable<NumericCastBase>
     }
 
     internal init(kind: ExprKind, srcVal: Value, overflow: OverflowStrategy) {
-        super(kind, ArrayList<Value>([srcVal]))
+        super(kind, srcVal)
         this._overflow = overflow
     }
 
@@ -3819,12 +3863,16 @@ public class UnaryExpression <: UnaryExpressionBase & Equatable<UnaryExpression>
      * @return The `UnaryExpression` result.
      */
     public static func create(kind: UnaryExprKind, op: Value): UnaryExpression {
-        let expr = UnaryExpression(kind.toExprKind(false), op)
+        let exprKind = kind.toExprKind(false)
+        if (!exprKind.isUnary() || exprKind.isTerminator()) {
+            throw CHIRException("UnaryExpression.create: Invalid kind for UnaryExpression: ${kind.toString()}")
+        }
+        let expr = UnaryExpression(exprKind, op)
         expr._attributes.setAttr(Attribute.PluginAdded, true)
-        let retType = match (kind) {
-            case Neg | BitNot => op.ty
-            case Not => BoolType.get()
-            case _ => throw CHIRException("UnaryExpression.create: Invalid kind for UnaryExpression: ${kind.toString()}")
+        let retType = if (exprKind == ExprKind.Not) {
+            BoolType.get()
+        } else {
+            op.ty
         }
         let result = LocalVar(retType, expr)
         expr._result = result

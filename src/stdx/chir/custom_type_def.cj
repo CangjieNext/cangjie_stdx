@@ -725,13 +725,11 @@ sealed abstract class CustomTypeDef <: Base & Equatable<CustomTypeDef> & Hashabl
     }
 
     protected open func printTitle(): String {
-        var kindStr = String.empty
+        var kindStr = _kind.toString()
         if (isInterface()) {
             kindStr = "interface"
         } else if (isClass()) {
             kindStr = "class"
-        } else {
-            kindStr = _kind.toString()
         }
         let result = StringBuilder()
         result.append(kindStr)

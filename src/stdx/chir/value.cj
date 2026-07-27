@@ -231,13 +231,22 @@ sealed abstract class Value <: Base & ToString & Hashable & Equatable<Value> {
             return
         }
         _users.add(user)
+        if (let Some(block) <- (this as Block)) {
+            block.addPredecessor(user)
+        }
     }
 
     internal func removeUser(user: Expression): Unit {
         if (user._operands.contains(this)) {
             return
         }
+        let wasUser = _users.contains(user)
         _users.removeIf({ u => u == user })
+        if (wasUser) {
+            if (let Some(block) <- (this as Block)) {
+                block.removePredecessor(user)
+            }
+        }
     }
 }
 
@@ -330,6 +339,7 @@ public class Block <: Value & Equatable<Block> {
         if (let Some(v) <- expr._result) {
             updateLocalVarIdAndHashCode(v)
         }
+        linkTerminatorPredecessors(expr)
     }
 
     /**
@@ -369,6 +379,54 @@ public class Block <: Value & Equatable<Block> {
         expr._owner = this
         if (let Some(v) <- expr._result) {
             updateLocalVarIdAndHashCode(v)
+        }
+        linkTerminatorPredecessors(expr)
+    }
+
+    // Register the terminator's owner as a predecessor of this block.
+    internal func addPredecessor(user: Expression): Unit {
+        if (!user.isTerminator()) {
+            return
+        }
+        if (let Some(bb) <- user._owner) {
+            if (!_predecessors.contains(bb)) {
+                _predecessors.add(bb)
+            }
+        }
+    }
+
+    // After a terminator is attached to this block, link this block as a predecessor
+    // of each successor (uses addPredecessor).
+    internal func linkTerminatorPredecessors(expr: Expression): Unit {
+        if (!expr.isTerminator()) {
+            return
+        }
+        for (successor in expr.successors) {
+            successor.addPredecessor(expr)
+        }
+    }
+
+    // Drop the terminator's owner from this block's predecessors unless another
+    // terminator in the same owner still targets this block.
+    internal func removePredecessor(user: Expression): Unit {
+        if (!user.isTerminator()) {
+            return
+        }
+        if (let Some(bb) <- user._owner) {
+            var stillPred = false
+            for (u in _users) {
+                if (u.isTerminator()) {
+                    if (let Some(ownerBb) <- u._owner) {
+                        if (ownerBb == bb) {
+                            stillPred = true
+                            break
+                        }
+                    }
+                }
+            }
+            if (!stillPred) {
+                _predecessors.removeIf({ p => p == bb })
+            }
         }
     }
 

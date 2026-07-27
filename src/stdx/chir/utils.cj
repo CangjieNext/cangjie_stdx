@@ -295,8 +295,10 @@ internal func getInstType(genericType: Type, f: Value, funcCallCtx: FuncCallCont
     }
     var replaceTable: HashMap<GenericType, Type> = HashMap<GenericType, Type>()
     let instParentType = getInstParentCustomTypeOfCallee(f, funcCallCtx)
-    if (let Some(ct) <- (instParentType as CustomType)) {
-        replaceTable = getInstMapFromCurDefAndExDefToCurType(ct)
+    if (let Some(parentTy) <- instParentType) {
+        if (let Some(ct) <- (parentTy as CustomType)) {
+            replaceTable = getInstMapFromCurDefAndExDefToCurType(ct)
+        }
     }
     for (i in 0..genericTypeParams.size) {
         let genericTypeParam = genericTypeParams[i]

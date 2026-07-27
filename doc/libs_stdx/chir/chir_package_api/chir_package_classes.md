@@ -8138,6 +8138,92 @@ main() {
 visitor_done
 ```
 
+## class TypeVisitor
+
+```cangjie
+public abstract class TypeVisitor {}
+```
+
+功能：CHIR 类型节点的**抽象访问器**。按深度优先顺序访问类型及其 `typeArgs`；子类可重写 [`action`](#func-actiontype) 以观察每个类型节点，`walk` 根据返回的 [`TypeActionMode`](chir_package_enums.md#enum-typeactionmode) 决定继续、跳过或终止。
+
+### func walk(Type)
+
+```cangjie
+public func walk(ty: Type): Unit
+```
+
+功能：递归遍历给定类型及其类型实参；遇到 `STOP` 状态时提前终止。
+
+参数：
+
+- ty: [Type](#class-type) - 待遍历的根类型。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let i32 = IntType.getInt32()
+    let ft = FuncType.get([i32], i32)
+    println("walk_Type: ${ft.typeArgs.size}")
+}
+```
+
+运行结果：
+
+```text
+walk_Type: 2
+```
+
+### func action(Type)
+
+```cangjie
+public open func action(ty: Type): TypeActionMode
+```
+
+功能：对每个访问到的类型节点调用，决定是否继续遍历。默认返回 `TypeActionMode.CONTINUE`；子类可重写以实现自定义观察逻辑、跳过子节点或提前终止。
+
+参数：
+
+- ty: [Type](#class-type) - 当前类型节点。
+
+返回值：
+
+- [TypeActionMode](chir_package_enums.md#enum-typeactionmode) - 访问器控制模式（`CONTINUE` 继续遍历子类型，`SKIP` 跳过当前类型的子节点，`STOP` 终止遍历）。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+class MyTypeVisitor <: TypeVisitor {
+    public open func action(ty: Type): TypeActionMode {
+        println(ty.toString().size > 0)
+        return TypeActionMode.CONTINUE
+    }
+}
+
+main() {
+    let i32 = IntType.getInt32()
+    let ft = FuncType.get([i32], i32)
+    let v = MyTypeVisitor()
+    v.walk(ft)
+    println("type_visitor_done")
+}
+```
+
+运行结果：
+
+```text
+true
+true
+true
+type_visitor_done
+```
+
 ## class FuncCallContext
 
 ```cangjie
@@ -17816,14 +17902,14 @@ op_eq_MultiBranch: true
 ## class NumericCastBase
 
 ```cangjie
-sealed abstract class NumericCastBase <: Expression & Equatable<NumericCastBase> {}
+sealed abstract class NumericCastBase <: TypeCast & Equatable<NumericCastBase> {}
 ```
 
 功能：数值类型转换表达式的抽象基类，是 [NumericCast](#class-numericcast)、[TryNumericCast](#class-trynumericcast) 的父类型，提供溢出策略的查询与设置能力。
 
 父类型：
 
-- [Expression](#class-expression)
+- [TypeCast](#class-typecast)
 - Equatable\<[NumericCastBase](#class-numericcastbase)>
 
 ### prop overflow
@@ -19857,7 +19943,7 @@ op_eq_Tuple: true
 sealed abstract class TypeCast <: Expression & Equatable<TypeCast> {}
 ```
 
-功能：类型转换表达式的抽象基类，是 [Box](#class-box)、[StaticCast](#class-staticcast)、[CastToConcrete](#class-casttoconcrete)、[CastToGeneric](#class-casttogeneric) 等的父类型，提供源值、源类型与目标类型的查询能力。
+功能：类型转换表达式的抽象基类，是 [Box](#class-box)、[StaticCast](#class-staticcast)、[CastToConcrete](#class-casttoconcrete)、[CastToGeneric](#class-casttogeneric)、[NumericCastBase](#class-numericcastbase) 等的父类型，提供源值、源类型与目标类型的查询能力。
 
 父类型：
 
@@ -22689,6 +22775,47 @@ main() {
 createGoTo: true
 ```
 
+### func createInout(Type, Value)
+
+```cangjie
+public func createInout(retTy: Type, param: Value): Intrinsic
+```
+
+功能：创建 `inout` 参数内建调用表达式。
+
+参数：
+
+- retTy: Type - 返回类型，通常为引用类型。
+- param: Value - 传入的参数值。
+
+返回值：
+
+- [Intrinsic](#class-intrinsic) - `inout` 内建调用表达式。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let builder = CHIRBuilder(InsertPosition.AtEnd(block))
+    let alloc = builder.createAllocate(IntType.getInt32())
+    let expr = builder.createInout(RefType.get(IntType.getInt32()), alloc.result)
+    println("createInout: ${expr.toString().size > 0}")
+}
+```
+
+运行结果：
+
+```text
+createInout: true
+```
+
 ### func createInstanceOf(Value, Type)
 
 ```cangjie
@@ -23860,6 +23987,52 @@ main() {
 
 ```text
 createTryBinarySub: true
+```
+
+### func createTryInout(Type, Value, Block, Block)
+
+```cangjie
+public func createTryInout(retTy: Type, param: Value, normal: Block, err: Block): TryIntrinsic
+```
+
+功能：创建带异常处理的 `inout` 参数内建调用表达式。
+
+参数：
+
+- retTy: Type - 返回类型，通常为引用类型。
+- param: Value - 传入的参数值。
+- normal: Block - 正常分支目标基本块。
+- err: Block - 异常分支目标基本块。
+
+返回值：
+
+- [TryIntrinsic](#class-tryintrinsic) - 带异常处理的 `inout` 内建调用表达式。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let bg = f.body.getOrThrow()
+    let entryBlock = bg.entryBlock
+    let normalBlock = bg.appendBlock()
+    let errBlock = bg.appendBlock()
+    let builder = CHIRBuilder(InsertPosition.AtEnd(entryBlock))
+    let alloc = builder.createAllocate(IntType.getInt32())
+    let expr = builder.createTryInout(RefType.get(IntType.getInt32()), alloc.result, normalBlock, errBlock)
+    println("createTryInout: ${expr.toString().size > 0}")
+}
+```
+
+运行结果：
+
+```text
+createTryInout: true
 ```
 
 ### func createTryInvoke(Type, InvokeCallContext, Block, Block)
