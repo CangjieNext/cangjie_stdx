@@ -9,33 +9,40 @@
 package stdx.crypto.digest
 
 import std.crypto.digest.Digest
+import std.sync.Mutex
 import stdx.crypto.common.CryptoException
 
 public class SM3 <: Digest {
+    private static let lock = Mutex()
     private var sm3Ctx = CPointer<Unit>()
     private var hasFinished = false
 
     public init() {
         unsafe {
-            sm3Ctx = mdCtxNew()
-            if (sm3Ctx.isNull()) {
+            let newCtx = mdCtxNew()
+            if (newCtx.isNull()) {
                 throw CryptoException("SM3 init failed due to create ctx error.")
             }
             try {
-                var ret = digestInitEx(sm3Ctx, sm3())
+                var ret = digestInitEx(newCtx, sm3())
                 if (ret != 1) {
                     throw CryptoException("SM3 init failed due to inner error.")
                 }
             } catch (e: Exception) {
-                mdCtxFree(sm3Ctx)
+                mdCtxFree(newCtx)
                 throw e
             }
+            sm3Ctx = newCtx
         }
         hasFinished = false
     }
     ~init() {
-        if (!sm3Ctx.isNull()) {
-            mdCtxFree(sm3Ctx)
+        synchronized(lock) {
+            if (!sm3Ctx.isNull()) {
+                let ctx = sm3Ctx
+                sm3Ctx = CPointer<Unit>()
+                mdCtxFree(ctx)
+            }
         }
     }
     public prop size: Int64 {
@@ -57,10 +64,12 @@ public class SM3 <: Digest {
     }
 
     public func write(buffer: Array<Byte>): Unit {
-        if (hasFinished) {
-            throw CryptoException("SM3 write failed, digest calculation has been completed.")
+        synchronized(lock) {
+            if (hasFinished) {
+                throw CryptoException("SM3 write failed, digest calculation has been completed.")
+            }
+            sm3Update(sm3Ctx, buffer)
         }
-        sm3Update(sm3Ctx, buffer)
     }
 
     public func finish(): Array<Byte> {
@@ -70,37 +79,42 @@ public class SM3 <: Digest {
     }
 
     public func finish(to!: Array<Byte>): Unit {
-        if (hasFinished) {
-            throw CryptoException("SM3 finish failed, digest calculation has been completed.")
+        synchronized(lock) {
+            if (hasFinished) {
+                throw CryptoException("SM3 finish failed, digest calculation has been completed.")
+            }
+            if (to.size != size) {
+                throw CryptoException("The length of output is not equal to the digest length.")
+            }
+            sm3Final(sm3Ctx, to)
+            hasFinished = true
         }
-        if (to.size != size) {
-            throw CryptoException("The length of output is not equal to the digest length.")
-        }
-        sm3Final(sm3Ctx, to)
-        hasFinished = true
     }
 
     public func reset(): Unit {
-        unsafe {
-            if (!sm3Ctx.isNull()) {
-                mdCtxFree(sm3Ctx)
-                sm3Ctx = CPointer<Unit>()
-            }
-            sm3Ctx = mdCtxNew()
-            if (sm3Ctx.isNull()) {
-                throw CryptoException("SM3 reset failed due to create ctx error.")
-            }
-            try {
-                var res = digestInitEx(sm3Ctx, sm3())
-                if (res != 1) {
-                    throw CryptoException("SM3 reset failed due to inner error.")
+        synchronized(lock) {
+            unsafe {
+                let newCtx = mdCtxNew()
+                if (newCtx.isNull()) {
+                    throw CryptoException("SM3 reset failed due to create ctx error.")
                 }
-            } catch (e: Exception) {
-                mdCtxFree(sm3Ctx)
-                throw e
+                try {
+                    var res = digestInitEx(newCtx, sm3())
+                    if (res != 1) {
+                        throw CryptoException("SM3 reset failed due to inner error.")
+                    }
+                } catch (e: Exception) {
+                    mdCtxFree(newCtx)
+                    throw e
+                }
+                let oldCtx = sm3Ctx
+                sm3Ctx = newCtx
+                if (!oldCtx.isNull()) {
+                    mdCtxFree(oldCtx)
+                }
             }
+            hasFinished = false
         }
-        hasFinished = false
     }
 }
 
