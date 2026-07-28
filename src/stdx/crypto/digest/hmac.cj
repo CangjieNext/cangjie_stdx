@@ -9,6 +9,7 @@
 package stdx.crypto.digest
 
 import std.crypto.digest.Digest
+import std.sync.Mutex
 import stdx.crypto.common.CryptoException
 
 public struct HashType <: ToString & Equatable<HashType> {
@@ -102,6 +103,8 @@ func getHash(algorithm: HashType): () -> Digest {
  * init、write、finish reset Combined use for digest encryption.
  */
 public class HMAC <: Digest {
+    // Keep the lock static so thread safety does not change the layout of this public class.
+    private static let ctxLock: Mutex = Mutex()
     private var ctxPtr: CPointer<Unit>
     private var hashName: String
     private var hash: Digest
@@ -177,10 +180,15 @@ public class HMAC <: Digest {
     }
 
     ~init() {
-        if (!this.hasFinished) {
-            hmacCtxFree(this.ctxPtr)
+        synchronized(ctxLock) {
+            let ctx = this.ctxPtr
+            this.ctxPtr = CPointer<Unit>()
+            this.hasFinished = true
+            if (!ctx.isNull()) {
+                hmacCtxFree(ctx)
+            }
+            key.fill(0)
         }
-        key.fill(0)
     }
 
     /*
@@ -191,10 +199,12 @@ public class HMAC <: Digest {
      * @throw CryptoException
      */
     public func write(buffer: Array<Byte>): Unit {
-        if (this.hasFinished) {
-            throw CryptoException("HMAC write failed, digest calculation has been completed.")
+        synchronized(ctxLock) {
+            if (this.hasFinished) {
+                throw CryptoException("HMAC write failed, digest calculation has been completed.")
+            }
+            hmacUpdateC(this.ctxPtr, buffer, UIntNative(buffer.size))
         }
-        hmacUpdateC(this.ctxPtr, buffer, UIntNative(buffer.size))
     }
 
     /*
@@ -210,15 +220,22 @@ public class HMAC <: Digest {
     }
 
     public func finish(to!: Array<Byte>): Unit {
-        if (this.hasFinished) {
-            throw CryptoException("HMAC finish failed, digest calculation has been completed.")
+        synchronized(ctxLock) {
+            if (this.hasFinished) {
+                throw CryptoException("HMAC finish failed, digest calculation has been completed.")
+            }
+            if (to.size != size) {
+                throw CryptoException("The length of output is not equal to the digest length.")
+            }
+            let ctx = this.ctxPtr
+            this.ctxPtr = CPointer<Unit>()
+            this.hasFinished = true
+            try {
+                hmacFinalC(ctx, to)
+            } finally {
+                hmacCtxFree(ctx)
+            }
         }
-        if (to.size != size) {
-            throw CryptoException("The length of output is not equal to the digest length.")
-        }
-        hmacFinalC(this.ctxPtr, to)
-        this.hasFinished = true
-        this.ctxPtr = CPointer<Unit>()
     }
 
     /*
@@ -227,16 +244,26 @@ public class HMAC <: Digest {
      * @throw CryptoException
      */
     public func reset(): Unit {
-        if (!this.hasFinished) {
-            hmacCtxFree(this.ctxPtr)
+        synchronized(ctxLock) {
+            let oldCtx = this.ctxPtr
+            this.ctxPtr = CPointer<Unit>()
+            this.hasFinished = true
+            if (!oldCtx.isNull()) {
+                hmacCtxFree(oldCtx)
+            }
+            let newCtx = hmacCtxNew()
+            if (newCtx.isNull()) {
+                throw CryptoException("HMAC malloc failed.")
+            }
+            try {
+                hmacInitC(newCtx, this.key, Int32(this.key.size), this.hashName)
+            } catch (e: Exception) {
+                hmacCtxFree(newCtx)
+                throw e
+            }
+            this.ctxPtr = newCtx
+            this.hasFinished = false
         }
-        var ctxPtr = hmacCtxNew()
-        if (ctxPtr.isNull()) {
-            throw CryptoException("HMAC malloc failed.")
-        }
-        this.ctxPtr = ctxPtr
-        hmacInitC(this.ctxPtr, this.key, Int32(this.key.size), this.hashName)
-        this.hasFinished = false
     }
 
     /*
@@ -315,7 +342,6 @@ func hmacFinalC(ctx: CPointer<Unit>, md: Array<Byte>): Unit {
         } finally {
             releaseArrayRawData(mdptr)
         }
-        hmacCtxFree(ctx)
         checkError(dynMsgPtr)
         if (res != 1) {
             throw CryptoException("HMAC finish failed.")
