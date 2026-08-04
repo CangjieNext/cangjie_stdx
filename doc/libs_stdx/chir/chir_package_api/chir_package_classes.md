@@ -8315,7 +8315,7 @@ public init(caller: Value, funcCallCtx: FuncCallContext, method: Function,
 - caller: Value - 实例调用时为接收对象；静态虚调用时为 RTTI 值（如 `GetRTTIStatic` 的结果）。
 - funcCallCtx: [FuncCallContext](#class-funccallcontext) - 函数调用的实参与类型实参上下文。
 - method: [Function](#class-function) - 被调虚方法，语义类似 `Apply` 中的 `callee`。
-- overflowStrategy!: [OverflowStrategy](#enum-overflowstrategy) - overflow 策略，默认为 `NA`；非 `NA` 时会影响 `InvokeBase.methodName` 的前缀。
+- overflowStrategy!: [OverflowStrategy](./chir_package_enums.md#enum-overflowstrategy) - overflow 策略，默认为 `NA`；非 `NA` 时会影响 `InvokeBase.methodName` 的前缀。
 
 示例：
 
@@ -10149,6 +10149,7 @@ fn_body_after: true
 fn_invalid: true
 pkg_fn_count: 1
 ```
+
 ### func isCompilerAdd()
 
 ```cangjie

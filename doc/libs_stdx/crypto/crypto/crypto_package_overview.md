@@ -22,6 +22,9 @@ crypto 包提供安全随机数功能和提供国密 SM4 对称加解密。
     - 如果无法通过上面的方式安装，可自行下载 OpenSSL 3.x.x 源码编译安装软件包，并确保安装目录下含有 libcrypto.dylib 和 libcrypto.3.dylib 这两个动态库文件，然后可选择下面任意一种方式来保证系统链接器可以找到这些文件：
         - 在系统未安装 OpenSSL 的场景，安装时选择直接安装到系统路径下；
         - 安装在自定义目录的场景，将这些文件所在目录设置到环境变量 DYLD_LIBRARY_PATH 以及 LIBRARY_PATH 中。
+    > **注意：**
+ 	>
+ 	> macOS 系统自带的 OpenSSL 库不完整，不符合 stdx 的需求，使用系统自带的库会导致未知错误。用户必须按照以上步骤正确安装完整的 OpenSSL 库并配置环境变量。
 
 - 对于 Android 操作系统，可参考以下方式：
     - 由于 Android 系统默认自带的 OpenSSL 是裁剪版本，部分接口可能找不到符号而抛出异常，因此需要用户自行编译安装完整的 OpenSSL 3.x.x 版本；
@@ -31,7 +34,9 @@ crypto 包提供安全随机数功能和提供国密 SM4 对称加解密。
 - 对于 HarmonyOS 操作系统，可参考以下方式：
     - 由于 HarmonyOS 6.0 及以上版本系统限制，stdx 无法直接调用系统内置的 OpenSSL，需要用户自行编译 HarmonyOS 的 OpenSSL 动态库并打包到应用中；
     - 编译 HarmonyOS 的 OpenSSL 可参考 [OHOS 仓颉 SDK 构建指导书](https://gitcode.com/Cangjie/cangjie_build/blob/main/docs/linux_ohos_toolchain.md)；
-    - 将编译好的动态库文件 libcrypto_openssl.z.so 和 libssl_openssl.z.so 打包到应用中，并确保应用运行时能够正确加载这些库文件。
+    - 将编译好的动态库文件 libcrypto_openssl.z.so 和 libssl_openssl.z.so 拷贝到应用模块的 libs/arm64-v8a（真机）或 libs/x86_64（模拟器）目录下，DevEco Studio 会将其打包到应用包的对应目录中，确保应用运行时能够正确加载这些库文件。
+    - 另外，使用 DevEco Studio 仓颉插件 DevEco Studio-Cangjie Plugin 26.0.0 Beta1 及以上版本时，在动态链接 stdx 库的场景下，还需要把 stdx 模块中的 libcangjie-dynamicLoader-opensslFFI.so 打包到应用包中，该动态库用于链接 OpenSSL。
+    - 用户可将本地仓颉 stdx 库中的 libcangjie-dynamicLoader-opensslFFI.so 拷贝到应用模块的 libs/arm64-v8a（真机）或 libs/x86_64（模拟器）目录下，DevEco Studio 会将其打包到应用包的对应目录中。
 
 > **说明：**
 >
