@@ -119,7 +119,14 @@ main(): Int64 {
 }
 
 public func stagePreBuild(pyCommand: String): Int64 {
-    return execute(pyCommand, "cjpm_build.py", "build", "--build-stage", "preBuild")
+    let ret = execute(pyCommand, "cjpm_build.py", "build", "--build-stage", "preBuild")
+    if (ret != 0) {
+        return ret
+    }
+    // Build a private, temporary flatbuffers static library from the compiler SDK sources.
+    // Artifacts stay under build-script-cache/ (not target/), and are only consumed by
+    // stdx.chir / stdx.syntax via bin-dependencies. Users must not depend on flatbuffers.
+    return buildPrivateFlatbuffers()
 }
 
 public func stagePostBuild(pyCommand: String): Int64 {
@@ -127,5 +134,61 @@ public func stagePostBuild(pyCommand: String): Int64 {
 }
 
 public func stagePreClean(pyCommand: String): Int64 {
+    // Drop the private flatbuffers cache along with other cjpm clean work.
+    try {
+        let cacheDir = Path("build-script-cache/flatbuffers-private")
+        if (exists(cacheDir)) {
+            remove(cacheDir)
+        }
+    } catch (_: Exception) {}
     return execute(pyCommand, "cjpm_build.py", "clean")
+}
+
+/**
+ * Compiles $CANGJIE_HOME/third_party/flatbuffers/cangjie into
+ * build-script-cache/flatbuffers-private/flatbuffers/{flatbuffers.cjo,libflatbuffers.a}.
+ */
+func buildPrivateFlatbuffers(): Int64 {
+    let home = getVariable("CANGJIE_HOME") ?? ""
+    if (home.isEmpty()) {
+        println("Error: CANGJIE_HOME is not set; cannot build private flatbuffers library.")
+        return 1
+    }
+    let srcDir = home + "/third_party/flatbuffers/cangjie"
+    if (!exists(Path(srcDir))) {
+        println("Error: flatbuffers sources not found: ${srcDir}")
+        return 1
+    }
+
+    let outDir = "build-script-cache/flatbuffers-private/flatbuffers"
+    let outLib = outDir + "/libflatbuffers.a"
+    let outCjo = outDir + "/flatbuffers.cjo"
+
+    try {
+        Directory.create(Path(outDir), recursive: true)
+    } catch (e: Exception) {
+        println("Error: failed to create ${outDir}: ${e}")
+        return 1
+    }
+
+    println("building private flatbuffers from ${srcDir} ...")
+    let code = execute(
+        "cjc",
+        "--no-sub-pkg",
+        "--output-type=staticlib",
+        "-p",
+        srcDir,
+        "--output",
+        outLib,
+        "-O2")
+    if (code != 0) {
+        println("Error: failed to build private flatbuffers (cjc exit ${code})")
+        return code
+    }
+    if (!exists(Path(outLib)) || !exists(Path(outCjo))) {
+        println("Error: private flatbuffers artifacts missing under ${outDir}")
+        return 1
+    }
+    println("private flatbuffers ready: ${outDir}")
+    return 0
 }
