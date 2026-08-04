@@ -8315,7 +8315,7 @@ Parameters:
 - caller: Value - Receiver for instance calls; RTTI value (e.g. result of `GetRTTIStatic`) for static virtual calls.
 - funcCallCtx: [FuncCallContext](#class-funccallcontext) - Function call context for arguments and type arguments.
 - method: [Function](#class-function) - The virtual method being invoked, analogous to `callee` in `Apply`.
-- overflowStrategy!: [OverflowStrategy](#enum-overflowstrategy) - Overflow strategy, default `NA`; when not `NA`, affects the prefix of `InvokeBase.methodName`.
+- overflowStrategy!: [OverflowStrategy](./chir_package_enums.md#enum-overflowstrategy) - Overflow strategy, default `NA`; when not `NA`, affects the prefix of `InvokeBase.methodName`.
 
 Example:
 
@@ -10149,6 +10149,7 @@ fn_body_after: true
 fn_invalid: true
 pkg_fn_count: 1
 ```
+
 ### func isCompilerAdd()
 
 ```cangjie
