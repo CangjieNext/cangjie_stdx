@@ -56,18 +56,21 @@ func roundtrip(key: Array<Byte>, iv: Array<Byte>, plain: Array<Byte>, aad: Array
     }
     assertTrue(rejected, "tampered tag was not rejected (tagSize=${tagSize})")
 
-    // Wrong AAD should fail tag verification. NOTE: this is not asserted
-    // because stdx currently fails to feed AAD into the GCM authentication
-    // path (separate known issue, unrelated to the AEAD control-code fix).
+    // Wrong AAD must fail tag verification. For the empty-AAD case the
+    // wrong AAD must be non-empty so that it differs from the correct one.
+    var wrongAad: Array<Byte> = Array<Byte>(aad.size, repeat: 0)
+    if (wrongAad.size == 0) {
+        wrongAad = Array<Byte>(1, repeat: 0)
+    }
     let decWrongAad = SM4(OperationMode.GCM, key, iv: iv, paddingMode: PaddingMode.NoPadding,
-        aad: Array<Byte>(aad.size, repeat: 0), tagSize: tagSize)
+        aad: wrongAad, tagSize: tagSize)
     var aadRejected = false
     try {
         decWrongAad.decrypt(ciphertext)
     } catch (e: CryptoException) {
         aadRejected = true
     }
-    println("  note: wrong AAD rejected=${aadRejected} (tagSize=${tagSize})")
+    assertTrue(aadRejected, "wrong aad was not rejected (tagSize=${tagSize})")
 }
 
 main() {
