@@ -7,9 +7,11 @@
  */
 
 #include <stdint.h>
+#include <math.h>
 #include "securec.h"
+#include "ryu/ryu.h"
 
-#define FL_TO_STR_MAX 310 /* 310 is the maxlength of double to string size */
+#define RYU_DOUBLE_MAX_OUTPUT 32
 
 extern int64_t CJ_ReadString(const uint8_t* str, int64_t left, int64_t right)
 {
@@ -68,7 +70,103 @@ extern int64_t CJ_ReadString(const uint8_t* str, int64_t left, int64_t right)
     return i;
 }
 
+static int RyuExponentLength(int exponent)
+{
+    int length = exponent < 0 ? 1 : 0;
+    int value = exponent < 0 ? -exponent : exponent;
+    do {
+        length++;
+        value /= 10;
+    } while (value != 0);
+    return length;
+}
+
+static int RyuToJsonNumber(const char* input, int inputLength, char* output)
+{
+    int inputIndex = 0;
+    int outputIndex = 0;
+    const int negative = input[0] == '-';
+    if (negative) {
+        output[outputIndex++] = input[inputIndex++];
+    }
+
+    char digits[17];
+    int digitCount = 0;
+    while (inputIndex < inputLength && input[inputIndex] != 'E') {
+        if (input[inputIndex] != '.') {
+            digits[digitCount++] = input[inputIndex];
+        }
+        inputIndex++;
+    }
+    if (inputIndex == inputLength) {
+        return -1;
+    }
+
+    inputIndex++;
+    int exponentSign = 1;
+    if (input[inputIndex] == '-') {
+        exponentSign = -1;
+        inputIndex++;
+    }
+    int exponent = 0;
+    while (inputIndex < inputLength) {
+        exponent = exponent * 10 + (input[inputIndex++] - '0');
+    }
+    exponent *= exponentSign;
+
+    const int scientificLength = negative + digitCount + (digitCount > 1) + 1 + RyuExponentLength(exponent);
+    // Ryu's exponent applies to the first significant digit: for example,
+    // 1.25E-1 has its decimal point after one digit (0.125).
+    const int decimalPoint = 1 + exponent;
+    const int fixedLength = negative + (decimalPoint <= 0 ? 2 - decimalPoint + digitCount :
+        (decimalPoint < digitCount ? digitCount + 1 : decimalPoint));
+    if (fixedLength > scientificLength) {
+        inputIndex = 0;
+        while (inputIndex < inputLength) {
+            output[inputIndex] = input[inputIndex] == 'E' ? 'e' : input[inputIndex];
+            inputIndex++;
+        }
+        return inputLength;
+    }
+
+    if (decimalPoint <= 0) {
+        output[outputIndex++] = '0';
+        output[outputIndex++] = '.';
+        for (int i = 0; i < -decimalPoint; i++) {
+            output[outputIndex++] = '0';
+        }
+        for (int i = 0; i < digitCount; i++) {
+            output[outputIndex++] = digits[i];
+        }
+        return outputIndex;
+    }
+
+    for (int i = 0; i < digitCount; i++) {
+        if (i == decimalPoint) {
+            output[outputIndex++] = '.';
+        }
+        output[outputIndex++] = digits[i];
+    }
+    for (int i = digitCount; i < decimalPoint; i++) {
+        output[outputIndex++] = '0';
+    }
+    return outputIndex;
+}
+
 extern int64_t CJ_JSON_FloatPrint(const double num, uint8_t* dest, const int64_t destSize)
 {
-    return snprintf_s((char*)dest, (unsigned long)destSize, FL_TO_STR_MAX - 1, "%f", num);
+    if (dest == NULL || destSize < RYU_DOUBLE_MAX_OUTPUT || !isfinite(num)) {
+        return -1;
+    }
+    char ryuOutput[RYU_DOUBLE_MAX_OUTPUT];
+    char jsonOutput[RYU_DOUBLE_MAX_OUTPUT];
+    const int ryuLength = d2s_buffered_n(num, ryuOutput);
+    const int jsonLength = RyuToJsonNumber(ryuOutput, ryuLength, jsonOutput);
+    if (jsonLength <= 0 || jsonLength > destSize) {
+        return -1;
+    }
+    for (int i = 0; i < jsonLength; i++) {
+        dest[i] = (uint8_t)jsonOutput[i];
+    }
+    return jsonLength;
 }
