@@ -110,14 +110,6 @@ extend Float64 <: JsonSerializable {
             }
             w.curPos += printedLen
         }
-        // the result of CJ_JSON_FloatPrint have at least 6 decimal points
-        // there is no out-of-bounds risk
-        while (w.buffer[w.curPos - 1] == b'0') {
-            w.curPos--
-        }
-        if (w.buffer[w.curPos - 1] == b'.') {
-            w.curPos--
-        }
     }
 }
 

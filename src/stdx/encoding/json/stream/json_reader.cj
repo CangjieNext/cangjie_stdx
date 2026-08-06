@@ -9,6 +9,7 @@
 package stdx.encoding.json.stream
 
 import std.io.InputStream
+import std.math.*
 import std.time.*
 
 @FastNative
@@ -1289,7 +1290,13 @@ public class JsonReader {
                 if (overflow) {
                     throw OverflowException("Overflow while reading JSON number.")
                 }
-                return ensureFiniteJsonFloat(result * (10.0 ** exponent))
+                if (exponent > 308) {
+                    throw IllegalStateException("Invalid float detected.")
+                }
+                if (exponent < -324) {
+                    return 0.0
+                }
+                return ensureFiniteJsonFloat(result * pow(10.0, Float64(exponent)))
             }
         }
         return result
