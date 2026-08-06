@@ -154,6 +154,48 @@ public class JsonReader {
     }
 
     /**
+     * Copy the next object member name to a JsonWriter without creating a
+     * decoded String. Whitespace before ':' is normalized just as it is by
+     * JsonWriter.writeName.
+     */
+    public func copyNameTo(writer: JsonWriter): Unit {
+        if (peeked != PEEK_STATE_NAME && peek() != Some(Name)) {
+            throw IllegalStateException("Failed to read name.")
+        }
+        writer.beginRawName()
+        copyString(writer)
+        if (nextNonJsonWhitespace() != b':') {
+            throw IllegalStateException("Missing ':' after name.")
+        }
+        index++
+        availLen--
+        peeked = PEEK_STATE_VALUE
+        writer.endRawName()
+    }
+
+    /**
+     * Fast-path comparison for a short, unescaped object name. The method
+     * never consumes input; names that cross the reader buffer or contain
+     * escapes simply return false and can be copied with copyNameTo.
+     */
+    public func nextNameEquals(name: Array<Byte>): Bool {
+        if (peeked != PEEK_STATE_NAME && peek() != Some(Name)) {
+            return false
+        }
+        if (availLen < name.size + 2 || buffer[index] != b'"' || buffer[index + name.size + 1] != b'"') {
+            return false
+        }
+        var i = 0
+        while (i < name.size) {
+            if (buffer[index + i + 1] != name[i]) {
+                return false
+            }
+            i++
+        }
+        return true
+    }
+
+    /**
      * Return the next token without consuming it.
      * if returns None, means the end of the stream.
      */
@@ -603,11 +645,24 @@ public class JsonReader {
             }
             // JSON scalars cannot contain whitespace. Dropping it here also
             // preserves readValueBytes' behavior of trimming trailing spaces.
-            if (!isJsonWhiteSpace(nextByte)) {
-                writer.writeRawByte(nextByte)
+            if (isJsonWhiteSpace(nextByte)) {
+                index++
+                availLen--
+                continue
             }
-            index++
-            availLen--
+            let spanStart = index
+            while (availLen > 0) {
+                let byte = buffer[index]
+                if (byte == b',' || byte == b']' || byte == b'}' || isJsonWhiteSpace(byte)) {
+                    break
+                }
+                index++
+                availLen--
+            }
+            let spanLength = index - spanStart
+            if (spanLength > 0) {
+                writer.appendRawBytes(buffer, spanStart, spanLength)
+            }
         }
     }
 
@@ -631,9 +686,21 @@ public class JsonReader {
     @OverflowWrapping
     func copyString(writer: JsonWriter) {
         var count = 0
-        var nextByte: Byte
         while (count < 2) {
-            nextByte = readNext()
+            checkBuffer()
+            let spanStart = index
+            while (availLen > 0 && buffer[index] != b'"' && buffer[index] != b'\\') {
+                index++
+                availLen--
+            }
+            let spanLength = index - spanStart
+            if (spanLength > 0) {
+                writer.appendRawBytes(buffer, spanStart, spanLength)
+            }
+            if (availLen <= 0) {
+                continue
+            }
+            let nextByte = readNext()
             writer.writeRawByte(nextByte)
             if (nextByte == b'"') {
                 count++
@@ -824,7 +891,7 @@ public class JsonReader {
     }
 
     @OverflowWrapping
-    func skipName() {
+    public func skipName() {
         if (peeked != PEEK_STATE_NAME) {
             if (peeked != PEEK_STATE_NONE || stacks.top != JsonStateStack.JSON_OBJECT) {
                 throw IllegalStateException("Failed to read name.")
@@ -1177,7 +1244,9 @@ public class JsonReader {
             }
             index++
             availLen--
-            fillInBuf()
+            if (availLen <= 0) {
+                fillInBuf()
+            }
         }
         return sign * result / leftMove
     }
