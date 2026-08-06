@@ -76,6 +76,37 @@ public class JsonWriter {
         curPos++
     }
 
+    /**
+     * Write one already encoded JSON value from a byte array.
+     *
+     * The caller is responsible for supplying valid JSON bytes, just as for
+     * jsonValue. JsonReader uses appendRawBytes after it has entered the value
+     * state so that one value can be appended in several contiguous spans.
+     */
+    public func writeRawBytes(value: Array<Byte>, offset: Int64, length: Int64): JsonWriter {
+        beginRawValue()
+        appendRawBytes(value, offset, length)
+        this
+    }
+
+    func appendRawBytes(value: Array<Byte>, offset: Int64, length: Int64): Unit {
+        if (offset < 0 || length < 0 || offset + length > value.size) {
+            throw IllegalArgumentException("The raw JSON byte range is out of bounds.")
+        }
+        var sourceOffset = offset
+        var remaining = length
+        while (remaining > 0) {
+            if (curPos >= buffer.size) {
+                flushOutBuf()
+            }
+            let copyLen = min(remaining, buffer.size - curPos)
+            value.copyTo(buffer, sourceOffset, curPos, copyLen)
+            sourceOffset += copyLen
+            curPos += copyLen
+            remaining -= copyLen
+        }
+    }
+
     func flushOutBuf() {
         out.write(buffer[0..curPos])
         curPos = 0

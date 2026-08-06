@@ -405,7 +405,12 @@ public class JsonReader {
 
     @OverflowWrapping
     private func readNext(): Byte {
-        fillInBuf(1)
+        if (availLen <= 0) {
+            fillInBuf()
+            if (availLen <= 0) {
+                throw IllegalStateException("The JSON stream ends at an incorrect location.")
+            }
+        }
         let res = buffer[index]
         availLen--
         index++
@@ -721,6 +726,26 @@ public class JsonReader {
         var endTag = end
         var inString = false
         while (true) {
+            // Bytes other than JSON structure markers do not affect nesting or
+            // string state. Copy such a contiguous span with one bulk copy.
+            checkBuffer()
+            let spanStart = index
+            while (availLen > 0) {
+                let nextByte = buffer[index]
+                if (nextByte == b'\\' || nextByte == b'"' || nextByte == b'{' || nextByte == b'[' ||
+                    nextByte == b'}' || nextByte == b']') {
+                    break
+                }
+                index++
+                availLen--
+            }
+            let spanLength = index - spanStart
+            if (spanLength > 0) {
+                writer.appendRawBytes(buffer, spanStart, spanLength)
+            }
+            if (availLen <= 0) {
+                continue
+            }
             let nextByte = readNext()
             writer.writeRawByte(nextByte)
             match (nextByte) {
@@ -825,13 +850,34 @@ public class JsonReader {
 
     func skipSymmetrySegment(start!: Byte, end!: Byte) {
         let depth = stacks.depth
-        if (start == b'[') {
-            startArray()
-        } else {
-            startObject()
-        }
+        startArray()
+        skipSymmetrySegment(end: b']', depth: depth)
+    }
+
+    func skipObject() {
+        let depth = stacks.depth
+        startObject()
+        skipSymmetrySegment(end: b'}', depth: depth)
+    }
+
+    func skipSymmetrySegment(end!: Byte, depth!: Int64) {
         var inString = false
         while (true) {
+            // Ordinary bytes cannot change the JSON nesting state. Move over
+            // them as a span and only inspect quotes, escapes and brackets.
+            checkBuffer()
+            while (availLen > 0) {
+                let nextByte = buffer[index]
+                if (nextByte == b'\\' || nextByte == b'\"' || nextByte == b'{' || nextByte == b'[' ||
+                    nextByte == b'}' || nextByte == b']') {
+                    break
+                }
+                index++
+                availLen--
+            }
+            if (availLen <= 0) {
+                continue
+            }
             let nextByte = readNext()
             match (nextByte) {
                 case b'\\' =>
