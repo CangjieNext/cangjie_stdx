@@ -68,6 +68,18 @@ public class JsonWriter {
         beforeValue()
     }
 
+    // JsonReader.copyNameTo uses this pair to preserve the already encoded
+    // member name without decoding it into a String first.
+    func beginRawName(): Unit {
+        beforeName()
+    }
+
+    func endRawName(): Unit {
+        writeRawByte(b':')
+        haveName = true
+        useSpaceAfterSeparators()
+    }
+
     func writeRawByte(value: Byte): Unit {
         if (curPos >= buffer.size) {
             flushOutBuf()
@@ -86,6 +98,21 @@ public class JsonWriter {
     public func writeRawBytes(value: Array<Byte>, offset: Int64, length: Int64): JsonWriter {
         beginRawValue()
         appendRawBytes(value, offset, length)
+        this
+    }
+
+    /**
+     * Write an ASCII/UTF-8 JSON member name whose bytes require no escaping.
+     *
+     * This is intended for static protocol field names. The caller is
+     * responsible for providing valid, unescaped JSON-string content.
+     */
+    public func writeRawName(value: Array<Byte>, offset: Int64, length: Int64): JsonWriter {
+        beginRawName()
+        writeRawByte(b'"')
+        appendRawBytes(value, offset, length)
+        writeRawByte(b'"')
+        endRawName()
         this
     }
 

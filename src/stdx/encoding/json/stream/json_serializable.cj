@@ -10,7 +10,6 @@ package stdx.encoding.json.stream
 
 import std.collection.*
 import std.collection.concurrent.ConcurrentHashMap
-import std.convert.Parsable
 
 @FastNative
 foreign func CJ_JSON_FloatPrint(num: Float64, dest: CPointer<UInt8>, destSize: Int64): Int64
@@ -23,11 +22,6 @@ foreign func memcpy_s(dest: CPointer<UInt8>, destMax: UIntNative, src: CPointer<
 
 public interface JsonSerializable {
     func toJson(w: JsonWriter): Unit
-}
-
-func isInvalidJsonFloat(buffer: Array<UInt8>, start: Int64, length: Int64): Bool {
-    let value = Float64.parse(String.fromUtf8(buffer[start..start+length]))
-    return value.isNaN() || value.isInf()
 }
 
 extend Int64 <: JsonSerializable {
@@ -104,11 +98,14 @@ extend Float64 <: JsonSerializable {
     @OverflowWrapping
     public func toJson(w: JsonWriter): Unit {
         w.beforeValue()
+        if (this.isNaN() || this.isInf()) {
+            throw IllegalStateException("Failed to serialize JSON float.")
+        }
         unsafe {
             let dest = acquireArrayRawData(w.buffer)
             let printedLen = CJ_JSON_FloatPrint(this, dest.pointer + w.curPos, w.buffer.size - w.curPos)
             releaseArrayRawData(dest)
-            if (printedLen <= 0 || isInvalidJsonFloat(w.buffer, w.curPos, printedLen)) {
+            if (printedLen <= 0) {
                 throw IllegalStateException("Failed to serialize JSON float.")
             }
             w.curPos += printedLen
