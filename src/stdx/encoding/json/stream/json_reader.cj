@@ -896,6 +896,21 @@ public class JsonReader {
         peeked = PEEK_STATE_VALUE
     }
 
+    /**
+     * Discard the unread JSON bytes without parsing their structure.
+     *
+     * This is intended for protocols that have already validated an early
+     * response marker but still need to consume the HTTP body before reusing
+     * the connection. Bytes already prefetched in this reader are dropped;
+     * the reader buffer is then reused to drain the wrapped input stream.
+     */
+    public func discardRemaining(): Unit {
+        availLen = 0
+        index = 0
+        while (inputStream.read(buffer) > 0) {}
+        peeked = PEEK_STATE_NONE
+    }
+
     func skipArray() {
         let depth = stacks.depth
         startArray()
