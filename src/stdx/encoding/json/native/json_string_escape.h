@@ -20,4 +20,10 @@ int64_t CJ_JSON_StringEscapeCharNumGet(const uint8_t* input, int64_t strlen, boo
 
 int64_t CJ_JSON_WriteBufferAppendUint(uint8_t* buffer, const uint64_t num);
 
+// Parse Int64 directly from byte array without creating a temporary string.
+int64_t CJ_JSON_ParseInt64(const uint8_t* data, int64_t start, int64_t end);
+
+// Parse Float64 directly from byte array without creating a temporary string.
+double CJ_JSON_ParseFloat64(const uint8_t* data, int64_t start, int64_t end);
+
 #endif
