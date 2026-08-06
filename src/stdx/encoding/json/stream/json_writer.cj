@@ -62,6 +62,20 @@ public class JsonWriter {
         this
     }
 
+    // JsonReader.copyValueTo calls these two functions to append one already
+    // encoded JSON value without materializing it as a String first.
+    func beginRawValue(): Unit {
+        beforeValue()
+    }
+
+    func writeRawByte(value: Byte): Unit {
+        if (curPos >= buffer.size) {
+            flushOutBuf()
+        }
+        buffer[curPos] = value
+        curPos++
+    }
+
     func flushOutBuf() {
         out.write(buffer[0..curPos])
         curPos = 0
