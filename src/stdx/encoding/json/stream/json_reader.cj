@@ -130,6 +130,30 @@ public class JsonReader {
     }
 
     /**
+     * Copy the next JSON value to a JsonWriter without creating an intermediate
+     * Array<Byte> or String. The copied value keeps its original JSON encoding.
+     */
+    public func copyValueTo(writer: JsonWriter): Unit {
+        beforeRead()
+        if (let Some(token) <- peek()) {
+            writer.beginRawValue()
+            match (token) {
+                case JsonNull | JsonBool | JsonNumber =>
+                    copyValue(writer)
+                case JsonString =>
+                    copyString(writer)
+                case BeginArray =>
+                    copyArray(writer)
+                case BeginObject =>
+                    copyObject(writer)
+                case Name | EndArray | EndObject =>
+                    throw IllegalStateException("The next token is not a JSON value.")
+            }
+            afterRead()
+        }
+    }
+
+    /**
      * Return the next token without consuming it.
      * if returns None, means the end of the stream.
      */
@@ -567,6 +591,22 @@ public class JsonReader {
     }
 
     @OverflowWrapping
+    func copyValue(writer: JsonWriter) {
+        while (let Some(nextByte) <- peekNext()) {
+            if (nextByte == b',' || nextByte == b']' || nextByte == b'}') {
+                break
+            }
+            // JSON scalars cannot contain whitespace. Dropping it here also
+            // preserves readValueBytes' behavior of trimming trailing spaces.
+            if (!isJsonWhiteSpace(nextByte)) {
+                writer.writeRawByte(nextByte)
+            }
+            index++
+            availLen--
+        }
+    }
+
+    @OverflowWrapping
     func nextString(sb: StringBuffer) {
         var count = 0
         var nextByte: Byte
@@ -579,6 +619,23 @@ public class JsonReader {
             }
             if (nextByte == b'\\') {
                 sb.append(readNext())
+            }
+        }
+    }
+
+    @OverflowWrapping
+    func copyString(writer: JsonWriter) {
+        var count = 0
+        var nextByte: Byte
+        while (count < 2) {
+            nextByte = readNext()
+            writer.writeRawByte(nextByte)
+            if (nextByte == b'"') {
+                count++
+                continue
+            }
+            if (nextByte == b'\\') {
+                writer.writeRawByte(readNext())
             }
         }
     }
@@ -607,6 +664,14 @@ public class JsonReader {
 
     func nextObject(sb: StringBuffer) {
         nextSymmetrySegment(sb, start: b'{', end: b'}')
+    }
+
+    func copyArray(writer: JsonWriter) {
+        copySymmetrySegment(writer, start: b'[', end: b']')
+    }
+
+    func copyObject(writer: JsonWriter) {
+        copySymmetrySegment(writer, start: b'{', end: b'}')
     }
 
     func nextSymmetrySegment(sb: StringBuffer, start!: Byte, end!: Byte) {
@@ -646,6 +711,47 @@ public class JsonReader {
         }
 
         // Non-symmetry end of segment, throw error
+        if (endTag != end) {
+            throw IllegalStateException("Failed to read symmetry end of '${Rune(start)}'.")
+        }
+    }
+
+    func copySymmetrySegment(writer: JsonWriter, start!: Byte, end!: Byte) {
+        let depth = stacks.depth
+        var endTag = end
+        var inString = false
+        while (true) {
+            let nextByte = readNext()
+            writer.writeRawByte(nextByte)
+            match (nextByte) {
+                case b'\\' =>
+                    if (inString) {
+                        writer.writeRawByte(readNext())
+                        continue
+                    }
+                    throw IllegalStateException("Characters not expected: '\\'.")
+                case b'"' => inString = !inString
+                case b'{' | b'[' =>
+                    if (!inString) {
+                        stacks.put(tagStackState(nextByte))
+                    }
+                case b'}' | b']' =>
+                    if (inString) {
+                        continue
+                    }
+                    if (stacks.top == tagStackState(nextByte)) {
+                        stacks.pop()
+                        if (stacks.depth == depth) {
+                            endTag = nextByte
+                            break
+                        }
+                        continue
+                    }
+                    throw IllegalStateException("Failed to read symmetry end of '${Rune(start)}'.")
+                case _ => ()
+            }
+        }
+
         if (endTag != end) {
             throw IllegalStateException("Failed to read symmetry end of '${Rune(start)}'.")
         }
