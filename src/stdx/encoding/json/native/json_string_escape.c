@@ -157,18 +157,71 @@ int64_t CJ_JSON_StringEscapeCharNumGet(const uint8_t* input, int64_t strlen, boo
     return escapeCharacters;
 }
 
+int64_t CJ_JSON_ParseInt64(const uint8_t* data, int64_t start, int64_t end)
+{
+    if (start >= end) {
+        return 0;
+    }
+
+    int64_t result = 0;
+    int64_t sign = 1;
+    int64_t i = start;
+    if (data[i] == '-') {
+        sign = -1;
+        i++;
+    } else if (data[i] == '+') {
+        i++;
+    }
+
+    if (i < end && data[i] == '0' && i + 1 < end) {
+        uint8_t prefix = data[i + 1];
+        int64_t base = 0;
+        if (prefix == 'b' || prefix == 'B') {
+            base = 2;
+        } else if (prefix == 'o' || prefix == 'O') {
+            base = 8;
+        } else if (prefix == 'x' || prefix == 'X') {
+            base = 16;
+        }
+        if (base != 0) {
+            i += 2;
+            for (; i < end; i++) {
+                uint8_t c = data[i];
+                int64_t digit = -1;
+                if (c >= '0' && c <= '9') {
+                    digit = c - '0';
+                } else if (c >= 'a' && c <= 'f') {
+                    digit = c - 'a' + 10;
+                } else if (c >= 'A' && c <= 'F') {
+                    digit = c - 'A' + 10;
+                }
+                if (digit >= 0 && digit < base) {
+                    result = result * base + digit;
+                }
+            }
+            return sign * result;
+        }
+    }
+
+    for (; i < end; i++) {
+        uint8_t c = data[i];
+        if (c >= '0' && c <= '9') {
+            result = result * 10 + (c - '0');
+        }
+    }
+    return sign * result;
+}
+
 double CJ_JSON_ParseFloat64(const uint8_t* data, int64_t start, int64_t end)
 {
     if (start >= end) {
         return 0.0;
     }
 
-    // Create a null-terminated temporary buffer
     int64_t len = end - start;
-    char stackTemp[512];
-    char* temp = stackTemp;
-
-    if (len >= (int64_t)sizeof(stackTemp)) {
+    char stack_temp[512];
+    char* temp = stack_temp;
+    if (len >= (int64_t)sizeof(stack_temp)) {
         if ((uint64_t)len >= SIZE_MAX) {
             return HUGE_VAL;
         }
@@ -179,14 +232,14 @@ double CJ_JSON_ParseFloat64(const uint8_t* data, int64_t start, int64_t end)
     }
 
     if (memcpy_s(temp, (size_t)len + 1, data + start, (size_t)len) != EOK) {
-        if (temp != stackTemp) {
+        if (temp != stack_temp) {
             free(temp);
         }
         return HUGE_VAL;
     }
     temp[len] = '\0';
     double result = strtod(temp, NULL);
-    if (temp != stackTemp) {
+    if (temp != stack_temp) {
         free(temp);
     }
     return result;
