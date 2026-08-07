@@ -133,7 +133,7 @@ stdx includes several packages that offer rich extension functionalities:
 | [crypto.kit](./crypto/kit/crypto_kit_package_overview.md)                      | The kit package provides a default implementation of [CryptoKit](./crypto/common/crypto_common_package_api/crypto_common_package_interfaces.md#interface-cryptokit), along with the capabilities of a random number generator and decoding DER and PEM. |
 | [crypto.x509](./crypto/x509/x509_package_overview.md)                        | The x509 package provides functionalities for handling digital certificates. |
 | [effect](./effect/effect_package_overview.md)                                | The effect package is a user-level API in Cangjie for using Effect Handlers. It is an experimental feature and requires the use of a Cangjie compiler that supports this mechanism. |
-| [encoding.base64](./encoding/base64/base64_package_overview.md)                        | The base package provides Base64 encoding and decoding for strings.|
+| [encoding.base64](./encoding/base64/base64_package_overview.md)                        | The base64 package provides Base64 encoding and decoding for strings.|
 | [encoding.hex](./encoding/hex/hex_package_overview.md)                        | The hex package provides Hex encoding and decoding for strings.|
 | [encoding.json](./encoding/json/json_package_overview.md)                        | The json package is used for processing JSON data, enabling mutual conversion between String, JsonValue, and DataModel.|
 | [encoding.json.stream](./encoding/json_stream/json_stream_package_overview.md)                        | The json.stream package is primarily used for mutual conversion between Cangjie objects and JSON data streams.|
