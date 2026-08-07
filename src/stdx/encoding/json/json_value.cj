@@ -81,6 +81,21 @@ sealed abstract class JsonValue <: ToString {
     }
 
     /**
+     * Convert JsonValue to a JSON string using the caller-provided output capacity.
+     *
+     * @param capacity Initial output-buffer capacity in bytes.
+     * @return json-converted String.
+     */
+    public func toStringWithCapacity(capacity: Int64): String {
+        if (capacity < 0) {
+            throw IllegalArgumentException("Capacity cannot be negative.")
+        }
+        let buff = WriteBuffer(capacity)
+        jsonWriteWithoutFormat(this, buff)
+        return unsafe { String.fromUtf8Unchecked(buff.getAndClear()) }
+    }
+
+    /**
      * Determine the JSON type to which the JsonValue belongs.
      *
      * @return type of this JsonValue.

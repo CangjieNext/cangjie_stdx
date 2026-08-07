@@ -436,7 +436,7 @@ func parseJsonNumberSlow(parser: JsonParser): JsonValue {
             let ptr = acquireArrayRawData(parser.data)
             let value = CJ_JSON_ParseFloat64(ptr.pointer, leftIndex, rightIndex)
             releaseArrayRawData(ptr)
-            return JsonFloat(ensureFiniteJsonFloat(value))
+            return JsonFloat(ensureFiniteJsonFloat(value), parser.data, leftIndex, rightIndex - leftIndex)
         }
     }
     let numStr = unsafe { String.fromUtf8Unchecked(parser.data[leftIndex..rightIndex]) }

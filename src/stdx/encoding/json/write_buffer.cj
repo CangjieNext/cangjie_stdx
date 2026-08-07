@@ -87,6 +87,13 @@ class WriteBuffer {
         return this
     }
 
+    func append(arr: Array<Byte>, offset: Int64, length: Int64): WriteBuffer {
+        checkAndExpend(length)
+        arr.copyTo(_buffer, offset, _size, length)
+        _size += length
+        return this
+    }
+
     func append(str: String): WriteBuffer {
         append(unsafe { str.rawData() })
         return this
@@ -220,7 +227,7 @@ func jsonWriteWithoutFormat(json: JsonValue, buff: WriteBuffer, depth: Int64, ht
         case js: JsonString => buff.append(b'\"').appendEscape(js.getValue(), htmlSafe:htmlSafe).append(b'\"')
         case jb: JsonBool => buff.append(jb.getValue())
         case ji: JsonInt => buff.append(ji.getValue())
-        case jf: JsonFloat => buff.append(jf.getValue())
+        case jf: JsonFloat => jf.appendTo(buff)
         case _ => buff.append(NULL_STRING)
     }
 }
@@ -314,12 +321,11 @@ func asumecapacity(json: JsonValue, depth: Int64): Int64 {
                 sum += asumecapacity(v, depth + 1) + 1  // value + comma
             }
             return sum
-        case js: JsonString => return js.getValue().size + 2  // "value"
-        case _: JsonBool => return 5  // max of "false" and "true"
-        case _: JsonInt => return 22  // max len is 22
-        case _: JsonFloat => return 200  // not precision
-        case _: JsonNull => return 4  // "null"
-        case _ => return 0
+        case js: JsonString => return js.value.size + 2 // "value"
+        case _: JsonBool => return 5 // max of "false" and "true" 
+        case _: JsonInt => return 22 // max len is 22
+        case jf: JsonFloat => return jf.writeCapacity()
+        case _ => return 4 // len of "null" is 4
     }
 }
 
