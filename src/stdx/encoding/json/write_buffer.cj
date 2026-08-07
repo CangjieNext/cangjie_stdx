@@ -15,6 +15,7 @@ let BOOL_TRUE_STRING = "true".toArray()
 let BOOL_FALSE_STRING = "false".toArray()
 let NULL_STRING = "null".toArray()
 const MIN_CAPACITY = 16
+const MAX_FLOAT64_JSON_SIZE = 32
 const BLANK: Byte = ' '
 const MAX_JSON_WRITE_DEPTH = 100
 
@@ -110,27 +111,15 @@ class WriteBuffer {
     }
 
     func append(fl: Float64): WriteBuffer {
+        checkAndExpend(MAX_FLOAT64_JSON_SIZE)
         unsafe {
-            let p: CPointer<UInt8> = CJ_CORE_Float64ToCPointer(fl)
-            if (p.isNull()) {
-                return this
-            }
-            let cpSize = Int64(strlen(p))
-            checkAndExpend(cpSize)
             let dest = acquireArrayRawData(_buffer)
-            memcpy_s(dest.pointer + _size, UIntNative(_buffer.size - _size), p, UIntNative(cpSize))
+            let printedLen = CJ_JSON_FloatPrint(fl, dest.pointer + _size, _buffer.size - _size)
             releaseArrayRawData(dest)
-            LibC.free(p)
-            _size += cpSize
-        }
-
-        // the result of CJ_CORE_Float64ToCPointer have at least 6 decimal points
-        // there is no out-of-bounds risk
-        while (_buffer[_size - 1] == b'0') {
-            _size--
-        }
-        if (_buffer[_size - 1] == b'.') {
-            _size--
+            if (printedLen <= 0) {
+                throw IllegalStateException("Failed to serialize JSON float.")
+            }
+            _size += printedLen
         }
         return this
     }

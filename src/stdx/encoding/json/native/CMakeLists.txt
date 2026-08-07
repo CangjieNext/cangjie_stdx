@@ -5,11 +5,16 @@
 #
 # See https://cangjie-lang.cn/pages/LICENSE for license information.
 
-file(GLOB json_ffi_src ./*.c)
+set(json_ffi_src
+    json_string_escape.c
+    ../stream/native/utils.c
+    ../stream/native/ryu/d2s.c
+)
 set(libname stdx.encoding.jsonFFI)
 
 add_library(${libname}-objs OBJECT ${json_ffi_src})
 target_compile_options(${libname}-objs PRIVATE ${CMAKE_C_COVERAGE_FLAGS})
+target_include_directories(${libname}-objs PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../stream/native)
 
 
 if(CANGJIE_CODEGEN_CJNATIVE_BACKEND)

@@ -22,10 +22,7 @@ foreign func CJ_JSON_ReplaceEscapeChar(input: CPointer<UInt8>, inputlen: Int64, 
 foreign func CJ_JSON_WriteBufferAppendInt(buffer: CPointer<UInt8>, num: Int64): Int64
 
 @FastNative
-foreign func CJ_CORE_Float64ToCPointer(num: Float64): CPointer<UInt8>
-
-@FastNative
-foreign func strlen(str: CPointer<UInt8>): UIntNative
+foreign func CJ_JSON_FloatPrint(num: Float64, dest: CPointer<UInt8>, destSize: Int64): Int64
 
 @FastNative
 foreign func CJ_JSON_StringEscapeCharNumGet(input: CPointer<UInt8>, inputlen: Int64, htmlSafe: Bool): Int64
