@@ -60,7 +60,7 @@ internal abstract class BaseDoubleLinkedListMemoryCache<K, V> <: BaseMemoryCache
     /**
      * Release a specified number of caches: For example, in the LRU cache, the specified number of least used elements are released.
      *
-     *  @param numberToReleasee Number of cached elements released
+     *  @param numberToRelease Number of cached elements released
      *  @return Number of cached elements that are actually released. If 10 elements are requested to be released but there are only three elements in the cache, the value 3 is returned.
      */
     public func release(numberToRelease: Int64): Int64 {
