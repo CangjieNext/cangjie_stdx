@@ -19,7 +19,7 @@
 - logger: 提供了文本格式和 JSON 格式日志打印功能。
 - net: 提供了网络通信和安全传输功能。
 - serialization: 提供了序列化和反序列化的能力。
-- syntax：提供了对仓颉源码进行语法解析的功能。
+- syntax: 提供了对仓颉源码进行语法解析的功能。
 - unittest: 提供了在编写仓颉项目单元测试代码时输入序列化格式的测试数据的能力。
 
 ## 使用说明
@@ -71,7 +71,7 @@ bash -c "$(curl -fsSL https://raw.gitcode.com/Cangjie/cangjie_stdx/raw/main/down
 ```
 
 ```powershell
-# 在 Windows 下载 v1.0.0.1 的 linux-x64 版本，并解压到 C:\cangjie_libs 目录
+# 在 Windows 下载 v1.0.0.1 的 windows-x64 版本，并解压到 C:\cangjie_libs 目录
 irm https://raw.gitcode.com/Cangjie/cangjie_stdx/raw/main/downloader.ps1 -OutFile "$env:TEMP\downloader.ps1"; & "$env:TEMP\downloader.ps1" 1.0.0.1 -p windows-x64 -d C:\cangjie_libs
 ```
 
