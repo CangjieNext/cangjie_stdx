@@ -242,6 +242,9 @@ public class JsonInt <: JsonValue {
 public class JsonFloat <: JsonValue {
     /* Json data of the JsonFloat(Float64). */
     private var value: Float64
+    private var rawData: ?Array<Byte> = None
+    private var rawStart: Int64 = 0
+    private var rawSize: Int64 = 0
 
     /**
      * Create a new JsonFloat object.
@@ -265,6 +268,13 @@ public class JsonFloat <: JsonValue {
      */
     public init(v: Int64) {
         this.value = Float64(v)
+    }
+
+    init(fv: Float64, rawData: Array<Byte>, rawStart: Int64, rawSize: Int64) {
+        this.value = fv
+        this.rawData = rawData
+        this.rawStart = rawStart
+        this.rawSize = rawSize
     }
 
     /**
@@ -297,7 +307,9 @@ public class JsonFloat <: JsonValue {
      * @since 0.17.4
      */
     public func toString(): String {
-        return value.toString()
+        let buff = WriteBuffer(writeCapacity())
+        appendTo(buff)
+        return unsafe { String.fromUtf8Unchecked(buff.getAndClear()) }
     }
 
     /**
@@ -317,7 +329,7 @@ public class JsonFloat <: JsonValue {
      * @return json-converted String is value string data.
      */
     public func toStringWithoutEscaping(): String {
-        return value.toString()
+        return toString()
     }
 
     /**
@@ -327,6 +339,21 @@ public class JsonFloat <: JsonValue {
      */
     public func toJsonStringWithoutEscaping(): String {
         return toString()
+    }
+
+    func appendTo(buff: WriteBuffer): Unit {
+        if (let Some(data) <- rawData) {
+            buff.append(data, rawStart, rawSize)
+        } else {
+            buff.append(value)
+        }
+    }
+
+    func writeCapacity(): Int64 {
+        if (let Some(_) <- rawData) {
+            return rawSize
+        }
+        return MAX_FLOAT64_JSON_SIZE
     }
 }
 
