@@ -43,7 +43,7 @@ class Encoder {
     var maxHeaderListSize = -1
 
     /**
-     * New size should be encoded at the begining of the first HeaderBlock.
+     * New size should be encoded at the beginning of the first HeaderBlock.
      */
     private var headerTableSizeChanged = false
 
