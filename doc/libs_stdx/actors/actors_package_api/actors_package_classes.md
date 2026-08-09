@@ -164,7 +164,7 @@ public init(enableReceiverPriority!: Bool = false)
 
 参数：
 
-- enableReceiverPriority!: Bool - 设置为 true 时提供提供优先值功能，让优先值高的闭包优先执行。
+- enableReceiverPriority!: Bool - 设置为 true 时提供优先值功能，让优先值高的闭包优先执行。
 
 ### func post\<T>(() -> T, Int64)
 
