@@ -20,6 +20,10 @@ import std.collection.*
  */
 public class JsonNull <: JsonValue { // cjlint-ignore !G.ENU.01
 
+    protected override func writeCompactTo(buff: WriteBuffer, depth: Int64, htmlSafe: Bool): Unit {
+        buff.append(NULL_STRING)
+    }
+
     /**
      * Determine the JSON type to which the JsonNull belongs.
      *
@@ -78,6 +82,10 @@ public class JsonNull <: JsonValue { // cjlint-ignore !G.ENU.01
 public class JsonBool <: JsonValue { // cjlint-ignore !G.ENU.01
     /* Json data of the JsonBool(Bool). */
     private var value: Bool
+
+    protected override func writeCompactTo(buff: WriteBuffer, depth: Int64, htmlSafe: Bool): Unit {
+        buff.append(value)
+    }
 
     /**
      * Create a new JsonBool object.
@@ -160,6 +168,10 @@ public class JsonBool <: JsonValue { // cjlint-ignore !G.ENU.01
 public class JsonInt <: JsonValue {
     /* Json data of the JsonInt(Int64). */
     private var value: Int64
+
+    protected override func writeCompactTo(buff: WriteBuffer, depth: Int64, htmlSafe: Bool): Unit {
+        buff.append(value)
+    }
 
     /**
      * Create a new JsonInt object.
@@ -245,6 +257,10 @@ public class JsonFloat <: JsonValue {
     private var rawData: ?Array<Byte> = None
     private var rawStart: Int64 = 0
     private var rawSize: Int64 = 0
+
+    protected override func writeCompactTo(buff: WriteBuffer, depth: Int64, htmlSafe: Bool): Unit {
+        appendTo(buff)
+    }
 
     /**
      * Create a new JsonFloat object.
@@ -364,6 +380,10 @@ public class JsonString <: JsonValue { // cjlint-ignore !G.ENU.01
     /* Json data of the JsonString(String). */
     var value: String
 
+    protected override func writeCompactTo(buff: WriteBuffer, depth: Int64, htmlSafe: Bool): Unit {
+        buff.append(b'\"').appendEscape(value, htmlSafe: htmlSafe).append(b'\"')
+    }
+
     /**
      * Create a new JsonString object.
      * Construction with parameters.
@@ -453,6 +473,20 @@ public class JsonString <: JsonValue { // cjlint-ignore !G.ENU.01
 public class JsonArray <: JsonValue {
     /* Json data of the JsonArray(ArrayList<JsonValue>). */
     private var items: ArrayList<JsonValue>
+
+    protected override func writeCompactTo(buff: WriteBuffer, depth: Int64, htmlSafe: Bool): Unit {
+        if (items.size == 0) {
+            buff.append(EMPTY_ARRAY_BYTES)
+            return
+        }
+        buff.append(b'[')
+        for (item in items) {
+            jsonWriteWithoutFormat(item, buff, depth + 1, htmlSafe: htmlSafe)
+            buff.append(b',')
+        }
+        buff.removetail()
+        buff.append(b']')
+    }
 
     /**
      * Create a new JsonArray object.
@@ -670,6 +704,21 @@ public class JsonArray <: JsonValue {
 public class JsonObject <: JsonValue {
     /* Json data of the JsonObject(HashMap<String,JsonValue>). */
     private var fields: HashMap<String, JsonValue>
+
+    protected override func writeCompactTo(buff: WriteBuffer, depth: Int64, htmlSafe: Bool): Unit {
+        if (fields.size == 0) {
+            buff.append(EMPTY_OBJECT_BYTES)
+            return
+        }
+        buff.append(b'{')
+        for ((strKey, jv) in fields) {
+            buff.append(b'\"').appendEscape(strKey).append(KEY_VALUE_SEPARATOR_BYTES)
+            jsonWriteWithoutFormat(jv, buff, depth + 1, htmlSafe: htmlSafe)
+            buff.append(b',')
+        }
+        buff.removetail()
+        buff.append(b'}')
+    }
 
     /**
      * Create a new JsonObject object.

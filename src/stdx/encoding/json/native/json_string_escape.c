@@ -7,8 +7,10 @@
  */
 
 #include <math.h>
+#include <limits.h>
 #include <stdlib.h>
 #include <string.h>
+#include "ryu/ryu_parse.h"
 
 #include "json_string_escape.h"
 #include "securec.h"
@@ -212,6 +214,38 @@ int64_t CJ_JSON_ParseInt64(const uint8_t* data, int64_t start, int64_t end)
     return sign * result;
 }
 
+static bool CJ_JSON_CanUseRyu(const uint8_t* data, int64_t start, int64_t end)
+{
+    // s2d_n keeps the significant mantissa in uint64_t and the exponent in
+    // int32_t.  Restrict the zero-copy fast path to the range those fields can
+    // represent; longer/less common forms continue through strtod below.
+    int64_t mantissaDigits = 0;
+    int64_t exponentDigits = 0;
+    bool inExponent = false;
+    for (int64_t i = start; i < end; i++) {
+        uint8_t c = data[i];
+        if (c == 'e' || c == 'E') {
+            if (inExponent) {
+                return false;
+            }
+            inExponent = true;
+            continue;
+        }
+        if (c == '.' || c == '-' || c == '+') {
+            continue;
+        }
+        if (c < '0' || c > '9') {
+            return false;
+        }
+        if (inExponent) {
+            exponentDigits++;
+        } else {
+            mantissaDigits++;
+        }
+    }
+    return mantissaDigits <= 17 && exponentDigits <= 3;
+}
+
 double CJ_JSON_ParseFloat64(const uint8_t* data, int64_t start, int64_t end)
 {
     if (start >= end) {
@@ -219,6 +253,15 @@ double CJ_JSON_ParseFloat64(const uint8_t* data, int64_t start, int64_t end)
     }
 
     int64_t len = end - start;
+    if (len <= INT_MAX && CJ_JSON_CanUseRyu(data, start, end)) {
+        double result = 0.0;
+        if (s2d_n((const char*)(data + start), (int)len, &result) == SUCCESS) {
+            return result;
+        }
+    }
+
+    // Ryu s2d intentionally declines long inputs and uncommon formats. Keep
+    // strtod as the exact compatibility fallback for those tokens.
     char stack_temp[512];
     char* temp = stack_temp;
     if (len >= (int64_t)sizeof(stack_temp)) {

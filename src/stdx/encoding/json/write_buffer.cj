@@ -14,6 +14,10 @@ foreign func memcpy_s(dest: CPointer<UInt8>, destMax: UIntNative, src: CPointer<
 let BOOL_TRUE_STRING = "true".toArray()
 let BOOL_FALSE_STRING = "false".toArray()
 let NULL_STRING = "null".toArray()
+let EMPTY_OBJECT_BYTES: Array<Byte> = [b'{', b'}']
+let EMPTY_ARRAY_BYTES: Array<Byte> = [b'[', b']']
+let KEY_VALUE_SEPARATOR_BYTES: Array<Byte> = [b'\"', b':']
+let HEX_BYTES = "0123456789abcdef".toArray()
 const MIN_CAPACITY = 16
 const MAX_FLOAT64_JSON_SIZE = 32
 const BLANK: Byte = ' '
@@ -31,7 +35,7 @@ const MAX_JSON_WRITE_DEPTH = 100
  *  3. append(str: String), faster then StringBuilder.
  *  4. func removetail(), faster then StringBuilder.
  */
-class WriteBuffer {
+protected class WriteBuffer {
     private var _buffer: Array<Byte>
     private var _size: Int64 = 0
 
@@ -152,7 +156,50 @@ class WriteBuffer {
         return this
     }
 
-    func appendEscape(str: String, htmlSafe!: Bool = true) {
+    func appendEscapeSmall(data: Array<Byte>, htmlSafe: Bool): WriteBuffer {
+        // Reserve the common no-escape result once. If an escaped byte is
+        // found, reserve only its expansion plus the unprocessed suffix.
+        checkAndExpend(data.size)
+        var i: Int64 = 0
+        while (i < data.size) {
+            let b = data[i]
+            if (b >= 32 && b != 127 && b != b'\"' && b != b'\\' && (!htmlSafe || b != b'&')) {
+                _buffer[_size] = b
+                _size++
+                i++
+                continue
+            }
+
+            let extra = match (b) {
+                case '\b' | '\f' | '\n' | '\r' | '\t' | '\\' | '\"' => 1
+                case _ => 5
+            }
+            checkAndExpend(data.size - i + extra)
+            _buffer[_size] = b'\\'
+            _size++
+            match (b) {
+                case '\b' => _buffer[_size] = b'b'
+                case '\f' => _buffer[_size] = b'f'
+                case '\n' => _buffer[_size] = b'n'
+                case '\r' => _buffer[_size] = b'r'
+                case '\t' => _buffer[_size] = b't'
+                case '\\' => _buffer[_size] = b'\\'
+                case '\"' => _buffer[_size] = b'\"'
+                case _ =>
+                    _buffer[_size] = b'u'
+                    _buffer[_size + 1] = b'0'
+                    _buffer[_size + 2] = b'0'
+                    _buffer[_size + 3] = HEX_BYTES[Int64(b >> 4)]
+                    _buffer[_size + 4] = HEX_BYTES[Int64(b & 0x0f)]
+                    _size += 4
+            }
+            _size++
+            i++
+        }
+        return this
+    }
+
+    func appendEscapeNative(str: String, htmlSafe: Bool): WriteBuffer {
         var escapenum = 0
         unsafe {
             let input = acquireArrayRawData(str.rawData())
@@ -177,6 +224,14 @@ class WriteBuffer {
         }
     }
 
+    func appendEscape(str: String, htmlSafe!: Bool = true): WriteBuffer {
+        let data = unsafe { str.rawData() }
+        if (data.size < 32) {
+            return appendEscapeSmall(data, htmlSafe)
+        }
+        return appendEscapeNative(str, htmlSafe)
+    }
+
     func getAndClear(): Array<Byte> {
         let ret = _buffer[0.._size]
         _buffer = Array<Byte>(0, repeat: BLANK)
@@ -197,38 +252,7 @@ func jsonWriteWithoutFormat(json: JsonValue, buff: WriteBuffer, htmlSafe!: Bool 
 
 func jsonWriteWithoutFormat(json: JsonValue, buff: WriteBuffer, depth: Int64, htmlSafe!: Bool = true): Unit {
     checkJsonWriteDepth(depth)
-    match (json) {
-        case jo: JsonObject =>
-            if (jo.size() == 0) {
-                buff.append("{}".toArray())
-                return
-            }
-            buff.append(b'{')
-            for ((strKey, jv) in jo.getFields()) {
-                buff.append(b'\"').appendEscape(strKey).append("\":".toArray())
-                jsonWriteWithoutFormat(jv, buff, depth + 1, htmlSafe: htmlSafe)
-                buff.append(b',')
-            }
-            buff.removetail()
-            buff.append(b'}')
-        case ja: JsonArray =>
-            if (ja.size() == 0) {
-                buff.append("[]".toArray())
-                return
-            }
-            buff.append(b'[')
-            for (item in ja.getItems()) {
-                jsonWriteWithoutFormat(item, buff, depth + 1, htmlSafe: htmlSafe)
-                buff.append(b',')
-            }
-            buff.removetail()
-            buff.append(b']')
-        case js: JsonString => buff.append(b'\"').appendEscape(js.getValue(), htmlSafe:htmlSafe).append(b'\"')
-        case jb: JsonBool => buff.append(jb.getValue())
-        case ji: JsonInt => buff.append(ji.getValue())
-        case jf: JsonFloat => jf.appendTo(buff)
-        case _ => buff.append(NULL_STRING)
-    }
+    json.writeCompactTo(buff, depth, htmlSafe)
 }
 
 func jsonWriteObject(json: JsonObject, buff: WriteBuffer, depth: Int64, bracketInNewLine: Bool, indent: String, htmlSafe!: Bool = true): Unit {
@@ -240,7 +264,7 @@ func jsonWriteObject(json: JsonObject, buff: WriteBuffer, depth: Int64, bracketI
     }
 
     if (json.size() == 0) {
-        buff.append("{}".toArray())
+        buff.append(EMPTY_OBJECT_BYTES)
         return
     }
 
@@ -276,7 +300,7 @@ func jsonWriteArray(json: JsonArray, buff: WriteBuffer, depth: Int64, bracketInN
     }
 
     if (json.size() == 0) {
-        buff.append("[]".toArray())
+        buff.append(EMPTY_ARRAY_BYTES)
         return
     }
 
