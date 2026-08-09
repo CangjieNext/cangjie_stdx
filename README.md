@@ -217,7 +217,7 @@ explain:
 - x86_64-w64-mingw32.bin-dependencies：Please replace x86_64-w64-mingw32 in the configuration with the actual operating system information.
 - path-option：`stdx` The path where the binary is located.
 
-> **illustrate:**
+> **Note:**
 >
 > - `cjpm.toml` is the configuration file of the Cangjie package management tool CJPM. For details, please refer to the Cangjie Programming Language Tool User Guide.
 > - The configuration method is the same for Windows, Linux, and macOS.
