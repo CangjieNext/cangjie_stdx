@@ -10251,7 +10251,7 @@ public prop name: String
 public prop params: ParameterList
 ```
 
-功能：获取 [MacroDecl](#class-macrodecl) 节点的的参数列表。
+功能：获取 [MacroDecl](#class-macrodecl) 节点的参数列表。
 
 类型：[ParameterList](#class-parameterlist)
 
