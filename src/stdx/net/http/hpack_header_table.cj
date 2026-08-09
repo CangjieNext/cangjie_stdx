@@ -258,7 +258,7 @@ class HeaderTable {
     // cjlint-ignore -start !G.OTH.03
     /**
      * Table size change or insert may cause entry eviction.
-     * Reduce util size <= limit.
+     * Reduce until size <= limit.
      *
      * https://www.rfc-editor.org/rfc/rfc7541#section-4.3
      * https://www.rfc-editor.org/rfc/rfc7541#section-4.4
