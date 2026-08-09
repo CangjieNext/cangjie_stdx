@@ -278,7 +278,7 @@ RSA_PSS_RSAE_SHA384
 RSA_PSS_RSAE_SHA512
 ```
 
-功能：创建一个 `RSA_PSS_RSAE_SHA512` 类型的枚举实例，表示加密算法类型使用 `RSA_PSS_RSAE_SHA384`。
+功能：创建一个 `RSA_PSS_RSAE_SHA512` 类型的枚举实例，表示加密算法类型使用 `RSA_PSS_RSAE_SHA512`。
 
 ### func toString()
 

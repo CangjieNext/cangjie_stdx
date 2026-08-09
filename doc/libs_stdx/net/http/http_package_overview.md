@@ -99,7 +99,7 @@ Server 端根据 Client 端请求，创建对应的 ProtocolService 实例，同
 |              类名          |           功能           |
 | --------------------------- | ------------------------ |
 | [Client](./http_package_api/http_package_classes.md#class-client) | Client 类，用户可以通过 Client 实例发送 HTTP/1.1 或 HTTP/2 请求。  |
-| [ClientBuilder](./http_package_api/http_package_classes.md#class-clientbuilder) | 用于 Client 实例的构建，Client 没有公开的构造函数，用户只能通过 ClientBuilder 得到 Client 实例。ClientBuilder 文档中未明确说明支持版本的配置，在 HTTP/1.1 与 HTTP/2 都会生效。  |
+| [ClientBuilder](./http_package_api/http_package_classes.md#class-clientbuilder) | 用于 Client 实例的构建，Client 没有公开的构造函数，用户只能通过 ClientBuilder 得到 Client 实例。ClientBuilder 支持配置协议版本，配置在 HTTP/1.1 与 HTTP/2 下都会生效。  |
 | [Cookie](./http_package_api/http_package_classes.md#class-cookie) | HTTP 本身是无状态的，server 为了知道 client 的状态，提供个性化的服务，便可以通过 Cookie 来维护一个有状态的会话。  |
 | [FileHandler](./http_package_api/http_package_classes.md#class-filehandler) | 用于处理文件下载或者文件上传。  |
 | [FuncHandler](./http_package_api/http_package_classes.md#class-funchandler) | HttpRequestHandler 接口包装类，把单个函数包装成 HttpRequestHandler。  |
