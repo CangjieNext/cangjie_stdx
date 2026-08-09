@@ -109,27 +109,39 @@ class JsonParser {
     var size: Int64
     var offset: Int64
     var depth: Int64
-    let strCache: ArrayList<Byte>
+    // Escaped strings are uncommon for the DOM workload.  Do not reserve a
+    // fraction of every input until parsing actually encounters a backslash.
+    var strCache: ?ArrayList<Byte> = None
 
     init(str: String) {
         this.data = unsafe { str.rawData() }
         this.size = data.size
         this.offset = 0
         this.depth = 0
-        let estimatedCacheSize = if (str.size / 4 > 64) { str.size / 4 } else { 64 }
-        this.strCache = ArrayList<Byte>(estimatedCacheSize)
     }
 
     func reset(): Unit {
         this.offset = 0
         this.depth = 0
-        this.strCache.clear()
+        if (let Some(cache) <- this.strCache) {
+            cache.clear()
+        }
     }
 
     func reinit(str: String): Unit {
         this.data = unsafe { str.rawData() }
         this.size = data.size
         reset()
+    }
+}
+
+func ensureStrCache(parser: JsonParser): ArrayList<Byte> {
+    return match (parser.strCache) {
+        case Some(cache) => cache
+        case None =>
+            let cache = ArrayList<Byte>(64)
+            parser.strCache = cache
+            cache
     }
 }
 
@@ -582,7 +594,7 @@ func parseJsonString(parser: JsonParser): JsonString {
         let next = parser.data[parser.offset]
         if (next == b'\"') {
             parser.offset++
-            return unsafe { JsonString(String.fromUtf8Unchecked(parser.data[start..(parser.offset - 1)])) }
+            return unsafe { JsonString(String.withRawData(parser.data[start..(parser.offset - 1)])) }
         }
         if (next == b'\\') {
             break
@@ -598,7 +610,7 @@ func parseJsonString(parser: JsonParser): JsonString {
     var tmpStart = start
     while (next != b'\"') {
         if (next == b'\\') {
-            parser.strCache.add(all: parser.data[tmpStart..parser.offset])
+            ensureStrCache(parser).add(all: parser.data[tmpStart..parser.offset])
             parser.offset++
             handleEscape(parser)
             tmpStart = parser.offset + 1
@@ -607,9 +619,10 @@ func parseJsonString(parser: JsonParser): JsonString {
         next = requireCurrentByte(parser)
     }
     parser.offset++
-    parser.strCache.add(all: parser.data[tmpStart..parser.offset - 1])
-    let res = unsafe { JsonString(String.fromUtf8Unchecked(parser.strCache.getRawArray()[0..parser.strCache.size])) }
-    parser.strCache.clear()
+    let strCache = ensureStrCache(parser)
+    strCache.add(all: parser.data[tmpStart..parser.offset - 1])
+    let res = unsafe { JsonString(String.fromUtf8Unchecked(strCache.getRawArray()[0..strCache.size])) }
+    strCache.clear()
     return res
 }
 
@@ -624,14 +637,14 @@ func getNextHexNum(parser: JsonParser): Byte {
 
 func handleEscape(parser: JsonParser): Unit {
     match (requireCurrentByte(parser)) {
-        case '\"' => parser.strCache.add(b'\"')
-        case '\\' => parser.strCache.add(b'\\')
-        case '/' => parser.strCache.add(b'/')
-        case 'b' => parser.strCache.add(b'\b')
-        case 'f' => parser.strCache.add(b'\f')
-        case 'n' => parser.strCache.add(b'\n')
-        case 'r' => parser.strCache.add(b'\r')
-        case 't' => parser.strCache.add(b'\t')
+        case '\"' => ensureStrCache(parser).add(b'\"')
+        case '\\' => ensureStrCache(parser).add(b'\\')
+        case '/' => ensureStrCache(parser).add(b'/')
+        case 'b' => ensureStrCache(parser).add(b'\b')
+        case 'f' => ensureStrCache(parser).add(b'\f')
+        case 'n' => ensureStrCache(parser).add(b'\n')
+        case 'r' => ensureStrCache(parser).add(b'\r')
+        case 't' => ensureStrCache(parser).add(b'\t')
         case 'u' =>
             let byte1 = getNextHexNum(parser)
             let byte2 = getNextHexNum(parser)
@@ -642,10 +655,10 @@ func handleEscape(parser: JsonParser): Unit {
             try {
                 let chr = unsafe { Rune.parse(String.fromUtf8Unchecked(arr)) }
                 if (UInt32(chr) <= 127) {
-                    parser.strCache.add(UInt8(UInt32(chr)))
+                    ensureStrCache(parser).add(UInt8(UInt32(chr)))
                 } else {
                     let str = chr.toString()
-                    unsafe { parser.strCache.add(all: str.rawData()) }
+                    unsafe { ensureStrCache(parser).add(all: str.rawData()) }
                 }
             } catch (_: Exception) {
                 parser.offset++
@@ -670,7 +683,7 @@ func handleEscape(parser: JsonParser): Unit {
                 let num1 = rawNum1 & 0b0000001111111111
                 let num2 = rawNum2 & 0b0000001111111111
                 let str = Rune((((UInt32(num1)) << 10) | (UInt32(num2))) + 0x10000).toString()
-                unsafe { parser.strCache.add(all: str.rawData()) }
+                unsafe { ensureStrCache(parser).add(all: str.rawData()) }
             }
         case _ => throw JsonException("Fail to parseJsonString")
     }

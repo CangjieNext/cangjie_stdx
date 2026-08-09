@@ -9,6 +9,7 @@ set(json_ffi_src
     json_string_escape.c
     ../stream/native/utils.c
     ../stream/native/ryu/d2s.c
+    ../stream/native/ryu/s2d.c
 )
 set(libname stdx.encoding.jsonFFI)
 

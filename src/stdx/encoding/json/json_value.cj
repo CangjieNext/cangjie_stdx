@@ -26,6 +26,12 @@ public enum JsonKind {
  */
 sealed abstract class JsonValue <: ToString {
     /**
+     * Write the compact representation using virtual dispatch. This avoids
+     * repeating a runtime subtype-test chain for every DOM node.
+     */
+    protected func writeCompactTo(buff: WriteBuffer, depth: Int64, htmlSafe: Bool): Unit
+
+    /**
      * Convert JsonValue to String.
      *
      * @return json-converted String.
@@ -92,7 +98,7 @@ sealed abstract class JsonValue <: ToString {
         }
         let buff = WriteBuffer(capacity)
         jsonWriteWithoutFormat(this, buff)
-        return unsafe { String.fromUtf8Unchecked(buff.getAndClear()) }
+        return unsafe { String.withRawData(buff.getAndClear()) }
     }
 
     /**
