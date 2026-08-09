@@ -109,7 +109,7 @@ The following platform and architecture combinations are currently supported:
 │       ├── logger              # Provides log printing functions in text format and JSON format
 │       ├── net                 # Provide network communication and other capabilities
 │       ├── serialization       # Provides serialization and deserialization
-│       ├── string_intern       # Provides polled caching capability for string objects
+│       ├── string_intern       # Provides pooled caching capability for string objects
 │       ├── syntax              # Provides syntax parsing functions
 │       └── unittest            # Provides unit testing extension
 │
