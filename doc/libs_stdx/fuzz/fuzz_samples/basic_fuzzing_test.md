@@ -28,7 +28,7 @@ public func api(data: Array<UInt8>): Int32 {
 
 Linux 的编译命令是：`cjc fuzz_main.cj -L $CANGJIE_STDX_PATH -lstdx.fuzz --import-path $CANGJIE_STDX_PATH --link-options="--whole-archive $CANGJIE_HOME/lib/linux_x86_64_cjnative/libclang_rt.fuzzer_no_main.a -no-whole-archive -lstdc++" --sanitizer-coverage-inline-8bit-counters -lpthread`
 
-macOS 的编译命令是：`cjc fuzz_main.cj -L $CANGJIE_STDX_PATH -lstdx.fuzz --import-path $CANGJIE_STDX_PATH --link-options="$CANGJIE_HOME/lib/linux_x86_64_cjnative/libclang_rt.fuzzer_no_main.a -lc++" --sanitizer-coverage-inline-8bit-counters -lpthread`
+macOS 的编译命令是：`cjc fuzz_main.cj -L $CANGJIE_STDX_PATH -lstdx.fuzz --import-path $CANGJIE_STDX_PATH --link-options="$CANGJIE_HOME/libdarwin_aarch64_cjnative/libclang_rt.fuzzer_no_main.a -lc++" --sanitizer-coverage-inline-8bit-counters -lpthread`
 
 释义：
 
