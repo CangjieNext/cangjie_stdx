@@ -127,6 +127,13 @@ class JsonParser {
         this.depth = 0
     }
 
+    init(data: Array<Byte>) {
+        this.data = data
+        this.size = data.size
+        this.offset = 0
+        this.depth = 0
+    }
+
     func reset(): Unit {
         this.offset = 0
         this.depth = 0
@@ -205,6 +212,32 @@ func parseString(str: String): JsonValue {
         throw JsonException("Json String is empty!")
     }
     let parser = JsonParser(str)
+    try {
+        let res = parseJson(parser)
+        if (parser.offset <= (parser.size - 1)) {
+            skipWhiteSpace(parser)
+        }
+        if (parser.offset <= (parser.size - 1)) {
+            throw JsonException()
+        }
+        return res
+    } catch (_: Exception) {
+        let errMsg = buildParseErrorMessage(parser)
+        throw JsonException("The json data is Non-standard, please check:\n${errMsg}")
+    }
+}
+
+func parseUtf8Bytes(data: Array<Byte>): JsonValue {
+    if (data.size == 0) {
+        throw JsonException("Json byte array is empty!")
+    }
+    if (!String.checkUtf8Encoding(data)) {
+        throw JsonException("Json byte array is not valid UTF-8.")
+    }
+    // Keep parser/DOM storage private. parseJsonStringValue uses
+    // String.withRawData for unescaped tokens, so parsing the caller buffer
+    // directly would make the returned DOM depend on that buffer's lifetime.
+    let parser = JsonParser(data.clone())
     try {
         let res = parseJson(parser)
         if (parser.offset <= (parser.size - 1)) {
