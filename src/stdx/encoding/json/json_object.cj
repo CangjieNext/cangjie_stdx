@@ -197,6 +197,15 @@ public class JsonInt <: JsonValue {
     }
 
     /**
+     * Update this integer value in place.
+     *
+     * All references to this JsonInt observe the new value.
+     */
+    public func setValue(iv: Int64): Unit {
+        value = iv
+    }
+
+    /**
      * Determine the JSON type to which the JsonInt belongs.
      *
      * @return type of the JsonInt is JsInt.
@@ -305,6 +314,19 @@ public class JsonFloat <: JsonValue {
     }
 
     /**
+     * Update this floating-point value in place.
+     *
+     * A parsed float may retain its original JSON token for lossless output.
+     * Clear that token so subsequent serialization emits the updated value.
+     */
+    public func setValue(fv: Float64): Unit {
+        value = fv
+        rawData = None
+        rawStart = 0
+        rawSize = 0
+    }
+
+    /**
      * Determine the JSON type to which the JsonFloat belongs.
      *
      * @return type of the JsonFloat is JsFloat.
@@ -405,6 +427,15 @@ public class JsonString <: JsonValue { // cjlint-ignore !G.ENU.01
      */
     public func getValue(): String {
         return value
+    }
+
+    /**
+     * Update this string value in place.
+     *
+     * All references to this JsonString observe the new value.
+     */
+    public func setValue(sv: String): Unit {
+        value = sv
     }
 
     /**

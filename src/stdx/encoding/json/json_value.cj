@@ -88,6 +88,21 @@ sealed abstract class JsonValue <: ToString {
     }
 
     /**
+     * Parses UTF-8 JSON bytes into JsonValue.
+     *
+     * The input is copied before parsing. The returned DOM may retain slices of
+     * that private copy for unescaped strings, so later writes to the caller's
+     * byte array cannot affect the parsed value.
+     *
+     * @param data UTF-8 encoded JSON bytes.
+     * @return parsed JsonValue.
+     * @throws JsonException if data is invalid UTF-8 or JSON is non-standard.
+     */
+    public static func fromUtf8Bytes(data: Array<Byte>): JsonValue {
+        parseUtf8Bytes(data)
+    }
+
+    /**
      * Convert JsonValue to a JSON string using the caller-provided output capacity.
      *
      * @param capacity Initial output-buffer capacity in bytes.
