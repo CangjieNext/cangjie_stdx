@@ -15,6 +15,13 @@ const MAX_JSON_PARSE_DEPTH = 100
 const INITIAL_JSON_OBJECT_CAPACITY = 8
 const INITIAL_JSON_ARRAY_CAPACITY = 8
 
+// JSON null and booleans are immutable values.  The parser sees them very
+// frequently, so keep one process-wide instance of each instead of allocating
+// three short-lived objects for every occurrence.
+let SHARED_JSON_NULL = JsonNull()
+let SHARED_JSON_TRUE = JsonBool(true)
+let SHARED_JSON_FALSE = JsonBool(false)
+
 @FastNative
 foreign func CJ_JSON_ReplaceEscapeChar(input: CPointer<UInt8>, inputlen: Int64, buffer: CPointer<UInt8>, htmlSafe: Bool): Int64
 
@@ -306,7 +313,7 @@ func parseJsonNull(parser: JsonParser): JsonNull {
         throw JsonException()
     }
     parser.offset++
-    return JsonNull()
+    return SHARED_JSON_NULL
 }
 
 func parseJsonTrue(parser: JsonParser): JsonBool {
@@ -326,7 +333,7 @@ func parseJsonTrue(parser: JsonParser): JsonBool {
         throw JsonException()
     }
     parser.offset++
-    return JsonBool(true)
+    return SHARED_JSON_TRUE
 }
 
 func parseJsonFalse(parser: JsonParser): JsonBool {
@@ -350,7 +357,7 @@ func parseJsonFalse(parser: JsonParser): JsonBool {
         throw JsonException()
     }
     parser.offset++
-    return JsonBool(false)
+    return SHARED_JSON_FALSE
 }
 
 func tryParseJsonIntFast(parser: JsonParser): (Bool, Int64) {
@@ -594,19 +601,28 @@ func parseJsonStringValue(parser: JsonParser): String {
     }
     parser.offset++
     let start = parser.offset
-    while (parser.offset < parser.size) {
-        let next = parser.data[parser.offset]
+    // Most JSON keys and values in the DOM benchmark are short and contain no
+    // escape.  Keep the scan state in locals so the common path only publishes
+    // the parser offset once, after finding the closing quote.
+    let size = parser.size
+    var offset = start
+    while (offset < size) {
+        let next = parser.data[offset]
         if (next == b'\"') {
-            parser.offset++
+            parser.offset = offset + 1
+            // Keep the established field-based raw-data expression: the
+            // String retains this Array's storage after parser returns.
             return unsafe { String.withRawData(parser.data[start..(parser.offset - 1)]) }
         }
         if (next == b'\\') {
+            parser.offset = offset
             break
         }
-        parser.offset++
+        offset++
     }
 
-    if (parser.offset >= parser.size) {
+    if (offset >= size) {
+        parser.offset = offset
         throw JsonException()
     }
 
