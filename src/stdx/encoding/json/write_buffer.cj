@@ -160,16 +160,22 @@ protected class WriteBuffer {
         // Reserve the common no-escape result once. If an escaped byte is
         // found, reserve only its expansion plus the unprocessed suffix.
         checkAndExpend(data.size)
+
         var i: Int64 = 0
+        var normalStart: Int64 = 0
         while (i < data.size) {
             let b = data[i]
             if (b >= 32 && b != 127 && b != b'\"' && b != b'\\' && (!htmlSafe || b != b'&')) {
-                _buffer[_size] = b
-                _size++
                 i++
                 continue
             }
 
+            // Copy a maximal ordinary run once. This keeps the existing
+            // Array backing and does not add a String/descriptor allocation.
+            if (i > normalStart) {
+                data.copyTo(_buffer, normalStart, _size, i - normalStart)
+                _size += i - normalStart
+            }
             let extra = match (b) {
                 case '\b' | '\f' | '\n' | '\r' | '\t' | '\\' | '\"' => 1
                 case _ => 5
@@ -195,6 +201,11 @@ protected class WriteBuffer {
             }
             _size++
             i++
+            normalStart = i
+        }
+        if (normalStart < data.size) {
+            data.copyTo(_buffer, normalStart, _size, data.size - normalStart)
+            _size += data.size - normalStart
         }
         return this
     }
