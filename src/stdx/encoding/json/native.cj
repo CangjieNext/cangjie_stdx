@@ -254,7 +254,7 @@ func parseJsonObject(parser: JsonParser): JsonObject {
             throw JsonException()
         }
         skipWhiteSpace(parser)
-        let key = parseJsonString(parser)
+        let key = parseJsonStringValue(parser)
         skipWhiteSpace(parser)
         if (requireCurrentByte(parser) != b':') {
             throw JsonException()
@@ -262,7 +262,7 @@ func parseJsonObject(parser: JsonParser): JsonObject {
         parser.offset++
         let value = parseJson(parser)
         skipWhiteSpace(parser)
-        obj.put(key.getValue(), value)
+        obj.put(key, value)
     }
     parser.offset++
     return obj
@@ -585,6 +585,10 @@ func isHexNum(char: UInt8): Bool {
 }
 
 func parseJsonString(parser: JsonParser): JsonString {
+    return JsonString(parseJsonStringValue(parser))
+}
+
+func parseJsonStringValue(parser: JsonParser): String {
     if (requireCurrentByte(parser) != b'\"') {
         throw JsonException("Fail to parseJsonString")
     }
@@ -594,7 +598,7 @@ func parseJsonString(parser: JsonParser): JsonString {
         let next = parser.data[parser.offset]
         if (next == b'\"') {
             parser.offset++
-            return unsafe { JsonString(String.withRawData(parser.data[start..(parser.offset - 1)])) }
+            return unsafe { String.withRawData(parser.data[start..(parser.offset - 1)]) }
         }
         if (next == b'\\') {
             break
@@ -621,7 +625,7 @@ func parseJsonString(parser: JsonParser): JsonString {
     parser.offset++
     let strCache = ensureStrCache(parser)
     strCache.add(all: parser.data[tmpStart..parser.offset - 1])
-    let res = unsafe { JsonString(String.fromUtf8Unchecked(strCache.getRawArray()[0..strCache.size])) }
+    let res = unsafe { String.fromUtf8Unchecked(strCache.getRawArray()[0..strCache.size]) }
     strCache.clear()
     return res
 }
