@@ -60,13 +60,9 @@ protected class WriteBuffer {
     /*
      * buff must be filled with blank
      */
-    func checkAndExpend(addition: Int64): Unit {
+    func expendSlow(addition: Int64): Unit {
         let minCapacity = _size + addition
         let oldCapacity: Int64 = _buffer.size
-        if (minCapacity < oldCapacity) {
-            return
-        }
-
         var newCapacity: Int64 = oldCapacity + (oldCapacity >> 1)
         if (newCapacity < minCapacity) {
             newCapacity = minCapacity
@@ -77,7 +73,9 @@ protected class WriteBuffer {
     }
 
     func append(arr: Array<Byte>): WriteBuffer {
-        checkAndExpend(arr.size)
+        if (_size + arr.size >= _buffer.size) {
+            expendSlow(arr.size)
+        }
 
         if (arr.size < 32) {
             for (index in 0..arr.size) {
@@ -92,7 +90,9 @@ protected class WriteBuffer {
     }
 
     func append(arr: Array<Byte>, offset: Int64, length: Int64): WriteBuffer {
-        checkAndExpend(length)
+        if (_size + length >= _buffer.size) {
+            expendSlow(length)
+        }
         arr.copyTo(_buffer, offset, _size, length)
         _size += length
         return this
@@ -104,14 +104,18 @@ protected class WriteBuffer {
     }
 
     func append(byte: Byte): WriteBuffer {
-        checkAndExpend(1)
+        if (_size + 1 >= _buffer.size) {
+            expendSlow(1)
+        }
         _buffer[_size] = byte
         _size++
         return this
     }
 
     func append(n: Int64): WriteBuffer {
-        checkAndExpend(22)
+        if (_size + 22 >= _buffer.size) {
+            expendSlow(22)
+        }
         unsafe {
             let buff = acquireArrayRawData<Byte>(_buffer)
             let len = CJ_JSON_WriteBufferAppendInt(buff.pointer + _size, n)
@@ -122,7 +126,9 @@ protected class WriteBuffer {
     }
 
     func append(fl: Float64): WriteBuffer {
-        checkAndExpend(MAX_FLOAT64_JSON_SIZE)
+        if (_size + MAX_FLOAT64_JSON_SIZE >= _buffer.size) {
+            expendSlow(MAX_FLOAT64_JSON_SIZE)
+        }
         unsafe {
             let dest = acquireArrayRawData(_buffer)
             let printedLen = CJ_JSON_FloatPrint(fl, dest.pointer + _size, _buffer.size - _size)
@@ -144,7 +150,9 @@ protected class WriteBuffer {
     }
 
     func appendBlank(n: Int64): WriteBuffer {
-        checkAndExpend(n)
+        if (_size + n >= _buffer.size) {
+            expendSlow(n)
+        }
         _size += n
         return this
     }
@@ -159,7 +167,9 @@ protected class WriteBuffer {
     func appendEscapeSmall(data: Array<Byte>, htmlSafe: Bool): WriteBuffer {
         // Reserve the common no-escape result once. If an escaped byte is
         // found, reserve only its expansion plus the unprocessed suffix.
-        checkAndExpend(data.size)
+        if (_size + data.size >= _buffer.size) {
+            expendSlow(data.size)
+        }
 
         var i: Int64 = 0
         var normalStart: Int64 = 0
@@ -180,7 +190,10 @@ protected class WriteBuffer {
                 case '\b' | '\f' | '\n' | '\r' | '\t' | '\\' | '\"' => 1
                 case _ => 5
             }
-            checkAndExpend(data.size - i + extra)
+            let addition = data.size - i + extra
+            if (_size + addition >= _buffer.size) {
+                expendSlow(addition)
+            }
             _buffer[_size] = b'\\'
             _size++
             match (b) {
@@ -223,7 +236,10 @@ protected class WriteBuffer {
             append(str)
             return this
         } else {
-            checkAndExpend(str.size + escapenum)
+            let addition = str.size + escapenum
+            if (_size + addition >= _buffer.size) {
+                expendSlow(addition)
+            }
             unsafe {
                 let input = acquireArrayRawData(str.rawData())
                 let buff = acquireArrayRawData<Byte>(_buffer)
