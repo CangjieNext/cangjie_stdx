@@ -26,4 +26,7 @@ int64_t CJ_JSON_ParseInt64(const uint8_t* data, int64_t start, int64_t end);
 // Parse Float64 directly from byte array without creating a temporary string.
 double CJ_JSON_ParseFloat64(const uint8_t* data, int64_t start, int64_t end);
 
+// Copy `input` to `output` while validating exactly one strict UTF-8 sequence.
+bool CJ_JSON_ValidateUtf8AndCopy(const uint8_t* input, uint8_t* output, int64_t size);
+
 #endif
