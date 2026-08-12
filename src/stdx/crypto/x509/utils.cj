@@ -315,7 +315,7 @@ foreign {
 
     func DYN_CJGetPriKeyPtr(priKey: CPointer<CPointer<Byte>>, length: Int64, msg: CPointer<DynMsg>): CPointer<Unit>
 
-    func DYN_CJGetNamePtr(nameKey: CPointer<CPointer<Byte>>, lenght: Int64, msg: CPointer<DynMsg>): CPointer<Unit>
+    func DYN_CJGetNamePtr(nameKey: CPointer<CPointer<Byte>>, length: Int64, msg: CPointer<DynMsg>): CPointer<Unit>
 
     func DYN_CJCheckKeyType(key: CPointer<Unit>, keyType: Int64, msg: CPointer<DynMsg>): Bool
 
@@ -473,9 +473,9 @@ func getNameDer(name: CPointer<Unit>, c: CPointer<CPointer<Byte>>): Int32 {
     return res
 }
 
-func getNamePtr(nameKey: CPointer<CPointer<Byte>>, lenght: Int64): CPointer<Unit> {
+func getNamePtr(nameKey: CPointer<CPointer<Byte>>, length: Int64): CPointer<Unit> {
     let dynMsgPtr = generateDynMsg()
-    let res = unsafe { DYN_CJGetNamePtr(nameKey, lenght, dynMsgPtr) }
+    let res = unsafe { DYN_CJGetNamePtr(nameKey, length, dynMsgPtr) }
     checkError(dynMsgPtr)
     return res
 }
