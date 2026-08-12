@@ -40,6 +40,9 @@ foreign func CJ_JSON_ParseInt64(data: CPointer<UInt8>, start: Int64, end: Int64)
 @FastNative
 foreign func CJ_JSON_ParseFloat64(data: CPointer<UInt8>, start: Int64, end: Int64): Float64
 
+@FastNative
+foreign func CJ_JSON_ValidateUtf8AndCopy(input: CPointer<UInt8>, output: CPointer<UInt8>, size: Int64): Bool
+
 /**
  * @brief Get rows and columns of the error position
  *
@@ -231,13 +234,21 @@ func parseUtf8Bytes(data: Array<Byte>): JsonValue {
     if (data.size == 0) {
         throw JsonException("Json byte array is empty!")
     }
-    if (!String.checkUtf8Encoding(data)) {
+    // Unescaped DOM strings retain slices of parser.data.  Keep one private
+    // backing array, but validate while copying it so UTF-8 input is read once.
+    let parserData = Array<Byte>(data.size, repeat: 0)
+    let isValidUtf8 = unsafe {
+        let input = acquireArrayRawData(data)
+        let output = acquireArrayRawData(parserData)
+        let result = CJ_JSON_ValidateUtf8AndCopy(input.pointer, output.pointer, data.size)
+        releaseArrayRawData(output)
+        releaseArrayRawData(input)
+        result
+    }
+    if (!isValidUtf8) {
         throw JsonException("Json byte array is not valid UTF-8.")
     }
-    // Keep parser/DOM storage private. parseJsonStringValue uses
-    // String.withRawData for unescaped tokens, so parsing the caller buffer
-    // directly would make the returned DOM depend on that buffer's lifetime.
-    let parser = JsonParser(data.clone())
+    let parser = JsonParser(parserData)
     try {
         let res = parseJson(parser)
         if (parser.offset <= (parser.size - 1)) {

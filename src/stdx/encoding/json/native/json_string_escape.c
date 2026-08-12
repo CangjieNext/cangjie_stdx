@@ -15,6 +15,89 @@
 #include "json_string_escape.h"
 #include "securec.h"
 
+bool CJ_JSON_ValidateUtf8AndCopy(const uint8_t* input, uint8_t* output, int64_t size)
+{
+    const uint64_t asciiMask = UINT64_C(0x8080808080808080);
+    int64_t offset = 0;
+
+    if (size < 0) {
+        return false;
+    }
+
+    // Fast path for the ASCII-heavy JSON payloads.  The stack temporary keeps
+    // the load/store well-defined for unaligned Cangjie array storage.
+    while (size - offset >= (int64_t)sizeof(uint64_t)) {
+        uint64_t bytes;
+        (void)memcpy(&bytes, input + offset, sizeof(bytes));
+        (void)memcpy(output + offset, &bytes, sizeof(bytes));
+        if ((bytes & asciiMask) != 0) {
+            break;
+        }
+        offset += (int64_t)sizeof(bytes);
+    }
+
+    while (offset < size) {
+        const uint8_t byte1 = input[offset];
+        output[offset] = byte1;
+        if (byte1 < 0x80) {
+            offset++;
+            continue;
+        }
+        if (byte1 < 0xc0) {
+            return false;
+        }
+        if (byte1 < 0xe0) {
+            if (size - offset < 2) {
+                return false;
+            }
+            const uint8_t byte2 = input[offset + 1];
+            output[offset + 1] = byte2;
+            if ((byte1 & 0x1e) == 0 || (byte2 & 0xc0) != 0x80) {
+                return false;
+            }
+            offset += 2;
+            continue;
+        }
+        if (byte1 < 0xf0) {
+            if (size - offset < 3) {
+                return false;
+            }
+            const uint8_t byte2 = input[offset + 1];
+            const uint8_t byte3 = input[offset + 2];
+            output[offset + 1] = byte2;
+            output[offset + 2] = byte3;
+            if ((byte2 & 0xc0) != 0x80 || (byte3 & 0xc0) != 0x80 ||
+                ((byte1 & 0x0f) == 0 && (byte2 & 0x20) == 0) ||
+                ((byte1 & 0x0f) == 0x0d && (byte2 & 0x20) != 0)) {
+                return false;
+            }
+            offset += 3;
+            continue;
+        }
+        if (byte1 < 0xf8) {
+            if (size - offset < 4) {
+                return false;
+            }
+            const uint8_t byte2 = input[offset + 1];
+            const uint8_t byte3 = input[offset + 2];
+            const uint8_t byte4 = input[offset + 3];
+            output[offset + 1] = byte2;
+            output[offset + 2] = byte3;
+            output[offset + 3] = byte4;
+            if ((byte2 & 0xc0) != 0x80 || (byte3 & 0xc0) != 0x80 || (byte4 & 0xc0) != 0x80 ||
+                (byte1 & 0x07) > 0x04 ||
+                ((byte1 & 0x07) == 0 && (byte2 & 0x30) == 0) ||
+                ((byte1 & 0x07) == 0x04 && (byte2 & 0x30) != 0)) {
+                return false;
+            }
+            offset += 4;
+            continue;
+        }
+        return false;
+    }
+    return true;
+}
+
 int64_t CJ_JSON_ReplaceEscapeChar(const uint8_t* input, int64_t inputlen, uint8_t* buffer, bool htmlSafe)
 {
     uint8_t* pointer = buffer;
