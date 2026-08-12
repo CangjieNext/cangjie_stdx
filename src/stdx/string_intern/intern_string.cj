@@ -34,7 +34,7 @@ public interface Internable {
      * Config string intern pool
      *
      * @param capacity dynamic string pool capacity
-     * @param strMaxLength max lenght of string in dynamic string pool
+     * @param strMaxLength max length of string in dynamic string pool
      */
     static func configInternPool(capacity!: Int64, strMaxLength!: Int64): Unit
 }
@@ -99,7 +99,7 @@ extend String <: Internable {
      * Config string intern pool
      *
      * @param capacity dynamic string pool capacity
-     * @param strMaxLength max lenght of string in dynamic string pool
+     * @param strMaxLength max length of string in dynamic string pool
      */
     public static func configInternPool(capacity!: Int64 = 8192, strMaxLength!: Int64 = 512): Unit {
         if (capacity <= 0) {
