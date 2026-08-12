@@ -306,7 +306,7 @@ flatbuffers::Offset<NodeFormat::Pattern> NodeWriter::SerializePattern(AstPattern
     if (serializeFunc != serializePatternMap.end()) {
         return serializeFunc->second(*this, pattern);
     }
-    Errorln("Unkown Pattern in libast Serialization.");
+    Errorln("Unknown Pattern in libast Serialization.");
     return flatbuffers::Offset<NodeFormat::Pattern>();
 }
 
