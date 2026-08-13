@@ -333,7 +333,7 @@ public init(inputStream: InputStream, wrap!: WrapType = DeflateFormat, bufLen!: 
 
 参数：
 
-- inputStream: InputStream - 待解压的输入流。
+- inputStream: InputStream - 待压缩的输入流。
 - wrap!: [WrapType](zlib_package_enums.md#enum-wraptype) - 待解压数据格式，默认值为 [DeflateFormat](zlib_package_enums.md#deflateformat)。
 - bufLen!: Int64 - 输入流缓冲区的大小，取值范围为 (0, Int64.Max]，默认 512 字节。
 
@@ -503,7 +503,7 @@ public init(outputStream: OutputStream, wrap!: WrapType = DeflateFormat, bufLen!
 
 功能：构造一个解压输出流。
 
-需绑定一个输出流，可设置压缩数据类型、内部缓冲区大小（解压后数据会存入内部缓冲区，缓冲区存满后再写到输出流）。
+需绑定一个输出流，可设置压缩数据类型、压缩等级、内部缓冲区大小（解压后数据会存入内部缓冲区，缓冲区存满后再写到输出流）。
 
 参数：
 
