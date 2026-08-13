@@ -1720,7 +1720,7 @@ SM4算法名称: SM4
 public func decrypt(input: Array<Byte>): Array<Byte>
 ```
 
-功能：解密一段数据数据。
+功能：解密一段数据。
 
 参数：
 
@@ -1915,7 +1915,7 @@ main() {
 public func encrypt(input: Array<Byte>): Array<Byte>
 ```
 
-功能：加密一段数据数据。
+功能：加密一段数据。
 
 参数：
 
