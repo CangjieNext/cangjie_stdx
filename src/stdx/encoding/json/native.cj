@@ -41,7 +41,7 @@ foreign func CJ_JSON_ParseFloat64(data: CPointer<UInt8>, start: Int64, end: Int6
  * @return (Int64, Int64) Rows and columns of the error position
  * @throws IllegalArgumentException if there is no valid utf8 leading code in array `strArr`.
  */
-func getErrRowAndCol(strArr: Array<UInt8>, errPos: Int64): (Int64, Int64) {
+func getErrRowAndCol(strArr: Array<UInt8> @local?, errPos: Int64): (Int64, Int64) {
     var tempPos: Int64 = 0
     var errRow: Int64 = 1
     var errCol: Int64 = 1
@@ -105,13 +105,21 @@ const MINVAL_I64: Int64 = -0x8000_0000_0000_0000
 const DECIMAL_OVERFLOW_LIMIT_UI64 = MAXVAL_UI64 / 10
 
 class JsonParser {
-    var data: Array<Byte>
+    demode var data: Array<Byte>
     var size: Int64
     var offset: Int64
     var depth: Int64
     let strCache: ArrayList<Byte>
 
     init(str: String) {
+        this.data = unsafe { str.rawData() }
+        this.size = data.size
+        this.offset = 0
+        this.depth = 0
+        let estimatedCacheSize = if (str.size / 4 > 64) { str.size / 4 } else { 64 }
+        this.strCache = ArrayList<Byte>(estimatedCacheSize)
+    }
+    exclave init(this @local!, str: String) {
         this.data = unsafe { str.rawData() }
         this.size = data.size
         this.offset = 0
@@ -133,7 +141,7 @@ class JsonParser {
     }
 }
 
-func requireCurrentByte(parser: JsonParser): Byte {
+func requireCurrentByte(parser: JsonParser @local?): Byte {
     if (parser.offset >= parser.size) {
         throw JsonException()
     }
@@ -155,7 +163,7 @@ func ensureFiniteJsonFloat(value: Float64): Float64 {
     return value
 }
 
-func skipWhiteSpace(parser: JsonParser): Unit {
+func skipWhiteSpace(parser: JsonParser @local?): Unit {
     if (parser.offset >= parser.size) {
         return
     }
@@ -169,7 +177,7 @@ func skipWhiteSpace(parser: JsonParser): Unit {
     }
 }
 
-func buildParseErrorMessage(parser: JsonParser): String {
+func buildParseErrorMessage(parser: JsonParser @local?): String {
     let strArr = parser.data
     var errPos = parser.offset
     if (errPos >= strArr.size) {
@@ -297,7 +305,7 @@ func parseJsonNull(parser: JsonParser): JsonNull {
     return JsonNull()
 }
 
-func parseJsonTrue(parser: JsonParser): JsonBool {
+private func parseJsonTrue(parser: JsonParser): JsonBool {
     if (requireCurrentByte(parser) != b't') {
         throw JsonException()
     }
@@ -443,7 +451,7 @@ func parseJsonNumberSlow(parser: JsonParser): JsonValue {
     return JsonInt(Int64.parse(numStr))
 }
 
-func parseJsonNumber(parser: JsonParser): JsonValue {
+private func parseJsonNumber(parser: JsonParser): JsonValue {
     let (success, value) = tryParseJsonIntFast(parser)
     if (success) {
         return JsonInt(value)
@@ -572,7 +580,7 @@ func isHexNum(char: UInt8): Bool {
     return true
 }
 
-func parseJsonString(parser: JsonParser): JsonString {
+private func parseJsonString(parser: JsonParser): JsonString {
     if (requireCurrentByte(parser) != b'\"') {
         throw JsonException("Fail to parseJsonString")
     }
