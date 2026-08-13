@@ -14,7 +14,7 @@ import std.collection.HashMap
  * @brief  LfU cache implementation:
  *
  * The bidirectional linked list is used to store cache keys, and the countMap is used to store access times.
- * In the LFU, the header data of the linked list indicates the most access times, the tail data indicates the least access times, and the tail data is preferentially eliminated.
+ * In the LRU, the header data of the linked list indicates the most access times, the tail data indicates the least access times, and the tail data is preferentially eliminated.
  * After the cache is hit, The hit key needs to be placed in the header of the linked list.
  * When the cache is updated, the new data is also placed in the header of the cache.
  */
