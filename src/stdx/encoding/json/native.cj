@@ -268,26 +268,28 @@ func parseJson(parser: JsonParser): JsonValue {
     skipWhiteSpace(parser)
     let start = requireCurrentByte(parser)
     match {
-        case start == b'{' => return parseNestedJson(parser, {=> parseJsonObject(parser)})
-        case start == b'[' => return parseNestedJson(parser, {=> parseJsonArray(parser)})
+        case start == b'{' =>
+            parser.depth++
+            if (parser.depth > MAX_JSON_PARSE_DEPTH) {
+                throw JsonException("Json nested depth exceeds ${MAX_JSON_PARSE_DEPTH}.")
+            }
+            let value = parseJsonObject(parser)
+            parser.depth--
+            return value
+        case start == b'[' =>
+            parser.depth++
+            if (parser.depth > MAX_JSON_PARSE_DEPTH) {
+                throw JsonException("Json nested depth exceeds ${MAX_JSON_PARSE_DEPTH}.")
+            }
+            let value = parseJsonArray(parser)
+            parser.depth--
+            return value
         case start == b'n' => return parseJsonNull(parser)
         case start == b't' => return parseJsonTrue(parser)
         case start == b'f' => return parseJsonFalse(parser)
         case start == b'\"' => return parseJsonString(parser)
         case start >= b'0' && start <= b'9' || start == b'-' => return parseJsonNumber(parser)
         case _ => throw JsonException()
-    }
-}
-
-func parseNestedJson(parser: JsonParser, block: () -> JsonValue): JsonValue {
-    parser.depth++
-    if (parser.depth > MAX_JSON_PARSE_DEPTH) {
-        throw JsonException("Json nested depth exceeds ${MAX_JSON_PARSE_DEPTH}.")
-    }
-    try {
-        return block()
-    } finally {
-        parser.depth--
     }
 }
 
@@ -506,12 +508,133 @@ func parseJsonNumberSlow(parser: JsonParser): JsonValue {
     return JsonInt(Int64.parse(numStr))
 }
 
-func parseJsonNumber(parser: JsonParser): JsonValue {
-    let (success, value) = tryParseJsonIntFast(parser)
-    if (success) {
-        return JsonInt(value)
+// Scan a standard JSON decimal once. The old path first scanned every token
+// as an integer and then restored parser.offset for fractional/exponent
+// tokens, causing all floating-point values to be scanned a second time by
+// parseJsonNumberSlow. A false result restores the original offset so callers
+// can preserve the extension-number and overflow slow paths unchanged.
+func tryParseJsonDecimalNumber(parser: JsonParser): (Bool, Int64, Int64, Bool, UInt64, Bool) {
+    let start = parser.offset
+    var negative = false
+    if (parser.data[parser.offset] == b'-') {
+        negative = true
+        parser.offset++
+        if (parser.offset >= parser.size) {
+            parser.offset = start
+            return (false, start, start, false, 0, negative)
+        }
     }
-    return parseJsonNumberSlow(parser)
+
+    let first = parser.data[parser.offset]
+    if (first < b'0' || first > b'9') {
+        parser.offset = start
+        return (false, start, start, false, 0, negative)
+    }
+    if (first == b'0' && parser.offset + 1 < parser.size) {
+        let next = parser.data[parser.offset + 1]
+        if (next >= b'0' && next <= b'9') {
+            throw JsonException()
+        }
+        if (next == b'b' || next == b'B' || next == b'o' || next == b'O' || next == b'x' ||
+            next == b'X' || next == b'd' || next == b'D') {
+            parser.offset = start
+            return (false, start, start, false, 0, negative)
+        }
+    }
+
+    var integerValue: UInt64 = 0
+    var overflow = false
+    while (parser.offset < parser.size) {
+        let next = parser.data[parser.offset]
+        if (next < b'0' || next > b'9') {
+            break
+        }
+        let digit = UInt64(next - b'0')
+        if (!overflow) {
+            if (integerValue > DECIMAL_OVERFLOW_LIMIT_UI64) {
+                overflow = true
+            } else {
+                let multiplied = integerValue * 10
+                if (MAXVAL_UI64 - multiplied < digit) {
+                    overflow = true
+                } else {
+                    integerValue = multiplied + digit
+                }
+            }
+        }
+        parser.offset++
+    }
+
+    var isFloat = false
+    if (parser.offset < parser.size && parser.data[parser.offset] == b'.') {
+        isFloat = true
+        parser.offset++
+        let fractionStart = parser.offset
+        while (parser.offset < parser.size) {
+            let next = parser.data[parser.offset]
+            if (next < b'0' || next > b'9') {
+                break
+            }
+            parser.offset++
+        }
+        if (parser.offset == fractionStart) {
+            throw JsonException()
+        }
+    }
+    if (parser.offset < parser.size &&
+        (parser.data[parser.offset] == b'e' || parser.data[parser.offset] == b'E')) {
+        isFloat = true
+        parser.offset++
+        if (parser.offset < parser.size &&
+            (parser.data[parser.offset] == b'+' || parser.data[parser.offset] == b'-')) {
+            parser.offset++
+        }
+        let exponentStart = parser.offset
+        while (parser.offset < parser.size) {
+            let next = parser.data[parser.offset]
+            if (next < b'0' || next > b'9') {
+                break
+            }
+            parser.offset++
+        }
+        if (parser.offset == exponentStart) {
+            throw JsonException()
+        }
+    }
+
+    let end = parser.offset
+    if (!isFloat) {
+        if (overflow || (negative && integerValue > MAXABSVAL_I64) ||
+            (!negative && integerValue > MAXVAL_I64)) {
+            parser.offset = start
+            return (false, start, start, false, 0, negative)
+        }
+    }
+    return (true, start, end, isFloat, integerValue, negative)
+}
+
+func parseJsonNumber(parser: JsonParser): JsonValue {
+    let (success, start, end, isFloat, integerValue, negative) = tryParseJsonDecimalNumber(parser)
+    if (!success) {
+        return parseJsonNumberSlow(parser)
+    }
+    if (!isFloat) {
+        if (negative && integerValue == MAXABSVAL_I64) {
+            return JsonInt(MINVAL_I64)
+        }
+        let result = if (negative) {
+            -Int64(integerValue)
+        } else {
+            Int64(integerValue)
+        }
+        return JsonInt(result)
+    }
+    unsafe {
+        let input = acquireArrayRawData(parser.data)
+        let value = CJ_JSON_ParseFloat64(input.pointer, start, end)
+        releaseArrayRawData(input)
+        return JsonFloat(ensureFiniteJsonFloat(value), parser.data, start, end - start)
+    }
 }
 
 func parseSign(parser: JsonParser): Unit {
