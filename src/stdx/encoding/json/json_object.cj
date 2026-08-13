@@ -555,6 +555,7 @@ public class JsonArray <: JsonValue {
     private var items: ArrayList<JsonValue>
 
     protected override func writeCompactTo(buff: WriteBuffer, depth: Int64, htmlSafe: Bool): Unit {
+        checkJsonWriteDepth(depth)
         if (items.size == 0) {
             buff.append(EMPTY_ARRAY_BYTES)
             return
@@ -774,6 +775,7 @@ public class JsonObject <: JsonValue {
     private var fields: HashMap<String, JsonValue>
 
     protected override func writeCompactTo(buff: WriteBuffer, depth: Int64, htmlSafe: Bool): Unit {
+        checkJsonWriteDepth(depth)
         if (fields.size == 0) {
             buff.append(EMPTY_OBJECT_BYTES)
             return

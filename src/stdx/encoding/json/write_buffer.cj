@@ -279,7 +279,6 @@ func jsonWriteWithoutFormat(json: JsonValue, buff: WriteBuffer, htmlSafe!: Bool 
 }
 
 func jsonWriteWithoutFormat(json: JsonValue, buff: WriteBuffer, depth: Int64, htmlSafe!: Bool = true): Unit {
-    checkJsonWriteDepth(depth)
     json.writeCompactTo(buff, depth, htmlSafe)
 }
 
