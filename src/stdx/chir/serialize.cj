@@ -580,7 +580,11 @@ class CHIRSerializerImpl {
             UInt32(0)
         }
         valueKind[Int64(valueId) - 1] = EnumPackageFormat_ValueElemValues(PackageFormat_ValueElem.ValueElem_BLOCK)
-        return PackageFormat_Block.createBlock(fbBuilder, base, parentGroup, exprsVec, predecessorsVec, obj.isLandingPadBlock, exceptionCatchListVec)
+        let hasMatchCaseId = obj._matchCaseId.isSome()
+        assert(!hasMatchCaseId || obj._isPatternBlock, "match case id is only valid on a pattern block")
+        let matchCaseId = if (let Some(caseId) <- obj._matchCaseId) { caseId } else { UInt64(0) }
+        return PackageFormat_Block.createBlock(fbBuilder, base, parentGroup, exprsVec, predecessorsVec, obj.isLandingPadBlock,
+            exceptionCatchListVec, obj._isPatternBlock, hasMatchCaseId, matchCaseId)
     }
 
     private func serializeBlockGroup(obj: BlockGroup, base: UInt32, valueId: UInt32): UInt32 {
@@ -670,7 +674,9 @@ class CHIRSerializerImpl {
         var resultLocalVar: UInt32 = if (let Some(v) <- obj._result) { getId(v) } else { UInt32(0) }
         var resultTy: UInt32 = if (let Some(v) <- obj._result) { getId(v._type) } else { UInt32(0) }
 
-        return PackageFormat_Expression.createExpression(fbBuilder, base, kind, operandsVec, blockGroupsVec, parentBlock, resultLocalVar, resultTy)
+        let isPatternGoTo = if (let Some(goTo) <- (obj as GoTo)) { goTo._isPatternGoTo } else { false }
+        return PackageFormat_Expression.createExpression(
+            fbBuilder, base, kind, operandsVec, blockGroupsVec, parentBlock, resultLocalVar, resultTy, isPatternGoTo)
     }
 
     private func serializeExprKind(kind: ExprKind): PackageFormat_CHIRExprKind {
@@ -784,6 +790,7 @@ class CHIRSerializerImpl {
             case SourceExpr.Quest => PackageFormat_SourceExpr.SourceExpr_QUEST
             case SourceExpr.Binary => PackageFormat_SourceExpr.SourceExpr_BINARY
             case SourceExpr.ForInExpr => PackageFormat_SourceExpr.SourceExpr_FOR_IN_EXPR
+            case SourceExpr.MatchCase => PackageFormat_SourceExpr.SourceExpr_MATCH_CASE
             case SourceExpr.Other => PackageFormat_SourceExpr.SourceExpr_OTHER
         }
     }
@@ -1231,7 +1238,8 @@ class CHIRSerializerImpl {
                 exprKind[Int64(exprId) - 1] = EnumPackageFormat_ExpressionElemValues(PackageFormat_ExpressionElem.ExpressionElem_MULTIBRANCH)
                 let caseValues = Array<UInt64>(e.caseValues.size, { i => e.caseValues[i] })
                 let caseValuesVec = if (caseValues.isEmpty()) { UInt32(0) } else { fbBuilder.createUInt64Vector(caseValues) }
-                PackageFormat_MultiBranch.createMultiBranch(fbBuilder, base, caseValuesVec)
+                let sourceExpr = serializeSourceExpr(e._sourceExpr)
+                PackageFormat_MultiBranch.createMultiBranch(fbBuilder, base, caseValuesVec, sourceExpr)
             case e: NumericCastBase =>
                 exprKind[Int64(exprId) - 1] = EnumPackageFormat_ExpressionElemValues(PackageFormat_ExpressionElem.ExpressionElem_NUMERICCASTBASE)
                 let overflowStrategy = serializeOverflowStrategy(e._overflow)

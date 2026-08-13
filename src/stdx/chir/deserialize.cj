@@ -640,7 +640,14 @@ class CHIRDeserializerImpl {
 
     private func deserializeBlock(blockFormat: PackageFormat_Block): Block {
         let parentGroup = getValueAs<BlockGroup>(blockFormat.GetParentGroup())
-        return Block("", parentGroup)
+        let block = Block("", parentGroup)
+        block._isPatternBlock = blockFormat.GetIsPatternBlock()
+        assert(!blockFormat.GetHasMatchCaseId() || block._isPatternBlock,
+            "match case id is only valid on a pattern block")
+        if (blockFormat.GetHasMatchCaseId()) {
+            block._matchCaseId = Some(blockFormat.GetMatchCaseId())
+        }
+        return block
     }
 
     private func deserializeBlockGroup(blockGroupFormat: PackageFormat_BlockGroup): BlockGroup {
@@ -870,6 +877,13 @@ class CHIRDeserializerImpl {
     private func configExpression(exprFormat: PackageFormat_Expression, expr: Expression) {
         configBase(exprFormat.GetBase().getOrThrow(), expr)
 
+        assert(!exprFormat.GetIsPatternGoTo() || expr._kind == ExprKind.Goto,
+            "pattern goto metadata is only valid on GoTo")
+        if (exprFormat.GetIsPatternGoTo()) {
+            let goTo = (expr as GoTo).getOrThrow()
+            goTo._isPatternGoTo = true
+        }
+
         expr._owner = getValueAs<Block>(exprFormat.GetOwner())
         // some terminators don't have result
         if (let Some(v) <- tryGetType(exprFormat.GetResultTy())) {
@@ -992,6 +1006,7 @@ class CHIRDeserializerImpl {
             case PackageFormat_SourceExpr.SourceExpr_QUEST => SourceExpr.Quest
             case PackageFormat_SourceExpr.SourceExpr_BINARY => SourceExpr.Binary
             case PackageFormat_SourceExpr.SourceExpr_FOR_IN_EXPR => SourceExpr.ForInExpr
+            case PackageFormat_SourceExpr.SourceExpr_MATCH_CASE => SourceExpr.MatchCase
             case PackageFormat_SourceExpr.SourceExpr_OTHER => SourceExpr.Other
         }
     }
@@ -1666,7 +1681,9 @@ class CHIRDeserializerImpl {
             targets.add(getValueAs<Block>(operands[i]))
         }
         let caseValues = collectArrayList<UInt64>(exprFormat.GetCaseValues())
-        return MultiBranch(condition, defaultTarget, targets, caseValues)
+        let expr = MultiBranch(condition, defaultTarget, targets, caseValues)
+        expr._sourceExpr = convertSourceExpr(exprFormat.GetSourceExpr())
+        return expr
     }
 
     private func deserializeDebug(exprFormat: PackageFormat_Debug): Debug {

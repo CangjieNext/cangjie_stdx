@@ -247,6 +247,8 @@ sealed abstract class Value <: Base & ToString & Hashable & Equatable<Value> {
 public class Block <: Value & Equatable<Block> {
     internal var _exceptions: ?ArrayList<ClassLikeType> = None
     internal var _exprs = ArrayList<Expression>()
+    internal var _isPatternBlock = false
+    internal var _matchCaseId: ?UInt64 = None
     internal var _owner: BlockGroup
     internal var _predecessors = ArrayList<Block>()
 

@@ -560,6 +560,7 @@ internal enum SourceExpr {
     | Quest
     | Binary
     | ForInExpr
+    | MatchCase
     | Other
 }
 
@@ -2255,6 +2256,8 @@ public class GetRTTIStatic <: Expression & Equatable<GetRTTIStatic> {
  * Public definition of GoTo.
  */
 public class GoTo <: Expression & Equatable<GoTo> {
+    internal var _isPatternGoTo = false
+
     internal init(target: Block) {
         super(ExprKind.Goto)
         _operands.add(target)
@@ -2596,6 +2599,7 @@ public class Load <: Expression & Equatable<Load> {
  */
 public class MultiBranch <: Expression & Equatable<MultiBranch> {
     internal let _caseValues: ArrayList<UInt64>
+    internal var _sourceExpr: SourceExpr = SourceExpr.Other
 
     /**
      * Gets the `caseValues` property.
