@@ -2399,7 +2399,7 @@ public func flush(): Unit
 
 异常：
 
-- [TarException](tar_package_exceptions.md#class-tarexception) - 如果写入已结束（调用 [finish()](#func-flush) 之后），则抛出异常。
+- [TarException](tar_package_exceptions.md#class-tarexception) - 如果写入已结束（调用 [finish()](#func-finish) 之后），则抛出异常。
 
 示例：
 
