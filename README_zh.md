@@ -19,7 +19,7 @@
 - logger: 提供了文本格式和 JSON 格式日志打印功能。
 - net: 提供了网络通信和安全传输功能。
 - serialization: 提供了序列化和反序列化的能力。
-- syntax：提供了对仓颉源码进行语法解析的功能。
+- syntax: 提供了对仓颉源码进行语法解析的功能。
 - unittest: 提供了在编写仓颉项目单元测试代码时输入序列化格式的测试数据的能力。
 
 ## 使用说明
@@ -71,7 +71,7 @@ bash -c "$(curl -fsSL https://raw.gitcode.com/Cangjie/cangjie_stdx/raw/main/down
 ```
 
 ```powershell
-# 在 Windows 下载 v1.0.0.1 的 linux-x64 版本，并解压到 C:\cangjie_libs 目录
+# 在 Windows 下载 v1.0.0.1 的 windows-x64 版本，并解压到 C:\cangjie_libs 目录
 irm https://raw.gitcode.com/Cangjie/cangjie_stdx/raw/main/downloader.ps1 -OutFile "$env:TEMP\downloader.ps1"; & "$env:TEMP\downloader.ps1" 1.0.0.1 -p windows-x64 -d C:\cangjie_libs
 ```
 
@@ -93,7 +93,7 @@ irm https://raw.gitcode.com/Cangjie/cangjie_stdx/raw/main/downloader.ps1 -OutFil
 /stdx
 ├─ build                        # 工程构建目录，编译构建工具、脚本等
 ├─ doc                          # stdx 库资料目录
-├─ figures                      # 存放readme中的架构图
+├─ figures                      # 存放 README中的架构图
 ├─ src                          # stdx 各个包代码目录
 │   └─ stdx
 │       ├── actors              # 提供 Actors 功能                     
@@ -118,7 +118,7 @@ irm https://raw.gitcode.com/Cangjie/cangjie_stdx/raw/main/downloader.ps1 -OutFil
 
 ## 约束
 
-支持在 Ubuntu/macOS(x86_64, aarch64)、Cangjie SDK 1.0.0 及以上版本中对 `stdx` 构建。更详细的环境及工具依赖请参阅 [构建依赖工具](https://gitcode.com/Cangjie/cangjie_build/blob/main/docs/env.md)。
+支持在 Ubuntu/macOS/Windows(x86_64, aarch64)、Cangjie SDK 1.0.0 及以上版本中对 `stdx` 构建。更详细的环境及工具依赖请参阅 [构建依赖工具](https://gitcode.com/Cangjie/cangjie_build/blob/main/docs/env.md)。
 
 注意：本拓展库后续版本可能存在不兼容变更，不承诺跨版本 API/ABI 兼容性，使用前请充分评估版本适配风险。
 
@@ -205,7 +205,7 @@ cjpm 的详细使用可以参考 [cjpm 文档](https://gitcode.com/Cangjie/cangj
 - x86_64-w64-mingw32：该配置项表示代码编译所在机器的操作系统架构信息。该信息可以通过执行 `cjc -v` 获得。开发者请根据实际情况配置。例如执行 `cjc -v` 的回显信息如下，则该配置为 `x86_64-w64-mingw32` 。
 
   ```text
-  Cangjie Compiler: 0.60.5 (cjnative)
+  Cangjie Compiler:1.0.0 (cjnative)
   Target: x86_64-w64-mingw32
   ```
 
@@ -314,7 +314,7 @@ cjc main.cj \
 [dependencies]
 
 [package]
-  cjc-version = "0.60.5"
+  cjc-version = "1.0.0"
   compile-option = ""
   description = "nothing here"
   link-option = ""
@@ -337,7 +337,7 @@ cjc main.cj \
 
 **import stdx.fullPackageName.itemName**
 
-其中 `fullPackageName` 为[包列表](./doc/libs_stdx/libs_overview.md#包列表)给出的包名，`itemName` 为可见声明或定义的名字,  `*` 表示导入所有可见的顶层声明或定义，例如：
+其中 `fullPackageName` 为[包列表](./doc/libs_stdx/libs_overview.md#包列表)给出的包名，`itemName` 为可见声明或定义的 名字， `*` 表示导入所有可见的顶层声明或定义，例如：
 
 - import stdx.net.http.ServerBuilder：导入 stdx 模块的 net.http 包中的【顶层声明】ServerBuilder。
 - import stdx.net.http.\* ：导入 stdx 模块的 net.http 包。
@@ -351,7 +351,7 @@ cjc main.cj \
 [dependencies]
 
 [package]
-  cjc-version = "0.60.5"
+  cjc-version = "1.0.0"
   compile-option = "-ldl"
   description = "nothing here"
   link-option = ""
