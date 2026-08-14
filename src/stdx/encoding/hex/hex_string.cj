@@ -53,7 +53,7 @@ func unhex(c: UInt8): UInt8 {
 }
 
 /*
- * Converts the UInt8 collection to a character string (HexToString encodinkg).
+ * Converts the UInt8 collection to a character string (HexToString encoding ).
  * ASCII: A (65)
  * Binary code: 0100 _ 0001
  * Regroup: 0000 _ 0100 0000 _ 0001
