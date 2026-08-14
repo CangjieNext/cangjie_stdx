@@ -83,7 +83,7 @@ public class JsonNull <: JsonValue { // cjlint-ignore !G.ENU.01
     /**
      * Convert JsonNull to String.
      *
-     * @return json-converted String is "".
+     * @return json-converted String is "null".
      *
      * @since 0.17.4
      */
