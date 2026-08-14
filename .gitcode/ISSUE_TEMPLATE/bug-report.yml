@@ -6,31 +6,31 @@ body:
   - type: markdown
     attributes:
       value: |
-        感谢对仓颉社区的支持与关注，欢迎反馈缺陷。 | Thanks for your support and attention to the community. We welcome feedback on any issues.
+        感谢对仓颉社区的支持与关注，欢迎向我们反馈缺陷。 | Thanks for your support and attention to the community. We welcome feedback on any issues.
   - type: textarea
     attributes:
       label: "发生了什么问题？ | Describe the issue that occurred."
-      description: "提供尽可能多的信息描述产生了什么问题： | Provide as much information as possible describing what issue occurred."
+      description: "提供尽可能多的信息来描述发生了什么问题： | Provide as much information as possible describing what issue occurred."
       placeholder: ""
     validations:
       required: true
   - type: textarea
     attributes:
       label: "期望行为是什么？ | What is the expected behavior?"
-      description: "描述期望行为或效果应如何： | Describe what the expected behavior or effect should be."
+      description: "描述期望行为或效果： | Describe what the expected behavior or effect should be."
       placeholder: ""
     validations:
       required: true
   - type: textarea
     attributes:
       label: "如何复现该缺陷 | How to reproduce the bug"
-      description: "提供尽可能多的信息描述如何复现该缺陷，如最小可复现用例代码，错误行为截图等： | Provide as much information as possible on how to reproduce the bug, such as a minimal reproducible code example, screenshots of the error behavior, etc."
+      description: "提供尽可能多的信息来描述如何复现该缺陷，如最小可复现用例（代码）、报错截图等： | Provide as much information as possible on how to reproduce the bug, such as a minimal reproducible code example, screenshots of the error behavior, etc."
     validations:
       required: true
   - type: textarea
     attributes:
       label: "其他补充信息 | Additional information"
-      description: "补充下其他您认为需要提供的信息： | Add any other information you think is necessary to provide."
+      description: "补充下补充其他您认为需要提供的信息： | Add any other information you think is necessary to provide."
     validations:
       required: false
   - type: textarea
