@@ -1494,7 +1494,7 @@ public static func server(
 
 参数：
 
-- socket: StreamingSocket - TCP 连接建立完成后接受到套接字。
+- socket: StreamingSocket - TCP 连接建立完成后接收到套接字。
 - session!: ?[TlsServerSession](tls_package_classes.md#class-tlsserversession) - TLS 会话 id， 若存在可用的 TLS 会话， 则可通过该 id 恢复历史 TLS 会话，省去 TLS 建立连接时间，但使用该会话依然可能协商失败。默认为 None。
 - serverConfig!: [KeylessTlsServerConfig](./tls_package_classes.md#class-keylesstlsserverconfig) - 服务端配置。
 
