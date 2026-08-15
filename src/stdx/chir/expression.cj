@@ -329,7 +329,7 @@ internal enum IntrinsicKind {
     GetTypeTemplate |
     CheckMethodActualArgs |
     MethodEntrypointIsNull |
-    IsRelectUnsupportedType |
+    IsReflectUnsupportedType |
     GetTypeForAny |
     GetTypeByMangledName |
     GetTypeName |
@@ -376,7 +376,7 @@ internal enum IntrinsicKind {
     GetParameterName |
     GetParameterType |
     GetParameterAnnotations |
-    GetRelatedPackageInf |
+    GetRelatedPackageInfo |
     GetPackageName |
     GetPackageNumOfTypeInfos |
     GetPackageTypeInfo |
@@ -410,9 +410,9 @@ internal enum IntrinsicKind {
     MutexUnlock |
     WaitQueueInit |
     MonitorInit |
-    MoitiorWait |
-    MoitiorNotify |
-    MoitiorNotifyAll |
+    Monitorait |
+    MonitorNotify |
+    MonitorNotifyAll |
     MulticonditionWait |
     MulticonditionNotify |
     MulticonditionNotifyAll |
@@ -2212,7 +2212,7 @@ public class GetInstantiateValue <: Expression & Equatable<GetInstantiateValue> 
  */
 public class GetRTTI <: Expression & Equatable<GetRTTI> {
     internal init(val: Value) {
-        super(ExprKind.GetRtti, ArrayList<Value>([val]))
+        super(ExprKind.GetRTTI, ArrayList<Value>([val]))
         addOperandUsers()
     }
 
@@ -2293,7 +2293,7 @@ public class GetRTTIStatic <: Expression & Equatable<GetRTTIStatic> {
  */
 public class GoTo <: Expression & Equatable<GoTo> {
     internal init(target: Block) {
-        super(ExprKind.Goto)
+        super(ExprKind.GoTo)
         _operands.add(target)
         addOperandUsers()
     }
