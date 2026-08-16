@@ -10,6 +10,7 @@
 
 - actors: 提供了一种并发编程模型，旨在简化并发任务的处理。
 - aspect_cj: 提供了 Cangjie 中面向切面编程的相关注解。
+- chir: 提供了仓颉中间表示（IR）相关功能，用于构建和操作程序 IR。
 - compress: 提供了压缩解压功能。
 - crypto: 提供了密码学操作的工具库。
 - effect: 提供了一种强大的非局部控制操作。
@@ -18,7 +19,9 @@
 - log: 提供了一个单一的日志 API。
 - logger: 提供了文本格式和 JSON 格式日志打印功能。
 - net: 提供了网络通信和安全传输功能。
+- plugin: 提供了插件管理能力，用于扩展仓颉功能。
 - serialization: 提供了序列化和反序列化的能力。
+- string_intern: 提供了 string 对象的池化缓存能力。
 - syntax：提供了对仓颉源码进行语法解析的功能。
 - unittest: 提供了在编写仓颉项目单元测试代码时输入序列化格式的测试数据的能力。
 
@@ -71,7 +74,7 @@ bash -c "$(curl -fsSL https://raw.gitcode.com/Cangjie/cangjie_stdx/raw/main/down
 ```
 
 ```powershell
-# 在 Windows 下载 v1.0.0.1 的 linux-x64 版本，并解压到 C:\cangjie_libs 目录
+# 在 Windows 下载 v1.0.0.1 的 windows-x64 版本，并解压到 C:\cangjie_libs 目录
 irm https://raw.gitcode.com/Cangjie/cangjie_stdx/raw/main/downloader.ps1 -OutFile "$env:TEMP\downloader.ps1"; & "$env:TEMP\downloader.ps1" 1.0.0.1 -p windows-x64 -d C:\cangjie_libs
 ```
 
@@ -98,6 +101,7 @@ irm https://raw.gitcode.com/Cangjie/cangjie_stdx/raw/main/downloader.ps1 -OutFil
 │   └─ stdx
 │       ├── actors              # 提供 Actors 功能                     
 │       ├── aspect_cj           # 提供 AOP 功能
+│       ├── chir                # 提供仓颉 IR 功能
 │       ├── compress            # 提供压缩和解压缩功能
 │       ├── crypto              # 提供安全相关能力
 │       ├── effect              # 提供用于处理 Effect Handler 特性的用户级 API。这是一个实验性功能，需要使用支持该机制的 Cangjie 编译器。
@@ -107,6 +111,7 @@ irm https://raw.gitcode.com/Cangjie/cangjie_stdx/raw/main/downloader.ps1 -OutFil
 │       ├── log                 # 提供了日志记录相关的能力
 │       ├── logger              # 提供文本格式和 JSON 格式日志打印功能
 │       ├── net                 # 提供网络通信等能力
+│       ├── plugin              # 提供插件管理能力
 │       ├── serialization       # 提供序列化和反序列化能力
 │       ├── string_intern       # 提供string对象的池化缓存能力
 │       ├── syntax              # 提供语法解析能力

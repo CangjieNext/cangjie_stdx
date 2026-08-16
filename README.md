@@ -10,6 +10,7 @@ Architecture Diagram:
 
 - actors: Provides a concurrent programming model designed to simplify the handling of concurrent tasks.
 - aspect_cj: Provides annotations related to aspect-oriented programming in Cangjie.
+- chir: Provides Cangjie Intermediate Representation (IR) related functionality for building and manipulating program IR.
 - compress: Provides compression and decompression functions.
 - crypto: Provides a utility library for cryptographic operations.
 - effect: Provides a powerful non-local control operation.
@@ -18,6 +19,7 @@ Architecture Diagram:
 - log: Provides a single logging API.
 - logger: Provides log printing functions in text format and JSON format.
 - net: Provides network communication and secure transmission functions.
+- plugin: Provides plugin management capabilities for extending Cangjie functionality.
 - serialization: Provides the capability of serialization and deserialization.
 - string_intern: Provides polled caching capability for string objects.
 - syntax: Provides Cangjie source code syntax parsing functions.
@@ -99,6 +101,7 @@ The following platform and architecture combinations are currently supported:
 │   └─ stdx
 │       ├── actors              # Provides Actors
 │       ├── aspect_cj           # Provides AOP
+│       ├── chir                # Provides Cangjie IR
 │       ├── compress            # Provides compression and decompression
 │       ├── crypto              # Provide security related capabilities
 │       ├── effect              # Provides user-level APIs for handling the Effect Handler feature. This is an experimental feature and requires the use of a Cangjie compiler that supports this mechanism.
@@ -108,6 +111,7 @@ The following platform and architecture combinations are currently supported:
 │       ├── log                 # Provides logging related
 │       ├── logger              # Provides log printing functions in text format and JSON format
 │       ├── net                 # Provide network communication and other capabilities
+│       ├── plugin              # Provides plugin management capabilities
 │       ├── serialization       # Provides serialization and deserialization
 │       ├── string_intern       # Provides polled caching capability for string objects
 │       ├── syntax              # Provides syntax parsing functions
@@ -210,7 +214,7 @@ explain:
 - x86_64-w64-mingw32：This configuration item indicates the operating system architecture information of the machine where the code is compiled. This information can be obtained by executing `cjc -v`. Developers should configure according to the actual situation. For example, the output of executing `cjc -v` is as follows, and the configuration is `x86_64-w64-mingw32`.
 
   ```text
-  Cangjie Compiler: 0.59.4 (cjnative)
+  Cangjie Compiler: 0.60.5 (cjnative)
   Target: x86_64-w64-mingw32
   ```
 
@@ -320,7 +324,7 @@ Use `static-static-link-extern/stdx` when you want an explicit static-link contr
 [dependencies]
 
 [package]
-  cjc-version = "0.59.4"
+  cjc-version = "0.60.5"
   compile-option = ""
   description = "nothing here"
   link-option = ""
@@ -357,7 +361,7 @@ Assuming that the developer is developing on Linux and wants to import the stati
 [dependencies]
 
 [package]
-  cjc-version = "0.59.4"
+  cjc-version = "0.60.5"
   compile-option = "-ldl"
   description = "nothing here"
   link-option = ""
