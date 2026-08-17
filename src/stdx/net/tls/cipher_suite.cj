@@ -13,7 +13,7 @@ import stdx.net.tls.common.*
 public struct CipherSuite <: ToString & Equatable<CipherSuite> {
     CipherSuite(let name: String) {
         if (name.isEmpty()) {
-            throw IllegalArgumentException("Cipher suite name cannot be empty.")
+            throw IllegalArgumentException("Invalid argument 'name': is empty.")
         }
     }
 
@@ -33,7 +33,7 @@ public struct CipherSuite <: ToString & Equatable<CipherSuite> {
         get() {
             let suites = unsafe { CJ_TLS_GetAllCipherSuites() }
             if (suites.isNull()) {
-                throw TlsException("Unable to get supported cipher suites.")
+                throw TlsException("Failed to get supported cipher suites.")
             }
 
             let result = ArrayBuilder<CipherSuite>()
@@ -99,7 +99,7 @@ extend TlsRawSocket {
             nativeStream, _ =>
             let cipherSuiteRaw: CPointer<TlsCipherSuite> = unsafe { CJ_TLS_GetCipherSuite(nativeStream) }
             if (cipherSuiteRaw.isNull()) {
-                throw TlsException("Unable to get cipherSuite.")
+                throw TlsException("Failed to get cipher suite.")
             }
 
             try {

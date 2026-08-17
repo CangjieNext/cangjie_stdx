@@ -38,7 +38,7 @@ extend TlsRawSocket {
                 result = CJ_TLS_SetHostName(stream, cstring.value, exception)
             }
             if (result == 0) {
-                exception.read().throwException(fallback: "Cannot set hostname on client.")
+                exception.read().throwException(fallback: "Failed to set hostname.")
             }
         }
     }
@@ -56,7 +56,7 @@ extend TlsRawSocket {
                 result = CJ_TLS_SetHostNameForVerify(stream, cstring.value)
             }
             if (result == 0) {
-                throw TlsException("Cannot set hostname for verification.")
+                throw TlsException("Failed to set hostname for verification.")
             }
         }
     }
