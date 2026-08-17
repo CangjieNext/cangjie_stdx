@@ -103,6 +103,21 @@ sealed abstract class JsonValue <: ToString {
     }
 
     /**
+     * Parses owned UTF-8 JSON bytes into JsonValue without copying the input.
+     *
+     * The returned DOM may retain slices of `data`. Ownership transfers to the
+     * DOM when this function is called; the caller must not modify `data` or any
+     * array view sharing its backing storage after the call.
+     *
+     * @param data Owned UTF-8 encoded JSON bytes.
+     * @return parsed JsonValue retaining the supplied byte-array storage.
+     * @throws JsonException if data is invalid UTF-8 or JSON is non-standard.
+     */
+    public static func fromOwnedUtf8Bytes(data: Array<Byte>): JsonValue {
+        parseOwnedUtf8Bytes(data)
+    }
+
+    /**
      * Convert JsonValue to a JSON string using the caller-provided output capacity.
      *
      * @param capacity Initial output-buffer capacity in bytes.

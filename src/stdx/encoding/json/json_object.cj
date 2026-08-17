@@ -15,6 +15,20 @@ package stdx.encoding.json
 
 import std.collection.*
 
+const SMALL_JSON_OBJECT_CAPACITY = 8
+
+// Object keys are always written in HTML-safe mode. Cache only their aggregate
+// safety on JsonObject so ordinary JsonString nodes keep their compact layout.
+func isJsonObjectKeyHtmlSafe(value: String): Bool {
+    let data = unsafe { value.rawData() }
+    for (b in data) {
+        if (b < 32 || b == 127 || b == b'\"' || b == b'\\' || b == b'&') {
+            return false
+        }
+    }
+    return true
+}
+
 /**
  * JsonNull class used for encapsulate JSON data: null.
  */
@@ -734,23 +748,97 @@ public class JsonArray <: JsonValue {
  * JsonObject class used for encapsulate JSON data: object.
  */
 public class JsonObject <: JsonValue {
-    /* Json data of the JsonObject(HashMap<String,JsonValue>). */
-    private var fields: HashMap<String, JsonValue>
+    // Most parsed objects have only a handful of fields. Keep those entries in
+    // one sequential backing array and allocate HashMap buckets only after the
+    // ninth distinct key (or when the public map view must escape).
+    private var flatFields: Array<(String, JsonValue)>
+    private var flatSize: Int64
+    private var hashFields: ?HashMap<String, JsonValue>
+    private var allKeysHtmlSafe: Bool
 
     protected override func writeCompactTo(buff: WriteBuffer, depth: Int64, htmlSafe: Bool): Unit {
         checkJsonWriteDepth(depth)
-        if (fields.size == 0) {
+        if (size() == 0) {
             buff.append(EMPTY_OBJECT_BYTES)
             return
         }
         buff.append(b'{')
-        for ((strKey, jv) in fields) {
-            buff.append(b'\"').appendEscape(strKey).append(KEY_VALUE_SEPARATOR_BYTES)
-            jsonWriteWithoutFormat(jv, buff, depth + 1, htmlSafe: htmlSafe)
-            buff.append(b',')
+        match (hashFields) {
+            case Some(fields) =>
+                for ((key, value) in fields) {
+                    writeCompactField(buff, key, value, depth, htmlSafe)
+                }
+            case None =>
+                for (i in 0..flatSize) {
+                    let field = flatFields[i]
+                    writeCompactField(buff, field[0], field[1], depth, htmlSafe)
+                }
         }
         buff.removetail()
         buff.append(b'}')
+    }
+
+    private func writeCompactField(
+        buff: WriteBuffer,
+        key: String,
+        value: JsonValue,
+        depth: Int64,
+        htmlSafe: Bool
+    ): Unit {
+        buff.append(b'\"')
+        if (allKeysHtmlSafe) {
+            buff.append(key)
+        } else {
+            buff.appendEscape(key)
+        }
+        buff.append(KEY_VALUE_SEPARATOR_BYTES)
+        jsonWriteWithoutFormat(value, buff, depth + 1, htmlSafe: htmlSafe)
+        buff.append(b',')
+    }
+
+    private func promoteToHashFields(): HashMap<String, JsonValue> {
+        match (hashFields) {
+            case Some(fields) => return fields
+            case None =>
+                let fields = HashMap<String, JsonValue>(flatSize + 1)
+                for (i in 0..flatSize) {
+                    let field = flatFields[i]
+                    fields.add(field[0], field[1])
+                }
+                hashFields = Some(fields)
+                flatFields = Array<(String, JsonValue)>()
+                flatSize = 0
+                return fields
+        }
+    }
+
+    private func putField(key: String, value: JsonValue): Unit {
+        match (hashFields) {
+            case Some(fields) => fields.add(key, value)
+            case None =>
+                for (i in 0..flatSize) {
+                    if (flatFields[i][0] == key) {
+                        flatFields[i] = (key, value)
+                        return
+                    }
+                }
+                if (flatSize < SMALL_JSON_OBJECT_CAPACITY) {
+                    flatFields[flatSize] = (key, value)
+                    flatSize++
+                } else {
+                    promoteToHashFields().add(key, value)
+                }
+        }
+    }
+
+    private func getFlatField(key: String): Option<JsonValue> {
+        for (i in 0..flatSize) {
+            let field = flatFields[i]
+            if (field[0] == key) {
+                return Some(field[1])
+            }
+        }
+        return None
     }
 
     /**
@@ -760,11 +848,31 @@ public class JsonObject <: JsonValue {
      * @since 0.17.4
      */
     public init() {
-        fields = HashMap<String, JsonValue>()
+        flatFields = Array<(String, JsonValue)>(
+            SMALL_JSON_OBJECT_CAPACITY,
+            repeat: unsafe { zeroValue<(String, JsonValue)>() }
+        )
+        flatSize = 0
+        hashFields = None
+        allKeysHtmlSafe = true
     }
 
     init(capacity: Int64) {
-        fields = HashMap<String, JsonValue>(capacity)
+        if (capacity < 0) {
+            throw IllegalArgumentException("Invalid size of JsonObject: ${capacity}.")
+        }
+        if (capacity <= SMALL_JSON_OBJECT_CAPACITY) {
+            flatFields = Array<(String, JsonValue)>(
+                SMALL_JSON_OBJECT_CAPACITY,
+                repeat: unsafe { zeroValue<(String, JsonValue)>() }
+            )
+            hashFields = None
+        } else {
+            flatFields = Array<(String, JsonValue)>()
+            hashFields = Some(HashMap<String, JsonValue>(capacity))
+        }
+        flatSize = 0
+        allKeysHtmlSafe = true
     }
 
     /**
@@ -776,7 +884,12 @@ public class JsonObject <: JsonValue {
      * @since 0.17.4
      */
     public init(map: HashMap<String, JsonValue>) {
-        fields = map
+        flatFields = Array<(String, JsonValue)>()
+        flatSize = 0
+        hashFields = Some(map)
+        // The caller retains a mutable reference to map, so a permanent
+        // conservative fallback is required for correctness.
+        allKeysHtmlSafe = false
     }
 
     /**
@@ -896,7 +1009,10 @@ public class JsonObject <: JsonValue {
      * @since 0.17.4
      */
     public func size(): Int64 {
-        return fields.size
+        return match (hashFields) {
+            case Some(fields) => fields.size
+            case None => flatSize
+        }
     }
 
     /**
@@ -908,7 +1024,10 @@ public class JsonObject <: JsonValue {
      * @since 0.17.4
      */
     public func containsKey(key: String): Bool {
-        return fields.contains(key)
+        return match (hashFields) {
+            case Some(fields) => fields.contains(key)
+            case None => getFlatField(key).isSome()
+        }
     }
 
     /**
@@ -920,7 +1039,17 @@ public class JsonObject <: JsonValue {
      * @since 0.17.4
      */
     public func put(key: String, v: JsonValue): Unit {
-        fields.add(key, v)
+        putField(key, v)
+        if (!isJsonObjectKeyHtmlSafe(key)) {
+            allKeysHtmlSafe = false
+        }
+    }
+
+    func putParsed(key: String, v: JsonValue, htmlSafe: Bool): Unit {
+        putField(key, v)
+        if (!htmlSafe) {
+            allKeysHtmlSafe = false
+        }
     }
 
     /**
@@ -932,7 +1061,10 @@ public class JsonObject <: JsonValue {
      * @since 0.17.4
      */
     public func get(key: String): Option<JsonValue> {
-        return fields.get(key)
+        return match (hashFields) {
+            case Some(fields) => fields.get(key)
+            case None => getFlatField(key)
+        }
     }
 
     /**
@@ -946,7 +1078,7 @@ public class JsonObject <: JsonValue {
      * @throws JsonException if key of JsonObject does not exist.
      */
     public operator func [](key: String): JsonValue {
-        return match (fields.get(key)) {
+        return match (get(key)) {
             case Some(v) => v
             case None => throw JsonException("The Value of JsonObject does not exist")
         }
@@ -960,7 +1092,36 @@ public class JsonObject <: JsonValue {
      * @since 0.17.4
      */
     public func getFields(): HashMap<String, JsonValue> {
-        return fields
+        // The returned map can be mutated without going through put(). Once it
+        // escapes, keep serialization on the checking path.
+        allKeysHtmlSafe = false
+        return promoteToHashFields()
+    }
+
+    func isFlatStorage(): Bool {
+        return match (hashFields) {
+            case Some(_) => false
+            case None => true
+        }
+    }
+
+    func getFlatFieldsForRead(): Array<(String, JsonValue)> {
+        return flatFields
+    }
+
+    func getFlatSizeForRead(): Int64 {
+        return flatSize
+    }
+
+    func getHashFieldsForRead(): HashMap<String, JsonValue> {
+        return match (hashFields) {
+            case Some(fields) => fields
+            case None => throw IllegalStateException("JsonObject is using flat storage.")
+        }
+    }
+
+    func allKeysAreHtmlSafe(): Bool {
+        return allKeysHtmlSafe
     }
 }
 

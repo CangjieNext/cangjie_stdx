@@ -92,13 +92,23 @@ extend DataModel <: ToJson {
      */
     private static func buildDMStruct(jo: JsonObject): DataModelStruct {
         let dms: DataModelStruct = DataModelStruct()
-        let map: HashMap<String, JsonValue> = jo.getFields()
-        for ((str, jv) in map) {
-            var dm: DataModel = fromJson(jv)
-            var field: Field = Field(str, dm)
-            dms.add(field)
+        if (jo.isFlatStorage()) {
+            let fields = jo.getFlatFieldsForRead()
+            for (i in 0..jo.getFlatSizeForRead()) {
+                let field = fields[i]
+                addDMField(dms, field[0], field[1])
+            }
+        } else {
+            for ((name, value) in jo.getHashFieldsForRead()) {
+                addDMField(dms, name, value)
+            }
         }
         return dms
+    }
+
+    private static func addDMField(dms: DataModelStruct, name: String, value: JsonValue): Unit {
+        let data: DataModel = fromJson(value)
+        dms.add(Field(name, data))
     }
 
     /**
