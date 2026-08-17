@@ -136,7 +136,9 @@ open class Frame <: ToString {
             case Data => DataFrame(streamId, flag, payloadWrapper, payloadLen64)
             case Headers => HeadersFrame(streamId, flag, payloadWrapper, payloadLen64)
             case Continuation => ContinuationFrame(streamId, flag, payloadWrapper, payloadLen64)
-            case Priority => None // we support new PRIORITY_UPDATE, old PRIORITY not supported
+            case Priority => 
+                arrayPool?.put(payloadWrapper)
+                None // we support new PRIORITY_UPDATE, old PRIORITY not supported
             case RstStream =>
                 let frame = RstStreamFrame(streamId, payloadWrapper, payloadLen64)
                 frame.recyclePayload(arrayPool)
@@ -162,7 +164,9 @@ open class Frame <: ToString {
                 let frame = PriorityUpdateFrame(streamId, payloadWrapper, payloadLen64)
                 frame.recyclePayload(arrayPool)
                 frame
-            case _ => None // MUST ignore and discard frames of unknown types
+            case _ =>
+                arrayPool?.put(payloadWrapper)
+                None // MUST ignore and discard frames of unknown types
         }
     }
 
@@ -343,10 +347,10 @@ class HeadersFrame <: Frame {
             } else {
                 0
             }
-            if (payloadLen64 < 5) {
+            if (payloadLen64 < Int64(start) + 5) {
                 throw HttpConnectionException(ProtocolError, "Illegal headers frame.")
             }
-            this.streamDependency = readUInt32(payload[start..4])
+            this.streamDependency = readUInt32(payload[start..start + 4])
             if (!checkStreamId(id)) {
                 throw HttpConnectionException(ProtocolError, "Illegal stream id.")
             }
@@ -389,7 +393,7 @@ class HeadersFrame <: Frame {
         }
         if (hasPriority) {
             sb.append("Stream Dependency: ${streamDependency}")
-            sb.append("Weight: ${padLen} ")
+            sb.append("Weight: ${weight} ")
         }
         sb.append(r']')
         return sb.toString()
