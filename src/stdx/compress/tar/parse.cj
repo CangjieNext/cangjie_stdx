@@ -164,7 +164,7 @@ func parsePaxTimestamp(buffer: Array<UInt8>): DateTime {
             continue
         }
         if (c < b'0' || c > b'9') {
-            throw TarException("Invalid pax timestamp value ${buffer}.")
+            throw TarException("Invalid PAX timestamp value: '${buffer}'.")
         }
         if (!isDecimal) {
             integerPart = integerPart * DECIMAL_BASE + Int64(c - b'0')

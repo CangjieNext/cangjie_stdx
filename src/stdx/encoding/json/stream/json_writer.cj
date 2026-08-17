@@ -125,7 +125,7 @@ public class JsonWriter {
                 newlineWithIndent(stack.size - 2)
                 buffer[curPos] = b']'
                 curPos++
-            case _ => throw IllegalStateException("End array must be directly after Start array")
+            case _ => throw IllegalStateException("Cannot end array: array was not started or has already been ended.")
         }
         pop()
     }
@@ -144,14 +144,14 @@ public class JsonWriter {
             flushOutBuf()
         }
         if (haveName) {
-            throw IllegalStateException("End object cannot directly after a name.")
+            throw IllegalStateException("Cannot end object directly after a name.")
         }
         match (top()) {
             case EmptyObject | NoEmptyObject =>
                 newlineWithIndent(stack.size - 2)
                 buffer[curPos] = b'}'
                 curPos++
-            case _ => throw IllegalStateException("End object must be directly after Start object.")
+            case _ => throw IllegalStateException("Cannot end object: object was not started or has already been ended.")
         }
         pop()
     }
@@ -162,7 +162,7 @@ public class JsonWriter {
             flushOutBuf()
         }
         if (haveName) {
-            throw IllegalStateException("Already wrote a name, expecting a value.")
+            throw IllegalStateException("Cannot write name: already wrote a name, expecting a value.")
         }
         match (top()) {
             case EmptyObject => stack[stack.size - 1] = NoEmptyObject
@@ -171,7 +171,7 @@ public class JsonWriter {
                 buffer[curPos] = b','
                 curPos++
                 newlineWithIndent(stack.size - 1)
-            case _ => throw IllegalStateException("The name must be within an object.")
+            case _ => throw IllegalStateException("Cannot write name: name is not within an object.")
         }
     }
 
@@ -191,12 +191,12 @@ public class JsonWriter {
                 newlineWithIndent(stack.size - 1)
             case EmptyArray => stack[stack.size - 1] = NoEmptyArray
                 newlineWithIndent(stack.size - 1)
-            case NoEmptyText => throw IllegalStateException("JSON text must have only one top-level value.")
+            case NoEmptyText => throw IllegalStateException("Invalid state: JSON text can have only one top-level value.")
             case EmptyText => stack[stack.size - 1] = NoEmptyText
             case EmptyObject => stack[stack.size - 1] = NoEmptyObject
             case NoEmptyObject => // write value in object must write name first
                 if (!haveName) {
-                    throw IllegalStateException("Value in Json object must after a name.")
+                    throw IllegalStateException("Cannot write value in JSON object: value is not after a name.")
                 }
                 haveName = false
         }
@@ -208,7 +208,7 @@ public class JsonWriter {
 
     func put(scope: JsonWriterState) {
         if (stack.size >= MAX_JSON_STREAM_DEPTH) {
-            throw IllegalStateException("Json nested depth exceeds ${MAX_JSON_STREAM_DEPTH}.")
+            throw IllegalStateException("JSON nested depth '${stack.size}' exceeds maximum '${MAX_JSON_STREAM_DEPTH}'.")
         }
         stack.add(scope)
     }
@@ -270,7 +270,7 @@ public struct WriteConfig {
         }
         set(v) {
             for (b in v where (b != b'\r' && b != b'\n')) {
-                throw IllegalArgumentException("Invalid newline token: ${b}")
+                throw IllegalArgumentException("Invalid newline token: '${b}'.")
             }
             _newline = v
         }
@@ -282,7 +282,7 @@ public struct WriteConfig {
         }
         set(v) {
             for (b in v where (b != b' ' && b != b'\t')) {
-                throw IllegalArgumentException("Invalid indent token: ${b}")
+                throw IllegalArgumentException("Invalid indent token: '${b}'.")
             }
             _indent = v
         }

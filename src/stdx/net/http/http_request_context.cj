@@ -29,7 +29,7 @@ public class HttpContext {
 
     mut prop httpConn: HttpEngineConn {
         get() {
-            _httpConn ?? throw HttpException("Internal error, conn in HttpContext is None.")
+            _httpConn ?? throw HttpException("Internal error: connection in HttpContext is None.")
         }
         set(v) {
             _httpConn = v
@@ -80,13 +80,13 @@ public class HttpContext {
 public func upgrade(ctx: HttpContext): StreamingSocket {
     synchronized(ctx.writerMtx) {
         if (ctx.upgraded) {
-            throw HttpException("Should not call upgrade more than once.")
+            throw HttpException("Upgrade cannot be called more than once.")
         }
         if (ctx.responseFlushedByUser) {
-            throw HttpException("Should not upgrade after write response.")
+            throw HttpException("Cannot upgrade after response has been written.")
         }
         if (ctx.responded) {
-            throw HttpException("Already responded.")
+            throw HttpException("Response has already been sent.")
         }
         ctx.httpConn.writeUpgradeResponse(ctx)
         ctx.upgraded = true

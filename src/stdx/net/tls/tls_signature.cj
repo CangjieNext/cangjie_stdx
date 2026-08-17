@@ -167,7 +167,7 @@ func setClientSignatureAlgorithms(clientCtx: CPointer<Ctx>, sigalgs: Array<Signa
             case "SHA256" => continue
             case "SHA224" => continue
             case "SHA1" => continue
-            case _ => throw TlsException("Failed to set client signature algorithms, hash type is not supported.")
+            case _ => throw TlsException("Unsupported hash type '${hashType}'.")
         }
     }
 

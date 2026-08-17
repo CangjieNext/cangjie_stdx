@@ -17,11 +17,11 @@ public struct SerialNumber <: Equatable<SerialNumber> & Hashable & ToString {
 
     public init(length!: UInt8 = 16) {
         if (length == 0) {
-            throw X509Exception("X509SerialNumber init failed: Certificate serial number must contain at least 1 byte.")
+            throw X509Exception("X509SerialNumber init failed: serial number length is 0, expected at least 1 byte.")
         }
 
         if (length > 20) {
-            throw X509Exception("X509SerialNumber init failed: Certificate serial number should not exceed 20 bytes.")
+            throw X509Exception("X509SerialNumber init failed: serial number length is '${length}', exceeds maximum '20' bytes.")
         }
 
         let secureRandom = SecureRandom(priv: true)
@@ -30,11 +30,11 @@ public struct SerialNumber <: Equatable<SerialNumber> & Hashable & ToString {
 
     init(serialNumber: Array<Byte>) {
         if (serialNumber.size == 0) {
-            throw X509Exception("X509SerialNumber init failed: Certificate serial number must contain at least 1 byte.")
+            throw X509Exception("X509SerialNumber init failed: serial number length is 0, expected at least 1 byte.")
         }
 
         if (serialNumber.size > 20) {
-            throw X509Exception("X509SerialNumber init failed: Certificate serial number should not exceed 20 bytes.")
+            throw X509Exception("X509SerialNumber init failed: serial number length is '${serialNumber.size}', exceeds maximum '20' bytes.")
         }
         this.serialNumber_ = serialNumber.clone()
     }

@@ -24,7 +24,7 @@ class ProtocolServiceFactoryImpl <: ProtocolServiceFactory {
         return match (protocol) {
             case HTTP1_1 | HTTP1_0 | UnknownProtocol("") => HttpServer1(socket)
             case HTTP2_0 => HttpServer2(socket)
-            case _ => throw HttpException("Protocol unknown.")
+            case _ => throw HttpException("Unknown protocol: '${protocol}'.")
         }
     }
 }
@@ -34,7 +34,7 @@ public abstract class ProtocolService {
 
     protected open mut prop server: Server {
         get() {
-            _server ?? throw HttpException("Server instance not set yet.")
+            _server ?? throw HttpException("Server instance is not set.")
         }
         set(v) {
             _server = v

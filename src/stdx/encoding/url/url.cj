@@ -216,7 +216,7 @@ public class URL <: ToString {
         // Per WHATWG URL Standard, backslashes should be normalized to /,
         // but we choose to reject them for security.
         if (_rawUrl.contains("\\")) {
-            throw UrlSyntaxException(_rawUrl, "Backslash is not allowed in URL")
+            throw UrlSyntaxException(_rawUrl, "Backslash is not allowed in URL.")
         }
         var i = 0
         while (i < _rawUrl.size) {
@@ -275,7 +275,7 @@ public class URL <: ToString {
             case _ =>
                 i++
                 if (i == _rawUrl.size) {
-                    throw UrlSyntaxException(_rawUrl, "Missing the authority component.")
+                    throw UrlSyntaxException(_rawUrl, "Missing authority component.")
                 }
                 if (_rawUrl[i] != b'[') {
                     parseFromHost(i)
@@ -304,7 +304,7 @@ public class URL <: ToString {
             i++
         }
         if (i == end) {
-            throw UrlSyntaxException(_rawUrl[start..], "Missing r']' in host.")
+            throw UrlSyntaxException(_rawUrl[start..], "Missing ']' in host.")
         }
         i++
         if (i == end) {
@@ -314,13 +314,13 @@ public class URL <: ToString {
             case ':' =>
                 parsePort(i + 1, findPath(i + 1))
                 if (!_portEnd.isNone()) {
-                    throw UrlSyntaxException(_rawUrl[i + 1..], "Invalid url part.")
+                    throw UrlSyntaxException(_rawUrl[i + 1..], "Invalid URL part.")
                 }
             case '/' => parsePath(i, findQuery(i + 1))
             case '?' => parseQuery(i + 1, findFrag(i + 1))
             case '#' => parseFragment(_rawUrl[i + 1..end])
             case _ => throw UrlSyntaxException(_rawUrl[start..],
-                "A colon connection is required between the host and the port.")
+                "Colon required between host and port.")
         }
     }
 
@@ -451,7 +451,7 @@ public class URL <: ToString {
                 arr = unsafe { _scheme.rawData() }
                 isRaw = false
                 arr[0] = b + 32
-            case _ => throw UrlSyntaxException(_rawUrl[..end], "The first part of the scheme cannot be a non-letter.")
+            case _ => throw UrlSyntaxException(_rawUrl[..end], "Scheme must start with a letter.")
         }
         for (i in end - 1..0 : -1) {
             b = _rawUrl[i]
@@ -467,7 +467,7 @@ public class URL <: ToString {
                     arr[i] = b + 32
                 case isByteInSet(b, SCHEME) => ()
                 case _ => throw UrlSyntaxException(_rawUrl[..end],
-                    "The scheme must be a combination of letters, digits, and +-. characters.")
+                    "Scheme contains invalid characters: only letters, digits, '+', '-', and '.' allowed.")
             }
         }
     }
@@ -481,7 +481,7 @@ public class URL <: ToString {
      */
     private func parseIpv6Host(start: Int64, mid: Int64, end: Int64): Unit {
         if (end - start <= 1) {
-            throw UrlSyntaxException(_rawUrl[start..end], "IPv6 address in [] can't be empty")
+            throw UrlSyntaxException(_rawUrl[start..end], "IPv6 address within brackets is empty.")
         }
         let decoded = StringBuilder(end - start + 1)
         if (mid == -1) {
@@ -498,7 +498,7 @@ public class URL <: ToString {
         let hostEnd = _portEnd ?? end
         _host.hostname = checkAndDecode(REG_NAME, _rawUrl[start..hostEnd]).ensureAsciiLower()
         if (_host.hostname.contains(":")) {
-            throw UrlSyntaxException(_host.hostname, "Invalid URL: IPv6 address literals must within square brackets (\"[\" and \"]\")")
+            throw UrlSyntaxException(_host.hostname, "IPv6 address requires square brackets.")
         }
         // Validate hostname does not contain control characters (0x00-0x1F, 0x7F)
         // to prevent CRLF injection and other header injection attacks.
@@ -518,7 +518,7 @@ public class URL <: ToString {
     private static func validateNoControlChars(str: String, context: String): Unit {
         for (b in str) {
             if ((b >= 0 && b <= 0x1F) || b == 0x7F) {
-                throw UrlSyntaxException(str, "Invalid ${context}: contains control characters")
+                throw UrlSyntaxException(str, "Invalid '${context}': contains control characters.")
             }
         }
     }
@@ -568,11 +568,11 @@ public class URL <: ToString {
     private func parsePort(start: Int64, end: Int64): Unit {
         _port = _rawUrl[start..end]
         if (_port.isEmpty()) {
-            throw UrlSyntaxException(_rawUrl[start..end], "Port cannot be empty.")
+            throw UrlSyntaxException(_rawUrl[start..end], "Port is empty.")
         }
         for (b in _port) {
             if (!isByteInSet(b, DIGIT)) {
-                throw UrlSyntaxException(_rawUrl[start..end], "Port must contain digits only.")
+                throw UrlSyntaxException(_rawUrl[start..end], "Port contains non-digit characters.")
             }
         }
         try {
@@ -613,12 +613,12 @@ public class URL <: ToString {
         try {
             let name = checkAndDecode(USERINFO, _rawUrl[nameStart..nameEnd])
             if (name.contains("@")) {
-                throw UrlSyntaxException("The userinfo contains an encoded '@' character which is not allowed.")
+                throw UrlSyntaxException("Userinfo contains an encoded '@' character.")
             }
             if (passwordStart != -1) {
                 let password = checkAndDecode(USERINFO, _rawUrl[passwordStart..passwordEnd]) // cjlint-ignore !G.OTH.02
                 if (password.contains("@")) {
-                    throw UrlSyntaxException("The userinfo contains an encoded '@' character which is not allowed.")
+                    throw UrlSyntaxException("Userinfo contains an encoded '@' character.")
                 }
                 _userInfo = UserInfo(name, password)
                 _rawUserInfo = UserInfo(_rawUrl[nameStart..nameEnd], _rawUrl[passwordStart..passwordEnd])
@@ -627,7 +627,7 @@ public class URL <: ToString {
                 _rawUserInfo = UserInfo(_rawUrl[nameStart..nameEnd])
             }
         } catch (_) {
-            throw UrlSyntaxException("The userinfo contains an invalid encoding sequence.")
+            throw UrlSyntaxException("Userinfo contains an invalid encoding sequence.")
         }
     }
 
@@ -637,7 +637,7 @@ public class URL <: ToString {
         while (i < raw.size) {
             let b = raw[i]
             match {
-                case b.isAscii() && !isByteInSet(b, maskTuple) => throw UrlSyntaxException(raw, "Invalid url part.")
+                case b.isAscii() && !isByteInSet(b, maskTuple) => throw UrlSyntaxException(raw, "Invalid URL part.")
                 case b == b'%' =>
                     if (i + 2 >= raw.size) {
                         throw UrlSyntaxException(raw, "Invalid URL escape.")
@@ -680,11 +680,11 @@ public class URL <: ToString {
     private func checkIPv6(host: String) {
         var (_, zone, err) = parseIPv6(host)
         if (err) {
-            throw UrlSyntaxException(host, "Invalid IPv6 address")
+            throw UrlSyntaxException(host, "Invalid IPv6 address.")
         }
         for (b in zone) {
             if (!isByteInSet(b, ZONE)) {
-                throw UrlSyntaxException(zone, "Invalid IPv6 zoneId")
+                throw UrlSyntaxException(zone, "Invalid IPv6 zone ID.")
             }
         }
         _host.hostType = Host.IPV6
@@ -695,12 +695,12 @@ public class URL <: ToString {
         for (i in scheme.size - 1..=0 : -1) {
             if (i == 0) {
                 if (!isByteInSet(scheme[i], ALPHA)) {
-                    throw UrlSyntaxException(scheme, "The first part of the scheme cannot be a non-letter.")
+                    throw UrlSyntaxException(scheme, "Scheme must start with a letter.")
                 }
             } else {
                 if (!isByteInSet(scheme[i], SCHEME)) {
                     throw UrlSyntaxException(scheme,
-                        "The scheme must be a combination of letters, digits, and +-. characters.")
+                        "Scheme contains invalid characters: only letters, digits, '+', '-', and '.' allowed.")
                 }
             }
         }
@@ -708,10 +708,10 @@ public class URL <: ToString {
 
     private static func verifyInit(scheme: String, hostName: String, path: String): Unit {
         if (scheme.isEmpty() && !hostName.isEmpty()) {
-            throw UrlSyntaxException("If a hostname exists, the scheme cannot be empty.")
+            throw UrlSyntaxException("Hostname exists but scheme is empty.")
         }
         if (!scheme.isEmpty() && hostName.isEmpty() && path.isEmpty()) {
-            throw UrlSyntaxException("If the scheme exists, the hostname or path cannot be empty.")
+            throw UrlSyntaxException("Scheme exists but hostname and path are empty.")
         }
     }
 
@@ -746,7 +746,7 @@ public class URL <: ToString {
         if (path.isEmpty()) {
             if (!newUrl._scheme.isEmpty() && newUrl._host.hostname.isEmpty()) {
                 throw UrlSyntaxException(
-                    "If the scheme exists, the host name and path cannot be empty at the same time.")
+                    "Scheme exists but hostname and path are empty.")
             }
             newUrl._path = String.empty
             newUrl._rawPath = String.empty
@@ -804,7 +804,7 @@ public class URL <: ToString {
         }
         if (let Some(v) <- port) {
             if (!isDigit(v)) {
-                throw UrlSyntaxException("The range of port number string is limited to numeric symbols: 0 ~ 9")
+                throw UrlSyntaxException("Port number string contains non-digit characters.")
             }
             newUrl._port = v
         }
@@ -819,12 +819,12 @@ public class URL <: ToString {
         }
         match ((newUrl._scheme.isEmpty(), noUserInfo, newUrl._host.hostname.isEmpty(), newUrl._port.isEmpty(),
             newUrl._path.isEmpty())) {
-            case (true, _, false, _, _) => throw UrlSyntaxException("If a hostname exists, the scheme cannot be empty.")
+            case (true, _, false, _, _) => throw UrlSyntaxException("Hostname exists but scheme is empty.")
             case (_, false, true, _, _) => throw UrlSyntaxException(
-                "If a userInfo exists, the host name cannot be empty.")
-            case (_, _, true, false, _) => throw UrlSyntaxException("If a port exists, the host name cannot be empty.")
+                "Userinfo exists but hostname is empty.")
+            case (_, _, true, false, _) => throw UrlSyntaxException("Port exists but hostname is empty.")
             case (false, _, true, _, true) => throw UrlSyntaxException(
-                "If the scheme exists, the host name and path cannot be empty at the same time.")
+                "Scheme exists but hostname and path are empty.")
             case (false, _, _, _, false) =>
                 if (newUrl._path[0] != b'/') {
                     throw UrlSyntaxException("Absolute URL requires an absolute path.")

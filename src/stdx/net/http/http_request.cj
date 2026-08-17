@@ -77,7 +77,7 @@ public class HttpRequestBuilder {
             return this
         }
         if (!isTokenString(method)) {
-            throw HttpException("Method should be tokens.")
+            throw HttpException("Method must be tokens.")
         }
         this._method = method
         return this
@@ -243,7 +243,7 @@ public class HttpRequestBuilder {
     // cjlint-ignore -end
     public func priority(urg: Int64, inc: Bool): HttpRequestBuilder {
         if (urg < 0 || urg > 7) {
-            throw HttpException("Illegal header, priority urgency should be in range [0, 7].")
+            throw HttpException("Invalid header: priority urgency '${urg}' is out of range [0, 7].")
         }
         priorityValue = if (inc) {
             "u=${urg}, i"

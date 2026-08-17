@@ -40,7 +40,7 @@ public class SHA384 <: Digest {
 
     public func write(buffer: Array<Byte>): Unit {
         if (this.hasFinished) {
-            throw CryptoException("SHA384 write failed, digest calculation has been completed.")
+            throw CryptoException("Digest calculation already completed.")
         }
         sha384Update(sha384Ctx, buffer)
     }
@@ -53,10 +53,10 @@ public class SHA384 <: Digest {
 
     public func finish(to!: Array<Byte>): Unit {
         if (this.hasFinished) {
-            throw CryptoException("SHA384 finish failed, digest calculation has been completed.")
+            throw CryptoException("Digest calculation already completed.")
         }
         if (to.size != size) {
-            throw CryptoException("The length of output is not equal to the digest length.")
+            throw CryptoException("Output length '${to.size}' does not match digest length '${size}'.")
         }
         sha384Final(sha384Ctx, to)
         this.hasFinished = true
@@ -79,7 +79,7 @@ func sha384Update(c: SHA384CTX, data: Array<Byte>): Unit {
         }
         checkError(dynMsgPtr)
         if (res != 1) {
-            throw CryptoException("SHA384 write error")
+            throw CryptoException("SHA384 write operation failed.")
         }
     }
 }
@@ -95,7 +95,7 @@ func sha384Final(c: SHA384CTX, md: Array<Byte>): Unit {
         }
         checkError(dynMsgPtr)
         if (res != 1) {
-            throw CryptoException("SHA384 finish error")
+            throw CryptoException("SHA384 finish operation failed.")
         }
     }
 }

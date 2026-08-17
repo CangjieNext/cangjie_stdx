@@ -58,7 +58,7 @@ public class HttpResponseBuilder {
      */
     public func status(status: UInt16): HttpResponseBuilder {
         if (status < 100 || status > 599) {
-            throw HttpException("Valid status codes are within the range of 100 to 599.")
+            throw HttpException("Invalid status code: ${status}, but valid range is 100 to 599.")
         }
         this._status = status
         return this

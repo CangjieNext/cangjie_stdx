@@ -88,12 +88,12 @@ func validSetting(setting: H2Setting, value: UInt32) {
         case SettingsInitialWindowSize =>
             if (value > MAX_WINDOW) {
                 throw HttpConnectionException(FlowControlError,
-                    "Illegal HTTP/2 setting SettingsInitialWindowSize value:${value}.")
+                    "Invalid HTTP/2 setting SettingsInitialWindowSize: value is ${value}, but maximum is '${MAX_WINDOW}'.")
             }
         case SettingsMaxFrameSize =>
             if (value < MIN_FRAME_SIZE || value > MAX_FRAME_SIZE) {
                 throw HttpConnectionException(ProtocolError,
-                    "Illegal HTTP/2 setting SettingsMaxFrameSize value:${value}.")
+                    "Invalid HTTP/2 setting SettingsMaxFrameSize: value is ${value}, but valid range is '${MIN_FRAME_SIZE}' to '${MAX_FRAME_SIZE}'.")
             }
         case SettingsMaxHeaderListSize => () // no limit
         case SettingsEnableConnectProtocol => zeroOrOne(value)
@@ -108,7 +108,7 @@ func validSetting(setting: UInt16, value: UInt32) {
 
 func zeroOrOne(value: UInt32): Unit {
     if (value != 0 && value != 1) {
-        throw HttpConnectionException(ProtocolError, "Illegal HTTP/2 setting value:${value}, should be 0 or 1.")
+        throw HttpConnectionException(ProtocolError, "Invalid HTTP/2 setting value: ${value}, but valid values are 0 or 1.")
     }
 }
 
@@ -277,7 +277,7 @@ func convertUInt32(a: UInt8, b: UInt8, c: UInt8, d: UInt8): UInt32 {
 // convert Array<UInt8> to UInt32, the size must le 4
 func readUInt32(src: Array<UInt8>): UInt32 {
     if (src.size > 4 || src.size <= 1) {
-        throw IllegalArgumentException("Illegal src.")
+        throw IllegalArgumentException("Invalid array size: expected 2 to 4, but got ${src.size}.")
     }
     if (src.size == 2) {
         return UInt32(readUInt16(src))
@@ -296,7 +296,7 @@ func convertUInt16(a: UInt8, b: UInt8): UInt16 {
 // convert Array<UInt8> to UInt16, the size must equals 2
 func readUInt16(src: Array<UInt8>): UInt16 {
     if (src.size != 2) {
-        throw IllegalArgumentException("Illegal size.")
+        throw IllegalArgumentException("Invalid array size: expected 2, but got ${src.size}.")
     }
     convertUInt16(src[0], src[1])
 }

@@ -40,7 +40,7 @@ public class SHA1 <: Digest {
 
     public func write(buffer: Array<Byte>): Unit {
         if (this.hasFinished) {
-            throw CryptoException("SHA1 write failed, digest calculation has been completed.")
+            throw CryptoException("Digest calculation already completed.")
         }
         sha1Update(sha1Ctx, buffer)
     }
@@ -53,10 +53,10 @@ public class SHA1 <: Digest {
 
     public func finish(to!: Array<Byte>): Unit {
         if (this.hasFinished) {
-            throw CryptoException("SHA1 finish failed, digest calculation has been completed.")
+            throw CryptoException("Digest calculation already completed.")
         }
         if (to.size != size) {
-            throw CryptoException("The length of output is not equal to the digest length.")
+            throw CryptoException("Output length '${to.size}' does not match digest length '${size}'.")
         }
         sha1Final(sha1Ctx, to)
         this.hasFinished = true
@@ -79,7 +79,7 @@ func sha1Update(c: SHACTX, data: Array<Byte>): Unit {
         }
         checkError(dynMsgPtr)
         if (res != 1) {
-            throw CryptoException("SHA1 write error")
+            throw CryptoException("SHA1 write operation failed.")
         }
     }
 }
@@ -95,7 +95,7 @@ func sha1Final(c: SHACTX, md: Array<Byte>): Unit {
         }
         checkError(dynMsgPtr)
         if (res != 1) {
-            throw CryptoException("SHA1 finish error")
+            throw CryptoException("SHA1 finish operation failed.")
         }
     }
 }

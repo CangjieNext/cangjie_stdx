@@ -65,7 +65,7 @@ struct ExceptionData {
         unsafe {
             let ptr = LibC.malloc<ExceptionData>(count: 1)
             if (ptr.isNull()) {
-                throw IllegalMemoryException("Memory malloc failed.")
+                throw IllegalMemoryException("Failed to allocate memory.")
             }
             ptr.write(ExceptionData())
             return ptr

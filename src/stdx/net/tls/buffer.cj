@@ -34,13 +34,13 @@ abstract class Buffer {
 
     protected init(size: Int64, sizeLimit: Int64) {
         if (sizeLimit <= 0) {
-            throw IllegalArgumentException("SizeLimit should be positive: ${sizeLimit}.")
+            throw IllegalArgumentException("Invalid argument 'sizeLimit': expected a positive value, got '${sizeLimit}'.")
         }
         if (size <= 0) {
-            throw IllegalArgumentException("Size should be positive: ${size}.")
+            throw IllegalArgumentException("Invalid argument 'size': expected a positive value, got '${size}'.")
         }
         if (size > sizeLimit) {
-            throw IllegalArgumentException("Size is greater than the limit: size = ${size}, sizeLimit = ${sizeLimit}.")
+            throw IllegalArgumentException("Invalid argument 'size': '${size}' exceeds sizeLimit '${sizeLimit}'.")
         }
 
         this.buffer = Array<Byte>(size, repeat: 0)

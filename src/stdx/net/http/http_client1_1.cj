@@ -66,7 +66,7 @@ class HttpClient1 <: HttpClient {
             case ("https", false) => noProxyTarget(request, httpsProxy, "443", "80")
             // http proxy
             case ("http", false) => noProxyTarget(request, httpProxy, "80", "80")
-            case _ => throw HttpException("Not HTTP protocol scheme: ${request.url.scheme}")
+            case _ => throw HttpException("Invalid protocol scheme: '${request.url.scheme}'.")
         }
 
         if (client.logger.enabled(LogLevel.DEBUG)) {
@@ -86,7 +86,7 @@ class HttpClient1 <: HttpClient {
         }
         synchronized(mapMtx) {
             if (isClosed) {
-                throw HttpException("This client has already closed.")
+                throw HttpException("Client is already closed.")
             }
             httpEngine = match (isToProxy) {
                 case false => h1EngineMap.getIfAbsent(connnectKey, HttpEngine1(targetAddrPort, client, this))
@@ -132,7 +132,7 @@ class HttpClient1 <: HttpClient {
         let resp = request(req)
         let connNode = match (resp.connNode.getOrThrow() as ConnNode) {
             case Some(v) => v
-            case None => throw HttpException("Get connection failed.")
+            case None => throw HttpException("Failed to get connection.")
         }
 
         if (resp.status / 100 == 2) {
@@ -183,7 +183,7 @@ func checkRequest(request: HttpRequest) {
     if (request.method == "TRACE" || request.method == "CONNECT") {
         let length = request.contentLength ?? 0
         if (length != 0 || chunked) {
-            throw HttpException("The ${request.method} request cannot contain content.")
+            throw HttpException("Request method '${request.method}' does not support content.")
         }
         request.contentLength = 0
         request.headers.set("content-length", "0")
@@ -203,10 +203,10 @@ func checkRequest(request: HttpRequest) {
         case (None, Some(bodyLength)) =>
             request.contentLength = bodyLength
             request.headers.set("content-length", bodyLength.toString())
-        case (None, None) => throw HttpException("The content-length or transfer-encoding should be set if there is a body.")
+        case (None, None) => throw HttpException("Content-length or transfer-encoding is required for request body.")
         case (Some(contentLengthValue), Some(bodyLength)) =>
             if (contentLengthValue > bodyLength) {
-                throw HttpException("The content-length is wrong.")
+                throw HttpException("Invalid content-length: expected '${contentLengthValue}', but body size is '${bodyLength}'.")
             }
         case _ => ()
     }
@@ -325,7 +325,7 @@ class HttpEngine1 {
     private func tryGetConnFromPool(index: Int64): ?ConnNode {
         synchronized(connLock[index]) {
             if (isClosed) {
-                throw HttpException("This client has already closed")
+                throw HttpException("Client is already closed.")
             }
             if (connPool[index].head.isSome()) {
                 httpLogDebug(logger, "[HttpEngine1#getConn] Client1_1 get conn from pool")
@@ -340,13 +340,13 @@ class HttpEngine1 {
 
     private func createNewConn(request: HttpRequest, index: Int64, isToProxy: Bool, isToHttpsProxy!: Bool = false): ConnNode {
         if (isClosed) {
-            throw HttpException("This client has already closed.")
+            throw HttpException("Client is already closed.")
         }
 
         // limit the total connection number
         if (connNum.fetchAdd(1) >= poolSize) {
             connNum.fetchAdd(-1)
-            throw HttpException("Too many connections to the same server!")
+            throw HttpException("Too many connections to the same server.")
         }
 
         // establish a new connection
@@ -364,7 +364,7 @@ class HttpEngine1 {
             if (isClosed) {
                 connNum.fetchAdd(-1)
                 connNode.close()
-                throw HttpException("This client has already closed.")
+                throw HttpException("Client is already closed.")
             }
             connInUse[index].prepend(connNode)
         }
@@ -402,11 +402,11 @@ class HttpEngine1 {
 
     func connect(request: HttpRequest, isTls: Bool, isToHttpsProxy!: Bool = false): StreamingSocket {
         if (isTls && tlsConfig.isNone()) {
-            throw HttpException("TLS must be configured when HTTPS requests are sent.")
+            throw HttpException("TLS configuration is required for HTTPS requests.")
         }
         let ips = IPAddress.resolve(addrport.addr)
         if (ips.size == 0) {
-            throw HttpException("Failed to resolve address ${addrport.addr}.")
+            throw HttpException("Failed to resolve address '${addrport.addr}'.")
         }
         var conn = match (isToHttpsProxy) {
             case false => connector(IPSocketAddress(ips[0], addrport.port))
@@ -465,7 +465,7 @@ class HttpEngine1 {
 
     func extractFromConnInUse(connNode: ConnNode): BufferedConn {
         if (connNode.isClosed.load()) {
-            throw HttpException("This client has already closed.")
+            throw HttpException("Client is already closed.")
         }
         let index = if (connNode.isTls) {
             1
@@ -775,7 +775,7 @@ class ConnNode <: BodyProviderConn {
             }
             if (countUnfinalResponses > MAXUNFINALRESPONSES) {
                 shouldSendBody.swap(false)
-                throw HttpException("Too many 1xx responses.")
+                throw HttpException("Too many 1xx responses: count is '${countUnfinalResponses}'.")
             }
             // to send body
             if (expectContinuation.load() && response.status == 100) {
@@ -964,13 +964,13 @@ class ConnNode <: BodyProviderConn {
             // Security: Check header size limit
             headerSize += name.size + value.size + 1
             if (headerSize >= Int64(DEFAULT_MAX_HEADER_LIST_SIZE)) {
-                throw HttpException("Response header size out of limit ${DEFAULT_MAX_HEADER_LIST_SIZE}.")
+                throw HttpException("Response header size '${headerSize}' exceeds limit '${DEFAULT_MAX_HEADER_LIST_SIZE}'.")
             }
 
             // Security: Check header count limit
             headerCount++
             if (headerCount > Int64(DEFAULT_MAX_HEADER_COUNT)) {
-                throw HttpException("Response header count out of limit ${DEFAULT_MAX_HEADER_COUNT}.")
+                throw HttpException("Response header count '${headerCount}' exceeds limit '${DEFAULT_MAX_HEADER_COUNT}'.")
             }
 
             header.add(name, value)
@@ -982,7 +982,7 @@ class ConnNode <: BodyProviderConn {
     private func readLine(): Str {
         let line = conn.readLine()
         if (!line.byteMatches({byte => return byte != CR})) {
-            throw HttpException("The status line or header section can not contain raw CR.")
+            throw HttpException("Status line or header section cannot contain raw CR.")
         }
         return line
     }
@@ -1167,7 +1167,7 @@ class ConnNode <: BodyProviderConn {
 
 func toHeaderString(httpHeaders: HttpHeaders): StringBuilder {
     let stringBuilder = StringBuilder()
-    let host = httpHeaders.getFirst("host") ?? throw HttpException("Request headers must contain host field.")
+    let host = httpHeaders.getFirst("host") ?? throw HttpException("Request headers must contain 'host' field.")
     // a user agent that sends Host should send it as the
     // first field in the header section of a request
     stringBuilder.append("host: ")
@@ -1197,7 +1197,7 @@ class ResponseBodyProviderUtilConnectionClose <: InputStream & Resource {
                 bytesRead += n
                 if (bytesRead > DEFAULT_MAX_BODY_SIZE) {
                     connNode.h1Engine.closeConnInUse(connNode)
-                    throw HttpException("Response body size out of limit ${DEFAULT_MAX_BODY_SIZE}.")
+                    throw HttpException("Response body size '${bytesRead}' exceeds limit '${DEFAULT_MAX_BODY_SIZE}'.")
                 }
             }
             return n

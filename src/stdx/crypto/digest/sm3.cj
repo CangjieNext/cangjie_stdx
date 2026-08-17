@@ -19,12 +19,12 @@ public class SM3 <: Digest {
         unsafe {
             sm3Ctx = mdCtxNew()
             if (sm3Ctx.isNull()) {
-                throw CryptoException("SM3 init failed due to create ctx error.")
+                throw CryptoException("Failed to create SM3 context.")
             }
             try {
                 var ret = digestInitEx(sm3Ctx, sm3())
                 if (ret != 1) {
-                    throw CryptoException("SM3 init failed due to inner error.")
+                    throw CryptoException("Failed to initialize SM3 context.")
                 }
             } catch (e: Exception) {
                 mdCtxFree(sm3Ctx)
@@ -58,7 +58,7 @@ public class SM3 <: Digest {
 
     public func write(buffer: Array<Byte>): Unit {
         if (hasFinished) {
-            throw CryptoException("SM3 write failed, digest calculation has been completed.")
+            throw CryptoException("Digest calculation already completed.")
         }
         sm3Update(sm3Ctx, buffer)
     }
@@ -71,10 +71,10 @@ public class SM3 <: Digest {
 
     public func finish(to!: Array<Byte>): Unit {
         if (hasFinished) {
-            throw CryptoException("SM3 finish failed, digest calculation has been completed.")
+            throw CryptoException("Digest calculation already completed.")
         }
         if (to.size != size) {
-            throw CryptoException("The length of output is not equal to the digest length.")
+            throw CryptoException("Output length '${to.size}' does not match digest length '${size}'.")
         }
         sm3Final(sm3Ctx, to)
         hasFinished = true
@@ -88,12 +88,12 @@ public class SM3 <: Digest {
             }
             sm3Ctx = mdCtxNew()
             if (sm3Ctx.isNull()) {
-                throw CryptoException("SM3 reset failed due to create ctx error.")
+                throw CryptoException("Failed to create SM3 context.")
             }
             try {
                 var res = digestInitEx(sm3Ctx, sm3())
                 if (res != 1) {
-                    throw CryptoException("SM3 reset failed due to inner error.")
+                    throw CryptoException("Failed to initialize SM3 context.")
                 }
             } catch (e: Exception) {
                 mdCtxFree(sm3Ctx)
@@ -116,7 +116,7 @@ func sm3Update(c: CPointer<Unit>, data: Array<Byte>): Unit {
         }
         checkError(dynMsgPtr)
         if (res != 1) {
-            throw CryptoException("SM3 write error.")
+            throw CryptoException("SM3 write operation failed.")
         }
     }
 }
@@ -133,7 +133,7 @@ func sm3Final(c: CPointer<Unit>, md: Array<Byte>): Unit {
         }
         checkError(dynMsgPtr)
         if (res != 1) {
-            throw CryptoException("SM3 finish error.")
+            throw CryptoException("SM3 finish operation failed.")
         }
     }
 }

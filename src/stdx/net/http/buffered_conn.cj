@@ -32,7 +32,7 @@ class BufferedReader {
 
     mut prop logger: Logger {
         get() {
-            _logger ?? throw HttpException("[BufferedReader] logger not set yet.")
+            _logger ?? throw HttpException("Logger is not set for BufferedReader.")
         }
         set(v) {
             _logger = v
@@ -123,7 +123,7 @@ class BufferedWriter {
 
     mut prop logger: Logger {
         get() {
-            _logger ?? throw HttpException("[BufferedWriter] logger not set yet.")
+            _logger ?? throw HttpException("Logger is not set for BufferedWriter.")
         }
         set(v) {
             _logger = v
@@ -215,7 +215,7 @@ class BufferedConn <: StreamingSocket {
 
     mut prop logger: Logger {
         get() {
-            _logger ?? throw HttpException("[BufferedConn] logger not set yet.")
+            _logger ?? throw HttpException("Logger is not set for BufferedConn.")
         }
         set(v) {
             _logger = v
@@ -231,7 +231,7 @@ class BufferedConn <: StreamingSocket {
 
         var line = bufferedReader.tryReadLine() // the size of line must less than MAX_LINE_SIZE
         if (line.size > MAX_LINE_SIZE) {
-            throw HttpException("ReadLine too long.")
+            throw HttpException("ReadLine size ${line.size} exceeds limit ${MAX_LINE_SIZE}.")
         }
         if (line.endWith(LF)) {
             return line.removeLast(LF).removeLast(CR)
@@ -247,7 +247,7 @@ class BufferedConn <: StreamingSocket {
             sb.append(line)
 
             if (sb.size > MAX_LINE_SIZE) {
-                throw HttpException("ReadLine too long.")
+                throw HttpException("ReadLine size ${sb.size} exceeds limit ${MAX_LINE_SIZE}.")
             }
         } while (!line.endWith(LF)) // read to r'\n'
 

@@ -131,11 +131,12 @@ extend Int64 {
 
     static func fromHexStr(hexRaw: Str): Int64 {
         if (hexRaw.isEmpty()) {
-            throw IllegalArgumentException("Invalid hex string.")
+            throw IllegalArgumentException("Invalid argument 'hexRaw': string is empty.")
         }
         if (hexRaw.size > 16 || (hexRaw.size == 16 &&
-            (fromHexByte(hexRaw[0]) ?? throw IllegalArgumentException("Invalid hex string.")) > 7)) { // cjlint-ignore !G.EXP.03
-            throw IllegalArgumentException("The hex number is too big.")
+            (fromHexByte(hexRaw[0]) ?? throw IllegalArgumentException(
+            "Invalid argument 'hexRaw': '${hexRaw}' contains invalid hex character.")) > 7)) { // cjlint-ignore !G.EXP.03
+            throw IllegalArgumentException("Invalid argument 'hexRaw': '${hexRaw}' is too large for Int64.")
         }
         var number: Int64 = 0
         for (i in 0..hexRaw.size) {
@@ -143,7 +144,8 @@ extend Int64 {
                 case Some(v) =>
                     number <<= 4
                     number |= v
-                case None => throw IllegalArgumentException("Invalid hex string.")
+                case None => throw IllegalArgumentException(
+                    "Invalid argument 'hexRaw': '${hexRaw}' contains invalid hex character.")
             }
         }
         return number
@@ -394,7 +396,7 @@ func getRFC1123String(dateArr: Array<Byte>): Str {
 
 func writeTwoNum(dateArr: Array<Byte>, n: Int64, idx: Int64): Unit {
     if (n < 0 || n > 99) {
-        throw IllegalArgumentException("Invalid date number: ${n}.")
+        throw IllegalArgumentException("Invalid argument 'n': expected 0-99, got '${n}'.")
     }
     dateArr[idx] = UInt8(n / 10) + b'0'
     dateArr[idx + 1] = UInt8(n % 10) + b'0'
@@ -412,9 +414,9 @@ func writeYear(dateArr: Array<Byte>, year: Int64): Int64 {
 }
 
 func parseAndCheckResponseLine(line: Str): (String, UInt16) {
-    let version = line.splitFirst(WS)?.toString() ?? throw HttpException("Invalid response status line.")
+    let version = line.splitFirst(WS)?.toString() ?? throw HttpException("Invalid response status line: '${line}'.")
     if (version != "HTTP/1.0" && version != "HTTP/1.1") {
-        throw HttpException("Invalid response status line.")
+        throw HttpException("Invalid response status line: '${line}'.")
     }
 
     /**
@@ -424,14 +426,14 @@ func parseAndCheckResponseLine(line: Str): (String, UInt16) {
      * ---------------
      * HTTP/1.1 200 OK
      */
-    let status = line.splitFirst(WS, 9)?.toString() ?? throw HttpException("Invalid response status line.")
+    let status = line.splitFirst(WS, 9)?.toString() ?? throw HttpException("Invalid response status line: '${line}'.")
     let statusCode = match (UInt16.tryParse(status)) {
         case Some(v) =>
             if (v < 100 || v > 599) {
-                throw HttpException("Invalid response status code.")
+                throw HttpException("Invalid response status code: '${v}'.")
             }
             v
-        case None => throw HttpException("Invalid response status line.")
+        case None => throw HttpException("Invalid response status line: '${line}'.")
     }
     return (version, statusCode)
 }
@@ -439,47 +441,48 @@ func parseAndCheckResponseLine(line: Str): (String, UInt16) {
 func parseAndCheckRequestLine(line: Str): (String, String, String) {
     // parse and check method
     let method = line.splitFirst(WS) ?? throw HttpStatusException(HttpStatusCode.STATUS_BAD_REQUEST, // cjlint-ignore !G.EXP.03
-        "Invalid request method, request line: ${line}.")
+        "Invalid request method, request line: '${line}'.")
     if (method.isEmpty() || !method.byteMatches(isTokenByte)) { // cjlint-ignore !G.EXP.03
-        throw HttpStatusException(HttpStatusCode.STATUS_METHOD_NOT_ALLOWED, "Invalid request method: ${method}.")
+        throw HttpStatusException(HttpStatusCode.STATUS_METHOD_NOT_ALLOWED, "Invalid request method: '${method}'.")
     }
     if (method.size > MAX_METHOD_SIZE) {
-        throw HttpStatusException(HttpStatusCode.STATUS_BAD_REQUEST, "Invalid method: ${method}.")
+        throw HttpStatusException(HttpStatusCode.STATUS_BAD_REQUEST, "Invalid request method: '${method}'.")
     }
 
     // parse target
     var i = method.size + 1
     let target = line.splitFirst(WS, i) ?? throw HttpStatusException(HttpStatusCode.STATUS_BAD_REQUEST, // cjlint-ignore !G.EXP.03
-        "Invalid request target, request line: ${line}.")
+        "Invalid request target, request line: '${line}'.")
 
     // parse and check version
     i += target.size + 1
     let version = line.splitFirst(WS, i) ?? throw HttpStatusException(HttpStatusCode.STATUS_BAD_REQUEST, // cjlint-ignore !G.EXP.03
-        "Invalid request version, request line: ${line}.")
+        "Invalid request version, request line: '${line}'.")
     if (version != Str("HTTP/1.1") && version != Str("HTTP/1.0")) { // cjlint-ignore !G.EXP.03
-        throw HttpStatusException(HttpStatusCode.STATUS_HTTP_VERSION_NOT_SUPPORTED, "Incorrect version: ${version}.")
+        throw HttpStatusException(HttpStatusCode.STATUS_HTTP_VERSION_NOT_SUPPORTED,
+            "Invalid request version: '${version}'.")
     }
 
     if (i + version.size != line.size) {
         throw HttpStatusException(HttpStatusCode.STATUS_BAD_REQUEST,
-            "Invalid request line, more than three elements: ${line}.")
+            "Invalid request line, more than three elements: '${line}'.")
     }
     return (method.toString(), target.toString(), version.toString())
 }
 
 func parseAndCheckHeaderLine(line: Str, isReq: Bool): (String, String) {
     // parse and check name
-    let name = line.splitFirst(SYMBOL_COLON) ?? throw chooseException("Invalid field line: ${line}.", isReq) // cjlint-ignore !G.EXP.03
+    let name = line.splitFirst(SYMBOL_COLON) ?? throw chooseException("Invalid header field line: '${line}'.", isReq) // cjlint-ignore !G.EXP.03
     if (!name.byteMatches(isTokenByte)) {
-        throw chooseException("Invalid field line: ${line}.", isReq)
+        throw chooseException("Invalid header field line: '${line}'.", isReq)
     }
     if (name.size == line.size) {
-        throw chooseException("Invalid field line: ${line}.", isReq)
+        throw chooseException("Invalid header field line: '${line}'.", isReq)
     }
     // parse and check value
     let value = line.slice(name.size + 1).trim()
     if (!value.byteMatches(checkValueBytes)) {
-        throw chooseException("Invalid field line: ${line}.", isReq)
+        throw chooseException("Invalid header field line: '${line}'.", isReq)
     }
     return (getString(name), value.toString())
 }
@@ -506,7 +509,7 @@ func checkClAndTe(headers: HttpHeaders): (?Int64, Bool) {
     var contentLength: ?Int64 = None
     if (let Some(clHv) <- headers.getInternal("content-length")) {
         if (isChunked) {
-            throw HttpException("The content-length and transfer-encoding can not be set together.")
+            throw HttpException("Both content-length and transfer-encoding are present.")
         }
         let cl = checkCl(clHv, headers)
         contentLength = cl
@@ -530,7 +533,7 @@ func checkLastTeStr(te: String): Unit {
     let teStr = Str(te)
     let v = teStr.splitLast(SYMBOL_COMMA)
     if (v.trim() != Str("chunked")) {
-        throw HttpException("The last value of transfer-encoding must be chunked.")
+        throw HttpException("Invalid transfer-encoding: last value must be 'chunked'.")
     }
     checkOtherTeStr(te[..te.size - v.size])
 }
@@ -538,7 +541,7 @@ func checkLastTeStr(te: String): Unit {
 func checkOtherTeStr(te: String): Unit {
     let teStr = Str(te)
     if (!teStr.splitAllMatch(SYMBOL_COMMA, {v => v.trim() != Str("chunked")})) {
-        throw HttpException("Chunked should not be set more than once.")
+        throw HttpException("Invalid transfer-encoding: 'chunked' appears more than once.")
     }
 }
 
@@ -546,7 +549,7 @@ private func hasNoLeadingZeros(s: String): Bool {
     if (s.isEmpty()) {
         return false
     }
-    
+
     if (s == "0" || s[0] == b'-') {
         return true
     }
@@ -558,13 +561,13 @@ private func hasNoLeadingZeros(s: String): Bool {
 }
 
 func checkCl(hv: HeaderValue, headers: HttpHeaders): Int64 {
-    let clStr = checkFirstClStr(hv.single) ?? throw HttpException("The content-length invalid.")
+    let clStr = checkFirstClStr(hv.single) ?? throw HttpException("Invalid content-length value.")
     if (!hasNoLeadingZeros(clStr.toString())) {
-        throw HttpException("The content-length has leading zeros.")
+        throw HttpException("Invalid content-length: contains leading zeros.")
     }
-    let cl = Int64.tryParse(clStr.toString()) ?? throw HttpException("The content-length invalid.")
+    let cl = Int64.tryParse(clStr.toString()) ?? throw HttpException("Invalid content-length value.")
     if (cl < 0) {
-        throw HttpException("The content-length should not be negative.")
+        throw HttpException("Invalid content-length: value is negative.")
     }
     for (i in 0..hv.extra.size) {
         checkOtherClStr(hv.extra[i], clStr)
@@ -592,7 +595,7 @@ func checkFirstClStr(cl: String): ?Str {
 
 func checkOtherClStr(cl: String, first: Str): Unit {
     if (!Str(cl).splitAllMatch(SYMBOL_COMMA, {v => v.trim() == first})) {
-        throw HttpException("The content-length should not has different values.")
+        throw HttpException("Invalid content-length: values are inconsistent.")
     }
 }
 
@@ -623,7 +626,7 @@ func checkTrailerInHeader(headers: HttpHeaders, isReq: Bool): Unit {
     if (let Some(hv) <- headers.getInternal("trailer")) {
         let ret = hv.splitAllMatch(SYMBOL_COMMA, {v => !TrailerExcludeList.contains(v)})
         if (!ret) {
-            throw chooseException("Malformed trailer field in header.", isReq)
+            throw chooseException("Invalid trailer header: contains forbidden field.", isReq)
         }
     }
 }
@@ -670,11 +673,10 @@ func checkTrailer(trailer: HttpHeaders, header: HeaderValue) {
 func checkExpect(request: HttpRequest): Unit {
     if (let Some(hv) <- request.headers.getInternal("expect")) {
         if (!hv.splitAllMatch(SYMBOL_COMMA, {str => str == Str("100-continue")})) {
-            throw HttpException("The only expectation supported yet is 100-continue.")
+            throw HttpException("Invalid expect header: only '100-continue' is supported.")
         }
         if (request.body is HttpEmptyBody) {
-            throw HttpException(
-                "Must not generate a 100-continue expectation in a request that does not include content.")
+            throw HttpException("Invalid expect header: cannot set '100-continue' in a request with no body content.")
         }
         request.expectContinuation = true
     }
@@ -683,7 +685,7 @@ func checkExpect(request: HttpRequest): Unit {
 func expected100Continue(headers: HttpHeaders): Bool {
     let hv = headers.getInternal("expect") ?? return false
     if (!hv.splitAllMatch(SYMBOL_COMMA, {v => v == Str("100-continue")})) {
-        throw HttpStatusException(HttpStatusCode.STATUS_EXPECTATION_FAILED, "Invalid value for expect.")
+        throw HttpStatusException(HttpStatusCode.STATUS_EXPECTATION_FAILED, "Invalid expect header value.")
     }
     return true
 }
@@ -694,7 +696,7 @@ func checkUserAgent(version: Protocol, headers: HttpHeaders): Unit {
         match (version) {
             case HTTP1_1 | HTTP1_0 => headers.set("user-agent", "CANGJIEUSERAGENT_1_1")
             case HTTP2_0 => headers.set("user-agent", "CANGJIEUSERAGENT_2_0")
-            case _ => throw HttpException("Protocol unknown.")
+            case _ => throw HttpException("Unknown protocol: '${version}'.")
         }
     }
 }
@@ -719,7 +721,7 @@ func splitValuesByComma(values: Collection<String>): ArrayList<String> {
 class ThreadContext {
     private static let _connId = ThreadLocal<UInt64>()
 
-    mut static prop connId: ?UInt64 {
+    static mut prop connId: ?UInt64 {
         get() {
             _connId.get()
         }
