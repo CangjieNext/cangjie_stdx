@@ -70,7 +70,7 @@ struct TarHeaderBuffer {
 
     init(buffer: Array<UInt8>) {
         if (buffer.size != SIZE) {
-            throw TarException("Invalid buffer size ${buffer.size} which must be ${SIZE}.")
+            throw TarException("Invalid buffer size: '${buffer.size}', expected '${SIZE}'.")
         }
         this.buffer = buffer
     }
@@ -105,7 +105,7 @@ struct TarHeaderBuffer {
         let actural = Int32.parseOctal(checksumBuffer)
         let expected = calaulateChecksum()
         if (expected != actural) {
-            throw TarException("Invalid checksum ${actural} (expected ${expected}).")
+            throw TarException("Invalid checksum: got '${actural}', expected '${expected}'.")
         }
         return actural
     }

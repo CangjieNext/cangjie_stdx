@@ -99,7 +99,7 @@ open class Frame <: ToString {
 
         let payloadLen64 = Int64(readUInt32(header[..3]))
         if (payloadLen64 > Int64(maxFrameSize)) {
-            throw HttpConnectionException(ProtocolError, "Payload length exceed settings.")
+            throw HttpConnectionException(ProtocolError, "Frame payload length '${payloadLen64}' exceeds maximum '${maxFrameSize}'.")
         }
         // payloadWrapper is the array which cover payload, it may larger than payload
         // the valid part of payloadWrapper is payloadWrapper[..payloadLength]
@@ -177,7 +177,7 @@ open class Frame <: ToString {
 
 func writeHead(conn: BufferedWriter, frameType: FrameTypes, streamId: UInt32, flags: UInt8, payloadLen: UInt32): Unit {
     if (payloadLen > MAX_FRAME_SIZE) {
-        throw HttpConnectionException(ProtocolError, "Payload length overflow.")
+        throw HttpConnectionException(ProtocolError, "Frame payload length '${payloadLen}' exceeds maximum '${MAX_FRAME_SIZE}'.")
     }
     conn.writePayloadLen(payloadLen)
     conn.write(frameType.value())
@@ -190,10 +190,10 @@ class DataFrame <: Frame {
     var padLen: UInt8 = 0
     var streamEnd: Bool = false
 
-    // for read
+// for read
     init(id: UInt32, flag: UInt8, payloadWrapper: ArrayWrapper, payloadLen64: Int64) {
         if (!checkStreamId(id)) {
-            throw HttpConnectionException(ProtocolError, "Illegal id.")
+            throw HttpConnectionException(ProtocolError, "Stream identifier '${id}' is invalid.")
         }
         this.frameType = Data
         this.streamId = id
@@ -205,15 +205,15 @@ class DataFrame <: Frame {
         let payload = payloadWrapper.data
         if (this.padded) {
             if (payloadLen64 == 0) {
-                throw HttpConnectionException(ProtocolError, "Illegal data padding.")
+                throw HttpConnectionException(ProtocolError, "Padded frame has zero payload.")
             }
             this.padLen = payload[0]
             if (Int64(padLen) > payloadLen64 - 1) {
-                throw HttpConnectionException(ProtocolError, "Illegal data padding.")
+                throw HttpConnectionException(ProtocolError, "Data frame padding length '${padLen}' exceeds payload length '${payloadLen64}'.")
             }
             // padding cannot have non zero byte
             if (!checkPad(payload[payloadLen64 - Int64(padLen)..])) {
-                throw HttpConnectionException(ProtocolError, "Illegal padding.")
+                throw HttpConnectionException(ProtocolError, "Data frame padding contains non-zero bytes.")
             }
         }
     }
@@ -221,7 +221,7 @@ class DataFrame <: Frame {
     // for write
     init(id: UInt32, payloadWrapper: ArrayWrapper, payloadLen64: Int64, padLen!: UInt8 = 0, last!: Bool = false) {
         if (!checkStreamId(id)) {
-            throw HttpConnectionException(ProtocolError, "Illegal id.")
+            throw HttpConnectionException(ProtocolError, "Stream identifier '${id}' is invalid.")
         }
         if (padLen > 0) {
             padded = true
@@ -242,7 +242,7 @@ class DataFrame <: Frame {
     // for write
     init(id: UInt32, payload: Array<Byte>, payloadLen64: Int64, padLen!: UInt8 = 0, last!: Bool = false) {
         if (!checkStreamId(id)) {
-            throw HttpConnectionException(ProtocolError, "Illegal id.")
+            throw HttpConnectionException(ProtocolError, "Stream identifier '${id}' is invalid.")
         }
         if (padLen > 0) {
             padded = true
@@ -316,7 +316,7 @@ class HeadersFrame <: Frame {
     // for read
     init(id: UInt32, flag: UInt8, payloadWrapper: ArrayWrapper, payloadLen64: Int64) {
         if (!checkStreamId(id)) {
-            throw HttpConnectionException(ProtocolError, "Illegal stream id.")
+            throw HttpConnectionException(ProtocolError, "Stream identifier '${id}' is invalid.")
         }
         this.frameType = Headers
         this.streamId = id
@@ -327,14 +327,14 @@ class HeadersFrame <: Frame {
         parseFlag()
         if (this.padded) {
             if (payloadLen == 0) {
-                throw HttpConnectionException(ProtocolError, "Illegal headers padding.")
+                throw HttpConnectionException(ProtocolError, "Padded frame has zero payload.")
             }
             this.padLen = payload[0]
             if (Int64(padLen) > payloadLen64 - 1) {
-                throw HttpConnectionException(ProtocolError, "Illegal headers padding.")
+                throw HttpConnectionException(ProtocolError, "Headers frame padding length '${padLen}' exceeds payload length '${payloadLen64}'.")
             }
             if (!checkPad(payload[payloadLen64 - Int64(padLen)..])) {
-                throw HttpConnectionException(ProtocolError, "Illegal headers padding.")
+                throw HttpConnectionException(ProtocolError, "Headers frame padding contains non-zero bytes.")
             }
         }
         if (this.hasPriority) {
@@ -344,11 +344,11 @@ class HeadersFrame <: Frame {
                 0
             }
             if (payloadLen64 < 5) {
-                throw HttpConnectionException(ProtocolError, "Illegal headers frame.")
+                throw HttpConnectionException(ProtocolError, "Headers frame payload length '${payloadLen64}' is insufficient for priority data, expected at least 5.")
             }
             this.streamDependency = readUInt32(payload[start..4])
             if (!checkStreamId(id)) {
-                throw HttpConnectionException(ProtocolError, "Illegal stream id.")
+                throw HttpConnectionException(ProtocolError, "Stream identifier '${id}' is invalid.")
             }
             this.weight = payload[start + 4]
         }
@@ -402,7 +402,7 @@ class ContinuationFrame <: Frame {
     // for read
     init(id: UInt32, flag: UInt8, payloadWrapper: ArrayWrapper, payloadLen64: Int64) {
         if (!checkStreamId(id)) {
-            throw HttpConnectionException(ProtocolError, "Illegal id.")
+            throw HttpConnectionException(ProtocolError, "Stream identifier '${id}' is invalid.")
         }
         this.frameType = Continuation
         this.streamId = id
@@ -444,10 +444,10 @@ class RstStreamFrame <: Frame {
     // for read
     init(id: UInt32, payloadWrapper: ArrayWrapper, payloadLen64: Int64) {
         if (!checkStreamId(id)) {
-            throw HttpConnectionException(ProtocolError, "Illegal id.")
+            throw HttpConnectionException(ProtocolError, "Stream identifier '${id}' is invalid.")
         }
         if (payloadLen64 != 4) {
-            throw HttpConnectionException(ProtocolError, "RstStream frame payload illegal value:${payloadLen64}.")
+            throw HttpConnectionException(ProtocolError, "RstStream frame payload length is '${payloadLen64}', expected 4.")
         }
         // RstStreamFrame payload is a 4Bytes code
         this.payloadLen = 4
@@ -460,7 +460,7 @@ class RstStreamFrame <: Frame {
     // for write
     init(id: UInt32, errorCode: UInt32) { // no check on error code, in case there is customized code or new version of error code
         if (!checkStreamId(id)) {
-            throw HttpConnectionException(ProtocolError, "Illegal id.")
+            throw HttpConnectionException(ProtocolError, "Stream identifier '${id}' is invalid.")
         }
         this.payloadLen = 4
         this.frameType = RstStream
@@ -489,10 +489,10 @@ class SettingsFrame <: Frame {
     // for read
     init(id: UInt32, flag: UInt8, payloadWrapper: ArrayWrapper, payloadLen64: Int64) {
         if (id != 0) {
-            throw HttpConnectionException(ProtocolError, "Illegal id.")
+            throw HttpConnectionException(ProtocolError, "Settings frame stream identifier is '${id}', expected 0.")
         }
         if (payloadLen64 % 6 != 0) {
-            throw HttpConnectionException(ProtocolError, "Illegal setting length.")
+            throw HttpConnectionException(ProtocolError, "Settings frame payload length '${payloadLen64}' is not a multiple of 6.")
         }
         this.flags = flag
         parseFlag()
@@ -500,7 +500,7 @@ class SettingsFrame <: Frame {
         this.payloadWrapper = payloadWrapper
         if (ack && payloadLen != 0) {
             throw HttpConnectionException(ProtocolError,
-                "Ack settings frame can not have payload, current payloadLen:${payloadLen}.")
+                "Settings ACK frame payload length is '${payloadLen}', expected 0.")
         }
         this.frameType = Settings
         this.streamId = 0
@@ -586,7 +586,7 @@ class PushFrame <: Frame {
     // for read
     init(id: UInt32, flag: UInt8, payloadWrapper: ArrayWrapper, payloadLen64: Int64) {
         if (!checkStreamId(id)) {
-            throw HttpConnectionException(ProtocolError, "Illegal stream id.")
+            throw HttpConnectionException(ProtocolError, "Stream identifier '${id}' is invalid.")
         }
         this.flags = flag
         parseFlag()
@@ -597,22 +597,22 @@ class PushFrame <: Frame {
         let payload = payloadWrapper.data
         if (this.padded) {
             if (payloadLen == 0) {
-                throw HttpConnectionException(ProtocolError, "Illegal push padding.")
+                throw HttpConnectionException(ProtocolError, "PushPromise frame padding length is 0.")
             }
             padLen = payload[0]
             if (Int64(padLen) > payloadLen64 - 1) {
-                throw HttpConnectionException(ProtocolError, "Illegal push padding.")
+                throw HttpConnectionException(ProtocolError, "PushPromise frame padding length '${padLen}' exceeds payload length '${payloadLen64}'.")
             }
             if (!checkPad(payload[payloadLen64 - Int64(padLen)..])) {
-                throw HttpConnectionException(ProtocolError, "Illegal padding.")
+                throw HttpConnectionException(ProtocolError, "PushPromise frame padding contains non-zero bytes.")
             }
         }
         if (payloadLen64 < 4) {
-            throw HttpConnectionException(ProtocolError, "Illegal push frame.")
+            throw HttpConnectionException(ProtocolError, "PushPromise frame payload length '${payloadLen64}' is insufficient, expected at least 4.")
         }
         promisedId = readUInt32(payload[0..4])
         if (!checkStreamId(promisedId)) {
-            throw HttpConnectionException(ProtocolError, "Illegal stream id.")
+            throw HttpConnectionException(ProtocolError, "Promised stream identifier '${promisedId}' is invalid.")
         }
     }
 
@@ -653,10 +653,10 @@ class PingFrame <: Frame {
     // for read
     init(id: UInt32, flag: UInt8, payloadWrapper: ArrayWrapper, payloadLen64: Int64) {
         if (id != 0) {
-            throw HttpConnectionException(ProtocolError, "Illegal id.")
+            throw HttpConnectionException(ProtocolError, "Ping frame stream identifier is '${id}', expected 0.")
         }
         if (payloadLen64 != 8) {
-            throw HttpConnectionException(ProtocolError, "Opaque data must be 8 bytes.")
+            throw HttpConnectionException(ProtocolError, "Ping frame payload length is '${payloadLen64}', expected 8.")
         }
         // PingFrame payload is a 8Bytes opaque data
         this.payloadWrapper = payloadWrapper
@@ -706,10 +706,10 @@ class GoawayFrame <: Frame {
     // for read
     init(id: UInt32, payloadWrapper: ArrayWrapper, payloadLen64: Int64) {
         if (id != 0) {
-            throw HttpConnectionException(ProtocolError, "Illegal id.")
+            throw HttpConnectionException(ProtocolError, "Goaway frame stream identifier is '${id}', expected 0.")
         }
         if (payloadLen64 < 8) {
-            throw HttpConnectionException(ProtocolError, "Goaway should have at least 8 bytes payload.")
+            throw HttpConnectionException(ProtocolError, "Goaway frame payload length '${payloadLen64}' is insufficient, expected at least 8.")
         }
         this.payloadLen = UInt32(payloadLen64)
         this.payloadWrapper = payloadWrapper
@@ -757,7 +757,7 @@ class WindowUpdateFrame <: Frame {
     let increment: UInt32
     init(id: UInt32, payloadWrapper: ArrayWrapper, payloadLen64: Int64) {
         if (payloadLen64 != 4) {
-            throw HttpConnectionException(ProtocolError, "Illegal window update frame, payload length should be 4.")
+            throw HttpConnectionException(ProtocolError, "WindowUpdate frame payload length is '${payloadLen64}', expected 4.")
         }
         // WindowUpdateFrame payload is a 4Bytes number
         this.payloadLen = 4
@@ -767,19 +767,19 @@ class WindowUpdateFrame <: Frame {
         this.increment = readUInt32(payloadWrapper.data[..4])
         if (this.increment == 0 || increment > MAX_WINDOW) {
             if (id == 0) {
-                throw HttpConnectionException(ProtocolError, "Illegal increment.")
+                throw HttpConnectionException(ProtocolError, "Window increment '${increment}' is invalid.")
             } else {
-                throw HttpStreamException(ProtocolError, "Illegal increment.")
+                throw HttpStreamException(ProtocolError, "Window increment '${increment}' is invalid.")
             }
         }
     }
 
     init(id: UInt32, increment: UInt32) {
         if (streamIdOverflow(id)) {
-            throw HttpConnectionException(ProtocolError, "Illegal id.")
+            throw HttpConnectionException(ProtocolError, "Stream identifier '${id}' is invalid.")
         }
         if (increment == 0 || increment > MAX_WINDOW) {
-            throw HttpConnectionException(ProtocolError, "Illegal increment.")
+            throw HttpConnectionException(ProtocolError, "Window increment '${increment}' is invalid.")
         }
         this.payloadLen = 4
         this.frameType = WindowUpdate
@@ -808,24 +808,24 @@ class PriorityUpdateFrame <: Frame {
 
     init(id: UInt32, payloadWrapper: ArrayWrapper, payloadLen64: Int64) {
         if (id != 0) {
-            throw HttpConnectionException(ProtocolError, "Illegal stream id.")
+            throw HttpConnectionException(ProtocolError, "PriorityUpdate frame stream identifier is '${id}', expected 0.")
         }
         this.payloadLen = UInt32(payloadLen64)
         this.frameType = PriorityUpdate
         this.streamId = id
         if (payloadLen < 4) {
-            throw HttpConnectionException(ProtocolError, "Illegal priority_update frame.")
+            throw HttpConnectionException(ProtocolError, "PriorityUpdate frame payload length '${payloadLen}' is insufficient, expected at least 4.")
         }
         this.prioritizedId = readUInt32(payloadWrapper.data[0..4])
         if (!checkStreamId(prioritizedId)) {
-            throw HttpConnectionException(ProtocolError, "Illegal stream id.")
+            throw HttpConnectionException(ProtocolError, "Prioritized stream identifier '${prioritizedId}' is invalid.")
         }
         this.fieldValue = String.fromUtf8(payloadWrapper.data[4..]) // copy
     }
 
     init(prioritizedId: UInt32, fieldValue: String) {
         if (!checkStreamId(prioritizedId)) {
-            throw HttpConnectionException(ProtocolError, "Illegal stream id")
+            throw HttpConnectionException(ProtocolError, "Prioritized stream identifier '${prioritizedId}' is invalid.")
         }
         this.fieldValue = fieldValue
         this.payloadLen = UInt32(fieldValue.size) + 4

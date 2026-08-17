@@ -70,13 +70,13 @@ class MD5CTX {
         unsafe {
             this.ptr = LibC.malloc<Byte>(count: MD5_STRUCT_SIZE)
             if (this.ptr.isNull()) {
-                throw CryptoException("MD5 init failed due to insufficient memory.")
+                throw CryptoException("Failed to allocate memory for MD5 context.")
             }
             var ret = md5Init(ptr)
             if (ret != 1) {
                 LibC.free<Byte>(ptr)
                 ptr = CPointer<Byte>()
-                throw CryptoException("MD5 init failed due to inner error.")
+                throw CryptoException("Failed to initialize MD5 context.")
             }
         }
     }
@@ -109,13 +109,13 @@ class SHACTX {
         unsafe {
             this.ptr = LibC.malloc<Byte>(count: SHA1_STRUCT_SIZE)
             if (this.ptr.isNull()) {
-                throw CryptoException("SHA1 init failed due to insufficient memory")
+                throw CryptoException("Failed to allocate memory for SHA1 context.")
             }
             var ret = sha1Init(ptr)
             if (ret != 1) {
                 LibC.free<Byte>(ptr)
                 ptr = CPointer<Byte>()
-                throw CryptoException("SHA1 init failed due to inner error")
+                throw CryptoException("Failed to initialize SHA1 context.")
             }
         }
     }
@@ -152,13 +152,13 @@ class SHA224CTX {
         unsafe {
             this.ptr = LibC.malloc<Byte>(count: SHA224_STRUCT_SIZE)
             if (this.ptr.isNull()) {
-                throw CryptoException("SHA224 init failed due to insufficient memory")
+                throw CryptoException("Failed to allocate memory for SHA224 context.")
             }
             var ret = sha224Init(ptr)
             if (ret != 1) {
                 LibC.free<Byte>(ptr)
                 ptr = CPointer<Byte>()
-                throw CryptoException("SHA224 init failed due to inner error")
+                throw CryptoException("Failed to initialize SHA224 context.")
             }
         }
     }
@@ -180,13 +180,13 @@ class SHA256CTX {
         unsafe {
             this.ptr = LibC.malloc<Byte>(count: SHA256_STRUCT_SIZE)
             if (this.ptr.isNull()) {
-                throw CryptoException("SHA256 init failed due to insufficient memory")
+                throw CryptoException("Failed to allocate memory for SHA256 context.")
             }
             var ret = sha256Init(ptr)
             if (ret != 1) {
                 LibC.free<Byte>(ptr)
                 ptr = CPointer<Byte>()
-                throw CryptoException("SHA256 init failed due to inner error")
+                throw CryptoException("Failed to initialize SHA256 context.")
             }
         }
     }
@@ -229,13 +229,13 @@ class SHA384CTX {
         unsafe {
             this.ptr = LibC.malloc<Byte>(count: SHA384_STRUCT_SIZE)
             if (this.ptr.isNull()) {
-                throw CryptoException("SHA384 init failed due to insufficient memory")
+                throw CryptoException("Failed to allocate memory for SHA384 context.")
             }
             var ret = sha384Init(ptr)
             if (ret != 1) {
                 LibC.free<Byte>(ptr)
                 ptr = CPointer<Byte>()
-                throw CryptoException("SHA384 init failed due to inner error")
+                throw CryptoException("Failed to initialize SHA384 context.")
             }
         }
     }
@@ -257,13 +257,13 @@ class SHA512CTX {
         unsafe {
             this.ptr = LibC.malloc<Byte>(count: SHA512_STRUCT_SIZE)
             if (this.ptr.isNull()) {
-                throw CryptoException("SHA512 init failed due to insufficient memory")
+                throw CryptoException("Failed to allocate memory for SHA512 context.")
             }
             var ret = sha512Init(ptr)
             if (ret != 1) {
                 LibC.free<Byte>(ptr)
                 ptr = CPointer<Byte>()
-                throw CryptoException("SHA512 init failed due to inner error")
+                throw CryptoException("Failed to initialize SHA512 context.")
             }
         }
     }
@@ -376,7 +376,7 @@ func generateDynMsg(): CPointer<DynMsg> {
     unsafe {
         let dynMsgPtr = MallocDynMsg()
         if (dynMsgPtr.isNull()) {
-            throw CryptoException("malloc failed")
+            throw CryptoException("Failed to allocate memory for dynamic message.")
         }
         return dynMsgPtr
     }
@@ -385,12 +385,12 @@ func generateDynMsg(): CPointer<DynMsg> {
 func checkError(dynMsgPtr: CPointer<DynMsg>): Unit {
     unsafe {
         if (dynMsgPtr.isNull()) {
-            throw CryptoException("Null pointer check failed.")
+            throw CryptoException("Dynamic message pointer is null.")
         }
         try {
             if (!dynMsgPtr.read().found) {
                 let funcName = CString(dynMsgPtr.read().funcName).toString()
-                throw CryptoException("Can not load openssl library or function ${funcName}.")
+                throw CryptoException("Failed to load OpenSSL library or function '${funcName}'.")
             }
         } finally {
             FreeDynMsg(dynMsgPtr)

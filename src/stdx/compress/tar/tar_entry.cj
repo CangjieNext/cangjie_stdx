@@ -83,7 +83,7 @@ public abstract class TarEntry {
 
     protected init(path: Path) {
         if (!exists(path)) {
-            throw TarException("Target not exists: ${path}.")
+            throw TarException("Target does not exist: '${path}'.")
         }
 
         let fileInfo = FileInfo(path)
@@ -107,7 +107,7 @@ public abstract class TarEntry {
             _stream = None
             targetEntryType = TarEntryType.Symlink
         } else {
-            throw TarException("Target ${path} type is not directory/regular file/symbolic link, not supported.")
+            throw TarException("Unsupported target type for '${path}': only directory, regular file, and symbolic link are supported.")
         }
 
         _header = TarHeader(
@@ -150,32 +150,29 @@ public abstract class TarEntry {
     func writeDataTo(target: OutputStream): Unit {
         if (let Some(s) <- _stream) {
             if (_header.size < 0) {
-                throw TarException("TarEntry size is ${_header.size} < 0.")
+                throw TarException("Invalid TarEntry size: '${_header.size}'.")
             }
             let copySize = copy(s, to: target)
             if (copySize != _header.size) {
-                throw TarException("TarEntry size is ${_header.size} but " +
-                    "write ${copySize} bytes to target from stream.")
+                throw TarException("TarEntry size mismatch: expected '${_header.size}' bytes, but wrote '${copySize}' bytes.")
             }
             let paddingSize = PADDING - copySize % PADDING
             if (paddingSize != PADDING) {
                 writeZeros(target, paddingSize)
             }
         } else if (_header.size > 0) {
-            throw TarException("TarEntry size is ${_header.size} > 0 but stream is None.")
+            throw TarException("TarEntry size is '${_header.size}' but stream is None.")
         }
     }
 
     public open func writeTo(target: OutputStream): Unit {
         let buffer = TarHeaderBuffer()
         if (name.size > FieldLocation.NAME.length) {
-            throw TarException("Name `${name}` size is ${name.size} " +
-                "which is longer than the maximum ${FieldLocation.NAME.length}.")
+            throw TarException("Name '${name}' is too long: '${name.size}' bytes, maximum is '${FieldLocation.NAME.length}' bytes.")
         }
         writeNameDirectly(buffer)
         if (linkName.size > FieldLocation.LINK_NAME.length) {
-            throw TarException("LinkName `${name}` size is ${linkName.size} " +
-                "which is longer than the maximum ${FieldLocation.LINK_NAME.length}.")
+            throw TarException("Link name '${linkName}' is too long: '${linkName.size}' bytes, maximum is '${FieldLocation.LINK_NAME.length}' bytes.")
         }
         writeLinkNameDirectly(buffer)
         writeCommonFieldsWithoutNameChecksumLinkName(buffer)

@@ -40,7 +40,7 @@ public class SHA256 <: Digest {
 
     public func write(buffer: Array<Byte>): Unit {
         if (this.hasFinished) {
-            throw CryptoException("SHA256 write failed, digest calculation has been completed.")
+            throw CryptoException("Digest calculation already completed.")
         }
         sha256Update(sha256Ctx, buffer)
     }
@@ -53,10 +53,10 @@ public class SHA256 <: Digest {
 
     public func finish(to!: Array<Byte>): Unit {
         if (this.hasFinished) {
-            throw CryptoException("SHA256 finish failed, digest calculation has been completed.")
+            throw CryptoException("Digest calculation already completed.")
         }
         if (to.size != size) {
-            throw CryptoException("The length of output is not equal to the digest length.")
+            throw CryptoException("Output length '${to.size}' does not match digest length '${size}'.")
         }
         sha256Final(sha256Ctx, to)
         this.hasFinished = true
@@ -79,7 +79,7 @@ func sha256Update(c: SHA256CTX, data: Array<Byte>): Unit {
         }
         checkError(dynMsgPtr)
         if (res != 1) {
-            throw CryptoException("SHA256 write error")
+            throw CryptoException("SHA256 write operation failed.")
         }
     }
 }
@@ -95,7 +95,7 @@ func sha256Final(c: SHA256CTX, md: Array<Byte>): Unit {
         }
         checkError(dynMsgPtr)
         if (res != 1) {
-            throw CryptoException("SHA256 finish error")
+            throw CryptoException("SHA256 finish operation failed.")
         }
     }
 }

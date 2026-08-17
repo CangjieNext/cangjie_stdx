@@ -17,12 +17,12 @@ private const CHECKSUM_REAL_MAX = FieldLocation.CHECKSUM.length - 2
 extend Int32 {
     func encodeChecksumTo(target: Array<UInt8>): Unit {
         if (target.size != FieldLocation.CHECKSUM.length) {
-            throw TarException("Checksum target array must be of size ${FieldLocation.CHECKSUM.length} can not be ${target.size}.")
+            throw TarException("Invalid checksum target array size: '${target.size}', expected '${FieldLocation.CHECKSUM.length}'.")
         }
 
         let s = this.toString(radix: OCTAL)
         if (s.size > CHECKSUM_REAL_MAX) {
-            throw TarException("Value ${this} too long to encode octal in field of size ${CHECKSUM_REAL_MAX}.")
+            throw TarException("Value '${this}' is too large to encode as octal in '${CHECKSUM_REAL_MAX}' bytes.")
         }
         if (s.size == CHECKSUM_REAL_MAX) {
             target[0] = b'0'
@@ -38,7 +38,7 @@ extend Int32 {
     func encodeOcatalTo(target: Array<UInt8>): Unit {
         var s = this.toString(radix: OCTAL)
         if (s.size > target.size) {
-            throw TarException("Value ${this} too long to encode octal in field of size ${target.size}.")
+            throw TarException("Value '${this}' is too large to encode as octal in '${target.size}' bytes.")
         }
         s = s.padStart(target.size - 1, padding: '0')
 
@@ -60,7 +60,7 @@ extend Int64 {
     func encodeOcatalTo(target: Array<UInt8>): Unit {
         var s = this.toString(radix: OCTAL)
         if (s.size > target.size) {
-            throw TarException("Value ${this} too long to encode octal in field of size ${target.size}.")
+            throw TarException("Value '${this}' is too large to encode as octal in '${target.size}' bytes.")
         }
         s = s.padStart(target.size - 1, padding: '0')
 
@@ -81,10 +81,10 @@ extend DateTime {
         const TIMESTAMP_MAX = 0o777777777777
         let seconds = this.toUnixTimeStamp().toSeconds()
         if (seconds > TIMESTAMP_MAX) {
-            throw TarException("Timestamp ${this} too long to encode in field.")
+            throw TarException("Timestamp '${this}' is too large to encode.")
         }
         if (seconds < 0) {
-            throw TarException("Timestamp ${this} is negative.")
+            throw TarException("Timestamp '${this}' is negative.")
         }
         seconds.encodeOcatalTo(target)
     }
@@ -94,7 +94,7 @@ extend String {
     func encodeTo(target: Array<UInt8>): Unit {
         let bytes = unsafe { this.rawData() }
         if (bytes.size > target.size) {
-            throw TarException("String '${this}' too long to fit in field which size = ${target.size}.")
+            throw TarException("String '${this}' is too long: '${bytes.size}' bytes, field size is '${target.size}' bytes.")
         }
         var index = 0
         while (index < bytes.size) {

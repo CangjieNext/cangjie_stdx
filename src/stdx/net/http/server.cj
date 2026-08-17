@@ -221,7 +221,7 @@ public class ServerBuilder {
      */
     public func maxRequestHeaderSize(size: Int64): ServerBuilder {
         if (size < 0) {
-            throw IllegalArgumentException("Headers size shouldn't be negative, got ${size}.")
+            throw IllegalArgumentException("Invalid argument 'size': expected a non-negative value, got '${size}'.")
         }
         _maxRequestHeaderSize = size
         return this
@@ -237,7 +237,7 @@ public class ServerBuilder {
      */
     public func maxRequestBodySize(size: Int64): ServerBuilder {
         if (size < 0) {
-            throw IllegalArgumentException("Body size shouldn't be negative, got ${size}.")
+            throw IllegalArgumentException("Invalid argument 'size': expected a non-negative value, got '${size}'.")
         }
         _maxRequestBodySize = size
         return this
@@ -358,16 +358,16 @@ public class ServerBuilder {
             _logger.warn("[ServerBuilder#build] max concurrent streams num is recommended to be over 100")
         }
         if (_initialWindowSize > MAX_WINDOW) {
-            throw IllegalArgumentException("Initial window size should not exceed 2^31-1.")
+            throw IllegalArgumentException("Invalid argument 'initialWindowSize': expected 0–2^31-1, got '${_initialWindowSize}'.")
         }
         if (_maxFrameSize < MIN_FRAME_SIZE || _maxFrameSize > MAX_FRAME_SIZE) {
-            throw IllegalArgumentException("Max frame size should not be under 2^14 or over 2^24-1.")
+            throw IllegalArgumentException("Invalid argument 'maxFrameSize': expected 2^14–2^24-1, got '${_maxFrameSize}'.")
         }
         var addr = ""
         var port: UInt16 = 0
         if (_listener.isNone()) {
-            addr = _addr ?? throw IllegalArgumentException("The IP address number is not set.") // cjlint-ignore !G.EXP.03
-            port = _port ?? throw IllegalArgumentException("The port number is not set.") // cjlint-ignore !G.EXP.03
+            addr = _addr ?? throw IllegalArgumentException("Required parameter 'addr' is not set.") // cjlint-ignore !G.EXP.03
+            port = _port ?? throw IllegalArgumentException("Required parameter 'port' is not set.") // cjlint-ignore !G.EXP.03
         }
         return Server(
             _listener: _listener ?? TcpServerSocket(bindAt: IPSocketAddress(addr, port)),
@@ -725,7 +725,7 @@ public class Server { // cjlint-ignore !G.ENU.01
      * @throws HttpException, while the TLS certificate is not configured.
      */
     public func updateCert(certificateChainFile: String, privateKeyFile: String): Unit {
-        var cfg = _tlsConfig ?? throw HttpException("The TLS certificate is not configured.")
+        var cfg = _tlsConfig ?? throw HttpException("TLS certificate is not configured.")
         cfg.certificate = (certificateFromFile(certificateChainFile), privateKeyFromFile(privateKeyFile))
         _tlsConfig = cfg
     }
@@ -739,7 +739,7 @@ public class Server { // cjlint-ignore !G.ENU.01
      * @throws HttpException, while the TLS certificate is not configured.
      */
     public func updateCert(certChain: Array<Certificate>, certKey: PrivateKey): Unit {
-        var cfg = _tlsConfig ?? throw HttpException("The TLS certificate is not configured.")
+        var cfg = _tlsConfig ?? throw HttpException("TLS certificate is not configured.")
         cfg.certificate = (certChain, certKey)
         _tlsConfig = cfg
     }
@@ -753,7 +753,7 @@ public class Server { // cjlint-ignore !G.ENU.01
      * @throws HttpException, while the TLS certificate is not configured.
      */
     public func updateCA(newCaFile: String): Unit {
-        var cfg = _tlsConfig ?? throw HttpException("The TLS certificate is not configured.")
+        var cfg = _tlsConfig ?? throw HttpException("TLS certificate is not configured.")
         if (!newCaFile.isEmpty()) {
             let certificates = certificateFromFile(newCaFile)
             cfg.verifyMode = CertificateVerifyMode.CustomCA(certificates)
@@ -772,7 +772,7 @@ public class Server { // cjlint-ignore !G.ENU.01
      * @throws HttpException, while the TLS certificate is not configured.
      */
     public func updateCA(newCa: Array<Certificate>): Unit {
-        var cfg = _tlsConfig ?? throw HttpException("The TLS certificate is not configured.")
+        var cfg = _tlsConfig ?? throw HttpException("TLS certificate is not configured.")
         cfg.verifyMode = CustomCA(newCa)
         _tlsConfig = cfg
         if (logger.enabled(LogLevel.DEBUG)) {

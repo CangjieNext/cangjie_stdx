@@ -124,7 +124,7 @@ public class ClientBuilder {
      */
     public func poolSize(size: Int64): ClientBuilder {
         if (size <= 0) {
-            throw HttpException("The poolSize must be greater than 0.")
+            throw HttpException("Invalid argument 'size': expected a positive value, got ${size}.")
         }
         _poolSize = size
         return this
@@ -248,10 +248,10 @@ public class ClientBuilder {
     public func build(): Client {
         // check values
         if (_initialWindowSize == 0 || _initialWindowSize > MAX_WINDOW) {
-            throw IllegalArgumentException("InitialWindowSize should between 1 and ${MAX_WINDOW}.")
+            throw IllegalArgumentException("Invalid initialWindowSize: must be between 1 and ${MAX_WINDOW}, got ${_initialWindowSize}.")
         }
         if (_maxFrameSize < MIN_FRAME_SIZE || _maxFrameSize > MAX_FRAME_SIZE) {
-            throw IllegalArgumentException("MaxFrameSize should between 2^14 and 2^24-1.")
+            throw IllegalArgumentException("Invalid maxFrameSize: must be between 2^14 and 2^24-1, got ${_maxFrameSize}.")
         }
         if (_maxConcurrentStreams < 100) {
             _logger.warn("[ClientBuilder#build] Max concurrent streams num is recommended to be over 100.")
@@ -296,7 +296,7 @@ public class ClientBuilder {
             return proxy
         }
         if (!proxy.startsWith("http://")) {
-            throw IllegalArgumentException("Proxy must have http scheme.")
+            throw IllegalArgumentException("Invalid proxy '${proxy}': must use 'http' scheme.")
         }
         let url = URL.parse(proxy)
         if (url.hostName.isEmpty()) {
@@ -536,7 +536,7 @@ public class Client { // cjlint-ignore !G.ENU.01
                     while (body.read(tmpBuf) > 0) {}
             }
             if (reqsCnt > 10) {
-                throw HttpException("Redirect loop exceed 10 times.")
+                throw HttpException("Redirect loop exceeded 10 times.")
             }
             reqsCnt++
             (lastReq, response) = redirectOnce(lastReq, response)
@@ -554,10 +554,10 @@ public class Client { // cjlint-ignore !G.ENU.01
         // method is checked in request build
         var url = req.url
         if (url.scheme != "http" && url.scheme != "https") {
-            throw HttpException("Not HTTP protocol scheme: ${url.scheme}.")
+            throw HttpException("Invalid protocol scheme: '${url.scheme}', expected 'http' or 'https'.")
         }
         if (url.hostName.isEmpty()) {
-            throw HttpException("No host in request URL.")
+            throw HttpException("URL is missing host.")
         }
         if (url.path.isEmpty() && req.method != "OPTIONS") { // use OPTIONS on a host the target is *
             url = url.replace(path: SLASH)
@@ -594,7 +594,7 @@ public class Client { // cjlint-ignore !G.ENU.01
             return client.request(req)
         } catch (e: NegotiateException) {
             if (req.headers.getFirst(":protocol").isSome()) {
-                throw HttpException("H2 upgrade failed, since ALPN negotiate failed.")
+                throw HttpException("H2 upgrade failed: ALPN negotiation failed.")
             }
             req._version = HTTP1_1
             httpLogDebug(logger, "[Client#doRequest] h2 negotiate failed, and try h1 request again")
@@ -612,7 +612,7 @@ public class Client { // cjlint-ignore !G.ENU.01
                     throw HttpException("Response's Location header can only contain a single URI-reference.")
                 }
                 v.single
-            case None => throw HttpException("Response missing Location header, status code: ${response.status}.")
+            case None => throw HttpException("Response missing Location header, status code: '${response.status}'.")
         }
         let requestMethod = match (response.status) {
             case 301 | 302 => match {
@@ -745,19 +745,19 @@ public class Client { // cjlint-ignore !G.ENU.01
      */
     public func send(req: HttpRequest): HttpResponse {
         if (isClosed.load()) {
-            throw HttpException("This client has already closed.")
+            throw HttpException("Client is already closed.")
         }
         // websocket can be upgraded only by using the upgradeFromClient method.
         if (req.headers.getFirst("upgrade").isSome()) {
-            throw HttpException("Request header Upgrade is only supported in method upgrade or upgradeFromClient.")
+            throw HttpException("Upgrade header requires using upgrade() or upgradeFromClient() method.")
         }
         if (req.method == "CONNECT") {
-            throw HttpException("Please use connect method to send a CONNECT request.")
+            throw HttpException("CONNECT request requires using connect() method.")
         }
         // a client must not send content in a TRACE request.
         // RFC 9110 9.3.8.
         if (req.method == "TRACE" && !(req.body is HttpEmptyBody)) {
-            throw HttpException("TRACE request can not contain content.")
+            throw HttpException("TRACE request cannot contain content.")
         }
         return doRequest(req)
     }
@@ -882,7 +882,7 @@ public class Client { // cjlint-ignore !G.ENU.01
     public func connect(url: String, header!: HttpHeaders = HttpHeaders(), version!: Protocol = HTTP1_1): (HttpResponse, 
         ?StreamingSocket) {
         if (isClosed.load()) {
-            throw HttpException("This client has already closed.")
+            throw HttpException("Client is already closed.")
         }
         let req = HttpRequestBuilder().connect().url(url).version(version).setHeaders(header).build()
         checkReq(req)
@@ -931,7 +931,7 @@ public class Client { // cjlint-ignore !G.ENU.01
      */
     public func upgrade(req: HttpRequest): (HttpResponse, ?StreamingSocket) {
         if (isClosed.load()) {
-            throw HttpException("This client has already closed.")
+            throw HttpException("Client is already closed.")
         }
         if (req.headers.getFirst("upgrade").isNone()) {
             throw HttpException("Request header must contain Upgrade header.")
@@ -940,12 +940,12 @@ public class Client { // cjlint-ignore !G.ENU.01
             req._version = HTTP1_1
         }
         if (req.version != HTTP1_1) {
-            throw HttpException("Only HTTP/1.1 support upgrade.")
+            throw HttpException("Only HTTP/1.1 supports upgrade.")
         }
         // a client must not send content in a TRACE request.
         // RFC 9110 9.3.8.
         if (req.method == "TRACE" && !(req.body is HttpEmptyBody)) {
-            throw HttpException("TRACE request can not contain content.")
+            throw HttpException("TRACE request cannot contain content.")
         }
         // CONNECT method is not supported by upgrade
         if (req.method == "CONNECT") {
@@ -954,7 +954,7 @@ public class Client { // cjlint-ignore !G.ENU.01
         let resp = doRequest(req)
         let connNode = match (resp.connNode.getOrThrow() as ConnNode) {
             case Some(v) => v
-            case None => throw HttpException("Get connection failed.")
+            case None => throw HttpException("Failed to get connection.")
         }
         // a server may ignore a received Upgrade header field if it
         // wishes to continue using the current protocol on that connection.
@@ -988,7 +988,7 @@ public class Client { // cjlint-ignore !G.ENU.01
                 request._version = HTTP2_0
                 getOrCreateH2()
             case (HTTP1_0, _) => throw HttpException("HTTP/1.0 request is not supported.")
-            case _ => throw HttpException("Protocol unknown.")
+            case _ => throw HttpException("Unknown protocol.")
         }
     }
 

@@ -142,7 +142,7 @@ public class TarReader<T> <: Iterable<TarEntry> where T <: InputStream {
 
         const MAX_PAX_GLOBAL_DATA_BYTES = 32 * 1024 * 1024
         if (nextPaxGlobalDataBytes > MAX_PAX_GLOBAL_DATA_BYTES) {
-            throw TarException("Global pax metadata exceeds supported maximum ${MAX_PAX_GLOBAL_DATA_BYTES} bytes.")
+            throw TarException("Global PAX metadata size '${nextPaxGlobalDataBytes}' exceeds maximum '${MAX_PAX_GLOBAL_DATA_BYTES}' bytes.")
         }
 
         paxGlobalData.add(all: newData)
@@ -170,25 +170,25 @@ public class TarReader<T> <: Iterable<TarEntry> where T <: InputStream {
                         current++
                     } else if (c == b' ') {
                         if (position == current) {
-                            throw TarException("Invalid PAX record, empty length field.")
+                            throw TarException("Invalid PAX record: empty length field.")
                         }
                         length = parseInt64(data[position..current])
                         if (length < 1) {
-                            throw TarException("Invalid PAX record, length must be positive.")
+                            throw TarException("Invalid PAX record: length must be positive, got '${length}'.")
                         }
                         end = position + length
                         if (end > data.size) {
-                            throw TarException("Invalid PAX record, length ${length} exceeds available data size ${data.size - position}.")
+                            throw TarException("Invalid PAX record: length '${length}' exceeds available data size '${data.size - position}'.")
                         }
                         current++
                         position = current
                         state = PaxDataState.Keyword
                     } else {
-                        throw TarException("Invalid PAX record, length field includes non-digit character '${c}'.")
+                        throw TarException("Invalid PAX record: non-digit character '${c}' in length field.")
                     }
                 case PaxDataState.Keyword =>
                     if (end - 1 <= current) {
-                        throw TarException("Invalid PAX record, keyword length exceeds record length.")
+                        throw TarException("Invalid PAX record: keyword length exceeds record length.")
                     } else if (c == b'=') {
                         key = String.fromUtf8(data[position..current])
                         current++
@@ -201,9 +201,9 @@ public class TarReader<T> <: Iterable<TarEntry> where T <: InputStream {
                     if (end - 1 > current) {
                         current++
                     } else if (end - 1 < current) {
-                        throw TarException("Invalid PAX record, value length exceeds record length.")
+                        throw TarException("Invalid PAX record: value length exceeds record length.")
                     } else if (c != b'\n') {
-                        throw TarException("Invalid PAX record, value does not end with newline.")
+                        throw TarException("Invalid PAX record: value does not end with newline.")
                     } else {
                         value = String.fromUtf8(data[position..current])
                         result[key] = value
@@ -214,7 +214,7 @@ public class TarReader<T> <: Iterable<TarEntry> where T <: InputStream {
             }
         }
         if (state != PaxDataState.Length) { 
-            throw TarException("Invalid PAX record, incomplete record.")
+            throw TarException("Invalid PAX record: incomplete record.")
         }
         return result
     }
@@ -235,11 +235,11 @@ public class TarReader<T> <: Iterable<TarEntry> where T <: InputStream {
 
     private func validateDataBlockSize(size: Int64) {
         if (size < 0) {
-            throw TarException("Invalid tar entry size: ${size}.")
+            throw TarException("Invalid tar entry size: '${size}'.")
         }
         // Reject clearly malicious/corrupted headers that declare a single entry larger than the archive itself.
         if (let Some(totalSize) <- archiveSize && size > totalSize) {
-            throw TarException("Invalid tar entry size ${size}: exceeds tar archive size ${totalSize}.")
+            throw TarException("Invalid tar entry size: '${size}' exceeds archive size '${totalSize}'.")
         }
     }
 
@@ -247,7 +247,7 @@ public class TarReader<T> <: Iterable<TarEntry> where T <: InputStream {
         // PAX headers carry textual key-value metadata. In practice they are small.
         const MAX_PAX_HEADER_SIZE = 8 * 1024 * 1024 // 8 MiB
         if (size > MAX_PAX_HEADER_SIZE) {
-            throw TarException("${entryType} size ${size} exceeds supported maximum ${MAX_PAX_HEADER_SIZE}.")
+            throw TarException("${entryType} size '${size}' exceeds maximum '${MAX_PAX_HEADER_SIZE}' bytes.")
         }
     }
 
@@ -255,7 +255,7 @@ public class TarReader<T> <: Iterable<TarEntry> where T <: InputStream {
         // GNU long name/link store a single long path string (usually path length + '\0').
         const MAX_GNU_LONG_PATH_SIZE = 256 * 1024 // 256 KiB
         if (size > MAX_GNU_LONG_PATH_SIZE) {
-            throw TarException("${entryType} size ${size} exceeds supported maximum ${MAX_GNU_LONG_PATH_SIZE}.")
+            throw TarException("${entryType} size '${size}' exceeds maximum '${MAX_GNU_LONG_PATH_SIZE}' bytes.")
         }
     }
 
@@ -353,7 +353,7 @@ private class TarDataInputStream <: InputStream {
         }
         let readSize = source.read(outBuf[..expect])
         if (readSize == 0) {
-            throw TarException("End of stream reached before tar data block was exactly read.")
+            throw TarException("End of stream reached before tar data block was read completely.")
         }
 
         remainingDataSize -= readSize
@@ -377,7 +377,7 @@ private class TarDataInputStream <: InputStream {
             }
             let readSize = source.read(skipBuffer[..chunkSize])
             if (readSize == 0) {
-                throw TarException("End of stream reached before tar data block was exactly read.")
+                throw TarException("End of stream reached before tar data block was read completely.")
             }
             remainingDataSize -= readSize
         }
@@ -404,7 +404,7 @@ private class TarDataInputStream <: InputStream {
             }
             let readSize = source.read(skipBuffer[..chunkSize])
             if (readSize == 0) {
-                throw TarException("End of stream reached before tar data block padding was exactly read.")
+                throw TarException("End of stream reached before tar data block padding was read completely.")
             }
             remaining -= readSize
         }

@@ -24,7 +24,7 @@ struct DerField <: ToString {
 
     func asSequence(): DerSequence {
         if (fieldType != DerType.SEQUENCE) {
-            throw X509Exception("The field is not a sequence: ${fieldType}.")
+            throw X509Exception("The field is not a sequence: '${fieldType}'.")
         }
 
         DerSequence(body, depth: this.depth + 1)
@@ -33,7 +33,7 @@ struct DerField <: ToString {
     func asArrayByte(): Array<Byte> {
         let content = match {
             case fieldType == DerType.ASN_INT => body
-            case _ => throw X509Exception("Unsupported field type: ${fieldType}.")
+            case _ => throw X509Exception("Unsupported field type: '${fieldType}'.")
         }
         content
     }
@@ -41,17 +41,17 @@ struct DerField <: ToString {
     func asTime(): DateTime {
         let content = match {
             case fieldType == DerType.GENERALIZED_TIME || fieldType == DerType.UTC_TIME => String.fromUtf8(body)
-            case _ => throw X509Exception("Unsupported field type: ${fieldType}.")
+            case _ => throw X509Exception("Unsupported field type: '${fieldType}'.")
         }
 
         let format = match {
             case fieldType == DerType.UTC_TIME => "yyMMddHHmmssOO"
             case fieldType == DerType.GENERALIZED_TIME => "yyyyMMddHHmmssOO"
-            case _ => throw X509Exception("Unsupported field type: ${fieldType}.")
+            case _ => throw X509Exception("Unsupported field type: '${fieldType}'.")
         }
 
         if (!content.endsWith("Z")) {
-            throw X509Exception("Illegal date format: ${content}, should be ${format}Z.")
+            throw X509Exception("Invalid date format: '${content}', expected format '${format}Z'.")
         }
 
         let stdBuilder = StringBuilder()
@@ -70,13 +70,13 @@ struct DerField <: ToString {
         // second byte 0x01 denotes length
         // third byte is version value {0x01, 0x02}, 0x00 is usually omitted
         if (body.size != 3) {
-            throw X509Exception("Invalid version: Invalid version field length.")
+            throw X509Exception("Invalid version field length: expected 3 bytes, got '${body.size}' bytes.")
         }
         if (body[0] != 0x02 || body[1] != 0x01) {
-            throw X509Exception("Invalid version field value.")
+            throw X509Exception("Invalid version field: expected bytes '0x02' and '0x01', got '0x${body[0]}' and '0x${body[1]}'.")
         }
         if (body[2] != 0 && body[2] != 1 && body[2] != 2) {
-            throw X509Exception("X509Cert init failed: Invalid version value: ${body[2]}. Must be 0, 1, or 2.")
+            throw X509Exception("X509Cert init failed: invalid version value '${body[2]}', expected 0, 1, or 2.")
         }
     }
 
@@ -160,7 +160,7 @@ class DerSequence <: Collection<DerField> {
 
     DerSequence(private let body: Array<Byte>, let depth!: Int64 = 0) {
         if (depth > MAX_DER_DEPTH) {
-            throw X509Exception("X509 parse failed: DER nesting depth exceeds maximum limit (${MAX_DER_DEPTH}).")
+            throw X509Exception("X509 parse failed: DER nesting depth '${depth}' exceeds maximum limit '${MAX_DER_DEPTH}'.")
         }
         var parser = DerParser(body)
         let positions = ArrayList<(DerType, Int64)>()
@@ -191,7 +191,7 @@ class DerSequence <: Collection<DerField> {
             it: (DerType, Int64) =>
             let (_, position) = it
             if (position >= body.size) {
-                throw X509Exception("X509 parse failed: out of index.")
+                throw X509Exception("X509 parse failed: position '${position}' exceeds body size '${body.size}'.")
             }
             var parser = DerParser(body[position..])
             parser.parseNextDerField(depth)
@@ -200,11 +200,11 @@ class DerSequence <: Collection<DerField> {
 
     operator func [](index: Int64): DerField {
         if (index >= fields.size) {
-            throw X509Exception("DerSequence index out of bounds.")
+            throw X509Exception("DerSequence index out of bounds: index '${index}', size '${fields.size}'.")
         }
         let (_, position) = fields[index]
         if (position >= body.size) {
-            throw X509Exception("X509 parse failed: out of index.")
+            throw X509Exception("X509 parse failed: position '${position}' exceeds body size '${body.size}'.")
         }
         var parser = DerParser(body[position..])
         parser.parseNextDerField(depth)

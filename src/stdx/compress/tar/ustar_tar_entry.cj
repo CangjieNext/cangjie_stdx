@@ -46,7 +46,7 @@ public class UstarTarEntry <: PosixTarEntry {
             }
         }
         if (!findFeasibleSeparator) {
-            throw TarException("Can not find a feasible solution to split name and prefix of '${name}'.")
+            throw TarException("Cannot split name '${name}' into name and prefix within USTAR limits.")
         }
         name.encodeTo(buffer[FieldLocation.NAME])
         prefix.encodeTo(buffer[FieldLocation.PREFIX])
@@ -60,8 +60,7 @@ public class UstarTarEntry <: PosixTarEntry {
             writeNameDirectly(buffer)
         }
         if (linkName.size > FieldLocation.LINK_NAME.length) {
-            throw TarException("LinkName `${name}` size is ${linkName.size} " +
-                "which is longer than the maximum ${FieldLocation.LINK_NAME.length}.")
+            throw TarException("Link name '${linkName}' is too long: '${linkName.size}' bytes, maximum is '${FieldLocation.LINK_NAME.length}' bytes.")
         }
         writeLinkNameDirectly(buffer)
         writeCommonFieldsWithoutNameChecksumLinkName(buffer)

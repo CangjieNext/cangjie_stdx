@@ -83,7 +83,7 @@ class Stream {
 
     mut prop server: HttpServer2 {
         get() {
-            _server ?? throw HttpException("server in stream is None")
+            _server ?? throw HttpException("Server in stream is None.")
         }
         set(v) {
             _server = v
@@ -119,9 +119,9 @@ class Stream {
             start: server.readHeaderTimeout,
             task: {
                 =>
-                ThreadContext.connId = connId // set connection id for logger
-                close(ProtocolError, "read request headers timeout on stream ${streamId}")
-                ThreadContext.connId = None // clear connection id
+                    ThreadContext.connId = connId // set connection id for logger
+                    close(ProtocolError, "read request headers timeout on stream ${streamId}")
+                    ThreadContext.connId = None // clear connection id
             }
         )
         if (server.logger.enabled(LogLevel.DEBUG)) {
@@ -132,9 +132,9 @@ class Stream {
             start: server.readTimeout,
             task: {
                 =>
-                ThreadContext.connId = connId // set connection id for logger
-                close(ProtocolError, "read request timeout on stream ${streamId}")
-                ThreadContext.connId = None // clear connection id
+                    ThreadContext.connId = connId // set connection id for logger
+                    close(ProtocolError, "read request timeout on stream ${streamId}")
+                    ThreadContext.connId = None // clear connection id
             }
         )
     }
@@ -147,7 +147,7 @@ class Stream {
             case f: WindowUpdateFrame => onWindowUpdateRead(f)
             case f: RstStreamFrame => onRSTRead(f)
             case _: ContinuationFrame => throw HttpConnectionException(ProtocolError,
-                "unexpected CONTINUATION frame on stream ${streamId}")
+                "Unexpected CONTINUATION frame on stream '${streamId}'.")
             case _ => () // ignore or throw HttpStreamException?
         }
     }
@@ -155,13 +155,13 @@ class Stream {
     private func onDataRead(frame: DataFrame): Unit {
         if (localWindow.load() < frame.payloadLen) {
             throw HttpStreamException(FlowControlError,
-                "Payload length of data frame exceeds window on stream ${streamId}.")
+                "Payload length of data frame exceeds window on stream '${streamId}'.")
         }
 
         receivedBodySize += frame.data.size
         if (reqContentLength >= 0) {
             if (receivedBodySize > reqContentLength) {
-                throw HttpStreamException(ProtocolError, "Body size exceeds content-length ${reqContentLength}.")
+                throw HttpStreamException(ProtocolError, "Body size exceeds content-length '${reqContentLength}'.")
             }
         }
 
@@ -188,7 +188,7 @@ class Stream {
                     purgeStream() //status should be set to Closed when purge?
                 }
             case _ => throw HttpStreamException(StreamClosed,
-                "Received data frame on stream ${streamId}, status is ${status}.")
+                "Received data frame on stream '${streamId}', status is '${status}'.")
         }
         if (!dataBBQ.enqueue(frame)) {
             server.windowUpdateOnDataConsumed(frame.payloadLen)
@@ -249,7 +249,7 @@ class Stream {
                 }
                 purgeStream()
             case _ => throw HttpStreamException(StreamClosed,
-                "Received headers and continuation frame on stream ${streamId}, status is ${status}.")
+                "Received headers and continuation frame on stream '${streamId}', status is '${status}'.")
         }
     }
 
@@ -261,7 +261,7 @@ class Stream {
         remoteWindow.fetchAdd(Int64(frame.increment))
         if (remoteWindow.load() > Int64(MAX_WINDOW)) {
             throw HttpStreamException(FlowControlError,
-                "WINDOW_UPDATE frame cause remote window on stream ${streamId} exceeds 2^31-1.")
+                "WINDOW_UPDATE frame causes remote window on stream '${streamId}' to exceed 2^31-1.")
         }
         windowMonitor.lock()
         windowMonitor.notifyAll()
@@ -348,7 +348,8 @@ class Stream {
         readHeaderTimer.cancel()
         readTimer.cancel()
         if (server.logger.enabled(LogLevel.DEBUG)) {
-            httpLogDebug(server.logger,
+            httpLogDebug(
+                server.logger,
                 "[Stream#processHeaders] cancel read header timer and read timer when received trailers on stream ${streamId}"
             )
         }
@@ -359,7 +360,7 @@ class Stream {
         dataBBQ.close()
         if (reqContentLength >= 0) {
             if (receivedBodySize < reqContentLength) {
-                throw HttpStreamException(ProtocolError, "Body size is less than content-length ${reqContentLength}.")
+                throw HttpStreamException(ProtocolError, "Body size is less than content-length '${reqContentLength}'.")
             }
         }
     }
@@ -368,7 +369,7 @@ class Stream {
     func handle(): Unit {
         engineConn?.constructRequest(requestFields)
 
-        let engine = engineConn ?? throw HttpException("Internal error, engineConn in stream is None.")
+        let engine = engineConn ?? throw HttpException("Internal error: engineConn in stream is None.")
         if (let Some(expectBody) <- (ctx.request.body as HttpExpectBodyProviderH2)) {
             expectBody.context = ctx
         }
@@ -384,7 +385,8 @@ class Stream {
             let handlerEndTime = MonoTime.now()
             if (server.logger.enabled(LogLevel.DEBUG)) {
                 let duration = handlerEndTime - handlerStartTime
-                httpLogDebug(server.logger,
+                httpLogDebug(
+                    server.logger,
                     "[Stream#handle] Handler for request ${ctx.request.method} ${ctx.request.url} on stream ${streamId} took ${duration.toMilliseconds()} ms."
                 )
             }
@@ -450,7 +452,7 @@ class Stream {
                     }
                     purgeStream()
                 }
-            case _ => throw HttpStreamException(ProtocolError, "Write data frame on ${status} stream.")
+            case _ => throw HttpStreamException(ProtocolError, "Write data frame on '${status}' stream.")
         }
     }
 
@@ -473,7 +475,8 @@ class Stream {
                 if (frame.streamEnd) {
                     status = Closed
                     if (server.logger.enabled(LogLevel.DEBUG)) {
-                        httpLogDebug(server.logger,
+                        httpLogDebug(
+                            server.logger,
                             "[Stream#onHeadersFieldsWrite] purge stream when write headers with streamEnd on stream ${streamId}"
                         )
                     }
@@ -481,14 +484,14 @@ class Stream {
                 }
             case ReservedLocal => // push response headers
                 status = HalfClosedRemote
-            case _ => throw HttpStreamException(ProtocolError, "Write headers frame on ${status} stream.")
+            case _ => throw HttpStreamException(ProtocolError, "Write headers frame on '${status}' stream.")
         }
     }
 
     private func onPushFieldsWrite(): Unit {
         match (status) {
             case Open | HalfClosedRemote => ()
-            case _ => throw HttpStreamException(ProtocolError, "Write push promise on ${status} stream.")
+            case _ => throw HttpStreamException(ProtocolError, "Write push promise on '${status}' stream.")
         }
     }
 
@@ -533,7 +536,8 @@ class Stream {
             let rstFrame = RstStreamFrame(id, h2Error.code)
             if (!server.responseQueue.send(rstFrame, CONTROL_PRIORITY)) {
                 if (server.logger.enabled(LogLevel.DEBUG)) {
-                    httpLogDebug(server.logger, "[Stream#close] stream ${streamId}: connection closed, write rst failed.")
+                    httpLogDebug(server.logger,
+                        "[Stream#close] stream ${streamId}: connection closed, write rst failed.")
                 }
             }
         }
@@ -661,7 +665,7 @@ class HttpEngineConn2 <: HttpEngineConn & InputStream {
             }
         }
         if (pseudoHeadersNum == 0) {
-            throw HttpStreamException(ProtocolError, "Malformed request, pseudo headers are not found.")
+            throw HttpStreamException(ProtocolError, "Malformed request: pseudo headers not found.")
         }
         checkAndSetPseudoHeaders(fields[..pseudoHeadersNum])
         if (pseudoHeadersNum < fields.size) {
@@ -691,27 +695,24 @@ class HttpEngineConn2 <: HttpEngineConn & InputStream {
             match (name) {
                 case ":method" =>
                     if (!method.isEmpty()) {
-                        throw HttpStreamException(ProtocolError, "PseudoHeader ${name} should not be set more than once."
-                        )
+                        throw HttpStreamException(ProtocolError, "Pseudo header '${name}' is set more than once.")
                     } else {
                         method = value
                     }
                     request._method = value //may throw, method should be tokens
                 case ":scheme" =>
                     if (!scheme.isEmpty()) {
-                        throw HttpStreamException(ProtocolError, "PseudoHeader ${name} should not be set more than once."
-                        )
+                        throw HttpStreamException(ProtocolError, "Pseudo header '${name}' is set more than once.")
                     } else {
                         scheme = value
                     }
                     if (value != "https") {
-                        throw HttpStreamException(ProtocolError, "Malformed request, scheme of h2 request must be https."
-                        )
+                        throw HttpStreamException(ProtocolError,
+                            "Malformed request: scheme of HTTP/2 request must be 'https'.")
                     }
                 case ":authority" =>
                     if (!authority.isEmpty()) {
-                        throw HttpStreamException(ProtocolError, "PseudoHeader ${name} should not be set more than once."
-                        )
+                        throw HttpStreamException(ProtocolError, "Pseudo header '${name}' is set more than once.")
                     } else {
                         authority = value
                     }
@@ -719,11 +720,10 @@ class HttpEngineConn2 <: HttpEngineConn & InputStream {
                 case ":path" =>
                     if (value.isEmpty()) {
                         throw HttpStreamException(ProtocolError,
-                            "Malformed request, value of pseudo header \":path\" should not be empty.")
+                            "Malformed request: value of pseudo header ':path' cannot be empty.")
                     }
                     if (!path.isEmpty()) {
-                        throw HttpStreamException(ProtocolError, "PseudoHeader ${name} should not be set more than once."
-                        )
+                        throw HttpStreamException(ProtocolError, "Pseudo header '${name}' is set more than once.")
                     } else {
                         path = value
                     }
@@ -732,23 +732,22 @@ class HttpEngineConn2 <: HttpEngineConn & InputStream {
                     if (stream.server.localSettings[SettingsEnableConnectProtocol.code] == 0) {
                         throw HttpStreamException(
                             ProtocolError,
-                            "Malformed request, extended CONNECT protocol is disabled."
+                            "Malformed request: extended CONNECT protocol is disabled."
                         )
                     }
                     if (!h2UpgradeProtocols.contains(value)) {
-                        throw HttpStreamException(
-                            ProtocolError,
-                            "Pseudo header field \":protocol\" should be single valued and the value should be \"HTTP\", \"TLS\", \"WebSocket\", \"Websocket\", \"h2c\", \"connect-udp\" or \"connect-ip\"."
-                        )
+                        throw HttpStreamException(ProtocolError,
+                            "Malformed request: ':protocol' value '${value}' is invalid: allowed values are 'HTTP', 'TLS', 'WebSocket', 'Websocket', 'h2c', 'connect-udp', 'connect-ip'.")
                     }
                     upgrade = value
                 case _ => throw HttpStreamException(ProtocolError,
-                    "Malformed request, invalid pseudo header name ${name}.")
+                    "Malformed request: invalid pseudo header name '${name}'.")
             }
         }
         // must contain ":method"
         if (method.isEmpty()) {
-            throw HttpStreamException(ProtocolError, "Malformed request, pseudoHeaders must contain :method.")
+            throw HttpStreamException(ProtocolError,
+                "Malformed request: pseudoHeaders missing required field ':method'.")
         }
         // must contain ":scheme" and ":path", unless method is connect
         if (method == "CONNECT") {
@@ -758,10 +757,11 @@ class HttpEngineConn2 <: HttpEngineConn & InputStream {
             }
         }
         if (scheme.isEmpty()) {
-            throw HttpStreamException(ProtocolError, "Malformed request, pseudoHeaders must contain :scheme.")
+            throw HttpStreamException(ProtocolError,
+                "Malformed request: pseudoHeaders missing required field ':scheme'.")
         }
         if (path.isEmpty()) {
-            throw HttpStreamException(ProtocolError, "Malformed request, pseudoHeaders must contain :path.")
+            throw HttpStreamException(ProtocolError, "Malformed request: pseudoHeaders missing required field ':path'.")
         }
     }
 
@@ -770,18 +770,18 @@ class HttpEngineConn2 <: HttpEngineConn & InputStream {
             if (name.startsWith(":")) {
                 headerSyncCounter.dec()
                 throw HttpStreamException(ProtocolError,
-                    "Malformed request, h2 pseudoHeaders ${name} should procedure headers.")
+                    "Malformed request: HTTP/2 pseudoHeaders '${name}' appears after headers.")
             }
 
             if (name.hasUpper()) {
                 headerSyncCounter.dec()
-                throw HttpStreamException(ProtocolError, "Malformed request, h2 headers should be lower cases.")
+                throw HttpStreamException(ProtocolError, "Malformed request: HTTP/2 headers are not lowercase.")
             }
 
             // should not contain connection, proxy-connection, keep-alive, transfer-encoding, upgrade
             if (H2_EXCLUDE_HEADERS.contains(name)) {
                 headerSyncCounter.dec()
-                throw HttpStreamException(ProtocolError, "Malformed request, h2 headers should not contain ${name}.")
+                throw HttpStreamException(ProtocolError, "Malformed request: HTTP/2 headers cannot contain '${name}'.")
             }
 
             // TE header field can exist, value of TE MUST NOT contain any value other than "trailers"
@@ -789,7 +789,7 @@ class HttpEngineConn2 <: HttpEngineConn & InputStream {
             if (name == "te" && value != "trailers") {
                 headerSyncCounter.dec()
                 throw HttpStreamException(ProtocolError,
-                    "Malformed request, te header field must not contain any value other than \"trailers\".")
+                    "Malformed request: TE header field value '${value}' is invalid: only 'trailers' is allowed.")
             }
 
             // if :authority is set, value of Host must be the same with value of :authority
@@ -797,7 +797,7 @@ class HttpEngineConn2 <: HttpEngineConn & InputStream {
                 if (!requestAuthority.isEmpty() && requestAuthority != value) {
                     headerSyncCounter.dec()
                     throw HttpStreamException(ProtocolError,
-                        "Malformed request, value of :authority and host should be the same.")
+                        "Malformed request: value of ':authority' and 'host' must be the same.")
                 }
             }
 
@@ -805,7 +805,8 @@ class HttpEngineConn2 <: HttpEngineConn & InputStream {
                 let urgency = parsePriority(value)
                 stream.queuePriority = MAX_URGENCY - urgency
                 if (logger.enabled(LogLevel.DEBUG)) {
-                    httpLogDebug(logger,
+                    httpLogDebug(
+                        logger,
                         "[Stream#checkAndSetRequestHeaders] stream ${stream.streamId}, set queuePriority = ${stream.queuePriority}"
                     )
                 }
@@ -814,7 +815,7 @@ class HttpEngineConn2 <: HttpEngineConn & InputStream {
             if (name == "trailer") {
                 if (!Str(value).splitAllMatch(SYMBOL_COMMA, {v => !TrailerExcludeList.contains(v)})) {
                     headerSyncCounter.dec()
-                    throw HttpStreamException(ProtocolError, "Malformed request, invalid trailer value in header.")
+                    throw HttpStreamException(ProtocolError, "Malformed request: invalid trailer value in header.")
                 }
             }
 
@@ -824,7 +825,7 @@ class HttpEngineConn2 <: HttpEngineConn & InputStream {
                 request.headers.add(name, value) // may throw HttpException
             } catch (e: HttpException) {
                 headerSyncCounter.dec()
-                throw HttpStreamException(ProtocolError, "Malformed request, ${e.message}.")
+                throw HttpStreamException(ProtocolError, "Malformed request: ${e.message}")
             }
         }
 
@@ -835,13 +836,13 @@ class HttpEngineConn2 <: HttpEngineConn & InputStream {
                 checkContentLength()
             }
         } catch (e: HttpException) {
-            throw HttpStreamException(ProtocolError, "Malformed request, ${e.message}.")
+            throw HttpStreamException(ProtocolError, "Malformed request: ${e.message}")
         }
     }
 
     private func checkContentLength() {
         if (stream.reqContentLength >= 0 && stream.receivedBodySize > stream.reqContentLength) {
-            throw HttpStreamException(ProtocolError, "Body size exceeds content-length ${stream.reqContentLength}.")
+            throw HttpStreamException(ProtocolError, "Body size exceeds content-length '${stream.reqContentLength}'.")
         }
     }
 
@@ -860,7 +861,7 @@ class HttpEngineConn2 <: HttpEngineConn & InputStream {
                 checkTrailer(request)
             }
         } catch (e: HttpException) {
-            throw HttpStreamException(ProtocolError, "Invalid trailer field, ${e.message}.")
+            throw HttpStreamException(ProtocolError, "Invalid trailer field: ${e.message}")
         }
     }
 
@@ -902,7 +903,7 @@ class HttpEngineConn2 <: HttpEngineConn & InputStream {
      */
     func writeResponse(responseBuilder: HttpResponseBuilder): Unit {
         if (stream.isClosed()) {
-            throw HttpException("Stream ${streamId} closed, write response failed.")
+            throw HttpException("Stream '${streamId}' is closed.")
         }
 
         let status = responseBuilder._status ?? HttpStatusCode.STATUS_OK
@@ -945,7 +946,7 @@ class HttpEngineConn2 <: HttpEngineConn & InputStream {
 
     public func writeResponse(ctx: HttpContext): Unit {
         if (stream.isClosed()) {
-            throw HttpException("Stream ${streamId} closed, write response failed.")
+            throw HttpException("Stream '${streamId}' is closed.")
         }
         let responseBuilder = ctx.responseBuilder
         synchronized(ctx.writerMtx) {
@@ -968,13 +969,13 @@ class HttpEngineConn2 <: HttpEngineConn & InputStream {
 
     public func writeResponseByWriter(ctx: HttpContext, bodyData: Array<UInt8>): Unit {
         if (stream.isClosed()) {
-            throw HttpException("Stream ${streamId} closed, write response failed.")
+            throw HttpException("Stream '${streamId}' is closed.")
         }
         if (!ctx.responseFlushedByUser) {
             ctx.responseFlushedByUser = true
             let status = ctx.responseBuilder._status ?? HttpStatusCode.STATUS_OK
             if (request.method == "HEAD" || status / 100 == 1 || status == 204 || status == 304) {
-                throw HttpException("The body should be empty.")
+                throw HttpException("Invalid body: body is not empty for status '${status}'.")
             }
             writeHeader(status, ctx.responseBuilder.headers, streamEnd: false)
         }
@@ -983,10 +984,10 @@ class HttpEngineConn2 <: HttpEngineConn & InputStream {
 
     public func writeUpgradeResponse(ctx: HttpContext): Unit {
         if (stream.isClosed()) {
-            throw HttpException("Stream ${streamId} closed, write response failed.")
+            throw HttpException("Stream '${streamId}' is closed.")
         }
         if (ctx.request.method != "CONNECT") {
-            throw HttpException("In http/2 build a tunnel is supported only when request method is CONNECT.")
+            throw HttpException("Cannot build tunnel: request method is not CONNECT.")
         }
         // in http/2, response to CONNECT request must have status 2XX, and should not contain header field "content-length"
         // cjlint-ignore -start !G.OTH.03
@@ -994,7 +995,7 @@ class HttpEngineConn2 <: HttpEngineConn & InputStream {
         // cjlint-ignore -end
         let status = ctx.responseBuilder._status ?? HttpStatusCode.STATUS_OK
         if (status / 100 != 2) {
-            throw HttpException("Status of response to CONNECT request must be 2XX, if tunnel is built successfully.")
+            throw HttpException("Response to CONNECT request has invalid status: expected 2XX, got '${status}'.")
         }
         ctx.responseBuilder.headers.del("content-length")
         writeHeader(status, ctx.responseBuilder.headers, streamEnd: false)
@@ -1014,7 +1015,7 @@ class HttpEngineConn2 <: HttpEngineConn & InputStream {
         }
         if (let Some(readBufWrapper) <- readBufWrapperOp) {
             if (readBufWrapper.size == 0) {
-                throw Exception("The readBufWrapper.size == 0, rawSize == ${readBufWrapper.rawSize}")
+                throw Exception("Read buffer size is 0, but raw size is '${readBufWrapper.rawSize}'.")
             }
             arrayPool?.put(readBufWrapper)
         }
@@ -1027,7 +1028,7 @@ class HttpEngineConn2 <: HttpEngineConn & InputStream {
         var bodyIndex = 0
         while (bodyIndex < bodyData.size) {
             if (stream.isClosed()) {
-                throw HttpException("Connection closed, write body failed.")
+                throw HttpException("Cannot write body: connection is closed.")
             }
             waitIfWindowNegative()
             let remainLen = bodyData.size - bodyIndex
@@ -1047,7 +1048,7 @@ class HttpEngineConn2 <: HttpEngineConn & InputStream {
             }
             if (!responseQueue.send(frame, MESSAGE_PRIORITY)) {
                 // to handler or stream.handle, which will log the exception and go on
-                throw HttpException("Connection closed, write body failed.")
+                throw HttpException("Cannot write body: connection is closed.")
             }
             stream.remoteWindow.fetchSub(writeLen)
         }
@@ -1056,10 +1057,11 @@ class HttpEngineConn2 <: HttpEngineConn & InputStream {
     private func waitIfWindowNegative(): Unit {
         while (stream.remoteWindow.load() <= 0 && !quit.load()) {
             if (stream.isClosed()) {
-                throw HttpException("Stream is closed when waiting window update on stream ${stream.streamId}.") // to handler or stream.handle, which will log the exception and go on
+                throw HttpException("Stream is closed while waiting for window update on stream '${stream.streamId}'.") // to handler or stream.handle, which will log the exception and go on
             }
             if (logger.enabled(LogLevel.DEBUG)) {
-                httpLogDebug(stream.server.logger,
+                httpLogDebug(
+                    stream.server.logger,
                     "[Stream#waitIfWindowNegative] server stream ${stream.streamId} wait for window_update, current window is negative: ${stream.remoteWindow.load()}"
                 )
             }
@@ -1075,7 +1077,7 @@ class HttpEngineConn2 <: HttpEngineConn & InputStream {
     func writeEmptyDataFrame(): Unit {
         let frame = DataFrame(stream.streamId, Array<UInt8>(), 0, last: true)
         if (!responseQueue.send(frame, MESSAGE_PRIORITY)) {
-            throw HttpException("Connection closed, write body failed.")
+            throw HttpException("Cannot write body: connection is closed.")
         }
     }
 
@@ -1089,10 +1091,9 @@ class HttpEngineConn2 <: HttpEngineConn & InputStream {
         if (logger.enabled(LogLevel.DEBUG)) {
             httpLogDebug(logger, "[Stream#writeHeader] set write timer, writeTimeout = ${writeTimeout}")
         }
-        stream.writeTimer = HttpTimer(start: writeTimeout,
-            task: {
-                => stream.close(ProtocolError, "write response timeout on stream ${stream.streamId}")
-            })
+        stream.writeTimer = HttpTimer(start: writeTimeout, task: {
+            => stream.close(ProtocolError, "write response timeout on stream ${stream.streamId}")
+        })
 
         let fields = FieldsList()
         let statusString = STATUS_STRING.get(status) ?? status.toString()
@@ -1101,7 +1102,7 @@ class HttpEngineConn2 <: HttpEngineConn & InputStream {
         checkAndSetResponseHeaders(fields, header)
         let frame = FieldsFrame(stream.streamId, fields, last: streamEnd)
         if (!responseQueue.send(frame, MESSAGE_PRIORITY)) {
-            throw HttpException("Connection closed, write header failed.")
+            throw HttpException("Cannot write header: connection is closed.")
         }
     }
 
@@ -1109,7 +1110,7 @@ class HttpEngineConn2 <: HttpEngineConn & InputStream {
         let fields = FieldsList([(":status", "100")])
         let frame = FieldsFrame(stream.streamId, fields, last: false)
         if (!responseQueue.send(frame, MESSAGE_PRIORITY)) {
-            throw HttpException("Connection closed, write header failed.")
+            throw HttpException("Cannot write header: connection is closed.")
         }
     }
 
@@ -1147,7 +1148,7 @@ class HttpEngineConn2 <: HttpEngineConn & InputStream {
 
         let frame = FieldsFrame(stream.streamId, fields, pushId: pushStream.streamId)
         if (!responseQueue.send(frame, MESSAGE_PRIORITY)) {
-            throw HttpException("Connection closed, send push request failed.")
+            throw HttpException("Cannot send push request: connection is closed.")
         }
 
         pushStream.status = ReservedLocal
@@ -1157,7 +1158,7 @@ class HttpEngineConn2 <: HttpEngineConn & InputStream {
         }
 
         if (!stream.server.requestQueue.send(pushStream, pushStream.queuePriority)) {
-            throw HttpException("Connection closed, send push request failed.")
+            throw HttpException("Cannot send push request: connection is closed.")
         }
     }
 
@@ -1194,7 +1195,7 @@ class HttpEngineConn2 <: HttpEngineConn & InputStream {
         }
         let frame = FieldsFrame(stream.streamId, fields, last: true)
         if (!responseQueue.send(frame, MESSAGE_PRIORITY)) {
-            throw HttpException("Connection closed, write trailer failed.")
+            throw HttpException("Cannot write trailer: connection is closed.")
         }
     }
 
@@ -1263,7 +1264,7 @@ class StreamingSocket2 <: StreamingSocket {
             return None
         }
         set(_) {
-            throw HttpException("Should not set timeout on h2 stream.")
+            throw HttpException("Cannot set timeout on HTTP/2 stream.")
         }
     }
 
@@ -1272,7 +1273,7 @@ class StreamingSocket2 <: StreamingSocket {
             return None
         }
         set(_) {
-            throw HttpException("Should not set timeout on h2 stream.")
+            throw HttpException("Cannot set timeout on HTTP/2 stream.")
         }
     }
 
@@ -1293,13 +1294,13 @@ class StreamingSocket2 <: StreamingSocket {
     }
 
     public func toString(): String {
-        throw HttpException("StreamingSocket instance upgraded from h2 stream not support toString.")
+        throw HttpException("StreamingSocket instance upgraded from HTTP/2 stream does not support toString().")
     }
 }
 
 func putOrThrow(map: HashMap<String, String>, name: String, value: String): Unit {
     if (map.contains(name)) {
-        throw HttpStreamException(ProtocolError, "PseudoHeader ${name} should not be set more than once.")
+        throw HttpStreamException(ProtocolError, "Pseudo header '${name}' is set more than once.")
     } else {
         map.add(name, value)
     }
@@ -1307,7 +1308,7 @@ func putOrThrow(map: HashMap<String, String>, name: String, value: String): Unit
 
 func containsOrThrow(headers: HashMap<String, String>, name: String): Unit {
     if (!headers.contains(name)) {
-        throw HttpStreamException(ProtocolError, "Malformed request, pseudoHeaders must contain ${name}.")
+        throw HttpStreamException(ProtocolError, "Malformed request: pseudoHeaders missing required field '${name}'.")
     }
 }
 
@@ -1337,7 +1338,7 @@ func checkAndSetCl(responseBuilder: HttpResponseBuilder, setCl: Bool): Unit {
     match ((checkCl(responseBuilder.headers), sizeOf(responseBuilder._body), setCl)) {
         case (Some(cl), Some(bs), false) =>
             if (cl != bs) {
-                throw HttpException("The content-length and body length not match.")
+                throw HttpException("Content-length and body length do not match.")
             }
         case (None, Some(bs), true) => responseBuilder.headers.add("content-length", "${bs}")
         case _ => ()
@@ -1351,7 +1352,7 @@ class HttpExpectBodyProviderH2 <: InputStream {
     HttpExpectBodyProviderH2(let conn: HttpEngineConn2) {}
 
     public func read(buf: Array<Byte>): Int64 {
-        let ctx = context ?? throw HttpException("Internal error, ctx in body provider is None.")
+        let ctx = context ?? throw HttpException("Internal error: context in body provider is None.")
         synchronized(ctx.writerMtx) {
             if (!respondedContinue && !ctx.responseFlushedByUser && !ctx.upgraded && !ctx.responded) {
                 conn.write100ContinueHeader()

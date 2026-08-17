@@ -394,7 +394,7 @@ class CookieJarImpl <: CookieJar {
      */
     public func removeCookies(domain: String): Unit {
         if (domain.isEmpty() || domain[0] == b'.' || !isCookieDomainValid(domain)) {
-            throw IllegalArgumentException("Invalid cookie domain.")
+            throw IllegalArgumentException("Invalid cookie domain: '${domain}'.")
         }
         synchronized(cookieEntriesLock) {
             // domain:<path:<name:entry>>
