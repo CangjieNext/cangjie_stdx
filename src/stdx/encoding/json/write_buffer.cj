@@ -297,18 +297,19 @@ func jsonWriteObject(json: JsonObject, buff: WriteBuffer, depth: Int64, bracketI
 
     buff.append(b'{')
     let new_depth = depth + 1
-    for ((key, jv) in json.getFields()) {
-        buff.append(b'\n')
-        for (_ in 0..new_depth) {
-            buff.append(indent)
+    let allKeysHtmlSafe = json.allKeysAreHtmlSafe()
+    if (json.isFlatStorage()) {
+        let fields = json.getFlatFieldsForRead()
+        for (i in 0..json.getFlatSizeForRead()) {
+            let field = fields[i]
+            jsonWriteObjectField(
+                field[0], field[1], buff, new_depth, indent, allKeysHtmlSafe, htmlSafe
+            )
         }
-        buff.append(b'\"').appendEscape(key).append(b'\"').append(b':').appendBlank(1)
-        match (jv) {
-            case jo: JsonObject => jsonWriteObject(jo, buff, new_depth, false, indent, htmlSafe: htmlSafe)
-            case ja: JsonArray => jsonWriteArray(ja, buff, new_depth, false, indent, htmlSafe: htmlSafe)
-            case _ => jsonWriteWithoutFormat(jv, buff, new_depth, htmlSafe: htmlSafe)
+    } else {
+        for ((key, value) in json.getHashFieldsForRead()) {
+            jsonWriteObjectField(key, value, buff, new_depth, indent, allKeysHtmlSafe, htmlSafe)
         }
-        buff.append(b',')
     }
     buff.removetail()
     buff.append(b'\n')
@@ -316,6 +317,34 @@ func jsonWriteObject(json: JsonObject, buff: WriteBuffer, depth: Int64, bracketI
         buff.append(indent)
     }
     buff.append(b'}')
+}
+
+func jsonWriteObjectField(
+    key: String,
+    value: JsonValue,
+    buff: WriteBuffer,
+    depth: Int64,
+    indent: String,
+    allKeysHtmlSafe: Bool,
+    htmlSafe: Bool
+): Unit {
+    buff.append(b'\n')
+    for (_ in 0..depth) {
+        buff.append(indent)
+    }
+    buff.append(b'\"')
+    if (allKeysHtmlSafe) {
+        buff.append(key)
+    } else {
+        buff.appendEscape(key)
+    }
+    buff.append(b'\"').append(b':').appendBlank(1)
+    match (value) {
+        case jo: JsonObject => jsonWriteObject(jo, buff, depth, false, indent, htmlSafe: htmlSafe)
+        case ja: JsonArray => jsonWriteArray(ja, buff, depth, false, indent, htmlSafe: htmlSafe)
+        case _ => jsonWriteWithoutFormat(value, buff, depth, htmlSafe: htmlSafe)
+    }
+    buff.append(b',')
 }
 
 func jsonWriteArray(json: JsonArray, buff: WriteBuffer, depth: Int64, bracketInNewLine: Bool, indent: String, htmlSafe!: Bool = true): Unit {
@@ -359,10 +388,17 @@ func asumecapacity(json: JsonValue, depth: Int64): Int64 {
     checkJsonWriteDepth(depth)
     match (json) {
         case jo: JsonObject =>
-            var sum: Int64 = 2  // {}
-            for ((k, v) in jo.getFields()) {
-                sum += k.size + 4  // "key": ,
-                sum += asumecapacity(v, depth + 1)
+            var sum = 2
+            if (jo.isFlatStorage()) {
+                let fields = jo.getFlatFieldsForRead()
+                for (i in 0..jo.getFlatSizeForRead()) {
+                    let field = fields[i]
+                    sum += asumeObjectFieldCapacity(field[0], field[1], depth)
+                }
+            } else {
+                for ((key, value) in jo.getHashFieldsForRead()) {
+                    sum += asumeObjectFieldCapacity(key, value, depth)
+                }
             }
             return sum
         case ja: JsonArray =>
@@ -379,6 +415,6 @@ func asumecapacity(json: JsonValue, depth: Int64): Int64 {
     }
 }
 
-func asumecapacity(json: JsonValue): Int64 {
-    return asumecapacity(json, 0)
+func asumeObjectFieldCapacity(key: String, value: JsonValue, depth: Int64): Int64 {
+    return key.size + 4 + asumecapacity(value, depth + 1)
 }

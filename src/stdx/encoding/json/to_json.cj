@@ -93,24 +93,23 @@ extend DataModel <: ToJson {
      */
     private static func buildDMStruct(jo: JsonObject): DataModelStruct {
         let dms: DataModelStruct = DataModelStruct()
-        let list: ArrayList<Field> = dms.getFields()
-        let map: HashMap<String, JsonValue> = jo.getFields()
-        list.reserve(map.size)
-
-        for ((str, jv) in map) {
-            let dm = match (jv) {
-                case jb: JsonBool => DataModelBool(jb.getValue())
-                case ji: JsonInt => DataModelInt(ji.getValue())
-                case jf: JsonFloat => DataModelFloat(jf.getValue())
-                case js: JsonString => DataModelString(js.getValue())
-                case _: JsonNull => DataModelNull()
-                case ja: JsonArray => buildDMSeq(ja)
-                case jo: JsonObject => buildDMStruct(jo)
-                case _ => throw JsonException("Unmatched JsonValue type!")
+        if (jo.isFlatStorage()) {
+            let fields = jo.getFlatFieldsForRead()
+            for (i in 0..jo.getFlatSizeForRead()) {
+                let field = fields[i]
+                addDMField(dms, field[0], field[1])
             }
-            list.add(Field(str, dm))
+        } else {
+            for ((name, value) in jo.getHashFieldsForRead()) {
+                addDMField(dms, name, value)
+            }
         }
         return dms
+    }
+
+    private static func addDMField(dms: DataModelStruct, name: String, value: JsonValue): Unit {
+        let data: DataModel = fromJson(value)
+        dms.add(Field(name, data))
     }
 
     /**

@@ -119,6 +119,12 @@ class JsonParser {
     var size: Int64
     var offset: Int64
     var depth: Int64
+    // Safe byte parsing validates before constructing this parser. The owned
+    // path validates high-byte sequences while scanning JSON strings so it
+    // does not need a separate whole-input pass.
+    var integratedUtf8Validation: Bool
+    var invalidUtf8: Bool
+    var lastStringHtmlSafe: Bool
     // Escaped strings are uncommon for the DOM workload.  Do not reserve a
     // fraction of every input until parsing actually encounters a backslash.
     var strCache: ?ArrayList<Byte> = None
@@ -128,6 +134,9 @@ class JsonParser {
         this.size = data.size
         this.offset = 0
         this.depth = 0
+        this.integratedUtf8Validation = false
+        this.invalidUtf8 = false
+        this.lastStringHtmlSafe = false
     }
 
     init(data: Array<Byte>) {
@@ -135,11 +144,26 @@ class JsonParser {
         this.size = data.size
         this.offset = 0
         this.depth = 0
+        this.integratedUtf8Validation = false
+        this.invalidUtf8 = false
+        this.lastStringHtmlSafe = false
+    }
+
+    init(data: Array<Byte>, integratedUtf8Validation: Bool) {
+        this.data = data
+        this.size = data.size
+        this.offset = 0
+        this.depth = 0
+        this.integratedUtf8Validation = integratedUtf8Validation
+        this.invalidUtf8 = false
+        this.lastStringHtmlSafe = false
     }
 
     func reset(): Unit {
         this.offset = 0
         this.depth = 0
+        this.invalidUtf8 = false
+        this.lastStringHtmlSafe = false
         if (let Some(cache) <- this.strCache) {
             cache.clear()
         }
@@ -148,6 +172,7 @@ class JsonParser {
     func reinit(str: String): Unit {
         this.data = unsafe { str.rawData() }
         this.size = data.size
+        this.integratedUtf8Validation = false
         reset()
     }
 }
@@ -162,11 +187,70 @@ func ensureStrCache(parser: JsonParser): ArrayList<Byte> {
     }
 }
 
+func validateUtf8SequenceAt(parser: JsonParser, offset: Int64): Int64 {
+    let byte1 = parser.data[offset]
+    if (byte1 >= 0xc2 && byte1 <= 0xdf) {
+        if (offset + 1 >= parser.size) {
+            parser.invalidUtf8 = true
+            throw JsonException()
+        }
+        let byte2 = parser.data[offset + 1]
+        if (byte2 < 0x80 || byte2 > 0xbf) {
+            parser.invalidUtf8 = true
+            throw JsonException()
+        }
+        return 2
+    }
+    if (byte1 >= 0xe0 && byte1 <= 0xef) {
+        if (offset + 2 >= parser.size) {
+            parser.invalidUtf8 = true
+            throw JsonException()
+        }
+        let byte2 = parser.data[offset + 1]
+        let byte3 = parser.data[offset + 2]
+        let secondValid = match {
+            case byte1 == 0xe0 => byte2 >= 0xa0 && byte2 <= 0xbf
+            case byte1 == 0xed => byte2 >= 0x80 && byte2 <= 0x9f
+            case _ => byte2 >= 0x80 && byte2 <= 0xbf
+        }
+        if (!secondValid || byte3 < 0x80 || byte3 > 0xbf) {
+            parser.invalidUtf8 = true
+            throw JsonException()
+        }
+        return 3
+    }
+    if (byte1 >= 0xf0 && byte1 <= 0xf4) {
+        if (offset + 3 >= parser.size) {
+            parser.invalidUtf8 = true
+            throw JsonException()
+        }
+        let byte2 = parser.data[offset + 1]
+        let byte3 = parser.data[offset + 2]
+        let byte4 = parser.data[offset + 3]
+        let secondValid = match {
+            case byte1 == 0xf0 => byte2 >= 0x90 && byte2 <= 0xbf
+            case byte1 == 0xf4 => byte2 >= 0x80 && byte2 <= 0x8f
+            case _ => byte2 >= 0x80 && byte2 <= 0xbf
+        }
+        if (!secondValid || byte3 < 0x80 || byte3 > 0xbf || byte4 < 0x80 || byte4 > 0xbf) {
+            parser.invalidUtf8 = true
+            throw JsonException()
+        }
+        return 4
+    }
+    parser.invalidUtf8 = true
+    throw JsonException()
+}
+
 func requireCurrentByte(parser: JsonParser): Byte {
     if (parser.offset >= parser.size) {
         throw JsonException()
     }
-    return parser.data[parser.offset]
+    let current = parser.data[parser.offset]
+    if (parser.integratedUtf8Validation && current >= 0x80) {
+        let _ = validateUtf8SequenceAt(parser, parser.offset)
+    }
+    return current
 }
 
 func isHighSurrogate(num: UInt32): Bool {
@@ -230,6 +314,27 @@ func parseString(str: String): JsonValue {
     }
 }
 
+func parseValidatedUtf8Bytes(data: Array<Byte>, integratedUtf8Validation: Bool): JsonValue {
+    let parser = JsonParser(data, integratedUtf8Validation)
+    try {
+        let res = parseJson(parser)
+        if (parser.offset <= (parser.size - 1)) {
+            skipWhiteSpace(parser)
+        }
+        if (parser.offset <= (parser.size - 1)) {
+            let _ = requireCurrentByte(parser)
+            throw JsonException()
+        }
+        return res
+    } catch (_: Exception) {
+        if (parser.invalidUtf8) {
+            throw JsonException("Json byte array is not valid UTF-8.")
+        }
+        let errMsg = buildParseErrorMessage(parser)
+        throw JsonException("The json data is Non-standard, please check:\n${errMsg}")
+    }
+}
+
 func parseUtf8Bytes(data: Array<Byte>): JsonValue {
     if (data.size == 0) {
         throw JsonException("Json byte array is empty!")
@@ -248,20 +353,14 @@ func parseUtf8Bytes(data: Array<Byte>): JsonValue {
     if (!isValidUtf8) {
         throw JsonException("Json byte array is not valid UTF-8.")
     }
-    let parser = JsonParser(parserData)
-    try {
-        let res = parseJson(parser)
-        if (parser.offset <= (parser.size - 1)) {
-            skipWhiteSpace(parser)
-        }
-        if (parser.offset <= (parser.size - 1)) {
-            throw JsonException()
-        }
-        return res
-    } catch (_: Exception) {
-        let errMsg = buildParseErrorMessage(parser)
-        throw JsonException("The json data is Non-standard, please check:\n${errMsg}")
+    return parseValidatedUtf8Bytes(parserData, false)
+}
+
+func parseOwnedUtf8Bytes(data: Array<Byte>): JsonValue {
+    if (data.size == 0) {
+        throw JsonException("Json byte array is empty!")
     }
+    return parseValidatedUtf8Bytes(data, true)
 }
 
 func parseJson(parser: JsonParser): JsonValue {
@@ -307,7 +406,8 @@ func parseJsonObject(parser: JsonParser): JsonObject {
             throw JsonException()
         }
         skipWhiteSpace(parser)
-        let key = parseJsonStringValue(parser)
+        let key = parseJsonObjectKey(parser)
+        let keyHtmlSafe = parser.lastStringHtmlSafe
         skipWhiteSpace(parser)
         if (requireCurrentByte(parser) != b':') {
             throw JsonException()
@@ -315,7 +415,7 @@ func parseJsonObject(parser: JsonParser): JsonObject {
         parser.offset++
         let value = parseJson(parser)
         skipWhiteSpace(parser)
-        obj.put(key, value)
+        obj.putParsed(key, value, keyHtmlSafe)
     }
     parser.offset++
     return obj
@@ -759,7 +859,8 @@ func isHexNum(char: UInt8): Bool {
 }
 
 func parseJsonString(parser: JsonParser): JsonString {
-    return JsonString(parseJsonStringValue(parser))
+    let value = parseJsonStringValue(parser)
+    return JsonString(value)
 }
 
 func parseJsonStringValue(parser: JsonParser): String {
@@ -769,7 +870,7 @@ func parseJsonStringValue(parser: JsonParser): String {
     parser.offset++
     let start = parser.offset
     // Most JSON keys and values in the DOM benchmark are short and contain no
-    // escape.  Keep the scan state in locals so the common path only publishes
+    // escape. Keep the scan state in locals so the common path only publishes
     // the parser offset once, after finding the closing quote.
     let size = parser.size
     var offset = start
@@ -785,7 +886,15 @@ func parseJsonStringValue(parser: JsonParser): String {
             parser.offset = offset
             break
         }
-        offset++
+        if (next < 0x20) {
+            parser.offset = offset
+            throw JsonException()
+        }
+        if (parser.integratedUtf8Validation && next >= 0x80) {
+            offset += validateUtf8SequenceAt(parser, offset)
+        } else {
+            offset++
+        }
     }
 
     if (offset >= size) {
@@ -793,6 +902,53 @@ func parseJsonStringValue(parser: JsonParser): String {
         throw JsonException()
     }
 
+    return finishEscapedJsonString(parser, start)
+}
+
+func parseJsonObjectKey(parser: JsonParser): String {
+    if (requireCurrentByte(parser) != b'\"') {
+        throw JsonException("Fail to parseJsonString")
+    }
+    parser.offset++
+    let start = parser.offset
+    parser.lastStringHtmlSafe = false
+    let size = parser.size
+    var offset = start
+    var htmlSafe = true
+    while (offset < size) {
+        let next = parser.data[offset]
+        if (next == b'\"') {
+            parser.offset = offset + 1
+            parser.lastStringHtmlSafe = htmlSafe
+            return unsafe { String.withRawData(parser.data[start..(parser.offset - 1)]) }
+        }
+        if (next == b'\\') {
+            parser.offset = offset
+            break
+        }
+        if (next < 0x20) {
+            parser.offset = offset
+            throw JsonException()
+        }
+        if (next == 127 || next == b'&') {
+            htmlSafe = false
+        }
+        if (parser.integratedUtf8Validation && next >= 0x80) {
+            offset += validateUtf8SequenceAt(parser, offset)
+        } else {
+            offset++
+        }
+    }
+
+    if (offset >= size) {
+        parser.offset = offset
+        throw JsonException()
+    }
+
+    return finishEscapedJsonString(parser, start)
+}
+
+func finishEscapedJsonString(parser: JsonParser, start: Int64): String {
     var next = parser.data[parser.offset]
     var tmpStart = start
     while (next != b'\"') {
@@ -801,6 +957,12 @@ func parseJsonStringValue(parser: JsonParser): String {
             parser.offset++
             handleEscape(parser)
             tmpStart = parser.offset + 1
+        } else if (next < 0x20) {
+            throw JsonException()
+        } else if (parser.integratedUtf8Validation && next >= 0x80) {
+            parser.offset += validateUtf8SequenceAt(parser, parser.offset)
+            next = requireCurrentByte(parser)
+            continue
         }
         parser.offset++
         next = requireCurrentByte(parser)

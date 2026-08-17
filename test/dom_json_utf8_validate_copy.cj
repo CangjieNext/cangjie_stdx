@@ -60,6 +60,16 @@ func testDomDoesNotAliasCallerBytes(): Unit {
     ensure(message == "stable", "parsed DOM aliases caller bytes")
 }
 
+func testOwnedDomRetainsCallerBytes(): Unit {
+    let input: Array<Byte> = "{\"message\":\"stable\"}".toArray()
+    let value = JsonValue.fromOwnedUtf8Bytes(input)
+    let original = value.asObject().get("message").getOrThrow().asString().getValue()
+    ensure(original == "stable", "owned DOM parsed the wrong string")
+    input[12] = b'X'
+    let mutated = value.asObject().get("message").getOrThrow().asString().getValue()
+    ensure(mutated == "Xtable", "owned DOM did not retain the supplied backing array")
+}
+
 func testInvalidBytesStillThrowJsonException(): Unit {
     let invalid: Array<Byte> = [b'{', b'\"', 0xc0, 0x80, b'\"', b'}']
     var rejected = false
@@ -71,10 +81,53 @@ func testInvalidBytesStillThrowJsonException(): Unit {
     ensure(rejected, "invalid bytes did not preserve JsonException semantics")
 }
 
+func testOwnedDomRejectsMalformedUtf8(): Unit {
+    let invalidDocuments: Array<Array<Byte>> = [
+        [b'{', b'\"', b'v', b'\"', b':', b'\"', 0x80, b'\"', b'}'],
+        [b'{', b'\"', b'v', b'\"', b':', b'\"', 0xc0, 0x80, b'\"', b'}'],
+        [b'{', b'\"', b'v', b'\"', b':', b'\"', 0xed, 0xa0, 0x80, b'\"', b'}'],
+        [b'{', b'\"', b'v', b'\"', b':', b'\"', b'\\', b'n', 0xf4, 0x90, 0x80, 0x80, b'\"', b'}'],
+        [b'{', b'\"', 0xe4, 0xb8, b'\"', b':', b'1', b'}'],
+        [b'n', b'u', b'l', b'l', 0xc0, 0x80]
+    ]
+    for (invalid in invalidDocuments) {
+        var rejected = false
+        try {
+            let _ = JsonValue.fromOwnedUtf8Bytes(invalid)
+        } catch (e: JsonException) {
+            rejected = e.message == "Json byte array is not valid UTF-8."
+        }
+        ensure(rejected, "owned DOM accepted invalid UTF-8 or changed its error message")
+    }
+}
+
+func testOwnedDomAcceptsValidUtf8(): Unit {
+    let value = JsonValue.fromOwnedUtf8Bytes("{\"message\":\"hello, 世界 😀\"}".toArray())
+    let message = value.asObject().get("message").getOrThrow().asString().getValue()
+    ensure(message == "hello, 世界 😀", "owned DOM rejected or changed valid UTF-8")
+}
+
+func testOwnedDomRejectsUnescapedControl(): Unit {
+    let rawNewline: Array<Byte> = [
+        b'{', b'\"', b'v', b'\"', b':', b'\"', b'a', 0x0a, b'b', b'\"', b'}'
+    ]
+    var rejected = false
+    try {
+        let _ = JsonValue.fromOwnedUtf8Bytes(rawNewline)
+    } catch (_: JsonException) {
+        rejected = true
+    }
+    ensure(rejected, "owned DOM accepted an unescaped control byte")
+}
+
 main() {
     testValidateAndCopyAcceptsStrictUtf8()
     testValidateAndCopyRejectsMalformedUtf8()
     testDomDoesNotAliasCallerBytes()
+    testOwnedDomRetainsCallerBytes()
     testInvalidBytesStillThrowJsonException()
+    testOwnedDomRejectsMalformedUtf8()
+    testOwnedDomAcceptsValidUtf8()
+    testOwnedDomRejectsUnescapedControl()
     println("PASS dom_json_utf8_validate_copy")
 }
