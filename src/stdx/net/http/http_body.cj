@@ -184,7 +184,7 @@ class HttpNormalBodyProvider <: SeekableInputStream & Resource {
             throw e
         }
         readLen += len
-        if (readLen >= contentLength) {
+        if (len == 0 || readLen >= contentLength) {
             timer.cancel()
             providerConn.returnConn()
             eof = true
@@ -264,6 +264,12 @@ class HttpChunkedBodyProvider <: InputStream & Resource {
                     return dstReadLen
                 }
                 let readLen = conn.read(dst[dstReadLen..], remainChunkSize)
+                if (readLen == 0 && dstReadLen == 0) {
+                    timer.cancel()
+                    providerConn.closeConn()
+                    eof = true
+                    return 0
+                }
                 dstReadLen += readLen
                 remainChunkSize -= readLen
                 if (remainChunkSize == 0) {
