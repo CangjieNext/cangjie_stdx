@@ -750,7 +750,8 @@ static void* ResolveDynPopFreeFunction(const char* funcName)
     static _Atomic(uintptr_t) funcBits##index = 0;                                                                                                                                 \
     SSLFunc##index func##index = (SSLFunc##index)LoadCachedFunctionBits(&funcBits##index);                                                                                       \
     if (func##index == NULL) {                                                                                                                                                     \
-        func##index = (SSLFunc##index)(name);                                                                                                                                      \
+        /* Cast via uintptr_t: local SSLFunc typedefs intentionally differ from OpenSSL prototypes. */                                                                           \
+        func##index = (SSLFunc##index)(uintptr_t)(name);                                                                                                                            \
         PublishCachedFunctionBits(&funcBits##index, (uintptr_t)func##index);                                                                                                      \
         func##index = (SSLFunc##index)LoadCachedFunctionBits(&funcBits##index);                                                                                                   \
     }                                                                                                                                                                              \
@@ -761,9 +762,10 @@ static void* ResolveDynPopFreeFunction(const char* funcName)
     static _Atomic(uintptr_t) funcBits##index = 0;                                                                                                                                 \
     SSLFunc##index func##index = (SSLFunc##index)LoadCachedFunctionBits(&funcBits##index);                                                                                       \
     if (func##index == NULL) {                                                                                                                                                     \
-        func##index = (SSLFunc##index)(name);                                                                                                                                      \
+        /* Cast via uintptr_t: local SSLFunc typedefs intentionally differ from OpenSSL prototypes. */                                                                           \
+        func##index = (SSLFunc##index)(uintptr_t)(name);                                                                                                                            \
         if (func##index == NULL) {                                                                                                                                                 \
-            func##index = (SSLFunc##index)(FindFunction(#name));                                                                                                                   \
+            func##index = (SSLFunc##index)(uintptr_t)(FindFunction(#name));                                                                                                         \
         }                                                                                                                                                                          \
         PublishCachedFunctionBits(&funcBits##index, (uintptr_t)func##index);                                                                                                      \
         func##index = (SSLFunc##index)LoadCachedFunctionBits(&funcBits##index);                                                                                                   \
@@ -774,7 +776,7 @@ static void* ResolveDynPopFreeFunction(const char* funcName)
     static _Atomic(uintptr_t) funcBits##index = 0;                                                                                                                                 \
     SSLFunc##index func##index = (SSLFunc##index)LoadCachedFunctionBits(&funcBits##index);                                                                                       \
     if (func##index == NULL) {                                                                                                                                                     \
-        func##index = (SSLFunc##index)(FindFunction(#name));                                                                                                                       \
+        func##index = (SSLFunc##index)(uintptr_t)(FindFunction(#name));                                                                                                             \
         PublishCachedFunctionBits(&funcBits##index, (uintptr_t)func##index);                                                                                                      \
         func##index = (SSLFunc##index)LoadCachedFunctionBits(&funcBits##index);                                                                                                   \
     }                                                                                                                                                                              \
@@ -785,7 +787,7 @@ static void* ResolveDynPopFreeFunction(const char* funcName)
     static _Atomic(uintptr_t) funcBits##index = 0;                                                                                                                                 \
     SSLFunc##index func##index = (SSLFunc##index)LoadCachedFunctionBits(&funcBits##index);                                                                                       \
     if (func##index == NULL) {                                                                                                                                                     \
-        func##index = (SSLFunc##index)(FindFunction(#name));                                                                                                                       \
+        func##index = (SSLFunc##index)(uintptr_t)(FindFunction(#name));                                                                                                             \
         PublishCachedFunctionBits(&funcBits##index, (uintptr_t)func##index);                                                                                                      \
         func##index = (SSLFunc##index)LoadCachedFunctionBits(&funcBits##index);                                                                                                   \
     }                                                                                                                                                                              \
