@@ -21,14 +21,14 @@ public class SM2PrivateKey <: PrivateKey {
     init(blob: DerBlob) {
         pkey = loadPrivateKey(NID_sm2, blob.body)
         if (pkey.isNull()) {
-            throw CryptoException("Load private key failed.")
+            throw CryptoException("Failed to load private key.")
         }
     }
 
     public init() {
         pkey = unsafe { generateSM2Key() }
         if (pkey.isNull()) {
-            throw CryptoException("Init private key failed.")
+            throw CryptoException("Failed to generate SM2 private key.")
         }
     }
 
@@ -118,14 +118,14 @@ public class SM2PublicKey <: PublicKey {
     init(blob: DerBlob) {
         pkey = loadPublicKey(NID_sm2, blob.body)
         if (pkey.isNull()) {
-            throw CryptoException("Load public key failed.")
+            throw CryptoException("Failed to load public key.")
         }
     }
     public init(pri: SM2PrivateKey) {
         var content = getSM2PublicKeyDer(pri.pkey)
         pkey = loadPublicKey(NID_sm2, content)
         if (pkey.isNull()) {
-            throw CryptoException("Init public key failed.")
+            throw CryptoException("Failed to initialize public key.")
         }
     }
 
@@ -177,25 +177,25 @@ unsafe func generateSM2Key() {
     var pkey = CPointer<UInt64>()
     var ctx = keyCtxNewId(NID_sm2, CPointer<UInt64>())
     if (ctx.isNull()) {
-        throw CryptoException("Generate keypair failed, create key ctx error.")
+        throw CryptoException("Failed to generate key pair: failed to create key context.")
     }
     try (ppkey = LibC.malloc<CPointer<UInt64>>().asResource()) {
         if (ppkey.value.isNull()) {
-            throw CryptoException("Generate key failed, paramgen init error, malloc failed.")
+            throw CryptoException("Failed to generate key: parameter generation initialization failed: failed to allocate memory.")
         }
 
         if (paramgenInit(ctx) != 1) {
-            throw CryptoException("Generate key failed, paramgen init error.")
+            throw CryptoException("Failed to generate key: parameter generation initialization failed.")
         }
         if (keygenInit(ctx) != 1) {
-            throw CryptoException("Generate key failed, keygen init error.")
+            throw CryptoException("Failed to generate key: key generation initialization failed.")
         }
         if (setCurveNid(ctx, NID_sm2) <= 0) {
-            throw CryptoException("Generate key failed, set curve nid error.")
+            throw CryptoException("Failed to generate key: failed to set curve NID.")
         }
         ppkey.value.write(pkey)
         if (keygen(ctx, ppkey.value) != 1) {
-            throw CryptoException("Generate keypair failed, keygen error.")
+            throw CryptoException("Failed to generate key pair: key generation failed.")
         }
         pkey = ppkey.value.read()
     } finally {
@@ -213,13 +213,13 @@ func getSM2PrivateKeyDer(pkey: CPointer<UInt64>) {
         var readPriPtr = LibC.malloc<CPointer<Byte>>()
         if (readPriPtr.isNull()) {
             releaseArrayRawData(readPrivateKey)
-            throw CryptoException("Memory allocation failed.")
+            throw CryptoException("Failed to allocate memory.")
         }
         readPriPtr.write(readPrivateKey.pointer)
         try {
             readPriLen = privateKey2d(pkey, readPriPtr)
             if (readPriLen < 0 || Int64(readPriLen) > readPrivateKeyBuf.size) {
-                throw CryptoException("Fail to load private key.")
+                throw CryptoException("Failed to load private key.")
             }
         } finally {
             LibC.free(readPriPtr)
@@ -238,13 +238,13 @@ func getSM2PublicKeyDer(pkey: CPointer<UInt64>) {
         var readPtr = LibC.malloc<CPointer<Byte>>()
         if (readPtr.isNull()) {
             releaseArrayRawData(read)
-            throw CryptoException("Memory allocation failed.")
+            throw CryptoException("Failed to allocate memory.")
         }
         readPtr.write(read.pointer)
         try {
             readLen = pubKey2d(pkey, readPtr)
             if (readLen < 0 || Int64(readLen) > readBufPublicKey.size) {
-                throw CryptoException("Fail to load public key.")
+                throw CryptoException("Failed to load public key.")
             }
         } finally {
             LibC.free(readPtr)
@@ -261,7 +261,7 @@ func encryptSM2(pkey: CPointer<UInt64>, input: Array<Byte>) {
     unsafe {
         let ctx: CPointer<UInt64> = keyCtxNew(pkey, CPointer<UInt64>())
         if (ctx.isNull()) {
-            throw CryptoException("Encrypt failed, create key ctx error.")
+            throw CryptoException("Failed to encrypt: failed to create key context.")
         }
         var output = Array<Byte>(input.size + 256, repeat: 0)
         var inputBlock: CPointerHandle<Byte> = acquireArrayRawData(input)
@@ -269,17 +269,17 @@ func encryptSM2(pkey: CPointer<UInt64>, input: Array<Byte>) {
         var outlenSize = 0
         try (outlenPtr = LibC.malloc<UIntNative>().asResource()) {
             if (outlenPtr.value.isNull()) {
-                throw CryptoException("Encrypt failed, encrypt init error, malloc failed.")
+                throw CryptoException("Failed to encrypt: encryption initialization failed: failed to allocate memory.")
             }
 
             if (encryInit(ctx) != 1) {
-                throw CryptoException("Encrypt failed, encrypt init error.")
+                throw CryptoException("Failed to encrypt: encryption initialization failed.")
             }
             if (encrypt(ctx, CPointer<Byte>(), outlenPtr.value, inputBlock.pointer, UIntNative(input.size)) != 1) {
-                throw CryptoException("Encrypt prepare failed.")
+                throw CryptoException("Failed to prepare encryption.")
             }
             if (encrypt(ctx, outputBlock.pointer, outlenPtr.value, inputBlock.pointer, UIntNative(input.size)) != 1) {
-                throw CryptoException("Encrypt failed.")
+                throw CryptoException("Failed to encrypt data.")
             }
             outlenSize = Int64(outlenPtr.value.read())
         } finally {
@@ -298,7 +298,7 @@ func decryptSM2(pkey: CPointer<UInt64>, input: Array<Byte>) {
     unsafe {
         let ctx: CPointer<UInt64> = keyCtxNew(pkey, CPointer<UInt64>())
         if (ctx.isNull()) {
-            throw CryptoException("Decrypt failed, create key ctx error.")
+            throw CryptoException("Failed to decrypt: failed to create key context.")
         }
         var output = Array<Byte>(input.size, repeat: 0)
         var inputBlock: CPointerHandle<Byte> = acquireArrayRawData(input)
@@ -306,17 +306,17 @@ func decryptSM2(pkey: CPointer<UInt64>, input: Array<Byte>) {
         var reSize = 0
         try (outlenPtr = LibC.malloc<UIntNative>().asResource()) {
             if (outlenPtr.value.isNull()) {
-                throw CryptoException("Decrypt failed, decrypt init error, malloc failed.")
+                throw CryptoException("Failed to decrypt: decryption initialization failed: failed to allocate memory.")
             }
 
             if (decryptInit(ctx) != 1) {
-                throw CryptoException("Decrypt failed, decrypt init error.")
+                throw CryptoException("Failed to decrypt: decryption initialization failed.")
             }
             if (decrypt(ctx, CPointer<Byte>(), outlenPtr.value, inputBlock.pointer, UIntNative(input.size)) != 1) {
-                throw CryptoException("Decrypt prepare failed.")
+                throw CryptoException("Failed to prepare decryption.")
             }
             if (decrypt(ctx, outputBlock.pointer, outlenPtr.value, inputBlock.pointer, UIntNative(input.size)) != 1) {
-                throw CryptoException("Decrypt failed.")
+                throw CryptoException("Failed to decrypt data.")
             }
             reSize = Int64(outlenPtr.value.read())
         } finally {
@@ -338,23 +338,23 @@ func signSM2(pkey: CPointer<UInt64>, data: Array<Byte>, uid: Array<Byte>) {
         var mdctx = CPointer<UInt64>()
         try (sizePtr = LibC.malloc<Int64>().asResource()) {
             if (sizePtr.value.isNull()) {
-                throw CryptoException("Sign failed, digest sign init error, malloc failed.")
+                throw CryptoException("Failed to allocate memory during digest sign initialization.")
             }
 
             ctx = generateCtx(pkey)
             mdctx = createMdCtx()
             setPkeyCtx(ctx, mdctx, uid)
             if (digestSignInit(mdctx, CPointer<UInt64>(), sm3(), CPointer<UInt64>(), pkey) != 1) {
-                throw CryptoException("Sign failed, digest sign init error.")
+                throw CryptoException("Failed to sign: digest signing initialization failed.")
             }
             if (digestSignUpdate(mdctx, pData.pointer, UIntNative(data.size)) != 1) {
-                throw CryptoException("Sign failed, digest sign update error.")
+                throw CryptoException("Failed to sign: digest signing update failed.")
             }
             if (digestSignFinal(mdctx, CPointer<Byte>(), sizePtr.value) != 1) {
-                throw CryptoException("Sign prepare failed.")
+                throw CryptoException("Failed to prepare signing.")
             }
             if (digestSignFinal(mdctx, sigHandle.pointer, sizePtr.value) != 1) {
-                throw CryptoException("Sign failed.")
+                throw CryptoException("Failed to sign data.")
             }
             buffSize = sizePtr.value.read()
         } finally {
@@ -378,14 +378,14 @@ func verifySM2(pkey: CPointer<UInt64>, data: Array<Byte>, sig: Array<Byte>, uid:
             mdctx = createMdCtx()
             setPkeyCtx(ctx, mdctx, uid)
             if (digestVerifyInit(mdctx, CPointer<UInt64>(), sm3(), CPointer<UInt64>(), pkey) != 1) {
-                throw CryptoException("Verify failed, digest verify init error.")
+                throw CryptoException("Failed to verify: digest verification initialization failed.")
             }
             if (digestVerifyUpdate(mdctx, pData.pointer, UIntNative(data.size)) != 1) {
-                throw CryptoException("Verify failed, digest verify update error.")
+                throw CryptoException("Failed to verify: digest verification update failed.")
             }
             resFinal = digestVerifyFinal(mdctx, sigData.pointer, UIntNative(sig.size))
             if (resFinal != 1 && resFinal != 0) {
-                throw CryptoException("Verify failed.")
+                throw CryptoException("Failed to verify signature.")
             }
         } finally {
             releaseArrayRawData(pData)
@@ -400,7 +400,7 @@ func generateCtx(pkey: CPointer<UInt64>): CPointer<UInt64> {
     unsafe {
         let ctx: CPointer<UInt64> = keyCtxNew(pkey, CPointer<UInt64>())
         if (ctx.isNull()) {
-            throw CryptoException("Create ctx failed.")
+            throw CryptoException("Failed to create context.")
         }
         ctx
     }
@@ -410,7 +410,7 @@ func createMdCtx(): CPointer<UInt64> {
     unsafe {
         var mdctx: CPointer<UInt64> = mdCtxNew()
         if (mdctx.isNull()) {
-            throw CryptoException("Create md ctx failed.")
+            throw CryptoException("Failed to create message digest context.")
         }
         mdctx
     }
@@ -422,7 +422,7 @@ func setPkeyCtx(ctx: CPointer<UInt64>, mdctx: CPointer<UInt64>, uid: Array<Byte>
         try {
             let resSet = keyCtxSetId(ctx, uidData.pointer, uid.size)
             if (resSet <= 0) {
-                throw CryptoException("set md ctx failed.")
+                throw CryptoException("Failed to set message digest context.")
             }
         } finally {
             releaseArrayRawData(uidData)

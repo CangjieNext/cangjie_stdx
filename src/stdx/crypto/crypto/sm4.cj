@@ -82,32 +82,32 @@ public class SM4 <: BlockCipher {
         tagSize!: Int64 = SM4_GCM_TAG_SIZE
     ) {
         if (key.size != SM4_KEY_SIZE) {
-            throw CryptoException("Invalid key size.")
+            throw CryptoException("Invalid key size: expected '${SM4_KEY_SIZE}' bytes, got '${key.size}' bytes.")
         }
         match (optMode.mode) {
             case "GCM" =>
                 if (iv.size <= 0) {
-                    throw CryptoException("Invalid iv size.")
+                    throw CryptoException("Invalid IV size: IV must not be empty for GCM mode.")
                 }
                 if (tagSize < SM4_GCM_TAG_MIN_SIZE || tagSize > SM4_BLOCK_SIZE) {
-                    throw CryptoException("Invalid tag size.")
+                    throw CryptoException("Invalid tag size: must be between '${SM4_GCM_TAG_MIN_SIZE}' and '${SM4_BLOCK_SIZE}', got '${tagSize}'.")
                 }
             case "ECB" => ()
             case _ =>
                 if (iv.size != SM4_IV_SIZE) {
-                    throw CryptoException("Invalid iv size.")
+                    throw CryptoException("Invalid IV size: expected '${SM4_IV_SIZE}' bytes, got '${iv.size}' bytes.")
                 }
         }
 
         unsafe {
-            let algorithmOptionStr: CString = LibC.mallocCString("SM4-${optMode.toString()}")
+            let algorithmOptionStr: CString = LibC.mallocCString("SM4-${optMode}")
             try {
                 this.cipherPtr = cipherFetch(CPointer<UInt64>(), algorithmOptionStr, CPointer<Byte>())
             } finally {
                 LibC.free(algorithmOptionStr)
             }
             if (this.cipherPtr.isNull()) {
-                throw CryptoException("This algorithm or mode is not supported.")
+                throw CryptoException("Unsupported algorithm or mode: 'SM4-${optMode}'.")
             }
         }
         this._optMode = optMode
@@ -243,26 +243,26 @@ public class SM4 <: BlockCipher {
             var ctx = CPointer<UInt64>()
             try (outlenPtr = LibC.malloc<Int32>().asResource(), outlen2Ptr = LibC.malloc<Int32>().asResource()) {
                 if (outlenPtr.value.isNull() || outlen2Ptr.value.isNull()) {
-                    throw CryptoException("Encrypt failed due to memory error.")
+                    throw CryptoException("Failed to allocate memory for encryption.")
                 }
                 ctx = cipherCtxNew()
                 if (ctx.isNull()) {
-                    throw CryptoException("Encrypt failed due to create ctx error.")
+                    throw CryptoException("Failed to create cipher context for encryption.")
                 }
                 encryptInit(ctx, this.cipherPtr, keyM.pointer, ivM.pointer)
                 if (cipherCtxSetPadding(ctx, paddingMode.paddingType) != 1) {
-                    throw CryptoException("Encrypt failed due to set padding error.")
+                    throw CryptoException("Failed to set padding mode for encryption.")
                 }
                 if (optMode == OperationMode.GCM && aad.size > 0 && (encryptUpdate(ctx, CPointer<Byte>(), // cjlint-ignore !G.EXP.03
                     outlenPtr.value, aadM.pointer, aad.size) != 1)) {
-                    throw CryptoException("Encrypt failed due to update aad error.")
+                    throw CryptoException("Failed to update AAD for GCM encryption.")
                 }
                 outlenPtr.value.write(0)
                 outlen2Ptr.value.write(0)
                 var inLen = input.read(readbuff)
                 do {
                     if (encryptUpdate(ctx, outBlock.pointer, outlenPtr.value, inBlock.pointer, inLen) != 1) {
-                        throw CryptoException("Encrypt failed due to update error.")
+                        throw CryptoException("Encryption update failed.")
                     }
                     let ptrValue = Int64(outlenPtr.value.read())
                     if (ptrValue > 0) {
@@ -271,13 +271,13 @@ public class SM4 <: BlockCipher {
                     inLen = input.read(readbuff)
                 } while (inLen > 0)
                 if (encryptFinalEx(ctx, outBlock.pointer, outlen2Ptr.value) != 1) {
-                    throw CryptoException("Encrypt failed.")
+                    throw CryptoException("Encryption finalization failed.")
                 }
                 output.write(writebuff[..Int64(outlen2Ptr.value.read())])
 
                 if (optMode == OperationMode.GCM) {
                     if (cipherCtx(ctx, AEAD_GET_TAG, Int32(tagSize), tagM.pointer) != 1) {
-                        throw CryptoException("Encrypt failed due to create tag error.")
+                        throw CryptoException("Failed to get GCM authentication tag.")
                     }
                     output.write(tag)
                 }
@@ -305,19 +305,19 @@ public class SM4 <: BlockCipher {
             var ctx = CPointer<UInt64>()
             try (outlenPtr = LibC.malloc<Int32>().asResource(), outlen2Ptr = LibC.malloc<Int32>().asResource()) {
                 if (outlenPtr.value.isNull() || outlen2Ptr.value.isNull()) {
-                    throw CryptoException("Decrypt failed due to memory error.")
+                    throw CryptoException("Failed to allocate memory for decryption.")
                 }
                 ctx = cipherCtxNew()
                 if (ctx.isNull()) {
-                    throw CryptoException("Decrypt failed due to create ctx error.")
+                    throw CryptoException("Failed to create cipher context for decryption.")
                 }
                 decryptInit(ctx, this.cipherPtr, keyM.pointer, ivM.pointer)
                 if (cipherCtxSetPadding(ctx, paddingMode.paddingType) != 1) {
-                    throw CryptoException("Decrypt failed due to set padding error.")
+                    throw CryptoException("Failed to set padding mode for decryption.")
                 }
                 if (optMode == OperationMode.GCM && aad.size > 0 && (decryptUpdate(ctx, CPointer<Byte>(), // cjlint-ignore !G.EXP.03
                     outlenPtr.value, aadM.pointer, aad.size) != 1)) {
-                    throw CryptoException("Decrypt failed due to update aad error.")
+                    throw CryptoException("Failed to update AAD for GCM decryption.")
                 }
                 var inLen = input.read(readbuff)
                 if (optMode == OperationMode.GCM) {
@@ -331,7 +331,7 @@ public class SM4 <: BlockCipher {
                             outlenPtr.value.write(0)
                             try {
                                 if (decryptUpdate(ctx, outBlock.pointer, outlenPtr.value, inBlockDe.pointer, inLen) != 1) {
-                                    throw CryptoException("Decrypt failed due to update error.")
+                                    throw CryptoException("Decryption update failed.")
                                 }
                             } finally {
                                 releaseArrayRawData(inBlockDe)
@@ -350,7 +350,7 @@ public class SM4 <: BlockCipher {
                                 try {
                                     if (decryptUpdate(ctx, outBlock.pointer, outlenPtr.value, inBlockTemp.pointer,
                                         readbuffTemp.size) != 1) {
-                                        throw CryptoException("Decrypt failed due to update error.")
+                                        throw CryptoException("Decryption update failed.")
                                     }
                                 } finally {
                                     releaseArrayRawData(inBlockTemp)
@@ -369,14 +369,14 @@ public class SM4 <: BlockCipher {
                     var tagM: CPointerHandle<Byte> = acquireArrayRawData(tag)
                     try {
                         if (cipherCtx(ctx, AEAD_SET_TAG, Int32(tagSize), tagM.pointer) != 1) {
-                            throw CryptoException("Decrypt failed due to set tag error.")
+                            throw CryptoException("Failed to set GCM authentication tag.")
                         }
                     } finally {
                         releaseArrayRawData(tagM)
                     }
                     outlen2Ptr.value.write(0)
                     if (decryptFinalEx(ctx, outBlock.pointer, outlen2Ptr.value) != 1) {
-                        throw CryptoException("Decrypt failed: GCM tag verification failed.")
+                        throw CryptoException("GCM authentication failed: tag verification error.")
                     }
                     if (outlen2Ptr.value.read() > 0) {
                         decryptedData.add(all: writebuff[..Int64(outlen2Ptr.value.read())])
@@ -386,7 +386,7 @@ public class SM4 <: BlockCipher {
                     do {
                         outlenPtr.value.write(0)
                         if (decryptUpdate(ctx, outBlock.pointer, outlenPtr.value, inBlock.pointer, inLen) != 1) {
-                            throw CryptoException("Decrypt failed due to update error.")
+                            throw CryptoException("Decryption update failed.")
                         }
                         if (outlenPtr.value.read() > 0) {
                             output.write(writebuff[..Int64(outlenPtr.value.read())])
@@ -395,7 +395,7 @@ public class SM4 <: BlockCipher {
                     } while (inLen > 0)
                     outlen2Ptr.value.write(0)
                     if (decryptFinalEx(ctx, outBlock.pointer, outlen2Ptr.value) != 1) {
-                        throw CryptoException("Decrypt failed.")
+                        throw CryptoException("Decryption finalization failed.")
                     }
                     if (outlen2Ptr.value.read() > 0) {
                         output.write(writebuff[..Int64(outlen2Ptr.value.read())])
@@ -414,28 +414,28 @@ public class SM4 <: BlockCipher {
 
     func encryptInit(ctx: CPointer<UInt64>, mType: CPointer<UInt64>, key: CPointer<Byte>, iv: CPointer<Byte>) {
         if (encryptInitEx(ctx, mType, CPointer<UInt64>(), CPointer<Byte>(), CPointer<Byte>()) != 1) {
-            throw CryptoException("Encrypt failed due to init error.")
+            throw CryptoException("Encryption initialization failed.")
         }
         if (optMode == OperationMode.GCM) {
             if (cipherCtx(ctx, AEAD_SET_IVLEN, Int32(ivSize), CPointer<Byte>()) != 1) {
-                throw CryptoException("Encrypt failed due to set iv size error.")
+                throw CryptoException("Failed to set IV length for GCM encryption.")
             }
         }
         if (encryptInitEx(ctx, CPointer<UInt64>(), CPointer<UInt64>(), key, iv) != 1) {
-            throw CryptoException("Encrypt failed due to init error.")
+            throw CryptoException("Encryption initialization failed.")
         }
     }
     func decryptInit(ctx: CPointer<UInt64>, mType: CPointer<UInt64>, key: CPointer<Byte>, iv: CPointer<Byte>) {
         if (decryptInitEx(ctx, mType, CPointer<UInt64>(), CPointer<Byte>(), CPointer<Byte>()) != 1) {
-            throw CryptoException("Decrypt failed due to init error.")
+            throw CryptoException("Decryption initialization failed.")
         }
         if (optMode == OperationMode.GCM) {
             if (cipherCtx(ctx, AEAD_SET_IVLEN, Int32(ivSize), CPointer<Byte>()) != 1) {
-                throw CryptoException("Decrypt failed due to set iv size error.")
+                throw CryptoException("Failed to set IV length for GCM decryption.")
             }
         }
         if (decryptInitEx(ctx, CPointer<UInt64>(), CPointer<UInt64>(), key, iv) != 1) {
-            throw CryptoException("Decrypt failed due to init error.")
+            throw CryptoException("Decryption initialization failed.")
         }
     }
 }
@@ -572,7 +572,7 @@ func generateDynMsg(): CPointer<DynMsg> {
     unsafe {
         let dynMsgPtr = MallocDynMsg()
         if (dynMsgPtr.isNull()) {
-            throw CryptoException("malloc failed")
+            throw CryptoException("Failed to allocate memory.")
         }
         return dynMsgPtr
     }
@@ -581,12 +581,12 @@ func generateDynMsg(): CPointer<DynMsg> {
 func checkError(dynMsgPtr: CPointer<DynMsg>): Unit {
     unsafe {
         if (dynMsgPtr.isNull()) {
-            throw CryptoException("Null pointer check failed.")
+            throw CryptoException("Null pointer encountered.")
         }
         try {
             if (!dynMsgPtr.read().found) {
                 let funcName = CString(dynMsgPtr.read().funcName).toString()
-                throw CryptoException("Can not load openssl library or function ${funcName}.")
+                throw CryptoException("Cannot load OpenSSL library or function '${funcName}'.")
             }
         } finally {
             FreeDynMsg(dynMsgPtr)

@@ -135,7 +135,7 @@ class SocketClosed <: TlsSocketState {
     }
 
     static func alreadyClosedException(): Exception {
-        TlsException("TLS socket is already closed.")
+        TlsException("Socket is already closed.")
     }
 
     static func throwAlreadyClosed(): Nothing {

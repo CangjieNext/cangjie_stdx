@@ -186,7 +186,7 @@ class EVPKEYCTX {
         unsafe {
             this.ptr = keyCtxNew(pkey, e)
             if (this.ptr.isNull()) {
-                throw CryptoException("create key ctx error.")
+                throw CryptoException("Failed to create key context.")
             }
         }
     }
@@ -578,7 +578,7 @@ func generateDynMsg(): CPointer<DynMsg> {
     unsafe {
         let dynMsgPtr = MallocDynMsg()
         if (dynMsgPtr.isNull()) {
-            throw CryptoException("Malloc failed.")
+            throw CryptoException("Failed to allocate memory.")
         }
         return dynMsgPtr
     }
@@ -587,12 +587,12 @@ func generateDynMsg(): CPointer<DynMsg> {
 func checkError(dynMsgPtr: CPointer<DynMsg>): Unit {
     unsafe {
         if (dynMsgPtr.isNull()) {
-            throw CryptoException("Null pointer check failed.")
+            throw CryptoException("Null pointer encountered.")
         }
         try {
             if (!dynMsgPtr.read().found) {
                 let funcName = CString(dynMsgPtr.read().funcName).toString()
-                throw CryptoException("Can not load openssl library or function ${funcName}.")
+                throw CryptoException("Cannot load OpenSSL library or function '${funcName}'.")
             }
         } finally {
             FreeDynMsg(dynMsgPtr)
@@ -639,7 +639,7 @@ protected struct ExceptionData {
         unsafe {
             let ptr = LibC.malloc<ExceptionData>(count: 1)
             if (ptr.isNull()) {
-                throw CryptoException("malloc failed")
+                throw CryptoException("Failed to allocate memory.")
             }
             ptr.write(ExceptionData())
             return ptr

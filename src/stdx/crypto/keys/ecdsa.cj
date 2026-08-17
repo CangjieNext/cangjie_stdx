@@ -36,7 +36,7 @@ public class ECDSAPrivateKey <: PrivateKey {
     init(blob: DerBlob) {
         pkey = loadPrivateKey(EC_id, blob.body)
         if (pkey.isNull()) {
-            throw CryptoException("Init ECDSA PrivateKey failed.")
+            throw CryptoException("Failed to initialize ECDSA private key.")
         }
         evpKeyCtx = EVPKEYCTX(pkey)
     }
@@ -44,7 +44,7 @@ public class ECDSAPrivateKey <: PrivateKey {
     public init(curve: Curve) {
         pkey = unsafe { generateECDSA(curve) }
         if (pkey.isNull()) {
-            throw CryptoException("Init ECDSA PrivateKey failed.")
+            throw CryptoException("Failed to initialize ECDSA private key.")
         }
         evpKeyCtx = EVPKEYCTX(pkey)
     }
@@ -139,7 +139,7 @@ public class ECDSAPublicKey <: PublicKey {
     init(blob: DerBlob) {
         pkey = loadPublicKey(EC_id, blob.body)
         if (pkey.isNull()) {
-            throw CryptoException("Init ECDSA PublicKey failed.")
+            throw CryptoException("Failed to initialize ECDSA public key.")
         }
         evpKeyCtx = EVPKEYCTX(pkey)
     }
@@ -148,7 +148,7 @@ public class ECDSAPublicKey <: PublicKey {
         var content = getPublicKeyDer(pri.pkey)
         pkey = loadPublicKey(EC_id, content)
         if (pkey.isNull()) {
-            throw CryptoException("Init ECDSA PublicKey failed.")
+            throw CryptoException("Failed to initialize ECDSA public key.")
         }
         evpKeyCtx = EVPKEYCTX(pkey)
     }
@@ -192,26 +192,26 @@ unsafe func generateECDSA(curve: Curve) {
     var pkey = CPointer<UInt64>()
     try (ppkey = LibC.malloc<CPointer<UInt64>>().asResource()) {
         if (ppkey.value.isNull()) {
-            throw CryptoException("Init ECDSA PrivateKey failed, malloc failed.")
+            throw CryptoException("Failed to initialize ECDSA private key: memory allocation failed.")
         }
 
         var ctx = keyCtxNewId(EC_id, e)
         if (ctx.isNull()) {
-            throw CryptoException("Init ECDSA PrivateKey failed.")
+            throw CryptoException("Failed to initialize ECDSA private key.")
         }
         try {
             var ret = keygenInit(ctx)
             if (ret != 1) {
-                throw CryptoException("Init ECDSA PrivateKey failed.")
+                throw CryptoException("Failed to initialize ECDSA private key.")
             }
             ret = setCurveNid(ctx, curve.getNum())
             if (ret != 1) {
-                throw CryptoException("Set ECDSA curve type error.")
+                throw CryptoException("Failed to set ECDSA curve type.")
             }
             ppkey.value.write(pkey)
             ret = keyGenerate(ctx, ppkey.value)
             if (ret != 1) {
-                throw CryptoException("Generate ECDSA PrivateKey failed.")
+                throw CryptoException("Failed to generate ECDSA private key.")
             }
             pkey = ppkey.value.read()
         } finally {
@@ -229,17 +229,17 @@ func sign(ctx: EVPKEYCTX, pkey: CPointer<UInt64>, data: Array<Byte>) {
         let dataHandle: CPointerHandle<Byte> = acquireArrayRawData(data)
         try (sizePtr = LibC.malloc<UIntNative>().asResource()) {
             if (sizePtr.value.isNull()) {
-                throw CryptoException("Sign init error, malloc failed.")
+                throw CryptoException("Failed to initialize signing: memory allocation failed.")
             }
 
             sizePtr.value.write(UIntNative(ecSize))
             var ret = signInit(ctx.ptr)
             if (ret <= 0) {
-                throw CryptoException("Sign init error.")
+                throw CryptoException("Failed to initialize signing.")
             }
             ret = sign(ctx.ptr, sigHandle.pointer, sizePtr.value, dataHandle.pointer, UIntNative(data.size))
             if (ret != 1 || ecSize < Int64(sizePtr.value.read())) {
-                throw CryptoException("Sign error.")
+                throw CryptoException("Failed to sign data.")
             }
             ecSize = Int64(sizePtr.value.read())
         } finally {
@@ -258,7 +258,7 @@ func verify(ctx: EVPKEYCTX, data: Array<Byte>, sig: Array<Byte>) {
         try {
             var ret = verifyInit(ctx.ptr)
             if (ret <= 0) {
-                throw CryptoException("Verify init error.")
+                throw CryptoException("Failed to initialize verification.")
             }
             result = verify(ctx.ptr, sigHandle.pointer, UIntNative(sig.size), dataHandle.pointer, UIntNative(data.size))
         } finally {

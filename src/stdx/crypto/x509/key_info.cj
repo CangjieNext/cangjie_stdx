@@ -28,7 +28,7 @@ func decodePublicKeyFromPem(text: String): PublicKey {
         }
     }
 
-    throw X509Exception("No ${PemEntry.LABEL_PUBLIC_KEY} entry found in PEM file.")
+    throw X509Exception("No '${PemEntry.LABEL_PUBLIC_KEY}' entry found in PEM.")
 }
 
 class CertPublicKey <: PublicKey {

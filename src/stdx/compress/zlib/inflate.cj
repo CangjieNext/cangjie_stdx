@@ -39,7 +39,7 @@ class Inflate {
     init(wrap!: WrapType = DeflateFormat, wbits!: WindowBits = DefaultWindowBits) {
         zlibStreamCPtr = unsafe { CJ_CreateZlibStream() }
         if (zlibStreamCPtr.isNull()) {
-            throw ZlibException("Failed malloc in C code!")
+            throw ZlibException("Failed to allocate memory for zlib stream.")
         }
         let wbitsValue: Int32 = getWinBitsValue(wrap, wbits)
         let ret = unsafe { CJ_ZlibStreamDecodeInit(zlibStreamCPtr, wbitsValue) }

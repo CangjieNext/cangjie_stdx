@@ -91,7 +91,7 @@ func filterNotNone<T>(iterable: Iterable<Option<T>>) {
         map<Option<T>, T> {
         it => match (it) {
             case Some(it) => it
-            case None => throw X509Exception("Filter not none check failed.")
+            case None => throw X509Exception("Filter result is None, expected Some value.")
         }
     }
 }
