@@ -14,6 +14,8 @@ import std.convert.*
 const MAX_JSON_PARSE_DEPTH = 100
 const INITIAL_JSON_OBJECT_CAPACITY = 8
 const INITIAL_JSON_ARRAY_CAPACITY = 8
+const PARSED_FLAT_STORAGE_SLAB_CONTAINERS = 32
+const PARSED_FLAT_STORAGE_SLOTS = PARSED_FLAT_STORAGE_SLAB_CONTAINERS * 8
 
 // JSON null and booleans are immutable values.  The parser sees them very
 // frequently, so keep one process-wide instance of each instead of allocating
@@ -108,6 +110,42 @@ enum NumberSystem {
     Hex
 }
 
+// Parsed small containers keep independent eight-slot Array views while their
+// backing storage is allocated in chunks. A view retains its slab after the
+// parser advances to the next chunk or is discarded.
+class ParsedFlatStorageArena {
+    private var objectFieldsSlab = Array<(String, JsonValue)>()
+    private var objectFieldsNext: Int64 = PARSED_FLAT_STORAGE_SLOTS
+    private var arrayItemsSlab = Array<JsonValue>()
+    private var arrayItemsNext: Int64 = PARSED_FLAT_STORAGE_SLOTS
+
+    func allocateObjectFields(): Array<(String, JsonValue)> {
+        if (objectFieldsNext + 8 > objectFieldsSlab.size) {
+            objectFieldsSlab = Array<(String, JsonValue)>(
+                PARSED_FLAT_STORAGE_SLOTS,
+                repeat: unsafe { zeroValue<(String, JsonValue)>() }
+            )
+            objectFieldsNext = 0
+        }
+        let fields = objectFieldsSlab.slice(objectFieldsNext, 8)
+        objectFieldsNext += 8
+        return fields
+    }
+
+    func allocateArrayItems(): Array<JsonValue> {
+        if (arrayItemsNext + 8 > arrayItemsSlab.size) {
+            arrayItemsSlab = Array<JsonValue>(
+                PARSED_FLAT_STORAGE_SLOTS,
+                repeat: unsafe { zeroValue<JsonValue>() }
+            )
+            arrayItemsNext = 0
+        }
+        let items = arrayItemsSlab.slice(arrayItemsNext, 8)
+        arrayItemsNext += 8
+        return items
+    }
+}
+
 const MAXVAL_I64: UInt64 = 0x7FFF_FFFF_FFFF_FFFF
 const MAXVAL_UI64: UInt64 = 0xFFFF_FFFF_FFFF_FFFF
 const MAXABSVAL_I64: UInt64 = MAXVAL_I64 + 1
@@ -125,6 +163,7 @@ class JsonParser {
     var integratedUtf8Validation: Bool
     var invalidUtf8: Bool
     var lastStringHtmlSafe: Bool
+    var flatStorageArena: ParsedFlatStorageArena
     // Escaped strings are uncommon for the DOM workload.  Do not reserve a
     // fraction of every input until parsing actually encounters a backslash.
     var strCache: ?ArrayList<Byte> = None
@@ -137,6 +176,7 @@ class JsonParser {
         this.integratedUtf8Validation = false
         this.invalidUtf8 = false
         this.lastStringHtmlSafe = false
+        this.flatStorageArena = ParsedFlatStorageArena()
     }
 
     init(data: Array<Byte>) {
@@ -147,6 +187,7 @@ class JsonParser {
         this.integratedUtf8Validation = false
         this.invalidUtf8 = false
         this.lastStringHtmlSafe = false
+        this.flatStorageArena = ParsedFlatStorageArena()
     }
 
     init(data: Array<Byte>, integratedUtf8Validation: Bool) {
@@ -157,6 +198,7 @@ class JsonParser {
         this.integratedUtf8Validation = integratedUtf8Validation
         this.invalidUtf8 = false
         this.lastStringHtmlSafe = false
+        this.flatStorageArena = ParsedFlatStorageArena()
     }
 
     func reset(): Unit {
@@ -164,6 +206,7 @@ class JsonParser {
         this.depth = 0
         this.invalidUtf8 = false
         this.lastStringHtmlSafe = false
+        this.flatStorageArena = ParsedFlatStorageArena()
         if (let Some(cache) <- this.strCache) {
             cache.clear()
         }
@@ -395,7 +438,7 @@ func parseJson(parser: JsonParser): JsonValue {
 func parseJsonObject(parser: JsonParser): JsonObject {
     parser.offset++
     skipWhiteSpace(parser)
-    let obj = JsonObject(INITIAL_JSON_OBJECT_CAPACITY)
+    let obj = JsonObject(parser.flatStorageArena.allocateObjectFields(), 0)
     var first = true
     while (requireCurrentByte(parser) != b'}') {
         if (first) {
@@ -424,7 +467,7 @@ func parseJsonObject(parser: JsonParser): JsonObject {
 func parseJsonArray(parser: JsonParser): JsonArray {
     parser.offset++
     skipWhiteSpace(parser)
-    let arr = JsonArray(INITIAL_JSON_ARRAY_CAPACITY)
+    let arr = JsonArray(parser.flatStorageArena.allocateArrayItems(), 0)
     var first = true
     while (requireCurrentByte(parser) != b']') {
         if (first) {
