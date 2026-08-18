@@ -48,14 +48,13 @@ let RSA_MAX_EXPONENT = BigInt(true, Array<Byte>(32, repeat: 255))
 
 public class RSAPrivateKey <: PrivateKey {
     var pkey = CPointer<UInt64>()
-    var evpKeyCtx: EVPKEYCTX
+    var evpKeyCtx: EVPKEYCTX = EVPKEYCTX(pkey)  // redundant member, kept for ABI compatibility, concurrent reuse causes crash
 
     init(blob: DerBlob) {
         pkey = loadPrivateKey(RSA_id, blob.body)
         if (pkey.isNull()) {
             throw CryptoException("Init RSA PrivateKey failed.")
         }
-        evpKeyCtx = EVPKEYCTX(pkey)
     }
 
     public init(bits: Int32) {
@@ -64,7 +63,6 @@ public class RSAPrivateKey <: PrivateKey {
         if (pkey.isNull()) {
             throw CryptoException("Init RSA PrivateKey failed.")
         }
-        evpKeyCtx = EVPKEYCTX(pkey)
     }
 
     public init(bits: Int32, e: BigInt) {
@@ -74,7 +72,6 @@ public class RSAPrivateKey <: PrivateKey {
         if (pkey.isNull()) {
             throw CryptoException("Init RSA PrivateKey failed.")
         }
-        evpKeyCtx = EVPKEYCTX(pkey)
     }
 
     public func encodeToDer(password!: ?String): DerBlob {
@@ -146,9 +143,10 @@ public class RSAPrivateKey <: PrivateKey {
     }
 
     public func sign(hash: Digest, digest: Array<Byte>, padType!: PadOption): Array<Byte> {
+        let ctx = EVPKEYCTX(pkey)
         let result = match (padType) {
-            case PKCS1 => signPKCS1(evpKeyCtx, pkey, hash, digest)
-            case PSS(pss) => signPSS(evpKeyCtx, pkey, hash, digest, pss.saltLen)
+            case PKCS1 => signPKCS1(ctx, pkey, hash, digest)
+            case PSS(pss) => signPSS(ctx, pkey, hash, digest, pss.saltLen)
             case OAEP(_) => throw CryptoException("OAEPOption only use in encrypt or decrypt.")
         }
         keepAlive(this)
@@ -156,9 +154,10 @@ public class RSAPrivateKey <: PrivateKey {
     }
 
     public func decrypt(input: InputStream, output: OutputStream, padType!: PadOption): Unit {
+        let ctx = EVPKEYCTX(pkey)
         match (padType) {
-            case PKCS1 => unsafe { decryptPKCS1(evpKeyCtx, pkey, input, output) }
-            case OAEP(oaep) => unsafe { decryptOAEP(evpKeyCtx, pkey, input, output, oaep.label, oaep.hash, oaep.mgfHash) }
+            case PKCS1 => unsafe { decryptPKCS1(ctx, pkey, input, output) }
+            case OAEP(oaep) => unsafe { decryptOAEP(ctx, pkey, input, output, oaep.label, oaep.hash, oaep.mgfHash) }
             case PSS(_) => throw CryptoException("PSSOption only use in sign or verify.")
         }
         keepAlive(this)
@@ -177,14 +176,13 @@ public class RSAPrivateKey <: PrivateKey {
 
 public class RSAPublicKey <: PublicKey {
     var pkey: CPointer<UInt64>
-    var evpKeyCtx: EVPKEYCTX
+    var evpKeyCtx: EVPKEYCTX = EVPKEYCTX(CPointer<UInt64>())  // redundant member, kept for ABI compatibility, concurrent reuse causes crash
 
     init(blob: DerBlob) {
         pkey = loadPublicKey(RSA_id, blob.body)
         if (pkey.isNull()) {
             throw CryptoException("Init RSA PublicKey failed.")
         }
-        evpKeyCtx = EVPKEYCTX(pkey)
     }
 
     public init(pri: RSAPrivateKey) {
@@ -193,7 +191,6 @@ public class RSAPublicKey <: PublicKey {
         if (pkey.isNull()) {
             throw CryptoException("Init RSA PublicKey failed.")
         }
-        evpKeyCtx = EVPKEYCTX(pkey)
     }
 
     public func encodeToDer(): DerBlob {
@@ -219,18 +216,20 @@ public class RSAPublicKey <: PublicKey {
     }
 
     public func verify(hash: Digest, digest: Array<Byte>, sig: Array<Byte>, padType!: PadOption): Bool {
+        let ctx = EVPKEYCTX(pkey)
         let result = match (padType) {
-            case PKCS1 => verifyPKCS1(evpKeyCtx, hash, digest, sig)
-            case PSS(pss) => verifyPSS(evpKeyCtx, hash, digest, sig, pss.saltLen)
+            case PKCS1 => verifyPKCS1(ctx, hash, digest, sig)
+            case PSS(pss) => verifyPSS(ctx, hash, digest, sig, pss.saltLen)
             case OAEP(_) => throw CryptoException("OAEPOption only use in encrypt or decrypt.")
         }
         result
     }
 
     public func encrypt(input: InputStream, output: OutputStream, padType!: PadOption): Unit {
+        let ctx = EVPKEYCTX(pkey)
         match (padType) {
-            case PKCS1 => unsafe { encryptPKCS1(evpKeyCtx, pkey, input, output) }
-            case OAEP(oaep) => unsafe { encryptOAEP(evpKeyCtx, pkey, input, output, oaep.label, oaep.hash, oaep.mgfHash) }
+            case PKCS1 => unsafe { encryptPKCS1(ctx, pkey, input, output) }
+            case OAEP(oaep) => unsafe { encryptOAEP(ctx, pkey, input, output, oaep.label, oaep.hash, oaep.mgfHash) }
             case PSS(_) => throw CryptoException("PSSOption only use in sign or verify.")
         }
         keepAlive(this)
