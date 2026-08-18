@@ -118,7 +118,7 @@ extend String <: JsonSerializable {
         if (curPos <= beforePos) {
             return
         }
-        if (curPos - beforePos >= JsonWriter.FLUSH_THRESHOLD) {
+        if (curPos - beforePos >= JsonWriter.LARGE_VALUE_THRESHOLD) {
             // write directly to the stream if the string is too long
             w.flushOutBuf()
             unsafe { w.out.write(this.rawData()[beforePos..curPos]) }

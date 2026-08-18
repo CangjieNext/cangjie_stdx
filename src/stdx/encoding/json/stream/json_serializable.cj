@@ -25,16 +25,8 @@ public interface JsonSerializable {
 }
 
 extend Int64 <: JsonSerializable {
-    @OverflowWrapping
     public func toJson(w: JsonWriter): Unit {
-        w.beforeValue()
-        if (this < 0) {
-            w.buffer[w.curPos] = b'-'
-            w.curPos++
-            w.curPos += uitoa(UInt64(-this), w.buffer[w.curPos..])
-        } else {
-            w.curPos += uitoa(UInt64(this), w.buffer[w.curPos..])
-        }
+        w.writeInt64(this)
     }
 }
 
@@ -63,10 +55,8 @@ extend IntNative <: JsonSerializable {
 }
 
 extend UInt64 <: JsonSerializable {
-    @OverflowWrapping
     public func toJson(w: JsonWriter): Unit {
-        w.beforeValue()
-        w.curPos += uitoa(this, w.buffer[w.curPos..])
+        w.writeUInt64(this)
     }
 }
 

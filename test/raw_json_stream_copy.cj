@@ -129,6 +129,74 @@ func testRawStaticNameWrite(): Unit {
     ensure(String.fromUtf8(readToEnd(output)) == ##"{"answer":42}"##)
 }
 
+func testIntegerWriteBoundaries(): Unit {
+    let output = ByteBuffer()
+    let writer = JsonWriter(output)
+    let minInt64 = -9223372036854775807 - 1
+    writer.startArray()
+    writer.writeValue<Int64>(0)
+    writer.writeValue<Int64>(9)
+    writer.writeValue<Int64>(10)
+    writer.writeValue<Int64>(99)
+    writer.writeValue<Int64>(100)
+    writer.writeValue<Int64>(999)
+    writer.writeValue<Int64>(1000)
+    writer.writeValue<Int64>(9999)
+    writer.writeValue<Int64>(10000)
+    writer.writeValue<Int64>(9223372036854775807)
+    writer.writeValue<Int64>(minInt64)
+    writer.endArray()
+    writer.flush()
+    ensure(
+        String.fromUtf8(readToEnd(output)) ==
+        "[0,9,10,99,100,999,1000,9999,10000,9223372036854775807,-9223372036854775808]"
+    )
+}
+
+func testInt64ArrayBatchWrite(): Unit {
+    let values = [Int64(-100), 0, 9, 10, 999, 1000, 9223372036854775807]
+    let compactOutput = ByteBuffer()
+    let compactWriter = JsonWriter(compactOutput)
+    compactWriter.writeInt64Array(values)
+    compactWriter.flush()
+    let compactText = String.fromUtf8(readToEnd(compactOutput))
+    ensure(
+        compactText ==
+        "[-100,0,9,10,999,1000,9223372036854775807]"
+    )
+
+    let prettyOutput = ByteBuffer()
+    let prettyWriter = JsonWriter(prettyOutput)
+    prettyWriter.writeConfig = WriteConfig.pretty
+    prettyWriter.writeInt64Array(values)
+    prettyWriter.flush()
+    let prettyText = String.fromUtf8(readToEnd(prettyOutput))
+    ensure(
+        prettyText ==
+        "[\n    -100,\n    0,\n    9,\n    10,\n    999,\n    1000,\n    9223372036854775807\n]"
+    )
+}
+
+func testOtherIntegerArrayBatchWrite(): Unit {
+    let signedOutput = ByteBuffer()
+    let signedWriter = JsonWriter(signedOutput)
+    signedWriter.writeInt32Array([Int32(-2147483648), 0, 2147483647])
+    signedWriter.flush()
+    ensure(String.fromUtf8(readToEnd(signedOutput)) == "[-2147483648,0,2147483647]")
+
+    let unsignedOutput = ByteBuffer()
+    let unsignedWriter = JsonWriter(unsignedOutput)
+    unsignedWriter.writeUInt32Array([UInt32(0), 4294967295])
+    unsignedWriter.flush()
+    ensure(String.fromUtf8(readToEnd(unsignedOutput)) == "[0,4294967295]")
+
+    let wideUnsignedOutput = ByteBuffer()
+    let wideUnsignedWriter = JsonWriter(wideUnsignedOutput)
+    wideUnsignedWriter.writeUInt64Array([UInt64(0), 18446744073709551615])
+    wideUnsignedWriter.flush()
+    ensure(String.fromUtf8(readToEnd(wideUnsignedOutput)) == "[0,18446744073709551615]")
+}
+
 func testByteBufferRangeWriteWithoutGrowth(): Unit {
     let output = ByteBuffer(128)
     output.write("xxhello!".toArray(), 2, 5)
@@ -177,6 +245,9 @@ main() {
     testFloatReadWrite()
     testShortestFloatWritePreservesSmallFiniteValue()
     testRawStaticNameWrite()
+    testIntegerWriteBoundaries()
+    testInt64ArrayBatchWrite()
+    testOtherIntegerArrayBatchWrite()
     testByteBufferRangeWriteWithoutGrowth()
     testDiscardRemainingDrainsUnderlyingInput()
 }
