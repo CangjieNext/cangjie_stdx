@@ -361,17 +361,15 @@ func jsonWriteArray(json: JsonArray, buff: WriteBuffer, depth: Int64, bracketInN
 
     buff.append(b'[')
     let new_depth = depth + 1
-    for (v in json.getItems()) {
-        buff.append(b'\n')
-        for (_ in 0..new_depth) {
-            buff.append(indent)
+    if (json.isFlatStorage()) {
+        let items = json.getFlatItemsForRead()
+        for (i in 0..json.getFlatSizeForRead()) {
+            jsonWriteArrayItem(items[i], buff, new_depth, indent, htmlSafe)
         }
-        match (v) {
-            case jo: JsonObject => jsonWriteObject(jo, buff, new_depth, false, indent, htmlSafe: htmlSafe)
-            case ja: JsonArray => jsonWriteArray(ja, buff, new_depth, false, indent, htmlSafe: htmlSafe)
-            case _ => jsonWriteWithoutFormat(v, buff, new_depth, htmlSafe: htmlSafe)
+    } else {
+        for (v in json.getListItemsForRead()) {
+            jsonWriteArrayItem(v, buff, new_depth, indent, htmlSafe)
         }
-        buff.append(b',')
     }
     buff.removetail()
     buff.append(b'\n')
@@ -379,6 +377,19 @@ func jsonWriteArray(json: JsonArray, buff: WriteBuffer, depth: Int64, bracketInN
         buff.append(indent)
     }
     buff.append(b']')
+}
+
+func jsonWriteArrayItem(v: JsonValue, buff: WriteBuffer, depth: Int64, indent: String, htmlSafe: Bool): Unit {
+    buff.append(b'\n')
+    for (_ in 0..depth) {
+        buff.append(indent)
+    }
+    match (v) {
+        case jo: JsonObject => jsonWriteObject(jo, buff, depth, false, indent, htmlSafe: htmlSafe)
+        case ja: JsonArray => jsonWriteArray(ja, buff, depth, false, indent, htmlSafe: htmlSafe)
+        case _ => jsonWriteWithoutFormat(v, buff, depth, htmlSafe: htmlSafe)
+    }
+    buff.append(b',')
 }
 
 func asumecapacity(json: JsonValue): Int64 {
@@ -404,8 +415,15 @@ func asumecapacity(json: JsonValue, depth: Int64): Int64 {
             return sum
         case ja: JsonArray =>
             var sum = 2
-            for (v in ja.getItems()) {
-                sum = sum + asumecapacity(v, depth + 1) + 1
+            if (ja.isFlatStorage()) {
+                let items = ja.getFlatItemsForRead()
+                for (i in 0..ja.getFlatSizeForRead()) {
+                    sum = sum + asumecapacity(items[i], depth + 1) + 1
+                }
+            } else {
+                for (v in ja.getListItemsForRead()) {
+                    sum = sum + asumecapacity(v, depth + 1) + 1
+                }
             }
             return sum
         case js: JsonString => return js.value.size + 2 // "value"

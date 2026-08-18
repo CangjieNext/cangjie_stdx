@@ -16,6 +16,7 @@ package stdx.encoding.json
 import std.collection.*
 
 const SMALL_JSON_OBJECT_CAPACITY = 8
+const SMALL_JSON_ARRAY_CAPACITY = 8
 
 // Object keys are always written in HTML-safe mode. Cache only their aggregate
 // safety on JsonObject so ordinary JsonString nodes keep their compact layout.
@@ -516,22 +517,52 @@ public class JsonString <: JsonValue { // cjlint-ignore !G.ENU.01
  * JsonArray class used for encapsulate JSON data: array.
  */
 public class JsonArray <: JsonValue {
-    /* Json data of the JsonArray(ArrayList<JsonValue>). */
-    private var items: ArrayList<JsonValue>
+    // Keep small arrays in one sequential backing array. Allocate the
+    // ArrayList wrapper only after the ninth item or when its mutable view is
+    // exposed through getItems().
+    private var flatItems: Array<JsonValue>
+    private var flatSize: Int64
+    private var listItems: ?ArrayList<JsonValue>
 
     protected override func writeCompactTo(buff: WriteBuffer, depth: Int64, htmlSafe: Bool): Unit {
         checkJsonWriteDepth(depth)
-        if (items.size == 0) {
+        if (size() == 0) {
             buff.append(EMPTY_ARRAY_BYTES)
             return
         }
         buff.append(b'[')
-        for (item in items) {
-            jsonWriteWithoutFormat(item, buff, depth + 1, htmlSafe: htmlSafe)
-            buff.append(b',')
+        match (listItems) {
+            case Some(items) =>
+                for (item in items) {
+                    writeCompactItem(buff, item, depth, htmlSafe)
+                }
+            case None =>
+                for (i in 0..flatSize) {
+                    writeCompactItem(buff, flatItems[i], depth, htmlSafe)
+                }
         }
         buff.removetail()
         buff.append(b']')
+    }
+
+    private func writeCompactItem(buff: WriteBuffer, item: JsonValue, depth: Int64, htmlSafe: Bool): Unit {
+        jsonWriteWithoutFormat(item, buff, depth + 1, htmlSafe: htmlSafe)
+        buff.append(b',')
+    }
+
+    private func promoteToListItems(): ArrayList<JsonValue> {
+        match (listItems) {
+            case Some(items) => return items
+            case None =>
+                let items = ArrayList<JsonValue>(flatSize + 1)
+                for (i in 0..flatSize) {
+                    items.add(flatItems[i])
+                }
+                listItems = Some(items)
+                flatItems = Array<JsonValue>()
+                flatSize = 0
+                return items
+        }
     }
 
     /**
@@ -541,11 +572,35 @@ public class JsonArray <: JsonValue {
      * @since 0.17.4
      */
     init(capacity: Int64) {
-        items = ArrayList<JsonValue>(capacity)
+        if (capacity < 0) {
+            throw IllegalArgumentException("Invalid size of JsonArray: ${capacity}.")
+        }
+        if (capacity <= SMALL_JSON_ARRAY_CAPACITY) {
+            flatItems = Array<JsonValue>(
+                SMALL_JSON_ARRAY_CAPACITY,
+                repeat: unsafe { zeroValue<JsonValue>() }
+            )
+            listItems = None
+        } else {
+            flatItems = Array<JsonValue>()
+            listItems = Some(ArrayList<JsonValue>(capacity))
+        }
+        flatSize = 0
     }
 
     public init() {
-        items = ArrayList<JsonValue>()
+        flatItems = Array<JsonValue>(
+            SMALL_JSON_ARRAY_CAPACITY,
+            repeat: unsafe { zeroValue<JsonValue>() }
+        )
+        flatSize = 0
+        listItems = None
+    }
+
+    init(parsedFlatItems: Array<JsonValue>, parsedFlatSize: Int64) {
+        flatItems = parsedFlatItems
+        flatSize = parsedFlatSize
+        listItems = None
     }
     /**
      * Create a new JsonArray object.
@@ -556,7 +611,9 @@ public class JsonArray <: JsonValue {
      * @since 0.17.4
      */
     public init(list: ArrayList<JsonValue>) {
-        items = list
+        flatItems = Array<JsonValue>()
+        flatSize = 0
+        listItems = Some(list)
     }
 
     /**
@@ -568,7 +625,21 @@ public class JsonArray <: JsonValue {
      * @since 0.17.4
      */
     public init(list: Array<JsonValue>) {
-        items = ArrayList<JsonValue>(list)
+        if (list.size <= SMALL_JSON_ARRAY_CAPACITY) {
+            flatItems = Array<JsonValue>(
+                SMALL_JSON_ARRAY_CAPACITY,
+                repeat: unsafe { zeroValue<JsonValue>() }
+            )
+            for (i in 0..list.size) {
+                flatItems[i] = list[i]
+            }
+            flatSize = list.size
+            listItems = None
+        } else {
+            flatItems = Array<JsonValue>()
+            flatSize = 0
+            listItems = Some(ArrayList<JsonValue>(list))
+        }
     }
 
     /**
@@ -688,7 +759,10 @@ public class JsonArray <: JsonValue {
      * @since 0.17.4
      */
     public func size(): Int64 {
-        return items.size
+        return match (listItems) {
+            case Some(items) => items.size
+            case None => flatSize
+        }
     }
 
     /**
@@ -699,7 +773,16 @@ public class JsonArray <: JsonValue {
      * @since 0.17.4
      */
     public func add(jv: JsonValue): JsonArray {
-        items.add(jv)
+        match (listItems) {
+            case Some(items) => items.add(jv)
+            case None =>
+                if (flatSize < SMALL_JSON_ARRAY_CAPACITY) {
+                    flatItems[flatSize] = jv
+                    flatSize++
+                } else {
+                    promoteToListItems().add(jv)
+                }
+        }
         return this
     }
 
@@ -712,7 +795,15 @@ public class JsonArray <: JsonValue {
      * @since 0.17.4
      */
     public func get(index: Int64): Option<JsonValue> {
-        return items.get(index)
+        return match (listItems) {
+            case Some(items) => items.get(index)
+            case None =>
+                if (index < 0 || index >= flatSize) {
+                    None
+                } else {
+                    Some(flatItems[index])
+                }
+        }
     }
 
     /**
@@ -726,7 +817,7 @@ public class JsonArray <: JsonValue {
      * @throws JsonException if index of JsonArray does not exist.
      */
     public operator func [](index: Int64): JsonValue {
-        return match (items.get(index)) {
+        return match (get(index)) {
             case Some(v) => v
             case None => throw JsonException("The index ${index} of JsonArray does not exist.")
         }
@@ -740,7 +831,29 @@ public class JsonArray <: JsonValue {
      * @since 0.17.4
      */
     public func getItems(): ArrayList<JsonValue> {
-        return items
+        return promoteToListItems()
+    }
+
+    func isFlatStorage(): Bool {
+        return match (listItems) {
+            case Some(_) => false
+            case None => true
+        }
+    }
+
+    func getFlatItemsForRead(): Array<JsonValue> {
+        return flatItems
+    }
+
+    func getFlatSizeForRead(): Int64 {
+        return flatSize
+    }
+
+    func getListItemsForRead(): ArrayList<JsonValue> {
+        return match (listItems) {
+            case Some(items) => items
+            case None => throw IllegalStateException("JsonArray is using flat storage.")
+        }
     }
 }
 
@@ -872,6 +985,13 @@ public class JsonObject <: JsonValue {
             hashFields = Some(HashMap<String, JsonValue>(capacity))
         }
         flatSize = 0
+        allKeysHtmlSafe = true
+    }
+
+    init(parsedFlatFields: Array<(String, JsonValue)>, parsedFlatSize: Int64) {
+        flatFields = parsedFlatFields
+        flatSize = parsedFlatSize
+        hashFields = None
         allKeysHtmlSafe = true
     }
 

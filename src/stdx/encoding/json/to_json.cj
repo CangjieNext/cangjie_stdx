@@ -78,9 +78,15 @@ extend DataModel <: ToJson {
     private static func buildDMSeq(ja: JsonArray): DataModelSeq {
         let dms: DataModelSeq = DataModelSeq()
         let list: ArrayList<DataModel> = dms.getItems()
-        let ji = ja.getItems()
-        for (i in 0..ji.size) {
-            list.add(fromJson(ji[i]))
+        if (ja.isFlatStorage()) {
+            let items = ja.getFlatItemsForRead()
+            for (i in 0..ja.getFlatSizeForRead()) {
+                list.add(fromJson(items[i]))
+            }
+        } else {
+            for (item in ja.getListItemsForRead()) {
+                list.add(fromJson(item))
+            }
         }
         return dms
     }
