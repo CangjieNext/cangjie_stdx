@@ -18,6 +18,7 @@ enum JsonWriterState {
     | EmptyObject
     | NoEmptyObject
     | CompactSchemaObject
+    | CompactSchemaValue
     | EmptyText
     | NoEmptyText
 }
@@ -308,6 +309,20 @@ public class JsonWriter {
     public func writeCompactSchemaFloat64(prefix: Array<Byte>, offset: Int64, length: Int64, number: Float64): JsonWriter {
         writeCompactSchemaPrefix(prefix, offset, length)
         writeFloat64Value(this, number)
+        this
+    }
+
+    /**
+     * Write a compile-time generated compact-schema member prefix and arm one
+     * ordinary JSON value.  The next value writer consumes CompactSchemaValue
+     * in beforeValue(), so arrays, maps and nested @Codable objects can reuse
+     * their normal serialization implementations without per-member name
+     * state transitions.
+     */
+    @OverflowWrapping
+    public func beginCompactSchemaValue(prefix: Array<Byte>, offset: Int64, length: Int64): JsonWriter {
+        writeCompactSchemaPrefix(prefix, offset, length)
+        put(CompactSchemaValue)
         this
     }
 
@@ -859,6 +874,7 @@ public class JsonWriter {
                     throw IllegalStateException("Value in Json object must after a name.")
                 }
                 haveName = false
+            case CompactSchemaValue => pop()
             case CompactSchemaObject =>
                 throw IllegalStateException("Compact schema object accepts only compact schema fields.")
         }
