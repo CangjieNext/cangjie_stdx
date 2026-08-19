@@ -148,6 +148,76 @@ public class JsonWriter {
         this
     }
 
+    /**
+     * Write one unescaped static object member name and its Int64 value in a
+     * single state-machine transition. The name bytes must be valid JSON
+     * string content without escaping, as with writeRawName.
+     */
+    @OverflowWrapping
+    public func writeRawNameInt64(value: Array<Byte>, offset: Int64, length: Int64, number: Int64): JsonWriter {
+        writeRawNamePrefix(value, offset, length)
+        ensureBufferSpace(32)
+        if (number < 0) {
+            buffer[curPos] = b'-'
+            curPos++
+            curPos += appendUInt64(UInt64(-(number + 1)) + 1)
+        } else {
+            curPos += appendUInt64(UInt64(number))
+        }
+        this
+    }
+
+    /**
+     * Write one unescaped static object member name and its UInt64 value in a
+     * single state-machine transition. The name bytes have the same contract
+     * as writeRawName.
+     */
+    @OverflowWrapping
+    public func writeRawNameUInt64(value: Array<Byte>, offset: Int64, length: Int64, number: UInt64): JsonWriter {
+        writeRawNamePrefix(value, offset, length)
+        ensureBufferSpace(32)
+        curPos += appendUInt64(number)
+        this
+    }
+
+    /**
+     * Write one unescaped static object member name and its Bool value in a
+     * single state-machine transition. The name bytes have the same contract
+     * as writeRawName.
+     */
+    @OverflowWrapping
+    public func writeRawNameBool(value: Array<Byte>, offset: Int64, length: Int64, flag: Bool): JsonWriter {
+        writeRawNamePrefix(value, offset, length)
+        ensureBufferSpace(5)
+        if (flag) {
+            buffer[curPos] = b't'
+            buffer[curPos + 1] = b'r'
+            buffer[curPos + 2] = b'u'
+            buffer[curPos + 3] = b'e'
+            curPos += 4
+        } else {
+            buffer[curPos] = b'f'
+            buffer[curPos + 1] = b'a'
+            buffer[curPos + 2] = b'l'
+            buffer[curPos + 3] = b's'
+            buffer[curPos + 4] = b'e'
+            curPos += 5
+        }
+        this
+    }
+
+    @OverflowWrapping
+    func writeRawNamePrefix(value: Array<Byte>, offset: Int64, length: Int64): Unit {
+        beginRawName()
+        writeRawByte(b'"')
+        appendRawBytes(value, offset, length)
+        writeRawByte(b'"')
+        endRawName()
+        // The following scalar is the value paired with this name, so it can
+        // skip the second beforeValue state-machine transition.
+        haveName = false
+    }
+
     func appendRawBytes(value: Array<Byte>, offset: Int64, length: Int64): Unit {
         if (offset < 0 || length < 0 || offset + length > value.size) {
             throw IllegalArgumentException("The raw JSON byte range is out of bounds.")
