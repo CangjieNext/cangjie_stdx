@@ -36,6 +36,12 @@ const UTF8_2_MAX: UInt32 = 0x07FF
 const UTF8_1_MAX: UInt32 = 0x7F
 const ESCAPE_SIZE_2: Int64 = 2
 const ESCAPE_SIZE_6: Int64 = 6
+// The native probe amortizes its FFI transition for payload-sized strings.
+// Smaller strings keep the existing inlined Cangjie scan.
+const NATIVE_NO_ESCAPE_SCAN_THRESHOLD: Int64 = 64
+
+@FastNative
+foreign func CJ_JSON_StringEscapeCharNumGet(input: CPointer<UInt8>, inputlen: Int64, htmlSafe: Bool): Int64
 
 func newEscapeTable(): Array<Byte> {
     let escapeTable: Array<Byte> = Array<Byte>(128, repeat: 0)
@@ -50,6 +56,15 @@ func newEscapeTable(): Array<Byte> {
 }
 
 let escapeTable = newEscapeTable()
+
+func hasNativeEscape(value: String): Bool {
+    unsafe {
+        let input = acquireArrayRawData(value.rawData())
+        let escapeCount = CJ_JSON_StringEscapeCharNumGet(input.pointer, value.size, false)
+        releaseArrayRawData(input)
+        return escapeCount != 0
+    }
+}
 
 @OverflowWrapping
 func writeEscapeAscii(w: JsonWriter, byte: Int64) {
@@ -80,6 +95,18 @@ extend String <: JsonSerializable {
         w.beforeValue()
         w.buffer[w.curPos] = b'\"'
         w.curPos++
+
+        // In the default compact mode the native helper has the same escape
+        // classification as the stream writer. A long plain string can then
+        // be copied once without executing the Cangjie byte loop. htmlSafe
+        // keeps the complete stream-side classifier because it additionally
+        // escapes <, >, = and '.
+        if (size >= NATIVE_NO_ESCAPE_SCAN_THRESHOLD && !w.writeConfig.htmlSafe && !hasNativeEscape(this)) {
+            insideflush(w, this.size, 0)
+            w.buffer[w.curPos] = b'\"'
+            w.curPos++
+            return
+        }
 
         var beforePos = 0
         let backslash = Int64(b'\\')
