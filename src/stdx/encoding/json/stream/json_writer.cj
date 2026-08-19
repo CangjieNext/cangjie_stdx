@@ -45,7 +45,7 @@ public class JsonWriter {
     }
 
     public func flush(): Unit {
-        out.write(buffer, 0, curPos)
+        out.write(buffer[0..curPos])
         curPos = 0
         out.flush()
     }
@@ -151,7 +151,7 @@ public class JsonWriter {
     }
 
     func flushOutBuf() {
-        out.write(buffer, 0, curPos)
+        out.write(buffer[0..curPos])
         curPos = 0
         0
     }
