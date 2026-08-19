@@ -17,6 +17,7 @@ enum JsonWriterState {
     | NoEmptyArray
     | EmptyObject
     | NoEmptyObject
+    | CompactSchemaObject
     | EmptyText
     | NoEmptyText
 }
@@ -228,6 +229,88 @@ public class JsonWriter {
         this
     }
 
+    /**
+     * Start an object whose members are emitted by a compile-time generated
+     * compact schema. Schema member prefixes include their own comma/name/
+     * colon bytes, so this mode intentionally skips per-member object-state
+     * transitions. It is incompatible with pretty-print formatting.
+     */
+    @OverflowWrapping
+    public func startCompactSchemaObject(): JsonWriter {
+        beforeValue()
+        writeRawByte(b'{')
+        put(CompactSchemaObject)
+        this
+    }
+
+    @OverflowWrapping
+    public func endCompactSchemaObject(): JsonWriter {
+        match (top()) {
+            case CompactSchemaObject =>
+                writeRawByte(b'}')
+                pop()
+            case _ => throw IllegalStateException("End compact schema object must directly follow its start.")
+        }
+        this
+    }
+
+    @OverflowWrapping
+    public func writeCompactSchemaInt64(prefix: Array<Byte>, offset: Int64, length: Int64, number: Int64): JsonWriter {
+        writeCompactSchemaPrefix(prefix, offset, length)
+        ensureBufferSpace(32)
+        if (number < 0) {
+            buffer[curPos] = b'-'
+            curPos++
+            curPos += appendUInt64(UInt64(-(number + 1)) + 1)
+        } else {
+            curPos += appendUInt64(UInt64(number))
+        }
+        this
+    }
+
+    @OverflowWrapping
+    public func writeCompactSchemaUInt64(prefix: Array<Byte>, offset: Int64, length: Int64, number: UInt64): JsonWriter {
+        writeCompactSchemaPrefix(prefix, offset, length)
+        ensureBufferSpace(32)
+        curPos += appendUInt64(number)
+        this
+    }
+
+    @OverflowWrapping
+    public func writeCompactSchemaBool(prefix: Array<Byte>, offset: Int64, length: Int64, flag: Bool): JsonWriter {
+        writeCompactSchemaPrefix(prefix, offset, length)
+        ensureBufferSpace(5)
+        if (flag) {
+            buffer[curPos] = b't'
+            buffer[curPos + 1] = b'r'
+            buffer[curPos + 2] = b'u'
+            buffer[curPos + 3] = b'e'
+            curPos += 4
+        } else {
+            buffer[curPos] = b'f'
+            buffer[curPos + 1] = b'a'
+            buffer[curPos + 2] = b'l'
+            buffer[curPos + 3] = b's'
+            buffer[curPos + 4] = b'e'
+            curPos += 5
+        }
+        this
+    }
+
+    @OverflowWrapping
+    public func writeCompactSchemaString(prefix: Array<Byte>, offset: Int64, length: Int64, text: String): JsonWriter {
+        writeCompactSchemaPrefix(prefix, offset, length)
+        writeStringValue(this, text)
+        this
+    }
+
+    @OverflowWrapping
+    public func writeCompactSchemaFloat64(prefix: Array<Byte>, offset: Int64, length: Int64, number: Float64): JsonWriter {
+        writeCompactSchemaPrefix(prefix, offset, length)
+        writeFloat64Value(this, number)
+        this
+    }
+
     @OverflowWrapping
     func writeRawNamePrefix(value: Array<Byte>, offset: Int64, length: Int64): Unit {
         beginRawName()
@@ -238,6 +321,14 @@ public class JsonWriter {
         // The following scalar is the value paired with this name, so it can
         // skip the second beforeValue state-machine transition.
         haveName = false
+    }
+
+    @OverflowWrapping
+    func writeCompactSchemaPrefix(value: Array<Byte>, offset: Int64, length: Int64): Unit {
+        match (top()) {
+            case CompactSchemaObject => appendRawBytes(value, offset, length)
+            case _ => throw IllegalStateException("Compact schema field must be within a compact schema object.")
+        }
     }
 
     func appendRawBytes(value: Array<Byte>, offset: Int64, length: Int64): Unit {
@@ -768,6 +859,8 @@ public class JsonWriter {
                     throw IllegalStateException("Value in Json object must after a name.")
                 }
                 haveName = false
+            case CompactSchemaObject =>
+                throw IllegalStateException("Compact schema object accepts only compact schema fields.")
         }
     }
 
