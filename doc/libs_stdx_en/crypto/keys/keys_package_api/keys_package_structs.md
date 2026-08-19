@@ -48,4 +48,4 @@ Parameters:
 
 Exceptions:
 
-- [CryptoException](../../digest/digest_package_api/digest_package_exceptions.md#class-cryptoexception) - Thrown when salt length is less than 0.
+- [CryptoException](../../common/crypto_common_package_api/crypto_common_package_exceptions.md#class-cryptoexception) - Thrown when salt length is less than 0.

@@ -15,7 +15,7 @@ endmacro()
 
 function(make_cangjie_lib target_name)
     set(options IS_SHARED IS_MACRO ALLOW_UNDEFINED)
-    set(oneValueArgs)
+    set(oneValueArgs IOS_DEPLOYMENT_VERSION)
     set(multiValueArgs
         DEPENDS
         OBJECTS
@@ -70,12 +70,22 @@ function(make_cangjie_lib target_name)
             list(APPEND flags_to_compile -arch x86_64)
         endif()
         if(IOS)
+            # Default minimum iOS deployment target is 11. Libraries that link against C++
+            # (libc++ is only available from iOS 12 onward), e.g. syntax, override it via
+            # IOS_DEPLOYMENT_VERSION.
+            if(NOT CANGJIE_LIBRARY_IOS_DEPLOYMENT_VERSION)
+                set(CANGJIE_LIBRARY_IOS_DEPLOYMENT_VERSION "11.0.0")
+            endif()
             if(IOS_PLATFORM MATCHES "SIMULATOR")
                 list(APPEND flags_to_compile -syslibroot "${CMAKE_IOS_SDK_ROOT}")
-                list(APPEND flags_to_compile -platform_version ios-simulator 17.5.0 17.5)
+                set(ios_sim_deployment_version "${CANGJIE_LIBRARY_IOS_DEPLOYMENT_VERSION}")
+                if(ios_sim_deployment_version VERSION_LESS "13.0.0")
+                    set(ios_sim_deployment_version "13.0.0")
+                endif()
+                list(APPEND flags_to_compile -platform_version ios-simulator ${ios_sim_deployment_version} 17.5)
             else()
                 list(APPEND flags_to_compile -syslibroot "${CMAKE_IOS_SDK_ROOT}")
-                list(APPEND flags_to_compile -platform_version ios 17.5.0 17.5)
+                list(APPEND flags_to_compile -platform_version ios ${CANGJIE_LIBRARY_IOS_DEPLOYMENT_VERSION} 17.5)
             endif()
         else()
             list(APPEND flags_to_compile -syslibroot "${CANGJIE_MACOSX_SDK_PATH}")
@@ -105,7 +115,7 @@ function(make_cangjie_lib target_name)
             list(APPEND flags_to_compile "${RUNTIME_LIB_DIR}/cjstart.o")
 
             if(CANGJIE_BUILD_STDLIB_WITH_COVERAGE)
-                list(APPEND flags_to_compile "${CMAKE_BINARY_DIR}/lib/libclang_rt-profile.a")
+                list(APPEND flags_to_compile "$ENV{CANGJIE_HOME}/lib/${output_cj_lib_dir}/libclang_rt-profile.a")
             endif()
             set(runtime_link_option "cangjie-runtime")
             to_link_library_option(runtime_link_option)
@@ -232,6 +242,13 @@ function(make_cangjie_lib target_name)
         if(OHOS)
             list(APPEND flags_to_compile "-L${CMAKE_SYSROOT}/usr/lib/${CMAKE_SYSTEM_PROCESSOR}-linux-ohos")
         endif()
+        if(TRIPLE STREQUAL "arm-linux-android23")
+            set(NDK_PREBUILT_ARCH "linux-x86_64")
+            if(CMAKE_HOST_SYSTEM_NAME STREQUAL "Darwin")
+                set(NDK_PREBUILT_ARCH "darwin-x86_64")
+            endif()
+            list(APPEND flags_to_compile "-L${CMAKE_ANDROID_NDK}/toolchains/llvm/prebuilt/${NDK_PREBUILT_ARCH}/lib/clang/18/lib/linux/arm")
+        endif()
         if(CMAKE_SYSROOT AND NOT IOS)
             list(APPEND flags_to_compile "--sysroot=${CMAKE_SYSROOT}")
         endif()
@@ -319,19 +336,29 @@ function(make_cangjie_lib target_name)
             endif()
         endforeach()
 
-        add_custom_target(
-            ${target_name} ALL
+        cj_resolve_depends(resolved_depends
+            ${CANGJIE_LIBRARY_DEPENDS}
+            ${CANGJIE_LIBRARY_CANGJIE_STDX_LIB_DEPENDS}
+            ${CANGJIE_LIBRARY_CANGJIE_STDX_LIB_INDIRECT_DEPENDS})
+
+        add_custom_command(
+            OUTPUT ${target_lib_full_name}
             COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_BINARY_DIR}/lib/${output_stdx_cj_lib_dir}
             COMMAND ${CMAKE_COMMAND} -E env ${set_env_path} ${clang_compiler} ${CANGJIE_LIBRARY_OBJECTS} ${force_link_archives_option}
                     ${CANGJIE_LIBRARY_FLAGS}  ${link_std_libraries_flag} ${flags_to_compile} -o ${target_lib_full_name}
-            BYPRODUCTS ${target_lib_full_name}
             DEPENDS
-                ${CANGJIE_LIBRARY_DEPENDS}
-                ${CANGJIE_LIBRARY_CANGJIE_STDX_LIB_DEPENDS}
-                ${CANGJIE_LIBRARY_CANGJIE_STDX_LIB_INDIRECT_DEPENDS}
+                ${resolved_depends}
                 ${CANGJIE_LIBRARY_OBJECTS}
                 boundscheck
             COMMENT "Generating ${target_lib_full_name}")
+
+        add_custom_target(
+            ${target_name} ALL
+            DEPENDS ${target_lib_full_name}
+            COMMENT "Target executed ${target_lib_full_name}"
+        )
+        
+        set_target_properties(${target_name} PROPERTIES CJ_LIB_OUTPUT_FILE ${target_lib_full_name})
 
     else()
         message(FATAL_ERROR "only support SHARED or EXE for now")

@@ -154,13 +154,59 @@ Exceptions:
 
 - IllegalArgumentException - Thrown if depth is negative or if indent contains characters other than ' ' and '\t'.
 
+### func toJsonStringWithoutEscaping()
+
+```cangjie
+public func toJsonStringWithoutEscaping(): String
+```
+
+Function: Converts a [JsonArray](encoding_json_package_classes.md#class-jsonarray) into a JSON-formatted string (with spaces and line breaks) without escaping HTML special characters such as `&`.
+
+Return Value:
+
+- String - The converted JSON-formatted string.
+
+### func toJsonStringWithoutEscaping(Int64, Bool, String)
+
+```cangjie
+public func toJsonStringWithoutEscaping(depth: Int64, bracketInNewLine!: Bool = false, indent!: String = "  "): String
+```
+
+Function: Converts a [JsonArray](encoding_json_package_classes.md#class-jsonarray) into a JSON-formatted string. This function specifies the initial indentation depth, whether to place the first bracket on a new line, and the indentation string, without escaping HTML special characters such as `&`.
+
+Parameters:
+
+- depth: Int64 - The specified indentation depth.
+- bracketInNewLine!: Bool - Whether to place the first bracket on a new line. If `true`, the first bracket will start on a new line and be indented according to the specified depth.
+- indent!: String - The specified indentation string. The indentation string can only contain combinations of spaces and tabs, defaulting to two spaces.
+
+Return Value:
+
+- String - The converted JSON-formatted string.
+
+Exceptions:
+
+- IllegalArgumentException - Throws an exception if depth is negative or if indent contains characters other than ' ' and '\t'.
+
 ### func toString()
 
 ```cangjie
 public func toString(): String
 ```
 
-Functionality: Converts the [JsonString](encoding_json_package_classes.md#class-jsonstring) into a string.
+Functionality: Converts the [JsonArray](encoding_json_package_classes.md#class-jsonarray) into a string.
+
+Return Value:
+
+- String - The converted string.
+
+### func toStringWithoutEscaping()
+
+```cangjie
+public func toStringWithoutEscaping(): String
+```
+
+Function: Converts a [JsonArray](encoding_json_package_classes.md#class-jsonarray) to a string without escaping HTML special characters, such as `&`.
 
 Return Value:
 
@@ -208,6 +254,10 @@ public init(bv: Bool)
 
 Functionality: Encapsulates the specified Bool instance into a [JsonBool](encoding_json_package_classes.md#class-jsonbool) instance.
 
+Parameters:
+
+- bv: Bool - The Bool type.
+
 ### func getValue()
 
 ```cangjie
@@ -244,6 +294,18 @@ Return Value:
 
 - String - The converted JSON-formatted string.
 
+### func toJsonStringWithoutEscaping()
+
+```cangjie
+public func toJsonStringWithoutEscaping(): String
+```
+
+Function: Equivalent to toJsonString().
+
+Return Value:
+
+- String - The converted JSON-formatted string.
+
 ### func toString()
 
 ```cangjie
@@ -251,6 +313,18 @@ public func toString(): String
 ```
 
 Functionality: Converts the [JsonBool](encoding_json_package_classes.md#class-jsonbool) into a string.
+
+Return Value:
+
+- String - The converted string.
+
+### func toStringWithoutEscaping()
+
+```cangjie
+public func toStringWithoutEscaping(): String
+```
+
+Function: Equivalent to toString().
 
 Return Value:
 
@@ -331,6 +405,18 @@ Return Value:
 
 - String - The converted JSON-formatted string.
 
+### func toJsonStringWithoutEscaping()
+
+```cangjie
+public func toJsonStringWithoutEscaping(): String
+```
+
+Function: Equivalent to toJsonString().
+
+Return Value:
+
+- String - The converted JSON-formatted string.
+
 ### func toString()
 
 ```cangjie
@@ -338,6 +424,18 @@ public func toString(): String
 ```
 
 Function: Converts [JsonFloat](encoding_json_package_classes.md#class-jsonfloat) into a string.
+
+Return Value:
+
+- String - The converted string.
+
+### func toStringWithoutEscaping()
+
+```cangjie
+public func toStringWithoutEscaping(): String
+```
+
+Function: Equivalent to toString().
 
 Return Value:
 
@@ -405,6 +503,18 @@ Return Value:
 
 - String - The converted JSON-formatted string.
 
+### func toJsonStringWithoutEscaping()
+
+```cangjie
+public func toJsonStringWithoutEscaping(): String
+```
+
+Function: Equivalent to toJsonString().
+
+Return value:
+
+- String - The converted JSON-formatted string.
+
 ### func toString()
 
 ```cangjie
@@ -412,6 +522,18 @@ public func toString(): String
 ```
 
 Function: Converts [JsonInt](encoding_json_package_classes.md#class-jsonint) into a string.
+
+Return Value:
+
+- String - The converted string.
+
+### func toStringWithoutEscaping()
+
+```cangjie
+public func toStringWithoutEscaping(): String
+```
+
+Function: Equivalent to toString().
 
 Return Value:
 
@@ -453,6 +575,18 @@ Return Value:
 
 - String - The converted JSON-formatted string.
 
+### func toJsonStringWithoutEscaping()
+
+```cangjie
+public func toJsonStringWithoutEscaping(): String
+```
+
+Function: Equivalent to toJsonString().
+
+Return value:
+
+- String - The converted JSON-formatted string.
+
 ### func toString()
 
 ```cangjie
@@ -460,6 +594,18 @@ public func toString(): String
 ```
 
 Function: Converts [JsonNull](encoding_json_package_classes.md#class-jsonnull) into a string.
+
+Return Value:
+
+- String - The converted string.
+
+### func toStringWithoutEscaping()
+
+```cangjie
+public func toStringWithoutEscaping(): String
+```
+
+Function: Equivalent to toString().
 
 Return Value:
 
@@ -495,6 +641,10 @@ public init(map: HashMap<String, JsonValue>)
 ```
 
 Function: Encapsulates the specified HashMap instance into a [JsonObject](encoding_json_package_classes.md#class-jsonobject) instance.
+
+Parameters:
+
+- map: HashMap\<String, [JsonValue](encoding_json_package_classes.md#class-jsonvalue)> - data.
 
 ### func containsKey(String)
 
@@ -598,6 +748,7 @@ public func toJsonString(depth: Int64, bracketInNewLine!: Bool = false, indent!:
 Function: Converts [JsonObject](encoding_json_package_classes.md#class-jsonobject) into a JSON-formatted string. This function specifies the initial indentation depth, whether to place the first bracket on a new line, and the indentation string.
 
 Parameters:
+
 - depth: Int64 - Indentation depth.
 - bracketInNewLine!: Bool - Whether the first bracket should be on a new line. If `true`, the first bracket will start on a new line and be indented to the specified depth.
 - indent!: String - The specified indentation string. The indentation string can only consist of spaces and tabs. Defaults to two spaces.
@@ -610,6 +761,40 @@ Exceptions:
 
 - IllegalArgumentException - Thrown if `depth` is negative or if `indent` contains characters other than ' ' or '\t'.
 
+### func toJsonStringWithoutEscaping()
+
+```cangjie
+public func toJsonStringWithoutEscaping(): String
+```
+
+Function: Converts a [JsonObject](encoding_json_package_classes.md#class-jsonobject) into a JSON-formatted string (with spaces and line breaks) without escaping HTML special characters such as `&`.
+
+Return Value:
+
+- String - The converted JSON-formatted string.
+
+### func toJsonStringWithoutEscaping(Int64, Bool, String)
+
+```cangjie
+public func toJsonStringWithoutEscaping(depth: Int64, bracketInNewLine!: Bool = false, indent!: String = "  "): String
+```
+
+Function: Converts a [JsonObject](encoding_json_package_classes.md#class-jsonobject) into a JSON-formatted string. This function specifies the initial indentation depth, whether to place the first bracket on a new line, and the indentation string, without escaping HTML special characters such as `&`.
+
+Parameters:
+
+- depth: Int64 - The indentation depth.
+- bracketInNewLine!: Bool - Whether to place the first bracket on a new line. If `true`, the first bracket will start on a new line and be indented according to the specified depth.
+- indent!: String - The specified indentation string. The indentation string can only consist of combinations of spaces and tabs, defaulting to two spaces.
+
+Return Value:
+
+- String - The converted JSON-formatted string.
+
+Exceptions:
+
+- IllegalArgumentException - Throws an exception if the depth is negative or if the indentation string contains characters other than ' ' and '\t'.
+
 ### func toString()
 
 ```cangjie
@@ -619,6 +804,18 @@ public func toString(): String
 Function: Converts a [JsonObject](encoding_json_package_classes.md#class-jsonobject) to a string.
 
 Return Value:
+
+- String - The converted string.
+
+### func toStringWithoutEscaping()
+
+```cangjie
+public func toStringWithoutEscaping(): String
+```
+
+Function: Converts a [JsonObject](encoding_json_package_classes.md#class-jsonobject) to a string without escaping HTML special characters, such as `&`.
+
+Return value:
 
 - String - The converted string.
 
@@ -664,6 +861,10 @@ public init(sv: String)
 
 Function: Encapsulates the specified `String` instance into a [JsonString](encoding_json_package_classes.md#class-jsonstring) instance.
 
+Parameters:
+
+- sv: String - The String type.
+
 ### func getValue()
 
 ```cangjie
@@ -700,6 +901,18 @@ Return Value:
 
 - String - The converted JSON-formatted string.
 
+### func toJsonStringWithoutEscaping()
+
+```cangjie
+public func toJsonStringWithoutEscaping(): String
+```
+
+Function: Converts a [JsonString](encoding_json_package_classes.md#class-jsonstring) into a JSON-formatted string (with spaces and line breaks) without escaping HTML special characters such as `&`.
+
+Return Value:
+
+- String - The converted JSON-formatted string.
+
 ### func toString()
 
 ```cangjie
@@ -707,6 +920,18 @@ public func toString(): String
 ```
 
 Function: Converts the [JsonString](encoding_json_package_classes.md#class-jsonstring) into a string.
+
+Return Value:
+
+- String - The converted string.
+
+### func toStringWithoutEscaping()
+
+```cangjie
+public func toStringWithoutEscaping(): String
+```
+
+Function: Converts a [JsonString](encoding_json_package_classes.md#class-jsonstring) to a string without escaping HTML special characters, such as `&`.
 
 Return Value:
 
@@ -922,6 +1147,18 @@ Return Value:
 
 - String - The converted JSON-formatted string.
 
+### func toJsonStringWithoutEscaping()
+
+```cangjie
+public func toJsonStringWithoutEscaping(): String
+```
+
+Function: Converts a [JsonValue](encoding_json_package_classes.md#class-jsonvalue) into a JSON-formatted string (with spaces and line breaks) without escaping HTML special characters such as `&`.
+
+Return Value:
+
+- String - The converted JSON-formatted string.
+
 ### func toString()
 
 ```cangjie
@@ -929,6 +1166,18 @@ public func toString(): String
 ```
 
 Function: Converts the [JsonValue](encoding_json_package_classes.md#class-jsonvalue) into a string.
+
+Return Value:
+
+- String - The converted string.
+
+### func toStringWithoutEscaping()
+
+```cangjie
+public func toStringWithoutEscaping(): String
+```
+
+Function: Converts [JsonValue](encoding_json_package_classes.md#class-jsonvalue) to a string without escaping HTML special characters, such as `&`.
 
 Return Value:
 

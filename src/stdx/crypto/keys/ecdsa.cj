@@ -31,14 +31,13 @@ public enum Curve {
 
 public class ECDSAPrivateKey <: PrivateKey {
     var pkey = CPointer<UInt64>()
-    var evpKeyCtx: EVPKEYCTX
+    var evpKeyCtx: EVPKEYCTX = unsafe { zeroValue<EVPKEYCTX>() } // redundant member, kept for ABI compatibility, concurrent reuse causes crash
 
     init(blob: DerBlob) {
         pkey = loadPrivateKey(EC_id, blob.body)
         if (pkey.isNull()) {
             throw CryptoException("Init ECDSA PrivateKey failed.")
         }
-        evpKeyCtx = EVPKEYCTX(pkey)
     }
 
     public init(curve: Curve) {
@@ -46,7 +45,6 @@ public class ECDSAPrivateKey <: PrivateKey {
         if (pkey.isNull()) {
             throw CryptoException("Init ECDSA PrivateKey failed.")
         }
-        evpKeyCtx = EVPKEYCTX(pkey)
     }
 
     public func encodeToDer(): DerBlob {
@@ -57,7 +55,7 @@ public class ECDSAPrivateKey <: PrivateKey {
 
     public func encodeToDer(password!: ?String): DerBlob {
         var blob: DerBlob = encodeToDer()
-        match (password) {
+        return match (password) {
             case Some(password) => try {
                 var key = GeneralPrivateKey.decodeDer(blob)
                 key.encodeToDer(password: password) // route to GeneralPrivateKey::encodeToDer
@@ -117,8 +115,9 @@ public class ECDSAPrivateKey <: PrivateKey {
     }
 
     public func sign(digest: Array<Byte>): Array<Byte> {
+        let ctx = EVPKEYCTX(pkey)
         keepAlive(this)
-        sign(evpKeyCtx, pkey, digest)
+        sign(ctx, pkey, digest)
     }
 
     public override func toString(): String {
@@ -134,14 +133,13 @@ public class ECDSAPrivateKey <: PrivateKey {
 
 public class ECDSAPublicKey <: PublicKey {
     var pkey: CPointer<UInt64>
-    var evpKeyCtx: EVPKEYCTX
+    var evpKeyCtx: EVPKEYCTX = unsafe { zeroValue<EVPKEYCTX>() } // redundant member, kept for ABI compatibility, concurrent reuse causes crash
 
     init(blob: DerBlob) {
         pkey = loadPublicKey(EC_id, blob.body)
         if (pkey.isNull()) {
             throw CryptoException("Init ECDSA PublicKey failed.")
         }
-        evpKeyCtx = EVPKEYCTX(pkey)
     }
 
     public init(pri: ECDSAPrivateKey) {
@@ -150,7 +148,6 @@ public class ECDSAPublicKey <: PublicKey {
         if (pkey.isNull()) {
             throw CryptoException("Init ECDSA PublicKey failed.")
         }
-        evpKeyCtx = EVPKEYCTX(pkey)
     }
 
     public func encodeToDer(): DerBlob {
@@ -173,7 +170,8 @@ public class ECDSAPublicKey <: PublicKey {
     }
 
     public func verify(digest: Array<Byte>, sig: Array<Byte>): Bool {
-        verify(evpKeyCtx, digest, sig)
+        let ctx = EVPKEYCTX(pkey)
+        verify(ctx, digest, sig)
     }
 
     public override func toString(): String {
@@ -262,8 +260,8 @@ func verify(ctx: EVPKEYCTX, data: Array<Byte>, sig: Array<Byte>) {
             }
             result = verify(ctx.ptr, sigHandle.pointer, UIntNative(sig.size), dataHandle.pointer, UIntNative(data.size))
         } finally {
-            releaseArrayRawData(sigHandle)
             releaseArrayRawData(dataHandle)
+            releaseArrayRawData(sigHandle)
         }
         if (result != 1) {
             return false

@@ -2,9 +2,10 @@
 
 除了使用字节流对 API 进行测试的方法之外，fuzz 包提供了 FuzzDataProvider 类，用于更友好地从变异的数据源产生仓颉的标准数据类型，方便对 API 进行测试。
 
+<!-- code_no_check -->
 ```cangjie
 public func api2(dp: FuzzDataProvider): Int32 {
-    if(dp.consumeBool() && dp.consumeByte() == b'A' && dp.consumeUInt32() == 0xdeadbeef){
+    if (dp.consumeBool() && dp.consumeByte() == b'A' && dp.consumeUInt32() == 0xdeadbeef) {
         throw Exception("TRAP")
     }
     return 0
@@ -17,8 +18,9 @@ DataProvider 模式下，无法直观地判断各个 API 返回值分别是什�
 
 例如，上文代码触发异常后，添加 `enableDebugDataProvider` 重新编译，效果如下。
 
+<!-- code_no_check -->
 ```cangjie
-import stdx.fuzz.fuzz.*
+import stdx.fuzz.*
 
 main() {
     let fuzzer = Fuzzer(api2)
@@ -28,7 +30,7 @@ main() {
 }
 ```
 
-运行结果如下：
+运行结果：
 
 ```text
 ./main crash-d7ece8e77ff25769a5d55eb8d3093d4bace78e1b

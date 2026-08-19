@@ -11,7 +11,8 @@ Example:
 import std.io.*
 import std.fs.{File, OpenMode}
 import std.net.{TcpServerSocket, TcpSocket}
-import stdx.crypto.x509.{X509Certificate, PrivateKey}
+import stdx.crypto.x509.X509Certificate
+import stdx.crypto.keys.GeneralPrivateKey
 import stdx.net.tls.*
 
 // Paths to certificate and private key (user must provide these)
@@ -24,18 +25,18 @@ main() {
     let keyText = readTextFromFile(certificateKeyPath)
 
     let certificate = X509Certificate.decodeFromPem(pem)
-    let privateKey = PrivateKey.decodeFromPem(keyText)
+    let privateKey = GeneralPrivateKey.decodeFromPem(keyText)
 
     let config = TlsServerConfig(certificate, privateKey)
 
     // Optional: Enable TLS session resumption
-    let sessions = TlsSessionContext.fromName("my-server")
+    let sessions = TlsServerSession.fromName("my-server")
 
     try (server = TcpServerSocket(bindAt: 8443)) {
         server.bind()
 
         server.acceptLoop {
-            clientSocket => try (tls = TlsSocket.server(clientSocket, serverConfig: config, sessionContext: sessions)) {
+            clientSocket => try (tls = TlsSocket.server(clientSocket, serverConfig: config, session: sessions)) {
                 tls.handshake()
                 let buffer = Array<Byte>(100, repeat: 0)
                 tls.read(buffer)

@@ -5,16 +5,17 @@ Example:
 <!-- compile -->
 ```cangjie
 import std.net.TcpSocket
-import stdx.crypto.x509.{X509Certificate, PrivateKey}
+import stdx.crypto.x509.X509Certificate
 import stdx.net.tls.*
+import stdx.net.tls.common.*
 
 main() {
     var config = TlsClientConfig()
     config.verifyMode = TrustAll
-    config.alpnProtocolsList = ["h2"]
+    config.supportedAlpnProtocols = ["h2"]
 
     // For session resumption
-    var lastSession: ?TlsSession = None
+    var lastSession: ?TlsClientSession = None
     // Reconnection loop
     while (true) {
         try (socket = TcpSocket("127.0.0.1", 8443)) {
@@ -24,7 +25,10 @@ main() {
                 try {
                     tls.handshake()
                     // If successful, remember session for next reconnection
-                    lastSession = tls.session
+                    lastSession = match (tls.handshakeResult) {
+                        case Some(r) => r.session as TlsClientSession
+                        case None => None
+                    }
                 } catch (e: Exception) {
                     // If negotiation fails, clear the session
                     lastSession = None

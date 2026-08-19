@@ -23,8 +23,8 @@ body:
       required: true
   - type: textarea
     attributes:
-      label: "如何复现该缺陷？ | How to reproduce the bug?"
-      description: "提供尽可能多的信息描述如何复现该缺陷，如最小可复现用例代码，错误行为截图等： | Provide as much information as possible on how to reproduce the bug, such as a minimal reproducible code example, screenshots of the wrong behavior, etc."
+      label: "如何复现该缺陷 | How to reproduce the bug"
+      description: "提供尽可能多的信息描述如何复现该缺陷，如最小可复现用例代码，错误行为截图等： | Provide as much information as possible on how to reproduce the bug, such as a minimal reproducible code example, screenshots of the error behavior, etc."
     validations:
       required: true
   - type: textarea
@@ -43,7 +43,7 @@ body:
   - type: textarea
     attributes:
       label: "stdx版本信息 | stdx version information"
-      description: "请将stdx的版本信息(可通过下载的压缩包名获取)以图片或者文字的形式填写在下方： | Please provide the stdx version information (it can be obtained from the downloaded archive name)as text or an image below."
+      description: "请将stdx的版本信息(可通过下载的压缩包名获取)以图片或者文字的形式填写在下方： | Please provide the stdx version information (can be obtained from the downloaded archive name) as text or an image below."
       placeholder: ""
     validations:
       required: true

@@ -56,8 +56,7 @@ TrustAll
 ## enum TlsVersion
 
 ```cangjie
-@Derive[ToString, Hashable, Equatable]
-public enum TlsVersion {
+public enum TlsVersion <: ToString & Hashable & Equatable<TlsVersion> {
     V1_2 | V1_3 | TLCP | ...
 }
 ```

@@ -11,6 +11,7 @@ Example:
 <!-- compile -->
 ```cangjie
 import stdx.net.http.ServerBuilder
+import stdx.net.tls
 
 main() {
     // 1. Create Server instance
@@ -60,6 +61,7 @@ Example:
 <!-- compile -->
 ```cangjie
 import stdx.net.http.*
+import stdx.net.tls.*
 import std.collection.HashMap
 
 // Custom request distributor
@@ -101,7 +103,8 @@ Example:
 import std.io.*
 import std.fs.*
 import stdx.net.tls.*
-import stdx.crypto.x509.{X509Certificate, PrivateKey}
+import stdx.crypto.x509.X509Certificate
+import stdx.crypto.keys.GeneralPrivateKey
 import stdx.net.http.*
 
 main() {
@@ -112,7 +115,7 @@ main() {
     // TLS configuration requires certificate and private key file paths (users must provide these)
     let pem0 = String.fromUtf8(readToEnd(File("/certPath", Read)))
     let pem02 = String.fromUtf8(readToEnd(File("/keyPath", Read)))
-    var tlsConfig = TlsServerConfig(X509Certificate.decodeFromPem(pem0), PrivateKey.decodeFromPem(pem02))
+    var tlsConfig = TlsServerConfig(X509Certificate.decodeFromPem(pem0), GeneralPrivateKey.decodeFromPem(pem02))
     tlsConfig.supportedAlpnProtocols = ["h2"]
     // 2. Create Server instance
     let server = ServerBuilder()
@@ -139,8 +142,7 @@ Example:
 <!-- compile -->
 ```cangjie
 import stdx.net.http.*
-import std.io.*
-import std.collection.HashMap
+import stdx.net.tls
 
 func checksum(chunk: Array<UInt8>): Int64 {
     var sum = 0
@@ -190,6 +192,7 @@ Example:
 <!-- compile -->
 ```cangjie
 import stdx.net.http.*
+import stdx.net.tls
 
 main() {
     // 1. Create Server instance
@@ -211,7 +214,9 @@ Example:
 import std.io.*
 import std.fs.*
 import stdx.net.tls.*
-import stdx.crypto.x509.{X509Certificate, PrivateKey}
+import stdx.net.tls.common.*
+import stdx.crypto.x509.X509Certificate
+import stdx.crypto.keys.GeneralPrivateKey
 import stdx.net.http.*
 
 // Users must provide valid file paths for this program to execute
@@ -219,10 +224,10 @@ main() {
     // 1. TLS configuration (users must provide certificate and private key files)
     let pem0 = String.fromUtf8(readToEnd(File("/certPath", Read)))
     let pem02 = String.fromUtf8(readToEnd(File("/keyPath", Read)))
-    var tlsConfig = TlsServerConfig(X509Certificate.decodeFromPem(pem0), PrivateKey.decodeFromPem(pem02))
+    var tlsConfig = TlsServerConfig(X509Certificate.decodeFromPem(pem0), GeneralPrivateKey.decodeFromPem(pem02))
     tlsConfig.supportedAlpnProtocols = ["http/1.1"]
     let pem = String.fromUtf8(readToEnd(File("/rootCerPath", Read)))
-    tlsConfig.verifyMode = CustomCA(X509Certificate.decodeFromPem(pem))
+    tlsConfig.verifyMode = CustomCA(X509Certificate.decodeFromPem(pem).map({certificate => certificate}))
     // 2. Create Server instance and start service
     let server = ServerBuilder().addr("127.0.0.1").port(8080).tlsConfig(tlsConfig).build()
     spawn {
@@ -249,6 +254,7 @@ import std.io.*
 import std.fs.*
 import std.collection.ArrayList
 import stdx.net.tls.*
+import stdx.net.tls.common.*
 import stdx.crypto.x509.X509Certificate
 import stdx.net.http.*
 
@@ -256,8 +262,8 @@ main() {
     // 1. TLS configuration (users must provide certificate files)
     var tlsConfig = TlsClientConfig()
     let pem = String.fromUtf8(readToEnd(File("/rootCerPath", Read)))
-    tlsConfig.verifyMode = CustomCA(X509Certificate.decodeFromPem(pem))
-    tlsConfig.alpnProtocolsList = ["h2"]
+    tlsConfig.verifyMode = CustomCA(X509Certificate.decodeFromPem(pem).map({certificate => certificate}))
+    tlsConfig.supportedAlpnProtocols = ["h2"]
     // 2. Create Client instance
     let client = ClientBuilder().tlsConfig(tlsConfig).build()
     // 3. Send request and receive response
@@ -277,14 +283,15 @@ Example:
 import std.io.*
 import std.fs.*
 import stdx.net.tls.*
-import stdx.crypto.x509.{X509Certificate, PrivateKey}
+import stdx.crypto.x509.X509Certificate
+import stdx.crypto.keys.GeneralPrivateKey
 import stdx.net.http.*
 
 main() {
     // 1. TLS configuration (users must provide certificate files)
     let pem0 = String.fromUtf8(readToEnd(File("/certPath", Read)))
     let pem02 = String.fromUtf8(readToEnd(File("/keyPath", Read)))
-    var tlsConfig = TlsServerConfig(X509Certificate.decodeFromPem(pem0), PrivateKey.decodeFromPem(pem02))
+    var tlsConfig = TlsServerConfig(X509Certificate.decodeFromPem(pem0), GeneralPrivateKey.decodeFromPem(pem02))
     tlsConfig.supportedAlpnProtocols = ["h2"]
     // 2. Create Server instance
     let server = ServerBuilder().addr("127.0.0.1").port(8080).tlsConfig(tlsConfig).build()

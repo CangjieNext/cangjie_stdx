@@ -3,8 +3,7 @@
 ## class Logger
 
 ```cangjie
-public abstract class Logger <: Resource {
-}
+public abstract class Logger <: Resource {}
 ```
 
 功能：此抽象类提供基础的日志打印和管理功能。
@@ -726,7 +725,7 @@ public class LogRecord {
 
 功能：日志消息的“负载”。
 
-记录结构作为参数传递给 [Logger](#class-logger) 类的 [log](log_package_classes.md#func-loglogrecord)方法。日志提供者处理这些结构以显示日志消息。记录是由日志对象自动创建，因此日志用户看不到。
+记录结构作为参数传递给 [Logger](#class-logger) 类的 [log](#func-loglogrecord)方法。日志提供者处理这些结构以显示日志消息。记录是由日志对象自动创建，因此日志用户看不到。
 
 ### prop attrs
 
@@ -970,8 +969,7 @@ main() {
 ## class LogWriter
 
 ```cangjie
-public abstract class LogWriter {
-}
+public abstract class LogWriter {}
 ```
 
 功能：[LogWriter](log_package_classes.md#class-logwriter) 提供了将仓颉对象序列化成日志输出目标的能力。

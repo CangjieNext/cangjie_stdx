@@ -225,6 +225,7 @@ protected class WriteBuffer {
 
     func appendEscapeNative(str: String, htmlSafe: Bool): WriteBuffer {
         var escapenum = 0
+
         unsafe {
             let input = acquireArrayRawData(str.rawData())
             escapenum = CJ_JSON_StringEscapeCharNumGet(input.pointer, str.size, htmlSafe)
@@ -396,6 +397,8 @@ func asumecapacity(json: JsonValue): Int64 {
     return asumecapacity(json, 0)
 }
 
+// Keep container capacity estimation recomputed on each serialization. JsonArray and JsonObject expose
+// mutable backing collections, so a persistent cached capacity could become stale after external mutation.
 func asumecapacity(json: JsonValue, depth: Int64): Int64 {
     checkJsonWriteDepth(depth)
     match (json) {

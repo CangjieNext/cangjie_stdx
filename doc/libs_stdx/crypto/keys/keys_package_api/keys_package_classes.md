@@ -83,7 +83,7 @@ main() {
     let originalKey = ECDSAPrivateKey(Curve.P256)
     let encodedBlob = originalKey.encodeToDer()
 
-    // 核心演示：从 DerBlob 解码还原 ECDSA 私钥
+    // 从 DerBlob 解码还原 ECDSA 私钥
     let decodedKey = ECDSAPrivateKey.decodeDer(encodedBlob)
     println("解码成功")
     println("解码后密钥类型: ${decodedKey}")
@@ -131,7 +131,7 @@ main() {
     let originalKey = ECDSAPrivateKey(Curve.P256)
     let encodedBlob = originalKey.encodeToDer(password: "mypassword")
 
-    // 核心演示：从 DerBlob 解码还原 ECDSA 私钥
+    // 从 DerBlob 解码还原 ECDSA 私钥
     let decodedKey = ECDSAPrivateKey.decodeDer(encodedBlob, password: "mypassword")
     println("解码加密DER成功")
     println("解码后密钥类型: ${decodedKey}")
@@ -179,7 +179,7 @@ main() {
     let pemEntry = originalKey.encodeToPem()
     let pemString = pemEntry.encode()
 
-    // 核心演示：从 PEM 字符串解码还原 ECDSA 私钥
+    // 从 PEM 字符串解码还原 ECDSA 私钥
     let decodedKey = ECDSAPrivateKey.decodeFromPem(pemString)
     println("从PEM解码成功")
     println("解码后密钥类型: ${decodedKey}")
@@ -228,7 +228,7 @@ main() {
     let pemEntry = originalKey.encodeToPem(password: "mypassword")
     let pemString = pemEntry.encode()
 
-    // 核心演示：从加密的 PEM 字符串解码还原 ECDSA 私钥
+    // 从加密的 PEM 字符串解码还原 ECDSA 私钥
     let decodedKey = ECDSAPrivateKey.decodeFromPem(pemString, password: "mypassword")
     println("从加密PEM解码成功")
     println("解码后密钥类型: ${decodedKey}")
@@ -247,7 +247,7 @@ main() {
 ### func encodeToDer()
 
 ```cangjie
-public override func encodeToDer(): DerBlob
+public func encodeToDer(): DerBlob
 ```
 
 功能：将私钥编码为 DER 格式。
@@ -652,7 +652,7 @@ main() {
 ### func encodeToDer()
 
 ```cangjie
-public override func encodeToDer(): DerBlob
+public func encodeToDer(): DerBlob
 ```
 
 功能：将公钥编码为 DER 格式。
@@ -843,7 +843,7 @@ public class GeneralPrivateKey <: PrivateKey
 ### static func decodeDer(DerBlob)
 
 ```cangjie
-static func decodeDer(encoded: DerBlob): PrivateKey
+public static func decodeDer(encoded: DerBlob): PrivateKey
 ```
 
 功能：将私钥从 DER 格式解码。
@@ -861,7 +861,6 @@ static func decodeDer(encoded: DerBlob): PrivateKey
 <!-- run -->
 ```cangjie
 import std.fs.*
-import std.io.*
 import std.process.*
 import stdx.crypto.keys.*
 import stdx.crypto.common.*
@@ -878,8 +877,8 @@ main() {
 
     executeWithOutput("sh", ["-c", cmdStr])
 
-    // 核心演示：从 DerBlob 解码还原私钥
-    let decodedKey = GeneralPrivateKey.decodeDer(DerBlob(readToEnd(File(privateDer, Read))))
+    // 从 DerBlob 解码还原私钥
+    let decodedKey = GeneralPrivateKey.decodeDer(DerBlob(File.readFrom(privateDer)))
     println("解码成功")
     println("解码后密钥类型: ${decodedKey}")
 
@@ -900,7 +899,7 @@ main() {
 ### static func decodeDer(DerBlob, ?String)
 
 ```cangjie
-static func decodeDer(encoded: DerBlob, password!: ?String): PrivateKey
+public static func decodeDer(encoded: DerBlob, password!: ?String): PrivateKey
 ```
 
 功能：将 DER 格式的私钥解密解码成 [PrivateKey](../../common/crypto_common_package_api/crypto_common_package_interfaces.md#interface-privatekey) 对象，密码为 None 时则不解密。
@@ -937,8 +936,8 @@ main() {
 
     executeWithOutput("sh", ["-c", cmdStr])
 
-    // 核心演示：从加密的 DerBlob 解码还原私钥
-    let decodedKey = GeneralPrivateKey.decodeDer(DerBlob(readToEnd(File(privateDer, Read))), password: password)
+    // 从加密的 DerBlob 解码还原私钥
+    let decodedKey = GeneralPrivateKey.decodeDer(DerBlob(File.readFrom(privateDer)), password: password)
     println("解码加密DER成功")
     println("解码后密钥类型: ${decodedKey}")
 
@@ -959,7 +958,7 @@ main() {
 ### static func decodeFromPem(String)
 
 ```cangjie
-static func decodeFromPem(text: String): PrivateKey
+public static func decodeFromPem(text: String): PrivateKey
 ```
 
 功能：将私钥从 PEM 格式解码。
@@ -991,8 +990,8 @@ main() {
 
     executeWithOutput("sh", ["-c", cmdStr])
 
-    // 核心演示：从 PEM 字符串解码还原私钥
-    let pemContent = String.fromUtf8(readToEnd(File(privatePem, Read)))
+    // 从 PEM 字符串解码还原私钥
+    let pemContent = String.fromUtf8(File.readFrom(privatePem))
     let decodedKey = GeneralPrivateKey.decodeFromPem(pemContent)
     println("从PEM解码成功")
     println("解码后密钥类型: ${decodedKey}")
@@ -1013,7 +1012,7 @@ main() {
 ### static func decodeFromPem(String, ?String)
 
 ```cangjie
-static func decodeFromPem(text: String, password!: ?String): PrivateKey
+public static func decodeFromPem(text: String, password!: ?String): PrivateKey
 ```
 
 功能：将 PEM 格式的私钥解密解码成 [PrivateKey](../../common/crypto_common_package_api/crypto_common_package_interfaces.md#interface-privatekey) 对象，密码为 None 时则不解密。
@@ -1047,8 +1046,8 @@ main() {
 
     executeWithOutput("sh", ["-c", cmdStr])
 
-    // 核心演示：从加密的 PEM 字符串解码还原私钥
-    let pemContent = String.fromUtf8(readToEnd(File(privatePem, Read)))
+    // 从加密的 PEM 字符串解码还原私钥
+    let pemContent = String.fromUtf8(File.readFrom(privatePem))
     let decodedKey = GeneralPrivateKey.decodeFromPem(pemContent, password: password)
     println("从加密PEM解码成功")
     println("解码后密钥类型: ${decodedKey}")
@@ -1069,7 +1068,7 @@ main() {
 ### func encodeToDer()
 
 ```cangjie
-func encodeToDer(): DerBlob
+public func encodeToDer(): DerBlob
 ```
 
 功能：将私钥编码成 DER 格式。
@@ -1101,9 +1100,9 @@ main() {
     executeWithOutput("sh", ["-c", cmdStr])
 
     // 从 DER 文件读取并解码为私钥
-    let originalKey = GeneralPrivateKey.decodeDer(DerBlob(readToEnd(File(privateDer, Read))))
+    let originalKey = GeneralPrivateKey.decodeDer(DerBlob(File.readFrom(privateDer)))
 
-    // 核心演示：将私钥编码为 DER 格式
+    // 将私钥编码为 DER 格式
     let encodedBlob = originalKey.encodeToDer()
     println("编码为DER格式成功")
     println("DER数据大小: ${encodedBlob.size}")
@@ -1125,7 +1124,7 @@ DER数据大小: 1217
 ### func encodeToDer(?String)
 
 ```cangjie
-func encodeToDer(password!: ?String): DerBlob
+public func encodeToDer(password!: ?String): DerBlob
 ```
 
 功能：将私钥加密编码成 DER 格式，密码为 None 时则不加密。
@@ -1161,9 +1160,9 @@ main() {
     executeWithOutput("sh", ["-c", cmdStr])
 
     // 从 DER 文件读取并解码为私钥
-    let originalKey = GeneralPrivateKey.decodeDer(DerBlob(readToEnd(File(privateDer, Read))))
+    let originalKey = GeneralPrivateKey.decodeDer(DerBlob(File.readFrom(privateDer)))
 
-    // 核心演示：将私钥加密编码为 DER 格式
+    // 将私钥加密编码为 DER 格式
     let encodedBlob = originalKey.encodeToDer(password: "mypassword")
     println("编码为加密DER格式成功")
     println("DER数据大小: ${encodedBlob.size}")
@@ -1185,7 +1184,7 @@ DER数据大小: 1354
 ### func encodeToPem()
 
 ```cangjie
-func encodeToPem(): PemEntry
+public func encodeToPem(): PemEntry
 ```
 
 功能：将私钥编码成 PEM 格式。
@@ -1214,10 +1213,10 @@ main() {
     executeWithOutput("sh", ["-c", cmdStr])
 
     // 从 PEM 文件读取并解码为私钥
-    let pemContent = String.fromUtf8(readToEnd(File(privatePem, Read)))
+    let pemContent = String.fromUtf8(File.readFrom(privatePem))
     let originalKey = GeneralPrivateKey.decodeFromPem(pemContent)
 
-    // 核心演示：将私钥编码为 PEM 格式
+    // 将私钥编码为 PEM 格式
     let encodedPem = originalKey.encodeToPem()
     println("编码为PEM格式成功")
     println("PEM标签: ${encodedPem.label}")
@@ -1238,7 +1237,7 @@ PEM标签: PRIVATE KEY
 ### func encodeToPem(?String)
 
 ```cangjie
-func encodeToPem(password!: ?String): PemEntry
+public func encodeToPem(password!: ?String): PemEntry
 ```
 
 功能：将私钥加密编码成 PEM 格式，密码为 None 时则不加密。
@@ -1271,10 +1270,10 @@ main() {
     executeWithOutput("sh", ["-c", cmdStr])
 
     // 从 PEM 文件读取并解码为私钥
-    let pemContent = String.fromUtf8(readToEnd(File(privatePem, Read)))
+    let pemContent = String.fromUtf8(File.readFrom(privatePem))
     let originalKey = GeneralPrivateKey.decodeFromPem(pemContent)
 
-    // 核心演示：将私钥加密编码为 PEM 格式
+    // 将私钥加密编码为 PEM 格式
     let encodedPem = originalKey.encodeToPem(password: "mypassword")
     println("编码为加密PEM格式成功")
     println("PEM标签: ${encodedPem.label}")
@@ -1324,10 +1323,10 @@ main() {
     executeWithOutput("sh", ["-c", cmdStr])
 
     // 从 PEM 文件读取并解码为私钥
-    let pemContent = String.fromUtf8(readToEnd(File(privatePem, Read)))
+    let pemContent = String.fromUtf8(File.readFrom(privatePem))
     let key = GeneralPrivateKey.decodeFromPem(pemContent)
 
-    // 核心演示：获取私钥类型描述
+    // 获取私钥类型描述
     let keyType = key.toString()
     println("私钥类型: ${keyType}")
 
@@ -1358,7 +1357,7 @@ public class GeneralPublicKey <: PublicKey
 ### static func decodeDer(DerBlob)
 
 ```cangjie
-static func decodeDer(encoded: DerBlob): PublicKey
+public static func decodeDer(encoded: DerBlob): PublicKey
 ```
 
 功能：将公钥从 DER 格式解码。
@@ -1394,8 +1393,8 @@ main() {
 
     executeWithOutput("sh", ["-c", cmdStr])
 
-    // 核心演示：从 DerBlob 解码还原公钥
-    let decodedKey = GeneralPublicKey.decodeDer(DerBlob(readToEnd(File(publicDer, Read))))
+    // 从 DerBlob 解码还原公钥
+    let decodedKey = GeneralPublicKey.decodeDer(DerBlob(File.readFrom(publicDer)))
     println("解码成功")
     println("解码后公钥类型: ${decodedKey}")
 
@@ -1417,7 +1416,7 @@ main() {
 ### static func decodeFromPem(String)
 
 ```cangjie
-static func decodeFromPem(text: String): PublicKey
+public static func decodeFromPem(text: String): PublicKey
 ```
 
 功能：将公钥从 PEM 格式解码。
@@ -1450,8 +1449,8 @@ main() {
 
     executeWithOutput("sh", ["-c", cmdStr])
 
-    // 核心演示：从 PEM 字符串解码还原公钥
-    let pemContent = String.fromUtf8(readToEnd(File(publicPem, Read)))
+    // 从 PEM 字符串解码还原公钥
+    let pemContent = String.fromUtf8(File.readFrom(publicPem))
     let decodedKey = GeneralPublicKey.decodeFromPem(pemContent)
     println("从PEM解码成功")
     println("解码后公钥类型: ${decodedKey}")
@@ -1473,7 +1472,7 @@ main() {
 ### func encodeToDer()
 
 ```cangjie
-func encodeToDer(): DerBlob
+public override func encodeToDer(): DerBlob
 ```
 
 功能：将公钥编码成 DER 格式。
@@ -1504,10 +1503,10 @@ main() {
     executeWithOutput("sh", ["-c", cmdStr])
 
     // 从 PEM 文件读取并解码为公钥
-    let pemContent = String.fromUtf8(readToEnd(File(publicPem, Read)))
+    let pemContent = String.fromUtf8(File.readFrom(publicPem))
     let originalKey = GeneralPublicKey.decodeFromPem(pemContent)
 
-    // 核心演示：将公钥编码为 DER 格式
+    // 将公钥编码为 DER 格式
     let encodedBlob = originalKey.encodeToDer()
     println("编码为DER格式成功")
     println("DER数据大小: ${encodedBlob.size}")
@@ -1529,7 +1528,7 @@ DER数据大小: 294
 ### func encodeToPem()
 
 ```cangjie
-func encodeToPem(): PemEntry
+public func encodeToPem(): PemEntry
 ```
 
 功能：将公钥编码为 PEM 格式。
@@ -1559,10 +1558,10 @@ main() {
     executeWithOutput("sh", ["-c", cmdStr])
 
     // 从 PEM 文件读取并解码为公钥
-    let pemContent = String.fromUtf8(readToEnd(File(publicPem, Read)))
+    let pemContent = String.fromUtf8(File.readFrom(publicPem))
     let originalKey = GeneralPublicKey.decodeFromPem(pemContent)
 
-    // 核心演示：将公钥编码为 PEM 格式
+    // 将公钥编码为 PEM 格式
     let encodedPem = originalKey.encodeToPem()
     println("编码为PEM格式成功")
     println("PEM标签: ${encodedPem.label}")
@@ -1584,7 +1583,7 @@ PEM标签: PUBLIC KEY
 ### func toString()
 
 ```cangjie
-public func toString(): String
+public override func toString(): String
 ```
 
 功能：转换为字符串格式。
@@ -1614,10 +1613,10 @@ main() {
     executeWithOutput("sh", ["-c", cmdStr])
 
     // 从 PEM 文件读取并解码为公钥
-    let pemContent = String.fromUtf8(readToEnd(File(publicPem, Read)))
+    let pemContent = String.fromUtf8(File.readFrom(publicPem))
     let key = GeneralPublicKey.decodeFromPem(pemContent)
 
-    // 核心演示：获取公钥类型描述
+    // 获取公钥类型描述
     let keyType = key.toString()
     println("公钥类型: ${keyType}")
 
@@ -1637,7 +1636,7 @@ main() {
 ## class RSAPrivateKey
 
 ```cangjie
-public class RSAPrivateKey <: PrivateKey{
+public class RSAPrivateKey <: PrivateKey {
     public init(bits: Int32)
     public init(bits: Int32, e: BigInt)
 }
@@ -1763,7 +1762,7 @@ main() {
     let originalKey = RSAPrivateKey(2048)
     let encodedBlob = originalKey.encodeToDer()
 
-    // 核心演示：从 DerBlob 解码还原 RSA 私钥
+    // 从 DerBlob 解码还原 RSA 私钥
     let decodedKey = RSAPrivateKey.decodeDer(encodedBlob)
     println("解码成功")
     println("解码后密钥类型: ${decodedKey}")
@@ -1811,7 +1810,7 @@ main() {
     let originalKey = RSAPrivateKey(2048)
     let encodedBlob = originalKey.encodeToDer(password: "mypassword")
 
-    // 核心演示：从加密的 DerBlob 解码还原 RSA 私钥
+    // 从加密的 DerBlob 解码还原 RSA 私钥
     let decodedKey = RSAPrivateKey.decodeDer(encodedBlob, password: "mypassword")
     println("解码加密DER成功")
     println("解码后密钥类型: ${decodedKey}")
@@ -1859,7 +1858,7 @@ main() {
     let pemEntry = originalKey.encodeToPem()
     let pemString = pemEntry.encode()
 
-    // 核心演示：从 PEM 字符串解码还原 RSA 私钥
+    // 从 PEM 字符串解码还原 RSA 私钥
     let decodedKey = RSAPrivateKey.decodeFromPem(pemString)
     println("从PEM解码成功")
     println("解码后密钥类型: ${decodedKey}")
@@ -1908,7 +1907,7 @@ main() {
     let pemEntry = originalKey.encodeToPem(password: "mypassword")
     let pemString = pemEntry.encode()
 
-    // 核心演示：从加密的 PEM 字符串解码还原 RSA 私钥
+    // 从加密的 PEM 字符串解码还原 RSA 私钥
     let decodedKey = RSAPrivateKey.decodeFromPem(pemString, password: "mypassword")
     println("从加密PEM解码成功")
     println("解码后密钥类型: ${decodedKey}")
@@ -1988,7 +1987,7 @@ main() {
 ### func encodeToDer()
 
 ```cangjie
-public override func encodeToDer(): DerBlob
+public func encodeToDer(): DerBlob
 ```
 
 功能：将私钥编码为 DER 格式。
@@ -2394,7 +2393,7 @@ main() {
 ### func encodeToDer()
 
 ```cangjie
-public override func encodeToDer(): DerBlob
+public func encodeToDer(): DerBlob
 ```
 
 功能：将公钥编码为 DER 格式。
@@ -2705,7 +2704,7 @@ main() {
     let originalKey = SM2PrivateKey()
     let encodedBlob = originalKey.encodeToDer()
 
-    // 核心演示：从 DerBlob 解码还原 SM2 私钥
+    // 从 DerBlob 解码还原 SM2 私钥
     let decodedKey = SM2PrivateKey.decodeDer(encodedBlob)
     println("解码成功")
     println("解码后密钥类型: ${decodedKey}")
@@ -2753,7 +2752,7 @@ main() {
     let originalKey = SM2PrivateKey()
     let encodedBlob = originalKey.encodeToDer(password: "mypassword")
 
-    // 核心演示：从加密的 DerBlob 解码还原 SM2 私钥
+    // 从加密的 DerBlob 解码还原 SM2 私钥
     let decodedKey = SM2PrivateKey.decodeDer(encodedBlob, password: "mypassword")
     println("解码加密DER成功")
     println("解码后密钥类型: ${decodedKey}")
@@ -2801,7 +2800,7 @@ main() {
     let pemEntry = originalKey.encodeToPem()
     let pemString = pemEntry.encode()
 
-    // 核心演示：从 PEM 字符串解码还原 SM2 私钥
+    // 从 PEM 字符串解码还原 SM2 私钥
     let decodedKey = SM2PrivateKey.decodeFromPem(pemString)
     println("从PEM解码成功")
     println("解码后密钥类型: ${decodedKey}")
@@ -2850,7 +2849,7 @@ main() {
     let pemEntry = originalKey.encodeToPem(password: "mypassword")
     let pemString = pemEntry.encode()
 
-    // 核心演示：从加密的 PEM 字符串解码还原 SM2 私钥
+    // 从加密的 PEM 字符串解码还原 SM2 私钥
     let decodedKey = SM2PrivateKey.decodeFromPem(pemString, password: "mypassword")
     println("从加密PEM解码成功")
     println("解码后密钥类型: ${decodedKey}")

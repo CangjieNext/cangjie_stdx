@@ -138,21 +138,21 @@ extend Bool <: JsonSerializable {
 
 extend<T> Array<T> <: JsonSerializable where T <: JsonSerializable {
     public func toJson(w: JsonWriter): Unit {
-        w.startArray()
-        for (item in this) {
-            w.writeValue<T>(item)
-        }
-        w.endArray()
+        writeJsonArray<T>(w, this)
     }
+}
+
+func writeJsonArray<T>(w: JsonWriter, items: Iterable<T>): Unit where T <: JsonSerializable {
+    w.startArray()
+    for (item in items) {
+        w.writeValue<T>(item)
+    }
+    w.endArray()
 }
 
 extend<T> ArrayList<T> <: JsonSerializable where T <: JsonSerializable {
     public func toJson(w: JsonWriter): Unit {
-        w.startArray()
-        for (item in this) {
-            w.writeValue<T>(item)
-        }
-        w.endArray()
+        writeJsonArray<T>(w, this)
     }
 }
 
@@ -178,41 +178,25 @@ extend<T> Option<T> <: JsonSerializable where T <: JsonSerializable {
 
 extend<T> HashSet<T> <: JsonSerializable where T <: JsonSerializable {
     public func toJson(w: JsonWriter): Unit {
-        w.startArray()
-        for (item in this) {
-            w.writeValue<T>(item)
-        }
-        w.endArray()
+        writeJsonArray<T>(w, this)
     }
 }
 
 extend<T> LinkedList<T> <: JsonSerializable where T <: JsonSerializable {
     public func toJson(w: JsonWriter): Unit {
-        w.startArray()
-        for (item in this) {
-            w.writeValue<T>(item)
-        }
-        w.endArray()
+        writeJsonArray<T>(w, this)
     }
 }
 
 extend<T> ArrayQueue<T> <: JsonSerializable where T <: JsonSerializable {
     public func toJson(w: JsonWriter): Unit {
-        w.startArray()
-        for (item in this) {
-            w.writeValue<T>(item)
-        }
-        w.endArray()
+        writeJsonArray<T>(w, this)
     }
 }
 
 extend<T> ArrayDeque<T> <: JsonSerializable where T <: JsonSerializable {
     public func toJson(w: JsonWriter): Unit {
-        w.startArray()
-        for (item in this) {
-            w.writeValue<T>(item)
-        }
-        w.endArray()
+        writeJsonArray<T>(w, this)
     }
 }
 

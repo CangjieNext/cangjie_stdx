@@ -80,10 +80,12 @@ extend DataModel <: ToJson {
         let list: ArrayList<DataModel> = dms.getItems()
         if (ja.isFlatStorage()) {
             let items = ja.getFlatItemsForRead()
+            list.reserve(ja.getFlatSizeForRead())
             for (i in 0..ja.getFlatSizeForRead()) {
                 list.add(fromJson(items[i]))
             }
         } else {
+            list.reserve(ja.getListItemsForRead().size)
             for (item in ja.getListItemsForRead()) {
                 list.add(fromJson(item))
             }
@@ -98,13 +100,16 @@ extend DataModel <: ToJson {
      */
     private static func buildDMStruct(jo: JsonObject): DataModelStruct {
         let dms: DataModelStruct = DataModelStruct()
+        let list: ArrayList<Field> = dms.getFields()
         if (jo.isFlatStorage()) {
             let fields = jo.getFlatFieldsForRead()
+            list.reserve(jo.getFlatSizeForRead())
             for (i in 0..jo.getFlatSizeForRead()) {
                 let field = fields[i]
                 addDMField(dms, field[0], field[1])
             }
         } else {
+            list.reserve(jo.getHashFieldsForRead().size)
             for ((name, value) in jo.getHashFieldsForRead()) {
                 addDMField(dms, name, value)
             }

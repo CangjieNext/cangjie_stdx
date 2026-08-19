@@ -66,7 +66,7 @@ public override func toString(): String
 import stdx.crypto.x509.*
 
 main() {
-    // 创建一个PublicKeyAlgorithm枚举值
+    // 创建一个 PublicKeyAlgorithm 枚举值
     let algorithm = PublicKeyAlgorithm.RSA
 
     // 获取算法的字符串表示
@@ -104,7 +104,7 @@ public override operator func !=(other: PublicKeyAlgorithm): Bool
 import stdx.crypto.x509.*
 
 main() {
-    // 创建两个PublicKeyAlgorithm枚举值
+    // 创建两个 PublicKeyAlgorithm 枚举值
     let alg1 = PublicKeyAlgorithm.RSA
     let alg2 = PublicKeyAlgorithm.ECDSA
 
@@ -148,7 +148,7 @@ public override operator func ==(other: PublicKeyAlgorithm): Bool
 import stdx.crypto.x509.*
 
 main() {
-    // 创建两个PublicKeyAlgorithm枚举值
+    // 创建两个 PublicKeyAlgorithm 枚举值
     let alg1 = PublicKeyAlgorithm.RSA
     let alg2 = PublicKeyAlgorithm.ECDSA
 
@@ -173,9 +173,19 @@ RSA == RSA: true
 
 ```cangjie
 public enum SignatureAlgorithm <: Equatable<SignatureAlgorithm> & ToString {
-    | MD2WithRSA | MD5WithRSA | SHA1WithRSA | SHA256WithRSA | SHA384WithRSA
-    | SHA512WithRSA | DSAWithSHA1 | DSAWithSHA256 | ECDSAWithSHA1 | ECDSAWithSHA256
-    | ECDSAWithSHA384 | ECDSAWithSHA512 | UnknownSignatureAlgorithm
+    | MD2WithRSA
+    | MD5WithRSA
+    | SHA1WithRSA
+    | SHA256WithRSA
+    | SHA384WithRSA
+    | SHA512WithRSA
+    | DSAWithSHA1
+    | DSAWithSHA256
+    | ECDSAWithSHA1
+    | ECDSAWithSHA256
+    | ECDSAWithSHA384
+    | ECDSAWithSHA512
+    | UnknownSignatureAlgorithm
 }
 ```
 
@@ -315,7 +325,7 @@ public override func toString(): String
 import stdx.crypto.x509.*
 
 main() {
-    // 创建一个SignatureAlgorithm枚举值
+    // 创建一个 SignatureAlgorithm 枚举值
     let algorithm = SignatureAlgorithm.SHA256WithRSA
 
     // 获取算法的字符串表示
@@ -353,7 +363,7 @@ public override operator func !=(other: SignatureAlgorithm): Bool
 import stdx.crypto.x509.*
 
 main() {
-    // 创建两个SignatureAlgorithm枚举值
+    // 创建两个 SignatureAlgorithm 枚举值
     let alg1 = SignatureAlgorithm.SHA256WithRSA
     let alg2 = SignatureAlgorithm.ECDSAWithSHA256
 
@@ -397,7 +407,7 @@ public override operator func ==(other: SignatureAlgorithm): Bool
 import stdx.crypto.x509.*
 
 main() {
-    // 创建两个SignatureAlgorithm枚举值
+    // 创建两个 SignatureAlgorithm 枚举值
     let alg1 = SignatureAlgorithm.SHA256WithRSA
     let alg2 = SignatureAlgorithm.ECDSAWithSHA256
 

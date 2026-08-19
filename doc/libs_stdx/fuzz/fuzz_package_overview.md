@@ -1,4 +1,4 @@
-# stdx.fuzz.fuzz
+# stdx.fuzz
 
 ## 功能介绍
 

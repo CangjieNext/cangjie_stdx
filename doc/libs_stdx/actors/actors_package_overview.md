@@ -15,10 +15,12 @@ Actor 模型是一种并发编程模型，旨在简化并发任务的处理。
 - 一旦没有任何引用指向该 actor，且所有的接收函数都已执行完毕，它就可以被系统回收。
 
 > **注意：**
+>
 > Actor 模型的第三项特性还没有被语言强制实施，所以 actor 的成员变量还不具备完全的并发安全性。未来，类型系统可以解决这个问题，确保成员变量的并发安全。
 
 Actor 的主要应用场景是在多线程环境下对同一个对象进行访问和修改。例如，一个银行账户的对象能会被多个线程同时访问，如执行存款或取款。在缺乏任何同步机制的情况下，可能会导致数据竞争：
 
+<!-- code_no_check -->
 ```cangjie
 public class Account {
     public Account(
@@ -45,6 +47,7 @@ public class Account {
 
 在多线程环境下同时访问和修改该对象，可能会导致数据竞争：
 
+<!-- code_no_check -->
 ```cangjie
 let account = Account("Steven", 0.0)
 spawn {
@@ -63,6 +66,7 @@ spawn {
 
 首先，我们可以使用 [@Actor](./macros/macros_package_api/macros_package_macros.md#actor-宏) 注解将 `Account` 类标记为一个 actor。然后，使用 [@Receiver](./macros/macros_package_api/macros_package_macros.md#receiver-宏) 注解来标记 deposit ， withdraw 和 getBalance 函数：
 
+<!-- code_no_check -->
 ```cangjie
 @Actor
 public class Account {
@@ -95,6 +99,7 @@ public class Account {
 
 我们可以通过调用该类的构造函数来创建一个 Account 实例，例如：
 
+<!-- code_no_check -->
 ```cangjie
 let stevenAccount: Account = Account("Steven", 0.0)
 ```
@@ -105,6 +110,7 @@ let stevenAccount: Account = Account("Steven", 0.0)
 
 与普通函数不同，接收函数的调用是异步的，并返回一个 [ActorFuture\<T>](./actors_package_api/actors_package_classes.md#class-actorfuture) 对象。通过该对象，可以等待接收函数执行完成并获取结果，其中 `T` 是该接收函数的返回类型。例如，调用 getBalance 时，将返回一个 [ActorFuture\<Float64>](./actors_package_api/actors_package_classes.md#class-actorfuture) 的对象：
 
+<!-- code_no_check -->
 ```cangjie
 let fut: ActorFuture<Float64> = stevenAccount.getBalance()
 ```
@@ -113,6 +119,7 @@ let fut: ActorFuture<Float64> = stevenAccount.getBalance()
 
 随后，我们可以通过调用 [ActorFuture\<T>](./actors_package_api/actors_package_classes.md#class-actorfuture) 的 get 函数来阻塞当前线程，直到 steven.getBalance() 函数执行完成，并返回一个 `T` 类型的值。
 
+<!-- code_no_check -->
 ```cangjie
 let stevenBalance: Float64 = fut.get()
 ```
@@ -121,6 +128,7 @@ stevenBalance 的值将取决于 steven.getBalance() 执行时成员变量 balan
 
 在多线程环境下，虽然接收函数可能同时被调用，但由于同一个 actor 实例的接收函数是顺序执行的，不会发生交叉执行。因此，我们可以将它们视为原子操作（atomic function），从而避免数据竞争。
 
+<!-- code_no_check -->
 ```cangjie
 let account = Account("Steven", 0.0)
 spawn {
@@ -132,29 +140,32 @@ spawn {
 ```
 
 > **注意：**
+>
 > 目前 actor 的成员变量还不具备完全的并发安全性。例如在以下的例子当中，public 的成员变量还是可以被直接在外部访问与修改：
->
-> ```cangjie
-> @Actor
-> public class MyActor {
->     public var x: Int64 = 0
-> }
->
-> let myActor = MyActor()
-> spawn {
->     myActor.x = 2
-> }
-> spawn {
->     myActor.x = 3
-> }
-> ```
->
-> 未来，一个新的类型系统可以解决这个问题，确保成员变量的并发安全。
+
+<!-- code_no_check -->
+```cangjie
+@Actor
+public class MyActor {
+    public var x: Int64 = 0
+}
+
+let myActor = MyActor()
+spawn {
+    myActor.x = 2
+}
+spawn {
+    myActor.x = 3
+}
+```
+
+未来，一个新的类型系统可以解决这个问题，确保成员变量的并发安全。
 
 ### 接收函数的执行顺序
 
 在同一线程对同一个 actor 调用接收函数时，这些函数将按调用的顺序执行。例如：
 
+<!-- code_no_check -->
 ```cangjie
 func foo() {
     let account = Account("Federico", 0.0)
@@ -173,6 +184,7 @@ func foo() {
 
 不同线程对同一 actor 的调用将不保证执行顺序，比如：
 
+<!-- code_no_check -->
 ```cangjie
 let account = Account("Steven", 0.0)
 spawn {
@@ -201,6 +213,7 @@ account.deposit(1000.0)
 
 继续应用 Account 的例子，在 withdraw(amount) 函数里面，如果户口里面的 balance 不够会抛出 BalanceNotEnoughException 异常：
 
+<!-- code_no_check -->
 ```cangjie
 @Receiver
 public func withdraw(amount: Float64): Unit {
@@ -213,6 +226,7 @@ public func withdraw(amount: Float64): Unit {
 
 抛出的异常会被传递到对应的 [ActorFuture](./actors_package_api/actors_package_classes.md#class-actorfuture) 对象，调用它的 get 函数时会抛出同一个异常：
 
+<!-- code_no_check -->
 ```cangjie
 let account = Account("Hamid", 0.0)
 let fut: ActorFuture<Unit> = account.withdraw(500.0)
@@ -240,6 +254,7 @@ Exception: Balance for account Hamid is not enough.
 
 当一个接收函数抛出异常后， 该 actor 的附属线程会继续执行下一个在队列里面的接收函数调用：
 
+<!-- code_no_check -->
 ```cangjie
 let account = Account("Hamid", 0.0)
 let fut: ActorFuture<Unit> = account.withdraw(500.0)
@@ -275,6 +290,7 @@ Balance = 0.0
 
 当没有任何引用指向该 actor，并且没有待执行的接收函数调用时，该 actor 就可以被运行时回收：
 
+<!-- code_no_check -->
 ```cangjie
 func test(): Unit {
     let account = Account("Ziming", 0.0)
@@ -296,6 +312,7 @@ func bar() {
 
 首先，用户需要通过在 [@Actor](./macros/macros_package_api/macros_package_macros.md#actor-宏) 宏上加上 `enableReceiverPriority: true` 选项，用于启用 actor 接收函数之间的优先级。例如：
 
+<!-- code_no_check -->
 ```cangjie
 @Actor[enableReceiverPriority: true]
 public class Account {
@@ -310,6 +327,7 @@ public class Account {
 
 接下来我们可以为每个接收函数指定默认的优先级级别，目前我们提供了 10 个优先级级别，用 1 到 10 的整数表示；数字越大，优先级越高，如果未设置 `priority` 选项，则默认值为 5：
 
+<!-- code_no_check -->
 ```cangjie
 @Actor[enableReceiverPriority: true]
 public class Account {
@@ -339,6 +357,7 @@ public class Account {
 
 此外，在调用接收函数时，可以通过在参数列表末尾传递一个额外的命名参数 *priority* 来重载该函数的优先级：
 
+<!-- code_no_check -->
 ```cangjie
 func foo(account: Account) {
     account.getBalance()
@@ -352,6 +371,7 @@ account.withdraw(100.0, priority: 10) 的调用将有可能被优先执行。
 
 最后请注意，在 actor 的接收函数中调用 `fut.get()` 可能会导致死锁，例如：
 
+<!-- code_no_check -->
 ```cangjie
 @Actor
 class MyActor {
@@ -379,7 +399,6 @@ class MyActor {
 package actorDemo
 
 import std.collection.ArrayList
-
 import stdx.actors.*
 import stdx.actors.macros.*
 

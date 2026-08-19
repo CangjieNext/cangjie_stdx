@@ -29,6 +29,18 @@ set_target_properties(stdx PROPERTIES LINKER_LANGUAGE C)
 install(TARGETS stdx DESTINATION ${output_triple_name}_${CJNATIVE_BACKEND}${SANITIZER_SUBPATH}/static/stdx)
 
 make_cangjie_lib(
+    chir IS_SHARED
+    DEPENDS cangjie${BACKEND_TYPE}Chir
+    CANGJIE_STD_LIB_LINK
+        std-core
+        std-collection
+        std-fs
+    OBJECTS ${output_cj_object_dir}/stdx/chir.o)
+add_library(stdx.chir STATIC ${output_cj_object_dir}/stdx/chir.o)
+set_target_properties(stdx.chir PROPERTIES LINKER_LANGUAGE C)
+install(TARGETS stdx.chir DESTINATION ${output_triple_name}_${CJNATIVE_BACKEND}${SANITIZER_SUBPATH}/static/stdx)
+
+make_cangjie_lib(
     encoding IS_SHARED
     DEPENDS cangjie${BACKEND_TYPE}Encoding
     CANGJIE_STD_LIB_LINK std-core
@@ -117,7 +129,6 @@ include(LibraryDependencies)
 add_cangjie_library(
     cangjie${BACKEND_TYPE}Stdx
     NO_SUB_PKG
-    IS_STDXLIB
     IS_PACKAGE
     IS_CJNATIVE_BACKEND
     OUTPUT_NAME "cangjieStdx"
@@ -129,7 +140,6 @@ add_cangjie_library(
 add_cangjie_library(
     cangjie${BACKEND_TYPE}Encoding
     NO_SUB_PKG
-    IS_STDXLIB
     IS_PACKAGE
     IS_CJNATIVE_BACKEND
     OUTPUT_NAME "cangjieEncoding"
@@ -141,7 +151,6 @@ add_cangjie_library(
 add_cangjie_library(
     cangjie${BACKEND_TYPE}StdxSerialization
     NO_SUB_PKG
-    IS_STDXLIB
     IS_PACKAGE
     IS_CJNATIVE_BACKEND
     PACKAGE_NAME "serialization"
@@ -152,7 +161,6 @@ add_cangjie_library(
 add_cangjie_library(
     cangjie${BACKEND_TYPE}Serialization
     NO_SUB_PKG
-    IS_STDXLIB
     IS_PACKAGE
     IS_CJNATIVE_BACKEND
     PACKAGE_NAME "serialization.serialization"
@@ -162,7 +170,6 @@ add_cangjie_library(
 
 add_cangjie_library(
     cangjie${BACKEND_TYPE}Json
-    IS_STDXLIB
     IS_PACKAGE
     IS_CJNATIVE_BACKEND
     PACKAGE_NAME "encoding.json"
@@ -174,7 +181,6 @@ add_cangjie_library(
 add_cangjie_library(
     cangjie${BACKEND_TYPE}JsonStream
     NO_SUB_PKG
-    IS_STDXLIB
     IS_PACKAGE
     IS_CJNATIVE_BACKEND
     OUTPUT_NAME "cangjieJson"

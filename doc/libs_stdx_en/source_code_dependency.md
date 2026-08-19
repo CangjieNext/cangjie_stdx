@@ -1,8 +1,8 @@
 # Extension Library Source Code Integration Guide
 
-## Two Integration Methods
+## Three Integration Methods
 
-stdx has two source code integration methods: git source dependency and local source dependency.
+stdx has three source code integration methods: git source dependency, local source dependency, and Cangjie central repository source dependency.
 
 ### git source code dependency
 
@@ -10,7 +10,7 @@ In project's `cjpm.toml` file, add the following source code dependency configur
 
 ```toml
 [dependencies]
-  stdx = { git = "https://gitcode.com/Cangjie/cangjie_stdx.git", branch = "dev", output-type = "dynamic" }
+  stdx = { git = "https://gitcode.com/Cangjie/cangjie_stdx.git", branch = "main", output-type = "dynamic" }
 ```
 
 In the directory where project's cjpm.toml file is located, execute the `cjpm update` command to synchronously update the source code of this repository.
@@ -26,9 +26,22 @@ If developers do not wish to depend on this repository via git, Developers can d
 
 After completing the addition of local module dependencies, developers can use stdx in the project.
 
+### Cangjie Central Repository Source Code Dependency
+
+If developers do not wish to directly depend on local source code, they can also depend on stdx via the Cangjie central repository.
+
+To depend on stdx via the Cangjie central repository, developers need to add a central repository configuration file in the project and add a central repository module dependency in the project's cjpm.toml file. Please refer to [Cangjie central repository usage guide](https://pkgdocs.cangjie-lang.cn/docs/zh/1.0.0/central-repo/source_zh_cn/overview.html) for specific configuration steps.
+
+```toml
+[dependencies]
+  stdx = { version = "x.y.z", output-type="dynamic"}
+```
+
+After completing the addition of central repository module dependencies, developers can use stdx in the project.
+
 ## Package Scope
 
-Currently, the integrated stdx for source code dependencies does not include aspectCJ and syntax, and there is no fuzz package on the Windows platform.
+Currently, the integrated stdx for source code dependencies does not include aspect_cj and syntax, and there is no fuzz package on the Windows platform.
 
 ## Supported Platforms
 
@@ -39,7 +52,7 @@ Currently, the integrated stdx for source code dependencies does not include asp
 
 ## Cross-compiling OpenHarmony
 
-Cross-compiling OpenHarmony on Linux and macOS platforms requires configuring environment variables for the cross-compilation toolchain (non DevEco Studio projects). [Please refer to compiling ohos-x86_64 and ohos-aarch64 toolchains](https://gitcode.com/Cangjie/cangjie_build/blob/dev/docs/linux_ohos_toolchain.md)
+Cross-compiling OpenHarmony on Linux and macOS platforms requires configuring environment variables for the cross-compilation toolchain (non DevEco Studio projects). [Please refer to compiling ohos-x86_64 and ohos-aarch64 toolchains](https://gitcode.com/Cangjie/cangjie_build/blob/main/docs/linux_ohos_toolchain.md)
 
 1. OHOS_TOOLCHAIN_PATH (Binary directory of Clang/LLVM compiler in the compilation toolchain, e.g., /opt/buildtools/ohos_root/prebuilts/clang/ohos/linux-x86_64/llvm/bin)
 
@@ -67,3 +80,26 @@ Since stdx needs to pull and compile external open-source C libraries, and there
 - openssl: >= 3 (The environment variable OPENSSL_ROOT_DIR needs to be configured to point to the root directory of the OpenSSL installation)
 - clang: >= 15.0.4 且 < 16 (Linux or macOS)
 - mingw-w64 (Windows) [Download link](https://github.com/niXman/mingw-builds-binaries/releases/download/12.2.0-rt_v10-rev2/x86_64-12.2.0-release-posix-seh-msvcrt-rt_v10-rev2.7z)
+
+## Notes
+
+- If the configured stdx compilation output type is dynamic, and the user's cjpm project output is an executable file, before manually running the executable, you need to add the target/release/stdx directory under the project directory to the environment variables: LD_LIBRARY_PATH (Linux), DYLD_LIBRARY_PATH (macOS), or PATH (Windows).
+- If the configured stdx compilation output type is static, and the user has used libraries with FFI calls, you need to manually add linking options to the `compile-option` in the project's cjpm.toml file. The corresponding relationships are shown in the following table:
+
+| Library Name | Linking Options |
+| ------------ | --------------- |
+| stdx.compress.tar | -lstdx.compress.tarFFI |
+| stdx.compress.zlib | -lstdx.compress.zlibFFI |
+| stdx.crypto.keys | -lstdx.crypto.keysFFI -lcangjie-dynamicLoader-opensslFFI |
+| stdx.crypto.x509 | -lstdx.crypto.x509FFI -lcangjie-dynamicLoader-opensslFFI |
+| stdx.net.tls | -lstdx.net.tlsFFI -lcangjie-dynamicLoader-opensslFFI |
+| stdx.encoding.json | -lstdx.encoding.jsonFFI |
+| stdx.encoding.json.stream | -lstdx.encoding.json.streamFFI |
+| stdx.fuzz | -lstdx.fuzzFFI |
+
+## Common Issues
+
+- **Cannot find OPENSSL**: Please check if the environment variable OPENSSL_ROOT_DIR is configured, and if the lib directory under OPENSSL_ROOT_DIR contains the openssl dynamic library.
+- **zlib compilation fails**: First check if the third_party/zlib directory contains zlib source files. If not, it is a code pull failure. Please check the network connection. If it is present, please check if the cmake version is compatible (>= 3.16.5 and < 4).
+- **vsnprintf_s redefinition error on Windows**: Please check if gcc is the one provided by the mingw-w64 dependency.
+- **undefined reference to `CJ_XXX`**: Either depend on the stdx dynamic library or manually add compile-option `-lstdx.encoding.jsonFFI -lstdx.encoding.json.streamFFI -lstdx.compress.zlibFFI -lstdx.compress.tarFFI -lstdx.crypto.keysFFI -lstdx.crypto.x509FFI -lstdx.net.tlsFFI -lcangjie-dynamicLoader-opensslFFI` to the project's cjpm.toml file.

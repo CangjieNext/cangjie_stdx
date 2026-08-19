@@ -24,6 +24,7 @@ Effect Handlers 在语法上扩展了传统的 `try-catch` 结构，增加了用
 
     语法：
 
+    <!-- code_no_check -->
     ```cangjie
     try{
         ...  
@@ -44,6 +45,7 @@ Effect Handlers 在语法上扩展了传统的 `try-catch` 结构，增加了用
 
 ### 基本语法
 
+<!-- code_no_check -->
 ```cangjie
 class MyEffect <: Command<String> {}
 
@@ -74,6 +76,7 @@ try {
 
 #### 示例 1：基础用法
 
+<!-- code_no_check -->
 ```cangjie
 import stdx.effect.Command
 
@@ -97,6 +100,7 @@ main() {
 
 #### 示例 2：抛出异常
 
+<!-- code_no_check -->
 ```cangjie
 import stdx.effect.Command
 
@@ -121,6 +125,7 @@ Error from effect
 
 #### 示例 3：默认实现
 
+<!-- code_no_check -->
 ```cangjie
 import stdx.effect.Command
 

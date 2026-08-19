@@ -490,7 +490,7 @@ public abstract class TarEntry {
 }
 ```
 
-Function: Represents an entry in a tar file, used to interact with [TarReader](tar_package_classes.md#class-tarreader) and [TarWriter](tar_package_classes.md#class-tarwriter). A [TarEntry](tar_package_classes.md#class-tarentry) instance can be obtained from [TarReader](tar_package_classes.md#class-tarreader), representing an entry in the tar archive file. It can also be written to a tar archive file via [TarWriter](tar_package_classes.md#class-tarwriter).
+Function: Represents an entry in a tar file, used to interact with [TarReader](tar_package_classes.md#class-tarreadert) and [TarWriter](tar_package_classes.md#class-tarwritert). A [TarEntry](tar_package_classes.md#class-tarentry) instance can be obtained from [TarReader](tar_package_classes.md#class-tarreadert), representing an entry in the tar archive file. It can also be written to a tar archive file via [TarWriter](tar_package_classes.md#class-tarwritert).
 
 ### prop entryType
 
@@ -501,6 +501,16 @@ public prop entryType: TarEntryType
 Function: Gets the entry type of the current entry.
 
 Type: [TarEntryType](tar_package_enums.md#enum-tarentrytype)
+
+### prop linkName
+
+```cangjie
+public prop linkName: String
+```
+
+Function: Gets the link name of the current entry.
+
+Type: String
 
 ### prop gid
 
@@ -532,6 +542,16 @@ Function: Gets the last modification time of the current entry.
 
 Type: DateTime
 
+### prop checksum
+
+```cangjie
+public prop checksum: Int32
+```
+
+Function: Gets the checksum of the current entry.
+
+Type: Int32
+
 ### prop name
 
 ```cangjie
@@ -558,7 +578,7 @@ Type: Int64
 public prop stream: ?InputStream
 ```
 
-Function: Gets the input stream of the current entry. If the instance is created by [TarReader](tar_package_classes.md#class-tarreader), this property returns the data stream for the entry, or None if the entry has no data. If the instance is created by the constructor, this property returns the created file stream, which will be called when passed to [TarWriter](tar_package_classes.md#class-tarwriter) to write entry data.
+Function: Gets the input stream of the current entry. If the instance is created by [TarReader](tar_package_classes.md#class-tarreadert), this property returns the data stream for the entry, or None if the entry has no data. If the instance is created by the constructor, this property returns the created file stream, which will be called when passed to [TarWriter](tar_package_classes.md#class-tarwritert) to write entry data.
 
 Type: Option\<InputStream>
 
@@ -664,7 +684,7 @@ Return value:
 extend<T> TarReader<T> <: Resource where T <: Resource
 ```
 
-Function: Implements the Resource interface for [TarReader](tar_package_classes.md#class-tarreader), allowing objects of this type to achieve automatic resource release in the `try-with-resource` syntax context.
+Function: Implements the Resource interface for [TarReader](tar_package_classes.md#class-tarreadert), allowing objects of this type to achieve automatic resource release in the `try-with-resource` syntax context.
 
 Parent type:
 
@@ -680,7 +700,7 @@ Function: Close the internal stream.
 
 > **Note:**
 >
-> After calling this method, do not call other interfaces of [TarReader](tar_package_classes.md#class-tarreader), otherwise it may cause unexpected behavior.
+> After calling this method, do not call other interfaces of [TarReader](tar_package_classes.md#class-tarreadert), otherwise it may cause unexpected behavior.
 
 #### func isClosed()
 
@@ -863,7 +883,7 @@ Exceptions:
 extend<T> TarWriter<T> <: Resource where T <: Resource
 ```
 
-Function: Implements the Resource interface for [TarWriter](tar_package_classes.md#class-tarwriter), allowing objects of this type to achieve automatic resource release in the `try-with-resource` syntax context.
+Function: Implements the Resource interface for [TarWriter](tar_package_classes.md#class-tarwritert), allowing objects of this type to achieve automatic resource release in the `try-with-resource` syntax context.
 
 Parent type:
 
@@ -879,7 +899,7 @@ Function: Write the tar end marker and close the internal stream.
 
 > **Note:**
 >
-> After calling this method, do not call other interfaces of [TarWriter](tar_package_classes.md#class-tarwriter), otherwise it may cause unexpected behavior.
+> After calling this method, do not call other interfaces of [TarWriter](tar_package_classes.md#class-tarwritert), otherwise it may cause unexpected behavior.
 
 #### func isClosed()
 
@@ -1010,4 +1030,3 @@ Exceptions:
 - [TarException](tar_package_exceptions.md#class-tarexception) - Thrown if the target specified by the filePath parameter does not exist or is not a file, directory, or symbolic link.
 
 - FSException - Thrown if reading target information or creating target file stream fails.
-

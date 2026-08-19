@@ -25,7 +25,6 @@ public enum JsonKind {
  * JsonValue abstract class used for JSON manipulations.
  */
 sealed abstract class JsonValue <: ToString {
-
     /**
      * Write the compact representation using virtual dispatch. This avoids
      * repeating a runtime subtype-test chain for every DOM node.

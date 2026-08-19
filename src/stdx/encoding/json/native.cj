@@ -44,7 +44,6 @@ foreign func CJ_JSON_ParseFloat64(data: CPointer<UInt8>, start: Int64, end: Int6
 
 @FastNative
 foreign func CJ_JSON_ValidateUtf8AndCopy(input: CPointer<UInt8>, output: CPointer<UInt8>, size: Int64): Bool
-
 /**
  * @brief Get rows and columns of the error position
  *
@@ -145,7 +144,6 @@ class ParsedFlatStorageArena {
         return items
     }
 }
-
 const MAXVAL_I64: UInt64 = 0x7FFF_FFFF_FFFF_FFFF
 const MAXVAL_UI64: UInt64 = 0xFFFF_FFFF_FFFF_FFFF
 const MAXABSVAL_I64: UInt64 = MAXVAL_I64 + 1
@@ -434,6 +432,7 @@ func parseJson(parser: JsonParser): JsonValue {
         case _ => throw JsonException()
     }
 }
+
 
 func parseJsonObject(parser: JsonParser): JsonObject {
     parser.offset++

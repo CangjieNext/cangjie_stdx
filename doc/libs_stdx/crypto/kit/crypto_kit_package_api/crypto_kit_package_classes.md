@@ -19,7 +19,7 @@ public class DefaultCryptoKit <: CryptoKit
 ### func certificateFromDer(DerBlob)
 
 ```cangjie
-func certificateFromDer(encoded: DerBlob): Certificate
+public func certificateFromDer(encoded: DerBlob): Certificate
 ```
 
 功能：将证书从 DER 格式解码。
@@ -63,8 +63,8 @@ main() {
 
     executeWithOutput("sh", ["-c", cmdStr])
 
-    // 核心演示：从 DerBlob 解码证书
-    let certBlob = DerBlob(readToEnd(File(certDer, Read)))
+    // 从 DerBlob 解码证书
+    let certBlob = DerBlob(File.readFrom(certDer))
     let certificate = cryptoKit.certificateFromDer(certBlob)
     println("证书解码成功")
 
@@ -85,7 +85,7 @@ main() {
 ### func certificateFromPem(String)
 
 ```cangjie
-func certificateFromPem(text: String): Array<Certificate>
+public func certificateFromPem(text: String): Array<Certificate>
 ```
 
 功能：将证书从 PEM 格式解码。
@@ -127,9 +127,9 @@ main() {
     executeWithOutput("sh", ["-c", cmdStr])
 
     // 读取PEM格式的证书内容
-    let pemContent = String.fromUtf8(readToEnd(File(certPem, Read)))
+    let pemContent = String.fromUtf8(File.readFrom(certPem))
 
-    // 核心演示：从 PEM 字符串解码证书
+    // 从 PEM 字符串解码证书
     let certificates = cryptoKit.certificateFromPem(pemContent)
     println("证书PEM解码成功")
     println("证书数量: ${certificates.size}")
@@ -151,7 +151,7 @@ main() {
 ### func dhParametersFromDer(DerBlob)
 
 ```cangjie
-func dhParametersFromDer(encoded: DerBlob): DHParameters
+public func dhParametersFromDer(encoded: DerBlob): DHParameters
 ```
 
 功能：将 DH 密钥参数从 DER 格式解码。
@@ -193,8 +193,8 @@ main() {
 
     executeWithOutput("sh", ["-c", cmdStr])
 
-    // 核心演示：从 DerBlob 解码DH参数
-    let dhBlob = DerBlob(readToEnd(File(dhDer, Read)))
+    // 从 DerBlob 解码DH参数
+    let dhBlob = DerBlob(File.readFrom(dhDer))
     let dhParams = cryptoKit.dhParametersFromDer(dhBlob)
     println("DH参数DER解码成功")
 
@@ -214,7 +214,7 @@ DH参数DER解码成功
 ### func dhParametersFromPem(String)
 
 ```cangjie
-func dhParametersFromPem(text: String): DHParameters
+public func dhParametersFromPem(text: String): DHParameters
 ```
 
 功能：将 DH 密钥参数从 PEM 格式解码。
@@ -255,9 +255,9 @@ main() {
     executeWithOutput("sh", ["-c", cmdStr])
 
     // 读取PEM格式的DH参数内容
-    let pemContent = String.fromUtf8(readToEnd(File(dhPem, Read)))
+    let pemContent = String.fromUtf8(File.readFrom(dhPem))
 
-    // 核心演示：从 PEM 字符串解码DH参数
+    // 从 PEM 字符串解码DH参数
     let dhParams = cryptoKit.dhParametersFromPem(pemContent)
     println("DH参数PEM解码成功")
 
@@ -276,7 +276,7 @@ DH参数PEM解码成功
 ### func getRandomGen()
 
 ```cangjie
-func getRandomGen(): RandomGenerator
+public func getRandomGen(): RandomGenerator
 ```
 
 功能：获取随机数生成器。
@@ -296,7 +296,7 @@ main() {
     // 创建默认的CryptoKit实例
     let cryptoKit = DefaultCryptoKit()
 
-    // 核心演示：获取随机数生成器
+    // 获取随机数生成器
     let randomGen = cryptoKit.getRandomGen()
 
     let randomNum = randomGen.nextBits(32)
@@ -315,7 +315,7 @@ main() {
 ### func privateKeyFromDer(DerBlob)
 
 ```cangjie
-func privateKeyFromDer(encoded: DerBlob): PrivateKey
+public func privateKeyFromDer(encoded: DerBlob): PrivateKey
 ```
 
 功能：将私钥从 DER 格式解码。
@@ -358,8 +358,8 @@ main() {
 
     executeWithOutput("sh", ["-c", cmdStr])
 
-    // 核心演示：从 DerBlob 解码私钥
-    let keyBlob = DerBlob(readToEnd(File(privateKeyDer, Read)))
+    // 从 DerBlob 解码私钥
+    let keyBlob = DerBlob(File.readFrom(privateKeyDer))
     let privateKey = cryptoKit.privateKeyFromDer(keyBlob)
     println("私钥DER解码成功")
 
@@ -379,7 +379,7 @@ main() {
 ### func privateKeyFromDer(DerBlob, ?String)
 
 ```cangjie
-func privateKeyFromDer(encoded: DerBlob, password!: ?String): PrivateKey
+public func privateKeyFromDer(encoded: DerBlob, password!: ?String): PrivateKey
 ```
 
 功能：将私钥从 DER 格式解密解码。密码为 None 时则不解密。
@@ -424,8 +424,8 @@ main() {
 
     executeWithOutput("sh", ["-c", cmdStr])
 
-    // 核心演示：从 DerBlob 解密解码私钥
-    let encryptedKeyBlob = DerBlob(readToEnd(File(encryptedKeyDer, Read)))
+    // 从 DerBlob 解密解码私钥
+    let encryptedKeyBlob = DerBlob(File.readFrom(encryptedKeyDer))
     let privateKey = cryptoKit.privateKeyFromDer(encryptedKeyBlob, password: password)
     println("加密私钥DER解码成功")
 
@@ -445,7 +445,7 @@ main() {
 ### func privateKeyFromPem(String)
 
 ```cangjie
-func privateKeyFromPem(text: String): PrivateKey
+public func privateKeyFromPem(text: String): PrivateKey
 ```
 
 功能：将私钥从 PEM 格式解码。
@@ -486,9 +486,9 @@ main() {
     executeWithOutput("sh", ["-c", cmdStr])
 
     // 读取PEM格式的私钥内容
-    let pemContent = String.fromUtf8(readToEnd(File(privateKeyPem, Read)))
+    let pemContent = String.fromUtf8(File.readFrom(privateKeyPem))
 
-    // 核心演示：从 PEM 字符串解码私钥
+    // 从 PEM 字符串解码私钥
     let privateKey = cryptoKit.privateKeyFromPem(pemContent)
     println("私钥PEM解码成功")
 
@@ -507,7 +507,7 @@ main() {
 ### func privateKeyFromPem(String, ?String)
 
 ```cangjie
-func privateKeyFromPem(text: String, password!: ?String): PrivateKey
+public func privateKeyFromPem(text: String, password!: ?String): PrivateKey
 ```
 
 功能：将私钥从 PEM 格式解密解码。密码为 `None` 时则不解密。
@@ -551,9 +551,9 @@ main() {
     executeWithOutput("sh", ["-c", cmdStr])
 
     // 读取PEM格式的加密私钥内容
-    let pemContent = String.fromUtf8(readToEnd(File(encryptedKeyPem, Read)))
+    let pemContent = String.fromUtf8(File.readFrom(encryptedKeyPem))
 
-    // 核心演示：从 PEM 字符串解密解码私钥
+    // 从 PEM 字符串解密解码私钥
     let privateKey = cryptoKit.privateKeyFromPem(pemContent, password: password)
     println("加密私钥PEM解码成功")
 
@@ -572,7 +572,7 @@ main() {
 ### func publicKeyFromDer(DerBlob)
 
 ```cangjie
-func publicKeyFromDer(encoded: DerBlob): PublicKey
+public func publicKeyFromDer(encoded: DerBlob): PublicKey
 ```
 
 功能：将公钥从 DER 格式解码。
@@ -617,8 +617,8 @@ main() {
 
     executeWithOutput("sh", ["-c", cmdStr])
 
-    // 核心演示：从 DerBlob 解码公钥
-    let keyBlob = DerBlob(readToEnd(File(publicKeyDer, Read)))
+    // 从 DerBlob 解码公钥
+    let keyBlob = DerBlob(File.readFrom(publicKeyDer))
     let publicKey = cryptoKit.publicKeyFromDer(keyBlob)
     println("公钥DER解码成功")
 
@@ -639,7 +639,7 @@ main() {
 ### func publicKeyFromPem(String)
 
 ```cangjie
-func publicKeyFromPem(text: String): PublicKey
+public func publicKeyFromPem(text: String): PublicKey
 ```
 
 功能：将公钥从 PEM 格式解码。
@@ -682,9 +682,9 @@ main() {
     executeWithOutput("sh", ["-c", cmdStr])
 
     // 读取PEM格式的公钥内容
-    let pemContent = String.fromUtf8(readToEnd(File(publicKeyPem, Read)))
+    let pemContent = String.fromUtf8(File.readFrom(publicKeyPem))
 
-    // 核心演示：从 PEM 字符串解码公钥
+    // 从 PEM 字符串解码公钥
     let publicKey = cryptoKit.publicKeyFromPem(pemContent)
     println("公钥PEM解码成功")
 

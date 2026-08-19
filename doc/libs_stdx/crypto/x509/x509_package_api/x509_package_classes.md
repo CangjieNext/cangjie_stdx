@@ -15,7 +15,7 @@ public class GeneralDHParameters <: DHParameters
 ### static func decodeDer(DerBlob)
 
 ```cangjie
-static func decodeDer(encoded: DerBlob): DHParameters
+public static func decodeDer(encoded: DerBlob): DHParameters
 ```
 
 功能：将 DH 密钥参数从 DER 格式解码。
@@ -54,8 +54,8 @@ main() {
 
     executeWithOutput("sh", ["-c", cmdStr])
 
-    // 核心演示：从 DerBlob 解码DH参数
-    let dhBlob = DerBlob(readToEnd(File(dhDer, Read)))
+    // 从 DerBlob 解码DH参数
+    let dhBlob = DerBlob(File.readFrom(dhDer))
     let dhParams = GeneralDHParameters.decodeDer(dhBlob)
     println("DH参数DER解码成功")
     println("解码后类型: ${dhParams}")
@@ -77,7 +77,7 @@ DH参数DER解码成功
 ### static func decodeFromPem(String)
 
 ```cangjie
-static func decodeFromPem(text: String): DHParameters
+public static func decodeFromPem(text: String): DHParameters
 ```
 
 功能：将 DH 密钥参数从 PEM 格式解码。
@@ -110,9 +110,9 @@ main() {
     executeWithOutput("sh", ["-c", cmdStr])
 
     // 读取PEM格式的DH参数内容
-    let pemContent = String.fromUtf8(readToEnd(File(dhPem, Read)))
+    let pemContent = String.fromUtf8(File.readFrom(dhPem))
 
-    // 核心演示：从 PEM 字符串解码DH参数
+    // 从 PEM 字符串解码DH参数
     let dhParams = GeneralDHParameters.decodeFromPem(pemContent)
     println("DH参数PEM解码成功")
     println("解码后类型: ${dhParams}")
@@ -133,7 +133,7 @@ DH参数PEM解码成功
 ### func encodeToDer()
 
 ```cangjie
-func encodeToDer(): DerBlob
+public override func encodeToDer(): DerBlob
 ```
 
 功能：将 DH 密钥参数编码为 DER 格式。
@@ -163,10 +163,10 @@ main() {
     executeWithOutput("sh", ["-c", cmdStr])
 
     // 读取PEM格式的DH参数内容并解码
-    let pemContent = String.fromUtf8(readToEnd(File(dhPem, Read)))
+    let pemContent = String.fromUtf8(File.readFrom(dhPem))
     let dhParams = GeneralDHParameters.decodeFromPem(pemContent)
 
-    // 核心演示：将DH参数编码为DER格式
+    // 将DH参数编码为DER格式
     let derBlob = dhParams.encodeToDer()
     println("DH参数编码为DER格式成功")
     println("DER数据大小: ${derBlob.size}")
@@ -187,7 +187,7 @@ DER数据大小: 138
 ### func encodeToPem()
 
 ```cangjie
-func encodeToPem(): PemEntry
+public func encodeToPem(): PemEntry
 ```
 
 功能：将 DH 密钥参数编码为 PEM 格式。
@@ -216,10 +216,10 @@ main() {
     executeWithOutput("sh", ["-c", cmdStr])
 
     // 读取PEM格式的DH参数内容并解码
-    let pemContent = String.fromUtf8(readToEnd(File(dhPem, Read)))
+    let pemContent = String.fromUtf8(File.readFrom(dhPem))
     let dhParams = GeneralDHParameters.decodeFromPem(pemContent)
 
-    // 核心演示：将DH参数编码为PEM格式
+    // 将DH参数编码为PEM格式
     let pemEntry = dhParams.encodeToPem()
     println("DH参数编码为PEM格式成功")
     println("PEM标签: ${pemEntry.label}")
@@ -269,10 +269,10 @@ main() {
     executeWithOutput("sh", ["-c", cmdStr])
 
     // 读取PEM格式的DH参数内容并解码
-    let pemContent = String.fromUtf8(readToEnd(File(dhPem, Read)))
+    let pemContent = String.fromUtf8(File.readFrom(dhPem))
     let dhParams = GeneralDHParameters.decodeFromPem(pemContent)
 
-    // 核心演示：获取DH参数的字符串表示
+    // 获取DH参数的字符串表示
     let typeStr = dhParams.toString()
     println("DH参数类型: ${typeStr}")
 
@@ -878,16 +878,16 @@ main() {
     executeWithOutput("sh", ["-c", cmdStr])
 
     // 读取根证书
-    let rootCertContent = String.fromUtf8(readToEnd(File(rootCertPem, Read)))
+    let rootCertContent = String.fromUtf8(File.readFrom(rootCertPem))
     let rootCerts = X509Certificate.decodeFromPem(rootCertContent)
     let rootCert = rootCerts[0]
 
     // 读取根私钥
-    let rootKeyContent = String.fromUtf8(readToEnd(File(rootKeyPem, Read)))
+    let rootKeyContent = String.fromUtf8(File.readFrom(rootKeyPem))
     let rootPrivateKey = GeneralPrivateKey.decodeFromPem(rootKeyContent)
 
     // 读取CA私钥
-    let caKeyContent = String.fromUtf8(readToEnd(File(caKeyPem, Read)))
+    let caKeyContent = String.fromUtf8(File.readFrom(caKeyPem))
     let caKey = RSAPrivateKey.decodeFromPem(caKeyContent)
 
     // 获取CA的公钥
@@ -910,7 +910,7 @@ main() {
         extKeyUsage: ExtKeyUsage([ExtKeyUsage.ServerAuth])
     )
 
-    // 核心演示：创建X509证书对象
+    // 创建X509证书对象
     let cert = X509Certificate(certInfo, parent: rootCert, publicKey: caPubKey, privateKey: rootPrivateKey)
 
     // 删除测试用文件
@@ -962,7 +962,7 @@ main() {
     // 获取到DER数据
     let derData = derDataOpt.getOrThrow()
 
-    // 核心演示：从DER数据解码证书
+    // 从DER数据解码证书
     let decodedCert = X509Certificate.decodeFromDer(derData)
 
     println("解码后根证书的通用名称: ${decodedCert.issuer.commonName}")
@@ -1016,7 +1016,7 @@ main() {
     // 获取到PEM字符串
     let pemStr = pemStrOpt.getOrThrow()
 
-    // 核心演示：从PEM字符串解码证书
+    // 从PEM字符串解码证书
     let decodedCerts = X509Certificate.decodeFromPem(pemStr)
 
     println("解码后证书数组长度: ${decodedCerts.size}")
@@ -1050,7 +1050,7 @@ public static func systemRootCerts(): Array<X509Certificate>
 import stdx.crypto.x509.*
 
 main() {
-    // 核心演示：获取系统根证书
+    // 获取系统根证书
     let rootCerts = X509Certificate.systemRootCerts()
 
     println("系统根证书数量: ${rootCerts.size}")
@@ -1096,7 +1096,7 @@ main() {
             break
         }
     }
-    // 核心演示：将证书编码为DER格式
+    // 将证书编码为DER格式
     let derBlob = certOpt?.encodeToDer()
 
     println("DER格式证书数据长度: ${derBlob?.size ?? 0}")
@@ -1138,7 +1138,7 @@ main() {
         }
     }
 
-    // 核心演示：将证书编码为PEM格式
+    // 将证书编码为PEM格式
     let pemEntry = certOpt?.encodeToPem()
 
     println("PEM格式证书编码后字符串长度: ${pemEntry?.encode().size ?? 0}")
@@ -1180,7 +1180,7 @@ main() {
         }
     }
 
-    // 核心演示：获取证书哈希值
+    // 获取证书哈希值
     let hashCode = certOpt?.hashCode()
 
     println("证书哈希值: ${hashCode ?? 0}")
@@ -1222,7 +1222,7 @@ main() {
         }
     }
 
-    // 核心演示：获取证书字符串表示
+    // 获取证书字符串表示
     let certStr = certOpt?.toString()
 
     println("证书字符串表示: ${certStr ?? "未找到证书"}")
@@ -1283,7 +1283,7 @@ main() {
     var verifyOpt = VerifyOption()
     // 设置验证时间
     verifyOpt.time = DateTime.of(year: 2036, month: 1, dayOfMonth: 1)
-    // 核心演示：验证证书
+    // 验证证书
     let isValid = certOpt?.verify(verifyOpt)
 
     println("证书是否有效: ${isValid ?? false}")
@@ -1291,7 +1291,7 @@ main() {
     // 创建另一个验证选项
     var verifyOpt2 = VerifyOption()
     verifyOpt2.time = DateTime.of(year: 2026, month: 1, dayOfMonth: 1)
-    // 核心演示：验证证书
+    // 验证证书
     let isValid2 = certOpt?.verify(verifyOpt2)
 
     println("证书是否有效: ${isValid2 ?? false}")
@@ -1343,7 +1343,7 @@ main() {
         }
     }
 
-    // 核心演示：比较两个证书是否不相等
+    // 比较两个证书是否不相等
     let isNotEqual = certOpt1 != certOpt2
 
     println("两个不同证书是否不相等: ${isNotEqual}")
@@ -1399,7 +1399,7 @@ main() {
         }
     }
 
-    // 核心演示：比较两个不同证书是否相等
+    // 比较两个不同证书是否相等
     let isEqual = certOpt1 == certOpt2
 
     println("两个不同证书是否相等: ${isEqual}")
@@ -1471,7 +1471,7 @@ main() {
     let csrInfo = X509CertificateRequestInfo(subject: x509Name, dnsNames: ["test.example.com"])
     let csr = X509CertificateRequest(rsaKey, certificateRequestInfo: csrInfo, signatureAlgorithm: SHA256WithRSA)
 
-    // 核心演示：获取证书请求的DNS名称
+    // 获取证书请求的DNS名称
     let dnsNames = csr.dnsNames
     println("DNS Names: ${dnsNames}")
 }
@@ -1518,7 +1518,7 @@ main() {
     let csrInfo = X509CertificateRequestInfo(subject: x509Name, emailAddresses: ["user@example.com"])
     let csr = X509CertificateRequest(rsaKey, certificateRequestInfo: csrInfo, signatureAlgorithm: SHA256WithRSA)
 
-    // 核心演示：获取证书请求的邮箱地址
+    // 获取证书请求的邮箱地址
     let emailAddresses = csr.emailAddresses
     println("Email Addresses: ${emailAddresses}")
 }
@@ -1568,7 +1568,7 @@ main() {
     let csrInfo = X509CertificateRequestInfo(subject: x509Name, IPAddresses: [ip1, ip2])
     let csr = X509CertificateRequest(rsaKey, certificateRequestInfo: csrInfo, signatureAlgorithm: SHA256WithRSA)
 
-    // 核心演示：获取证书请求的IP地址
+    // 获取证书请求的IP地址
     let ipAddresses = csr.IPAddresses
     println("IP Addresses: ${ipAddresses}")
 }
@@ -1615,7 +1615,7 @@ main() {
     let csrInfo = X509CertificateRequestInfo(subject: x509Name)
     let csr = X509CertificateRequest(rsaKey, certificateRequestInfo: csrInfo, signatureAlgorithm: SHA256WithRSA)
 
-    // 核心演示：获取证书请求的公钥
+    // 获取证书请求的公钥
     let publicKey = csr.publicKey
     println("Public Key: ${publicKey}")
 }
@@ -1669,7 +1669,7 @@ main() {
     let csrInfo = X509CertificateRequestInfo(subject: x509Name)
     let csr = X509CertificateRequest(rsaKey, certificateRequestInfo: csrInfo, signatureAlgorithm: SHA256WithRSA)
 
-    // 核心演示：获取证书请求的公钥算法
+    // 获取证书请求的公钥算法
     let publicKeyAlgorithm = csr.publicKeyAlgorithm
     println(publicKeyAlgorithm)
 }
@@ -1716,7 +1716,7 @@ main() {
     let csrInfo = X509CertificateRequestInfo(subject: x509Name)
     let csr = X509CertificateRequest(rsaKey, certificateRequestInfo: csrInfo, signatureAlgorithm: SHA256WithRSA)
 
-    // 核心演示：获取证书请求的签名
+    // 获取证书请求的签名
     let signature = csr.signature
 }
 ```
@@ -1756,7 +1756,7 @@ main() {
     let csrInfo = X509CertificateRequestInfo(subject: x509Name)
     let csr = X509CertificateRequest(rsaKey, certificateRequestInfo: csrInfo, signatureAlgorithm: SHA256WithRSA)
 
-    // 核心演示：获取证书请求的签名算法
+    // 获取证书请求的签名算法
     let signatureAlgorithm = csr.signatureAlgorithm
     println(signatureAlgorithm)
 }
@@ -1803,7 +1803,7 @@ main() {
     let csrInfo = X509CertificateRequestInfo(subject: x509Name)
     let csr = X509CertificateRequest(rsaKey, certificateRequestInfo: csrInfo, signatureAlgorithm: SHA256WithRSA)
 
-    // 核心演示：获取证书请求的使用者信息
+    // 获取证书请求的使用者信息
     let subject = csr.subject
     println("Subject: ${subject}")
 }
@@ -1921,7 +1921,7 @@ main() {
     // 模拟场景：从外部（文件/网络）获取的 DerBlob（此处通过代码生成）
     let derBlob = originalCsr.encodeToDer()
 
-    // 核心演示：从DER格式解码证书请求
+    // 从DER格式解码证书请求
     let decodedCsr = X509CertificateRequest.decodeFromDer(derBlob)
 
     // 输出解码后的证书请求信息
@@ -1984,7 +1984,7 @@ main() {
     let pemEntry = originalCsr.encodeToPem()
     let pemString = pemEntry.encode()
 
-    // 核心演示：从PEM格式解码证书请求
+    // 从PEM格式解码证书请求
     let decodedCsrs = X509CertificateRequest.decodeFromPem(pemString)
     let decodedCsr = decodedCsrs[0]
 
@@ -2036,7 +2036,7 @@ main() {
     let csrInfo = X509CertificateRequestInfo(subject: x509Name)
     let csr = X509CertificateRequest(rsaKey, certificateRequestInfo: csrInfo, signatureAlgorithm: SHA256WithRSA)
 
-    // 核心演示：将证书请求编码为DER格式
+    // 将证书请求编码为DER格式
     let derBlob = csr.encodeToDer()
 
     // 输出DER数据的大小
@@ -2087,7 +2087,7 @@ main() {
     let csrInfo = X509CertificateRequestInfo(subject: x509Name)
     let csr = X509CertificateRequest(rsaKey, certificateRequestInfo: csrInfo, signatureAlgorithm: SHA256WithRSA)
 
-    // 核心演示：将证书请求编码为PEM格式
+    // 将证书请求编码为PEM格式
     let pemEntry = csr.encodeToPem()
 
     // 输出PEM条目的标签
@@ -2454,15 +2454,15 @@ Province Name: Some(Beijing)
 ### init(?String, ?String, ?String, ?String, ?String, ?String, ?String)
 
 ```cangjie
-    public init(
-        countryName!: ?String = None,
-        provinceName!: ?String = None,
-        localityName!: ?String = None,
-        organizationName!: ?String = None,
-        organizationalUnitName!: ?String = None,
-        commonName!: ?String = None,
-        email!: ?String = None
-    )
+public init(
+    countryName!: ?String = None,
+    provinceName!: ?String = None,
+    localityName!: ?String = None,
+    organizationName!: ?String = None,
+    organizationalUnitName!: ?String = None,
+    commonName!: ?String = None,
+    email!: ?String = None
+)
 ```
 
 功能：构造 [X509Name](x509_package_classes.md#class-x509name) 对象。
