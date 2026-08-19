@@ -206,6 +206,28 @@ public class JsonWriter {
         this
     }
 
+    /**
+     * Write one unescaped static object member name and a dynamically escaped
+     * String value in a single state-machine transition.
+     */
+    @OverflowWrapping
+    public func writeRawNameString(value: Array<Byte>, offset: Int64, length: Int64, text: String): JsonWriter {
+        writeRawNamePrefix(value, offset, length)
+        writeStringValue(this, text)
+        this
+    }
+
+    /**
+     * Write one unescaped static object member name and a finite Float64 value
+     * in a single state-machine transition.
+     */
+    @OverflowWrapping
+    public func writeRawNameFloat64(value: Array<Byte>, offset: Int64, length: Int64, number: Float64): JsonWriter {
+        writeRawNamePrefix(value, offset, length)
+        writeFloat64Value(this, number)
+        this
+    }
+
     @OverflowWrapping
     func writeRawNamePrefix(value: Array<Byte>, offset: Int64, length: Int64): Unit {
         beginRawName()

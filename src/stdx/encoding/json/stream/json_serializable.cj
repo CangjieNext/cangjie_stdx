@@ -84,22 +84,27 @@ extend UIntNative <: JsonSerializable {
     }
 }
 
+@OverflowWrapping
+func writeFloat64Value(w: JsonWriter, value: Float64): Unit {
+    if (value.isNaN() || value.isInf()) {
+        throw IllegalStateException("Failed to serialize JSON float.")
+    }
+    unsafe {
+        let dest = acquireArrayRawData(w.buffer)
+        let printedLen = CJ_JSON_FloatPrint(value, dest.pointer + w.curPos, w.buffer.size - w.curPos)
+        releaseArrayRawData(dest)
+        if (printedLen <= 0) {
+            throw IllegalStateException("Failed to serialize JSON float.")
+        }
+        w.curPos += printedLen
+    }
+}
+
 extend Float64 <: JsonSerializable {
     @OverflowWrapping
     public func toJson(w: JsonWriter): Unit {
         w.beforeValue()
-        if (this.isNaN() || this.isInf()) {
-            throw IllegalStateException("Failed to serialize JSON float.")
-        }
-        unsafe {
-            let dest = acquireArrayRawData(w.buffer)
-            let printedLen = CJ_JSON_FloatPrint(this, dest.pointer + w.curPos, w.buffer.size - w.curPos)
-            releaseArrayRawData(dest)
-            if (printedLen <= 0) {
-                throw IllegalStateException("Failed to serialize JSON float.")
-            }
-            w.curPos += printedLen
-        }
+        writeFloat64Value(w, this)
     }
 }
 
