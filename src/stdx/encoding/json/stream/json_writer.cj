@@ -9,7 +9,7 @@
 package stdx.encoding.json.stream
 
 import std.collection.{ArrayList, HashMap}
-import std.io.OutputStream
+import std.io.{ByteBuffer, OutputStream}
 import std.time.*
 
 enum JsonWriterState {
@@ -23,6 +23,7 @@ enum JsonWriterState {
 
 public class JsonWriter {
     static const DEFAULT_CAPACITY: Int64 = 4096
+    static const DIRECT_SMALL_DOCUMENT_CAPACITY: Int64 = 512
     // Scalar writers can emit at most 20 digits plus a separator. Keep this
     // amount of headroom while allowing compact documents to fill the buffer.
     static const FLUSH_THRESHOLD: Int64 = DEFAULT_CAPACITY - 32
@@ -34,19 +35,34 @@ public class JsonWriter {
 
     var haveName = false
 
-    var buffer = Array<UInt8>(DEFAULT_CAPACITY, repeat: 0)
+    // The ByteBuffer constructor replaces this with an append-region view.
+    // Keep the field empty so that path does not first allocate a discarded
+    // 4 KiB staging array.
+    var buffer = Array<Byte>()
     var curPos = 0
+    // A ByteBuffer destination can expose its append region directly.  Keep
+    // this separate from the generic OutputStream path: only committed bytes
+    // contribute to the ByteBuffer length, so a growth can preserve pending
+    // JSON bytes before they become visible to callers.
+    var directByteBuffer: ?ByteBuffer = None
 
     public var writeConfig: WriteConfig = WriteConfig.compact
 
     public init(out: OutputStream) {
         this.out = out
+        buffer = Array<Byte>(DEFAULT_CAPACITY, repeat: 0)
+        stack.add(EmptyText)
+    }
+
+    public init(out: ByteBuffer) {
+        this.out = out
+        directByteBuffer = Some(out)
+        buffer = out.writableRegion(0, 0)
         stack.add(EmptyText)
     }
 
     public func flush(): Unit {
-        out.write(buffer, 0, curPos)
-        curPos = 0
+        flushOutBuf()
         out.flush()
     }
 
@@ -65,13 +81,15 @@ public class JsonWriter {
     @OverflowWrapping
     public func jsonValue(value: String): JsonWriter {
         beforeValue()
-        if (value.size > JsonWriter.LARGE_VALUE_THRESHOLD) {
+        if (let Some(_) <- directByteBuffer) {
+            ensureBufferSpace(value.size)
+            unsafe { value.rawData().copyTo(buffer, 0, curPos, value.size) }
+            curPos += value.size
+        } else if (value.size > JsonWriter.LARGE_VALUE_THRESHOLD) {
             flushOutBuf()
             unsafe { out.write(value.rawData()) }
         } else {
-            if (curPos + value.size > JsonWriter.DEFAULT_CAPACITY - 1) {
-                flushOutBuf()
-            }
+            ensureBufferSpace(value.size)
             unsafe { value.rawData().copyTo(buffer, 0, curPos, value.size) }
             curPos += value.size
         }
@@ -97,9 +115,7 @@ public class JsonWriter {
     }
 
     func writeRawByte(value: Byte): Unit {
-        if (curPos >= buffer.size) {
-            flushOutBuf()
-        }
+        ensureBufferSpace(1)
         buffer[curPos] = value
         curPos++
     }
@@ -136,24 +152,56 @@ public class JsonWriter {
         if (offset < 0 || length < 0 || offset + length > value.size) {
             throw IllegalArgumentException("The raw JSON byte range is out of bounds.")
         }
-        var sourceOffset = offset
-        var remaining = length
-        while (remaining > 0) {
-            if (curPos >= buffer.size) {
-                flushOutBuf()
+        if (let Some(_) <- directByteBuffer) {
+            ensureBufferSpace(length)
+            value.copyTo(buffer, offset, curPos, length)
+            curPos += length
+        } else {
+            var sourceOffset = offset
+            var remaining = length
+            while (remaining > 0) {
+                ensureBufferSpace(1)
+                let copyLen = min(remaining, buffer.size - curPos)
+                value.copyTo(buffer, sourceOffset, curPos, copyLen)
+                sourceOffset += copyLen
+                curPos += copyLen
+                remaining -= copyLen
             }
-            let copyLen = min(remaining, buffer.size - curPos)
-            value.copyTo(buffer, sourceOffset, curPos, copyLen)
-            sourceOffset += copyLen
-            curPos += copyLen
-            remaining -= copyLen
         }
     }
 
-    func flushOutBuf() {
-        out.write(buffer, 0, curPos)
-        curPos = 0
-        0
+    func ensureBufferSpace(additional: Int64): Unit {
+        if (additional < 0) {
+            throw IllegalArgumentException("The required JSON buffer space cannot be negative.")
+        }
+        if (let Some(output) <- directByteBuffer) {
+            // Array.slice creates a new view. Reuse the current view until it
+            // is actually full; scalar writers call this helper frequently.
+            if (buffer.size - curPos < additional) {
+                let required = curPos + additional
+                let reserve = if (required <= JsonWriter.DIRECT_SMALL_DOCUMENT_CAPACITY) {
+                    max(additional, JsonWriter.DIRECT_SMALL_DOCUMENT_CAPACITY - curPos)
+                } else if (required <= JsonWriter.DEFAULT_CAPACITY) {
+                    max(additional, JsonWriter.DEFAULT_CAPACITY - curPos)
+                } else {
+                    additional
+                }
+                buffer = output.writableRegion(curPos, reserve)
+            }
+        } else if (curPos + additional > buffer.size) {
+            flushOutBuf()
+        }
+    }
+
+    func flushOutBuf(): Unit {
+        if (let Some(output) <- directByteBuffer) {
+            output.commitWrite(curPos)
+            curPos = 0
+            buffer = output.writableRegion(0, 0)
+        } else {
+            out.write(buffer, 0, curPos)
+            curPos = 0
+        }
     }
 
     public func writeValue<T>(v: T): JsonWriter where T <: JsonSerializable {
@@ -318,9 +366,7 @@ public class JsonWriter {
     @OverflowWrapping
     func writeCompactInt64Array(values: Array<Int64>): Unit {
         for (index in 0..values.size) {
-            if (curPos >= FLUSH_THRESHOLD) {
-                flushOutBuf()
-            }
+            ensureBufferSpace(32)
             if (index > 0) {
                 buffer[curPos] = b','
                 curPos++
@@ -427,9 +473,7 @@ public class JsonWriter {
 
     @OverflowWrapping
     func beforeCompactArrayElement(index: Int64): Unit {
-        if (curPos >= FLUSH_THRESHOLD) {
-            flushOutBuf()
-        }
+        ensureBufferSpace(32)
         if (index > 0) {
             buffer[curPos] = b','
             curPos++
@@ -522,9 +566,7 @@ public class JsonWriter {
     }
 
     protected func writeWrap(): JsonWriter {
-        if (curPos + 1 > JsonWriter.DEFAULT_CAPACITY - 1) {
-            flushOutBuf()
-        }
+        ensureBufferSpace(1)
         buffer[curPos] = b'\n'
         curPos += 1
         this
@@ -535,6 +577,7 @@ public class JsonWriter {
         beforeName()
         haveName = true
         name.toJson(this)
+        ensureBufferSpace(1)
         buffer[curPos] = b':'
         curPos++
         haveName = true // reuse String.toJson, need to keep name state
@@ -553,12 +596,11 @@ public class JsonWriter {
     // end array need to check if the state is after an array
     @OverflowWrapping
     public func endArray(): Unit {
-        if (curPos >= FLUSH_THRESHOLD) {
-            flushOutBuf()
-        }
+        ensureBufferSpace(1)
         match (top()) {
             case EmptyArray | NoEmptyArray =>
                 newlineWithIndent(stack.size - 2)
+                ensureBufferSpace(1)
                 buffer[curPos] = b']'
                 curPos++
             case _ => throw IllegalStateException("End array must be directly after Start array")
@@ -576,15 +618,14 @@ public class JsonWriter {
 
     @OverflowWrapping
     public func endObject(): Unit {
-        if (curPos >= FLUSH_THRESHOLD) {
-            flushOutBuf()
-        }
+        ensureBufferSpace(1)
         if (haveName) {
             throw IllegalStateException("End object cannot directly after a name.")
         }
         match (top()) {
             case EmptyObject | NoEmptyObject =>
                 newlineWithIndent(stack.size - 2)
+                ensureBufferSpace(1)
                 buffer[curPos] = b'}'
                 curPos++
             case _ => throw IllegalStateException("End object must be directly after Start object.")
@@ -594,28 +635,26 @@ public class JsonWriter {
 
     @OverflowWrapping
     func beforeName() {
-        if (curPos >= FLUSH_THRESHOLD) {
-            flushOutBuf()
-        }
+        ensureBufferSpace(32)
         if (haveName) {
             throw IllegalStateException("Already wrote a name, expecting a value.")
         }
         match (top()) {
             case EmptyObject => stack[stack.size - 1] = NoEmptyObject
                 newlineWithIndent(stack.size - 1)
+                ensureBufferSpace(1)
             case NoEmptyObject =>
                 buffer[curPos] = b','
                 curPos++
                 newlineWithIndent(stack.size - 1)
+                ensureBufferSpace(1)
             case _ => throw IllegalStateException("The name must be within an object.")
         }
     }
 
     @OverflowWrapping
     func beforeValue() {
-        if (curPos >= FLUSH_THRESHOLD) {
-            flushOutBuf()
-        }
+        ensureBufferSpace(32)
         match (top()) {
             case NoEmptyArray =>
                 buffer[curPos] = b','
@@ -625,8 +664,10 @@ public class JsonWriter {
                     useSpaceAfterSeparators()
                 }
                 newlineWithIndent(stack.size - 1)
+                ensureBufferSpace(1)
             case EmptyArray => stack[stack.size - 1] = NoEmptyArray
                 newlineWithIndent(stack.size - 1)
+                ensureBufferSpace(1)
             case NoEmptyText => throw IllegalStateException("JSON text must have only one top-level value.")
             case EmptyText => stack[stack.size - 1] = NoEmptyText
             case EmptyObject => stack[stack.size - 1] = NoEmptyObject
@@ -659,12 +700,9 @@ public class JsonWriter {
             return
         }
         for (b in writeConfig.newline) {
+            ensureBufferSpace(1)
             buffer[curPos] = b
             curPos++
-
-            if (curPos >= buffer.size) {
-                flushOutBuf()
-            }
         }
 
         // indent
@@ -673,18 +711,16 @@ public class JsonWriter {
         }
         for (_ in 0..indentLevel) {
             for (b in writeConfig.indent) {
+                ensureBufferSpace(1)
                 buffer[curPos] = b
                 curPos++
-
-                if (curPos >= buffer.size) {
-                    flushOutBuf()
-                }
             }
         }
     }
 
     func useSpaceAfterSeparators(): Unit {
         if (writeConfig.useSpaceAfterSeparators) {
+            ensureBufferSpace(1)
             buffer[curPos] = b' '
             curPos++
         }
