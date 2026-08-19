@@ -69,16 +69,12 @@ func hasNativeEscape(value: String): Bool {
 @OverflowWrapping
 func writeEscapeAscii(w: JsonWriter, byte: Int64) {
     if (escapeTable[byte] != 0) {
-        if (w.curPos + ESCAPE_SIZE_2 > JsonWriter.DEFAULT_CAPACITY) {
-            w.flushOutBuf()
-        }
+        w.ensureBufferSpace(ESCAPE_SIZE_2)
         w.buffer[w.curPos + 1] = escapeTable[byte]
         w.buffer[w.curPos] = b'\\'
         w.curPos += 2
     } else {
-        if (w.curPos + ESCAPE_SIZE_6 > JsonWriter.DEFAULT_CAPACITY) {
-            w.flushOutBuf()
-        }
+        w.ensureBufferSpace(ESCAPE_SIZE_6)
         w.buffer[w.curPos + 5] = hex[byte & 0xF] // num of low 4 bits
         w.buffer[w.curPos + 4] = hex[byte >> 4] // num of high 4 bits
         w.buffer[w.curPos + 3] = b'0'
@@ -93,6 +89,7 @@ extend String <: JsonSerializable {
     @OverflowWrapping
     public func toJson(w: JsonWriter): Unit {
         w.beforeValue()
+        w.ensureBufferSpace(1)
         w.buffer[w.curPos] = b'\"'
         w.curPos++
 
@@ -103,6 +100,7 @@ extend String <: JsonSerializable {
         // escapes <, >, = and '.
         if (size >= NATIVE_NO_ESCAPE_SCAN_THRESHOLD && !w.writeConfig.htmlSafe && !hasNativeEscape(this)) {
             insideflush(w, this.size, 0)
+            w.ensureBufferSpace(1)
             w.buffer[w.curPos] = b'\"'
             w.curPos++
             return
@@ -136,6 +134,7 @@ extend String <: JsonSerializable {
         }
 
         insideflush(w, this.size, beforePos)
+        w.ensureBufferSpace(1)
         w.buffer[w.curPos] = b'\"'
         w.curPos++
     }
@@ -145,17 +144,19 @@ extend String <: JsonSerializable {
         if (curPos <= beforePos) {
             return
         }
-        if (curPos - beforePos >= JsonWriter.LARGE_VALUE_THRESHOLD) {
+        let length = curPos - beforePos
+        if (let Some(_) <- w.directByteBuffer) {
+            w.ensureBufferSpace(length)
+            unsafe { this.rawData().copyTo(w.buffer, beforePos, w.curPos, length) }
+            w.curPos += length
+        } else if (length >= JsonWriter.LARGE_VALUE_THRESHOLD) {
             // write directly to the stream if the string is too long
             w.flushOutBuf()
             unsafe { w.out.write(this.rawData()[beforePos..curPos]) }
         } else {
-            if (w.curPos + curPos - beforePos > JsonWriter.DEFAULT_CAPACITY) {
-                // flush if the buffer has not enough capacity
-                w.flushOutBuf()
-            }
-            unsafe { this.rawData().copyTo(w.buffer, beforePos, w.curPos, curPos - beforePos) }
-            w.curPos = w.curPos + curPos - beforePos
+            w.ensureBufferSpace(length)
+            unsafe { this.rawData().copyTo(w.buffer, beforePos, w.curPos, length) }
+            w.curPos += length
             // flush if the buffer is nearly full
             if (w.curPos >= JsonWriter.FLUSH_THRESHOLD) {
                 w.flushOutBuf()
