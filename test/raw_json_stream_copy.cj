@@ -1,4 +1,5 @@
 import std.io.*
+import std.collection.HashMap
 import stdx.encoding.json.stream.*
 
 func ensure(value: Bool): Unit {
@@ -197,6 +198,46 @@ func testOtherIntegerArrayBatchWrite(): Unit {
     ensure(String.fromUtf8(readToEnd(wideUnsignedOutput)) == "[0,18446744073709551615]")
 }
 
+func testLongStringNativeNoEscapeFastPath(): Unit {
+    let plain = String.fromUtf8(Array<Byte>(8_192, repeat: b'a'))
+    let plainOutput = ByteBuffer()
+    let plainWriter = JsonWriter(plainOutput)
+    plainWriter.writeValue<String>(plain)
+    plainWriter.flush()
+    ensure(JsonReader(plainOutput).readValue<String>() == plain)
+
+    let escapedBytes = Array<Byte>(8_192, repeat: b'a')
+    escapedBytes[4_096] = b'\"'
+    let escaped = String.fromUtf8(escapedBytes)
+    let escapedOutput = ByteBuffer()
+    let escapedWriter = JsonWriter(escapedOutput)
+    escapedWriter.writeValue<String>(escaped)
+    escapedWriter.flush()
+    ensure(JsonReader(escapedOutput).readValue<String>() == escaped)
+}
+
+func testStringInt64MapBatchWrite(): Unit {
+    let values = HashMap<String, Int64>()
+    values["plain"] = 7
+    values["quote\"key"] = -9
+    let output = ByteBuffer()
+    let writer = JsonWriter(output)
+    writer.writeStringInt64Map(values)
+    writer.flush()
+    let reader = JsonReader(output)
+    let result = reader.readValue<HashMap<String, Int64>>()
+    ensure(result.get("plain") == Some(7))
+    ensure(result.get("quote\"key") == Some(-9))
+
+    let prettyOutput = ByteBuffer()
+    let prettyWriter = JsonWriter(prettyOutput)
+    prettyWriter.writeConfig = WriteConfig.pretty
+    prettyWriter.writeStringInt64Map(values)
+    prettyWriter.flush()
+    let prettyResult = JsonReader(prettyOutput).readValue<HashMap<String, Int64>>()
+    ensure(prettyResult == values)
+}
+
 func testByteBufferRangeWriteWithoutGrowth(): Unit {
     let output = ByteBuffer(128)
     output.write("xxhello!".toArray(), 2, 5)
@@ -248,6 +289,8 @@ main() {
     testIntegerWriteBoundaries()
     testInt64ArrayBatchWrite()
     testOtherIntegerArrayBatchWrite()
+    testLongStringNativeNoEscapeFastPath()
+    testStringInt64MapBatchWrite()
     testByteBufferRangeWriteWithoutGrowth()
     testDiscardRemainingDrainsUnderlyingInput()
 }

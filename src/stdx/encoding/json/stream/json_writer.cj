@@ -8,7 +8,7 @@
 
 package stdx.encoding.json.stream
 
-import std.collection.ArrayList
+import std.collection.{ArrayList, HashMap}
 import std.io.OutputStream
 import std.time.*
 
@@ -48,6 +48,18 @@ public class JsonWriter {
         out.write(buffer, 0, curPos)
         curPos = 0
         out.flush()
+    }
+
+    /**
+     * Discard the current JSON document and prepare this writer for another
+     * top-level value. The destination stream is intentionally not flushed:
+     * callers that want the previous document must materialize it first.
+     */
+    public func reset(): Unit {
+        curPos = 0
+        stack.clear()
+        stack.add(EmptyText)
+        haveName = false
     }
 
     @OverflowWrapping
@@ -165,6 +177,25 @@ public class JsonWriter {
             }
         }
         endArray()
+    }
+
+    /**
+     * Write a HashMap<String, Int64> without generic JsonSerializable
+     * dispatch for every integer value. Dynamic map names intentionally keep
+     * writeName so their JSON escaping semantics remain unchanged.
+     */
+    @OverflowWrapping
+    public func writeStringInt64Map(values: HashMap<String, Int64>): Unit {
+        startObject()
+        if (writeConfig.newline.isEmpty() && !writeConfig.useSpaceAfterSeparators) {
+            writeCompactStringInt64Map(values)
+        } else {
+            for ((name, value) in values) {
+                writeName(name)
+                writeInt64(value)
+            }
+        }
+        endObject()
     }
 
     @OverflowWrapping
@@ -302,6 +333,14 @@ public class JsonWriter {
             } else {
                 curPos += appendUInt64(UInt64(value))
             }
+        }
+    }
+
+    @OverflowWrapping
+    func writeCompactStringInt64Map(values: HashMap<String, Int64>): Unit {
+        for ((name, value) in values) {
+            writeName(name)
+            writeInt64(value)
         }
     }
 

@@ -8,6 +8,7 @@ import unittest
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 WRITER = ROOT / "src/stdx/encoding/json/stream/json_writer.cj"
 SERIALIZABLE = ROOT / "src/stdx/encoding/json/stream/json_serializable.cj"
+STRING_SERIALIZE = ROOT / "src/stdx/encoding/json/stream/string_serialize.cj"
 JSON4CJ_ROOT = ROOT.parent / "json4cj"
 CORE_WRITER = JSON4CJ_ROOT / "json4cj-core/src/stream/JsonWriter.cj"
 BUILTIN_ENCODERS = JSON4CJ_ROOT / "json4cj-core/src/codec/BuiltinEncoders.cj"
@@ -124,6 +125,83 @@ class StreamIntegerWriterFastPathTest(unittest.TestCase):
         self.assertRegex(json_codec, r"public func write\(value: Array<Int64>, writer: JsonWriter\): Unit")
         self.assertRegex(codec_writer, r"public func stringify\(value: Array<Int64>\): String")
         self.assertRegex(codec_writer, r"public func write\(value: Array<Int64>, writer: JsonWriter\): Unit")
+
+    def test_static_json_field_names_use_raw_name_fast_path(self):
+        core_writer = CORE_WRITER.read_text(encoding="utf-8")
+        self.assertRegex(
+            core_writer,
+            r"public func writeStaticName\(fieldName: String\): JsonWriter",
+        )
+        self.assertIn("fieldName.rawData()", core_writer)
+        self.assertIn("inner.writeRawName", core_writer)
+
+        for macro_path in (CLASS_MACRO, STRUCT_MACRO):
+            macro = macro_path.read_text(encoding="utf-8")
+            self.assertIn("isRawJsonFieldNameSafe", macro)
+            self.assertIn("buildStreamFieldNameWrite", macro)
+            self.assertIn("return quote(writer.writeStaticName($(nameTok)))", macro)
+
+    def test_to_bytes_returns_an_owned_copy(self):
+        core_writer = CORE_WRITER.read_text(encoding="utf-8")
+        self.assertRegex(core_writer, r"public func toBytes\(\): Array<Byte>")
+        to_bytes_start = core_writer.index("public func toBytes(): Array<Byte>")
+        to_string_start = core_writer.index("public func toString(): String", to_bytes_start)
+        to_bytes = core_writer[to_bytes_start:to_string_start]
+        self.assertIn("inner.flush()", to_bytes)
+        self.assertIn("buf.bytes().clone()", to_bytes)
+
+    def test_long_plain_strings_use_native_no_escape_probe(self):
+        string_serialize = STRING_SERIALIZE.read_text(encoding="utf-8")
+        self.assertIn("NATIVE_NO_ESCAPE_SCAN_THRESHOLD", string_serialize)
+        self.assertIn("CJ_JSON_StringEscapeCharNumGet", string_serialize)
+        self.assertIn("hasNativeEscape", string_serialize)
+        self.assertIn("!w.writeConfig.htmlSafe", string_serialize)
+
+    def test_string_int64_map_has_compact_batch_writer_and_macro_dispatch(self):
+        writer = WRITER.read_text(encoding="utf-8")
+        core_writer = CORE_WRITER.read_text(encoding="utf-8")
+        self.assertRegex(
+            writer,
+            r"public func writeStringInt64Map\(values: HashMap<String, Int64>\): Unit",
+        )
+        self.assertIn("writeCompactStringInt64Map(values)", writer)
+        self.assertRegex(
+            core_writer,
+            r"public func writeStringInt64Map\(values: HashMap<String, Int64>\): JsonWriter",
+        )
+        for macro_path in (CLASS_MACRO, STRUCT_MACRO):
+            macro = macro_path.read_text(encoding="utf-8")
+            self.assertIn('typeStr == "HashMap<String,Int64>"', macro)
+            self.assertIn("writer.writeStringInt64Map($(value))", macro)
+
+    def test_json_writer_reset_reuses_buffer_and_resets_stream_state(self):
+        writer = WRITER.read_text(encoding="utf-8")
+        core_writer = CORE_WRITER.read_text(encoding="utf-8")
+        self.assertRegex(writer, r"public func reset\(\): Unit")
+        reset_start = writer.index("public func reset(): Unit")
+        reset_end = writer.index("public func jsonValue", reset_start)
+        reset_body = writer[reset_start:reset_end]
+        self.assertIn("curPos = 0", reset_body)
+        self.assertIn("stack.clear()", reset_body)
+        self.assertIn("stack.add(EmptyText)", reset_body)
+        self.assertIn("haveName = false", reset_body)
+
+        self.assertRegex(core_writer, r"public func reset\(\): JsonWriter")
+        core_reset_start = core_writer.index("public func reset(): JsonWriter")
+        core_reset_end = core_writer.index("public func flush(): Unit", core_reset_start)
+        core_reset = core_writer[core_reset_start:core_reset_end]
+        self.assertIn("inner.reset()", core_reset)
+        self.assertIn("buf.clear()", core_reset)
+
+    def test_range_macro_uses_static_names_for_fixed_protocol_fields(self):
+        for macro_path in (CLASS_MACRO, STRUCT_MACRO):
+            macro = macro_path.read_text(encoding="utf-8")
+            range_start = macro.rindex("if (isRangeType(typeTokens))")
+            range_end = macro.index("// DateTime", range_start)
+            range_body = macro[range_start:range_end]
+            for field_name in ("start", "end", "step", "isClosed"):
+                self.assertIn(f'writer.writeStaticName("{field_name}")', range_body)
+                self.assertNotIn(f'writer.writeName("{field_name}")', range_body)
 
 
 if __name__ == "__main__":
