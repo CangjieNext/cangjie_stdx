@@ -12,6 +12,58 @@ import std.collection.{ArrayList, HashMap}
 import std.io.{ByteBuffer, OutputStream}
 import std.time.*
 
+/*
+ * Native chunk formatter for compact integer arrays.  One call formats as
+ * many elements as fit into the writable buffer region, so the per-element
+ * capacity checks collapse into one check per chunk.  The element kinds
+ * mirror the native side (json_int_array.c).
+ */
+@FastNative
+foreign func CJ_JSON_FormatIntegerArray(input: CPointer<UInt8>, kind: Int64, startIndex: Int64,
+    count: Int64, output: CPointer<UInt8>, outputCapacity: Int64, firstElement: Bool): Int64
+
+/*
+ * Native chunk formatter for compact Float64 arrays, sharing the packed
+ * return contract of CJ_JSON_FormatIntegerArray; a negative value marks a
+ * non-finite element.
+ */
+@FastNative
+foreign func CJ_JSON_FormatFloat64Array(input: CPointer<UInt8>, startIndex: Int64, count: Int64,
+    output: CPointer<UInt8>, outputCapacity: Int64, firstElement: Bool): Int64
+
+/*
+ * Native chunk formatter for compact Float32 arrays: each 4-byte element is
+ * widened to double before the same Ryu round trip, matching the
+ * element-wise Float64(value) output byte for byte.
+ */
+@FastNative
+foreign func CJ_JSON_FormatFloat32Array(input: CPointer<UInt8>, startIndex: Int64, count: Int64,
+    output: CPointer<UInt8>, outputCapacity: Int64, firstElement: Bool): Int64
+
+let JSON_INT_ARRAY_KIND_I8: Int64 = 0
+let JSON_INT_ARRAY_KIND_I16: Int64 = 1
+let JSON_INT_ARRAY_KIND_I32: Int64 = 2
+let JSON_INT_ARRAY_KIND_I64: Int64 = 3
+let JSON_INT_ARRAY_KIND_U8: Int64 = 4
+let JSON_INT_ARRAY_KIND_U16: Int64 = 5
+let JSON_INT_ARRAY_KIND_U32: Int64 = 6
+let JSON_INT_ARRAY_KIND_U64: Int64 = 7
+
+/*
+ * Arrays below this size keep the inline per-element writer.  The native
+ * chunk formatter's input/output pinning and FFI transition are fixed
+ * costs that only pay off once enough elements amortize them; measured
+ * crossover on T9.3.1/T9.3.2/T9.3.7 is around 20 elements.
+ */
+let JSON_INT_ARRAY_MIN_CHUNK_ELEMENTS: Int64 = 32
+
+/*
+ * Same amortization rationale as the integer threshold: Float64 elements
+ * cost more to format (Ryu round trip), so the native chunk formatter pays
+ * off from a similar array size.
+ */
+let JSON_FLOAT64_ARRAY_MIN_CHUNK_ELEMENTS: Int64 = 32
+
 enum JsonWriterState {
     | EmptyArray
     | NoEmptyArray
@@ -561,93 +613,181 @@ public class JsonWriter {
         endArray()
     }
 
+    /**
+     * Write one Float64 array without repeating generic JsonSerializable
+     * dispatch and per-element pinning for every value.
+     */
     @OverflowWrapping
-    func writeCompactInt64Array(values: Array<Int64>): Unit {
-        for (index in 0..values.size) {
-            ensureBufferSpace(32)
-            if (index > 0) {
-                buffer[curPos] = b','
-                curPos++
+    public func writeFloat64Array(values: Array<Float64>): Unit {
+        startArray()
+        if (writeConfig.newline.isEmpty() && !writeConfig.useSpaceAfterSeparators) {
+            writeCompactFloat64Array(values)
+        } else {
+            for (value in values) {
+                writeValue<Float64>(value)
             }
-            let value = values[index]
-            if (value < 0) {
-                buffer[curPos] = b'-'
-                curPos++
-                curPos += appendUInt64(UInt64(-(value + 1)) + 1)
+        }
+        endArray()
+    }
+
+    /**
+     * Write one Float32 array through the native chunk formatter, widening
+     * every element to double so the digits match writeValue<Float64>.
+     */
+    @OverflowWrapping
+    public func writeFloat32Array(values: Array<Float32>): Unit {
+        startArray()
+        if (writeConfig.newline.isEmpty() && !writeConfig.useSpaceAfterSeparators) {
+            writeCompactFloat32Array(values)
+        } else {
+            for (value in values) {
+                writeValue<Float32>(value)
+            }
+        }
+        endArray()
+    }
+
+    /**
+     * Write one Float16 array.  Large arrays widen into a temporary
+     * Float64 array and reuse its chunk formatter: Float16 is not a CType,
+     * so its raw data cannot be pinned directly, and the half-to-double
+     * conversion is exact, keeping the output byte-identical to the
+     * element-wise path.
+     */
+    @OverflowWrapping
+    public func writeFloat16Array(values: Array<Float16>): Unit {
+        startArray()
+        if (writeConfig.newline.isEmpty() && !writeConfig.useSpaceAfterSeparators) {
+            writeCompactFloat16Array(values)
+        } else {
+            for (value in values) {
+                writeValue<Float16>(value)
+            }
+        }
+        endArray()
+    }
+
+    /*
+     * Chunk loop for the compact Float64 array writer, mirroring the integer
+     * chunk loop: each pass reserves the worst-case output for the remaining
+     * elements (capped by the default capacity), pins both arrays and lets
+     * the native Ryu-based formatter fill the region.
+     */
+    func writeFloat64ArrayChunks(values: Array<Float64>): Unit {
+        var consumed = 0
+        let count = values.size
+        while (consumed < count) {
+            let remaining = count - consumed
+            // 33 bytes cover the worst element: comma + 32 print bytes.
+            let wanted = if (remaining <= DEFAULT_CAPACITY / 33) {
+                remaining * 33
             } else {
-                curPos += appendUInt64(UInt64(value))
+                DEFAULT_CAPACITY
             }
+            ensureBufferSpace(wanted)
+            let packed = unsafe {
+                let input = acquireArrayRawData(values)
+                let output = acquireArrayRawData(buffer)
+                try {
+                    CJ_JSON_FormatFloat64Array(CPointer<UInt8>(input.pointer), consumed, remaining,
+                        output.pointer + curPos, buffer.size - curPos, consumed == 0)
+                } finally {
+                    releaseArrayRawData(output)
+                    releaseArrayRawData(input)
+                }
+            }
+            if (packed < 0) {
+                throw IllegalStateException("Failed to serialize JSON float.")
+            }
+            let writtenElements = packed >> 32
+            if (writtenElements <= 0) {
+                throw IllegalStateException("Float64 array formatter made no progress.")
+            }
+            consumed += writtenElements
+            curPos += packed & 0xFFFFFFFF
         }
     }
 
-    @OverflowWrapping
-    func writeCompactStringInt64Map(values: HashMap<String, Int64>): Unit {
-        for ((name, value) in values) {
-            writeName(name)
-            writeInt64(value)
+    /*
+     * Chunk loop for the compact Float32 array writer, mirroring the
+     * Float64 loop: the native side widens each element to double before
+     * formatting, so the worst-case per-element output is identical.
+     */
+    func writeFloat32ArrayChunks(values: Array<Float32>): Unit {
+        var consumed = 0
+        let count = values.size
+        while (consumed < count) {
+            let remaining = count - consumed
+            // 33 bytes cover the worst element: comma + 32 print bytes.
+            let wanted = if (remaining <= DEFAULT_CAPACITY / 33) {
+                remaining * 33
+            } else {
+                DEFAULT_CAPACITY
+            }
+            ensureBufferSpace(wanted)
+            let packed = unsafe {
+                let input = acquireArrayRawData(values)
+                let output = acquireArrayRawData(buffer)
+                try {
+                    CJ_JSON_FormatFloat32Array(CPointer<UInt8>(input.pointer), consumed, remaining,
+                        output.pointer + curPos, buffer.size - curPos, consumed == 0)
+                } finally {
+                    releaseArrayRawData(output)
+                    releaseArrayRawData(input)
+                }
+            }
+            if (packed < 0) {
+                throw IllegalStateException("Failed to serialize JSON float.")
+            }
+            let writtenElements = packed >> 32
+            if (writtenElements <= 0) {
+                throw IllegalStateException("Float32 array formatter made no progress.")
+            }
+            consumed += writtenElements
+            curPos += packed & 0xFFFFFFFF
         }
     }
 
-    @OverflowWrapping
-    func writeCompactInt8Array(values: Array<Int8>): Unit {
-        for (index in 0..values.size) {
-            writeCompactInt64Element(Int64(values[index]), index)
-        }
-    }
-
-    @OverflowWrapping
-    func writeCompactInt16Array(values: Array<Int16>): Unit {
-        for (index in 0..values.size) {
-            writeCompactInt64Element(Int64(values[index]), index)
-        }
-    }
-
-    @OverflowWrapping
-    func writeCompactInt32Array(values: Array<Int32>): Unit {
-        for (index in 0..values.size) {
-            writeCompactInt64Element(Int64(values[index]), index)
-        }
-    }
-
-    @OverflowWrapping
-    func writeCompactIntNativeArray(values: Array<IntNative>): Unit {
-        for (index in 0..values.size) {
-            writeCompactInt64Element(Int64(values[index]), index)
-        }
-    }
-
-    @OverflowWrapping
-    func writeCompactUInt8Array(values: Array<UInt8>): Unit {
-        for (index in 0..values.size) {
-            writeCompactUInt64Element(UInt64(values[index]), index)
-        }
-    }
-
-    @OverflowWrapping
-    func writeCompactUInt16Array(values: Array<UInt16>): Unit {
-        for (index in 0..values.size) {
-            writeCompactUInt64Element(UInt64(values[index]), index)
-        }
-    }
-
-    @OverflowWrapping
-    func writeCompactUInt32Array(values: Array<UInt32>): Unit {
-        for (index in 0..values.size) {
-            writeCompactUInt64Element(UInt64(values[index]), index)
-        }
-    }
-
-    @OverflowWrapping
-    func writeCompactUInt64Array(values: Array<UInt64>): Unit {
-        for (index in 0..values.size) {
-            writeCompactUInt64Element(values[index], index)
-        }
-    }
-
-    @OverflowWrapping
-    func writeCompactUIntNativeArray(values: Array<UIntNative>): Unit {
-        for (index in 0..values.size) {
-            writeCompactUInt64Element(UInt64(values[index]), index)
+    /*
+     * Shared chunk loop for the compact integer array writers: each pass
+     * reserves buffer space, pins the current view and lets the native
+     * formatter fill it.  The input and output raw-data handles are acquired
+     * only after the current output region has been selected, then released
+     * immediately after that one foreign call.  This keeps the FFI pinning
+     * scope free of buffer growth, stream flushing, and other Cangjie work.
+     */
+    func writeIntegerArrayChunks<T>(values: Array<T>, kind: Int64): Unit where T <: CType {
+        var consumed = 0
+        let count = values.size
+        while (consumed < count) {
+            let remaining = count - consumed
+            // 21 bytes cover the worst element: comma + minus + 20 digits.
+            let wanted = if (remaining <= DEFAULT_CAPACITY / 21) {
+                remaining * 21
+            } else {
+                DEFAULT_CAPACITY
+            }
+            ensureBufferSpace(wanted)
+            let packed = unsafe {
+                let input = acquireArrayRawData(values)
+                let output = acquireArrayRawData(buffer)
+                try {
+                    CJ_JSON_FormatIntegerArray(CPointer<UInt8>(input.pointer), kind, consumed, remaining,
+                        output.pointer + curPos, buffer.size - curPos, consumed == 0)
+                } finally {
+                    releaseArrayRawData(output)
+                    releaseArrayRawData(input)
+                }
+            }
+            if (packed < 0) {
+                throw IllegalStateException("Unsupported integer array kind: ${kind}")
+            }
+            let writtenElements = packed >> 32
+            if (writtenElements <= 0) {
+                throw IllegalStateException("Integer array formatter made no progress.")
+            }
+            consumed += writtenElements
+            curPos += packed & 0xFFFFFFFF
         }
     }
 
@@ -676,6 +816,193 @@ public class JsonWriter {
             buffer[curPos] = b','
             curPos++
         }
+    }
+
+    @OverflowWrapping
+    func writeCompactInt64Array(values: Array<Int64>): Unit {
+        if (values.size < JSON_INT_ARRAY_MIN_CHUNK_ELEMENTS) {
+            // Keep the original flat per-element loop for small arrays: the
+            // helper call per element measurably regressed nested small-array
+            // documents (T9.3.7), while the chunk formatter's pinning + FFI
+            // overhead only pays off once enough elements amortize it.
+            for (index in 0..values.size) {
+                ensureBufferSpace(32)
+                if (index > 0) {
+                    buffer[curPos] = b','
+                    curPos++
+                }
+                let value = values[index]
+                if (value < 0) {
+                    buffer[curPos] = b'-'
+                    curPos++
+                    curPos += appendUInt64(UInt64(-(value + 1)) + 1)
+                } else {
+                    curPos += appendUInt64(UInt64(value))
+                }
+            }
+            return
+        }
+        writeIntegerArrayChunks(values, JSON_INT_ARRAY_KIND_I64)
+    }
+
+    @OverflowWrapping
+    func writeCompactFloat64Array(values: Array<Float64>): Unit {
+        if (values.size < JSON_FLOAT64_ARRAY_MIN_CHUNK_ELEMENTS) {
+            // Small arrays keep the per-element writer, matching the integer
+            // array threshold rationale: the chunk formatter's pinning + FFI
+            // overhead only pays off once enough elements amortize it.
+            for (index in 0..values.size) {
+                beforeCompactArrayElement(index)
+                writeFloat64Value(this, values[index])
+            }
+            return
+        }
+        writeFloat64ArrayChunks(values)
+    }
+
+    @OverflowWrapping
+    func writeCompactFloat32Array(values: Array<Float32>): Unit {
+        if (values.size < JSON_FLOAT64_ARRAY_MIN_CHUNK_ELEMENTS) {
+            for (index in 0..values.size) {
+                beforeCompactArrayElement(index)
+                writeFloat64Value(this, Float64(values[index]))
+            }
+            return
+        }
+        writeFloat32ArrayChunks(values)
+    }
+
+    @OverflowWrapping
+    func writeCompactFloat16Array(values: Array<Float16>): Unit {
+        if (values.size < JSON_FLOAT64_ARRAY_MIN_CHUNK_ELEMENTS) {
+            for (index in 0..values.size) {
+                beforeCompactArrayElement(index)
+                writeFloat64Value(this, Float64(values[index]))
+            }
+            return
+        }
+        // Float16 is not a CType, so its array cannot be pinned for the
+        // native formatter.  Widen once into a temporary Float64 array
+        // (the conversion is exact) and reuse the chunk formatter; the
+        // O(n) widen pass is far cheaper than per-element FFI.
+        let widened = Array<Float64>(values.size, repeat: 0.0)
+        for (index in 0..values.size) {
+            widened[index] = Float64(values[index])
+        }
+        writeFloat64ArrayChunks(widened)
+    }
+
+    @OverflowWrapping
+    func writeCompactStringInt64Map(values: HashMap<String, Int64>): Unit {
+        for ((name, value) in values) {
+            writeName(name)
+            writeInt64(value)
+        }
+    }
+
+    @OverflowWrapping
+    func writeCompactInt8Array(values: Array<Int8>): Unit {
+        if (values.size < JSON_INT_ARRAY_MIN_CHUNK_ELEMENTS) {
+            for (index in 0..values.size) {
+                writeCompactInt64Element(Int64(values[index]), index)
+            }
+            return
+        }
+        writeIntegerArrayChunks(values, JSON_INT_ARRAY_KIND_I8)
+    }
+
+    func writeCompactInt16Array(values: Array<Int16>): Unit {
+        if (values.size < JSON_INT_ARRAY_MIN_CHUNK_ELEMENTS) {
+            for (index in 0..values.size) {
+                writeCompactInt64Element(Int64(values[index]), index)
+            }
+            return
+        }
+        writeIntegerArrayChunks(values, JSON_INT_ARRAY_KIND_I16)
+    }
+
+    func writeCompactInt32Array(values: Array<Int32>): Unit {
+        if (values.size < JSON_INT_ARRAY_MIN_CHUNK_ELEMENTS) {
+            for (index in 0..values.size) {
+                writeCompactInt64Element(Int64(values[index]), index)
+            }
+            return
+        }
+        writeIntegerArrayChunks(values, JSON_INT_ARRAY_KIND_I32)
+    }
+
+    @OverflowWrapping
+    func writeCompactIntNativeArray(values: Array<IntNative>): Unit {
+        if (values.size < JSON_INT_ARRAY_MIN_CHUNK_ELEMENTS) {
+            for (index in 0..values.size) {
+                writeCompactInt64Element(Int64(values[index]), index)
+            }
+            return
+        }
+        let kind = if (Int64(sizeOf<IntNative>()) == 8) {
+            JSON_INT_ARRAY_KIND_I64
+        } else {
+            JSON_INT_ARRAY_KIND_I32
+        }
+        writeIntegerArrayChunks(values, kind)
+    }
+
+    func writeCompactUInt8Array(values: Array<UInt8>): Unit {
+        if (values.size < JSON_INT_ARRAY_MIN_CHUNK_ELEMENTS) {
+            for (index in 0..values.size) {
+                writeCompactUInt64Element(UInt64(values[index]), index)
+            }
+            return
+        }
+        writeIntegerArrayChunks(values, JSON_INT_ARRAY_KIND_U8)
+    }
+
+    @OverflowWrapping
+    func writeCompactUInt16Array(values: Array<UInt16>): Unit {
+        if (values.size < JSON_INT_ARRAY_MIN_CHUNK_ELEMENTS) {
+            for (index in 0..values.size) {
+                writeCompactUInt64Element(UInt64(values[index]), index)
+            }
+            return
+        }
+        writeIntegerArrayChunks(values, JSON_INT_ARRAY_KIND_U16)
+    }
+
+    func writeCompactUInt32Array(values: Array<UInt32>): Unit {
+        if (values.size < JSON_INT_ARRAY_MIN_CHUNK_ELEMENTS) {
+            for (index in 0..values.size) {
+                writeCompactUInt64Element(UInt64(values[index]), index)
+            }
+            return
+        }
+        writeIntegerArrayChunks(values, JSON_INT_ARRAY_KIND_U32)
+    }
+
+    @OverflowWrapping
+    func writeCompactUInt64Array(values: Array<UInt64>): Unit {
+        if (values.size < JSON_INT_ARRAY_MIN_CHUNK_ELEMENTS) {
+            for (index in 0..values.size) {
+                writeCompactUInt64Element(values[index], index)
+            }
+            return
+        }
+        writeIntegerArrayChunks(values, JSON_INT_ARRAY_KIND_U64)
+    }
+
+    @OverflowWrapping
+    func writeCompactUIntNativeArray(values: Array<UIntNative>): Unit {
+        if (values.size < JSON_INT_ARRAY_MIN_CHUNK_ELEMENTS) {
+            for (index in 0..values.size) {
+                writeCompactUInt64Element(UInt64(values[index]), index)
+            }
+            return
+        }
+        let kind = if (Int64(sizeOf<UIntNative>()) == 8) {
+            JSON_INT_ARRAY_KIND_U64
+        } else {
+            JSON_INT_ARRAY_KIND_U32
+        }
+        writeIntegerArrayChunks(values, kind)
     }
 
     @OverflowWrapping

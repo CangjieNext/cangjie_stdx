@@ -6,6 +6,7 @@
  * See https://cangjie-lang.cn/pages/LICENSE for license information.
  */
 
+#include <stdbool.h>
 #include <stdint.h>
 #include <math.h>
 #include "securec.h"
@@ -169,4 +170,88 @@ extern int64_t CJ_JSON_FloatPrint(const double num, uint8_t* dest, const int64_t
         dest[i] = (uint8_t)jsonOutput[i];
     }
     return jsonLength;
+}
+
+/*
+ * Format the doubles input[startIndex, startIndex + count) into output and
+ * stop before the remaining capacity drops below the worst-case element
+ * size.  firstElement tells whether startIndex is the first element of the
+ * whole array, keeping comma placement correct across chunk boundaries.
+ * The return value packs the consumed element count into the high 32 bits
+ * and the written byte count into the low 32 bits; -1 marks a non-finite
+ * value, which the caller reports as a serialization error.
+ */
+extern int64_t CJ_JSON_FormatFloat64Array(const void* input, int64_t startIndex, int64_t count,
+    uint8_t* output, int64_t outputCapacity, bool firstElement)
+{
+    const double* values = (const double*)input;
+    int64_t index = 0;
+    int64_t written = 0;
+    if (input == NULL || output == NULL || count <= 0) {
+        return 0;
+    }
+    while (index < count) {
+        if (outputCapacity - written < RYU_DOUBLE_MAX_OUTPUT + 1) {
+            break;
+        }
+        const double num = values[startIndex + index];
+        if (!isfinite(num)) {
+            return -1;
+        }
+        if (index > 0 || !firstElement) {
+            output[written++] = ',';
+        }
+        char ryuOutput[RYU_DOUBLE_MAX_OUTPUT];
+        char jsonOutput[RYU_DOUBLE_MAX_OUTPUT];
+        const int ryuLength = d2s_buffered_n(num, ryuOutput);
+        const int jsonLength = RyuToJsonNumber(ryuOutput, ryuLength, jsonOutput);
+        if (jsonLength <= 0) {
+            return -1;
+        }
+        for (int i = 0; i < jsonLength; i++) {
+            output[written++] = (uint8_t)jsonOutput[i];
+        }
+        index++;
+    }
+    return (index << 32) | written;
+}
+
+/*
+ * Same chunk contract as CJ_JSON_FormatFloat64Array, reading 4-byte float
+ * elements.  Each element is widened to double before the Ryu round trip so
+ * the digits match the element-wise Float64(value) path byte for byte.
+ */
+extern int64_t CJ_JSON_FormatFloat32Array(const void* input, int64_t startIndex, int64_t count,
+    uint8_t* output, int64_t outputCapacity, bool firstElement)
+{
+    const float* values = (const float*)input;
+    int64_t index = 0;
+    int64_t written = 0;
+    if (input == NULL || output == NULL || count <= 0) {
+        return 0;
+    }
+    while (index < count) {
+        if (outputCapacity - written < RYU_DOUBLE_MAX_OUTPUT + 1) {
+            break;
+        }
+        const double num = (double)values[startIndex + index];
+        if (!isfinite(num)) {
+            return -1;
+        }
+        if (index > 0 || !firstElement) {
+            output[written++] = ',';
+        }
+        char ryuOutput[RYU_DOUBLE_MAX_OUTPUT];
+        char jsonOutput[RYU_DOUBLE_MAX_OUTPUT];
+        const int ryuLength = d2s_buffered_n(num, ryuOutput);
+        const int jsonLength = RyuToJsonNumber(ryuOutput, ryuLength, jsonOutput);
+        if (jsonLength <= 0) {
+            return -1;
+        }
+        for (int i = 0; i < jsonLength; i++) {
+            output[written++] = (uint8_t)jsonOutput[i];
+        }
+        index++;
+    }
+    return (index << 32) | written;
 }

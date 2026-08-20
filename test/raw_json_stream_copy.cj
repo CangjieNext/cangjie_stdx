@@ -178,6 +178,33 @@ func testInt64ArrayBatchWrite(): Unit {
     )
 }
 
+// 1,024 elements force the native batch formatter (threshold: 32) to emit
+// several output chunks.  Keep the extrema in the data so both signed
+// conversion and the boundary between native chunks are checked end-to-end.
+func testLargeInt64ArrayNativeBatchRoundTrip(): Unit {
+    let minInt64 = -9223372036854775807 - 1
+    let maxInt64 = 9223372036854775807
+    let values = Array<Int64>(1_024) { index =>
+        if (index == 0) {
+            minInt64
+        } else if (index == 1) {
+            maxInt64
+        } else {
+            1_000_000_000_000 + index
+        }
+    }
+    let output = ByteBuffer()
+    let writer = JsonWriter(output)
+    writer.writeInt64Array(values)
+    writer.flush()
+
+    let result = JsonReader(output).readValue<Array<Int64>>()
+    ensure(result.size == values.size)
+    for (index in 0..values.size) {
+        ensure(result[index] == values[index])
+    }
+}
+
 func testOtherIntegerArrayBatchWrite(): Unit {
     let signedOutput = ByteBuffer()
     let signedWriter = JsonWriter(signedOutput)
@@ -288,6 +315,7 @@ main() {
     testRawStaticNameWrite()
     testIntegerWriteBoundaries()
     testInt64ArrayBatchWrite()
+    testLargeInt64ArrayNativeBatchRoundTrip()
     testOtherIntegerArrayBatchWrite()
     testLongStringNativeNoEscapeFastPath()
     testStringInt64MapBatchWrite()

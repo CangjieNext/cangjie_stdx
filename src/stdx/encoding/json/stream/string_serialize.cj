@@ -36,12 +36,23 @@ const UTF8_2_MAX: UInt32 = 0x07FF
 const UTF8_1_MAX: UInt32 = 0x7F
 const ESCAPE_SIZE_2: Int64 = 2
 const ESCAPE_SIZE_6: Int64 = 6
-// The native probe amortizes its FFI transition for payload-sized strings.
-// Smaller strings keep the existing inlined Cangjie scan.
-const NATIVE_NO_ESCAPE_SCAN_THRESHOLD: Int64 = 64
+// The native chunk writer scans, escapes and copies one buffer region in a
+// single foreign call, so its fixed pinning + FFI cost only pays off for
+// payload-sized strings.  Smaller strings keep the inlined Cangjie scan.
+const NATIVE_STRING_CHUNK_THRESHOLD: Int64 = 64
+
+// Plain runs of at least one staging buffer in size bypass the buffer
+// entirely: the vectorized scanner locates the run and the raw bytes are
+// appended to the output stream with one copy, so long strings never pay
+// the staging double hop.  Keep in sync with JsonWriter.DEFAULT_CAPACITY.
+const NATIVE_STRING_DIRECT_THRESHOLD: Int64 = 4096
 
 @FastNative
-foreign func CJ_JSON_StringEscapeCharNumGet(input: CPointer<UInt8>, inputlen: Int64, htmlSafe: Bool): Int64
+foreign func CJ_JSON_EscapeStringChunk(input: CPointer<UInt8>, inputLen: Int64,
+    output: CPointer<UInt8>, outputCapacity: Int64): Int64
+
+@FastNative
+foreign func CJ_JSON_StringFindFirstEscape(input: CPointer<UInt8>, from: Int64, end: Int64): Int64
 
 func newEscapeTable(): Array<Byte> {
     let escapeTable: Array<Byte> = Array<Byte>(128, repeat: 0)
@@ -57,12 +68,67 @@ func newEscapeTable(): Array<Byte> {
 
 let escapeTable = newEscapeTable()
 
-func hasNativeEscape(value: String): Bool {
-    unsafe {
-        let input = acquireArrayRawData(value.rawData())
-        let escapeCount = CJ_JSON_StringEscapeCharNumGet(input.pointer, value.size, false)
-        releaseArrayRawData(input)
-        return escapeCount != 0
+/*
+ * Chunk loop for the native string writer: each pass reserves buffer space,
+ * pins the input and output raw data, and lets the native helper fill the
+ * writable region.  Plain strings complete in one call; escaped strings stop
+ * before the region can no longer hold the worst-case expansion of one byte,
+ * and the loop continues from the consumed offset.  The worst-case escape is
+ * six bytes, so reserving at least that much guarantees forward progress.
+ *
+ * When the unconsumed tail is large enough, a vectorized native scan first
+ * locates the next escape byte.  A plain run of at least one staging buffer
+ * in size is flushed and appended to the output stream directly, skipping
+ * the staging buffer's second copy; shorter runs (and escape bytes) fall
+ * through to the chunk writer as before.
+ */
+@OverflowWrapping
+func writeNativeStringChunks(w: JsonWriter, value: String): Unit {
+    var consumed = 0
+    let total = value.size
+    let canDirectWrite = w.directByteBuffer.isNone()
+    while (consumed < total) {
+        let remaining = total - consumed
+        if (canDirectWrite && remaining >= NATIVE_STRING_DIRECT_THRESHOLD) {
+            let escapePos = unsafe {
+                let input = acquireArrayRawData(value.rawData())
+                try {
+                    CJ_JSON_StringFindFirstEscape(input.pointer, consumed, total)
+                } finally {
+                    releaseArrayRawData(input)
+                }
+            }
+            let plainLen = escapePos - consumed
+            if (plainLen >= NATIVE_STRING_DIRECT_THRESHOLD) {
+                w.flushOutBuf()
+                unsafe { w.out.write(value.rawData(), consumed, plainLen) }
+                consumed += plainLen
+                continue
+            }
+        }
+        let wanted = if (remaining < JsonWriter.DEFAULT_CAPACITY) {
+            remaining
+        } else {
+            JsonWriter.DEFAULT_CAPACITY
+        }
+        w.ensureBufferSpace(max(wanted, ESCAPE_SIZE_6))
+        let packed = unsafe {
+            let input = acquireArrayRawData(value.rawData())
+            let output = acquireArrayRawData(w.buffer)
+            try {
+                CJ_JSON_EscapeStringChunk(input.pointer + consumed, remaining,
+                    output.pointer + w.curPos, w.buffer.size - w.curPos)
+            } finally {
+                releaseArrayRawData(output)
+                releaseArrayRawData(input)
+            }
+        }
+        let consumedNow = packed >> 32
+        if (consumedNow <= 0) {
+            throw IllegalStateException("String escape chunk writer made no progress.")
+        }
+        consumed += consumedNow
+        w.curPos += packed & 0xFFFFFFFF
     }
 }
 
@@ -91,13 +157,13 @@ func writeStringValue(w: JsonWriter, value: String): Unit {
     w.buffer[w.curPos] = b'\"'
     w.curPos++
 
-    // In the default compact mode the native helper has the same escape
-    // classification as the stream writer. A long plain string can then
-    // be copied once without executing the Cangjie byte loop. htmlSafe
-    // keeps the complete stream-side classifier because it additionally
-    // escapes <, >, = and '.
-    if (value.size >= NATIVE_NO_ESCAPE_SCAN_THRESHOLD && !w.writeConfig.htmlSafe && !hasNativeEscape(value)) {
-        flushStringSegment(w, value, value.size, 0)
+    // In the default compact mode the native chunk writer has the same
+    // escape classification as the stream writer, so a long string is
+    // scanned, escaped and copied in one foreign call per buffer region.
+    // htmlSafe keeps the complete stream-side classifier because it
+    // additionally escapes <, >, = and '.
+    if (value.size >= NATIVE_STRING_CHUNK_THRESHOLD && !w.writeConfig.htmlSafe) {
+        writeNativeStringChunks(w, value)
         w.ensureBufferSpace(1)
         w.buffer[w.curPos] = b'\"'
         w.curPos++
