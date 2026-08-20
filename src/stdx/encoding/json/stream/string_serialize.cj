@@ -69,16 +69,12 @@ func hasNativeEscape(value: String): Bool {
 @OverflowWrapping
 func writeEscapeAscii(w: JsonWriter, byte: Int64) {
     if (escapeTable[byte] != 0) {
-        if (w.curPos + ESCAPE_SIZE_2 > JsonWriter.DEFAULT_CAPACITY) {
-            w.flushOutBuf()
-        }
+        w.ensureBufferSpace(ESCAPE_SIZE_2)
         w.buffer[w.curPos + 1] = escapeTable[byte]
         w.buffer[w.curPos] = b'\\'
         w.curPos += 2
     } else {
-        if (w.curPos + ESCAPE_SIZE_6 > JsonWriter.DEFAULT_CAPACITY) {
-            w.flushOutBuf()
-        }
+        w.ensureBufferSpace(ESCAPE_SIZE_6)
         w.buffer[w.curPos + 5] = hex[byte & 0xF] // num of low 4 bits
         w.buffer[w.curPos + 4] = hex[byte >> 4] // num of high 4 bits
         w.buffer[w.curPos + 3] = b'0'
@@ -89,78 +85,88 @@ func writeEscapeAscii(w: JsonWriter, byte: Int64) {
     }
 }
 
+@OverflowWrapping
+func writeStringValue(w: JsonWriter, value: String): Unit {
+    w.ensureBufferSpace(1)
+    w.buffer[w.curPos] = b'\"'
+    w.curPos++
+
+    // In the default compact mode the native helper has the same escape
+    // classification as the stream writer. A long plain string can then
+    // be copied once without executing the Cangjie byte loop. htmlSafe
+    // keeps the complete stream-side classifier because it additionally
+    // escapes <, >, = and '.
+    if (value.size >= NATIVE_NO_ESCAPE_SCAN_THRESHOLD && !w.writeConfig.htmlSafe && !hasNativeEscape(value)) {
+        flushStringSegment(w, value, value.size, 0)
+        w.ensureBufferSpace(1)
+        w.buffer[w.curPos] = b'\"'
+        w.curPos++
+        return
+    }
+
+    var beforePos = 0
+    let backslash = Int64(b'\\')
+    var escapeMask = 0u64
+    escapeMask |= 1u64 << Int64(b'\"')
+    escapeMask |= (1u64 << 32) - 1u64
+
+    if (w.writeConfig.htmlSafe) {
+        var htmlEscapeMask = 0u64
+        htmlEscapeMask |= (1u64 << Int64(b'<'))
+        htmlEscapeMask |= (1u64 << Int64(b'>'))
+        htmlEscapeMask |= (1u64 << Int64(b'&'))
+        htmlEscapeMask |= (1u64 << Int64(b'='))
+        htmlEscapeMask |= (1u64 << Int64(b'\''))
+        escapeMask |= htmlEscapeMask
+    }
+    for (index in 0..value.size) {
+        let byte = Int64(value[index])
+        if (byte > 127) {
+            continue
+        }
+        if (byte == 127 || byte == backslash || (byte < 64 && ((1u64 << byte) & escapeMask) != 0)) {
+            flushStringSegment(w, value, index, beforePos)
+            writeEscapeAscii(w, byte)
+            beforePos = index + 1
+        }
+    }
+
+    flushStringSegment(w, value, value.size, beforePos)
+    w.ensureBufferSpace(1)
+    w.buffer[w.curPos] = b'\"'
+    w.curPos++
+}
+
+@OverflowWrapping
+func flushStringSegment(w: JsonWriter, value: String, curPos: Int64, beforePos: Int64) {
+    if (curPos <= beforePos) {
+        return
+    }
+    let length = curPos - beforePos
+    if (let Some(_) <- w.directByteBuffer) {
+        w.ensureBufferSpace(length)
+        unsafe { value.rawData().copyTo(w.buffer, beforePos, w.curPos, length) }
+        w.curPos += length
+    } else if (length >= JsonWriter.LARGE_VALUE_THRESHOLD) {
+        // write directly to the stream if the string is too long
+        w.flushOutBuf()
+        unsafe { w.out.write(value.rawData()[beforePos..curPos]) }
+    } else {
+        w.ensureBufferSpace(length)
+        unsafe { value.rawData().copyTo(w.buffer, beforePos, w.curPos, length) }
+        w.curPos += length
+        // flush if the buffer is nearly full
+        if (w.curPos >= JsonWriter.FLUSH_THRESHOLD) {
+            w.flushOutBuf()
+        }
+    }
+}
+
 extend String <: JsonSerializable {
     @OverflowWrapping
     public func toJson(w: JsonWriter): Unit {
         w.beforeValue()
-        w.buffer[w.curPos] = b'\"'
-        w.curPos++
-
-        // In the default compact mode the native helper has the same escape
-        // classification as the stream writer. A long plain string can then
-        // be copied once without executing the Cangjie byte loop. htmlSafe
-        // keeps the complete stream-side classifier because it additionally
-        // escapes <, >, = and '.
-        if (size >= NATIVE_NO_ESCAPE_SCAN_THRESHOLD && !w.writeConfig.htmlSafe && !hasNativeEscape(this)) {
-            insideflush(w, this.size, 0)
-            w.buffer[w.curPos] = b'\"'
-            w.curPos++
-            return
-        }
-
-        var beforePos = 0
-        let backslash = Int64(b'\\')
-        var escapeMask = 0u64
-        escapeMask |= 1u64 << Int64(b'\"')
-        escapeMask |= (1u64 << 32) - 1u64
-
-        if (w.writeConfig.htmlSafe) {
-            var htmlEscapeMask = 0u64
-            htmlEscapeMask |= (1u64 << Int64(b'<'))
-            htmlEscapeMask |= (1u64 << Int64(b'>'))
-            htmlEscapeMask |= (1u64 << Int64(b'&'))
-            htmlEscapeMask |= (1u64 << Int64(b'='))
-            htmlEscapeMask |= (1u64 << Int64(b'\''))
-            escapeMask |= htmlEscapeMask
-        }
-        for (index in 0..size) {
-            let byte = Int64(this[index])
-            if (byte > 127) {
-                continue
-            }
-            if (byte == 127 || byte == backslash || (byte < 64 && ((1u64 << byte) & escapeMask) != 0)) {
-                insideflush(w, index, beforePos)
-                writeEscapeAscii(w, byte)
-                beforePos = index + 1
-            }
-        }
-
-        insideflush(w, this.size, beforePos)
-        w.buffer[w.curPos] = b'\"'
-        w.curPos++
-    }
-
-    @OverflowWrapping
-    private func insideflush(w: JsonWriter, curPos: Int64, beforePos: Int64) {
-        if (curPos <= beforePos) {
-            return
-        }
-        if (curPos - beforePos >= JsonWriter.LARGE_VALUE_THRESHOLD) {
-            // write directly to the stream if the string is too long
-            w.flushOutBuf()
-            unsafe { w.out.write(this.rawData()[beforePos..curPos]) }
-        } else {
-            if (w.curPos + curPos - beforePos > JsonWriter.DEFAULT_CAPACITY) {
-                // flush if the buffer has not enough capacity
-                w.flushOutBuf()
-            }
-            unsafe { this.rawData().copyTo(w.buffer, beforePos, w.curPos, curPos - beforePos) }
-            w.curPos = w.curPos + curPos - beforePos
-            // flush if the buffer is nearly full
-            if (w.curPos >= JsonWriter.FLUSH_THRESHOLD) {
-                w.flushOutBuf()
-            }
-        }
+        writeStringValue(w, this)
     }
 }
 
