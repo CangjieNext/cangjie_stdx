@@ -9,15 +9,86 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include <math.h>
+#include <string.h>
 #include "securec.h"
 #include "ryu/ryu.h"
 
+#if defined(__aarch64__) || defined(_M_ARM64)
+#define CJ_JSON_READ_SCAN_NEON 1
+#include <arm_neon.h>
+#endif
+
 #define RYU_DOUBLE_MAX_OUTPUT 32
+
+/*
+ * Return the first byte that needs the scalar JSON-string decoder.  The
+ * common case is a long ASCII run: it contains neither a quote/backslash nor
+ * a UTF-8 lead/continuation byte, so scan 16 bytes at once on arm64 (or 8
+ * bytes with a portable word scan) before falling back to the existing UTF-8
+ * validator.  Control ASCII bytes remain part of the fast run because the
+ * pre-existing decoder accepts them and this change must not alter its input
+ * semantics.
+ */
+#ifdef CJ_JSON_READ_SCAN_NEON
+static bool CJ_ReadStringVectorNeedsScalar(const uint8_t* input)
+{
+    const uint8x16_t value = vld1q_u8(input);
+    const uint8x16_t high = vandq_u8(value, vdupq_n_u8(0x80));
+    const uint8x16_t special = vorrq_u8(vceqq_u8(value, vdupq_n_u8('"')),
+        vceqq_u8(value, vdupq_n_u8('\\')));
+    return vmaxvq_u8(vorrq_u8(high, special)) != 0;
+}
+#else
+static bool CJ_ReadStringWordHasZero(uint64_t value)
+{
+    return ((value - UINT64_C(0x0101010101010101)) & ~value &
+        UINT64_C(0x8080808080808080)) != 0;
+}
+
+static bool CJ_ReadStringWordNeedsScalar(uint64_t value)
+{
+    if ((value & UINT64_C(0x8080808080808080)) != 0) {
+        return true;
+    }
+    return CJ_ReadStringWordHasZero(value ^ UINT64_C(0x2222222222222222)) ||
+        CJ_ReadStringWordHasZero(value ^ UINT64_C(0x5c5c5c5c5c5c5c5c));
+}
+#endif
+
+static int64_t CJ_ReadStringAsciiRun(const uint8_t* input, int64_t from, int64_t end)
+{
+    int64_t index = from;
+#ifdef CJ_JSON_READ_SCAN_NEON
+    while (index + 16 <= end) {
+        if (CJ_ReadStringVectorNeedsScalar(input + index)) {
+            break;
+        }
+        index += 16;
+    }
+#else
+    while (index + 8 <= end) {
+        uint64_t word;
+        (void)memcpy(&word, input + index, sizeof(word));
+        if (CJ_ReadStringWordNeedsScalar(word)) {
+            break;
+        }
+        index += 8;
+    }
+#endif
+    while (index < end && input[index] <= 0x7F && input[index] != '"' && input[index] != '\\') {
+        index++;
+    }
+    return index;
+}
 
 extern int64_t CJ_ReadString(const uint8_t* str, int64_t left, int64_t right)
 {
     int64_t i = left;
     while (i < right) {
+        i = CJ_ReadStringAsciiRun(str, i, right);
+        if (i >= right) {
+            return i;
+        }
         unsigned char c = str[i];
         if (c <= 0x7F) {
             // ASCII character
