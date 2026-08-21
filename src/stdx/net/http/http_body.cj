@@ -264,11 +264,11 @@ class HttpChunkedBodyProvider <: InputStream & Resource {
                     return dstReadLen
                 }
                 let readLen = conn.read(dst[dstReadLen..], remainChunkSize)
-                if (readLen == 0 && dstReadLen == 0) {
-                    timer.cancel()
-                    providerConn.closeConn()
-                    eof = true
-                    return 0
+                // 当conn.read()返回0时，可能只是缓冲区暂时为空，而非连接关闭
+                // 此时不应关闭连接和设置eof，而是break退出循环返回已读数据
+                // 这样调用方可以重试，不会破坏正常的分块数据读取流程
+                if (readLen == 0) {
+                    break
                 }
                 dstReadLen += readLen
                 remainChunkSize -= readLen
