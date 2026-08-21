@@ -489,8 +489,7 @@ public class JsonWriter {
             writeCompactStringInt64Map(values)
         } else {
             for ((name, value) in values) {
-                writeName(name)
-                writeInt64(value)
+                writeDynamicNameInt64(name, value)
             }
         }
         endObject()
@@ -941,8 +940,7 @@ public class JsonWriter {
     @OverflowWrapping
     func writeCompactStringInt64Map(values: HashMap<String, Int64>): Unit {
         for ((name, value) in values) {
-            writeName(name)
-            writeInt64(value)
+            writeDynamicNameInt64(name, value)
         }
     }
 
@@ -1153,6 +1151,35 @@ public class JsonWriter {
         curPos++
         haveName = true // reuse String.toJson, need to keep name state
         useSpaceAfterSeparators()
+        this
+    }
+
+    /**
+     * Write one dynamic object member with an Int64 value in one state-machine
+     * transition.  Name escaping deliberately remains the ordinary String
+     * writer; only the redundant value-side ``beforeValue`` transition is
+     * fused for the ``HashMap<String, Int64>`` hot path.
+     */
+    @OverflowWrapping
+    public func writeDynamicNameInt64(name: String, value: Int64): JsonWriter {
+        beforeName()
+        haveName = true
+        name.toJson(this)
+        ensureBufferSpace(1)
+        buffer[curPos] = b':'
+        curPos++
+        useSpaceAfterSeparators()
+        // String.toJson consumed the name-side state.  The scalar below is
+        // written directly, so mark the object member complete ourselves.
+        haveName = false
+        ensureBufferSpace(32)
+        if (value < 0) {
+            buffer[curPos] = b'-'
+            curPos++
+            curPos += appendUInt64(UInt64(-(value + 1)) + 1)
+        } else {
+            curPos += appendUInt64(UInt64(value))
+        }
         this
     }
 
