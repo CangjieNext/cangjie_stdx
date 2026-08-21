@@ -496,6 +496,52 @@ public class JsonWriter {
         endObject()
     }
 
+    /** Write an exact String-to-String map without generic value dispatch. */
+    @OverflowWrapping
+    public func writeStringStringMap(values: HashMap<String, String>): Unit {
+        startObject()
+        for ((name, value) in values) {
+            writeName(name)
+            // String.toJson enters the writer value state before using the
+            // same escaping helper, which clears the pending-name flag.
+            value.toJson(this)
+        }
+        endObject()
+    }
+
+    /** Write an exact String-to-Bool map without generic value dispatch. */
+    @OverflowWrapping
+    public func writeStringBoolMap(values: HashMap<String, Bool>): Unit {
+        startObject()
+        for ((name, value) in values) {
+            writeName(name)
+            value.toJson(this)
+        }
+        endObject()
+    }
+
+    /** Write an exact String-to-Float64 map without generic value dispatch. */
+    @OverflowWrapping
+    public func writeStringFloat64Map(values: HashMap<String, Float64>): Unit {
+        startObject()
+        for ((name, value) in values) {
+            writeName(name)
+            value.toJson(this)
+        }
+        endObject()
+    }
+
+    /** Write an exact String-to-Int64-array map with the array bulk writer. */
+    @OverflowWrapping
+    public func writeStringInt64ArrayMap(values: HashMap<String, Array<Int64>>): Unit {
+        startObject()
+        for ((name, value) in values) {
+            writeName(name)
+            writeInt64Array(value)
+        }
+        endObject()
+    }
+
     @OverflowWrapping
     public func writeInt8Array(values: Array<Int8>): Unit {
         startArray()

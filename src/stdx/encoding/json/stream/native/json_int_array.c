@@ -145,6 +145,207 @@ static void CJ_JSON_LoadIntegerElement(const void* input, int64_t kind, int64_t 
 }
 
 /*
+ * Batch integer parsing (deserialization counterpart of the formatter above).
+ *
+ * The caller positions input[0..len) at an element boundary: either right
+ * after the '[' of the array or right after the ',' that followed a
+ * previously accepted element.  The parser accepts as many plain decimal
+ * elements (optional '-' followed by digits, JSON whitespace allowed around
+ * tokens) as fit into out, and always stops at a clean boundary so the
+ * caller can resume element-wise decoding for anything it does not handle.
+ *
+ * Return value packs:
+ *   bits 63..34 : accepted element count
+ *   bits 33..2  : consumed byte count (up to and including the last ',' or
+ *                 the terminating ']')
+ *   bits  1..0  : stop reason
+ * Reasons:
+ *   DONE        ']' consumed; the array is complete.  A ']' directly after
+ *               a ',' (trailing comma) is reported as COMPLEX because the
+ *               element-wise reader rejects it with the same exception.
+ *   COMPLEX     A token the fast path does not handle: floats, strings,
+ *               0x/0b/0o/0d number-system prefixes, values beyond Int64,
+ *               malformed signs, ...  Consumed stops BEFORE that element so
+ *               the element-wise fallback reproduces the exact original
+ *               behavior (same values or same exceptions).
+ *   TRUNCATED   The buffer ends inside an element or before its terminator;
+ *               consumed stops at the last boundary and the caller should
+ *               refill the buffer and retry.
+ *   CHUNK_FULL  out reached its capacity; consumed stops at the last
+ *               boundary so the caller can retry with a fresh chunk.
+ */
+#define CJ_JSON_PARSE_DONE 0
+#define CJ_JSON_PARSE_COMPLEX 1
+#define CJ_JSON_PARSE_TRUNCATED 2
+#define CJ_JSON_PARSE_CHUNK_FULL 3
+
+static int CJ_JSON_ParseIsWs(uint8_t c)
+{
+    return c == ' ' || c == '\t' || c == '\n' || c == '\r';
+}
+
+static int CJ_JSON_ParseIsDigit(uint8_t c)
+{
+    return c >= '0' && c <= '9';
+}
+
+static int64_t CJ_JSON_ParsePack(int64_t elems, int64_t consumed, int64_t reason)
+{
+    return (elems << 34) | (consumed << 2) | reason;
+}
+
+int64_t CJ_JSON_ParseInt64Array(const uint8_t* input, int64_t len, int64_t* out, int64_t outCap)
+{
+    int64_t pos = 0;
+    int64_t boundary = 0; /* 0 also means "still right after '['" */
+    int64_t elems = 0;
+    if (input == NULL || out == NULL || outCap <= 0) {
+        return CJ_JSON_ParsePack(0, 0, CJ_JSON_PARSE_TRUNCATED);
+    }
+    while (1) {
+        while (pos < len && CJ_JSON_ParseIsWs(input[pos])) {
+            pos++;
+        }
+        if (pos >= len) {
+            return CJ_JSON_ParsePack(elems, boundary, CJ_JSON_PARSE_TRUNCATED);
+        }
+        uint8_t c = input[pos];
+        if (c == ']') {
+            if (boundary == 0) {
+                /* empty array (or whitespace only): ']' right after '[' */
+                return CJ_JSON_ParsePack(elems, pos + 1, CJ_JSON_PARSE_DONE);
+            }
+            /* ']' right after a ',': trailing comma, rejected downstream */
+            return CJ_JSON_ParsePack(elems, boundary, CJ_JSON_PARSE_COMPLEX);
+        }
+        if (elems == outCap) {
+            return CJ_JSON_ParsePack(elems, boundary, CJ_JSON_PARSE_CHUNK_FULL);
+        }
+        int neg = 0;
+        if (c == '-') {
+            neg = 1;
+            pos++;
+            if (pos >= len) {
+                return CJ_JSON_ParsePack(elems, boundary, CJ_JSON_PARSE_TRUNCATED);
+            }
+            c = input[pos];
+        }
+        if (!CJ_JSON_ParseIsDigit(c)) {
+            return CJ_JSON_ParsePack(elems, boundary, CJ_JSON_PARSE_COMPLEX);
+        }
+        uint64_t mag = 0;
+        int overflow = 0;
+        while (pos < len && CJ_JSON_ParseIsDigit(input[pos])) {
+            uint8_t d = (uint8_t)(input[pos] - '0');
+            if (mag > (UINT64_MAX - d) / 10) {
+                overflow = 1;
+            } else {
+                mag = mag * 10 + d;
+            }
+            pos++;
+        }
+        if (pos >= len) {
+            /* element terminator not in buffer yet */
+            return CJ_JSON_ParsePack(elems, boundary, CJ_JSON_PARSE_TRUNCATED);
+        }
+        while (pos < len && CJ_JSON_ParseIsWs(input[pos])) {
+            pos++;
+        }
+        if (pos >= len) {
+            return CJ_JSON_ParsePack(elems, boundary, CJ_JSON_PARSE_TRUNCATED);
+        }
+        c = input[pos];
+        if (c != ',' && c != ']') {
+            /* fraction/exponent, 0x-style prefix, stray letter, ... */
+            return CJ_JSON_ParsePack(elems, boundary, CJ_JSON_PARSE_COMPLEX);
+        }
+        if (overflow || (!neg && mag > (uint64_t)INT64_MAX) ||
+            (neg && mag > (uint64_t)INT64_MAX + 1)) {
+            /* fallback re-reads the element and raises the same overflow error */
+            return CJ_JSON_ParsePack(elems, boundary, CJ_JSON_PARSE_COMPLEX);
+        }
+        out[elems] = neg ? (int64_t)(0 - mag) : (int64_t)mag;
+        elems++;
+        if (c == ']') {
+            return CJ_JSON_ParsePack(elems, pos + 1, CJ_JSON_PARSE_DONE);
+        }
+        pos++;
+        boundary = pos;
+    }
+}
+
+/*
+ * Unsigned counterpart of CJ_JSON_ParseInt64Array.  The fast path accepts
+ * only ordinary non-negative decimal JSON integers; '-' and every malformed
+ * or cross-buffer token are intentionally reported as COMPLEX/TRUNCATED so
+ * the Cangjie reader finishes through its established UInt64 scalar path.
+ */
+int64_t CJ_JSON_ParseUInt64Array(const uint8_t* input, int64_t len, uint64_t* out, int64_t outCap)
+{
+    int64_t pos = 0;
+    int64_t boundary = 0;
+    int64_t elems = 0;
+    if (input == NULL || out == NULL || outCap <= 0) {
+        return CJ_JSON_ParsePack(0, 0, CJ_JSON_PARSE_TRUNCATED);
+    }
+    while (1) {
+        while (pos < len && CJ_JSON_ParseIsWs(input[pos])) {
+            pos++;
+        }
+        if (pos >= len) {
+            return CJ_JSON_ParsePack(elems, boundary, CJ_JSON_PARSE_TRUNCATED);
+        }
+        uint8_t c = input[pos];
+        if (c == ']') {
+            if (boundary == 0) {
+                return CJ_JSON_ParsePack(elems, pos + 1, CJ_JSON_PARSE_DONE);
+            }
+            return CJ_JSON_ParsePack(elems, boundary, CJ_JSON_PARSE_COMPLEX);
+        }
+        if (elems == outCap) {
+            return CJ_JSON_ParsePack(elems, boundary, CJ_JSON_PARSE_CHUNK_FULL);
+        }
+        if (!CJ_JSON_ParseIsDigit(c)) {
+            return CJ_JSON_ParsePack(elems, boundary, CJ_JSON_PARSE_COMPLEX);
+        }
+        uint64_t value = 0;
+        int overflow = 0;
+        while (pos < len && CJ_JSON_ParseIsDigit(input[pos])) {
+            uint8_t d = (uint8_t)(input[pos] - '0');
+            if (value > (UINT64_MAX - d) / 10) {
+                overflow = 1;
+            } else {
+                value = value * 10 + d;
+            }
+            pos++;
+        }
+        if (pos >= len) {
+            return CJ_JSON_ParsePack(elems, boundary, CJ_JSON_PARSE_TRUNCATED);
+        }
+        while (pos < len && CJ_JSON_ParseIsWs(input[pos])) {
+            pos++;
+        }
+        if (pos >= len) {
+            return CJ_JSON_ParsePack(elems, boundary, CJ_JSON_PARSE_TRUNCATED);
+        }
+        c = input[pos];
+        if (c != ',' && c != ']') {
+            return CJ_JSON_ParsePack(elems, boundary, CJ_JSON_PARSE_COMPLEX);
+        }
+        if (overflow) {
+            return CJ_JSON_ParsePack(elems, boundary, CJ_JSON_PARSE_COMPLEX);
+        }
+        out[elems] = value;
+        elems++;
+        if (c == ']') {
+            return CJ_JSON_ParsePack(elems, pos + 1, CJ_JSON_PARSE_DONE);
+        }
+        pos++;
+        boundary = pos;
+    }
+}
+
+/*
  * Format the elements input[startIndex, startIndex + count) into output and
  * stop before the remaining capacity drops below the worst-case element
  * size.  firstElement tells whether startIndex is the first element of the
