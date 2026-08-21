@@ -11,9 +11,40 @@ package stdx.encoding.json.stream
 import std.io.InputStream
 import std.math.*
 import std.time.*
+import std.collection.{ArrayList, HashMap}
 
 @FastNative
 foreign func CJ_ReadString(buffer: CPointer<Byte>, left: Int64, right: Int64): Int64
+
+/*
+ * Native batch parser for JSON arrays of plain decimal Int64 elements.
+ * One call parses as many elements as fit into the output chunk, collapsing
+ * the per-element peeked/stacks state machine into a single scan; the
+ * element kinds and stop reasons mirror the native side (json_int_array.c).
+ */
+@FastNative
+foreign func CJ_JSON_ParseInt64Array(input: CPointer<Byte>, len: Int64, out: CPointer<Int64>,
+    outCap: Int64): Int64
+
+@FastNative
+foreign func CJ_JSON_ParseUInt64Array(input: CPointer<Byte>, len: Int64, out: CPointer<UInt64>,
+    outCap: Int64): Int64
+
+@FastNative
+foreign func CJ_JSON_ParseStringInt64Members(input: CPointer<Byte>, len: Int64,
+    keyStarts: CPointer<Int64>, keyLens: CPointer<Int64>, values: CPointer<Int64>, outCap: Int64): Int64
+
+/** Parse a contiguous, ordinary JSON Float64 through Ryu without a temporary String. */
+@FastNative
+foreign func CJ_JSON_TryParseFloat64(input: CPointer<Byte>, start: Int64, end: Int64): Float64
+
+/*
+ * Small arrays dominate nested-object payloads. Start with a compact scratch
+ * buffer, then promote to the throughput-oriented chunk only on overflow.
+ */
+const JSON_PARSE_INT64_INITIAL_CHUNK_ELEMS: Int64 = 16
+const JSON_PARSE_INT64_CHUNK_ELEMS: Int64 = 256
+const JSON_PARSE_MAP_CHUNK_ELEMS: Int64 = 32
 
 const HIGH_1_UInt8: UInt8 = 0b10000000 // 0x80
 const HIGH_3_UInt8: UInt8 = 0b11100000 // 0xe0
@@ -38,7 +69,7 @@ func isLowSurrogate(num: UInt32): Bool {
 }
 
 public class JsonReader {
-    let inputStream: InputStream // the input stream
+    var inputStream: InputStream // the input stream
     let buffer: Array<Byte> = Array<Byte>(8192, repeat: 0)
     let stacks = JsonStateStack() // a stack of json types(object/array)
     let stringBuffer: StringBuffer = StringBuffer() // a buffer for readed string
@@ -46,6 +77,11 @@ public class JsonReader {
     var peeked: Int64 = PEEK_STATE_NONE // peeked state
     var availLen: Int64 = 0 // The amount of valid data in the buffer
     var index: Int64 = 0 // The start position of valid data in the buffer
+    // Span of the most recently consumed simple field name.  It is valid only
+    // until the caller advances the reader again and supports the hash-based
+    // static-name dispatch fast path below without materializing a String.
+    var lastFieldNameStart: Int64 = -1
+    var lastFieldNameLen: Int64 = -1
 
     var dateTimeFormat: ?DateTimeFormat = None
 
@@ -53,20 +89,191 @@ public class JsonReader {
         this.inputStream = inputStream
     }
 
+    /**
+     * Rebind this reader to a new input stream while retaining its internal
+     * byte/string buffers and state-stack allocation.  The caller owns the
+     * stream lifetime and must not reset a reader concurrently with a read.
+     */
+    public func reset(inputStream: InputStream): Unit {
+        this.inputStream = inputStream
+        availLen = 0
+        index = 0
+        peeked = PEEK_STATE_NONE
+        lastFieldNameStart = -1
+        lastFieldNameLen = -1
+        dateTimeFormat = None
+        stacks.reset()
+        stringBuffer.clear()
+    }
+
     @Frozen
     public func readValue<T>(): T where T <: JsonDeserializable<T> {
-        if (peeked == PEEK_STATE_NONE && stacks.top == JsonStateStack.JSON_OBJECT || peeked == PEEK_STATE_NAME) {
-            throw IllegalStateException("In an object, the name must be handled before the value.")
-        }
+        beforeRead()
         let res = T.fromJson(this)
-        // manual inline func afterRead
+        afterValueRead()
+        return res
+    }
+
+    /**
+     * Read an Int64 without the generic ``JsonDeserializable`` dispatch.
+     *
+     * This is the scalar counterpart to the array batch reader: macro-generated
+     * object fields use it after their name has been consumed.  Range checking
+     * and delimiter/state handling are intentionally identical to
+     * ``readValue<Int64>``.
+     */
+    @OverflowWrapping
+    public func readInt64Value(): Int64 {
+        return readDirectInt64Value()
+    }
+
+    /**
+     * Read a contiguous ordinary decimal Int64 without entering the generic
+     * number-system parser.  Tokens that are buffer-spanning, overflow, or
+     * use any non-decimal spelling deliberately fall back before consuming
+     * input, preserving the existing parser's value/error semantics.
+     */
+    @OverflowWrapping
+    public func readDirectInt64Value(): Int64 {
+        beforeRead()
+        if (let Some(value) <- tryReadDirectDecimalInt64()) {
+            afterValueRead()
+            return value
+        }
+        let (res, overflow) = readInt()
+        if (overflow) {
+            throw OverflowException("The next number is out of range for Int64.")
+        }
+        afterValueRead()
+        return res
+    }
+
+    @OverflowWrapping
+    private func tryReadDirectDecimalInt64(): Option<Int64> {
+        let originalIndex = index
+        var pos = originalIndex
+        let limit = index + availLen
+        if (peeked == PEEK_STATE_NONE || peeked == PEEK_STATE_VALUE) {
+            while (pos < limit && isJsonWhiteSpace(buffer[pos])) {
+                pos++
+            }
+            // The generic stream parser owns whitespace that reaches a
+            // buffer edge, including its precise end-of-stream diagnostic.
+            if (pos >= limit) { return None }
+        } else if (peeked != PEEK_STATE_NUMBER) {
+            return None
+        }
+
+        var negative = false
+        if (buffer[pos] == b'-') {
+            negative = true
+            pos++
+            if (pos >= limit) { return None }
+        }
+        if (buffer[pos] < b'0' || buffer[pos] > b'9') {
+            return None
+        }
+        var magnitude = 0u64
+        var overflow = false
+        while (pos < limit && buffer[pos] >= b'0' && buffer[pos] <= b'9') {
+            let digit = UInt64(buffer[pos] - b'0')
+            if (magnitude > (MAXVAL_UI64 - digit) / 10) {
+                overflow = true
+            } else {
+                magnitude = magnitude * 10 + digit
+            }
+            pos++
+        }
+        // Require an in-buffer delimiter.  This also rejects number-system
+        // prefixes, exponents and fractions without disturbing the reader.
+        if (pos >= limit) { return None }
+        let delimiter = buffer[pos]
+        if (!isJsonWhiteSpace(delimiter) && delimiter != b',' && delimiter != b']' && delimiter != b'}') {
+            return None
+        }
+        if (overflow || (!negative && magnitude > MAXVAL_I64) ||
+            (negative && magnitude > MAXABSVAL_I64)) {
+            return None
+        }
+        index = pos
+        availLen -= pos - originalIndex
+        peeked = PEEK_STATE_NUMBER
+        return Some(if (negative) { Int64(-magnitude) } else { Int64(magnitude) })
+    }
+
+    /**
+     * Read a Float64 through the native Ryu parser when its complete token is
+     * already in the reader buffer.  Non-standard, malformed, long, and
+     * buffer-spanning input deliberately falls back to ``readFloat`` so this
+     * typed entry point keeps the existing stream semantics.
+     */
+    @OverflowWrapping
+    public func readFloat64Value(): Float64 {
+        beforeRead()
+        let _ = peek()
+        if (let Some(value) <- tryReadFloat64ValueFast()) {
+            afterValueRead()
+            return value
+        }
+        let value = ensureFiniteJsonFloat(readFloat())
+        afterValueRead()
+        return value
+    }
+
+    @OverflowWrapping
+    private func tryReadFloat64ValueFast(): Option<Float64> {
+        if (peeked != PEEK_STATE_NUMBER) {
+            return None
+        }
+        let start = index
+        let limit = index + availLen
+        var end = start
+        while (end < limit) {
+            let b = buffer[end]
+            if ((b >= b'0' && b <= b'9') || b == b'-' || b == b'+' || b == b'.' ||
+                b == b'e' || b == b'E') {
+                end++
+            } else {
+                break
+            }
+        }
+        // The native path needs both a full token and its delimiter in this
+        // buffer; otherwise the original streaming parser owns the input.
+        if (end == start || end == limit || end - start < 16) {
+            return None
+        }
+        let delimiter = buffer[end]
+        if (delimiter != b',' && delimiter != b']' && delimiter != b'}' &&
+            delimiter != b' ' && delimiter != b'\n' && delimiter != b'\r' && delimiter != b'\t') {
+            return None
+        }
+        var value = Float64.NaN
+        unsafe {
+            let handle = acquireArrayRawData<Byte>(buffer)
+            try {
+                value = CJ_JSON_TryParseFloat64(handle.pointer, start, end)
+            } finally {
+                releaseArrayRawData(handle)
+            }
+        }
+        if (value.isNaN()) {
+            return None
+        }
+        availLen -= end - start
+        index = end
+        return Some(ensureFiniteJsonFloat(value))
+    }
+
+    // Shared completion logic for generic and typed scalar reads.  This is
+    // intentionally stricter than afterRead(), preserving readValue's comma
+    // validation for every public value-reading API.
+    private func afterValueRead(): Unit {
         let nextByte: Byte = if (let Some(v) <- tryNextNonJsonWhitespace()) {
             v
         } else {
             peeked = PEEK_STATE_NONE
-            return res
+            return
         }
-        
         if (nextByte == b',') {
             index++
             availLen--
@@ -89,8 +296,6 @@ public class JsonReader {
             }
             peeked = PEEK_STATE_NONE
         }
-
-        return res
     }
 
     /**
@@ -194,6 +399,552 @@ public class JsonReader {
             i++
         }
         return true
+    }
+
+    /**
+     * 尝试读取字段名到调用方缓冲区（零分配快速路径）。
+     *
+     * 仅当 upcoming token 为字段名、名字完整落在当前 buffer 内、不含转义
+     * 反斜杠、长度不超过 ``buf.size`` 且冒号紧跟右引号（无空白）时，拷贝
+     * 原始字节到 ``buf``、消费 ``"name":`` 并置 ``peeked = PEEK_STATE_VALUE``，
+     * 返回名字字节长度。
+     * 其余情况（转义名、跨界名、名字后有空白等）返回 -1 且不移动任何状态，
+     * 调用方回退 ``readName`` 完整路径。
+     */
+    @OverflowWrapping
+    public func tryReadNameInto(buf: Array<Byte>): Int64 {
+        if (peeked != PEEK_STATE_NAME && peek() != Some(Name)) {
+            return -1
+        }
+        // buffer[index] is the opening quote; scan for the closing quote.
+        var end = index + 1
+        let limit = index + availLen
+        while (end < limit) {
+            let b = buffer[end]
+            if (b == b'"') {
+                break
+            }
+            if (b == b'\\') {
+                return -1 // escaped name: fallback to readName
+            }
+            end++
+        }
+        if (end >= limit) {
+            return -1 // closing quote not in buffer: fallback
+        }
+        let len = end - (index + 1)
+        if (len > buf.size) {
+            return -1
+        }
+        // ':' must immediately follow the closing quote (no whitespace fast path).
+        if (end + 1 >= limit || buffer[end + 1] != b':') {
+            return -1
+        }
+        var i = 0
+        while (i < len) {
+            buf[i] = buffer[index + 1 + i]
+            i++
+        }
+        index += len + 3
+        availLen -= len + 3
+        peeked = PEEK_STATE_VALUE
+        return len
+    }
+
+    /**
+     * Advance an object decoder to its next member name in one state-machine
+     * operation.
+     *
+     * Return values are deliberately compact for macro-generated decode loops:
+     * a non-negative value is the byte length returned by ``tryReadNameInto``;
+     * ``-1`` means that the name needs the existing ``readName`` slow path
+     * (escaped, split across the buffer, too long, or whitespace before ':');
+     * ``-2`` means that the next token is ``EndObject``.  The slow-path result
+     * leaves reader state untouched, while the end result leaves the end token
+     * peeked so a following ``endObject`` has the normal semantics.
+     */
+    @OverflowWrapping
+    public func nextFieldInto(buf: Array<Byte>): Int64 {
+        match (peek()) {
+            case Some(JsonToken.EndObject) => return -2
+            case Some(JsonToken.Name) => return tryReadNameInto(buf)
+            case _ => throw IllegalStateException("Expect an object member name or EndObject.")
+        }
+    }
+
+    /**
+     * Consume a simple object member name and return its bounded DJB2 hash.
+     *
+     * A non-negative result means the unescaped name and following ':' were
+     * consumed.  ``lastFieldNameEquals`` must immediately confirm the chosen
+     * static literal before dispatching; this keeps hash collisions harmless.
+     * ``-1`` leaves the reader unchanged for the existing ``readName`` slow
+     * path, and ``-2`` denotes ``EndObject`` just like ``nextFieldInto``.
+     */
+    @OverflowWrapping
+    public func nextFieldHash(): Int64 {
+        match (peek()) {
+            case Some(JsonToken.EndObject) => return -2
+            case Some(JsonToken.Name) => ()
+            case _ => throw IllegalStateException("Expect an object member name or EndObject.")
+        }
+        var end = index + 1
+        let limit = index + availLen
+        var hash: Int64 = 5381
+        while (end < limit) {
+            let b = buffer[end]
+            if (b == b'"') {
+                break
+            }
+            if (b == b'\\') {
+                return -1
+            }
+            // Keep the return value non-negative so -1/-2 remain sentinels.
+            hash = ((hash * 33) + Int64(b)) & 0x7fffffff
+            end++
+        }
+        if (end >= limit || end + 1 >= limit || buffer[end + 1] != b':') {
+            return -1
+        }
+        lastFieldNameStart = index + 1
+        lastFieldNameLen = end - lastFieldNameStart
+        let consumed = end - index + 2
+        index += consumed
+        availLen -= consumed
+        peeked = PEEK_STATE_VALUE
+        return hash
+    }
+
+    /**
+     * Exact confirmation for the name returned by ``nextFieldHash``.
+     *
+     * The comparison reads the current reader buffer directly and does not
+     * allocate a temporary byte array or String.  It is intentionally public
+     * so generated decoders can use it, but callers must invoke it before
+     * reading/skipping the corresponding value.
+     */
+    @OverflowWrapping
+    public func lastFieldNameEquals(name: String): Bool {
+        if (lastFieldNameStart < 0) {
+            return false
+        }
+        let raw = unsafe { name.rawData() }
+        if (raw.size != lastFieldNameLen) {
+            return false
+        }
+        var i = 0
+        while (i < lastFieldNameLen) {
+            if (buffer[lastFieldNameStart + i] != raw[i]) {
+                return false
+            }
+            i++
+        }
+        return true
+    }
+
+    /**
+     * Consume and verify the next object member name against an exact fixed
+     * schema literal without allocating a temporary String for the input name.
+     *
+     * This is deliberately strict: end-of-object, escaped names, whitespace
+     * between a name and ':', cross-buffer names, or a different literal all
+     * fail instead of taking the ordinary permissive reader fallback.
+     */
+    @OverflowWrapping
+    public func expectNextFieldName(name: String): Unit {
+        let hash = nextFieldHash()
+        if (hash < 0 || !lastFieldNameEquals(name)) {
+            throw IllegalStateException("Fixed JSON schema field name mismatch.")
+        }
+    }
+
+    /**
+     * Consume one exact, unescaped fixed-schema member name in a single scan.
+     *
+     * Unlike ``expectNextFieldName``, this route does not calculate a dispatch
+     * hash and then scan the same bytes again for confirmation.  It is only
+     * for generated strict decoders that already know the one legal next
+     * literal.  Any escaped name, whitespace before ':', cross-buffer name,
+     * end-of-object, or mismatch is rejected.
+     */
+    @OverflowWrapping
+    public func expectNextFixedFieldName(name: String): Unit {
+        if (peeked != PEEK_STATE_NAME && peek() != Some(Name)) {
+            throw IllegalStateException("Fixed JSON schema field name mismatch.")
+        }
+        let raw = unsafe { name.rawData() }
+        let limit = index + availLen
+        var pos = index + 1
+        var i = 0
+        while (i < raw.size) {
+            if (pos >= limit || buffer[pos] != raw[i]) {
+                throw IllegalStateException("Fixed JSON schema field name mismatch.")
+            }
+            pos++
+            i++
+        }
+        if (pos + 1 >= limit || buffer[pos] != b'"' || buffer[pos + 1] != b':') {
+            throw IllegalStateException("Fixed JSON schema field name mismatch.")
+        }
+        let consumed = pos - index + 2
+        index += consumed
+        availLen -= consumed
+        lastFieldNameStart = -1
+        lastFieldNameLen = -1
+        peeked = PEEK_STATE_VALUE
+    }
+
+    /**
+     * 尝试直接物化一个简单字段名并消费其后的冒号。
+     *
+     * 与 ``tryReadNameInto`` 的接受条件相同，但不经过调用方的临时字节
+     * 缓冲区：字段名完整位于当前 buffer、无转义且右引号后紧跟冒号时，
+     * 直接从输入 span 创建 ``String``，消费 ``"name":`` 并返回 ``Some``。
+     * 其余情况返回 ``None``，且 reader 状态完全不变，调用方必须回退到
+     * ``readName`` 保持转义、跨 buffer 与空白场景的既有语义。
+     */
+    @OverflowWrapping
+    public func tryReadNameString(): Option<String> {
+        if (peeked != PEEK_STATE_NAME && peek() != Some(Name)) {
+            return None
+        }
+        var end = index + 1
+        let limit = index + availLen
+        // M3: Map keys are commonly short ASCII names (for example key0,
+        // key99).  Scan four bytes per iteration in pure Cangjie before the
+        // scalar tail; this avoids a loop back-edge and two delimiter checks
+        // for every byte without adding a per-key native/FFI call.
+        while (end + 4 <= limit) {
+            let b0 = buffer[end]
+            let b1 = buffer[end + 1]
+            let b2 = buffer[end + 2]
+            let b3 = buffer[end + 3]
+            if (b0 == b'"' || b0 == b'\\' || b1 == b'"' || b1 == b'\\' ||
+                b2 == b'"' || b2 == b'\\' || b3 == b'"' || b3 == b'\\') {
+                break
+            }
+            end += 4
+        }
+        while (end < limit) {
+            let b = buffer[end]
+            if (b == b'"') {
+                break
+            }
+            if (b == b'\\') {
+                return None
+            }
+            end++
+        }
+        if (end >= limit || end + 1 >= limit || buffer[end + 1] != b':') {
+            return None
+        }
+        let result = unsafe { String.fromUtf8Unchecked(buffer[index + 1..end]) }
+        let consumed = end - index + 2
+        index += consumed
+        availLen -= consumed
+        peeked = PEEK_STATE_VALUE
+        return Some(result)
+    }
+
+    /**
+     * Batch-read an object whose ordinary members are ``String:Int64``.
+     *
+     * The native scanner consumes only simple unescaped keys and decimal
+     * Int64 values.  Any other legal JSON spelling resumes through the
+     * established name/value reader, so this method remains semantically
+     * equivalent to a normal object loop after it has accepted a prefix.
+     */
+    @OverflowWrapping
+    public func tryReadStringInt64Map(capacityHint: Int64): Option<HashMap<String, Int64>> {
+        if (peeked != PEEK_STATE_OBJECT_BEGIN && peek() != Some(BeginObject)) {
+            return None
+        }
+        beforeRead()
+        index++
+        availLen--
+        stacks.put(JsonStateStack.JSON_OBJECT)
+        peeked = PEEK_STATE_NONE
+
+        let capacity = if (capacityHint > 0) { capacityHint } else { 0 }
+        let values = HashMap<String, Int64>(capacity)
+        let keyStarts = Array<Int64>(JSON_PARSE_MAP_CHUNK_ELEMS, repeat: 0)
+        let keyLens = Array<Int64>(JSON_PARSE_MAP_CHUNK_ELEMS, repeat: 0)
+        let intValues = Array<Int64>(JSON_PARSE_MAP_CHUNK_ELEMS, repeat: 0)
+        var complete = false
+        while (!complete) {
+            if (availLen <= 0) {
+                fillInBuf()
+                if (availLen <= 0) { break }
+            }
+            var packed = Int64(0)
+            unsafe {
+                let inHandle = acquireArrayRawData<Byte>(buffer)
+                let startHandle = acquireArrayRawData<Int64>(keyStarts)
+                let lenHandle = acquireArrayRawData<Int64>(keyLens)
+                let valueHandle = acquireArrayRawData<Int64>(intValues)
+                try {
+                    packed = CJ_JSON_ParseStringInt64Members(inHandle.pointer + index, availLen,
+                        startHandle.pointer, lenHandle.pointer, valueHandle.pointer, intValues.size)
+                } finally {
+                    releaseArrayRawData(valueHandle)
+                    releaseArrayRawData(lenHandle)
+                    releaseArrayRawData(startHandle)
+                    releaseArrayRawData(inHandle)
+                }
+            }
+            let reason = packed & 0x3
+            let consumed = (packed >> 2) & 0xFFFFFFFF
+            let count = packed >> 34
+            let start = index
+            var i = Int64(0)
+            while (i < count) {
+                let name = unsafe {
+                    String.fromUtf8Unchecked(buffer[start + keyStarts[i]..start + keyStarts[i] + keyLens[i]])
+                }
+                values.add(name, intValues[i])
+                i++
+            }
+            index += consumed
+            availLen -= consumed
+            if (reason == 0) {
+                complete = true
+                break
+            }
+            if (reason == 2) {
+                if (refillCompact() <= 0) { break }
+                continue
+            }
+            if (reason == 3) { continue }
+            break
+        }
+        if (!complete) {
+            while (let Some(token) <- peek()) {
+                match (token) {
+                    case EndObject =>
+                        endObject()
+                        return Some(values)
+                    case _ =>
+                        let key = match (tryReadNameString()) {
+                            case Some(name) => name
+                            case None => readName()
+                        }
+                        values.add(key, readInt64Value())
+                }
+            }
+            return Some(values)
+        }
+        endObject()
+        return Some(values)
+    }
+
+    /*
+     * Fast path: batch-decode a JSON array of Int64 values.
+     *
+     * Returns None when the next token is not BeginArray, leaving all state
+     * untouched so the caller can fall back to the generic element-wise
+     * reader (which raises the proper error for non-array tokens).  Once the
+     * '[' is consumed the method always returns Some: plain decimal elements
+     * are parsed natively in chunks, and anything the native parser does not
+     * accept (floats, strings, 0x-style prefixes, Int64 overflow, trailing
+     * commas, end-of-stream truncation, ...) is finished element-wise with
+     * readValue<Int64>, reproducing the original behavior byte for byte.
+     */
+    @OverflowWrapping
+    public func tryReadInt64Array(): Option<Array<Int64>> {
+        if (peeked != PEEK_STATE_ARRAY_BEGIN && peek() != Some(BeginArray)) {
+            return None
+        }
+        // peeked == PEEK_STATE_ARRAY_BEGIN and index points at '['; consume
+        // it exactly like startArray() (beforeRead included).
+        beforeRead()
+        index++
+        availLen--
+        stacks.put(JsonStateStack.JSON_ARRAY)
+        peeked = PEEK_STATE_NONE
+
+        // Avoid allocating two 256-element containers for short nested
+        // arrays. The native parser reports CHUNK_FULL before consuming the
+        // next item, so switching buffers preserves reader state exactly.
+        var elems = ArrayList<Int64>(JSON_PARSE_INT64_INITIAL_CHUNK_ELEMS)
+        var chunk = Array<Int64>(JSON_PARSE_INT64_INITIAL_CHUNK_ELEMS, repeat: 0)
+        var complete = false
+        while (!complete) {
+            if (availLen <= 0) {
+                fillInBuf()
+                if (availLen <= 0) {
+                    break // stream exhausted mid-array: element-wise tail
+                }
+            }
+            var packed = Int64(0)
+            unsafe {
+                let inHandle = acquireArrayRawData<Byte>(buffer)
+                let outHandle = acquireArrayRawData<Int64>(chunk)
+                try {
+                    packed = CJ_JSON_ParseInt64Array(inHandle.pointer + index, availLen,
+                        outHandle.pointer, chunk.size)
+                } finally {
+                    releaseArrayRawData(outHandle)
+                    releaseArrayRawData(inHandle)
+                }
+            }
+            let reason = packed & 0x3
+            let consumed = (packed >> 2) & 0xFFFFFFFF
+            let count = packed >> 34
+            var i = Int64(0)
+            while (i < count) {
+                elems.add(chunk[i])
+                i++
+            }
+            index += consumed
+            availLen -= consumed
+            // Keep the peeked state consistent with the element-wise reader:
+            // after a consumed ',' the next token must be a value, and a ']'
+            // there is a trailing comma the element-wise reader rejects.
+            if (reason != 0 && consumed > 0 && buffer[index - 1] == b',') {
+                peeked = PEEK_STATE_VALUE
+            }
+            if (reason == 0) { // DONE: ']' consumed
+                complete = true
+                break
+            }
+            if (reason == 2) { // TRUNCATED: refill and retry
+                if (refillCompact() <= 0) {
+                    break // no more input: element-wise tail (EOF semantics)
+                }
+                continue
+            }
+            if (reason == 3) { // CHUNK_FULL: promote only once, then retry
+                if (chunk.size < JSON_PARSE_INT64_CHUNK_ELEMS) {
+                    let promotedElems = ArrayList<Int64>(JSON_PARSE_INT64_CHUNK_ELEMS)
+                    for (value in elems) {
+                        promotedElems.add(value)
+                    }
+                    elems = promotedElems
+                    chunk = Array<Int64>(JSON_PARSE_INT64_CHUNK_ELEMS, repeat: 0)
+                }
+                continue
+            }
+            break // COMPLEX: element-wise tail preserves exact semantics
+        }
+        if (!complete) {
+            // Element-wise tail: the same loop the generic readArray helper
+            // generates, including its lenient end-of-stream behavior.
+            while (let Some(token) <- peek()) {
+                match (token) {
+                    case EndArray =>
+                        endArray()
+                        return Some(elems.toArray())
+                    case _ =>
+                        elems.add(readValue<Int64>())
+                }
+            }
+            return Some(elems.toArray())
+        }
+        stacks.pop()
+        peeked = PEEK_STATE_NONE
+        afterRead()
+        return Some(elems.toArray())
+    }
+
+    /**
+     * Fast path for arrays of non-negative decimal UInt64 values.  Every
+     * token the native scanner cannot prove equivalent is completed by the
+     * existing readValue<UInt64> path, including its error behavior.
+     */
+    @OverflowWrapping
+    public func tryReadUInt64Array(): Option<Array<UInt64>> {
+        if (peeked != PEEK_STATE_ARRAY_BEGIN && peek() != Some(BeginArray)) {
+            return None
+        }
+        beforeRead()
+        index++
+        availLen--
+        stacks.put(JsonStateStack.JSON_ARRAY)
+        peeked = PEEK_STATE_NONE
+
+        let elems = ArrayList<UInt64>(JSON_PARSE_INT64_CHUNK_ELEMS)
+        let chunk = Array<UInt64>(JSON_PARSE_INT64_CHUNK_ELEMS, repeat: 0u64)
+        var complete = false
+        while (!complete) {
+            if (availLen <= 0) {
+                fillInBuf()
+                if (availLen <= 0) { break }
+            }
+            var packed = Int64(0)
+            unsafe {
+                let inHandle = acquireArrayRawData<Byte>(buffer)
+                let outHandle = acquireArrayRawData<UInt64>(chunk)
+                try {
+                    packed = CJ_JSON_ParseUInt64Array(inHandle.pointer + index, availLen,
+                        outHandle.pointer, chunk.size)
+                } finally {
+                    releaseArrayRawData(outHandle)
+                    releaseArrayRawData(inHandle)
+                }
+            }
+            let reason = packed & 0x3
+            let consumed = (packed >> 2) & 0xFFFFFFFF
+            let count = packed >> 34
+            var i = Int64(0)
+            while (i < count) {
+                elems.add(chunk[i])
+                i++
+            }
+            index += consumed
+            availLen -= consumed
+            if (reason != 0 && consumed > 0 && buffer[index - 1] == b',') {
+                peeked = PEEK_STATE_VALUE
+            }
+            if (reason == 0) {
+                complete = true
+                break
+            }
+            if (reason == 2) {
+                if (refillCompact() <= 0) { break }
+                continue
+            }
+            if (reason == 3) { continue }
+            break
+        }
+        if (!complete) {
+            while (let Some(token) <- peek()) {
+                match (token) {
+                    case EndArray =>
+                        endArray()
+                        return Some(elems.toArray())
+                    case _ => elems.add(readValue<UInt64>())
+                }
+            }
+            return Some(elems.toArray())
+        }
+        stacks.pop()
+        peeked = PEEK_STATE_NONE
+        afterRead()
+        return Some(elems.toArray())
+    }
+
+    /*
+     * Compact the remaining buffer bytes to offset 0 and read more input into
+     * the free tail.  Returns the number of new bytes read (<= 0 at end of
+     * stream).  Unlike fillInBuf(min) this never throws, so the batch parser
+     * can degrade to the element-wise tail at end of stream.
+     */
+    private func refillCompact(): Int64 {
+        if (availLen >= buffer.size) {
+            // Buffer already full without a terminator: a single element
+            // longer than the buffer; degrade to the element-wise reader.
+            return 0
+        }
+        for (i in 0..availLen) {
+            buffer[i] = buffer[index + i]
+        }
+        index = 0
+        let readLen = inputStream.read(buffer[availLen..])
+        if (readLen > 0) {
+            availLen += readLen
+            return readLen
+        }
+        return 0
     }
 
     /**

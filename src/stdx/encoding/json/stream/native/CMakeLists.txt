@@ -7,7 +7,11 @@
 
 set(json_stream_ffi_src
     utils.c
+    json_int_array.c
+    json_float_parse.c
+    json_string_chunk.c
     ryu/d2s.c
+    ryu/s2d.c
 )
 set(libname stdx.encoding.json.streamFFI)
 

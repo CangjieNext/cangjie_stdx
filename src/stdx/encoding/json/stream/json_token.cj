@@ -99,6 +99,12 @@ class JsonStateStack {
         stacksize--
     }
 
+    /* Reset to the top-level sentinel while retaining the allocated stack. */
+    func reset() {
+        stacksize = 1
+        stack[0] = JSON_UNDEFINE
+    }
+
     prop top: Int64 {
         get() {
             stack[stacksize - 1]
