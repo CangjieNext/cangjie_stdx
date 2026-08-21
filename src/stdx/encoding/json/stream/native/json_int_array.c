@@ -346,6 +346,115 @@ int64_t CJ_JSON_ParseUInt64Array(const uint8_t* input, int64_t len, uint64_t* ou
 }
 
 /*
+ * Batch parse ordinary object members of the form "key":<Int64>.
+ *
+ * The input begins immediately after '{' or a previously consumed comma.
+ * Accepted keys are unescaped and wholly contained in this input span.  The
+ * caller materializes the reported key spans before it refills the stream.
+ * Unlike the array parsers, DONE deliberately stops *before* the closing
+ * '}', allowing JsonReader.endObject() to retain ownership of object state.
+ */
+int64_t CJ_JSON_ParseStringInt64Members(const uint8_t* input, int64_t len,
+    int64_t* keyStarts, int64_t* keyLens, int64_t* values, int64_t outCap)
+{
+    int64_t pos = 0;
+    int64_t boundary = 0;
+    int64_t elems = 0;
+    if (input == NULL || keyStarts == NULL || keyLens == NULL || values == NULL || outCap <= 0) {
+        return CJ_JSON_ParsePack(0, 0, CJ_JSON_PARSE_TRUNCATED);
+    }
+    while (1) {
+        while (pos < len && CJ_JSON_ParseIsWs(input[pos])) {
+            pos++;
+        }
+        if (pos >= len) {
+            return CJ_JSON_ParsePack(elems, boundary, CJ_JSON_PARSE_TRUNCATED);
+        }
+        if (input[pos] == '}') {
+            return CJ_JSON_ParsePack(elems, pos, CJ_JSON_PARSE_DONE);
+        }
+        if (elems == outCap) {
+            return CJ_JSON_ParsePack(elems, boundary, CJ_JSON_PARSE_CHUNK_FULL);
+        }
+        if (input[pos] != '"') {
+            return CJ_JSON_ParsePack(elems, boundary, CJ_JSON_PARSE_COMPLEX);
+        }
+        int64_t keyStart = ++pos;
+        while (pos < len && input[pos] != '"') {
+            if (input[pos] == '\\') {
+                return CJ_JSON_ParsePack(elems, boundary, CJ_JSON_PARSE_COMPLEX);
+            }
+            pos++;
+        }
+        if (pos >= len) {
+            return CJ_JSON_ParsePack(elems, boundary, CJ_JSON_PARSE_TRUNCATED);
+        }
+        int64_t keyLen = pos - keyStart;
+        pos++;
+        if (pos >= len) {
+            return CJ_JSON_ParsePack(elems, boundary, CJ_JSON_PARSE_TRUNCATED);
+        }
+        if (input[pos] != ':') {
+            return CJ_JSON_ParsePack(elems, boundary, CJ_JSON_PARSE_COMPLEX);
+        }
+        pos++;
+        if (pos >= len) {
+            return CJ_JSON_ParsePack(elems, boundary, CJ_JSON_PARSE_TRUNCATED);
+        }
+        int neg = 0;
+        uint8_t c = input[pos];
+        if (c == '-') {
+            neg = 1;
+            pos++;
+            if (pos >= len) {
+                return CJ_JSON_ParsePack(elems, boundary, CJ_JSON_PARSE_TRUNCATED);
+            }
+            c = input[pos];
+        }
+        if (!CJ_JSON_ParseIsDigit(c)) {
+            return CJ_JSON_ParsePack(elems, boundary, CJ_JSON_PARSE_COMPLEX);
+        }
+        uint64_t mag = 0;
+        int overflow = 0;
+        while (pos < len && CJ_JSON_ParseIsDigit(input[pos])) {
+            uint8_t d = (uint8_t)(input[pos] - '0');
+            if (mag > (UINT64_MAX - d) / 10) {
+                overflow = 1;
+            } else {
+                mag = mag * 10 + d;
+            }
+            pos++;
+        }
+        if (pos >= len) {
+            return CJ_JSON_ParsePack(elems, boundary, CJ_JSON_PARSE_TRUNCATED);
+        }
+        while (pos < len && CJ_JSON_ParseIsWs(input[pos])) {
+            pos++;
+        }
+        if (pos >= len) {
+            return CJ_JSON_ParsePack(elems, boundary, CJ_JSON_PARSE_TRUNCATED);
+        }
+        c = input[pos];
+        if (c != ',' && c != '}') {
+            return CJ_JSON_ParsePack(elems, boundary, CJ_JSON_PARSE_COMPLEX);
+        }
+        if (overflow || (!neg && mag > (uint64_t)INT64_MAX) ||
+            (neg && mag > (uint64_t)INT64_MAX + 1)) {
+            return CJ_JSON_ParsePack(elems, boundary, CJ_JSON_PARSE_COMPLEX);
+        }
+        keyStarts[elems] = keyStart;
+        keyLens[elems] = keyLen;
+        values[elems] = neg ? (int64_t)(0 - mag) : (int64_t)mag;
+        elems++;
+        if (c == '}') {
+            return CJ_JSON_ParsePack(elems, pos, CJ_JSON_PARSE_DONE);
+        }
+        pos++;
+        boundary = pos;
+    }
+}
+
+/*
  * Format the elements input[startIndex, startIndex + count) into output and
  * stop before the remaining capacity drops below the worst-case element
  * size.  firstElement tells whether startIndex is the first element of the
