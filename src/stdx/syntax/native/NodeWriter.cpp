@@ -39,7 +39,7 @@ uint8_t* ExportFinishedFlatBuffer(flatbuffers::FlatBufferBuilder& builder, std::
     (void)std::copy(pBufferSize, pBufferSize + sizeof(uint32_t), bufferData.begin());
     (void)std::copy(
         buf, buf + static_cast<size_t>(length), bufferData.begin() + static_cast<int32_t>(sizeof(uint32_t)));
-    uint8_t* rawPtr = (uint8_t*)malloc(bufferData.size());
+    uint8_t* rawPtr = static_cast<uint8_t*>(std::malloc(bufferData.size()));
     if (rawPtr == nullptr) {
         Errorln("Memory Allocation Failed.");
         return rawPtr;
