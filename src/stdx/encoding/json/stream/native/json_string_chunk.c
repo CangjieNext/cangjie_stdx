@@ -17,6 +17,21 @@
 #endif
 
 /*
+ * x86_64 guarantees SSE2.  Keep the AVX2 body separately target-attributed:
+ * the library is built for a generic x86_64 baseline and selects that body
+ * only after checking the running CPU.
+ */
+#if defined(__x86_64__) || defined(_M_X64)
+#define CJ_JSON_SCAN_SSE2 1
+#include <emmintrin.h>
+#if (defined(__GNUC__) || defined(__clang__)) && !defined(_MSC_VER)
+#define CJ_JSON_SCAN_AVX2 1
+#include <immintrin.h>
+#define CJ_JSON_TARGET_AVX2 __attribute__((target("avx2")))
+#endif
+#endif
+
+/*
  * Escape classification shared with the stream writer's compact mode:
  * '"' and '\' take the two-byte short escapes, the C0 controls use
  * \u00XX, DEL (127) uses \u007f, and every other byte (including UTF-8
@@ -79,7 +94,7 @@ static int CJ_JSON_WriteEscapedByte(uint8_t* output, uint8_t byte)
     }
 }
 
-#ifndef CJ_JSON_SCAN_NEON
+#if !defined(CJ_JSON_SCAN_NEON) && !defined(CJ_JSON_SCAN_SSE2)
 /*
  * SWAR escape test for one 64-bit word: true when any byte is < 0x20 or
  * equals '"', '\' or 0x7f.  Bytes >= 0x80 (UTF-8 continuation) never match.
@@ -130,6 +145,40 @@ static bool CJ_JSON_VectorNeedsEscape(const uint8_t* p)
 }
 #endif
 
+#ifdef CJ_JSON_SCAN_SSE2
+static bool CJ_JSON_SSE2NeedsEscape(const uint8_t* p)
+{
+    const __m128i v = _mm_loadu_si128((const __m128i*)p);
+    /* Convert an unsigned byte comparison (v < 0x20) into a signed one. */
+    const __m128i below = _mm_cmplt_epi8(_mm_xor_si128(v, _mm_set1_epi8((char)0x80)),
+        _mm_set1_epi8((char)0xa0));
+    const __m128i bad = _mm_or_si128(below,
+        _mm_or_si128(_mm_cmpeq_epi8(v, _mm_set1_epi8(0x22)),
+            _mm_or_si128(_mm_cmpeq_epi8(v, _mm_set1_epi8(0x5c)),
+                _mm_cmpeq_epi8(v, _mm_set1_epi8(0x7f)))));
+    return _mm_movemask_epi8(bad) != 0;
+}
+#endif
+
+#ifdef CJ_JSON_SCAN_AVX2
+static CJ_JSON_TARGET_AVX2 bool CJ_JSON_AVX2NeedsEscape(const uint8_t* p)
+{
+    const __m256i v = _mm256_loadu_si256((const __m256i*)p);
+    const __m256i below = _mm256_cmpgt_epi8(_mm256_set1_epi8((char)0xa0),
+        _mm256_xor_si256(v, _mm256_set1_epi8((char)0x80)));
+    const __m256i bad = _mm256_or_si256(below,
+        _mm256_or_si256(_mm256_cmpeq_epi8(v, _mm256_set1_epi8(0x22)),
+            _mm256_or_si256(_mm256_cmpeq_epi8(v, _mm256_set1_epi8(0x5c)),
+                _mm256_cmpeq_epi8(v, _mm256_set1_epi8(0x7f)))));
+    return _mm256_movemask_epi8(bad) != 0;
+}
+
+static bool CJ_JSON_HasAVX2(void)
+{
+    return __builtin_cpu_supports("avx2");
+}
+#endif
+
 /*
  * Locate the first byte in [from, end) that requires escaping, or end when
  * the whole range is plain text.  The bulk of the scan advances 16 bytes
@@ -143,6 +192,23 @@ static int64_t CJ_JSON_FindNextEscape(const uint8_t* input, int64_t from, int64_
 #ifdef CJ_JSON_SCAN_NEON
     while (i + 16 <= end) {
         if (CJ_JSON_VectorNeedsEscape(input + i)) {
+            break;
+        }
+        i += 16;
+    }
+#elif defined(CJ_JSON_SCAN_SSE2)
+#ifdef CJ_JSON_SCAN_AVX2
+    if (CJ_JSON_HasAVX2()) {
+        while (i + 32 <= end) {
+            if (CJ_JSON_AVX2NeedsEscape(input + i)) {
+                break;
+            }
+            i += 32;
+        }
+    }
+#endif
+    while (i + 16 <= end) {
+        if (CJ_JSON_SSE2NeedsEscape(input + i)) {
             break;
         }
         i += 16;
