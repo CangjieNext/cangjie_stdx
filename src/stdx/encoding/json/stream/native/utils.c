@@ -18,6 +18,17 @@
 #include <arm_neon.h>
 #endif
 
+/* Generic x86_64 uses SSE2; AVX2 is selected at runtime when available. */
+#if defined(__x86_64__) || defined(_M_X64)
+#define CJ_JSON_READ_SCAN_SSE2 1
+#include <emmintrin.h>
+#if (defined(__GNUC__) || defined(__clang__)) && !defined(_MSC_VER)
+#define CJ_JSON_READ_SCAN_AVX2 1
+#include <immintrin.h>
+#define CJ_JSON_READ_TARGET_AVX2 __attribute__((target("avx2")))
+#endif
+#endif
+
 #define RYU_DOUBLE_MAX_OUTPUT 32
 
 /*
@@ -38,7 +49,32 @@ static bool CJ_ReadStringVectorNeedsScalar(const uint8_t* input)
         vceqq_u8(value, vdupq_n_u8('\\')));
     return vmaxvq_u8(vorrq_u8(high, special)) != 0;
 }
-#else
+#elif defined(CJ_JSON_READ_SCAN_SSE2)
+static bool CJ_ReadStringSSE2NeedsScalar(const uint8_t* input)
+{
+    const __m128i value = _mm_loadu_si128((const __m128i*)input);
+    const __m128i high = _mm_cmplt_epi8(value, _mm_setzero_si128());
+    const __m128i special = _mm_or_si128(_mm_cmpeq_epi8(value, _mm_set1_epi8('"')),
+        _mm_cmpeq_epi8(value, _mm_set1_epi8('\\')));
+    return _mm_movemask_epi8(_mm_or_si128(high, special)) != 0;
+}
+
+#ifdef CJ_JSON_READ_SCAN_AVX2
+static CJ_JSON_READ_TARGET_AVX2 bool CJ_ReadStringAVX2NeedsScalar(const uint8_t* input)
+{
+    const __m256i value = _mm256_loadu_si256((const __m256i*)input);
+    const __m256i high = _mm256_cmpgt_epi8(_mm256_setzero_si256(), value);
+    const __m256i special = _mm256_or_si256(_mm256_cmpeq_epi8(value, _mm256_set1_epi8('"')),
+        _mm256_cmpeq_epi8(value, _mm256_set1_epi8('\\')));
+    return _mm256_movemask_epi8(_mm256_or_si256(high, special)) != 0;
+}
+
+static bool CJ_ReadStringHasAVX2(void)
+{
+    return __builtin_cpu_supports("avx2");
+}
+#endif
+#elif !defined(CJ_JSON_READ_SCAN_SSE2)
 static bool CJ_ReadStringWordHasZero(uint64_t value)
 {
     return ((value - UINT64_C(0x0101010101010101)) & ~value &
@@ -61,6 +97,23 @@ static int64_t CJ_ReadStringAsciiRun(const uint8_t* input, int64_t from, int64_t
 #ifdef CJ_JSON_READ_SCAN_NEON
     while (index + 16 <= end) {
         if (CJ_ReadStringVectorNeedsScalar(input + index)) {
+            break;
+        }
+        index += 16;
+    }
+#elif defined(CJ_JSON_READ_SCAN_SSE2)
+#ifdef CJ_JSON_READ_SCAN_AVX2
+    if (CJ_ReadStringHasAVX2()) {
+        while (index + 32 <= end) {
+            if (CJ_ReadStringAVX2NeedsScalar(input + index)) {
+                break;
+            }
+            index += 32;
+        }
+    }
+#endif
+    while (index + 16 <= end) {
+        if (CJ_ReadStringSSE2NeedsScalar(input + index)) {
             break;
         }
         index += 16;
