@@ -20,8 +20,8 @@ let HEX_ENCODE_CHARS_LOW = "0123456789abcdef".toArray()
 /*
  * Converting a hexadecimal array to a set of UInt8 (HexToString decoding).
  *
- * @param data of Array<Rune>.
- * @return Parameters of Option<Array<UInt8>>.
+ * @param data Array<UInt8>.
+ * @return Option<Array<UInt8>>.
  *
  * @since 0.17.4
  */
@@ -53,15 +53,15 @@ func unhex(c: UInt8): UInt8 {
 }
 
 /*
- * Converts the UInt8 collection to a character string (HexToString encodinkg).
+ * Converts the UInt8 collection to a character string (HexToString encoding).
  * ASCII: A (65)
  * Binary code: 0100 _ 0001
  * Regroup: 0000 _ 0100 0000 _ 0001
  * Hexadecimal: 4 1
  * Hex code: 41
  *
- * @param data of Array<UInt8>.
- * @return Parameters of String.
+ * @param data Array<UInt8>.
+ * @return String.
  *
  * @since 0.17.4
  */
@@ -106,8 +106,8 @@ func processDataBeforeDecode(data: Array<UInt8>): Array<UInt8> {
 /**
  * Provides the Hex encoding conversion function and the HexString to ByteArray function. If decoding fails, Option is returned.
  *
- * @param data of String.
- * @return Parameters of Option<Array<UInt8>>.
+ * @param data String.
+ * @return Option<Array<UInt8>>.
  *
  * @since 0.17.4
  */
@@ -126,8 +126,8 @@ public func fromHexString(data: String): Option<Array<Byte>> {
 /**
  * Provides the ByteArray to HexString function. If the encoding fails, Option is returned.
  *
- * @param data of String.
- * @return Parameters of String
+ * @param data Array<Byte>.
+ * @return String.
  *
  * @since 0.17.4
  */
