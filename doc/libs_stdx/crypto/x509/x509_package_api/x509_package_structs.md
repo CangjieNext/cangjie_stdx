@@ -442,7 +442,7 @@ DecipherOnly Value: 256
 public static let DigitalSignature: UInt16 = 0x0080
 ```
 
-功能：表示私钥可以用于除了签发证书、签发 CRL 和非否认性服务的各种数字签名操作,而公钥用来验证这些签名。
+功能：表示私钥可以用于除了签发证书、签发 CRL 和非否认性服务的各种数字签名操作，而公钥用来验证这些签名。
 
 类型：UInt16
 
@@ -558,7 +558,7 @@ KeyEncipherment Value: 32
 public static let NonRepudiation: UInt16 = 0x0040
 ```
 
-功能：表示私钥可以用于进行非否认性服务中的签名,而公钥用来验证签名。
+功能：表示私钥可以用于进行非否认性服务中的签名，而公钥用来验证签名。
 
 类型：UInt16
 
