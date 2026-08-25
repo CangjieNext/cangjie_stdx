@@ -347,7 +347,7 @@ static EVP_PKEY* LoadPrivateKey(const void* keyBody, size_t keySize, ExceptionDa
 }
 
 // this does always produce PKCS8 keys
-static int32_t EncryptPrivateKey(EVP_PKEY* key, const char* password, char** resultBody, size_t* resultSize,
+static int32_t EncryptPrivateKeyImpl(EVP_PKEY* key, const char* password, char** resultBody, size_t* resultSize,
     ExceptionData* exception, DynMsg* dynMsg)
 {
     *resultBody = NULL;
@@ -406,6 +406,18 @@ static int32_t EncryptPrivateKey(EVP_PKEY* key, const char* password, char** res
     }
 
     return CJ_OK;
+}
+
+static int32_t EncryptPrivateKey(EVP_PKEY* key, const char* password, char** resultBody, size_t* resultSize,
+    ExceptionData* exception, DynMsg* dynMsg)
+{
+    size_t passwordLength = strlen(password);
+    int32_t result = EncryptPrivateKeyImpl(key, password, resultBody, resultSize, exception, dynMsg);
+    // the password buffer is heap-allocated by the Cangjie caller via LibC.mallocCString()
+    // and is released afterwards with free(), which does not clear the memory; wipe it here
+    // on every return path so that password material does not linger in the released heap block
+    (void)memset_s((void*)password, passwordLength, 0, passwordLength);
+    return result;
 }
 
 /**
