@@ -19,7 +19,7 @@ Architecture Diagram:
 - logger: Provides log printing functions in text format and JSON format.
 - net: Provides network communication and secure transmission functions.
 - serialization: Provides the capability of serialization and deserialization.
-- string_intern: Provides polled caching capability for string objects.
+- string_intern: Provides pooled  caching capability for string objects.
 - syntax: Provides Cangjie source code syntax parsing functions.
 - unittest: Provides the capability to supply test data in serialized input formats when writing unit test code for Cangjie projects.
 
@@ -109,7 +109,7 @@ The following platform and architecture combinations are currently supported:
 │       ├── logger              # Provides log printing functions in text format and JSON format
 │       ├── net                 # Provide network communication and other capabilities
 │       ├── serialization       # Provides serialization and deserialization
-│       ├── string_intern       # Provides polled caching capability for string objects
+│       ├── string_intern       # Provides pooled  caching capability for string objects
 │       ├── syntax              # Provides syntax parsing functions
 │       └── unittest            # Provides unit testing extension
 │
@@ -397,7 +397,7 @@ main () {
 
 ### Configure stdx source dependencies
 
-In addition to integrating stdx binaries, stdx currently supports source code dependency. For detailed usage, see [see Source Code Integration Guidance](./doc/libs_stdx_en/source_code_dependency.md)
+In addition to integrating stdx binaries, stdx currently supports source code dependency. For detailed usage, see [Source Code Integration Guidance](./doc/libs_stdx_en/source_code_dependency.md)
 
 ## License
 
