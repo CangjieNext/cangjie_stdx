@@ -93,9 +93,9 @@ The following platform and architecture combinations are currently supported:
 ```text
 /stdx
 ├─ build                        # Directory of Engineering Construction
-├─ doc                          # Directory of stdx library document
+├─ doc                          # Directory of stdx library documents
 ├─ figures                      # architecture pictures
-├─ src                          # Directory of stdx package codes
+├─ src                          # Directory of stdx package code
 │   └─ stdx
 │       ├── actors              # Provides Actors
 │       ├── aspect_cj           # Provides AOP
