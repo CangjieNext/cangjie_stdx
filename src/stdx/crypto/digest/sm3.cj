@@ -97,6 +97,7 @@ public class SM3 <: Digest {
                 }
             } catch (e: Exception) {
                 mdCtxFree(sm3Ctx)
+                sm3Ctx = CPointer<Unit>()
                 throw e
             }
         }
