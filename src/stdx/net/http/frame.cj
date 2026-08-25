@@ -136,7 +136,9 @@ open class Frame <: ToString {
             case Data => DataFrame(streamId, flag, payloadWrapper, payloadLen64)
             case Headers => HeadersFrame(streamId, flag, payloadWrapper, payloadLen64)
             case Continuation => ContinuationFrame(streamId, flag, payloadWrapper, payloadLen64)
-            case Priority => None // we support new PRIORITY_UPDATE, old PRIORITY not supported
+            case Priority =>
+                arrayPool?.put(payloadWrapper)
+                None // we support new PRIORITY_UPDATE, old PRIORITY not supported
             case RstStream =>
                 let frame = RstStreamFrame(streamId, payloadWrapper, payloadLen64)
                 frame.recyclePayload(arrayPool)
