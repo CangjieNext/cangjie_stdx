@@ -71,7 +71,7 @@ bash -c "$(curl -fsSL https://raw.gitcode.com/Cangjie/cangjie_stdx/raw/main/down
 ```
 
 ```powershell
-# 在 Windows 下载 v1.0.0.1 的 linux-x64 版本，并解压到 C:\cangjie_libs 目录
+# 在 Windows 下载 v1.0.0.1 的 windows-x64 版本，并解压到 C:\cangjie_libs 目录
 irm https://raw.gitcode.com/Cangjie/cangjie_stdx/raw/main/downloader.ps1 -OutFile "$env:TEMP\downloader.ps1"; & "$env:TEMP\downloader.ps1" 1.0.0.1 -p windows-x64 -d C:\cangjie_libs
 ```
 

@@ -31,7 +31,7 @@ JSON 数据转换标准可参考：[ECMA-404 The JSON Data Interchange Standard]
 | [JsonNull](./json_package_api/encoding_json_package_classes.md#class-jsonnull) | 将 JsonNull 转换为字符串。 |
 | [JsonObject](./json_package_api/encoding_json_package_classes.md#class-jsonobject) | 创建空 JsonObject。 |
 | [JsonString](./json_package_api/encoding_json_package_classes.md#class-jsonstring) | 将指定的 String 类型实例封装成 JsonString 实例。 |
-| [JsonValue](./json_package_api/encoding_json_package_classes.md#class-jsonvalue) | 此类为 JSON 数据层, 主要用于 JsonValue 和 String 数据之间的互相转换。 |
+| [JsonValue](./json_package_api/encoding_json_package_classes.md#class-jsonvalue) | 此类为 JSON 数据层，主要用于 JsonValue 和 String 数据之间的互相转换。 |
 
 ### 枚举
 
