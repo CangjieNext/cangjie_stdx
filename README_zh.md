@@ -19,7 +19,7 @@
 - logger: 提供了文本格式和 JSON 格式日志打印功能。
 - net: 提供了网络通信和安全传输功能。
 - serialization: 提供了序列化和反序列化的能力。
-- syntax：提供了对仓颉源码进行语法解析的功能。
+- syntax: 提供了对仓颉源码进行语法解析的功能。
 - unittest: 提供了在编写仓颉项目单元测试代码时输入序列化格式的测试数据的能力。
 
 ## 使用说明
@@ -93,7 +93,7 @@ irm https://raw.gitcode.com/Cangjie/cangjie_stdx/raw/main/downloader.ps1 -OutFil
 /stdx
 ├─ build                        # 工程构建目录，编译构建工具、脚本等
 ├─ doc                          # stdx 库资料目录
-├─ figures                      # 存放readme中的架构图
+├─ figures                      # 存放README中的架构图
 ├─ src                          # stdx 各个包代码目录
 │   └─ stdx
 │       ├── actors              # 提供 Actors 功能                     
@@ -102,7 +102,7 @@ irm https://raw.gitcode.com/Cangjie/cangjie_stdx/raw/main/downloader.ps1 -OutFil
 │       ├── crypto              # 提供安全相关能力
 │       ├── effect              # 提供用于处理 Effect Handler 特性的用户级 API。这是一个实验性功能，需要使用支持该机制的 Cangjie 编译器。
 │       ├── dynamicLoader       # OpenSSL 动态加载模块
-│       ├── encoding            # 提供 JSON 和字符串编码相关能力。
+│       ├── encoding            # 提供 base64/hex/json/url 编解码相关能力。
 │       ├── fuzz                # 提供基于覆盖率反馈的仓颉 fuzz 引擎及对应的接口
 │       ├── log                 # 提供了日志记录相关的能力
 │       ├── logger              # 提供文本格式和 JSON 格式日志打印功能
@@ -129,7 +129,7 @@ irm https://raw.gitcode.com/Cangjie/cangjie_stdx/raw/main/downloader.ps1 -OutFil
 #### 配置 Cangjie SDK
 
 ```shell
-source <cangjie sdk 路径>
+source /path/to/cangjie/sdk/env.sh
 ```
 
 通过下面命令，验证 Cangjie SDK 是否配置成功:
@@ -337,7 +337,7 @@ cjc main.cj \
 
 **import stdx.fullPackageName.itemName**
 
-其中 `fullPackageName` 为[包列表](./doc/libs_stdx/libs_overview.md#包列表)给出的包名，`itemName` 为可见声明或定义的名字,  `*` 表示导入所有可见的顶层声明或定义，例如：
+其中 `fullPackageName` 为[包列表](./doc/libs_stdx/libs_overview.md#包列表)给出的包名，`itemName` 为可见声明或定义的名字，`*` 表示导入所有可见的顶层声明或定义，例如：
 
 - import stdx.net.http.ServerBuilder：导入 stdx 模块的 net.http 包中的【顶层声明】ServerBuilder。
 - import stdx.net.http.\* ：导入 stdx 模块的 net.http 包。
