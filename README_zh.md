@@ -72,7 +72,7 @@ bash -c "$(curl -fsSL https://raw.gitcode.com/Cangjie/cangjie_stdx/raw/main/down
 
 ```powershell
 # 在 Windows 下载 v1.0.0.1 的 windows-x64 版本，并解压到 C:\cangjie_libs 目录
-irm https://raw.gitcode.com/Cangjie/cangjie_stdx/raw/main/downloader.ps1 -OutFile "$env:TEMP\downloader.ps1"; & "$env:TEMP\downloader.ps1" 1.0.0.1 -p windows-x64 -d C:\cangjie_libs
+irm https://raw.gitcode.com/Cangjie/cangjie_stdx/raw/main/downloader.ps1 -OutFile "$env:TEMP\downloader.ps1"; & "$env:TEMP\downloader.ps1" 1.0.0.1 -p linux-x64 -d C:\cangjie_libs
 ```
 
 ### 支持的 <平台-架构>
@@ -93,7 +93,7 @@ irm https://raw.gitcode.com/Cangjie/cangjie_stdx/raw/main/downloader.ps1 -OutFil
 /stdx
 ├─ build                        # 工程构建目录，编译构建工具、脚本等
 ├─ doc                          # stdx 库资料目录
-├─ figures                      # 存放 README中的架构图
+├─ figures                      # 存放 README 中的架构图
 ├─ src                          # stdx 各个包代码目录
 │   └─ stdx
 │       ├── actors              # 提供 Actors 功能                     
@@ -118,7 +118,7 @@ irm https://raw.gitcode.com/Cangjie/cangjie_stdx/raw/main/downloader.ps1 -OutFil
 
 ## 约束
 
-支持在 Ubuntu/macOS/Windows(x86_64, aarch64)、Cangjie SDK 1.0.0 及以上版本中对 `stdx` 构建。更详细的环境及工具依赖请参阅 [构建依赖工具](https://gitcode.com/Cangjie/cangjie_build/blob/main/docs/env.md)。
+支持在 Ubuntu/macOS(x86_64, aarch64)、Cangjie SDK 1.0.0 及以上版本中对 `stdx` 构建。更详细的环境及工具依赖请参阅 [构建依赖工具](https://gitcode.com/Cangjie/cangjie_build/blob/main/docs/env.md)。
 
 注意：本拓展库后续版本可能存在不兼容变更，不承诺跨版本 API/ABI 兼容性，使用前请充分评估版本适配风险。
 
@@ -337,7 +337,7 @@ cjc main.cj \
 
 **import stdx.fullPackageName.itemName**
 
-其中 `fullPackageName` 为[包列表](./doc/libs_stdx/libs_overview.md#包列表)给出的包名，`itemName` 为可见声明或定义的 名字， `*` 表示导入所有可见的顶层声明或定义，例如：
+其中 `fullPackageName` 为[包列表](./doc/libs_stdx/libs_overview.md#包列表)给出的包名，`itemName` 为可见声明或定义的名字， `*` 表示导入所有可见的顶层声明或定义，例如：
 
 - import stdx.net.http.ServerBuilder：导入 stdx 模块的 net.http 包中的【顶层声明】ServerBuilder。
 - import stdx.net.http.\* ：导入 stdx 模块的 net.http 包。
@@ -351,7 +351,7 @@ cjc main.cj \
 [dependencies]
 
 [package]
-  cjc-version = "1.0.0"
+  cjc-version = "1.00.0"
   compile-option = "-ldl"
   description = "nothing here"
   link-option = ""
