@@ -421,6 +421,79 @@ static int32_t EncryptPrivateKey(EVP_PKEY* key, const char* password, char** res
     return result;
 }
 
+/*
+ * Best-effort wipe of the parsed private key material before it is released.
+ *
+ * Keys decoded through the classic d2i entry points keep a legacy
+ * representation whose private components are reachable through the per-type
+ * accessors below, so clearing those BIGNUMs removes the plaintext key
+ * material from the heap. Provider-native keydata kept inside OpenSSL 3.x
+ * keymgmt does not expose its buffers through the public API and therefore
+ * cannot be cleansed from outside, which is the same limitation that applies
+ * to the keys handed out by the decryption path. One consequence is that
+ * provider-backed SM2 keys (base id 0, no legacy components) fall through to
+ * the default branch, while their legacy equivalents already match EVP_PKEY_EC.
+ */
+static void WipePrivateKeyData(EVP_PKEY* key, DynMsg* dynMsg)
+{
+    if (key == NULL) {
+        return;
+    }
+    switch (DYN_EVP_PKEY_get_base_id(key, dynMsg)) {
+        case EVP_PKEY_RSA:
+        case EVP_PKEY_RSA_PSS: {
+            RSA* rsa = DYN_EVP_PKEY_get1_RSA(key, dynMsg);
+            if (rsa != NULL) {
+                const BIGNUM* n = NULL;
+                const BIGNUM* e = NULL;
+                const BIGNUM* d = NULL;
+                DYN_RSA_get0_key(rsa, &n, &e, &d, dynMsg);
+                if (d != NULL) {
+                    DYN_BN_clear((BIGNUM*)d, dynMsg);
+                }
+                if (e != NULL) {
+                    DYN_BN_clear((BIGNUM*)e, dynMsg);
+                }
+                if (n != NULL) {
+                    DYN_BN_clear((BIGNUM*)n, dynMsg);
+                }
+                DYN_RSA_free(rsa, dynMsg);
+            }
+            break;
+        }
+        case EVP_PKEY_EC: {
+            EC_KEY* ec = DYN_EVP_PKEY_get1_EC_KEY(key, dynMsg);
+            if (ec != NULL) {
+                const BIGNUM* priv = DYN_EC_KEY_get0_private_key(ec, dynMsg);
+                if (priv != NULL) {
+                    DYN_BN_clear((BIGNUM*)priv, dynMsg);
+                }
+                DYN_EC_KEY_free(ec, dynMsg);
+            }
+            break;
+        }
+        case EVP_PKEY_DSA: {
+            DSA* dsa = DYN_EVP_PKEY_get1_DSA(key, dynMsg);
+            if (dsa != NULL) {
+                const BIGNUM* pub = NULL;
+                const BIGNUM* priv = NULL;
+                DYN_DSA_get0_key(dsa, &pub, &priv, dynMsg);
+                if (priv != NULL) {
+                    DYN_BN_clear((BIGNUM*)priv, dynMsg);
+                }
+                if (pub != NULL) {
+                    DYN_BN_clear((BIGNUM*)pub, dynMsg);
+                }
+                DYN_DSA_free(dsa, dynMsg);
+            }
+            break;
+        }
+        default:
+            // key types without directly reachable BIGNUM components (e.g. Ed25519)
+            break;
+    }
+}
+
 /**
  * Encrypt private key located at keyBody:length using the specified password (required)
  * and put the resulting ecrypted key to a new allocated memory and put
@@ -452,6 +525,8 @@ extern int32_t DYN_CJX509EncryptPrivateKey(char* keyBody, size_t keySize, const 
         return CJ_FAIL;
     }
     ret = EncryptPrivateKey(key, password, resultBody, resultSize, exception, dynMsg);
+    // the parsed key is no longer needed, wipe its material before releasing it
+    WipePrivateKeyData(key, dynMsg);
     DYN_EVP_PKEY_free(key, dynMsg);
     return ret;
 }
