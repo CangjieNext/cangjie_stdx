@@ -13,6 +13,14 @@ macro(to_link_library_option lib_name)
     endif()
 endmacro()
 
+macro(to_link_cangjie_shared_library_option lib_name)
+    if(MINGW)
+        set(${lib_name} -l:lib${${lib_name}}${CMAKE_SHARED_LIBRARY_SUFFIX}.a)
+    else()
+        to_link_library_option(${lib_name})
+    endif()
+endmacro()
+
 function(make_cangjie_lib target_name)
     set(options IS_SHARED IS_MACRO ALLOW_UNDEFINED)
     set(oneValueArgs)
@@ -108,7 +116,7 @@ function(make_cangjie_lib target_name)
                 list(APPEND flags_to_compile "${CMAKE_BINARY_DIR}/lib/libclang_rt-profile.a")
             endif()
             set(runtime_link_option "cangjie-runtime")
-            to_link_library_option(runtime_link_option)
+            to_link_cangjie_shared_library_option(runtime_link_option)
             list(APPEND flags_to_compile "${runtime_link_option}")
         endif()
         # Hot reload relies on .gnu.hash section.
@@ -211,6 +219,11 @@ function(make_cangjie_lib target_name)
                         ${CMAKE_BINARY_DIR}/lib/${output_stdx_cj_lib_dir}/libstdx.${target_name}${CMAKE_SHARED_LIBRARY_SUFFIX})
                 endif()
             endif()
+            if(MINGW)
+                set(target_import_lib_full_name "${target_lib_full_name}.a")
+                list(APPEND flags_to_compile
+                    "${LINKER_OPTION_PREFIX}--out-implib=${target_import_lib_full_name}")
+            endif()
         else()
             set(target_lib_full_name ${CMAKE_BINARY_DIR}/bin/${target_name}${CMAKE_EXECUTABLE_SUFFIX})
         endif()
@@ -270,7 +283,7 @@ function(make_cangjie_lib target_name)
  	    endif()
         foreach(library_name ${CANGJIE_LIBRARY_CANGJIE_STDX_LIB_DEPENDS})
             set(lib_link_option "stdx.${library_name}")
-            to_link_library_option(lib_link_option)
+            to_link_cangjie_shared_library_option(lib_link_option)
             list(APPEND link_std_libraries_flag "${lib_link_option}")
         endforeach()
 
@@ -278,6 +291,10 @@ function(make_cangjie_lib target_name)
             if(DARWIN)
                 list(APPEND link_std_libraries_flag
                 -L$ENV{CANGJIE_HOME}/runtime/lib/${output_cj_lib_dir} -lcangjie-${library_name})
+            elseif(MINGW)
+                list(APPEND link_std_libraries_flag
+                    -L $ENV{CANGJIE_HOME}/runtime/lib/${output_cj_lib_dir}
+                    -l:libcangjie-${library_name}${CMAKE_SHARED_LIBRARY_SUFFIX}.a)
             else()
                 list(APPEND link_std_libraries_flag  -L $ENV{CANGJIE_HOME}/runtime/lib/${output_cj_lib_dir} -l:libcangjie-${library_name}${CMAKE_SHARED_LIBRARY_SUFFIX})
             endif()
@@ -294,7 +311,8 @@ function(make_cangjie_lib target_name)
                     -l:libcangjie-${indirect_library_name}${CMAKE_SHARED_LIBRARY_SUFFIX})
                 list(APPEND link_std_libraries_flag ${LINKER_OPTION_PREFIX}--no-as-needed)
             else()
-                list(APPEND link_std_libraries_flag -l:libcangjie-${indirect_library_name}${CMAKE_SHARED_LIBRARY_SUFFIX})
+                list(APPEND link_std_libraries_flag
+                    -l:libcangjie-${indirect_library_name}${CMAKE_SHARED_LIBRARY_SUFFIX}.a)
             endif()
         endforeach()
 
@@ -324,7 +342,7 @@ function(make_cangjie_lib target_name)
             COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_BINARY_DIR}/lib/${output_stdx_cj_lib_dir}
             COMMAND ${CMAKE_COMMAND} -E env ${set_env_path} ${clang_compiler} ${CANGJIE_LIBRARY_OBJECTS} ${force_link_archives_option}
                     ${CANGJIE_LIBRARY_FLAGS}  ${link_std_libraries_flag} ${flags_to_compile} -o ${target_lib_full_name}
-            BYPRODUCTS ${target_lib_full_name}
+            BYPRODUCTS ${target_lib_full_name} ${target_import_lib_full_name}
             DEPENDS
                 ${CANGJIE_LIBRARY_DEPENDS}
                 ${CANGJIE_LIBRARY_CANGJIE_STDX_LIB_DEPENDS}
@@ -339,6 +357,9 @@ function(make_cangjie_lib target_name)
 
     if(CANGJIE_LIBRARY_IS_SHARED)
         install(FILES ${target_lib_full_name} DESTINATION ${output_stdx_cj_lib_dir}/dynamic/stdx)
+        if(MINGW)
+            install(FILES ${target_import_lib_full_name} DESTINATION ${output_stdx_cj_lib_dir}/dynamic/stdx)
+        endif()
         if(CANGJIE_LIBRARY_IS_MACRO)
             install(FILES ${target_lib_full_name} DESTINATION ${output_stdx_cj_lib_dir}/static/stdx)
         endif()

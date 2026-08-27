@@ -59,6 +59,11 @@ endif()
 # Build shared library.
 add_library(boundscheck SHARED ${SRC_FILE})
 add_library(boundscheck-static STATIC ${SRC_FILE})
+if(WIN32)
+    # UCRT already provides vsnprintf_s; do not emit the vendored definition.
+    target_compile_definitions(boundscheck PRIVATE SECUREC_ENABLE_VSNPRINTF=0)
+    target_compile_definitions(boundscheck-static PRIVATE SECUREC_ENABLE_VSNPRINTF=0)
+endif()
 target_include_directories(boundscheck PRIVATE ./include)
 target_include_directories(boundscheck-static PRIVATE ./include)
 target_link_options(boundscheck PRIVATE ${SECURE_LDFLAG_FOR_SHARED_LIBRARY} ${STRIP_FLAG})
