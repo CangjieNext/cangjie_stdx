@@ -98,7 +98,7 @@ public class JsonWriter {
     // this separate from the generic OutputStream path: only committed bytes
     // contribute to the ByteBuffer length, so a growth can preserve pending
     // JSON bytes before they become visible to callers.
-    var directByteBuffer: ?ByteBuffer = None
+    // var directByteBuffer: ?ByteBuffer = None
 
     public var writeConfig: WriteConfig = WriteConfig.compact
 
@@ -108,12 +108,12 @@ public class JsonWriter {
         stack.add(EmptyText)
     }
 
-    public init(out: ByteBuffer) {
-        this.out = out
-        directByteBuffer = Some(out)
-        buffer = out.writableRegion(0, 0)
-        stack.add(EmptyText)
-    }
+    // public init(out: ByteBuffer) {
+    //     this.out = out
+    //     directByteBuffer = Some(out)
+    //     buffer = out.writableRegion(0, 0)
+    //     stack.add(EmptyText)
+    // }
 
     public func flush(): Unit {
         flushOutBuf()
@@ -135,11 +135,12 @@ public class JsonWriter {
     @OverflowWrapping
     public func jsonValue(value: String): JsonWriter {
         beforeValue()
-        if (let Some(_) <- directByteBuffer) {
-            ensureBufferSpace(value.size)
-            unsafe { value.rawData().copyTo(buffer, 0, curPos, value.size) }
-            curPos += value.size
-        } else if (value.size > JsonWriter.LARGE_VALUE_THRESHOLD) {
+        // if (let Some(_) <- directByteBuffer) {
+        //     ensureBufferSpace(value.size)
+        //     unsafe { value.rawData().copyTo(buffer, 0, curPos, value.size) }
+        //     curPos += value.size
+        // } else 
+        if (value.size > JsonWriter.LARGE_VALUE_THRESHOLD) {
             flushOutBuf()
             unsafe { out.write(value.rawData()) }
         } else {
@@ -402,11 +403,11 @@ public class JsonWriter {
         if (offset < 0 || length < 0 || offset + length > value.size) {
             throw IllegalArgumentException("The raw JSON byte range is out of bounds.")
         }
-        if (let Some(_) <- directByteBuffer) {
-            ensureBufferSpace(length)
-            value.copyTo(buffer, offset, curPos, length)
-            curPos += length
-        } else {
+        // if (let Some(_) <- directByteBuffer) {
+        //     ensureBufferSpace(length)
+        //     value.copyTo(buffer, offset, curPos, length)
+        //     curPos += length
+        // } else {
             var sourceOffset = offset
             var remaining = length
             while (remaining > 0) {
@@ -417,41 +418,42 @@ public class JsonWriter {
                 curPos += copyLen
                 remaining -= copyLen
             }
-        }
+        // }
     }
 
     func ensureBufferSpace(additional: Int64): Unit {
         if (additional < 0) {
             throw IllegalArgumentException("The required JSON buffer space cannot be negative.")
         }
-        if (let Some(output) <- directByteBuffer) {
-            // Array.slice creates a new view. Reuse the current view until it
-            // is actually full; scalar writers call this helper frequently.
-            if (buffer.size - curPos < additional) {
-                let required = curPos + additional
-                let reserve = if (required <= JsonWriter.DIRECT_SMALL_DOCUMENT_CAPACITY) {
-                    max(additional, JsonWriter.DIRECT_SMALL_DOCUMENT_CAPACITY - curPos)
-                } else if (required <= JsonWriter.DEFAULT_CAPACITY) {
-                    max(additional, JsonWriter.DEFAULT_CAPACITY - curPos)
-                } else {
-                    additional
-                }
-                buffer = output.writableRegion(curPos, reserve)
-            }
-        } else if (curPos + additional > buffer.size) {
+        // if (let Some(output) <- directByteBuffer) {
+        //     // Array.slice creates a new view. Reuse the current view until it
+        //     // is actually full; scalar writers call this helper frequently.
+        //     if (buffer.size - curPos < additional) {
+        //         let required = curPos + additional
+        //         let reserve = if (required <= JsonWriter.DIRECT_SMALL_DOCUMENT_CAPACITY) {
+        //             max(additional, JsonWriter.DIRECT_SMALL_DOCUMENT_CAPACITY - curPos)
+        //         } else if (required <= JsonWriter.DEFAULT_CAPACITY) {
+        //             max(additional, JsonWriter.DEFAULT_CAPACITY - curPos)
+        //         } else {
+        //             additional
+        //         }
+        //         buffer = output.writableRegion(curPos, reserve)
+        //     }
+        // } else 
+        if (curPos + additional > buffer.size) {
             flushOutBuf()
         }
     }
 
     func flushOutBuf(): Unit {
-        if (let Some(output) <- directByteBuffer) {
-            output.commitWrite(curPos)
+        // if (let Some(output) <- directByteBuffer) {
+        //     output.commitWrite(curPos)
+        //     curPos = 0
+        //     buffer = output.writableRegion(0, 0)
+        // } else {
+            out.write(buffer[..curPos])
             curPos = 0
-            buffer = output.writableRegion(0, 0)
-        } else {
-            out.write(buffer, 0, curPos)
-            curPos = 0
-        }
+        // }
     }
 
     public func writeValue<T>(v: T): JsonWriter where T <: JsonSerializable {

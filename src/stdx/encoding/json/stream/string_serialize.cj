@@ -86,7 +86,7 @@ let escapeTable = newEscapeTable()
 func writeNativeStringChunks(w: JsonWriter, value: String): Unit {
     var consumed = 0
     let total = value.size
-    let canDirectWrite = w.directByteBuffer.isNone()
+    let canDirectWrite = true //w.directByteBuffer.isNone()
     while (consumed < total) {
         let remaining = total - consumed
         if (canDirectWrite && remaining >= NATIVE_STRING_DIRECT_THRESHOLD) {
@@ -101,7 +101,7 @@ func writeNativeStringChunks(w: JsonWriter, value: String): Unit {
             let plainLen = escapePos - consumed
             if (plainLen >= NATIVE_STRING_DIRECT_THRESHOLD) {
                 w.flushOutBuf()
-                unsafe { w.out.write(value.rawData(), consumed, plainLen) }
+                unsafe { w.out.write(value.rawData()[consumed..consumed+plainLen]) }
                 consumed += plainLen
                 continue
             }
@@ -209,11 +209,12 @@ func flushStringSegment(w: JsonWriter, value: String, curPos: Int64, beforePos: 
         return
     }
     let length = curPos - beforePos
-    if (let Some(_) <- w.directByteBuffer) {
-        w.ensureBufferSpace(length)
-        unsafe { value.rawData().copyTo(w.buffer, beforePos, w.curPos, length) }
-        w.curPos += length
-    } else if (length >= JsonWriter.LARGE_VALUE_THRESHOLD) {
+    // if (let Some(_) <- w.directByteBuffer) {
+    //     w.ensureBufferSpace(length)
+    //     unsafe { value.rawData().copyTo(w.buffer, beforePos, w.curPos, length) }
+    //     w.curPos += length
+    // } else 
+    if (length >= JsonWriter.LARGE_VALUE_THRESHOLD) {
         // write directly to the stream if the string is too long
         w.flushOutBuf()
         unsafe { w.out.write(value.rawData()[beforePos..curPos]) }
