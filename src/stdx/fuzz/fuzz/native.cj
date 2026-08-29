@@ -12,7 +12,6 @@ package stdx.fuzz.fuzz
  * extern "C" int LLVMFuzzerRunDriver(int *argc, char ***argv,
  *                    int (*UserCb)(const uint8_t *Data, size_t Size));
  */
-@FastNative
 foreign func LLVMFuzzerRunDriver(
     argc: CPointer<Int32>,
     argv: CPointer<CPointer<CPointer<UInt8>>>,
@@ -25,10 +24,8 @@ foreign func LLVMFuzzerRunDriver(
 @FastNative
 foreign func __sanitizer_cov_8bit_counters_init(start: CPointer<UInt8>, stop: CPointer<UInt8>): Unit
 
-@FastNative
 foreign func exit(status: Int32): Unit
 
-@FastNative
 foreign func _exit(status: Int32): Unit
 
 @FastNative
