@@ -137,7 +137,8 @@ open class Frame <: ToString {
             case Headers => HeadersFrame(streamId, flag, payloadWrapper, payloadLen64)
             case Continuation => ContinuationFrame(streamId, flag, payloadWrapper, payloadLen64)
             case Priority =>
-                arrayPool?.put(payloadWrapper)
+                let frame = PriorityFrame(streamId, payloadWrapper, payloadLen64)
+                frame.recyclePayload(arrayPool)
                 None // we support new PRIORITY_UPDATE, old PRIORITY not supported
             case RstStream =>
                 let frame = RstStreamFrame(streamId, payloadWrapper, payloadLen64)
@@ -164,7 +165,12 @@ open class Frame <: ToString {
                 let frame = PriorityUpdateFrame(streamId, payloadWrapper, payloadLen64)
                 frame.recyclePayload(arrayPool)
                 frame
-            case _ => None // MUST ignore and discard frames of unknown types
+            case _ =>
+                // MUST ignore and discard frames of unknown types
+                let frame = Frame()
+                frame.payloadWrapper = payloadWrapper
+                frame.recyclePayload(arrayPool)
+                None
         }
     }
 
@@ -435,6 +441,17 @@ class ContinuationFrame <: Frame {
 }
 
 class PriorityFrame <: Frame {
+    // for read
+    init(id: UInt32, payloadWrapper: ArrayWrapper, payloadLen64: Int64) {
+        if (!checkStreamId(id)) {
+            throw HttpConnectionException(ProtocolError, "Illegal id.")
+        }
+        this.frameType = Priority
+        this.streamId = id
+        this.payloadLen = UInt32(payloadLen64)
+        this.payloadWrapper = payloadWrapper
+    }
+
     public func toString(): String {
         return "priority not supported"
     }
