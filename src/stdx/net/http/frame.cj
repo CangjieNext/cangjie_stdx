@@ -164,7 +164,9 @@ open class Frame <: ToString {
                 let frame = PriorityUpdateFrame(streamId, payloadWrapper, payloadLen64)
                 frame.recyclePayload(arrayPool)
                 frame
-            case _ => None // MUST ignore and discard frames of unknown types
+            case _ =>
+                arrayPool?.put(payloadWrapper)
+                None // MUST ignore and discard frames of unknown types
         }
     }
 
