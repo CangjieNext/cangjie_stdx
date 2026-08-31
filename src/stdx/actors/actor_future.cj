@@ -108,7 +108,7 @@ private enum FutureResult<T> {
 
     func getOrThrow(): T {
         match (this) {
-            case Pending => throw IllegalArgumentException("Future is not ready.")
+            case Pending => throw IllegalArgumentException("Internal error: future result is pending after it was marked ready.")
             case Okay(res) => return res
             case Exc(e) => throw e
             case Err(e) => throw e
