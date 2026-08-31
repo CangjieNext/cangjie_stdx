@@ -53,18 +53,18 @@ public class CHIRBuilder {
                 this._parent = expr.owner
                 let index = expr.owner._exprs.indexOf(expr)
                 if (index == -1) {
-                    throw CHIRException("CHIRBuilder: ${expr.toString()} not found in block: ${expr.owner.toString()}")
+                    throw CHIRException("CHIRBuilder: expression '${expr.toString()}' was not found in block '${expr.owner.toString()}'.")
                 }
                 this._insertPoint = index
             case After(expr) =>
                 this._parent = expr.owner
                 let index = expr.owner._exprs.indexOf(expr)
                 if (index == -1) {
-                    throw CHIRException("CHIRBuilder: ${expr.toString()} not found in block: ${expr.owner.toString()}")
+                    throw CHIRException("CHIRBuilder: expression '${expr.toString()}' was not found in block '${expr.owner.toString()}'.")
                 }
                 this._insertPoint = index + 1
             case _ =>
-                throw CHIRException("CHIRBuilder: Unknown position")
+                throw CHIRException("CHIRBuilder: Unknown insertion position.")
         }
     }
 
