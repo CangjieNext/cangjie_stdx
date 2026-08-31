@@ -275,10 +275,10 @@ sealed abstract class CustomTypeDef <: Base & Equatable<CustomTypeDef> & Hashabl
         set(v) {
             if (let Some(gDef) <- v) {
                 assert(gDef._srcCodeName == _srcCodeName,
-                    "genericDecl's srcCodeName must be the same as the current def's srcCodeName")
-                assert(gDef._kind == _kind, "genericDecl's kind must be the same as the current def's kind")
-                assert(gDef.isGeneric(), "genericDecl must be generic")
-                assert(!this.isGeneric(), "current def can't be generic")
+                    "Generic declaration source name must match the current definition source name.")
+                assert(gDef._kind == _kind, "Generic declaration kind must match the current definition kind.")
+                assert(gDef.isGeneric(), "Generic declaration must be generic.")
+                assert(!this.isGeneric(), "Current definition must not be generic.")
                 // we don't check whether this.ty meet generic constraint of gDef.ty, it will cost much time
                 // we will check it in ir checker
             }

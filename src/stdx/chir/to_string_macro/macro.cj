@@ -38,8 +38,10 @@ public macro CHIREnumToString(input: Tokens): Tokens {
         )
     }
     if (enumDecl.ellipsis.kind == TokenKind.ELLIPSIS) {
+        let unknownEnumMessage = Token(TokenKind.STRING_LITERAL,
+            "Unknown enum element '" + enumDecl.identifier.value + "'.")
         caseTokens += quote(
-            case _ => throw CHIRException($(enumDecl.identifier.value) + ": Unknown enum element")
+            case _ => throw CHIRException($unknownEnumMessage)
         )
     }
 

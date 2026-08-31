@@ -201,7 +201,7 @@ internal func lambdaToString(expr: Lambda, indent: UInt64): String {
     if (let Some(v) <- expr._result) {
         result += v.identifier + ": " + v.ty.toString() + " = "
     } else {
-        throw CHIRException("Lambda: result is not set")
+        throw CHIRException("Lambda result is not set.")
     }
     if (expr.isCompileTimeValue) {
         result += "[compileTimeVal]"
@@ -267,7 +267,7 @@ internal func valueIdVecToString<T>(prefix: String, values: ArrayList<T>, suffix
     }
     if (hasExceptionBranch) {
         let size = result.size
-        assert(size >= 2, "Wrong value size")
+        assert(size >= 2, "Value size must be at least 2.")
         result[size - 2] = "normal: " + result[size - 2]
         result[size - 1] = "exception: " + result[size - 1]
     }
