@@ -371,7 +371,7 @@ class CHIRSerializerImpl {
                         typeKind[Int64(typeId) - 1] = EnumPackageFormat_TypeElemValues(PackageFormat_TypeElem.TypeElem_CUSTOMTYPE)
                         PackageFormat_CustomType.createCustomType(fbBuilder, base, getId(et.def))
                     case _ =>
-                        throw Exception("Invalid CustomType: " + t.toString())
+                        throw Exception("Invalid custom type '${t.toString()}'.")
                 }
             case _ =>
                 // Primitives / tuple / ref / box / this / C family: nested Type tables only (kind + argTys).
@@ -760,7 +760,7 @@ class CHIRSerializerImpl {
             case ExprKind.GetInstantiateValue => PackageFormat_CHIRExprKind.CHIRExprKind_GETINSTANTIATEVALUE
             case ExprKind.GetRtti => PackageFormat_CHIRExprKind.CHIRExprKind_GETRTTI
             case ExprKind.GetRttiStatic => PackageFormat_CHIRExprKind.CHIRExprKind_GETRTTISTATIC
-            case _ => throw CHIRException("Unknown Expr Kind: ${kind.toString()}")
+            case _ => throw CHIRException("Unknown expression kind '${kind.toString()}'.")
         }
     }
 
@@ -770,7 +770,7 @@ class CHIRSerializerImpl {
             case OverflowStrategy.Wrapping => PackageFormat_OverflowStrategy.OverflowStrategy_WRAPPING
             case OverflowStrategy.Throwing => PackageFormat_OverflowStrategy.OverflowStrategy_THROWING
             case OverflowStrategy.Saturating => PackageFormat_OverflowStrategy.OverflowStrategy_SATURATING
-            case _ => throw CHIRException("Invalid OverflowStrategy: " + strategy.toString())
+            case _ => throw CHIRException("Invalid OverflowStrategy value '${strategy.toString()}'.")
         }
     }
 
@@ -1372,7 +1372,7 @@ class CHIRSerializerImpl {
                 let genericParams = getTypeIdList(d._genericTypeParams)
                 let genericParamsVec = if (genericParams.isEmpty()) { UInt32(0) } else { fbBuilder.createUInt32Vector(genericParams) }
                 PackageFormat_ExtendDef.createExtendDef(fbBuilder, base, extendedType, genericParamsVec)
-            case _ => throw CHIRException("Invalid CustomTypeDef")
+            case _ => throw CHIRException("Invalid custom type definition.")
         }
     }
 
@@ -1406,12 +1406,12 @@ class CHIRSerializerImpl {
         // Build types byte + table vectors.
         // Guard: typeKind length must match allType length.
         if (typeKind.size != allType.size) {
-            throw Exception("typeKind.size (${typeKind.size}) != allType.size (${allType.size})")
+            throw Exception("Type-kind count '${typeKind.size}' does not match type count '${allType.size}'.")
         }
         // Guard: every type slot must be non-zero (fully serialized).
         for (i in 0..allType.size) {
             if (allType[i] == UInt32(0)) {
-                throw Exception("allType[${i}] is 0, object not serialized")
+                throw Exception("Type slot '${i}' has no serialized object.")
             }
         }
         let typesTypeArray = Array<UInt8>(typeKind.size, { i => typeKind[i] })
@@ -1422,17 +1422,17 @@ class CHIRSerializerImpl {
         // Build values byte + table vectors.
         // Guard: valueKind length must match allValue length.
         if (valueKind.size != allValue.size) {
-            throw Exception("valueKind.size (${valueKind.size}) != allValue.size (${allValue.size})")
+            throw Exception("Value-kind count '${valueKind.size}' does not match value count '${allValue.size}'.")
         }
         for (i in 0..valueKind.size) {
             if (valueKind[i] == UInt8(0)) {
-                throw Exception("valueKind[${i}] is 0, an invalid value kind")
+                throw Exception("Value slot '${i}' has an invalid value kind.")
             }
         }
         // Guard: every value slot must be non-zero (fully serialized).
         for (i in 0..allValue.size) {
             if (allValue[i] == UInt32(0)) {
-                throw Exception("allValue[${i}] is 0, object not serialized")
+                throw Exception("Value slot '${i}' has no serialized object.")
             }
         }
         let valuesTypeArray = Array<UInt8>(valueKind.size, { i => valueKind[i] })
@@ -1443,12 +1443,12 @@ class CHIRSerializerImpl {
         // Build expressions byte + table vectors.
         // Guard: exprKind length must match allExpression length.
         if (exprKind.size != allExpression.size) {
-            throw Exception("exprKind.size (${exprKind.size}) != allExpression.size (${allExpression.size})")
+            throw Exception("Expression-kind count '${exprKind.size}' does not match expression count '${allExpression.size}'.")
         }
         // Guard: every expression slot must be non-zero (fully serialized).
         for (i in 0..allExpression.size) {
             if (allExpression[i] == UInt32(0)) {
-                throw Exception("allExpression[${i}] is 0, object not serialized")
+                throw Exception("Expression slot '${i}' has no serialized object.")
             }
         }
         let exprsTypeArray = Array<UInt8>(exprKind.size, { i => exprKind[i] })
@@ -1459,12 +1459,12 @@ class CHIRSerializerImpl {
         // Build custom type defs byte + table vectors.
         // Guard: defKind length must match allCustomTypeDef length.
         if (defKind.size != allCustomTypeDef.size) {
-            throw Exception("defKind.size (${defKind.size}) != allCustomTypeDef.size (${allCustomTypeDef.size})")
+            throw Exception("Definition-kind count '${defKind.size}' does not match definition count '${allCustomTypeDef.size}'.")
         }
         // Guard: every def slot must be non-zero (fully serialized).
         for (i in 0..allCustomTypeDef.size) {
             if (allCustomTypeDef[i] == UInt32(0)) {
-                throw Exception("allCustomTypeDef[${i}] is 0, object not serialized")
+                throw Exception("Custom type definition slot '${i}' has no serialized object.")
             }
         }
         let defsTypeArray = Array<UInt8>(defKind.size, { i => defKind[i] })

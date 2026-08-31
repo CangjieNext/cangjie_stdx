@@ -155,7 +155,7 @@ public enum UnaryExprKind {
             case Neg => if (isTry) {ExprKind.TryNeg} else {ExprKind.Neg}
             case Not => ExprKind.Not
             case BitNot => ExprKind.BitNot
-            case _ => throw CHIRException("UnaryExprKind: Unknown UnaryExprKind")
+            case _ => throw CHIRException("UnaryExprKind: Unknown unary expression kind.")
         }
     }
 }
@@ -202,7 +202,7 @@ public enum BinaryExprKind {
             case NotEqual => ExprKind.NotEqual
             case And => ExprKind.And
             case Or => ExprKind.Or
-            case _ => throw CHIRException("BinaryExprKind: Unknown BinaryExprKind")
+            case _ => throw CHIRException("BinaryExprKind: Unknown binary expression kind.")
         }
     }
 }
@@ -603,7 +603,7 @@ sealed abstract class Expression <: Base & ToString & Hashable & Equatable<Expre
             if (let Some(b) <- _owner) {
                 return b
             } else {
-                throw CHIRException("Expression.owner: Owner is not set")
+                throw CHIRException("Expression owner is not set.")
             }
         }
     }
@@ -739,7 +739,7 @@ sealed abstract class Expression <: Base & ToString & Hashable & Equatable<Expre
      * @param other Anchor expression.
      */
     public func moveAfter(other: Expression): Unit {
-        assert(!other.isTerminator(), "An expression cannot be moved behind terminator expression")
+        assert(!other.isTerminator(), "An expression cannot be moved behind a terminator expression.")
         if (this == other) {
             return
         }
@@ -757,7 +757,7 @@ sealed abstract class Expression <: Base & ToString & Hashable & Equatable<Expre
                 break
             }
         }
-        assert(index != -1, "target expression: ${other.toString()} Not found in block: ${other.owner.toString()}")
+        assert(index != -1, "Target expression '${other.toString()}' was not found in block '${other.owner.toString()}'.")
 
         // 4. insert current expr after `other`
         other.owner._exprs.add(this, at: index + 1)
@@ -779,7 +779,7 @@ sealed abstract class Expression <: Base & ToString & Hashable & Equatable<Expre
      * @param other Anchor expression.
      */
     public func moveBefore(other: Expression): Unit {
-        assert(!this.isTerminator(), "Terminator expression cannot be moved in front of another expression")
+        assert(!this.isTerminator(), "A terminator expression cannot be moved in front of another expression.")
         if (this == other) {
             return
         }
@@ -794,7 +794,7 @@ sealed abstract class Expression <: Base & ToString & Hashable & Equatable<Expre
                 break
             }
         }
-        assert(index != -1, "target expression: ${other.toString()} Not found in block: ${other.owner.toString()}")
+        assert(index != -1, "Target expression '${other.toString()}' was not found in block '${other.owner.toString()}'.")
 
         // 3. insert current expr before `other`
         other.owner._exprs.add(this, at: index)
@@ -987,11 +987,11 @@ public class TryAllocate <: AllocateBase & Equatable<TryAllocate> {
      */
     public prop errorBranch: Block {
         get() {
-            assert(operands.size == 2, "TryAllocate: error branch is not set")
+            assert(operands.size == 2, "TryAllocate error branch is not set.")
             if (let Some(b) <- (operands[operands.size - 1] as Block)) {
                 return b
             }
-            throw CHIRException("TryAllocate.errorBranch: op[" + operands[operands.size - 1].toString() + "] is not a block")
+            throw CHIRException("TryAllocate error branch operand '${operands[operands.size - 1].toString()}' is not a block.")
         }
     }
 
@@ -1001,11 +1001,11 @@ public class TryAllocate <: AllocateBase & Equatable<TryAllocate> {
      */
     public prop normalBranch: Block {
         get() {
-            assert(operands.size == 2, "TryAllocate: normal branch is not set")
+            assert(operands.size == 2, "TryAllocate normal branch is not set.")
             if (let Some(b) <- (operands[operands.size - 2] as Block)) {
                 return b
             }
-            throw CHIRException("TryAllocate.normalBranch: op[" + operands[operands.size - 2].toString() + "] is not a block")
+            throw CHIRException("TryAllocate normal branch operand '${operands[operands.size - 2].toString()}' is not a block.")
         }
     }
 
@@ -1098,7 +1098,7 @@ public class BinaryExpression <: BinaryExpressionBase & Equatable<BinaryExpressi
     public static func create(kind: BinaryExprKind, leftOp: Value, rightOp: Value): BinaryExpression {
         let exprKind = kind.toExprKind(false)
         if (!exprKind.isBinary() || exprKind.isTerminator()) {
-            throw CHIRException("BinaryExpression.create: Invalid kind for BinaryExpression: ${kind.toString()}")
+            throw CHIRException("BinaryExpression.create: Invalid kind '${kind.toString()}'.")
         }
         let expr = BinaryExpression(exprKind, leftOp, rightOp)
         expr._attributes.setAttr(Attribute.PluginAdded, true)
@@ -1133,11 +1133,11 @@ public class TryBinaryExpression <: BinaryExpressionBase & Equatable<TryBinaryEx
      */
     public prop errorBranch: Block {
         get() {
-            assert(operands.size == 4, "TryBinaryExpression: error branch is not set")
+            assert(operands.size == 4, "TryBinaryExpression error branch is not set.")
             if (let Some(b) <- (operands[operands.size - 1] as Block)) {
                 return b
             }
-            throw CHIRException("TryBinaryExpression.errorBranch: op[" + operands[operands.size - 1].toString() + "] is not a block")
+            throw CHIRException("TryBinaryExpression error branch operand '${operands[operands.size - 1].toString()}' is not a block.")
         }
     }
 
@@ -1147,11 +1147,11 @@ public class TryBinaryExpression <: BinaryExpressionBase & Equatable<TryBinaryEx
      */
     public prop normalBranch: Block {
         get() {
-            assert(operands.size == 4, "TryBinaryExpression: normal branch is not set")
+            assert(operands.size == 4, "TryBinaryExpression normal branch is not set.")
             if (let Some(b) <- (operands[operands.size - 2] as Block)) {
                 return b
             }
-            throw CHIRException("TryBinaryExpression.normalBranch: op[" + operands[operands.size - 2].toString() + "] is not a block")
+            throw CHIRException("TryBinaryExpression normal branch operand '${operands[operands.size - 2].toString()}' is not a block.")
         }
     }
 
@@ -1175,7 +1175,7 @@ public class TryBinaryExpression <: BinaryExpressionBase & Equatable<TryBinaryEx
     public static func create(kind: BinaryExprKind, leftOp: Value, rightOp: Value, normal: Block, err: Block): TryBinaryExpression {
         let baseKind = kind.toExprKind(true)
         if (!baseKind.isBinary() || !baseKind.isTerminator()) {
-            throw CHIRException("TryBinaryExpression.create: try form is not supported for ${kind.toString()}")
+            throw CHIRException("TryBinaryExpression.create: Try form is not supported for '${kind.toString()}'.")
         }
         let expr = TryBinaryExpression(baseKind, leftOp, rightOp, normal, err)
         expr._attributes.setAttr(Attribute.PluginAdded, true)
@@ -1206,7 +1206,7 @@ public class Branch <: Expression & Equatable<Branch> {
      */
     public prop condition: Value {
         get() {
-            assert(!operands.isEmpty(), "Branch: condition is not set")
+            assert(!operands.isEmpty(), "Branch condition is not set.")
             return operands[0]
         }
     }
@@ -1217,11 +1217,11 @@ public class Branch <: Expression & Equatable<Branch> {
      */
     public prop falseTarget: Block {
         get() {
-            assert(operands.size == 3, "Branch: false target is not set")
+            assert(operands.size == 3, "Branch false target is not set.")
             if (let Some(b) <- (operands[2] as Block)) {
                 return b
             }
-            throw CHIRException("Branch.falseTarget: op[2] is not a block")
+            throw CHIRException("Branch false target operand at index 2 is not a block.")
         }
     }
 
@@ -1231,11 +1231,11 @@ public class Branch <: Expression & Equatable<Branch> {
      */
     public prop trueTarget: Block {
         get() {
-            assert(operands.size == 3, "Branch: true target is not set")
+            assert(operands.size == 3, "Branch true target is not set.")
             if (let Some(b) <- (operands[1] as Block)) {
                 return b
             }
-            throw CHIRException("Branch.trueTarget: op[1] is not a block")
+            throw CHIRException("Branch true target operand at index 1 is not a block.")
         }
     }
 
@@ -1554,7 +1554,7 @@ sealed abstract class ApplyBase <: FuncCall & Equatable<ApplyBase> {
      */
     public prop callee: Value {
         get() {
-            assert(!_operands.isEmpty(), "ApplyBase: callee is not set")
+            assert(!_operands.isEmpty(), "ApplyBase callee is not set.")
             return _operands[0]
         }
     }
@@ -1571,7 +1571,7 @@ sealed abstract class ApplyBase <: FuncCall & Equatable<ApplyBase> {
             let result = LocalVar(retTy, obj)
             obj._result = result
         } else {
-            throw CHIRException("create: callee is not a function type")
+            throw CHIRException("Cannot create an apply expression because the callee is not a function type.")
         }
     }
 
@@ -1633,7 +1633,7 @@ public class Apply <: ApplyBase & Equatable<Apply> {
      * @return The `Array<Value>` result.
      */
     public override func getArgs(): Array<Value> {
-        assert(!operands.isEmpty(), "Apply: args are not set")
+        assert(!operands.isEmpty(), "Apply arguments are not set.")
         return operands[1..].toArray()
     }
 
@@ -1657,11 +1657,11 @@ public class TryApply <: ApplyBase & Equatable<TryApply> {
      */
     public prop errorBranch: Block {
         get() {
-            assert(operands.size >= 3, "TryApply: error branch is not set")
+            assert(operands.size >= 3, "TryApply error branch is not set.")
             if (let Some(b) <- (operands[operands.size - 1] as Block)) {
                 return b
             }
-            throw CHIRException("TryApply.errorBranch: op[" + operands[operands.size - 1].toString() + "] is not a block")
+            throw CHIRException("TryApply error branch operand '${operands[operands.size - 1].toString()}' is not a block.")
         }
     }
 
@@ -1671,11 +1671,11 @@ public class TryApply <: ApplyBase & Equatable<TryApply> {
      */
     public prop normalBranch: Block {
         get() {
-            assert(operands.size >= 3, "TryApply: normal branch is not set")
+            assert(operands.size >= 3, "TryApply normal branch is not set.")
             if (let Some(b) <- (operands[operands.size - 2] as Block)) {
                 return b
             }
-            throw CHIRException("TryApply.normalBranch: op[" + operands[operands.size - 2].toString() + "] is not a block")
+            throw CHIRException("TryApply normal branch operand '${operands[operands.size - 2].toString()}' is not a block.")
         }
     }
 
@@ -1706,7 +1706,7 @@ public class TryApply <: ApplyBase & Equatable<TryApply> {
      * @return The `Array<Value>` result.
      */
     public override func getArgs(): Array<Value> {
-        assert(operands.size >= 3, "TryApply.getArgs: args are not set")
+        assert(operands.size >= 3, "TryApply arguments are not set.")
         return operands[1..operands.size - 2].toArray()
     }
 
@@ -1783,11 +1783,11 @@ public class TryIntrinsic <: IntrinsicBase & Equatable<TryIntrinsic> {
      */
     public prop errorBranch: Block {
         get() {
-            assert(operands.size >= 2, "TryIntrinsic: error branch is not set")
+            assert(operands.size >= 2, "TryIntrinsic error branch is not set.")
             if (let Some(b) <- (operands[operands.size - 1] as Block)) {
                 return b
             }
-            throw CHIRException("TryIntrinsic.errorBranch: op[" + operands[operands.size - 1].toString() + "] is not a block")
+            throw CHIRException("TryIntrinsic error branch operand '${operands[operands.size - 1].toString()}' is not a block.")
         }
     }
 
@@ -1797,11 +1797,11 @@ public class TryIntrinsic <: IntrinsicBase & Equatable<TryIntrinsic> {
      */
     public prop normalBranch: Block {
         get() {
-            assert(operands.size >= 2, "TryIntrinsic: normal branch is not set")
+            assert(operands.size >= 2, "TryIntrinsic normal branch is not set.")
             if (let Some(b) <- (operands[operands.size - 2] as Block)) {
                 return b
             }
-            throw CHIRException("TryIntrinsic.normalBranch: op[" + operands[operands.size - 2].toString() + "] is not a block")
+            throw CHIRException("TryIntrinsic normal branch operand '${operands[operands.size - 2].toString()}' is not a block.")
         }
     }
 
@@ -1825,7 +1825,7 @@ public class TryIntrinsic <: IntrinsicBase & Equatable<TryIntrinsic> {
      * @return The `Array<Value>` result.
      */
     public override func getArgs(): Array<Value> {
-        assert(operands.size >= 2, "TryIntrinsic: args are not set")
+        assert(operands.size >= 2, "TryIntrinsic arguments are not set.")
         return operands[0..operands.size - 2].toArray()
     }
 
@@ -1848,7 +1848,7 @@ sealed abstract class InvokeBase <: FuncCall & Equatable<InvokeBase> {
      */
     public prop callee: Function {
         get() {
-            assert(!_operands.isEmpty(), "InvokeBase: method is not set")
+            assert(!_operands.isEmpty(), "InvokeBase method is not set.")
             return (_operands[0] as Function).getOrThrow()
         }
     }
@@ -1946,7 +1946,7 @@ public class Invoke <: InvokeBase & Equatable<Invoke> {
      * @return The `Array<Value>` result.
      */
     public override func getArgs(): Array<Value> {
-        assert(operands.size >= 2, "Invoke: args are not set")
+        assert(operands.size >= 2, "Invoke arguments are not set.")
         if (callee.isStatic()) {
             return operands[2..].toArray()
         } else {
@@ -1974,11 +1974,11 @@ public class TryInvoke <: InvokeBase & Equatable<TryInvoke> {
      */
     public prop errorBranch: Block {
         get() {
-            assert(operands.size >= 3, "TryInvoke: error branch is not set")
+            assert(operands.size >= 3, "TryInvoke error branch is not set.")
             if (let Some(b) <- (operands[operands.size - 1] as Block)) {
                 return b
             }
-            throw CHIRException("TryInvoke.errorBranch: op[" + operands[operands.size - 1].toString() + "] is not a block")
+            throw CHIRException("TryInvoke error branch operand '${operands[operands.size - 1].toString()}' is not a block.")
         }
     }
 
@@ -1988,11 +1988,11 @@ public class TryInvoke <: InvokeBase & Equatable<TryInvoke> {
      */
     public prop normalBranch: Block {
         get() {
-            assert(operands.size >= 3, "TryInvoke: normal branch is not set")
+            assert(operands.size >= 3, "TryInvoke normal branch is not set.")
             if (let Some(b) <- (operands[operands.size - 2] as Block)) {
                 return b
             }
-            throw CHIRException("TryInvoke.normalBranch: op[" + operands[operands.size - 2].toString() + "] is not a block")
+            throw CHIRException("TryInvoke normal branch operand '${operands[operands.size - 2].toString()}' is not a block.")
         }
     }
 
@@ -2024,7 +2024,7 @@ public class TryInvoke <: InvokeBase & Equatable<TryInvoke> {
      * @return The `Array<Value>` result.
      */
     public override func getArgs(): Array<Value> {
-        assert(operands.size >= 4, "TryInvoke: args are not set")
+        assert(operands.size >= 4, "TryInvoke arguments are not set.")
         if (callee.isStatic()) {
             return operands[2..operands.size - 2].toArray()
         } else {
@@ -2389,7 +2389,7 @@ public class Lambda <: Expression & Equatable<Lambda> {
      */
     public prop body: BlockGroup {
         get() {
-            assert(!_blockGroups.isEmpty(), "Lambda: body is not set")
+            assert(!_blockGroups.isEmpty(), "Lambda body is not set.")
             return _blockGroups[0]
         }
     }
@@ -2599,7 +2599,7 @@ public class Load <: Expression & Equatable<Load> {
      */
     public prop srcAddress: Value {
         get() {
-            assert(operands.size == 1, "Load: op is not set")
+            assert(operands.size == 1, "Load operand is not set.")
             return operands[0]
         }
     }
@@ -2654,7 +2654,7 @@ public class MultiBranch <: Expression & Equatable<MultiBranch> {
      */
     public prop condition: Value {
         get() {
-            assert(!operands.isEmpty(), "MultiBranch: condition is not set")
+            assert(!operands.isEmpty(), "MultiBranch condition is not set.")
             return operands[0]
         }
     }
@@ -2665,11 +2665,11 @@ public class MultiBranch <: Expression & Equatable<MultiBranch> {
      */
     public prop defaultTarget: Block {
         get() {
-            assert(operands.size >= 2, "MultiBranch: default target is not set")
+            assert(operands.size >= 2, "MultiBranch default target is not set.")
             if (let Some(b) <- (operands[1] as Block)) {
                 return b
             }
-            throw CHIRException("MultiBranch.defaultTarget: op[1] is not a block")
+            throw CHIRException("MultiBranch default target operand at index 1 is not a block.")
         }
     }
 
@@ -2679,12 +2679,12 @@ public class MultiBranch <: Expression & Equatable<MultiBranch> {
      */
     public prop targetsWithoutDefault: Array<Block> {
         get() {
-            assert(operands.size >= 3, "MultiBranch: normal targets are not set")
+            assert(operands.size >= 3, "MultiBranch normal targets are not set.")
             return operands[2..].mapTo({ i =>
                 if (let Some(b) <- (i as Block)) {
                     return b
                 }
-                throw CHIRException("MultiBranch.targetsWithoutDefault: op[" + i.toString() + "] is not a block")
+                throw CHIRException("MultiBranch target operand '${i.toString()}' is not a block.")
             }).toArray()
         }
     }
@@ -2813,11 +2813,11 @@ public class TryNumericCast <: NumericCastBase & Equatable<TryNumericCast> {
      */
     public prop errorBranch: Block {
         get() {
-            assert(operands.size >= 2, "TryNumericCast: error branch is not set")
+            assert(operands.size >= 2, "TryNumericCast error branch is not set.")
             if (let Some(b) <- (operands[operands.size - 1] as Block)) {
                 return b
             }
-            throw CHIRException("TryNumericCast.errorBranch: op[" + operands[operands.size - 1].toString() + "] is not a block")
+            throw CHIRException("TryNumericCast error branch operand '${operands[operands.size - 1].toString()}' is not a block.")
         }
     }
 
@@ -2827,11 +2827,11 @@ public class TryNumericCast <: NumericCastBase & Equatable<TryNumericCast> {
      */
     public prop normalBranch: Block {
         get() {
-            assert(operands.size >= 2, "TryNumericCast: normal branch is not set")
+            assert(operands.size >= 2, "TryNumericCast normal branch is not set.")
             if (let Some(b) <- (operands[operands.size - 2] as Block)) {
                 return b
             }
-            throw CHIRException("TryNumericCast.normalBranch: op[" + operands[operands.size - 2].toString() + "] is not a block")
+            throw CHIRException("TryNumericCast normal branch operand '${operands[operands.size - 2].toString()}' is not a block.")
         }
     }
 
@@ -2993,11 +2993,11 @@ public class TryRawArrayAllocate <: RawArrayAllocateBase & Equatable<TryRawArray
      */
     public prop errorBranch: Block {
         get() {
-            assert(operands.size >= 2, "TryRawArrayAllocate: error branch is not set")
+            assert(operands.size >= 2, "TryRawArrayAllocate error branch is not set.")
             if (let Some(b) <- (operands[operands.size - 1] as Block)) {
                 return b
             }
-            throw CHIRException("TryRawArrayAllocate.errorBranch: op[" + operands[operands.size - 1].toString() + "] is not a block")
+            throw CHIRException("TryRawArrayAllocate error branch operand '${operands[operands.size - 1].toString()}' is not a block.")
         }
     }
 
@@ -3007,11 +3007,11 @@ public class TryRawArrayAllocate <: RawArrayAllocateBase & Equatable<TryRawArray
      */
     public prop normalBranch: Block {
         get() {
-            assert(operands.size >= 2, "TryRawArrayAllocate: normal branch is not set")
+            assert(operands.size >= 2, "TryRawArrayAllocate normal branch is not set.")
             if (let Some(b) <- (operands[operands.size - 2] as Block)) {
                 return b
             }
-            throw CHIRException("TryRawArrayAllocate.normalBranch: op[" + operands[operands.size - 2].toString() + "] is not a block")
+            throw CHIRException("TryRawArrayAllocate normal branch operand '${operands[operands.size - 2].toString()}' is not a block.")
         }
     }
 
@@ -3306,7 +3306,7 @@ public class Store <: Expression & Equatable<Store> {
      */
     public prop dstAddress: Value {
         get() {
-            assert(operands.size == 2, "Store: op is not set")
+            assert(operands.size == 2, "Store operand is not set.")
             return operands[1]
         }
     }
@@ -3317,7 +3317,7 @@ public class Store <: Expression & Equatable<Store> {
      */
     public prop srcValue: Value {
         get() {
-            assert(operands.size == 2, "Store: op is not set")
+            assert(operands.size == 2, "Store operand is not set.")
             return operands[0]
         }
     }
@@ -3373,7 +3373,7 @@ public class StoreElementByName <: Expression & Equatable<StoreElementByName> {
      */
     public prop srcValue: Value {
         get() {
-            assert(operands.size == 2, "StoreElementByName: op is not set")
+            assert(operands.size == 2, "StoreElementByName operand is not set.")
             return operands[0]
         }
     }
@@ -3429,7 +3429,7 @@ public class StoreElementRef <: Expression & Equatable<StoreElementRef> {
      */
     public prop srcValue: Value {
         get() {
-            assert(operands.size == 2, "StoreElementRef: op is not set")
+            assert(operands.size == 2, "StoreElementRef operand is not set.")
             return operands[0]
         }
     }
@@ -3484,7 +3484,7 @@ public class Tuple <: Expression & Equatable<Tuple> {
      * @return The `Tuple` result.
      */
     public static func create(elements: ArrayList<Value>): Tuple {
-        assert(!elements.isEmpty(), "Tuple: elements are not set")
+        assert(!elements.isEmpty(), "Tuple elements are not set.")
         let expr = Tuple(elements)
         expr._attributes.setAttr(Attribute.PluginAdded, true)
         let result = LocalVar(TupleType.get(elements.mapTo<Type>({ e => e.ty }).toArray()), expr)
@@ -3509,7 +3509,7 @@ sealed abstract class TypeCast <: Expression & Equatable<TypeCast> {
      */
     public prop sourceType: Type {
         get() {
-            assert(!operands.isEmpty(), "TypeCast: source value is not set")
+            assert(!operands.isEmpty(), "TypeCast source value is not set.")
             return operands[0].ty
         }
     }
@@ -3520,7 +3520,7 @@ sealed abstract class TypeCast <: Expression & Equatable<TypeCast> {
      */
     public prop srcValue: Value {
         get() {
-            assert(!operands.isEmpty(), "TypeCast: source value is not set")
+            assert(!operands.isEmpty(), "TypeCast source value is not set.")
             return operands[0]
         }
     }
@@ -3789,11 +3789,11 @@ public class TryUnaryExpression <: UnaryExpressionBase & Equatable<TryUnaryExpre
      */
     public prop errorBranch: Block {
         get() {
-            assert(operands.size == 3, "TryUnaryExpression: error branch is not set")
+            assert(operands.size == 3, "TryUnaryExpression error branch is not set.")
             if (let Some(b) <- (operands[operands.size - 1] as Block)) {
                 return b
             }
-            throw CHIRException("TryUnaryExpression.errorBranch: op[" + operands[operands.size - 1].toString() + "] is not a block")
+            throw CHIRException("TryUnaryExpression error branch operand '${operands[operands.size - 1].toString()}' is not a block.")
         }
     }
 
@@ -3803,11 +3803,11 @@ public class TryUnaryExpression <: UnaryExpressionBase & Equatable<TryUnaryExpre
      */
     public prop normalBranch: Block {
         get() {
-            assert(operands.size == 3, "TryUnaryExpression: normal branch is not set")
+            assert(operands.size == 3, "TryUnaryExpression normal branch is not set.")
             if (let Some(b) <- (operands[operands.size - 2] as Block)) {
                 return b
             }
-            throw CHIRException("TryUnaryExpression.normalBranch: op[" + operands[operands.size - 2].toString() + "] is not a block")
+            throw CHIRException("TryUnaryExpression normal branch operand '${operands[operands.size - 2].toString()}' is not a block.")
         }
     }
 
@@ -3862,7 +3862,7 @@ public class UnaryExpression <: UnaryExpressionBase & Equatable<UnaryExpression>
     public static func create(kind: UnaryExprKind, op: Value): UnaryExpression {
         let exprKind = kind.toExprKind(false)
         if (!exprKind.isUnary() || exprKind.isTerminator()) {
-            throw CHIRException("UnaryExpression.create: Invalid kind for UnaryExpression: ${kind.toString()}")
+            throw CHIRException("UnaryExpression.create: Invalid kind '${kind.toString()}'.")
         }
         let expr = UnaryExpression(exprKind, op)
         expr._attributes.setAttr(Attribute.PluginAdded, true)
@@ -3936,7 +3936,7 @@ public class VArrayExpr <: Expression & Equatable<VArrayExpr> {
      * @return The `VArrayExpr` result.
      */
     public static func create(elements: ArrayList<Value>): VArrayExpr {
-        assert(!elements.isEmpty(), "VArrayExpr: elements are not set")
+        assert(!elements.isEmpty(), "VArrayExpr elements are not set.")
         let expr = VArrayExpr(elements)
         expr._attributes.setAttr(Attribute.PluginAdded, true)
         let retTy = VArrayType.get(elements[0].ty, elements.size)
