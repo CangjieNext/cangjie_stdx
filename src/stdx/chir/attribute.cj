@@ -260,14 +260,14 @@ internal struct AttributeInfo <: ToString {
             if (bitIndex < ATTR_SIZE) {
                 _attributesInfo |= UInt64(1)  << bitIndex
             } else {
-                throw CHIRException("set failed, Attribute index out of range")
+                throw CHIRException("Invalid attribute index: expected a value in [0, ${ATTR_SIZE}), got '${bitIndex}'.")
             }
         } else {
             let bitIndex = attr.toUInt64()
             if (bitIndex < ATTR_SIZE) {
                 _attributesInfo &= !(UInt64(1) << bitIndex)
             } else {
-                throw CHIRException("set failed, Attribute index out of range")
+                throw CHIRException("Invalid attribute index: expected a value in [0, ${ATTR_SIZE}), got '${bitIndex}'.")
             }
         }
     }

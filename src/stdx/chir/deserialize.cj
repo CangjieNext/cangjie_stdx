@@ -20,7 +20,7 @@ import std.fs.*
  */
 public func deserializePackage(root: CPointer<UInt8>, length: Int64): Package {
     if (root.isNull()) {
-        throw CHIRException("root is null in deserialize")
+        throw CHIRException("Cannot deserialize a package from a null root pointer.")
     }
     let pkgBuf = Array<UInt8>(length, {x: Int64 => unsafe { root.read(x) }})
     let pkgFormat = PackageFormat_CHIRPackage(pkgBuf, 0)
@@ -38,7 +38,7 @@ private func deserializePackageAccessLevel(accessLevel: PackageFormat_PackageAcc
         case PackageFormat_PackageAccessLevel.PackageAccessLevel_INTERNAL => AccessLevel.Internal
         case PackageFormat_PackageAccessLevel.PackageAccessLevel_PROTECTED => AccessLevel.Protected
         case PackageFormat_PackageAccessLevel.PackageAccessLevel_PUBLIC => AccessLevel.Public
-        case _ => throw CHIRException("invalid package access level")
+        case _ => throw CHIRException("Invalid package access level.")
     }
 }
 
@@ -217,7 +217,7 @@ class CHIRDeserializerImpl {
             case PackageFormat_CHIRTypeKind.CHIRTypeKind_BOXTYPE => TypeKind.Box
             case PackageFormat_CHIRTypeKind.CHIRTypeKind_THIS => TypeKind.`This`
             case PackageFormat_CHIRTypeKind.CHIRTypeKind_FUNC => TypeKind.Func
-            case PackageFormat_CHIRTypeKind.CHIRTypeKind_VOID => throw IllegalArgumentException("Cannot convert CHIRTypeKind.CHIRTypeKind_VOID to TypeKind")
+            case PackageFormat_CHIRTypeKind.CHIRTypeKind_VOID => throw IllegalArgumentException("Cannot convert 'CHIRTypeKind.CHIRTypeKind_VOID' to 'TypeKind'.")
         }
     }
 
@@ -227,7 +227,7 @@ class CHIRDeserializerImpl {
 
     private func getType(id: UInt32): Type {
         if (id == 0) {
-            throw CHIRException("id is 0, type is not found")
+            throw CHIRException("Type identifier 0 is not found.")
         }
         if (let Some(v) <- id2Type.get(id)) {
             return v
@@ -252,7 +252,7 @@ class CHIRDeserializerImpl {
                             BoxType.get(argTys[0])
                         case TypeKind.CPointer =>
                             CPointerType.get(argTys[0])
-                        case _ => throw IllegalArgumentException("Unsupported TYPE kind: ${tk}")
+                        case _ => throw IllegalArgumentException("Unsupported type kind '${tk}'.")
                     }
                 }
             case PackageFormat_TypeElem.TypeElem_RAWARRAYTYPE =>
@@ -288,7 +288,7 @@ class CHIRDeserializerImpl {
                     case TypeKind.Enum =>
                         let enumDef = getCustomTypeDefAs<EnumDef>(def)
                         EnumType.get(enumDef, typeArgs)
-                    case _ => throw IllegalArgumentException("Illegal custom type kind: ${typeKind}")
+                    case _ => throw IllegalArgumentException("Invalid custom type kind '${typeKind}'.")
                 }
             case PackageFormat_TypeElem.TypeElem_GENERICTYPE =>
                 let genericType = pkgFormat.GetTypesAsGenericType(id - 1).getOrThrow()
@@ -298,7 +298,7 @@ class CHIRDeserializerImpl {
                 genericTypeConfig.add((result, genericType))
                 result
             case PackageFormat_TypeElem.TypeElem_NONE =>
-                throw IllegalArgumentException("none type not supported")
+                throw IllegalArgumentException("The None type is not supported.")
         }
         id2Type[id] = ty
         return ty
@@ -332,7 +332,7 @@ class CHIRDeserializerImpl {
 
     private func getExpression(id: UInt32): Expression {
         if (id == 0) {
-            throw CHIRException("id is 0, expression not found")
+            throw CHIRException("Expression identifier 0 is not found.")
         }
         if (let Some(v) <- id2Expression.get(id)) {
             return v
@@ -414,7 +414,7 @@ class CHIRDeserializerImpl {
                 let exprFormat = pkgFormat.GetExprsAsUnaryExpressionBase(id-1).getOrThrow()
                 (deserializeUnaryExpressionBase(exprFormat), exprFormat.GetBase().getOrThrow())
             case _ =>
-                throw IllegalArgumentException("unsupported expression type in chir deserialization.")
+                throw IllegalArgumentException("Unsupported expression type during CHIR deserialization.")
         }
         id2Expression[id] = expr
         configExpression(exprFormat, expr)
@@ -437,7 +437,7 @@ class CHIRDeserializerImpl {
 
     private func getCustomTypeDef(id : UInt32) : CustomTypeDef {
         if (id == 0) {
-            throw CHIRException("id is 0, CustomTypeDef not found")
+            throw CHIRException("Custom type definition identifier 0 is not found.")
         }
         if (let Some(v) <- id2CustomTypeDef.get(id)) {
             return v
@@ -453,7 +453,7 @@ class CHIRDeserializerImpl {
             case PackageFormat_CustomTypeDefElem.CustomTypeDefElem_EXTENDDEF =>
                 deserializeExtendDef(pkgFormat.GetDefsAsExtendDef(id-1).getOrThrow())
             case PackageFormat_CustomTypeDefElem.CustomTypeDefElem_NONE =>
-                throw CHIRException("Invalid PackageFormat_CustomTypeDefElem")
+                throw CHIRException("Invalid PackageFormat_CustomTypeDefElem value.")
         }
         id2CustomTypeDef.add(id, value)
         return value
@@ -558,7 +558,7 @@ class CHIRDeserializerImpl {
         } else if (let Some(v) <- tryGetExpressionAs<Lambda>(parameterFormat.GetOwnedLambda())) {
             param = Parameter(ty, "", v)
         } else {
-            throw CHIRException("Parameter must have either ownedFunc or ownedLambda")
+            throw CHIRException("Parameter must have an owning function or lambda.")
         }
         param._srcCodeName = parameterFormat.GetSrcCodeIdentifier()
         if (let Some(v) <- parameterFormat.GetAnnoInfo()) {
@@ -650,14 +650,14 @@ class CHIRDeserializerImpl {
         } else if (let Some(owner) <- tryGetExpressionAs<Lambda>(blockGroupFormat.GetOwnedExpression())) {
             result = BlockGroup("", owner._result.getOrThrow())
         } else {
-            throw CHIRException("Invalid owner, neither Function or Lambda")
+            throw CHIRException("Invalid owner: expected a function or lambda.")
         }
         return result
     }
 
     private func getValue(id : UInt32): Value {
         if (id == 0) {
-            throw CHIRException("id is 0, value is not found")
+            throw CHIRException("Value identifier 0 is not found.")
         }
         if (let Some(v) <- id2Value.get(id)) {
             return v
@@ -735,7 +735,7 @@ class CHIRDeserializerImpl {
                 id2Value[id] = unitLiteral
                 configValue(unitLiteralFormat.GetBase().getOrThrow().GetBase().getOrThrow(), unitLiteral)
             case _ =>
-                throw CHIRException("Unsupported value type")
+                throw CHIRException("Unsupported value type.")
         }
         return id2Value[id]
     }
@@ -891,7 +891,7 @@ class CHIRDeserializerImpl {
 
     private func convertExprKind(kind: PackageFormat_CHIRExprKind): ExprKind {
         return match (kind) {
-            case PackageFormat_CHIRExprKind.CHIRExprKind_INVALID => throw IllegalArgumentException("Invalid ExprKind")
+            case PackageFormat_CHIRExprKind.CHIRExprKind_INVALID => throw IllegalArgumentException("Invalid expression kind.")
             case PackageFormat_CHIRExprKind.CHIRExprKind_GOTO => ExprKind.Goto
             case PackageFormat_CHIRExprKind.CHIRExprKind_BRANCH => ExprKind.Branch
             case PackageFormat_CHIRExprKind.CHIRExprKind_MULTIBRANCH => ExprKind.MultiBranch
@@ -978,7 +978,7 @@ class CHIRDeserializerImpl {
             case PackageFormat_OverflowStrategy.OverflowStrategy_WRAPPING => OverflowStrategy.Wrapping
             case PackageFormat_OverflowStrategy.OverflowStrategy_THROWING => OverflowStrategy.Throwing
             case PackageFormat_OverflowStrategy.OverflowStrategy_SATURATING => OverflowStrategy.Saturating
-            case _ => throw CHIRException("Unsupported OverflowStrategy")
+            case _ => throw CHIRException("Unsupported OverflowStrategy.")
         }
     }
 
@@ -1340,7 +1340,7 @@ class CHIRDeserializerImpl {
             case PackageFormat_IntrinsicKind.IntrinsicKind_GET_TYPE_FOR_TYPE_PARAMETER => IntrinsicKind.GetTypeForTypeParameter
             case PackageFormat_IntrinsicKind.IntrinsicKind_IS_SUBTYPE_TYPES => IntrinsicKind.IsSubtypeTypes
 
-            case _ => throw IllegalArgumentException("Unsupported IntrinsicKind")
+            case _ => throw IllegalArgumentException("Unsupported intrinsic kind.")
         }
     }
 
@@ -1425,7 +1425,7 @@ class CHIRDeserializerImpl {
                 VArrayBuilder(getValue(operands[0]), getValue(operands[1]), getValue(operands[2]))
             case ExprKind.VArrayExpr =>
                 VArrayExpr(collectArrayList<Value>(getValue(operands)))
-            case _ => throw CHIRException("Unsupported EXPRESSION kind: " + kind.toString())
+            case _ => throw CHIRException("Unsupported expression kind '${kind.toString()}'.")
         }
         return expr
     }
@@ -1585,7 +1585,7 @@ class CHIRDeserializerImpl {
         let base = funcCall.GetBase().getOrThrow()
         let kind = convertExprKind(base.GetKind())
         let operands = base.GetOperands()
-        assert(operands.size >= 2, "Invoke operands must include method and caller")
+        assert(operands.size >= 2, "Invoke operands must include a method and caller.")
         let method = getValueAs<Function>(operands[0])
         let caller = getValue(operands[1])
         let instantiatedTypeArgs = getType(funcCall.GetInstantiatedTypeArgs())

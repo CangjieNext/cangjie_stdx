@@ -369,7 +369,7 @@ public class Block <: Value & Equatable<Block> {
      */
     public func insertExpr(expr: Expression, at: Int64): Unit {
         if (at < 0) {
-            throw CHIRException("Invalid insert position: ${at}")
+            throw CHIRException("Invalid insert position '${at}'.")
         }
         if (at >= _exprs.size) {
             _exprs.add(expr)
@@ -480,7 +480,7 @@ public class BlockGroup <: Value & Equatable<BlockGroup> {
             if (let Some(b) <- _entryBlock) {
                 return b
             } else {
-                throw CHIRException("Entry block is not set")
+                throw CHIRException("Entry block is not set.")
             }
         }
     }
@@ -506,7 +506,7 @@ public class BlockGroup <: Value & Equatable<BlockGroup> {
             } else if (let Some(lv) <- (_owner as LocalVar)) {
                 return lv.topLevelFunc
             } else {
-                throw CHIRException("Invalid owner: ${_owner.toString()}")
+                throw CHIRException("Invalid owner '${_owner.toString()}'.")
             }
         }
     }
@@ -548,7 +548,7 @@ public class BlockGroup <: Value & Equatable<BlockGroup> {
             } else if (let Some(lv) <- (_owner as LocalVar)) {
                 lv.expr._blockGroups.removeIf({ bg => bg == this })
             } else {
-                throw CHIRException("Invalid owner: ${_owner.toString()}")
+                throw CHIRException("Invalid owner '${_owner.toString()}'.")
             }
         }
         _kind = ValueKind.Invalid
@@ -561,7 +561,7 @@ public class BlockGroup <: Value & Equatable<BlockGroup> {
      */
     public func setEntryBlock(block: Block): Unit {
         if (!_blocks.contains(block)) {
-            throw CHIRException("Entry block must push into BlockGroup first")
+            throw CHIRException("Entry block is not present in the block group.")
         }
         _entryBlock = block
     }
@@ -1132,7 +1132,7 @@ public class Function <: GlobalValue & Equatable<Function> {
 
     internal func addBody(): BlockGroup {
         if (_body.isSome()) {
-            throw CHIRException("Function body already set")
+            throw CHIRException("Function body is already set.")
         }
         let identifier = generateBlockGroupId().toString()
         let b = BlockGroup(identifier, this)
@@ -1830,7 +1830,7 @@ public class Parameter <: Value & Equatable<Parameter> {
             } else if (let Some(lv) <- (_owner as LocalVar)) {
                 return lv.topLevelFunc
             } else {
-                throw CHIRException("Invalid owner: ${_owner.toString()}")
+                throw CHIRException("Invalid owner '${_owner.toString()}'.")
             }
         }
     }
