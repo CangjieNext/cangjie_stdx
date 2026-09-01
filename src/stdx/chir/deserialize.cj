@@ -38,7 +38,7 @@ private func deserializePackageAccessLevel(accessLevel: PackageFormat_PackageAcc
         case PackageFormat_PackageAccessLevel.PackageAccessLevel_INTERNAL => AccessLevel.Internal
         case PackageFormat_PackageAccessLevel.PackageAccessLevel_PROTECTED => AccessLevel.Protected
         case PackageFormat_PackageAccessLevel.PackageAccessLevel_PUBLIC => AccessLevel.Public
-        case _ => throw CHIRException("Invalid package access level.")
+        case _ => throw CHIRException("Invalid package access level '${EnumPackageFormat_PackageAccessLevelValues(accessLevel)}'.")
     }
 }
 
@@ -414,7 +414,7 @@ class CHIRDeserializerImpl {
                 let exprFormat = pkgFormat.GetExprsAsUnaryExpressionBase(id-1).getOrThrow()
                 (deserializeUnaryExpressionBase(exprFormat), exprFormat.GetBase().getOrThrow())
             case _ =>
-                throw IllegalArgumentException("Unsupported expression type during CHIR deserialization.")
+                throw IllegalArgumentException("Unsupported expression type '${EnumPackageFormat_ExpressionElemValues(pkgFormat.GetExprsType(id - 1))}' at identifier '${id}' during CHIR deserialization.")
         }
         id2Expression[id] = expr
         configExpression(exprFormat, expr)
@@ -453,7 +453,7 @@ class CHIRDeserializerImpl {
             case PackageFormat_CustomTypeDefElem.CustomTypeDefElem_EXTENDDEF =>
                 deserializeExtendDef(pkgFormat.GetDefsAsExtendDef(id-1).getOrThrow())
             case PackageFormat_CustomTypeDefElem.CustomTypeDefElem_NONE =>
-                throw CHIRException("Invalid PackageFormat_CustomTypeDefElem value.")
+                throw CHIRException("Invalid custom type definition kind '${EnumPackageFormat_CustomTypeDefElemValues(typeFormat)}' at identifier '${id}'.")
         }
         id2CustomTypeDef.add(id, value)
         return value
@@ -735,7 +735,7 @@ class CHIRDeserializerImpl {
                 id2Value[id] = unitLiteral
                 configValue(unitLiteralFormat.GetBase().getOrThrow().GetBase().getOrThrow(), unitLiteral)
             case _ =>
-                throw CHIRException("Unsupported value type.")
+                throw CHIRException("Unsupported value type '${EnumPackageFormat_ValueElemValues(pkgFormat.GetValuesType(id - 1))}' at identifier '${id}'.")
         }
         return id2Value[id]
     }
@@ -978,7 +978,7 @@ class CHIRDeserializerImpl {
             case PackageFormat_OverflowStrategy.OverflowStrategy_WRAPPING => OverflowStrategy.Wrapping
             case PackageFormat_OverflowStrategy.OverflowStrategy_THROWING => OverflowStrategy.Throwing
             case PackageFormat_OverflowStrategy.OverflowStrategy_SATURATING => OverflowStrategy.Saturating
-            case _ => throw CHIRException("Unsupported OverflowStrategy.")
+            case _ => throw CHIRException("Unsupported OverflowStrategy '${EnumPackageFormat_OverflowStrategyValues(strategy)}'.")
         }
     }
 
@@ -1340,7 +1340,7 @@ class CHIRDeserializerImpl {
             case PackageFormat_IntrinsicKind.IntrinsicKind_GET_TYPE_FOR_TYPE_PARAMETER => IntrinsicKind.GetTypeForTypeParameter
             case PackageFormat_IntrinsicKind.IntrinsicKind_IS_SUBTYPE_TYPES => IntrinsicKind.IsSubtypeTypes
 
-            case _ => throw IllegalArgumentException("Unsupported intrinsic kind.")
+            case _ => throw IllegalArgumentException("Unsupported intrinsic kind '${EnumPackageFormat_IntrinsicKindValues(kind)}'.")
         }
     }
 

@@ -165,7 +165,7 @@ class CollectAspects {
         }
         let outerDef = getFuncOuterDeclaredOrExtendedDef(f)
         if (f.isGeneric() || (outerDef.isSome() && outerDef.getOrThrow().isGeneric())) {
-            printError("Function '${f.srcCodeName}' with AOP annotations cannot be generic.")
+            printError("Function '${f.srcCodeName}' with AOP annotations cannot be generic or belong to a generic type.")
             return false
         }
         return true
@@ -221,11 +221,11 @@ class CollectAspects {
             let thisParamType = thisParamTypes[0]
             if (let Some(c) <- (thisParamType as CustomType)) {
                 if (c.def.srcCodeName != className) {
-                    printError("Function '${f.srcCodeName}' annotated with @InsertAtEntry/@InsertAtExit has first parameter type '${thisParamType.qualifiedName}', expected '${packageName}.${className}'.")
+                    printError("Function '${f.srcCodeName}' annotated with @InsertAtEntry/@InsertAtExit has first parameter type '${thisParamType.qualifiedName}', expected class '${className}'.")
                     return false
                 }
             } else {
-                printError("Function '${f.srcCodeName}' annotated with @InsertAtEntry/@InsertAtExit has first parameter type '${thisParamType.qualifiedName}', expected '${packageName}.${className}'.")
+                printError("Function '${f.srcCodeName}' annotated with @InsertAtEntry/@InsertAtExit has first parameter type '${thisParamType.qualifiedName}', expected class '${className}'.")
                 return false
             }
             paramTypes = explicitParamTypes

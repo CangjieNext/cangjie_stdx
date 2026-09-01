@@ -120,7 +120,7 @@ private func getFieldOfTypeImpl(baseTy: Type, index: Int64): Type {
     } else if (let Some(tt) <- (baseTy as TupleType)) {
         return tt.elementTypes[index]
     } else if (let Some(et) <- (baseTy as EnumType)) {
-        assert(index == 0, "Enum type must have exactly one element.")
+        assert(index == 0, "Enum type field index must be 0, got '${index}'.")
         if (getEnumSelectorType(et.enumDef) == TypeKind.`Bool`) {
             return BoolType.get()
         }
