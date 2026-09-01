@@ -369,7 +369,7 @@ public class Block <: Value & Equatable<Block> {
      */
     public func insertExpr(expr: Expression, at: Int64): Unit {
         if (at < 0) {
-            throw CHIRException("Invalid insert position '${at}'.")
+            throw CHIRException("Invalid insert position: expected a non-negative value, got '${at}'.")
         }
         if (at >= _exprs.size) {
             _exprs.add(expr)
