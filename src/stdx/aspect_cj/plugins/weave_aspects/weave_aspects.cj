@@ -111,7 +111,7 @@ class WeaveAspects {
         let args = ArrayList<Value>()
         if (expectedParamsNum != 0) {
             if (f.parameters.size != expectedParamsNum) {
-                printError("Function '${f.srcCodeName}' and woven method '${pi.insert.methodMangledName}' have different parameter counts: got '${f.parameters.size}', expected '${expectedParamsNum}'.")
+                printError("Target function '${f.srcCodeName}' has parameter count mismatch: got '${f.parameters.size}', expected '${expectedParamsNum}' arguments for aspect function '${pi.insert.methodMangledName}'.")
                 return (Array<Value>(), false)
             }
             for (param in f.parameters) {
