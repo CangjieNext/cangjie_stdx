@@ -23,7 +23,7 @@ public macro CHIRPlugin(input: Tokens): Tokens {
         if (let Some(refType) <- (superType as RefType)) {
             let superName = refType.identifier.value
             if (superName == "CHIRPluginBase") {
-                throw Exception(subClassDecl.identifier.value + " can't inherit from class CHIRPluginBase manually.")
+                throw Exception("Class '${subClassDecl.identifier.value}' cannot inherit from CHIRPluginBase directly.")
             }
         }
     }
