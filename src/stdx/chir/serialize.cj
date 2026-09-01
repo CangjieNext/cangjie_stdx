@@ -760,7 +760,7 @@ class CHIRSerializerImpl {
             case ExprKind.GetInstantiateValue => PackageFormat_CHIRExprKind.CHIRExprKind_GETINSTANTIATEVALUE
             case ExprKind.GetRtti => PackageFormat_CHIRExprKind.CHIRExprKind_GETRTTI
             case ExprKind.GetRttiStatic => PackageFormat_CHIRExprKind.CHIRExprKind_GETRTTISTATIC
-            case _ => throw CHIRException("Unknown expression kind '${kind.toString()}'.")
+            case _ => throw CHIRException("Invalid expression kind.")
         }
     }
 
@@ -770,7 +770,7 @@ class CHIRSerializerImpl {
             case OverflowStrategy.Wrapping => PackageFormat_OverflowStrategy.OverflowStrategy_WRAPPING
             case OverflowStrategy.Throwing => PackageFormat_OverflowStrategy.OverflowStrategy_THROWING
             case OverflowStrategy.Saturating => PackageFormat_OverflowStrategy.OverflowStrategy_SATURATING
-            case _ => throw CHIRException("Invalid OverflowStrategy value '${strategy.toString()}'.")
+            case _ => throw CHIRException("Unsupported OverflowStrategy '${strategy.toString()}'.")
         }
     }
 
@@ -1411,7 +1411,7 @@ class CHIRSerializerImpl {
         // Guard: every type slot must be non-zero (fully serialized).
         for (i in 0..allType.size) {
             if (allType[i] == UInt32(0)) {
-                throw Exception("Type slot '${i}' has no serialized object.")
+                throw Exception("Invalid type slot '${i}': expected a nonzero serialized table offset, got 0.")
             }
         }
         let typesTypeArray = Array<UInt8>(typeKind.size, { i => typeKind[i] })
@@ -1426,13 +1426,13 @@ class CHIRSerializerImpl {
         }
         for (i in 0..valueKind.size) {
             if (valueKind[i] == UInt8(0)) {
-                throw Exception("Value slot '${i}' has an invalid value kind.")
+                throw Exception("Invalid value kind at slot '${i}': expected a nonzero value, got 0.")
             }
         }
         // Guard: every value slot must be non-zero (fully serialized).
         for (i in 0..allValue.size) {
             if (allValue[i] == UInt32(0)) {
-                throw Exception("Value slot '${i}' has no serialized object.")
+                throw Exception("Invalid value slot '${i}': expected a nonzero serialized table offset, got 0.")
             }
         }
         let valuesTypeArray = Array<UInt8>(valueKind.size, { i => valueKind[i] })
@@ -1448,7 +1448,7 @@ class CHIRSerializerImpl {
         // Guard: every expression slot must be non-zero (fully serialized).
         for (i in 0..allExpression.size) {
             if (allExpression[i] == UInt32(0)) {
-                throw Exception("Expression slot '${i}' has no serialized object.")
+                throw Exception("Invalid expression slot '${i}': expected a nonzero serialized table offset, got 0.")
             }
         }
         let exprsTypeArray = Array<UInt8>(exprKind.size, { i => exprKind[i] })
@@ -1464,7 +1464,7 @@ class CHIRSerializerImpl {
         // Guard: every def slot must be non-zero (fully serialized).
         for (i in 0..allCustomTypeDef.size) {
             if (allCustomTypeDef[i] == UInt32(0)) {
-                throw Exception("Custom type definition slot '${i}' has no serialized object.")
+                throw Exception("Invalid custom type definition slot '${i}': expected a nonzero serialized table offset, got 0.")
             }
         }
         let defsTypeArray = Array<UInt8>(defKind.size, { i => defKind[i] })
