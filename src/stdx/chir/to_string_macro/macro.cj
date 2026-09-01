@@ -21,7 +21,7 @@ public macro CHIREnumToString(input: Tokens): Tokens {
     for (superType in superTypes) {
         let superName = (superType as RefType).getOrThrow().identifier.value
         if (superName == "ToString") {
-            diagReport(DiagReportLevel.ERROR, superType.toTokens(), "can't inherit from interface ToString manually.", "")
+            diagReport(DiagReportLevel.ERROR, superType.toTokens(), "Cannot inherit from interface ToString manually.", "")
             return Tokens(Token(TokenKind.ILLEGAL))
         }
     }
