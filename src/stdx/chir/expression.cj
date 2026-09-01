@@ -987,7 +987,7 @@ public class TryAllocate <: AllocateBase & Equatable<TryAllocate> {
      */
     public prop errorBranch: Block {
         get() {
-            assert(operands.size == 2, "TryAllocate error branch is not set.")
+            assert(operands.size == 2, "TryAllocate error branch operands: expected 2, got '${operands.size}'.")
             if (let Some(b) <- (operands[operands.size - 1] as Block)) {
                 return b
             }
@@ -1001,7 +1001,7 @@ public class TryAllocate <: AllocateBase & Equatable<TryAllocate> {
      */
     public prop normalBranch: Block {
         get() {
-            assert(operands.size == 2, "TryAllocate normal branch is not set.")
+            assert(operands.size == 2, "TryAllocate normal branch operands: expected 2, got '${operands.size}'.")
             if (let Some(b) <- (operands[operands.size - 2] as Block)) {
                 return b
             }
@@ -1133,7 +1133,7 @@ public class TryBinaryExpression <: BinaryExpressionBase & Equatable<TryBinaryEx
      */
     public prop errorBranch: Block {
         get() {
-            assert(operands.size == 4, "TryBinaryExpression error branch is not set.")
+            assert(operands.size == 4, "TryBinaryExpression error branch operands: expected 4, got '${operands.size}'.")
             if (let Some(b) <- (operands[operands.size - 1] as Block)) {
                 return b
             }
@@ -1147,7 +1147,7 @@ public class TryBinaryExpression <: BinaryExpressionBase & Equatable<TryBinaryEx
      */
     public prop normalBranch: Block {
         get() {
-            assert(operands.size == 4, "TryBinaryExpression normal branch is not set.")
+            assert(operands.size == 4, "TryBinaryExpression normal branch operands: expected 4, got '${operands.size}'.")
             if (let Some(b) <- (operands[operands.size - 2] as Block)) {
                 return b
             }
@@ -1206,7 +1206,7 @@ public class Branch <: Expression & Equatable<Branch> {
      */
     public prop condition: Value {
         get() {
-            assert(!operands.isEmpty(), "Branch condition is not set.")
+            assert(!operands.isEmpty(), "Branch condition operands: expected at least 1, got '${operands.size}'.")
             return operands[0]
         }
     }
@@ -1217,7 +1217,7 @@ public class Branch <: Expression & Equatable<Branch> {
      */
     public prop falseTarget: Block {
         get() {
-            assert(operands.size == 3, "Branch false target is not set.")
+            assert(operands.size == 3, "Branch false target operands: expected 3, got '${operands.size}'.")
             if (let Some(b) <- (operands[2] as Block)) {
                 return b
             }
@@ -1231,7 +1231,7 @@ public class Branch <: Expression & Equatable<Branch> {
      */
     public prop trueTarget: Block {
         get() {
-            assert(operands.size == 3, "Branch true target is not set.")
+            assert(operands.size == 3, "Branch true target operands: expected 3, got '${operands.size}'.")
             if (let Some(b) <- (operands[1] as Block)) {
                 return b
             }
@@ -1554,7 +1554,7 @@ sealed abstract class ApplyBase <: FuncCall & Equatable<ApplyBase> {
      */
     public prop callee: Value {
         get() {
-            assert(!_operands.isEmpty(), "ApplyBase callee is not set.")
+            assert(!_operands.isEmpty(), "ApplyBase callee operands: expected at least 1, got '${_operands.size}'.")
             return _operands[0]
         }
     }
@@ -1633,7 +1633,7 @@ public class Apply <: ApplyBase & Equatable<Apply> {
      * @return The `Array<Value>` result.
      */
     public override func getArgs(): Array<Value> {
-        assert(!operands.isEmpty(), "Apply arguments are not set.")
+        assert(!operands.isEmpty(), "Apply operands: expected at least 1, got '${operands.size}'.")
         return operands[1..].toArray()
     }
 
@@ -1657,7 +1657,7 @@ public class TryApply <: ApplyBase & Equatable<TryApply> {
      */
     public prop errorBranch: Block {
         get() {
-            assert(operands.size >= 3, "TryApply error branch is not set.")
+            assert(operands.size >= 3, "TryApply error branch operands: expected at least 3, got '${operands.size}'.")
             if (let Some(b) <- (operands[operands.size - 1] as Block)) {
                 return b
             }
@@ -1671,7 +1671,7 @@ public class TryApply <: ApplyBase & Equatable<TryApply> {
      */
     public prop normalBranch: Block {
         get() {
-            assert(operands.size >= 3, "TryApply normal branch is not set.")
+            assert(operands.size >= 3, "TryApply normal branch operands: expected at least 3, got '${operands.size}'.")
             if (let Some(b) <- (operands[operands.size - 2] as Block)) {
                 return b
             }
@@ -1706,7 +1706,7 @@ public class TryApply <: ApplyBase & Equatable<TryApply> {
      * @return The `Array<Value>` result.
      */
     public override func getArgs(): Array<Value> {
-        assert(operands.size >= 3, "TryApply arguments are not set.")
+        assert(operands.size >= 3, "TryApply operands: expected at least 3, got '${operands.size}'.")
         return operands[1..operands.size - 2].toArray()
     }
 
@@ -1783,7 +1783,7 @@ public class TryIntrinsic <: IntrinsicBase & Equatable<TryIntrinsic> {
      */
     public prop errorBranch: Block {
         get() {
-            assert(operands.size >= 2, "TryIntrinsic error branch is not set.")
+            assert(operands.size >= 2, "TryIntrinsic error branch operands: expected at least 2, got '${operands.size}'.")
             if (let Some(b) <- (operands[operands.size - 1] as Block)) {
                 return b
             }
@@ -1797,7 +1797,7 @@ public class TryIntrinsic <: IntrinsicBase & Equatable<TryIntrinsic> {
      */
     public prop normalBranch: Block {
         get() {
-            assert(operands.size >= 2, "TryIntrinsic normal branch is not set.")
+            assert(operands.size >= 2, "TryIntrinsic normal branch operands: expected at least 2, got '${operands.size}'.")
             if (let Some(b) <- (operands[operands.size - 2] as Block)) {
                 return b
             }
@@ -1825,7 +1825,7 @@ public class TryIntrinsic <: IntrinsicBase & Equatable<TryIntrinsic> {
      * @return The `Array<Value>` result.
      */
     public override func getArgs(): Array<Value> {
-        assert(operands.size >= 2, "TryIntrinsic arguments are not set.")
+        assert(operands.size >= 2, "TryIntrinsic operands: expected at least 2, got '${operands.size}'.")
         return operands[0..operands.size - 2].toArray()
     }
 
@@ -1848,7 +1848,7 @@ sealed abstract class InvokeBase <: FuncCall & Equatable<InvokeBase> {
      */
     public prop callee: Function {
         get() {
-            assert(!_operands.isEmpty(), "InvokeBase method is not set.")
+            assert(!_operands.isEmpty(), "InvokeBase method operands: expected at least 1, got '${_operands.size}'.")
             return (_operands[0] as Function).getOrThrow()
         }
     }
@@ -1946,7 +1946,7 @@ public class Invoke <: InvokeBase & Equatable<Invoke> {
      * @return The `Array<Value>` result.
      */
     public override func getArgs(): Array<Value> {
-        assert(operands.size >= 2, "Invoke arguments are not set.")
+        assert(operands.size >= 2, "Invoke operands: expected at least 2, got '${operands.size}'.")
         if (callee.isStatic()) {
             return operands[2..].toArray()
         } else {
@@ -1974,7 +1974,7 @@ public class TryInvoke <: InvokeBase & Equatable<TryInvoke> {
      */
     public prop errorBranch: Block {
         get() {
-            assert(operands.size >= 3, "TryInvoke error branch is not set.")
+            assert(operands.size >= 3, "TryInvoke error branch operands: expected at least 3, got '${operands.size}'.")
             if (let Some(b) <- (operands[operands.size - 1] as Block)) {
                 return b
             }
@@ -1988,7 +1988,7 @@ public class TryInvoke <: InvokeBase & Equatable<TryInvoke> {
      */
     public prop normalBranch: Block {
         get() {
-            assert(operands.size >= 3, "TryInvoke normal branch is not set.")
+            assert(operands.size >= 3, "TryInvoke normal branch operands: expected at least 3, got '${operands.size}'.")
             if (let Some(b) <- (operands[operands.size - 2] as Block)) {
                 return b
             }
@@ -2024,7 +2024,7 @@ public class TryInvoke <: InvokeBase & Equatable<TryInvoke> {
      * @return The `Array<Value>` result.
      */
     public override func getArgs(): Array<Value> {
-        assert(operands.size >= 4, "TryInvoke arguments are not set.")
+        assert(operands.size >= 4, "TryInvoke operands: expected at least 4, got '${operands.size}'.")
         if (callee.isStatic()) {
             return operands[2..operands.size - 2].toArray()
         } else {
@@ -2389,7 +2389,7 @@ public class Lambda <: Expression & Equatable<Lambda> {
      */
     public prop body: BlockGroup {
         get() {
-            assert(!_blockGroups.isEmpty(), "Lambda body is not set.")
+            assert(!_blockGroups.isEmpty(), "Lambda body block groups: expected at least 1, got '${_blockGroups.size}'.")
             return _blockGroups[0]
         }
     }
@@ -2599,7 +2599,7 @@ public class Load <: Expression & Equatable<Load> {
      */
     public prop srcAddress: Value {
         get() {
-            assert(operands.size == 1, "Load operand is not set.")
+            assert(operands.size == 1, "Load operands: expected 1, got '${operands.size}'.")
             return operands[0]
         }
     }
@@ -2654,7 +2654,7 @@ public class MultiBranch <: Expression & Equatable<MultiBranch> {
      */
     public prop condition: Value {
         get() {
-            assert(!operands.isEmpty(), "MultiBranch condition is not set.")
+            assert(!operands.isEmpty(), "MultiBranch condition operands: expected at least 1, got '${operands.size}'.")
             return operands[0]
         }
     }
@@ -2665,7 +2665,7 @@ public class MultiBranch <: Expression & Equatable<MultiBranch> {
      */
     public prop defaultTarget: Block {
         get() {
-            assert(operands.size >= 2, "MultiBranch default target is not set.")
+            assert(operands.size >= 2, "MultiBranch default target operands: expected at least 2, got '${operands.size}'.")
             if (let Some(b) <- (operands[1] as Block)) {
                 return b
             }
@@ -2679,7 +2679,7 @@ public class MultiBranch <: Expression & Equatable<MultiBranch> {
      */
     public prop targetsWithoutDefault: Array<Block> {
         get() {
-            assert(operands.size >= 3, "MultiBranch normal targets are not set.")
+            assert(operands.size >= 3, "MultiBranch normal target operands: expected at least 3, got '${operands.size}'.")
             return operands[2..].mapTo({ i =>
                 if (let Some(b) <- (i as Block)) {
                     return b
@@ -2813,7 +2813,7 @@ public class TryNumericCast <: NumericCastBase & Equatable<TryNumericCast> {
      */
     public prop errorBranch: Block {
         get() {
-            assert(operands.size >= 2, "TryNumericCast error branch is not set.")
+            assert(operands.size >= 2, "TryNumericCast error branch operands: expected at least 2, got '${operands.size}'.")
             if (let Some(b) <- (operands[operands.size - 1] as Block)) {
                 return b
             }
@@ -2827,7 +2827,7 @@ public class TryNumericCast <: NumericCastBase & Equatable<TryNumericCast> {
      */
     public prop normalBranch: Block {
         get() {
-            assert(operands.size >= 2, "TryNumericCast normal branch is not set.")
+            assert(operands.size >= 2, "TryNumericCast normal branch operands: expected at least 2, got '${operands.size}'.")
             if (let Some(b) <- (operands[operands.size - 2] as Block)) {
                 return b
             }
@@ -2993,7 +2993,7 @@ public class TryRawArrayAllocate <: RawArrayAllocateBase & Equatable<TryRawArray
      */
     public prop errorBranch: Block {
         get() {
-            assert(operands.size >= 2, "TryRawArrayAllocate error branch is not set.")
+            assert(operands.size >= 2, "TryRawArrayAllocate error branch operands: expected at least 2, got '${operands.size}'.")
             if (let Some(b) <- (operands[operands.size - 1] as Block)) {
                 return b
             }
@@ -3007,7 +3007,7 @@ public class TryRawArrayAllocate <: RawArrayAllocateBase & Equatable<TryRawArray
      */
     public prop normalBranch: Block {
         get() {
-            assert(operands.size >= 2, "TryRawArrayAllocate normal branch is not set.")
+            assert(operands.size >= 2, "TryRawArrayAllocate normal branch operands: expected at least 2, got '${operands.size}'.")
             if (let Some(b) <- (operands[operands.size - 2] as Block)) {
                 return b
             }
@@ -3306,7 +3306,7 @@ public class Store <: Expression & Equatable<Store> {
      */
     public prop dstAddress: Value {
         get() {
-            assert(operands.size == 2, "Store operand is not set.")
+            assert(operands.size == 2, "Store operands: expected 2, got '${operands.size}'.")
             return operands[1]
         }
     }
@@ -3317,7 +3317,7 @@ public class Store <: Expression & Equatable<Store> {
      */
     public prop srcValue: Value {
         get() {
-            assert(operands.size == 2, "Store operand is not set.")
+            assert(operands.size == 2, "Store operands: expected 2, got '${operands.size}'.")
             return operands[0]
         }
     }
@@ -3373,7 +3373,7 @@ public class StoreElementByName <: Expression & Equatable<StoreElementByName> {
      */
     public prop srcValue: Value {
         get() {
-            assert(operands.size == 2, "StoreElementByName operand is not set.")
+            assert(operands.size == 2, "StoreElementByName operands: expected 2, got '${operands.size}'.")
             return operands[0]
         }
     }
@@ -3429,7 +3429,7 @@ public class StoreElementRef <: Expression & Equatable<StoreElementRef> {
      */
     public prop srcValue: Value {
         get() {
-            assert(operands.size == 2, "StoreElementRef operand is not set.")
+            assert(operands.size == 2, "StoreElementRef operands: expected 2, got '${operands.size}'.")
             return operands[0]
         }
     }
@@ -3484,7 +3484,7 @@ public class Tuple <: Expression & Equatable<Tuple> {
      * @return The `Tuple` result.
      */
     public static func create(elements: ArrayList<Value>): Tuple {
-        assert(!elements.isEmpty(), "Tuple elements are not set.")
+        assert(!elements.isEmpty(), "Tuple elements: expected at least 1, got '${elements.size}'.")
         let expr = Tuple(elements)
         expr._attributes.setAttr(Attribute.PluginAdded, true)
         let result = LocalVar(TupleType.get(elements.mapTo<Type>({ e => e.ty }).toArray()), expr)
@@ -3509,7 +3509,7 @@ sealed abstract class TypeCast <: Expression & Equatable<TypeCast> {
      */
     public prop sourceType: Type {
         get() {
-            assert(!operands.isEmpty(), "TypeCast source value is not set.")
+            assert(!operands.isEmpty(), "TypeCast source operands: expected at least 1, got '${operands.size}'.")
             return operands[0].ty
         }
     }
@@ -3520,7 +3520,7 @@ sealed abstract class TypeCast <: Expression & Equatable<TypeCast> {
      */
     public prop srcValue: Value {
         get() {
-            assert(!operands.isEmpty(), "TypeCast source value is not set.")
+            assert(!operands.isEmpty(), "TypeCast source operands: expected at least 1, got '${operands.size}'.")
             return operands[0]
         }
     }
@@ -3789,7 +3789,7 @@ public class TryUnaryExpression <: UnaryExpressionBase & Equatable<TryUnaryExpre
      */
     public prop errorBranch: Block {
         get() {
-            assert(operands.size == 3, "TryUnaryExpression error branch is not set.")
+            assert(operands.size == 3, "TryUnaryExpression error branch operands: expected 3, got '${operands.size}'.")
             if (let Some(b) <- (operands[operands.size - 1] as Block)) {
                 return b
             }
@@ -3803,7 +3803,7 @@ public class TryUnaryExpression <: UnaryExpressionBase & Equatable<TryUnaryExpre
      */
     public prop normalBranch: Block {
         get() {
-            assert(operands.size == 3, "TryUnaryExpression normal branch is not set.")
+            assert(operands.size == 3, "TryUnaryExpression normal branch operands: expected 3, got '${operands.size}'.")
             if (let Some(b) <- (operands[operands.size - 2] as Block)) {
                 return b
             }
@@ -3936,7 +3936,7 @@ public class VArrayExpr <: Expression & Equatable<VArrayExpr> {
      * @return The `VArrayExpr` result.
      */
     public static func create(elements: ArrayList<Value>): VArrayExpr {
-        assert(!elements.isEmpty(), "VArrayExpr elements are not set.")
+        assert(!elements.isEmpty(), "VArrayExpr elements: expected at least 1, got '${elements.size}'.")
         let expr = VArrayExpr(elements)
         expr._attributes.setAttr(Attribute.PluginAdded, true)
         let retTy = VArrayType.get(elements[0].ty, elements.size)
