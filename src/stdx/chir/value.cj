@@ -1009,6 +1009,22 @@ public class Function <: GlobalValue & Equatable<Function> {
     }
 
     /**
+     * Determines whether this function is an annotation factory function.
+     * @return The `Bool` result.
+     */
+    public func isAnnoFactoryFunc(): Bool {
+        return _funcKind == FuncKind.AnnoFactoryFunc
+    }
+
+    /**
+     * Determines whether this function is a class constructor.
+     * @return `true` for both class constructors and primary class constructors.
+     */
+    public func isClassConstructor(): Bool {
+        return _funcKind == FuncKind.ClassConstructor || _funcKind == FuncKind.PrimaryClassConstructor
+    }
+
+    /**
      * Performs the public behavior of `isDeclaredInCurPackage`.
      * @return The `Bool` result.
      */
@@ -1017,11 +1033,27 @@ public class Function <: GlobalValue & Equatable<Function> {
     }
 
     /**
+     * Performs the public behavior of `isFinal`.
+     * @return The `Bool` result.
+     */
+    public func isFinal(): Bool {
+        return _attributes.isFinal()
+    }
+
+    /**
      * Performs the public behavior of `isGeneric`.
      * @return The `Bool` result.
      */
     public func isGeneric(): Bool {
         return _attributes.testAttr(Attribute.Generic)
+    }
+
+    /**
+     * Performs the public behavior of `isInitializer`.
+     * @return The `Bool` result.
+     */
+    public func isInitializer(): Bool {
+        return _attributes.isInitializer()
     }
 
     /**
@@ -1041,11 +1073,43 @@ public class Function <: GlobalValue & Equatable<Function> {
     }
 
     /**
+     * Performs the public behavior of `isMut`.
+     * @return The `Bool` result.
+     */
+    public func isMut(): Bool {
+        return _attributes.isMut()
+    }
+
+    /**
+     * Performs the public behavior of `isNoInline`.
+     * @return The `Bool` result.
+     */
+    public func isNoInline(): Bool {
+        return _attributes.isNoInline()
+    }
+
+    /**
      * Performs the public behavior of `isOpen`.
      * @return The `Bool` result.
      */
     public func isOpen(): Bool {
         return _attributes.testAttr(Attribute.Virtual) || _attributes.testAttr(Attribute.Abstract)
+    }
+
+    /**
+     * Performs the public behavior of `isOverride`.
+     * @return The `Bool` result.
+     */
+    public func isOverride(): Bool {
+        return _attributes.isOverride()
+    }
+
+    /**
+     * Performs the public behavior of `isSkipAnalysis`.
+     * @return The `Bool` result.
+     */
+    public func isSkipAnalysis(): Bool {
+        return _attributes.isSkipAnalysis()
     }
 
     /**
@@ -1062,6 +1126,14 @@ public class Function <: GlobalValue & Equatable<Function> {
      */
     public func isStaticMemberMethod(): Bool {
         return isMemberMethod() && isStatic()
+    }
+
+    /**
+     * Determines whether this function is a struct constructor.
+     * @return `true` for both struct constructors and primary struct constructors.
+     */
+    public func isStructConstructor(): Bool {
+        return _funcKind == FuncKind.StructConstructor || _funcKind == FuncKind.PrimaryStructConstructor
     }
 
     /**
@@ -1113,12 +1185,64 @@ public class Function <: GlobalValue & Equatable<Function> {
     }
 
     /**
+     * Marks this function as a class constructor.
+     * @return The `Unit` result.
+     */
+    public func setClassConstructor(): Unit {
+        _funcKind = FuncKind.ClassConstructor
+    }
+
+    /**
+     * Performs the public behavior of `setFinal`.
+     * @param enable The `enable` parameter.
+     * @return The `Unit` result.
+     */
+    public func setFinal(enable: Bool): Unit {
+        _attributes.setFinal(enable)
+    }
+
+    /**
+     * Performs the public behavior of `setNoInline`.
+     * @param enable The `enable` parameter.
+     * @return The `Unit` result.
+     */
+    public func setNoInline(enable: Bool): Unit {
+        _attributes.setNoInline(enable)
+    }
+
+    /**
      * Performs the public behavior of `setOpen`.
      * @param enable The `enable` parameter.
      * @return The `Unit` result.
      */
     public func setOpen(enable: Bool): Unit {
         _attributes.setAttr(Attribute.Virtual, enable)
+    }
+
+    /**
+     * Performs the public behavior of `setOverride`.
+     * @param enable The `enable` parameter.
+     * @return The `Unit` result.
+     */
+    public func setOverride(enable: Bool): Unit {
+        _attributes.setOverride(enable)
+    }
+
+    /**
+     * Performs the public behavior of `setSkipAnalysis`.
+     * @param enable The `enable` parameter.
+     * @return The `Unit` result.
+     */
+    public func setSkipAnalysis(enable: Bool): Unit {
+        _attributes.setSkipAnalysis(enable)
+    }
+
+    /**
+     * Marks this function as a struct constructor.
+     * @return The `Unit` result.
+     */
+    public func setStructConstructor(): Unit {
+        _funcKind = FuncKind.StructConstructor
     }
 
     /**

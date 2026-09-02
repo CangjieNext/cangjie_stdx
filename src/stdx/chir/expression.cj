@@ -2911,8 +2911,6 @@ public class RaiseException <: Expression & Equatable<RaiseException> {
     public static func create(value: Value): RaiseException {
         let expr = RaiseException(value)
         expr._attributes.setAttr(Attribute.PluginAdded, true)
-        let result = LocalVar(UnitType.get(), expr)
-        expr._result = result
         return expr
     }
 
