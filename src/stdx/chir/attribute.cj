@@ -322,4 +322,28 @@ internal struct AttributeInfo <: ToString {
     internal func isImported(): Bool {
         return testAttr(Attribute.Imported)
     }
+
+    internal func isMut(): Bool {
+        return testAttr(Attribute.Mut)
+    }
+
+    internal func isInitializer(): Bool {
+        return testAttr(Attribute.Initializer)
+    }
+
+    internal mut func setOverride(enable: Bool): Unit {
+        setAttr(Attribute.Override, enable)
+    }
+
+    internal mut func setFinal(enable: Bool): Unit {
+        setAttr(Attribute.Final, enable)
+    }
+
+    internal mut func setNoInline(enable: Bool): Unit {
+        setAttr(Attribute.NoInline, enable)
+    }
+
+    internal mut func setSkipAnalysis(enable: Bool): Unit {
+        setAttr(Attribute.SkipAnalysis, enable)
+    }
 }

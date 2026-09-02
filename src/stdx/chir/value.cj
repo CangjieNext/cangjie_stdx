@@ -322,6 +322,14 @@ public class Block <: Value & Equatable<Block> {
         }
     }
 
+    /**
+     * Performs the public behavior of `isInitializer`.
+     * @return The `Bool` result.
+     */
+    public func isInitializer(): Bool {
+        return _attributes.isInitializer()
+    }
+
     internal init(identifier: String, owner: BlockGroup) {
         super(ValueKind.Block, identifier)
         this._owner = owner
@@ -1010,6 +1018,30 @@ public class Function <: GlobalValue & Equatable<Function> {
     }
 
     /**
+     * Determines whether this function is a class constructor.
+     * @return `true` for both class constructors and primary class constructors.
+     */
+    public func isClassConstructor(): Bool {
+        return _funcKind == FuncKind.ClassConstructor || _funcKind == FuncKind.PrimaryClassConstructor
+    }
+
+    /**
+     * Determines whether this function is a struct constructor.
+     * @return `true` for both struct constructors and primary struct constructors.
+     */
+    public func isStructConstructor(): Bool {
+        return _funcKind == FuncKind.StructConstructor || _funcKind == FuncKind.PrimaryStructConstructor
+    }
+
+    /**
+     * Determines whether this function is an annotation factory function.
+     * @return The `Bool` result.
+     */
+    public func isAnnoFactoryFunc(): Bool {
+        return _funcKind == FuncKind.AnnoFactoryFunc
+    }
+
+    /**
      * Performs the public behavior of `isDeclaredInCurPackage`.
      * @return The `Bool` result.
      */
@@ -1039,6 +1071,22 @@ public class Function <: GlobalValue & Equatable<Function> {
      */
     public func isMemberMethod(): Bool {
         return _declaredParent.isSome()
+    }
+
+    /**
+     * Performs the public behavior of `isMut`.
+     * @return The `Bool` result.
+     */
+    public func isMut(): Bool {
+        return _attributes.isMut()
+    }
+
+    /**
+     * Performs the public behavior of `isInitializer`.
+     * @return The `Bool` result.
+     */
+    public func isInitializer(): Bool {
+        return _attributes.isInitializer()
     }
 
     /**
@@ -1111,6 +1159,60 @@ public class Function <: GlobalValue & Equatable<Function> {
      */
     public func setAbstract(enable: Bool): Unit {
         _attributes.setAttr(Attribute.Abstract, enable)
+    }
+
+    /**
+     * Marks this function as a class constructor.
+     * @param primary Whether this is a primary class constructor.
+     * @return The `Unit` result.
+     */
+    public func setClassConstructor(primary: Bool): Unit {
+        _funcKind = if (primary) { FuncKind.PrimaryClassConstructor } else { FuncKind.ClassConstructor }
+    }
+
+    /**
+     * Marks this function as a struct constructor.
+     * @param primary Whether this is a primary struct constructor.
+     * @return The `Unit` result.
+     */
+    public func setStructConstructor(primary: Bool): Unit {
+        _funcKind = if (primary) { FuncKind.PrimaryStructConstructor } else { FuncKind.StructConstructor }
+    }
+
+    /**
+     * Performs the public behavior of `setOverride`.
+     * @param enable The `enable` parameter.
+     * @return The `Unit` result.
+     */
+    public func setOverride(enable: Bool): Unit {
+        _attributes.setOverride(enable)
+    }
+
+    /**
+     * Performs the public behavior of `setFinal`.
+     * @param enable The `enable` parameter.
+     * @return The `Unit` result.
+     */
+    public func setFinal(enable: Bool): Unit {
+        _attributes.setFinal(enable)
+    }
+
+    /**
+     * Performs the public behavior of `setNoInline`.
+     * @param enable The `enable` parameter.
+     * @return The `Unit` result.
+     */
+    public func setNoInline(enable: Bool): Unit {
+        _attributes.setNoInline(enable)
+    }
+
+    /**
+     * Performs the public behavior of `setSkipAnalysis`.
+     * @param enable The `enable` parameter.
+     * @return The `Unit` result.
+     */
+    public func setSkipAnalysis(enable: Bool): Unit {
+        _attributes.setSkipAnalysis(enable)
     }
 
     /**
