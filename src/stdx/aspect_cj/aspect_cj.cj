@@ -128,3 +128,10 @@ protected func mapArrayTo<T, R>(array: Array<T>, f: (T) -> R): Array<R> {
     }
     return result.toArray()
 }
+
+protected func isInsertAnno(item: String): Bool {
+    return item == "InsertAtEntry" || item == "InsertAtExit"
+}
+protected func isReplaceBodyAnno(item: String): Bool {
+    return item == "ReplaceFuncBody"
+}

@@ -47,13 +47,15 @@ class WeaveAspects {
         }
         let callee = getCallee(pkg, pi, f, args)
         let funcCallCxt = FuncCallContext(args, Array<Type>(), computeThisTypeOfCallee(callee, args))
-        if (pi.annoClassName == "InsertAtEntry") {
-            let builder = CHIRBuilder(InsertPosition.AtStart(f.body.getOrThrow().entryBlock))
-            builder.createApply(callee, funcCallCxt)
-        } else if (pi.annoClassName == "InsertAtExit") {
-            let visitor = InsertAtExitVisitor(callee, funcCallCxt)
-            visitor.walk(f.body.getOrThrow())
-        } else if (pi.annoClassName == "ReplaceFuncBody") {
+        if (isInsertAnno(pi.annoClassName)) {
+            if (pi.annoClassName == "InsertAtEntry") {
+                let builder = CHIRBuilder(InsertPosition.AtStart(f.body.getOrThrow().entryBlock))
+                builder.createApply(callee, funcCallCxt)
+            } else {
+                let visitor = InsertAtExitVisitor(callee, funcCallCxt)
+                visitor.walk(f.body.getOrThrow())
+            }
+        } else if (isReplaceBodyAnno(pi.annoClassName)) {
             let wrapperFunc = pkg.addFunction(f.funcType, f.identifierWithoutPrefix, f.srcCodeName, f.packageName)
             f.replaceWith(wrapperFunc)
             wrapperFunc.initBody()
@@ -90,7 +92,7 @@ class WeaveAspects {
         }
         let paramTypes = mapArrayTo(args, {arg => arg.ty})
         var returnType: Type = UnitType.get()
-        if (pi.annoClassName.isReplaceBodyAnno()) {
+        if (isReplaceBodyAnno(pi.annoClassName)) {
             returnType = f.funcType.returnType
         }
         let funcType = FuncType.get(paramTypes, returnType)
@@ -105,7 +107,7 @@ class WeaveAspects {
 
     private func prepareArguments(f: Function, pi: OutputInfo): (Array<Value>, Bool) {
         var expectedParamsNum = pi.insert.paramsNum
-        if (pi.annoClassName.isReplaceBodyAnno()) {
+        if (isReplaceBodyAnno(pi.annoClassName)) {
             expectedParamsNum -= 1
         }
         let args = ArrayList<Value>()
@@ -118,7 +120,7 @@ class WeaveAspects {
                 args.add(param)
             }
         }
-        if (pi.annoClassName.isReplaceBodyAnno()) {
+        if (isReplaceBodyAnno(pi.annoClassName)) {
             args.add(f)
         }
         return (args.toArray(), true)
@@ -232,15 +234,6 @@ class WeaveAspects {
             }
         )
         return true
-    }
-}
-
-extend String {
-    internal func isInsertAnno(): Bool {
-        return this == "InsertAtEntry" || this == "InsertAtExit"
-    }
-    internal func isReplaceBodyAnno(): Bool {
-        return this == "ReplaceFuncBody"
     }
 }
 

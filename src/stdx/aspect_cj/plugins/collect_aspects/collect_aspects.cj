@@ -59,14 +59,12 @@ class CollectAspects {
         if (annoInstances.isEmpty()) {
             return true
         }
-        let whiteList1 = ["InsertAtEntry", "InsertAtExit"]
-        let whiteList2 = ["ReplaceFuncBody"]
         var inWhiteList1 = false
         var inWhiteList2 = false
         var result = true
         for (anno in annoInstances) {
-            let isInsertAnno = whiteList1.contains(anno.classSrcCodeName)
-            let isReplaceBodyAnno = whiteList2.contains(anno.classSrcCodeName)
+            let isInsertAnno = isInsertAnno(anno.classSrcCodeName)
+            let isReplaceBodyAnno = isReplaceBodyAnno(anno.classSrcCodeName)
             inWhiteList1 ||= isInsertAnno
             inWhiteList2 ||= isReplaceBodyAnno
             if (inWhiteList1 && inWhiteList2) {
