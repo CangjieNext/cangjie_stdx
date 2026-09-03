@@ -72,7 +72,7 @@ bash -c "$(curl -fsSL https://raw.gitcode.com/Cangjie/cangjie_stdx/raw/main/down
 
 ```powershell
 # 在 Windows 下载 v1.0.0.1 的 windows-x64 版本，并解压到 C:\cangjie_libs 目录
-irm https://raw.gitcode.com/Cangjie/cangjie_stdx/raw/main/downloader.ps1 -OutFile "$env:TEMP\downloader.ps1"; & "$env:TEMP\downloader.ps1" 1.0.0.1 -p linux-x64 -d C:\cangjie_libs
+irm https://raw.gitcode.com/Cangjie/cangjie_stdx/raw/main/downloader.ps1 -OutFile "$env:TEMP\downloader.ps1"; & "$env:TEMP\downloader.ps1" 1.0.0.1 -p window-x64 -d C:\cangjie_libs
 ```
 
 ### 支持的 <平台-架构>
@@ -351,7 +351,7 @@ cjc main.cj \
 [dependencies]
 
 [package]
-  cjc-version = "1.00.0"
+  cjc-version ="1.00.0"
   compile-option = "-ldl"
   description = "nothing here"
   link-option = ""
