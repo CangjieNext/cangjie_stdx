@@ -2,7 +2,7 @@
 
 ## 简介
 
-拓展库 `stdx` 是仓颉编程语言提供的拓展模块（即非核心的标准库，但官方提供的附加功能集），是该语言生态中的重要组成部分，为仓颉补充了更多实用能力，涵盖面向切面编程、压缩和解压缩、安全（安全加密能力/消息摘要算法/非对称加解密和签名算法/数字证书处理功能）、编解码（base64/hex/json/url）、网络（http/tls）、日志、语法解析、单元测试拓展、序列化、并发编程模型、非局部控制操作等多个领域。
+拓展库 `stdx` 是仓颉编程语言提供的拓展模块（即官方在非核心的标准库之外提供的附加功能集），是该语言生态中的重要组成部分，为仓颉补充了更多实用能力，涵盖面向切面编程、压缩和解压缩、安全（安全加密能力/消息摘要算法/非对称加解密和签名算法/数字证书处理功能）、编解码（base64/hex/json/url）、网络（http/tls）、日志、语法解析、单元测试拓展、序列化、并发编程模型、非局部控制操作等多个领域。
 
 架构图：
 
@@ -13,14 +13,16 @@
 - compress: 提供了压缩解压功能。
 - crypto: 提供了密码学操作的工具库。
 - effect: 提供了一种强大的非局部控制操作。
+- dynamicLoader: 提供了 OpenSSL 动态库的运行时加载能力。
 - encoding: 提供了数据编码与解码的基础工具库。
 - fuzz: 提供了一种自动化软件测试方法。
 - log: 提供了一个单一的日志 API。
 - logger: 提供了文本格式和 JSON 格式日志打印功能。
 - net: 提供了网络通信和安全传输功能。
 - serialization: 提供了序列化和反序列化的能力。
-- syntax：提供了对仓颉源码进行语法解析的功能。
-- unittest: 提供了在编写仓颉项目单元测试代码时输入序列化格式的测试数据的能力。
+- string_intern: 提供了 string 对象的池化缓存能力。
+- syntax: 提供了对仓颉源码进行语法解析的功能。
+- unittest: 提供了在编写仓颉项目单元测试时以序列化格式提供测试数据的能力。
 
 ## 使用说明
 
@@ -71,7 +73,7 @@ bash -c "$(curl -fsSL https://raw.gitcode.com/Cangjie/cangjie_stdx/raw/main/down
 ```
 
 ```powershell
-# 在 Windows 下载 v1.0.0.1 的 linux-x64 版本，并解压到 C:\cangjie_libs 目录
+# 在 Windows 下载 v1.0.0.1 的 windows-x64 版本，并解压到 C:\cangjie_libs 目录
 irm https://raw.gitcode.com/Cangjie/cangjie_stdx/raw/main/downloader.ps1 -OutFile "$env:TEMP\downloader.ps1"; & "$env:TEMP\downloader.ps1" 1.0.0.1 -p windows-x64 -d C:\cangjie_libs
 ```
 
@@ -102,7 +104,7 @@ irm https://raw.gitcode.com/Cangjie/cangjie_stdx/raw/main/downloader.ps1 -OutFil
 │       ├── crypto              # 提供安全相关能力
 │       ├── effect              # 提供用于处理 Effect Handler 特性的用户级 API。这是一个实验性功能，需要使用支持该机制的 Cangjie 编译器。
 │       ├── dynamicLoader       # OpenSSL 动态加载模块
-│       ├── encoding            # 提供 JSON 和字符串编码相关能力。
+│       ├── encoding            # 提供 base64/hex/json/url 等数据编码与解码能力。
 │       ├── fuzz                # 提供基于覆盖率反馈的仓颉 fuzz 引擎及对应的接口
 │       ├── log                 # 提供了日志记录相关的能力
 │       ├── logger              # 提供文本格式和 JSON 格式日志打印功能
