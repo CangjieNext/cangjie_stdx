@@ -364,7 +364,7 @@ cjc main.cj \
 
 [target.x86_64-unknown-linux-gnu]
   [target.x86_64-unknown-linux-gnu.bin-dependencies]
-    path-option = ["/target/linux_x86_64_cjnative/static/stdx"]  # stdx 路径根据实际情况配置
+    path-option = ["/target/linux_x86_64_cjnative/static/stdx"]  # stdx 路径根据实际情况配置。
 ```
 
 编写代码：使用 `net.http` 包创建 `HTTP` 服务。
