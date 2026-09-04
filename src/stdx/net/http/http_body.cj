@@ -305,6 +305,7 @@ class HttpChunkedBodyProvider <: InputStream & Resource {
                 eof = true
                 readTrailer()
                 clearHeader()
+                updateBodySize()
                 timer.cancel()
                 providerConn.returnConn()
             }
@@ -366,6 +367,14 @@ class HttpChunkedBodyProvider <: InputStream & Resource {
         match (hv.isEmpty()) {
             case true => header.del("transfer-encoding")
             case false => header.map.add(Str("transfer-encoding"), hv)
+        }
+    }
+
+    private func updateBodySize(): Unit {
+        match (msg) {
+            case req: HttpRequest => req._bodySize = contentLength
+            case rsp: HttpResponse => rsp._bodySize = contentLength
+            case _ => ()
         }
     }
 
