@@ -11,8 +11,6 @@ set(JSON_SRCS
     json_object.cj
     json_value.cj
     native.cj
-    parse_json_local.cj
-    write_json_local.cj
     to_json.cj
     json_exception.cj
     write_buffer.cj
