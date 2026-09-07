@@ -43,12 +43,19 @@ public class HttpRequestBuilder {
     var priorityValue: String = ""
     var _readTimeout: ?Duration = None
     var _writeTimeout: ?Duration = None
+    // when true, bodySizeInherited is a snapshot of the bodySize of the request
+    // passed to init(request); build() uses it instead of sizeOf(_body).
+    // body(...) resets it, since a new body has its own size.
+    var bodySizeInherited: Bool = false
+    var bodySizeSnapshot: ?Int64 = None
     public init() {}
 
     /**
      * Init an HttpRequestBuilder with the input request's attributes.
      * Headers and trailers are deep copy of the input request.
      * Body is the same stream as the input request.
+     * BodySize is a snapshot of the input request's bodySize.
+     * The snapshot is dropped if the body is replaced by body(...).
      */
     public init(request: HttpRequest) {
         this._method = request.method
@@ -61,6 +68,8 @@ public class HttpRequestBuilder {
         this.priorityValue = request.priorityValue
         this._readTimeout = request.readTimeout
         this._writeTimeout = request.writeTimeout
+        this.bodySizeInherited = true
+        this.bodySizeSnapshot = request._bodySize
     }
 
     /**
@@ -164,6 +173,7 @@ public class HttpRequestBuilder {
      */
     public func body(body: Array<UInt8>): HttpRequestBuilder {
         _body = HttpRawBody(body)
+        bodySizeInherited = false
         return this
     }
 
@@ -176,6 +186,7 @@ public class HttpRequestBuilder {
      */
     public func body(body: InputStream): HttpRequestBuilder {
         _body = body
+        bodySizeInherited = false
         return this
     }
 
@@ -188,6 +199,7 @@ public class HttpRequestBuilder {
      */
     public func body(body: String): HttpRequestBuilder {
         _body = HttpRawBody(body)
+        bodySizeInherited = false
         return this
     }
 
@@ -374,7 +386,7 @@ public class HttpRequestBuilder {
      * @return HttpRequest whose arguments are set by the builder.
      */
     public func build(): HttpRequest {
-        let bodySize: ?Int64 = sizeOf(_body)
+        let bodySize: ?Int64 = if (bodySizeInherited) { bodySizeSnapshot } else { sizeOf(_body) }
         if (!priorityValue.isEmpty() && (_headers.isNone() || headers.get("priority").isEmpty())) { // cjlint-ignore !G.EXP.03
             headers.add("priority", priorityValue)
         }
