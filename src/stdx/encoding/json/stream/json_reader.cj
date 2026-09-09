@@ -894,12 +894,9 @@ public class JsonReader {
     @OverflowWrapping
     func readInt(): (Int64, Bool) {
         var nextByte = if (peeked == PEEK_STATE_NONE || peeked == PEEK_STATE_VALUE) {
-            fillInBuf()
-            if (availLen <= 0) {
-                throw IllegalStateException("The JSON stream ends at an incorrect location.")
-            }
             nextNonJsonWhitespace()
         } else if (peeked == PEEK_STATE_NUMBER) {
+            checkBuffer()
             buffer[index]
         } else {
             throw IllegalStateException("Failed to read json number.")
@@ -931,12 +928,9 @@ public class JsonReader {
     @OverflowWrapping
     func readUInt(): (UInt64, Bool) {
         var nextByte = if (peeked == PEEK_STATE_NONE || peeked == PEEK_STATE_VALUE) {
-            fillInBuf()
-            if (availLen <= 0) {
-                throw IllegalStateException("The JSON stream ends at an incorrect location.")
-            }
             nextNonJsonWhitespace()
         } else if (peeked == PEEK_STATE_NUMBER) {
+            checkBuffer()
             buffer[index]
         } else {
             throw IllegalStateException("Failed to read json number.")
@@ -1021,12 +1015,9 @@ public class JsonReader {
     @OverflowWrapping
     func readFloat(): Float64 {
         if (peeked == PEEK_STATE_NONE || peeked == PEEK_STATE_VALUE) {
-            fillInBuf()
-            if (availLen <= 0) {
-                throw IllegalStateException("The JSON stream ends at an incorrect location.")
-            }
             nextNonJsonWhitespace()
         } else if (peeked == PEEK_STATE_NUMBER) {
+            checkBuffer()
             buffer[index]
         } else {
             throw IllegalStateException("Failed to read json number.")
