@@ -870,12 +870,9 @@ public class JsonReader {
     @OverflowWrapping
     func readInt(): (Int64, Bool) {
         var nextByte = if (peeked == PEEK_STATE_NONE || peeked == PEEK_STATE_VALUE) {
-            fillInBuf()
-            if (availLen <= 0) {
-                throw IllegalStateException("The JSON stream ends at an incorrect location.")
-            }
             nextNonJsonWhitespace()
         } else if (peeked == PEEK_STATE_NUMBER) {
+            checkBuffer()
             buffer[index]
         } else {
             throw IllegalStateException("Failed to read json number.")
@@ -907,12 +904,9 @@ public class JsonReader {
     @OverflowWrapping
     func readUInt(): (UInt64, Bool) {
         var nextByte = if (peeked == PEEK_STATE_NONE || peeked == PEEK_STATE_VALUE) {
-            fillInBuf()
-            if (availLen <= 0) {
-                throw IllegalStateException("The JSON stream ends at an incorrect location.")
-            }
             nextNonJsonWhitespace()
         } else if (peeked == PEEK_STATE_NUMBER) {
+            checkBuffer()
             buffer[index]
         } else {
             throw IllegalStateException("Failed to read json number.")
@@ -944,11 +938,11 @@ public class JsonReader {
             if (result > multmin) {
                 return (0, true)
             }
-
+            result *= numSys
             if (MAXVAL_UI64 - result < digit) {
                 return (0, true)
             }
-            result = result * numSys + digit
+            result += digit
             index++
             availLen--
         }
@@ -996,16 +990,8 @@ public class JsonReader {
 
     @OverflowWrapping
     func readFloat(): Float64 {
-        if (peeked == PEEK_STATE_NONE || peeked == PEEK_STATE_VALUE) {
-            fillInBuf()
-            if (availLen <= 0) {
-                throw IllegalStateException("The JSON stream ends at an incorrect location.")
-            }
-            nextNonJsonWhitespace()
-        } else if (peeked == PEEK_STATE_NUMBER) {
-            buffer[index]
-        } else {
-            throw IllegalStateException("Failed to read json number.")
+        if (peeked != PEEK_STATE_NONE && peeked != PEEK_STATE_VALUE && peeked != PEEK_STATE_NUMBER) {
+            throw IllegalStateException("Failed to read JSON number.")
         }
 
         let result = ensureFiniteJsonFloat(readFloatEx())
