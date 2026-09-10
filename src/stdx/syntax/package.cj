@@ -556,7 +556,7 @@ public class Package <: SyntaxTreeNode {
 
         let (isMacro, pkgName) = checkPackage(ArrayList(srcFile))
         if (isMacro != isMacroPkg || pkgName != name) {
-            throw Exception("InitException: the input params are illegal for Package Init.")
+            throw IllegalArgumentException("Invalid input 'name' or 'isMacroPkg' for 'Package' init.")
         }
 
         this.isMacroPkg_ = isMacroPkg

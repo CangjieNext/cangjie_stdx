@@ -79,7 +79,7 @@ class ParserImpl {
         let res: ?SyntaxNodeImpl = if (let Some(root) <- node) {
             let errMsg = findError(msg)
             if (errMsg != "") {
-                throw Exception("unsupported node type or parse error in parseText function:\n${errMsg}")
+                throw IllegalArgumentException("Failed to parse text.")
             }
             let preChildren = getPreChildren(text)
             FlatbufferNodeTranslator.translate(root, preChildren: preChildren.toArray())
@@ -118,7 +118,7 @@ private func transDiag(diag: SyntaxFormat_DiagInfo, fileInfo: FileInfos): Diagno
     let info = match (diag.GetSeverity()) {
         case 0 => DiagnosticInfo.Error(msg, hint)
         case 1 => DiagnosticInfo.Warning(msg, hint)
-        case _ => throw Exception("unsupported severity kind (only support note or hint)")
+        case _ => throw UnsupportedException("Unsupported diagnostic severity: expected 'Error' or 'Warning', got '${diag.GetSeverity()}'.")
     }
     var (begin, end) = (CodePosition(), CodePosition())
     if (let Some(range) <- diag.GetRange()) {
@@ -200,7 +200,7 @@ private class NodeLoader {
 
     private unsafe func getParseResultPointers(resPtr: CPointer<ParseRes>): (CPointer<UInt8>, CPointer<UInt8>) {
         if (resPtr.isNull()) {
-            throw Exception("the parsing result is empty.")
+            throw IllegalArgumentException("The parsing result pointer is null.")
         }
         let res = resPtr.read()
         return (res.node, res.errMsg)
@@ -214,12 +214,12 @@ private class NodeLoader {
         try {
             pathPtr = LibC.mallocCString(filePath)
             if (pathPtr.isNull()) {
-                throw Exception("mallocCString failed for file path.")
+                throw IllegalMemoryException("Failed to allocate memory in 'loadNodeFromFile'.")
             }
             resPtr = CJ_ParseFile(pathPtr)
             (nodePtr, diagPtr) = getParseResultPointers(resPtr)
             if (nodePtr.isNull() && diagPtr.isNull()) {
-                throw Exception("unsupported node type in parseFile function.")
+                throw IllegalArgumentException("Failed to parse file.")
             }
             if (!diagPtr.isNull()) {
                 getDiags(diagPtr)
@@ -245,12 +245,12 @@ private class NodeLoader {
         try {
             textPtr = LibC.mallocCString(text)
             if (textPtr.isNull()) {
-                throw Exception("mallocCString failed for text.")
+                throw IllegalMemoryException("Failed to allocate memory in 'loadNodeFromText'.")
             }
             resPtr = CJ_ParseText(textPtr)
             (nodePtr, diagPtr) = getParseResultPointers(resPtr)
             if (nodePtr.isNull() && diagPtr.isNull()) {
-                throw Exception("unsupported node type in parseText function.")
+                throw IllegalArgumentException("Failed to parse text.")
             }
             if (!diagPtr.isNull()) {
                 getDiags(diagPtr)
@@ -278,11 +278,11 @@ private class NodeLoader {
         try {
             tokensPtr = unsafePointerCastFromUint8Array(tokens.toBytes())
             if (tokensPtr.isNull()) {
-                throw Exception("the input tokens is empty.")
+                throw IllegalMemoryException("The input token list is empty.")
             }
             resPtr = CJ_ParseTokens(tokensPtr, tokensCounterPtr, refreshPos)
             if (resPtr.isNull()) {
-                throw Exception("the parsing result is empty.")
+                throw IllegalArgumentException("Failed to parse tokens.")
                 return None
             }
             let res = resPtr.read()
@@ -293,19 +293,19 @@ private class NodeLoader {
             }
             if (res.node.isNull()) {
                 if (res.errMsg.isNull()) {
-                    throw Exception("unsupported node type in parseTokens function.")
+                    throw IllegalArgumentException("Unsupported node type.")
                 }
                 return None
             }
             let errMsg = findError(diagInfo)
             if (errMsg != "") {
                 nodePtr = res.node
-                throw Exception("unsupported node type or parse error in parseTokens function:\n${errMsg}")
+                throw IllegalArgumentException("Failed to parse tokens.")
             }
             let tokenCnt: Int64 = tokensCounterPtr.read()
             if (tokenCnt == 1) {
                 nodePtr = res.node
-                throw Exception("parseTokens function not support parse more than one node.")
+                throw UnsupportedException("The current version does not support parsing more than one node.")
             }
             let pnode = res.node
             nodePtr = pnode // backup for free
@@ -344,7 +344,7 @@ private class FlatbufferNodeTranslator {
             case AnyNode_EXPR => transExpr(SyntaxFormat_Expr(table.bytes, off), preChildren)
             case AnyNode_IMPORT_SPEC => transImportList(SyntaxFormat_ImportSpec(table.bytes, off))
             case AnyNode_FEATURES_DIRECTIVE => transFeaturesDirective(SyntaxFormat_FeaturesDirective(table.bytes, off))
-            case _ => throw Exception("ParseException: The current version does not support this node.")
+            case _ => throw UnsupportedException("The current version does not support this node.")
         }
     }
 
@@ -1025,7 +1025,7 @@ private class FlatbufferNodeTranslator {
                 }
                 transBasicTerminal(qualifiedType.GetDotPos(), SyntaxNodeKind.DotToken)
                 transIdentifier(qualifiedType.GetFieldPos(), qualifiedType.GetField())
-            case _ => throw Exception("ParseException: error trans base identToken")
+            case _ => throw UnsupportedException("The current version does not support this node.")
         }
     }
 
@@ -1116,7 +1116,7 @@ private class FlatbufferNodeTranslator {
             case AnyType_TUPLE_TYPE => transTupleType(SyntaxFormat_TupleType(table.bytes, off))
             case AnyType_CONSTANT_TYPE => transConstantType(SyntaxFormat_ConstantType(table.bytes, off))
             case AnyType_VARRAY_TYPE => transVArrayType(SyntaxFormat_VArrayType(table.bytes, off))
-            case _ => throw Exception("ParseException: The current version does not support this node.")
+            case _ => throw UnsupportedException("The current version does not support this node.")
         }
     }
 
@@ -1321,7 +1321,7 @@ private class FlatbufferNodeTranslator {
             case AnyDecl_FUNC_PARAM => transFuncParam(SyntaxFormat_FuncParam(table.bytes, off), preChildren)
             case AnyDecl_MACRO_EXPAND_DECL => transMacroExpandDecl(SyntaxFormat_MacroExpandDecl(table.bytes, off),
                 preChildren)
-            case _ => throw Exception("ParseException: The current version does not support this node.")
+            case _ => throw UnsupportedException("The current version does not support this node.")
         }
     }
 
@@ -2353,7 +2353,7 @@ private class FlatbufferNodeTranslator {
             try {
                 parse(argTokens, {p: CPointer<UInt8> => return CJ_ParseAnnotationArguments(p)})
             } catch (e: Exception) {
-                throw Exception("\n" + e.message + "parsing custom annotation error.")
+                throw IllegalArgumentException("Failed to parse custom annotation arguments.")
             }
         }
         return node.GetRootAsAnnotation()
@@ -3079,7 +3079,7 @@ private class FlatbufferNodeTranslator {
                 SyntaxFormat_MacroExpandExpr(table.bytes, off), preChildren)
             case SyntaxFormat_AnyExpr.AnyExpr_PRIMITIVE_TYPE_EXPR => transPrimitiveTypeExpr(
                 SyntaxFormat_PrimitiveTypeExpr(table.bytes, off))
-            case _ => throw Exception("ParseException: The current version does not support this node.")
+            case _ => throw UnsupportedException("The current version does not support this node.")
         }
     }
 
@@ -4676,7 +4676,7 @@ private class FlatbufferNodeTranslator {
         }
         let ret = match (kind) {
             case 0 /*INTEGER*/ => transValuedLiteral(lit, preChildren)
-            case 1 /*RUNE_BYTE*/ => throw Exception("Rune Byte literal is not supported in syntax")
+            case 1 /*RUNE_BYTE*/ => throw UnsupportedException("Rune Byte literal is not currently supported.")
             case 2 /*FLOAT*/ => transValuedLiteral(lit, preChildren)
             case 3 /*RUNE*/ => buildRuneLiteral(lit, litToken, isSingle)
             case 4 /*STRING*/ => match (strKind) {

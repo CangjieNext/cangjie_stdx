@@ -33,7 +33,7 @@ let BUFFER_HEADER_SIZE: Int64 = 4
  */
 func getInt32FromUnsafePointer(ptr: CPointer<UInt8>): Int32 {
     if (ptr.isNull()) {
-        throw IllegalArgumentException("the input pointer is null.\n")
+        throw IllegalMemoryException("The input pointer in 'getInt32FromUnsafePointer' is null.")
     }
     var buf = Array<UInt8>(BUFFER_HEADER_SIZE, {x: Int64 => unsafe { ptr.read(x) }})
     return getInt32(buf[0..4])
@@ -49,12 +49,12 @@ unsafe func parse(input: Tokens, nativeParse: (CPointer<UInt8>) -> CPointer<Pars
     let tokensBytes: Array<UInt8> = input.toBytes()
     let pTokensBytes: CPointer<UInt8> = unsafePointerCastFromUint8Array(tokensBytes)
     if (pTokensBytes.isNull()) {
-        throw Exception("empty pointer found.")
+        throw IllegalMemoryException("The tokens byte buffer pointer in 'parse' is null.")
     }
     let parseResultRaw: CPointer<ParseRes> = nativeParse(pTokensBytes)
     if (parseResultRaw.isNull()) {
         LibC.free(pTokensBytes)
-        throw Exception("Unable to get parseResult.")
+        throw IllegalMemoryException("Failed to get the parse result in 'parse'.")
     }
 
     /*
@@ -73,7 +73,7 @@ unsafe func parse(input: Tokens, nativeParse: (CPointer<UInt8>) -> CPointer<Pars
 func genSyntaxFormatNode(pNode: CPointer<UInt8>, pTokensBytes: CPointer<UInt8>) {
     if (pNode.isNull()) {
         unsafe { LibC.free(pTokensBytes) }
-        throw IllegalArgumentException("Negative or zero length.\n")
+        throw IllegalMemoryException("The node pointer in 'genSyntaxFormatNode' is null.")
     }
     let bufferSize: Int64 = Int64(getInt32FromUnsafePointer(pNode))
     if (bufferSize <= 0) {
@@ -81,7 +81,7 @@ func genSyntaxFormatNode(pNode: CPointer<UInt8>, pTokensBytes: CPointer<UInt8>) 
             LibC.free(pNode)
             LibC.free(pTokensBytes)
         }
-        throw IllegalArgumentException("Negative or zero length.\n")
+        throw IllegalMemoryException("Invalid buffer size: expected a positive value, got '${bufferSize}'.")
     }
     let flatBuf = Array<UInt8>(bufferSize, {x: Int64 => unsafe { pNode.read(x) }})
     unsafe {
@@ -103,7 +103,7 @@ func unsafePointerCastFromUint8Array(arr: Array<UInt8>): CPointer<UInt8> {
     }
     var ptr: CPointer<UInt8> = unsafe { LibC.malloc<UInt8>(count: arrSize) }
     if (ptr.isNull()) {
-        throw IllegalMemoryException("unsafePointerCastFromUint8Array malloc failed!")
+        throw IllegalMemoryException("Failed to allocate memory in 'genSyntaxFormatNode'.")
     }
     for (i in 0..arrSize) {
         unsafe { ptr.write(i, arr[i]) }

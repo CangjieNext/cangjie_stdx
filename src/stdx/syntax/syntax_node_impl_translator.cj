@@ -17,7 +17,7 @@ private func fail(info: String) {
 
 @When[debug]
 private func fail(info: String) {
-    throw Exception("ParseException: " + info)
+    throw IllegalStateException("Failed to translate node: '${info}'.")
 }
 
 class SyntaxNodeImplTranslator {
@@ -44,10 +44,10 @@ class SyntaxNodeImplTranslator {
             if (let Some(target) <- (value as T)) {
                 nodes.add(target)
             } else {
-                fail("type cast fail")
+                fail("failed to cast the node to the expected type.")
             }
         } else {
-            fail("the node is None!")
+            fail("expected a node, found none.")
         }
     }
 
@@ -86,7 +86,7 @@ class SyntaxNodeImplTranslator {
                             beginPos += child.offset
                     }
                 }
-            case _ => fail("not support terminal for transList")
+            case _ => fail("unsupported terminal kind: '${node.kind}'.")
         }
         result.toArray()
     }
@@ -111,7 +111,7 @@ class SyntaxNodeImplTranslator {
         let ret: ?SyntaxTreeNode = match (node) {
             case nt: NonTerminal => transNonTerminal(nt, beginPos, parent)
             case _ =>
-                fail("terminal node kind - ${node.kind.toString()} - ${node.toString()} need to be translated");
+                fail("unsupported terminal kind: '${node.kind}'.");
                 None
         }
         ret
@@ -223,7 +223,7 @@ class SyntaxNodeImplTranslator {
             case SyntaxNodeKind.FeaturesSet => transFeaturesSet(node, startPos, parent)
             case SyntaxNodeKind.FeatureId => transFeatureId(node, startPos, parent)
             case _ =>
-                fail("nonterminal node kind - ${node.kind.toString()} - ${node.toString()} need to be translated");
+                fail("unsupported non-terminal kind: '${node.kind}'.");
                 None
         }
     }
@@ -559,7 +559,7 @@ class SyntaxNodeImplTranslator {
             case SyntaxNodeKind.StaticToken => ModifierKind.Static
             case SyntaxNodeKind.UnsafeToken => ModifierKind.Unsafe
             case SyntaxNodeKind.ConstToken => ModifierKind.Const
-            case _ => throw Exception("ParseException: This SyntaxNode kind is not modifier.")
+            case _ => throw IllegalArgumentException("Failed to translate node: expected a modifier kind, found '${kindNode.kind}'.")
         }
         lp.moveOffset(kindNode)
         lp.consumeToEnd()
@@ -792,7 +792,7 @@ class SyntaxNodeImplTranslator {
                     case SyntaxNodeKind.RCurlToken =>
                         rCurlPos = startPos + lp.offset
                         break
-                    case _ => fail("unExpected node kind in importMulti")
+                    case _ => fail("unexpected node kind: '${node.kind}'.")
                 }
             }
             lp.offset.move(node.offset)
@@ -829,7 +829,7 @@ class SyntaxNodeImplTranslator {
                 case SyntaxNodeKind.ImportMulti => ImportKind.Multi
                 case SyntaxNodeKind.ImportSingle => ImportKind.Single
                 case _ =>
-                    fail("translate ImportList error, not find import content")
+                    fail("the import content is not found.")
                     kind
             }
         }
@@ -1230,7 +1230,7 @@ class SyntaxNodeImplTranslator {
             case SyntaxNodeKind.VarToken => VarKind.Var
             case SyntaxNodeKind.LetToken => VarKind.Let
             case SyntaxNodeKind.ConstToken => VarKind.Const
-            case _ => throw Exception("ParseException: This SyntaxNode kind is not var kind.")
+            case _ => throw IllegalArgumentException("Failed to translate node: expected a var kind, found '${node.kind}'.")
         }
     }
 
@@ -1885,8 +1885,8 @@ class SyntaxNodeImplTranslator {
             case SyntaxNodeKind.IntegerLiteralToken => LitConstKind.IntergerLiteral
             case SyntaxNodeKind.FloatLiteralToken => LitConstKind.FloatLiteral
             case SyntaxNodeKind.BooleanLiteralToken => LitConstKind.BoolLiteral
-            case _ => throw Exception(
-                "ParseException: This SyntaxNode kind is not integer literal, float literal or bool literal.")
+            case _ => throw IllegalArgumentException(
+                "Failed to translate node: expected an integer, float or bool literal kind, found '${litNode.kind}'.")
         }
         let rawValue = match (litNode) {
             case vt: ValuedTerminal => vt.value
@@ -1941,7 +1941,7 @@ class SyntaxNodeImplTranslator {
             // case SyntaxNodeKind.JStringLiteral
             case SyntaxNodeKind.MultiLineStringLiteral => LitConstStrKind.MultiLineString
             case SyntaxNodeKind.MultiLineRawStringLiteral => LitConstStrKind.MultiLineRawString
-            case _ => throw Exception("ParseException: This SyntaxNode kind is not string literal.")
+            case _ => throw IllegalArgumentException("Failed to translate node: expected a string literal kind, found '${node.kind}'.")
         }
         var delimiterNum = 0
         var isSingleQuote = false
@@ -2194,9 +2194,9 @@ class SyntaxNodeImplTranslator {
                 case SyntaxNodeKind.BitXorAssignToken => AssignOpKind.BitXorAssign
                 case SyntaxNodeKind.LShiftAssignToken => AssignOpKind.LShiftAssign
                 case SyntaxNodeKind.RShiftAssignToken => AssignOpKind.RShiftAssign
-                case _ => throw Exception("ParseException: This SyntaxNode kind is not assign operator.")
+                case _ => throw IllegalArgumentException("Failed to translate node: expected an assign operator kind, found '${t.kind}'.")
             }
-            case _ => throw Exception("ParseException: This SyntaxNode kind is not assign operator.")
+            case _ => throw IllegalArgumentException("Failed to translate node: expected a terminal node for assign operator, found kind '${node.kind}'.")
         }
     }
 
@@ -2250,9 +2250,9 @@ class SyntaxNodeImplTranslator {
                 case SyntaxNodeKind.PipelineToken => BinaryOpKind.Pipeline
                 case SyntaxNodeKind.RShiftToken => BinaryOpKind.RShift
                 case SyntaxNodeKind.SubToken => BinaryOpKind.Sub
-                case _ => throw Exception("ParseException: This SyntaxNode kind is not binary operator.")
+                case _ => throw IllegalArgumentException("Failed to translate node: expected a binary operator kind, found '${t.kind}'.")
             }
-            case _ => throw Exception("ParseException: This SyntaxNode kind is not binary operator.")
+            case _ => throw IllegalArgumentException("Failed to translate node: expected a terminal node for binary operator, found kind '${node.kind}'.")
         }
     }
 
@@ -2286,9 +2286,9 @@ class SyntaxNodeImplTranslator {
             case t: Terminal => match (t.kind) {
                 case SyntaxNodeKind.NotToken => UnaryOpKind.Not
                 case SyntaxNodeKind.SubToken => UnaryOpKind.Sub
-                case _ => throw Exception("ParseException: This SyntaxNode kind is not unary operator.")
+                case _ => throw IllegalArgumentException("Failed to translate node: expected a unary operator kind, found '${t.kind}'.")
             }
-            case _ => throw Exception("ParseException: This SyntaxNode kind is not unary operator.")
+            case _ => throw IllegalArgumentException("Failed to translate node: expected a terminal node for unary operator, found kind '${op.kind}'.")
         }
         let opPos = startPos + lp.offset
         let curNode = lp.consume()
@@ -2431,9 +2431,9 @@ class SyntaxNodeImplTranslator {
             case t: Terminal => match (t.kind) {
                 case SyntaxNodeKind.RangeOpToken => RangeKind.RangeOp
                 case SyntaxNodeKind.ClosedRangeOpToken => RangeKind.ClosedRangeOp
-                case _ => throw Exception("ParseException: This SyntaxNode kind is not range operator.")
+                case _ => throw IllegalArgumentException("Failed to translate node: expected a range operator kind, found '${t.kind}'.")
             }
-            case _ => throw Exception("ParseException: This SyntaxNode kind is not range operator.")
+            case _ => throw IllegalArgumentException("Failed to translate node: expected a terminal node for range operator, found kind '${op.kind}'.")
         }
         var opPos = startPos + lp.offset
         lp.offset.move(op.offset)
@@ -3501,7 +3501,7 @@ class SyntaxNodeImplTranslator {
             case SyntaxNodeKind.UIntNativeToken => AtomicTypeKind.UIntNativeType
             case SyntaxNodeKind.UnitToken => AtomicTypeKind.UnitType
             case SyntaxNodeKind.ThisTypeToken => AtomicTypeKind.ThisType
-            case _ => throw Exception("ParseException: This SyntaxNode kind is not Atomic type.")
+            case _ => throw IllegalArgumentException("Failed to translate node: expected an atomic type kind, found '${kindNode.kind}'.")
         }
         lp.moveOffset(kindNode)
         lp.consumeToEnd()
@@ -3740,7 +3740,7 @@ class SyntaxNodeImplTranslator {
             prefixTypeOpKind = match (pre.kind) {
                 case SyntaxNodeKind.QuestToken => PrefixTypeOpKind.Quest
                 case _ =>
-                    fail("unsupported prefixTypeOperator")
+                    fail("unsupported prefix type operator.")
                     PrefixTypeOpKind.Quest
             }
             lp.moveOffset(pre)
@@ -3791,7 +3791,7 @@ class LocalParser {
             ret = nodes[cur]
             cur++
         } else {
-            fail("expect node but empty")
+            fail("expected a node, but the node list is empty.")
         }
         ret
     }
@@ -3816,10 +3816,10 @@ class LocalParser {
                 ret = nodes[cur]
                 cur++
             } else {
-                fail("expect ${kind} but get ${nodes[cur].kind}")
+                fail("expected node kind '${kind}', got '${nodes[cur].kind}'.")
             }
         } else {
-            fail("expect node but empty")
+            fail("expected a node of kind '${kind}', but the node list is empty.")
         }
         ret
     }
