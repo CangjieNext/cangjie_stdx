@@ -116,7 +116,7 @@ public class TlsSocket <: TlsConnection & Equatable<TlsSocket> & Hashable {
         set(value) {
             match (value) {
                 case Some(value) => negotiatedSessions_.store(Box(value))
-                case None => throw Exception("Removing sessions is not allowed.")
+                case None => throw Exception("Cannot remove negotiated session.")
             }
         }
     }
@@ -131,8 +131,8 @@ public class TlsSocket <: TlsConnection & Equatable<TlsSocket> & Hashable {
     private prop connected: ?SocketConnected {
         get() {
             match (state.load()) {
-                case _: SocketReady => throw TlsException("TLS socket didn't pass handshake yet.")
-                case _: SocketInHandshake => throw TlsException("TLS socket didn't pass handshake yet.")
+                case _: SocketReady => throw TlsException("Socket is not handshaked.")
+                case _: SocketInHandshake => throw TlsException("Socket is not handshaked.")
                 case connected: SocketConnected => connected
                 case _ => None
             }
@@ -277,7 +277,7 @@ public class TlsSocket <: TlsConnection & Equatable<TlsSocket> & Hashable {
             }
         } catch (e: Exception) {
             if (isClosed()) {
-                throw TlsException("TLS socket closed during handshake.")
+                throw TlsException("Socket closed during handshake.")
             }
             close(selfClosed: true)
             throw e
@@ -311,7 +311,7 @@ public class TlsSocket <: TlsConnection & Equatable<TlsSocket> & Hashable {
      */
     public override func read(buffer: Array<Byte>): Int64 {
         if (buffer.size == 0) {
-            throw TlsException("The buffer is empty.")
+            throw TlsException("Buffer is empty.")
         }
         let state = connected ?? return readClosed()
         state.stream.read(buffer)
@@ -437,13 +437,13 @@ public class TlsSocket <: TlsConnection & Equatable<TlsSocket> & Hashable {
                     if (state.compareAndSwap(s, started)) {
                         return (started, s.config)
                     }
-                case _: SocketInHandshake => throw TlsException("TLS handshake is already in progress.")
-                case _: SocketConnected => throw TlsException("TLS socket handshake is already complete.")
+                case _: SocketInHandshake => throw TlsException("Handshake is already in progress.")
+                case _: SocketConnected => throw TlsException("Handshake is already complete.")
                 case _ => throw TlsException("TLS socket is already closed.")
             }
         }
 
-        throw TlsException("Shouldn't reach here.")
+        throw TlsException("Internal error: unreachable code path.")
     }
 
     private static func tryGetSocket(state: TlsSocketState): ?StreamingSocket {

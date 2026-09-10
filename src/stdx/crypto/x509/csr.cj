@@ -28,7 +28,7 @@ public struct X509CertificateRequestInfo {
     ) {
         for (IPAddress in IPAddresses) {
             if (IPAddress.size != IPV4_SIZE && IPAddress.size != IPV6_SIZE) {
-                throw X509Exception("X509CSRInfo init failed: Illegal IP address.")
+                throw X509Exception("X509CSRInfo init failed: invalid IP address: expected 4 or 16 bytes, got '${IPAddress.size}' bytes.")
             }
         }
         this.IPAddresses = IPAddresses.clone()
@@ -77,14 +77,14 @@ public class X509CertificateRequest <: Hashable & ToString {
         unsafe {
             var req = x509ReqNew()
             if (req.isNull()) {
-                throw X509Exception("X509CSR init failed: Cannot init a new request.")
+                throw X509Exception("X509CSR init failed: Failed to initialize a new request.")
             }
             var pkey = CPointer<Unit>()
             try {
                 setRequestInfo(req, csrInfo: certificateRequestInfo)
                 pkey = getRawPriKey(privateKey)
                 if (!checkKeyType(CPointer<Unit>(pkey), getKeyType(signatureAlgorithm))) {
-                    throw X509Exception("X509CSR init failed: Private key type not match to signatureAlgorithm.")
+                    throw X509Exception("X509CSR init failed: Private key type does not match signature algorithm.")
                 }
                 var ret = x509ReqSetPubkey(req, pkey)
                 if (ret <= 0) {
@@ -92,7 +92,7 @@ public class X509CertificateRequest <: Hashable & ToString {
                 }
                 ret = x509ReqSign(req, pkey, getDigest(signatureAlgorithm))
                 if (ret <= 0) {
-                    throw X509Exception("X509CSR init failed: Failed to sign.")
+                    throw X509Exception("X509CSR init failed: Failed to sign the certificate request.")
                 }
                 this.blob = X509CsrBlob(getReqBody(req))
             } finally {
@@ -127,7 +127,7 @@ public class X509CertificateRequest <: Hashable & ToString {
 
         if (result.isEmpty()) {
             throw X509Exception(
-                "X509CSR decode failed: No ${PemEntry.LABEL_CERTIFICATE_REQUEST} entry found in PEM file.")
+                "X509CSR decode failed: No '${PemEntry.LABEL_CERTIFICATE_REQUEST}' entry found in PEM file.")
         }
         return result.toArray()
     }
@@ -241,7 +241,7 @@ func addName(nameStack: CPointer<Unit>, nid: Int64, str: String) {
         try (strPtr = LibC.mallocCString(str).asResource()) {
             let ret = addName(nameStack, nid, strPtr.value)
             if (ret < 0) {
-                throw X509Exception("X509CSR init failed: Failed to set attribute ${str}.")
+                throw X509Exception("X509CSR init failed: Failed to set attribute '${str}'.")
             }
         }
     }
@@ -251,7 +251,7 @@ func getReqBody(req: CPointer<Unit>): Array<Byte> {
     unsafe {
         var reqlen = getX509ReqDer(req, CPointer<CPointer<Byte>>())
         if (reqlen < 0) {
-            throw X509Exception("X509CSR init failed: Cannot parse the X509 req body.")
+            throw X509Exception("X509CSR init failed: Failed to parse the X509 request body.")
         }
         var reqBody = Array<Byte>(Int64(reqlen), repeat: 0)
         let data: CPointerHandle<Byte> = acquireArrayRawData(reqBody)
@@ -259,7 +259,7 @@ func getReqBody(req: CPointer<Unit>): Array<Byte> {
             reqPtr.pointer.write(data.pointer)
             reqlen = getX509ReqDer(req, reqPtr.pointer)
             if (reqlen < 0) {
-                throw X509Exception("X509CSR init failed: Cannot parse the X509 req body.")
+                throw X509Exception("X509CSR init failed: Failed to parse the X509 request body.")
             }
         } finally {
             releaseArrayRawData(data)

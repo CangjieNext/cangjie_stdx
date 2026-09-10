@@ -245,7 +245,7 @@ class HttpChunkedBodyProvider <: InputStream & Resource {
                 header = rsp.headers
                 trailer = rsp.trailers
                 isReq = false
-            case _ => throw HttpException("Unsupported msg type!")
+            case _ => throw HttpException("Internal error: unsupported message type.")
         }
     }
 
@@ -387,9 +387,9 @@ class HttpChunkedBodyProvider <: InputStream & Resource {
         }
         if (line.contains(CR)) {
             if (isReq) {
-                throw HttpStatusException(HttpStatusCode.STATUS_BAD_REQUEST, "Invalid line.")
+                throw HttpStatusException(HttpStatusCode.STATUS_BAD_REQUEST, "Invalid line: contains raw CR.")
             } else {
-                throw HttpException("Trailer section can not contain raw CR.")
+                throw HttpException("Trailer section cannot contain raw CR.")
             }
         }
         return line
@@ -402,7 +402,7 @@ class HttpChunkedBodyProvider <: InputStream & Resource {
      */
     private func readChunkSize(): Int64 {
         let line = readLine()
-        let chunkSize = line.splitFirst(SEMICOLON) ?? throw HttpException("Failed to extract chunk-size.") // extract chunk-size
+        let chunkSize = line.splitFirst(SEMICOLON) ?? throw HttpException("Failed to extract chunk-size from line '${line}'.") // extract chunk-size
         try {
             return Int64.fromHexStr(chunkSize)
         } catch (e: Exception) {
@@ -432,7 +432,7 @@ class HttpExpectBodyProvider <: InputStream {
                     HttpNormalBodyProvider(conn, length, timer)
                 case None =>
                     timer.cancel()
-                    throw HttpException(" The content-length should not be none!")
+                    throw HttpException("Content-length is missing.")
             }
         }
     }

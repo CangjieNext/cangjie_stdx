@@ -40,7 +40,7 @@ protected unsafe func describeImpl(
     let keySize = UIntNative(body.size) // we do it outside of acq-release
     let dynMsg = MallocDynMsg()
     if (dynMsg.isNull()) {
-        throw CryptoException("malloc failed")
+        throw CryptoException("Failed to allocate memory.")
     }
 
     let keyBodyBytes = acquireArrayRawData(body)
@@ -57,7 +57,7 @@ protected unsafe func describeImpl(
     try {
         if (!dynMsg.read().found) {
             let funcName = CString(dynMsg.read().funcName).toString()
-            throw CryptoException("Can not load openssl library or function ${funcName}.")
+            throw CryptoException("Cannot load OpenSSL library or function '${funcName}'.")
         }
     } finally {
         FreeDynMsg(dynMsg)
@@ -110,7 +110,7 @@ public class GeneralPublicKey <: PublicKey {
             }
         }
 
-        throw CryptoException("No ${PemEntry.LABEL_PUBLIC_KEY} entry found in PEM file.")
+        throw CryptoException("No '${PemEntry.LABEL_PUBLIC_KEY}' entry found in PEM file.")
     }
 
     public override func toString(): String {
@@ -241,7 +241,7 @@ public class GeneralPrivateKey <: PrivateKey {
             }
         }
 
-        return description ?? throw CryptoException("Failed to load private key") // cjlint-ignore !G.EXP.03
+        return description ?? throw CryptoException("Failed to load private key.") // cjlint-ignore !G.EXP.03
     }
 
     protected static func decodeFromDer(blob: DerBlob, password: ?String) {
@@ -267,14 +267,14 @@ public class GeneralPrivateKey <: PrivateKey {
             case (Some("4,ENCRYPTED"), Some(dekInfo)) =>
                 let dekInfoComponents = dekInfo.trimAscii().split(",")
                 if (dekInfoComponents.size != 2) {
-                    throw CryptoException("Wrong DEK-Info header format")
+                    throw CryptoException("Invalid DEK-Info header format.")
                 }
                 let cipherName = dekInfoComponents[0]
                 let iv = fromHexString(dekInfoComponents[1])
                 let password = password ?? throwPasswordIsMissing() // cjlint-ignore !G.OTH.02
                 decrypt(body, password, iv, cipherName)
-            case (Some(unsupportedProcType), _) => throw CryptoException("Unsupported Proc-Type = ${unsupportedProcType}")
-            case (None, Some(_)) => throw CryptoException("DEK-Info requires Proc-Type header")
+            case (Some(unsupportedProcType), _) => throw CryptoException("Unsupported Proc-Type '${unsupportedProcType}'.")
+            case (None, Some(_)) => throw CryptoException("DEK-Info header present without Proc-Type header.")
             case (None, None) =>
                 if (isEncrypted(entry) && password.isNone()) {
                     throwPasswordIsMissing()
@@ -284,7 +284,7 @@ public class GeneralPrivateKey <: PrivateKey {
     }
 
     private static func throwPasswordIsMissing(): Nothing {
-        throw CryptoException("The private key is encrypted but no password provided to decrypt it") // cjlint-ignore !G.ERR.02
+        throw CryptoException("Private key is encrypted but no password provided.") // cjlint-ignore !G.ERR.02
     }
 
     private static func decrypt(
@@ -305,10 +305,10 @@ public class GeneralPrivateKey <: PrivateKey {
         cipherName: ?String
     ): GeneralPrivateKey {
         if (password.contains(NULL_BYTE)) {
-            throw CryptoException("Password shouldn't contain zero byte.") // cjlint-ignore !G.ERR.02
+            throw CryptoException("Password contains zero byte.") // cjlint-ignore !G.ERR.02
         }
         if (password.isEmpty()) {
-            throw CryptoException("Password shouldn't be empty.") // cjlint-ignore !G.ERR.02
+            throw CryptoException("Password is empty.") // cjlint-ignore !G.ERR.02
         }
         var decryptedBody: ?DerBlob = None
         var keyDescription: ?String = None
@@ -323,7 +323,7 @@ public class GeneralPrivateKey <: PrivateKey {
             let keySize = UIntNative(body.size) // we do it outside of acq-release
             let dynMsgPtr = MallocDynMsg()
             if (dynMsgPtr.isNull()) {
-                throw CryptoException("malloc failed")
+                throw CryptoException("Failed to allocate memory.")
             }
             let keyBytes = acquireArrayRawData(body)
             let result = try {
@@ -343,14 +343,14 @@ public class GeneralPrivateKey <: PrivateKey {
             try {
                 if (!dynMsgPtr.read().found) {
                     let funcName = CString(dynMsgPtr.read().funcName).toString()
-                    throw CryptoException("Can not load openssl library or function ${funcName}.")
+                    throw CryptoException("Cannot load OpenSSL library or function '${funcName}'.")
                 }
             } finally {
                 FreeDynMsg(dynMsgPtr)
             }
             try {
                 if (result == CJ_FAIL) {
-                    exception.value.throwException(fallback: "Failed to decrypt private key")
+                    exception.value.throwException(fallback: "Failed to decrypt private key.")
                 }
                 decryptedBody = resultBody.value.ifNotNull {ptr => DerBlob(toArray(ptr, resultSize.value))}
                 keyDescription = description.value.ifNotNull {ptr => CString(ptr).toString()}
@@ -363,7 +363,7 @@ public class GeneralPrivateKey <: PrivateKey {
             }
         }
         return GeneralPrivateKey(
-            decryptedBody ?? throw CryptoException("Failed to decrypt private key"), // cjlint-ignore !G.EXP.03
+            decryptedBody ?? throw CryptoException("Failed to decrypt private key."), // cjlint-ignore !G.EXP.03
             keyDescription ?? ""
         )
     }
@@ -373,10 +373,10 @@ public class GeneralPrivateKey <: PrivateKey {
         password: String
     ): DerBlob {
         if (password.contains(NULL_BYTE)) {
-            throw CryptoException("Password shouldn't contain zero byte.") // cjlint-ignore !G.ERR.02
+            throw CryptoException("Password contains zero byte.") // cjlint-ignore !G.ERR.02
         }
         if (password.isEmpty()) {
-            throw CryptoException("Password shouldn't be empty.") // cjlint-ignore !G.ERR.02
+            throw CryptoException("Password is empty.") // cjlint-ignore !G.ERR.02
         }
         var encryptedBody: ?DerBlob = None
         try (passwordCStr = LibC.mallocCString(password).asResource(), resultBody = malloc<CPointer<Byte>>( // cjlint-ignore !G.OTH.02
@@ -398,7 +398,7 @@ public class GeneralPrivateKey <: PrivateKey {
             }
             try {
                 if (result == CJ_FAIL) {
-                    exception.value.throwException(fallback: "Failed to encrypt private key")
+                    exception.value.throwException(fallback: "Failed to encrypt private key.")
                 }
                 encryptedBody = resultBody.value.ifNotNull {ptr => DerBlob(toArray(ptr, resultSize.value))}
             } finally {
@@ -408,7 +408,7 @@ public class GeneralPrivateKey <: PrivateKey {
                 exception.value = data
             }
         }
-        return encryptedBody ?? throw CryptoException("Failed to encrypt private key") // cjlint-ignore !G.EXP.03
+        return encryptedBody ?? throw CryptoException("Failed to encrypt private key.") // cjlint-ignore !G.EXP.03
     }
 
     private static unsafe func describeImpl(
@@ -416,7 +416,7 @@ public class GeneralPrivateKey <: PrivateKey {
         exception: CPointer<ExceptionData>
     ): String {
         if (exception.isNull()) {
-            throw CryptoException("Null pointer check failed.")
+            throw CryptoException("Null pointer encountered.")
         }
         let keySize = UIntNative(body.size) // we do it outside of acq-release
         let keyBytes = acquireArrayRawData(body)
@@ -442,10 +442,10 @@ public class GeneralPrivateKey <: PrivateKey {
         }
 
         if (exception.read().hasException) {
-            exception.read().throwException(fallback: "Failed to load private key")
+            exception.read().throwException(fallback: "Failed to load private key.")
         }
 
-        return messageString ?? throw CryptoException("Failed to load private key") // cjlint-ignore !G.EXP.03
+        return messageString ?? throw CryptoException("Failed to load private key.") // cjlint-ignore !G.EXP.03
     }
 }
 
@@ -460,13 +460,13 @@ func cjX509EncryptPrivateKey(
     unsafe {
         let dynMsgPtr = MallocDynMsg()
         if (dynMsgPtr.isNull()) {
-            throw CryptoException("malloc failed")
+            throw CryptoException("Failed to allocate memory.")
         }
         let res = DYN_CJX509EncryptPrivateKey(keyBody, keySize, password, resultBody, resultSize, exception, dynMsgPtr)
         try {
             if (!dynMsgPtr.read().found) {
                 let funcName = CString(dynMsgPtr.read().funcName).toString()
-                throw CryptoException("Can not load openssl library or function ${funcName}.")
+                throw CryptoException("Cannot load OpenSSL library or function '${funcName}'.")
             }
         } finally {
             FreeDynMsg(dynMsgPtr)
@@ -483,13 +483,13 @@ func cjX509DescribePrivateKey(
     unsafe {
         let dynMsgPtr = MallocDynMsg()
         if (dynMsgPtr.isNull()) {
-            throw CryptoException("malloc failed")
+            throw CryptoException("Failed to allocate memory.")
         }
         let res = DYN_CJX509DescribePrivateKey(key, length, exception, dynMsgPtr)
         try {
             if (!dynMsgPtr.read().found) {
                 let funcName = CString(dynMsgPtr.read().funcName).toString()
-                throw CryptoException("Can not load openssl library or function ${funcName}.")
+                throw CryptoException("Cannot load OpenSSL library or function '${funcName}'.")
             }
         } finally {
             FreeDynMsg(dynMsgPtr)
@@ -502,13 +502,13 @@ func CRYPTO_free(ptr: CPointer<Byte>): Unit {
     unsafe {
         let dynMsg = MallocDynMsg()
         if (dynMsg.isNull()) {
-            throw CryptoException("malloc failed")
+            throw CryptoException("Failed to allocate memory.")
         }
         DYN_CRYPTO_free(ptr, dynMsg)
         try {
             if (!dynMsg.read().found) {
                 let funcName = CString(dynMsg.read().funcName).toString()
-                throw CryptoException("Can not load openssl library or function ${funcName}.")
+                throw CryptoException("Cannot load OpenSSL library or function '${funcName}'.")
             }
         } finally {
             FreeDynMsg(dynMsg)
@@ -517,7 +517,7 @@ func CRYPTO_free(ptr: CPointer<Byte>): Unit {
 }
 
 protected unsafe func describeDHParametersImpl(body: Array<Byte>, exception: CPointer<ExceptionData>) {
-    describeImpl(body, exception, CJX509DescribeDHParameters, "Failed to load DHParameters")
+    describeImpl(body, exception, CJX509DescribeDHParameters, "Failed to load DHParameters.")
 }
 
 foreign {

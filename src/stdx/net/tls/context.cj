@@ -23,7 +23,7 @@ class TlsContext <: Resource {
 
     init(existing!: CPointer<Ctx>, server!: Bool) {
         if (existing.isNull()) {
-            throw IllegalArgumentException("Existing context shouldn't be null.")
+            throw IllegalArgumentException("Invalid argument 'existing': is null.")
         }
         this.instance = existing
         this.server = server
@@ -42,7 +42,7 @@ class TlsContext <: Resource {
     func withContext<R>(block: (CPointer<Ctx>, CPointer<ExceptionData>) -> R): R {
         synchronized(sslLock) {
             if (instance.isNull()) {
-                throw TlsException("SSL context is already released.")
+                throw TlsException("Cannot call 'withContext': SSL context is already released.")
             }
 
             block(instance, exception)
@@ -57,7 +57,7 @@ class TlsContext <: Resource {
             instance, exception => unsafe {
                 let result = CJ_TLS_CreateSsl(instance, if (server) { 1 } else { 0 }, exception)
                 if (result.isNull()) {
-                    exception.read().throwException(fallback: "TLS failed to create SSL instance.")
+                    exception.read().throwException(fallback: "Failed to create SSL instance.")
                 }
 
                 // here the instance is leaking to TlsRawSocket
@@ -103,7 +103,7 @@ class TlsContext <: Resource {
                     exception
                 )
                 if (result.isNull()) {
-                    exception.read().throwException(fallback: "TLS failed to create context.")
+                    exception.read().throwException(fallback: "Failed to create context.")
                 }
                 return result
             }

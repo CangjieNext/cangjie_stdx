@@ -85,14 +85,14 @@ public enum SignatureAlgorithm <: Equatable<SignatureAlgorithm> & ToString {
 
     func getDigest() {
         var md = match (this) {
-            case MD2WithRSA => throw X509Exception("X509 get digest failed: Not supported MD2 digest.")
+            case MD2WithRSA => throw X509Exception("Failed to get digest: MD2 digest is not supported.")
             case MD5WithRSA => md5()
             case SHA1WithRSA | ECDSAWithSHA1 | DSAWithSHA1 => sha1()
             case SHA256WithRSA | ECDSAWithSHA256 | DSAWithSHA256 => sha256()
             case SHA384WithRSA | ECDSAWithSHA384 => sha384()
             case SHA512WithRSA | ECDSAWithSHA512 => sha512()
             case UnknownSignatureAlgorithm => throw X509Exception(
-                "X509 create certificate failed: Not supported UnknownSignatureAlgorithm.")
+                "Failed to create certificate: 'UnknownSignatureAlgorithm' is not supported.")
         }
         return md
     }
@@ -103,7 +103,7 @@ public enum SignatureAlgorithm <: Equatable<SignatureAlgorithm> & ToString {
             case DSAWithSHA1 | DSAWithSHA256 => DSAN_ID
             case ECDSAWithSHA1 | ECDSAWithSHA256 | ECDSAWithSHA384 | ECDSAWithSHA512 => ECN_ID
             case UnknownSignatureAlgorithm => throw X509Exception(
-                "X509 create certificate failed: Not supported UnknownSignatureAlgorithm.")
+                "Failed to create certificate: 'UnknownSignatureAlgorithm' is not supported.")
         }
         return key
     }

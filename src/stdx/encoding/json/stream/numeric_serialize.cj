@@ -34,7 +34,7 @@ extend BigInt <: JsonDeserializable<BigInt> {
     public static func fromJson(r: JsonReader): BigInt {
         let value = readJsonNumberAsString(r)
         if (value.size > MAX_JSON_BIGINT_LENGTH) {
-            throw IllegalStateException("BigInt length exceeds ${MAX_JSON_BIGINT_LENGTH}.")
+            throw IllegalStateException("BigInt length '${value.size}' exceeds maximum '${MAX_JSON_BIGINT_LENGTH}'.")
         }
         return BigInt.parse(value, radix: 10)
     }

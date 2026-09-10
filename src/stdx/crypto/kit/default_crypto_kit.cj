@@ -48,7 +48,7 @@ public class DefaultCryptoKit <: CryptoKit {
                 return GeneralPrivateKey.decodeFromPem(entry, password)
             }
         }
-        throw CryptoException("No supported private key entry found in PEM.")
+        throw CryptoException("No private key entry found in PEM.")
     }
 
     public func dhParametersFromDer(encoded: DerBlob): DHParameters {
@@ -63,7 +63,7 @@ public class DefaultCryptoKit <: CryptoKit {
                 }
             }
         }
-        throw X509Exception("No ${PemEntry.LABEL_DH_PARAMETERS} entry found in PEM file.")
+        throw X509Exception("No '${PemEntry.LABEL_DH_PARAMETERS}' entry found in PEM.")
     }
 
     public func certificateFromDer(encoded: DerBlob): Certificate {

@@ -66,7 +66,8 @@ class HttpServer1 <: ProtocolService {
             let handlerEndTime = MonoTime.now()
             if (logger.enabled(LogLevel.DEBUG)) {
                 let duration = handlerEndTime - handlerStartTime
-                httpLogDebug(logger,
+                httpLogDebug(
+                    logger,
                     "[HttpServer1#process] Handler for request ${context.request.method} ${context.request.url} took ${duration.toMilliseconds()} ms."
                 )
             }
@@ -233,7 +234,7 @@ class HttpEngineConn1 <: HttpEngineConn & BodyProviderConn {
 
     mut prop logger: Logger {
         get() {
-            _logger ?? throw HttpException("[HttpEngineConn1] logger not set yet.")
+            _logger ?? throw HttpException("Logger is not set.")
         }
         set(v) {
             _logger = v
@@ -271,6 +272,7 @@ class HttpEngineConn1 <: HttpEngineConn & BodyProviderConn {
             // A server that receives a 100-continue expectation in an HTTP/1.0 request ignore that expectation.
             // RFC 9110 10.1.1. Expect
             let expectContinue = (version != "HTTP/1.0") && expected100Continue(headers) // cjlint-ignore !G.EXP.03
+
             // 3. set body && build request
             let request = HttpRequestBuilder()
                 .method(method.toString())
@@ -335,12 +337,13 @@ class HttpEngineConn1 <: HttpEngineConn & BodyProviderConn {
             checkClAndTe(headers)
         } catch (e: HttpException) {
             throw HttpStatusException(HttpStatusCode.STATUS_BAD_REQUEST,
-                "The logic of content-length and transfer-encoding is incorrect.")
+                "Invalid content-length and transfer-encoding combination.")
         }
 
         if (let Some(s) <- contentLength) {
             if (maxRequestBodySize != 0 && maxRequestBodySize < s) {
-                throw HttpStatusException(HttpStatusCode.STATUS_REQUEST_CONTENT_TOO_LARGE, "The content too large.")
+                throw HttpStatusException(HttpStatusCode.STATUS_REQUEST_CONTENT_TOO_LARGE,
+                    "Content length '${s}' exceeds maximum '${maxRequestBodySize}'.")
             }
         }
 
@@ -363,7 +366,7 @@ class HttpEngineConn1 <: HttpEngineConn & BodyProviderConn {
             headerline = readLine()
         } catch (e: HttpException) {
             throw HttpStatusException(HttpStatusCode.STATUS_REQUEST_HEADER_FIELDS_TOO_LARGE,
-                "Single header size out of limit ${MAX_LINE_SIZE}.")
+                "Single header size exceeds limit '${MAX_LINE_SIZE}'.")
         }
         while (!headerline.isEmpty()) {
             if (logger.enabled(LogLevel.DEBUG)) {
@@ -379,7 +382,7 @@ class HttpEngineConn1 <: HttpEngineConn & BodyProviderConn {
                 headerSize += name.size + value.size + 1
                 if (headerSize >= maxRequestHeaderSize) {
                     throw HttpStatusException(HttpStatusCode.STATUS_REQUEST_HEADER_FIELDS_TOO_LARGE,
-                        "Header size out of limit ${maxRequestHeaderSize}.")
+                        "Total header size exceeds limit '${maxRequestHeaderSize}'.")
                 }
             }
 
@@ -388,7 +391,7 @@ class HttpEngineConn1 <: HttpEngineConn & BodyProviderConn {
             headerCount++
             if (headerCount > DEFAULT_MAX_HEADER_COUNT) {
                 throw HttpStatusException(HttpStatusCode.STATUS_REQUEST_HEADER_FIELDS_TOO_LARGE,
-                    "Header count out of limit ${DEFAULT_MAX_HEADER_COUNT}.")
+                    "Header count '${headerCount}' exceeds limit '${DEFAULT_MAX_HEADER_COUNT}'.")
             }
 
             headers.add(name, value)
@@ -396,7 +399,7 @@ class HttpEngineConn1 <: HttpEngineConn & BodyProviderConn {
                 headerline = readLine()
             } catch (_: HttpException) {
                 throw HttpStatusException(HttpStatusCode.STATUS_REQUEST_HEADER_FIELDS_TOO_LARGE,
-                    "Single header size out of limit ${MAX_LINE_SIZE}.")
+                    "Single header size exceeds limit '${MAX_LINE_SIZE}'.")
             }
         }
         return headers
@@ -408,16 +411,16 @@ class HttpEngineConn1 <: HttpEngineConn & BodyProviderConn {
             start: readTimeout,
             task: {
                 =>
-                ThreadContext.connId = connId // set connection id for logger
-                isReadTimeout.swap(true)
-                httpLogWarn(logger, "[HttpEngineConn1 readTimer] read request timeout")
-                let response = HttpResponseBuilder()
-                    .status(HttpStatusCode.STATUS_REQUEST_TIMEOUT)
-                    .header("connection", "close")
-                    .build()
-                writeResponse(response)
-                close()
-                ThreadContext.connId = None // clear connection id
+                    ThreadContext.connId = connId // set connection id for logger
+                    isReadTimeout.swap(true)
+                    httpLogWarn(logger, "[HttpEngineConn1 readTimer] read request timeout")
+                    let response = HttpResponseBuilder()
+                        .status(HttpStatusCode.STATUS_REQUEST_TIMEOUT)
+                        .header("connection", "close")
+                        .build()
+                    writeResponse(response)
+                    close()
+                    ThreadContext.connId = None // clear connection id
             }
         )
     }
@@ -428,15 +431,15 @@ class HttpEngineConn1 <: HttpEngineConn & BodyProviderConn {
             start: readHeaderTimeout,
             task: {
                 =>
-                ThreadContext.connId = connId // set connection id for logger
-                httpLogWarn(logger, "[HttpEngineConn1 readHeaderTimer] read header timeout")
-                let response = HttpResponseBuilder()
-                    .status(HttpStatusCode.STATUS_REQUEST_TIMEOUT)
-                    .header("connection", "close")
-                    .build()
-                writeResponse(response)
-                close()
-                ThreadContext.connId = None // clear connection id
+                    ThreadContext.connId = connId // set connection id for logger
+                    httpLogWarn(logger, "[HttpEngineConn1 readHeaderTimer] read header timeout")
+                    let response = HttpResponseBuilder()
+                        .status(HttpStatusCode.STATUS_REQUEST_TIMEOUT)
+                        .header("connection", "close")
+                        .build()
+                    writeResponse(response)
+                    close()
+                    ThreadContext.connId = None // clear connection id
             }
         )
     }
@@ -593,11 +596,11 @@ class HttpEngineConn1 <: HttpEngineConn & BodyProviderConn {
         let hv = match (version) {
             case "HTTP/1.0" => headers.getInternal("host") ?? return ()
             case _ => headers.getInternal("host") ?? throw HttpStatusException(HttpStatusCode.STATUS_BAD_REQUEST, // cjlint-ignore !G.EXP.03
-                "Host should be and only one.")
+                "Missing Host header.")
         }
 
         if (!hv.isSingle()) {
-            throw HttpStatusException(HttpStatusCode.STATUS_BAD_REQUEST, "Host should be only one.")
+            throw HttpStatusException(HttpStatusCode.STATUS_BAD_REQUEST, "Duplicate Host header.")
         }
         if (!Str(hv.single).byteMatches(validHostByte)) {
             throw HttpStatusException(HttpStatusCode.STATUS_BAD_REQUEST, "Malformed host header.")
@@ -731,7 +734,8 @@ class HttpEngineConn1 <: HttpEngineConn & BodyProviderConn {
         let headers = response.headers
 
         if (logger.enabled(LogLevel.DEBUG)) {
-            httpLogDebug(logger,
+            httpLogDebug(
+                logger,
                 "[HttpEngineConn1#checkResponse] raw status line: ${response.version} ${response.status} ${response.phrase}"
             )
             httpLogDebug(logger, "[HttpEngineConn1#checkResponse] raw response headers: ${headers.toString()}")
@@ -765,7 +769,7 @@ class HttpEngineConn1 <: HttpEngineConn & BodyProviderConn {
         if (response.version == HTTP1_0) {
             httpLogWarn(logger, "[HttpEngineConn1#checkResponse] HTTP/1.0 response is not supported")
             if (chunked) {
-                throw HttpException("The body cannot be sent in chunked mode in HTTP/1.0.")
+                throw HttpException("Chunked transfer encoding is not supported in HTTP/1.0.")
             }
             response._version = HTTP1_1
         }
@@ -779,7 +783,7 @@ class HttpEngineConn1 <: HttpEngineConn & BodyProviderConn {
         if (statusWithoutContent) {
             if (let Some(size) <- bodySize) {
                 if (chunked && size > 0) {
-                    throw HttpException("The body is not allowed in this scenario.")
+                    throw HttpException("Response body is not allowed for status '${status}'.")
                 }
             }
             response._body = HttpEmptyBody.INSTANCE
@@ -792,7 +796,8 @@ class HttpEngineConn1 <: HttpEngineConn & BodyProviderConn {
         }
 
         if (logger.enabled(LogLevel.DEBUG)) {
-            httpLogDebug(logger,
+            httpLogDebug(
+                logger,
                 "[HttpEngineConn1#checkResponse] status line: ${response.version} ${response.status} ${response.phrase}"
             )
             httpLogDebug(logger, "[HttpEngineConn1#checkResponse] response headers: ${headers.toString()}")
@@ -805,7 +810,7 @@ class HttpEngineConn1 <: HttpEngineConn & BodyProviderConn {
      */
     public func writeResponse(ctx: HttpContext): Unit {
         if (conn.isClosed()) {
-            throw HttpException("The connection is disconnected response cannot be written.")
+            throw HttpException("Connection is closed, response cannot be written.")
         }
 
         let response = ctx.responseBuilder.build()
@@ -832,8 +837,8 @@ class HttpEngineConn1 <: HttpEngineConn & BodyProviderConn {
                 start: writeTimeout,
                 task: {
                     =>
-                    httpLogWarn(logger, "[HttpEngineConn1#writeResponse] write response timeout")
-                    close()
+                        httpLogWarn(logger, "[HttpEngineConn1#writeResponse] write response timeout")
+                        close()
                 }
             )
             writeResponse(response)
@@ -843,7 +848,7 @@ class HttpEngineConn1 <: HttpEngineConn & BodyProviderConn {
 
     public func writeResponseByWriter(ctx: HttpContext, bodyData: Array<UInt8>): Unit {
         if (conn.isClosed()) {
-            throw HttpException("The connection is disconnected response cannot be written.")
+            throw HttpException("Connection is closed, response cannot be written.")
         }
         let response = ctx.responseBuilder.build()
         let request = response.request ?? return ()
@@ -851,7 +856,7 @@ class HttpEngineConn1 <: HttpEngineConn & BodyProviderConn {
         if (!ctx.responseFlushedByUser) {
             let (cl, chunked) = checkResponseHeader(response, bodyData.size)
             if (cl.isNone() && !chunked) {
-                throw HttpException("Either Content-Length or chunked must be set.")
+                throw HttpException("Response requires Content-Length header or chunked encoding.")
             }
 
             let connId = ThreadContext.connId
@@ -859,10 +864,10 @@ class HttpEngineConn1 <: HttpEngineConn & BodyProviderConn {
                 start: writeTimeout,
                 task: {
                     =>
-                    ThreadContext.connId = connId // set connection id for logger
-                    httpLogWarn(logger, "[HttpEngineConn1#writeResponse writeTimer] write response timeout")
-                    close()
-                    ThreadContext.connId = None // clear connection id
+                        ThreadContext.connId = connId // set connection id for logger
+                        httpLogWarn(logger, "[HttpEngineConn1#writeResponse writeTimer] write response timeout")
+                        close()
+                        ThreadContext.connId = None // clear connection id
                 }
             )
 
@@ -891,8 +896,7 @@ class HttpEngineConn1 <: HttpEngineConn & BodyProviderConn {
             // cjlint-ignore -end
             let response = ctx.responseBuilder.build()
             if (response.status / 100 != 2) {
-                throw HttpException(
-                    "Status of response to CONNECT request must be 2XX, if the tunnel is built successfully.")
+                throw HttpException("Invalid response status '${response.status}' to CONNECT request: expected 2xx.")
             }
             response.headers.del("content-length")
             response.headers.del("transfer-encoding")
@@ -907,7 +911,7 @@ class HttpEngineConn1 <: HttpEngineConn & BodyProviderConn {
             }
             let response = ctx.responseBuilder.build()
             if (response.status != HttpStatusCode.STATUS_SWITCHING_PROTOCOLS) {
-                throw HttpException("Status of response to upgrade request must be 101, if upgraded successfully.")
+                throw HttpException("Invalid response status '${response.status}' to upgrade request: expected 101.")
             }
             writeWithoutBody(response)
         }
@@ -919,14 +923,14 @@ class HttpEngineConn1 <: HttpEngineConn & BodyProviderConn {
         match ((response.bodySize, contentLengthInHeader)) {
             case (Some(bodySize), Some(cl)) =>
                 if (!isHeadRequest && cl > bodySize) {
-                    throw HttpException("Wrote body size less than declared content-length.")
+                    throw HttpException("Body size '${bodySize}' is less than declared content-length '${cl}'.")
                 }
                 return cl
             case (None, Some(cl)) => return cl
             case (Some(bodySize), None) =>
                 response.headers.set("content-length", bodySize.toString())
                 return bodySize
-            case (None, None) => throw HttpException("Unknown body size for Content-Length.")
+            case (None, None) => throw HttpException("Unknown body size for Content-Length header.")
         }
     }
 

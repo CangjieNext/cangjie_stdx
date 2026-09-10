@@ -84,7 +84,7 @@ class JsonStateStack {
 
     func put(v: Int64) {
         if (stacksize >= MAX_JSON_STREAM_DEPTH) {
-            throw IllegalStateException("Json nested depth exceeds ${MAX_JSON_STREAM_DEPTH}.")
+            throw IllegalStateException("JSON nested depth '${stacksize}' exceeds maximum '${MAX_JSON_STREAM_DEPTH}'.")
         }
         if (stacksize >= stack.size) {
             var newstack = Array<Int64>(stack.size * 2, repeat: 0)

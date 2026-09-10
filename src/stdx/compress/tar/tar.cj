@@ -52,14 +52,14 @@ public class Tar {
     protected static func archive<T>(fromDir!: Path, filter!: (Path) -> Bool, destStream!: T,
         includeBaseDirectory!: Bool): Unit where T <: OutputStream {
         if (!exists(fromDir)) {
-            throw TarException("From directory not exists: ${fromDir}.")
+            throw TarException("Source directory does not exist: '${fromDir}'.")
         }
         if (!FileInfo(fromDir).isDirectory()) {
-            throw TarException("From directory is not a directory: ${fromDir}.")
+            throw TarException("Source path is not a directory: '${fromDir}'.")
         }
         let fromDirCanonicalized = canonicalize(fromDir)
         if (isRootPath(fromDirCanonicalized.toString())) {
-            throw TarException("Can not archive root directory: ${fromDir}.")
+            throw TarException("Cannot archive root directory: '${fromDir}'.")
         }
         let fromDirNormalized = fromDirCanonicalized.normalizePath()
         let fromDirNormalizedPath = Path(fromDirNormalized)
@@ -112,7 +112,7 @@ public class Tar {
             let entryPath = destAbsoluteDir.join(entry.name)
 
             if (!isPathWithinDirectory(entryPath.normalize(), destAbsoluteDir)) {
-                throw TarException("Zip Slip detected: ${entry.name}.")
+                throw TarException("Zip slip detected: '${entry.name}'.")
             }
 
             let parentDir = entryPath.parent
@@ -125,7 +125,7 @@ public class Tar {
 
             if (exists(entryPath)) {
                 if (!overwrite) {
-                    throw TarException("File ${entryPath} already exists and overwrite is false.")
+                    throw TarException("File '${entryPath}' already exists and overwrite is disabled.")
                 }
                 if (!FileInfo(entryPath).isDirectory()) {
                     remove(entryPath)
@@ -177,7 +177,7 @@ public class Tar {
             }
         }
         if (!isPathWithinDirectory(linkTarget, destDir)) {
-            throw TarException("Symlink points outside target dir.")
+            throw TarException("Symbolic link target points outside destination directory.")
         }
     }
 
@@ -186,10 +186,10 @@ public class Tar {
         if (linkTarget.isRelative()) {
             linkTarget = destDir.join(linkTarget).normalize()
         } else {
-            throw TarException("Hardlink points to absolute path outside target dir.")
+            throw TarException("Hard link target is an absolute path outside destination directory.")
         }
         if (!isPathWithinDirectory(linkTarget, destDir)) {
-            throw TarException("Hardlink points outside target dir.")
+            throw TarException("Hard link target points outside destination directory.")
         }
         return linkTarget
     }
@@ -226,18 +226,18 @@ public class Tar {
         }
 
         if (nearestExistingAncestor.isEmpty()) {
-            throw TarException("Cannot resolve parent path for tar entry: ${entryName}.")
+            throw TarException("Cannot resolve parent path for tar entry: '${entryName}'.")
         }
 
         let resolvedAncestor = canonicalize(nearestExistingAncestor)
         if (!isPathWithinDirectory(resolvedAncestor, destDir)) {
-            throw TarException("Resolved parent path escapes target dir for tar entry: ${entryName}.")
+            throw TarException("Resolved parent path escapes destination directory for tar entry: '${entryName}'.")
         }
 
         if (exists(parentDir)) {
             let resolvedParentDir = canonicalize(parentDir)
             if (!isPathWithinDirectory(resolvedParentDir, destDir)) {
-                throw TarException("Resolved parent path escapes target dir for tar entry: ${entryName}.")
+                throw TarException("Resolved parent path escapes destination directory for tar entry: '${entryName}'.")
             }
         }
     }

@@ -80,7 +80,7 @@ class X509Blob <: Equatable<X509Blob> & Hashable {
     init(content: DerBlob) {
         this.content = content
         if (content.content.size == 0) {
-            throw X509Exception("X509 init failed: The content is empty.")
+            throw X509Exception("X509 init failed: content is empty.")
         }
         let wholeCert = DerSequence(content.content)[0].asSequence()
 
@@ -98,7 +98,7 @@ class X509Blob <: Equatable<X509Blob> & Hashable {
         let oidOut = parserOut.parseDerObjId()
         if (oidIn != oidOut) {
             throw X509Exception(
-                "X509Cert init failed: signatureAlgorithm must contain the same algorithm identifier as the signature field in the sequence tbsCertificate."
+                "X509Cert init failed: signature algorithm mismatch between certificate and signature field."
             )
         }
 
@@ -107,7 +107,7 @@ class X509Blob <: Equatable<X509Blob> & Hashable {
         checkDerType(wholeCert[SIGNATURE_OFFSET].fieldType, DerType.BIT_STREAM)
         signatureBit = wholeCert[SIGNATURE_OFFSET].body
         if (signatureBit.size < 2 || signatureBit[0] != 0) {
-            throw X509Exception("Wrong signature format: bit stream is not supported.")
+            throw X509Exception("Invalid signature format: bit stream format is invalid.")
         }
         signature = Signature(DerBlob(signatureBit[1..]))
 
@@ -144,7 +144,7 @@ class X509Blob <: Equatable<X509Blob> & Hashable {
 
 func checkDerType(inDerType: DerType, defaultDerType: DerType) {
     if (inDerType != defaultDerType) {
-        throw X509Exception("X509Cert init failed: Unsupported field type: ${inDerType}.")
+        throw X509Exception("X509Cert init failed: unsupported field type '${inDerType}'.")
     }
 }
 
@@ -233,7 +233,7 @@ struct UInt16Result {
  */
 func freeX509Result(data: CPointer<StringArrayResult>) {
     if (data.isNull()) {
-        throw X509Exception("Null pointer check failed.")
+        throw X509Exception("Null pointer encountered.")
     }
 
     let result: StringArrayResult = unsafe { data.read() }
@@ -250,7 +250,7 @@ func freeX509Result(data: CPointer<StringArrayResult>) {
 
 func freeX509Result(data: CPointer<ByteArrayResult>) {
     if (data.isNull()) {
-        throw X509Exception("Null pointer check failed.")
+        throw X509Exception("Null pointer encountered.")
     }
 
     let result: ByteArrayResult = unsafe { data.read() }
@@ -273,7 +273,7 @@ func freeX509Result(data: CPointer<ByteArrayResult>) {
 
 func freeX509Result(data: CPointer<UInt16Result>) {
     if (data.isNull()) {
-        throw X509Exception("Null pointer check failed.")
+        throw X509Exception("Null pointer encountered.")
     }
 
     let result: UInt16Result = unsafe { data.read() }
@@ -289,7 +289,7 @@ func freeX509Result(data: CPointer<UInt16Result>) {
  */
 func cloneAndFreeX509Result(data: CPointer<StringArrayResult>): Array<String> {
     if (data.isNull()) {
-        throw X509Exception("Null pointer check failed.")
+        throw X509Exception("Null pointer encountered.")
     }
 
     let result: StringArrayResult = unsafe { data.read() }
@@ -301,7 +301,7 @@ func cloneAndFreeX509Result(data: CPointer<StringArrayResult>): Array<String> {
     try {
         let buffer = result.buffer
         if (buffer.isNull()) {
-            throw X509Exception("Null pointer check failed.")
+            throw X509Exception("Null pointer encountered.")
         }
         return Array<String>(size) {i => bufferToString(buffer, i)}
     } finally {
@@ -324,7 +324,7 @@ private func bufferToString(buffer: CPointer<CString>, i: Int64): String {
  */
 func cloneAndFreeX509Result(data: CPointer<ByteArrayResult>): Array<Array<Byte>> {
     if (data.isNull()) {
-        throw X509Exception("Null pointer check failed.")
+        throw X509Exception("Null pointer encountered.")
     }
 
     let result: ByteArrayResult = unsafe { data.read() }
@@ -353,7 +353,7 @@ func cloneAndFreeX509Result(data: CPointer<ByteArrayResult>): Array<Array<Byte>>
  */
 func cloneStrAndFreeX509Result(data: CPointer<ByteArrayResult>): Array<String> {
     if (data.isNull()) {
-        throw X509Exception("Null pointer check failed.")
+        throw X509Exception("Null pointer encountered.")
     }
 
     let result: ByteArrayResult = unsafe { data.read() }
@@ -382,7 +382,7 @@ func cloneStrAndFreeX509Result(data: CPointer<ByteArrayResult>): Array<String> {
  */
 func cloneAndFreeX509Result(data: CPointer<UInt16Result>): Array<UInt16> {
     if (data.isNull()) {
-        throw X509Exception("Null pointer check failed.")
+        throw X509Exception("Null pointer encountered.")
     }
 
     let result: UInt16Result = unsafe { data.read() }

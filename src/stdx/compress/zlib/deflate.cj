@@ -48,7 +48,7 @@ class Deflate {
     ) {
         zlibStreamCPtr = unsafe { CJ_CreateZlibStream() }
         if (zlibStreamCPtr.isNull()) {
-            throw ZlibException("Failed malloc in C code!")
+            throw ZlibException("Failed to allocate memory for zlib stream.")
         }
         let levelValue: Int32 = getLevelValue(level)
         let wbitsValue: Int32 = getWinBitsValue(wrap, wbits)

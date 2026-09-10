@@ -125,5 +125,5 @@ func getBufByLen(bufLen: Int64) {
     if (bufLen > 0) {
         return Array<Byte>(bufLen, repeat: 0)
     }
-    throw ZlibException("Invalid buffer length: bufLen=${bufLen}")
+    throw ZlibException("Invalid buffer length: '${bufLen}'.")
 }

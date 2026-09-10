@@ -192,7 +192,7 @@ class WriteBuffer {
 
 func checkJsonWriteDepth(depth: Int64): Unit {
     if (depth > MAX_JSON_WRITE_DEPTH) {
-        throw JsonException("Json nested depth exceeds ${MAX_JSON_WRITE_DEPTH}.")
+        throw JsonException("JSON nested depth '${depth}' exceeds maximum '${MAX_JSON_WRITE_DEPTH}'.")
     }
 }
 

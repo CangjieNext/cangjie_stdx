@@ -45,7 +45,7 @@ public class GeneralDHParameters <: DHParameters {
             }
         }
 
-        throw X509Exception("No ${PemEntry.LABEL_DH_PARAMETERS} entry found in PEM file.")
+        throw X509Exception("No '${PemEntry.LABEL_DH_PARAMETERS}' entry found in PEM.")
     }
 
     public override func toString(): String {

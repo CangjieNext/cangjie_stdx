@@ -55,7 +55,7 @@ public class JsonReader {
     @Frozen
     public func readValue<T>(): T where T <: JsonDeserializable<T> {
         if (peeked == PEEK_STATE_NONE && stacks.top == JsonStateStack.JSON_OBJECT || peeked == PEEK_STATE_NAME) {
-            throw IllegalStateException("In an object, the name must be handled before the value.")
+            throw IllegalStateException("Cannot read value in object: name must be handled first.")
         }
         let res = T.fromJson(this)
         // manual inline func afterRead
@@ -81,8 +81,8 @@ public class JsonReader {
         } else {
             if (nextByte != b']' && nextByte != b'}') {
                 match (stacks.top) {
-                    case 1 where peeked != PEEK_STATE_NAME => throw IllegalStateException("Commas are required to separate values in arrays and object members.")// json object
-                    case 2 where peeked != PEEK_STATE_VALUE => throw IllegalStateException("Commas are required to separate values in arrays and object members.") // json array
+                    case 1 where peeked != PEEK_STATE_NAME => throw IllegalStateException("Missing comma between values in object.")
+                    case 2 where peeked != PEEK_STATE_VALUE => throw IllegalStateException("Missing comma between values in array.")
                     case _ => () // top level value
                 }
             }
@@ -117,7 +117,7 @@ public class JsonReader {
                         case JsonString => nextString(stringBuffer)
                         case BeginArray => nextArray(stringBuffer)
                         case BeginObject => nextObject(stringBuffer)
-                        case _ => throw IllegalStateException("The name must be followed by JSON value.")
+                        case _ => throw IllegalStateException("Name must be followed by JSON value.")
                     }
             }
         }
@@ -153,7 +153,7 @@ public class JsonReader {
                     peeked = PEEK_STATE_OBJECT_END
                     return JsonToken.EndObject
                 }
-                throw IllegalStateException("Expect a string as Json Name, but peeked '${Rune(nextByte)}'.")
+                throw IllegalStateException("Expected a string as JSON name, but peeked '${Rune(nextByte)}'.")
 
             case 2 where peeked != PEEK_STATE_VALUE && nextByte == b']' => // json array
                 peeked = PEEK_STATE_ARRAY_END
@@ -183,7 +183,7 @@ public class JsonReader {
             case b'[' =>
                 peeked = PEEK_STATE_ARRAY_BEGIN
                 return JsonToken.BeginArray
-            case _ => throw IllegalStateException("Character not expected: '${Rune(nextByte)}'.")
+            case _ => throw IllegalStateException("Unexpected character: '${Rune(nextByte)}'.")
         }
     }
 
@@ -197,7 +197,7 @@ public class JsonReader {
                     throw IllegalStateException("The next Token is not BeginArray.")
                 }
             case 4 => // PEEK_STATE_NAME
-                throw IllegalStateException("In an object, the name must be handled before the value.")
+                throw IllegalStateException("Cannot read value in object: name must be handled first.")
             case _ => // others
                 throw IllegalStateException("The next Token is not BeginArray.")
         }
@@ -268,7 +268,7 @@ public class JsonReader {
     public func readName(): String {
         match (peeked) {
             case 10 => // PEEK_STATE_VALUE
-                throw IllegalStateException("Expect readValue after readName.")
+                throw IllegalStateException("Expected readValue after readName.")
             case 11 => // PEEK_STATE_NONE
                 if (stacks.top != JsonStateStack.JSON_OBJECT) {
                     throw IllegalStateException("Failed to read name.")
@@ -303,7 +303,7 @@ public class JsonReader {
                             case JsonString => skipString()
                             case BeginArray => skipArray()
                             case BeginObject => skipObject()
-                            case _ => throw IllegalStateException("The name must be followed by JSON value.")
+                            case _ => throw IllegalStateException("Name must be followed by JSON value.")
                         }
                     } else {
                         throw IllegalStateException("The JSON stream ends at an incorrect location.")
@@ -316,7 +316,7 @@ public class JsonReader {
     // check the stack state of Json text
     func beforeRead(): Unit {
         if (peeked == PEEK_STATE_NONE && stacks.top == JsonStateStack.JSON_OBJECT || peeked == PEEK_STATE_NAME) {
-            throw IllegalStateException("In an object, the name must be handled before the value.")
+            throw IllegalStateException("Cannot read value in object: name must be handled first.")
         }
     }
 
@@ -489,7 +489,7 @@ public class JsonReader {
             stringBuffer.append(UInt8((ch & LOW_6_MASK) | HIGH_1_MASK))
             return 0
         } else {
-            throw IllegalStateException("Maximum of 4 bytes allowed for UTF-8.")
+            throw IllegalStateException("UTF-8 sequence exceeds maximum of 4 bytes.")
         }
     }
 
@@ -622,7 +622,7 @@ public class JsonReader {
                         sb.append(readNext())
                         continue
                     }
-                    throw IllegalStateException("Characters not expected: '\\'.")
+                    throw IllegalStateException("Unexpected character: '\\'.")
                 case b'\"' => inString = !inString
                 case b'{' | b'[' =>
                     if (!inString) {
@@ -733,7 +733,7 @@ public class JsonReader {
                         readNext()
                         continue
                     }
-                    throw IllegalStateException("Characters not expected: '\\'.")
+                    throw IllegalStateException("Unexpected character: '\\'.")
                 case b'\"' => inString = !inString
                 case b'{' =>
                     if (!inString) {
@@ -808,7 +808,7 @@ public class JsonReader {
                 availLen = 0
             // and continue
             } else if (breakIndex < 0) { // utf 8 check err
-                throw IllegalStateException("Invalid utf8 byte sequence.")
+                throw IllegalStateException("Invalid UTF-8 byte sequence.")
             } else if (buffer[breakIndex] == b'\\') { // read till some character need escape
                 stringBuffer.appendAll(buffer[index..breakIndex])
                 availLen = availLen - (breakIndex - index) - 1
@@ -823,7 +823,7 @@ public class JsonReader {
                 index = breakIndex
                 let utf8Size = utf8SizeUnchecked(buffer[breakIndex])
                 if (utf8Size == 1 || utf8Size > 4) {
-                    throw IllegalStateException("Invalid utf8 byte sequence.")
+                    throw IllegalStateException("Invalid UTF-8 byte sequence.")
                 }
                 fillInBuf(utf8Size) // if end, throw exception, continue
                 // and continue
@@ -853,7 +853,7 @@ public class JsonReader {
             checkBuffer()
             buffer[index]
         } else {
-            throw IllegalStateException("Failed to read json number.")
+            throw IllegalStateException("Failed to read JSON number.")
         }
 
         var isNegative = false
@@ -887,7 +887,7 @@ public class JsonReader {
             checkBuffer()
             buffer[index]
         } else {
-            throw IllegalStateException("Failed to read json number.")
+            throw IllegalStateException("Failed to read JSON number.")
         }
 
         if (nextByte == b'-') {
@@ -1032,7 +1032,7 @@ public class JsonReader {
             checkBuffer()
             buffer[index]
         } else {
-            throw IllegalStateException("Failed to read json number.")
+            throw IllegalStateException("Failed to read JSON number.")
         }
 
         let result = ensureFiniteJsonFloat(readFloatEx())
@@ -1116,7 +1116,7 @@ class StringBuffer {
 
     func grow(minCapacity: Int64): Unit {
         if (minCapacity > MAX_JSON_STREAM_STRING_BUFFER_SIZE) {
-            throw IllegalStateException("Json string length exceeds ${MAX_JSON_STREAM_STRING_BUFFER_SIZE}.")
+            throw IllegalStateException("JSON string length '${minCapacity}' exceeds maximum '${MAX_JSON_STREAM_STRING_BUFFER_SIZE}'.")
         }
         let oldCapacity: Int64 = data.size
         var newCapacity: Int64 = oldCapacity << 1
@@ -1133,7 +1133,7 @@ class StringBuffer {
         let cSize: Int64 = elements.size
 
         if (cSize > MAX_JSON_STREAM_STRING_BUFFER_SIZE - size) {
-            throw IllegalStateException("Json string length exceeds ${MAX_JSON_STREAM_STRING_BUFFER_SIZE}.")
+            throw IllegalStateException("JSON string length '${size + cSize}' exceeds maximum '${MAX_JSON_STREAM_STRING_BUFFER_SIZE}'.")
         }
         if (size + cSize > data.size) {
             grow(size + cSize)
@@ -1146,7 +1146,7 @@ class StringBuffer {
     @OverflowWrapping
     func append(element: Byte) {
         if (size >= MAX_JSON_STREAM_STRING_BUFFER_SIZE) {
-            throw IllegalStateException("Json string length exceeds ${MAX_JSON_STREAM_STRING_BUFFER_SIZE}.")
+            throw IllegalStateException("JSON string length '${size}' exceeds maximum '${MAX_JSON_STREAM_STRING_BUFFER_SIZE}'.")
         }
         if (size == data.size) {
             grow(size + 1)

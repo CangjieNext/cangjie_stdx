@@ -104,7 +104,7 @@ func alpnListToByteArray(alpnList: Array<String>): Array<Byte> {
     for (s in alpnList) {
         var ss = s.size
         if (ss > 255) {
-            throw TlsException("The length of the alpn protocol must be less than 255.")
+            throw TlsException("ALPN protocol string length '${ss}' exceeds maximum 255.")
         }
         bufLen = bufLen + 1 + ss
     }
