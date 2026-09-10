@@ -22,9 +22,7 @@ class WeaveAspects {
     var pkgInitFuncMangledNames = HashMap<String, String>()
 
     public override func run(pkg: Package): Bool {
-        if (!readAnnoInfo(pkg.name)) {
-            return false
-        }
+        readAnnoInfo(pkg.name)
         callUpstreamPkgInitFunc(pkg)
         for (f in pkg.functions) {
             if (f.body.isNone()) {
@@ -132,6 +130,10 @@ class WeaveAspects {
             if (pkgName == pkg.name) {
                 continue
             }
+            // Already imported packages already have their init; adding again duplicates CHIR ids.
+            if (pkg.getSpecifiedFunction(initFuncMangledName).isSome()) {
+                continue
+            }
             let funcType = FuncType.get(Array<Type>(), UnitType.get())
             let importedInitFunc = pkg.addFunction(funcType, initFuncMangledName, "", pkgName)
             importedInitFunc.setImported(true)
@@ -187,7 +189,7 @@ class WeaveAspects {
         return false
     }
 
-    private func readAnnoInfo(curPkgName: String): Bool {
+    private func readAnnoInfo(curPkgName: String): Unit {
         Directory.walk(
             Path("."),
             {
@@ -231,7 +233,6 @@ class WeaveAspects {
                 return true
             }
         )
-        return true
     }
 }
 
