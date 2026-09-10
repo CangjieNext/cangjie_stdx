@@ -81,7 +81,7 @@ func getHashName(digest: Digest): String {
         case _: SHA512 => SHA512_DIGEST_ALGORITHM_NAME
         case _: MD5 => MD5_DIGEST_ALGORITHM_NAME
         case _: SM3 => SM3_DIGEST_ALGORITHM_NAME
-        case _ => throw CryptoException("This hash is not supported.")
+        case _ => throw CryptoException("Unsupported hash type.")
     }
 }
 
@@ -94,7 +94,7 @@ func getHash(algorithm: HashType): () -> Digest {
         case "SHA512" => {=> SHA512()}
         case "MD5" => {=> MD5()}
         case "SM3" => {=> SM3()}
-        case _ => throw CryptoException("This hash is not supported.")
+        case _ => throw CryptoException("Unsupported hash type.")
     }
 }
 
@@ -138,12 +138,12 @@ public class HMAC <: Digest {
         this.hash = digest()
         this.hashName = getHashName(this.hash)
         if (key.size <= 0) {
-            throw CryptoException("The key cannot be empty.")
+            throw CryptoException("Key is empty.")
         }
         this.key = key.clone()
         var ctxPtr = hmacCtxNew()
         if (ctxPtr.isNull()) {
-            throw CryptoException("HMAC init failed, malloc failed.")
+            throw CryptoException("Failed to allocate HMAC context.")
         }
         this.ctxPtr = ctxPtr
         hmacInitC(this.ctxPtr, this.key, Int32(this.key.size), this.hashName)
@@ -162,14 +162,14 @@ public class HMAC <: Digest {
         let digest = getHash(algorithm)
 
         if (key.size <= 0) {
-            throw CryptoException("The key cannot be empty.")
+            throw CryptoException("Key is empty.")
         }
         this.hashName = algorithm.toString()
         this.key = key.clone()
         this.hash = digest()
         var ctxPtr = hmacCtxNew()
         if (ctxPtr.isNull()) {
-            throw CryptoException("HMAC init failed, malloc failed.")
+            throw CryptoException("Failed to allocate HMAC context.")
         }
         this.ctxPtr = ctxPtr
         hmacInitC(this.ctxPtr, this.key, Int32(this.key.size), this.hashName)
@@ -192,7 +192,7 @@ public class HMAC <: Digest {
      */
     public func write(buffer: Array<Byte>): Unit {
         if (this.hasFinished) {
-            throw CryptoException("HMAC write failed, digest calculation has been completed.")
+            throw CryptoException("Digest calculation already completed.")
         }
         hmacUpdateC(this.ctxPtr, buffer, UIntNative(buffer.size))
     }
@@ -211,10 +211,10 @@ public class HMAC <: Digest {
 
     public func finish(to!: Array<Byte>): Unit {
         if (this.hasFinished) {
-            throw CryptoException("HMAC finish failed, digest calculation has been completed.")
+            throw CryptoException("Digest calculation already completed.")
         }
         if (to.size != size) {
-            throw CryptoException("The length of output is not equal to the digest length.")
+            throw CryptoException("Output length '${to.size}' does not match digest length '${size}'.")
         }
         hmacFinalC(this.ctxPtr, to)
         this.hasFinished = true
@@ -232,7 +232,7 @@ public class HMAC <: Digest {
         }
         var ctxPtr = hmacCtxNew()
         if (ctxPtr.isNull()) {
-            throw CryptoException("HMAC malloc failed.")
+            throw CryptoException("Failed to allocate HMAC context.")
         }
         this.ctxPtr = ctxPtr
         hmacInitC(this.ctxPtr, this.key, Int32(this.key.size), this.hashName)
@@ -284,7 +284,7 @@ func hmacInitC(ctx: CPointer<Unit>, key: Array<Byte>, len: Int32, algorithm: Str
         }
         checkError(dynMsgPtr)
         if (res != 1) {
-            throw CryptoException("HMAC init failed.")
+            throw CryptoException("Failed to initialize HMAC.")
         }
     }
 }
@@ -300,7 +300,7 @@ func hmacUpdateC(ctx: CPointer<Unit>, data: Array<Byte>, len: UIntNative): Unit 
         }
         checkError(dynMsgPtr)
         if (res != 1) {
-            throw CryptoException("HMAC write failed.")
+            throw CryptoException("HMAC write operation failed.")
         }
     }
 }
@@ -318,7 +318,7 @@ func hmacFinalC(ctx: CPointer<Unit>, md: Array<Byte>): Unit {
         hmacCtxFree(ctx)
         checkError(dynMsgPtr)
         if (res != 1) {
-            throw CryptoException("HMAC finish failed.")
+            throw CryptoException("HMAC finish operation failed.")
         }
     }
 }

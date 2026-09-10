@@ -82,7 +82,7 @@ class SessionHolder {
 
     init(pointer: CPointer<NativeSession>) {
         if (pointer.isNull()) {
-            throw IllegalArgumentException("Session pointer shouldn't be NULL.")
+            throw IllegalArgumentException("Invalid argument 'pointer': is null.")
         }
 
         // the increment should be before assigning to the field
@@ -189,13 +189,13 @@ class SessionHolder {
 func setServerSessionId(serverCtx: CPointer<Ctx>, sessionId: String): Unit {
     let sessionIdSize = sessionId.size
     if (sessionIdSize > 32) {
-        throw TlsException("The length of the session ID cannot exceed 32 bytes.")
+        throw TlsException("Invalid argument 'sessionId': length '${sessionIdSize}' exceeds maximum 32.")
     }
     var cStr = unsafe { LibC.mallocCString(sessionId) }
     try {
         let ret = unsafe { CJ_TLS_SetSessionIdContext(serverCtx, cStr, UInt32(sessionIdSize)) }
         if (ret <= 0) {
-            throw TlsException("Failed to set tls socket server session ID.")
+            throw TlsException("Failed to set server session ID.")
         }
     } finally {
         unsafe { LibC.free(cStr) }
@@ -313,12 +313,12 @@ class RefCounter {
         updateAndGet {
             before =>
             let after = match {
-                case before == Terminated => throw IllegalStateException("The session has been already collected.")
+                case before == Terminated => throw IllegalStateException("Session is already collected.")
                 case before < 0 => before - 1
                 case _ => before + 1
             }
             if (after == Terminated) {
-                throw IllegalStateException("Too many users.")
+                throw IllegalStateException("Session reference count overflow.")
             }
             after
         }

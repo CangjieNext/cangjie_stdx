@@ -25,11 +25,11 @@ class DirectDistributor <: HttpRequestDistributor {
 
     public func register(path: String, handler: HttpRequestHandler): Unit {
         if (path == ASTERISK) {
-            throw HttpException("Invalid path.")
+            throw HttpException("Invalid path: '${path}'.")
         }
         let register = canonicalPath(path)
         if (map.contains(register)) {
-            throw HttpException("Path: ${register} already registered.")
+            throw HttpException("Path '${register}' is already registered.")
         }
         map.add(register, handler)
     }

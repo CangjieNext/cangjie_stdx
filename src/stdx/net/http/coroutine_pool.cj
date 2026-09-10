@@ -56,7 +56,7 @@ open class FutureTask<T> <: Task {
         while (!closed) {
             return value ?? continue
         }
-        throw ConcurrentException("Failed to get from FutureTask, task cancelled.")
+        throw ConcurrentException("Failed to get from FutureTask: task is cancelled.")
     }
 
     public open func tryGet(): ?T {
@@ -74,7 +74,7 @@ class DummyFutureTask<T> <: FutureTask<T> {
     public func closeGracefully(): Unit { /* nothing to do here */ }
 
     public func get(): T {
-        throw MethodUnsupportedException("Failed to get from DummyFutureTask.")
+        throw MethodUnsupportedException("Cannot get from DummyFutureTask.")
     }
 
     public func tryGet(): ?T {
@@ -172,10 +172,10 @@ class CoroutinePool {
         let queueCapacity: Int64, // queue capacity
         let rejectPolicy!: RejectPolicy = Reject
     ) { // reject policy while queue is full
-        assert(0 < capacity, "capacity should greater than 0, but got ${capacity}")
-        assert(0 < queueCapacity, "queue capacity should greater than 0, but got ${queueCapacity}")
+        assert(0 < capacity, "Invalid argument 'capacity': expected a positive value, got '${capacity}'.")
+        assert(0 < queueCapacity, "Invalid argument 'queueCapacity': expected a positive value, got '${queueCapacity}'.")
         assert(0 <= preheatSize && preheatSize <= capacity,
-            "preheat size should between 0 and ${capacity}, but got ${preheatSize}")
+            "Invalid argument 'preheatSize': expected 0-'${capacity}', got '${preheatSize}'.")
 
         taskQueue = TaskQueue(queueCapacity)
         start()
@@ -206,7 +206,7 @@ class CoroutinePool {
         rejectPolicy!: ?RejectPolicy = None
     ): FutureTask<T> {
         if (taskQueue.isClosed()) {
-            throw ConcurrentException("Failed to execute task, queue is closed.")
+            throw ConcurrentException("Failed to execute task: queue is closed.")
         }
 
         let task = FutureTask(fn, connId: connId, onClose: onClose, onCloseGracefully: onCloseGracefully)
@@ -227,7 +227,7 @@ class CoroutinePool {
                     httpLogTrace(logger, "[CoroutinePool#submit] Create new worker")
                 }
                 if (isClosed()) {
-                    throw ConcurrentException("Failed to execute task, coroutine pool is closed.")
+                    throw ConcurrentException("Failed to execute task: coroutine pool is closed.")
                 }
                 synchronized(workersMutex) {
                     let worker = Worker(task, this)
@@ -241,7 +241,7 @@ class CoroutinePool {
             case taskQueue.isFull() => // !!!reject!!!
                 let policy = rejectPolicy ?? this.rejectPolicy
                 match (policy) {
-                    case Reject => throw CoroutinePoolRejectException("Pool is busy.")
+                    case Reject => throw CoroutinePoolRejectException("Coroutine pool is busy.")
                     case Block => taskEnqueue(task, "pool is busy, waiting...")
                     case Discard =>
                         if (logger.enabled(LogLevel.TRACE)) {
@@ -302,7 +302,7 @@ class CoroutinePool {
             httpLogTrace(logger, "[CoroutinePool#taskEnqueue] Begin, ${reason}")
         }
         if (!taskQueue.enqueue(task)) {
-            throw ConcurrentException("Failed to execute task, queue is closed.")
+            throw ConcurrentException("Failed to execute task: queue is closed.")
         }
         if (logger.enabled(LogLevel.TRACE)) {
             httpLogTrace(logger, "[CoroutinePool#taskEnqueue] End")
@@ -318,5 +318,5 @@ func assert(flag: Bool, msg: String): Unit {
     if (flag) {
         return
     }
-    throw IllegalArgumentException("${msg}")
+    throw IllegalArgumentException(msg)
 }

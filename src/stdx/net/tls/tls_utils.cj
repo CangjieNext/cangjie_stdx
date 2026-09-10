@@ -44,7 +44,7 @@ func setProtoVersions(ctx: CPointer<Ctx>, supportedVersions: Array<TlsVersion>):
     }
     var ret = unsafe { CJ_TLS_SetProtoVersions(ctx, minVersion.toNumericConstant(), maxVersion.toNumericConstant()) }
     if (ret <= 0) {
-        throw TlsException("Failed to set proto versions: ${minVersion} ~ ${maxVersion}.")
+        throw TlsException("Failed to set proto versions: '${minVersion}' ~ '${maxVersion}'.")
     }
 }
 
@@ -53,7 +53,7 @@ func setProtoVersions(ctx: CPointer<Ctx>, supportedVersions: Array<TlsVersion>):
  */
 func checkString(str: String, sourceProperty: String): Unit {
     if (str.contains(NULL_BYTE)) {
-        throw IllegalArgumentException("The TLS config property (${sourceProperty}) cannot contain null character!")
+        throw IllegalArgumentException("TLS config property '${sourceProperty}' contains null character.")
     }
 }
 
@@ -72,7 +72,7 @@ func copy(source!: CPointer<Byte>, destination!: Array<Byte>, count!: UIntNative
         let result = memcpy_s(acq.pointer, UIntNative(destination.size), source, count)
         releaseArrayRawData(acq)
         if (result != 0) {
-            throw TlsException("Failed to copy ${count} bytes.")
+            throw TlsException("Failed to copy '${count}' bytes.")
         }
     }
 }
@@ -89,7 +89,7 @@ extend<T> CPointer<T> {
 
 unsafe func toArray(ptr: CPointer<Byte>, size: UIntNative): Array<Byte> {
     if (ptr.isNull() && size != 0) {
-        throw NoneValueException("Native pointer is NULL.")
+        throw NoneValueException("Native pointer is null.")
     }
 
     let result = Array<Byte>(Int64(size), repeat: 0)
@@ -145,7 +145,7 @@ class NativePointerResource<T> <: Resource where T <: CType {
     init(count: Int64, sample: ?T) {
         unsafe {
             if (count <= 0) {
-                throw IllegalArgumentException("Count should be positive: ${count}.")
+                throw IllegalArgumentException("Invalid count '${count}': expected positive value.")
             }
             pointer_ = LibC.malloc(count: count)
             if (pointer_.isNull()) {
@@ -211,6 +211,6 @@ class ArrayBuilder<T> {
 func checkDynMsg(dynMsg: DynMsg): Unit {
     if (!dynMsg.found) {
         let funcName = CString(dynMsg.funcName).toString()
-        throw TlsException("Can not load openssl library or function ${funcName}.")
+        throw TlsException("Failed to load OpenSSL library or function '${funcName}'.")
     }
 }
