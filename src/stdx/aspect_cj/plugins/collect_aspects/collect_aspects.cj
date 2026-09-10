@@ -280,6 +280,9 @@ class CollectAspects {
     }
 
     private func isValidPackageName(name: String): Bool {
+        if (name == "*") {
+            return true
+        }
         if (name.isEmpty()) {
             return false
         }

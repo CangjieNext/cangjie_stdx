@@ -138,3 +138,62 @@ abc
 ----- end -----
 def
 ```
+
+## 通配符配置示例
+
+下面是使用通配符配置来匹配多个函数的示例代码：
+
+<!-- compile -->
+
+```cangjie
+package AOP_demo4
+
+import stdx.aspect_cj.*
+import std.time.DateTime
+
+@InsertAtEntry[packageName: "*", className: "", methodName: "logTime", isStatic: false,
+    funcTypeStr: "()->Unit", recursive: false]
+public func logTimeImpl() {
+    println("----- ${DateTime.now()} -----")
+}
+
+public func logTime() {
+    println("logging time")
+}
+
+main() {
+    logTime()
+    0
+}
+```
+
+使用通配符 `*` 作为 `packageName` 可以匹配任意包中的 `logTime` 方法。同样，`className` 和 `methodName` 也可以使用 `*` 来匹配任意值。
+
+## 切点函数参数作为实参示例
+
+下面是使用切点函数参数作为实参的示例代码：
+
+<!-- compile -->
+
+```cangjie
+package AOP_demo5
+
+import stdx.aspect_cj.*
+
+@InsertAtEntry[packageName: "AOP_demo5", className: "", methodName: "processData", isStatic: false,
+    funcTypeStr: "(Int64, String)->Unit", recursive: false]
+public func logDataProcessing(x: Int64) {
+    println("Processing data with Int64 value: ${x}")
+}
+
+public func processData(x: Int64, name: String) {
+    println("Processing ${name} with value ${x}")
+}
+
+main() {
+    processData(42, "test")
+    0
+}
+```
+
+在这个示例中，切面函数 `logDataProcessing` 只声明了一个 `Int64` 类型的参数 `x`，而目标函数 `processData` 有两个参数。编译器会自动根据类型匹配将 `processData` 的第一个参数（`Int64` 类型）传递给 `logDataProcessing`。

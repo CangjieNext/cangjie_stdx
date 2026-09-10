@@ -16,6 +16,15 @@ import stdx.aspect_cj.*
 import stdx.chir.*
 import stdx.plugin.*
 
+private const WILDCARD = "*"
+
+private func matchesPattern(pattern: String, value: String): Bool {
+    if (pattern == WILDCARD) {
+        return true
+    }
+    return pattern == value
+}
+
 @CHIRPlugin
 class WeaveAspects {
     var processInfos = ArrayList<OutputInfo>()
@@ -110,8 +119,8 @@ class WeaveAspects {
         }
         let args = ArrayList<Value>()
         if (expectedParamsNum != 0) {
-            if (f.parameters.size != expectedParamsNum) {
-                printError("Parameter count mismatch: target function '${f.srcCodeName}' has '${f.parameters.size}' parameters, expected '${expectedParamsNum}' parameters from aspect metadata '${pi.insert.methodMangledName}'.")
+            if (f.parameters.size < expectedParamsNum) {
+                printError("Parameter count mismatch: target function '${f.srcCodeName}' has '${f.parameters.size}' parameters, expected at least '${expectedParamsNum}' parameters from aspect metadata '${pi.insert.methodMangledName}'.")
                 return (Array<Value>(), false)
             }
             for (param in f.parameters) {
@@ -141,13 +150,13 @@ class WeaveAspects {
     }
 
     private func meets(f: Function, pi: OutputInfo): Bool {
-        if (pi.to.packageName != f.packageName) {
+        if (!matchesPattern(pi.to.packageName, f.packageName)) {
             return false
         }
         if (!outerTypeNameMeets(f, pi)) {
             return false
         }
-        if (pi.to.methodName != f.srcCodeName) {
+        if (!matchesPattern(pi.to.methodName, f.srcCodeName)) {
             return false
         }
         if (pi.to.isStatic != f.isStatic()) {
@@ -166,7 +175,7 @@ class WeaveAspects {
     }
 
     private func outerTypeNameMeets(f: Function, pi: OutputInfo): Bool {
-        if (getFuncOuterTypeName(f) == pi.to.className) {
+        if (matchesPattern(pi.to.className, getFuncOuterTypeName(f))) {
             return true
         }
         if (let Some(outerType) <- f.outerType && pi.to.recursively) {
@@ -179,7 +188,7 @@ class WeaveAspects {
                 return false
             }
             for (superType in superTypes) {
-                if (superType.def.srcCodeName == pi.to.className) {
+                if (matchesPattern(pi.to.className, superType.def.srcCodeName)) {
                     return true
                 }
             }
