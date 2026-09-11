@@ -159,6 +159,10 @@ class Stream {
         }
 
         receivedBodySize += frame.data.size
+        if (server.maxRequestBodySize != 0 && receivedBodySize > server.maxRequestBodySize) {
+            throw HttpStreamException(RefusedStream,
+                "Body size exceeds maxRequestBodySize ${server.maxRequestBodySize} on stream ${streamId}.")
+        }
         if (reqContentLength >= 0) {
             if (receivedBodySize > reqContentLength) {
                 throw HttpStreamException(ProtocolError, "Body size exceeds content-length ${reqContentLength}.")
