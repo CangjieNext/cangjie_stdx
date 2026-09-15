@@ -1163,20 +1163,18 @@ public class Function <: GlobalValue & Equatable<Function> {
 
     /**
      * Marks this function as a class constructor.
-     * @param primary Whether this is a primary class constructor.
      * @return The `Unit` result.
      */
-    public func setClassConstructor(primary: Bool): Unit {
-        _funcKind = if (primary) { FuncKind.PrimaryClassConstructor } else { FuncKind.ClassConstructor }
+    public func setClassConstructor(): Unit {
+        _funcKind = FuncKind.ClassConstructor
     }
 
     /**
      * Marks this function as a struct constructor.
-     * @param primary Whether this is a primary struct constructor.
      * @return The `Unit` result.
      */
-    public func setStructConstructor(primary: Bool): Unit {
-        _funcKind = if (primary) { FuncKind.PrimaryStructConstructor } else { FuncKind.StructConstructor }
+    public func setStructConstructor(): Unit {
+        _funcKind = FuncKind.StructConstructor
     }
 
     /**
