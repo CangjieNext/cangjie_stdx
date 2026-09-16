@@ -269,6 +269,9 @@ class CHIRSerializerImpl {
                     let typeId = if (let Some(ft) <- funcTypeOpt) { getId(ft) } else { UInt32(0) }
                     annoTypes.add(EnumCHIRFormat_AnnotationValues(CHIRFormat_Annotation.Annotation_OVERRIDESRCFUNCTYPE))
                     annos.add(CHIRFormat_OverrideSrcFuncType.createOverrideSrcFuncType(fbBuilder, typeId))
+                case a: MatchCaseId =>
+                    annoTypes.add(EnumCHIRFormat_AnnotationValues(CHIRFormat_Annotation.Annotation_MATCHCASEID))
+                    annos.add(CHIRFormat_MatchCaseId.createMatchCaseId(fbBuilder, a.get()))
                 case _ => ()
             }
         }
@@ -785,6 +788,7 @@ class CHIRSerializerImpl {
             case SourceExpr.Quest => CHIRFormat_SourceExpr.SourceExpr_QUEST
             case SourceExpr.Binary => CHIRFormat_SourceExpr.SourceExpr_BINARY
             case SourceExpr.ForInExpr => CHIRFormat_SourceExpr.SourceExpr_FOR_IN_EXPR
+            case SourceExpr.MatchCase => CHIRFormat_SourceExpr.SourceExpr_MATCH_CASE
             case SourceExpr.Other => CHIRFormat_SourceExpr.SourceExpr_OTHER
         }
     }
@@ -1232,7 +1236,7 @@ class CHIRSerializerImpl {
                 exprKind[Int64(exprId) - 1] = EnumCHIRFormat_ExpressionElemValues(CHIRFormat_ExpressionElem.ExpressionElem_MULTIBRANCH)
                 let caseValues = Array<UInt64>(e.caseValues.size, { i => e.caseValues[i] })
                 let caseValuesVec = if (caseValues.isEmpty()) { UInt32(0) } else { fbBuilder.createUInt64Vector(caseValues) }
-                CHIRFormat_MultiBranch.createMultiBranch(fbBuilder, base, caseValuesVec)
+                CHIRFormat_MultiBranch.createMultiBranch(fbBuilder, base, caseValuesVec, serializeSourceExpr(e._sourceExpr))
             case e: NumericCastBase =>
                 exprKind[Int64(exprId) - 1] = EnumCHIRFormat_ExpressionElemValues(CHIRFormat_ExpressionElem.ExpressionElem_NUMERICCASTBASE)
                 let overflowStrategy = serializeOverflowStrategy(e._overflow)
