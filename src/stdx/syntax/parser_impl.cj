@@ -2682,6 +2682,62 @@ private class FlatbufferNodeTranslator {
         return false
     }
 
+    // Check whether the first annotation belongs to the text of this declaration itself.
+    // For members of a `foreign {}` block, the compiler propagates the block-level annotations
+    // and the FOREIGN modifier to every member. The cloned annotations keep the begin position
+    // of the block-level annotation (above the block), so such an annotation begins before the
+    // member's FOREIGN modifier and its text is not part of this declaration: it must not be
+    // expanded, otherwise the cursor would jump backwards and all following positions would drift.
+    // A standalone `foreign func` also carries a FOREIGN modifier, but there the declaration's
+    // own begin equals the first modifier's begin (it IS the foreign keyword), and the annotation
+    // is really part of its text and must be kept.
+    private func isAnnotationInDeclText(db: SyntaxFormat_DeclBase, firstAnno: SyntaxFormat_Annotation): Bool {
+        let modifiers = db.GetModifiers()
+        var hasForeign = false
+        var foreignBegin = SyntaxFormat_Position()
+        var hasModPos = false
+        for (m in modifiers) {
+            if (let Some(mod) <- m) {
+                if (getSyntaxImplKind(mod.GetKind()) == SyntaxNodeKind.ForeignToken) {
+                    hasForeign = true
+                }
+                if (let Some(mb) <- mod.GetBase()) {
+                    let modBegin = mb.GetBegin()
+                    if (!hasModPos || modBegin.line < foreignBegin.line ||
+                        (modBegin.line == foreignBegin.line && modBegin.column < foreignBegin.column)) {
+                        foreignBegin = modBegin
+                        hasModPos = true
+                    }
+                }
+            }
+        }
+        if (!hasForeign || !hasModPos) {
+            return true
+        }
+        // A member of a `foreign {}` block has its begin set to (or after) its own first
+        // token, which always comes after the propagated FOREIGN modifier's position.
+        // A standalone `foreign` declaration begins exactly at its first modifier.
+        let declBegin = if (let Some(dbBase) <- db.GetBase()) {
+            dbBase.GetBegin()
+        } else {
+            return true
+        }
+        let modBeforeDecl = foreignBegin.line < declBegin.line ||
+            (foreignBegin.line == declBegin.line && foreignBegin.column < declBegin.column)
+        if (!modBeforeDecl) {
+            return true
+        }
+        let annoBeginPos = if (let Some(ab) <- firstAnno.GetBase()) {
+            ab.GetBegin()
+        } else {
+            return true
+        }
+        // The propagated block-level annotation starts before the FOREIGN modifier,
+        // so it cannot be part of this member's text.
+        return !(annoBeginPos.line < foreignBegin.line ||
+            (annoBeginPos.line == foreignBegin.line && annoBeginPos.column < foreignBegin.column))
+    }
+
     func transFuncHeader(funcDecl: SyntaxFormat_FuncDecl, ret: ArrayList<SyntaxNodeImpl>, nodeKind: SyntaxNodeKind,
         innerCmts: Array<Option<SyntaxFormat_CommentGroup>>) {
         var identifier = ""
@@ -2697,8 +2753,18 @@ private class FlatbufferNodeTranslator {
                 kind = SyntaxNodeKind.StaticInit
             }
             // annotation
-            if (db.GetAnnotations().size != 0) {
-                addChild(ret, transAnnotations(db.GetAnnotations()))
+            let annos = db.GetAnnotations()
+            let annoInText = if (annos.size != 0) {
+                if (let Some(first) <- annos[0]) {
+                    isAnnotationInDeclText(db, first)
+                } else {
+                    true
+                }
+            } else {
+                false
+            }
+            if (annos.size != 0 && annoInText) {
+                addChild(ret, transAnnotations(annos))
             } else {
                 // The begin of FuncDecl is not begin of annotations
                 addWhitespaceAndMoveCursorToBegin(db.GetBase())
