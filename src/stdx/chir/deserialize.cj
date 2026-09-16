@@ -858,6 +858,9 @@ class CHIRDeserializerImpl {
                 case CHIRFormat_Annotation.Annotation_OVERRIDESRCFUNCTYPE =>
                     base.setAnno<OverrideSrcFuncType, Option<FuncType>>(Some(getTypeAs<FuncType>(
                         baseFormat.GetAnnosAsOverrideSrcFuncType(index).getOrThrow().GetType())))
+                case CHIRFormat_Annotation.Annotation_MATCHCASEID =>
+                    // Rebuild grouping before the plugin serializes the transformed CHIR back to the compiler.
+                    base.setAnno<MatchCaseId, UInt64>(baseFormat.GetAnnosAsMatchCaseId(index).getOrThrow().GetId())
                 case _ => ()
             }
         }
@@ -992,6 +995,7 @@ class CHIRDeserializerImpl {
             case CHIRFormat_SourceExpr.SourceExpr_QUEST => SourceExpr.Quest
             case CHIRFormat_SourceExpr.SourceExpr_BINARY => SourceExpr.Binary
             case CHIRFormat_SourceExpr.SourceExpr_FOR_IN_EXPR => SourceExpr.ForInExpr
+            case CHIRFormat_SourceExpr.SourceExpr_MATCH_CASE => SourceExpr.MatchCase
             case CHIRFormat_SourceExpr.SourceExpr_OTHER => SourceExpr.Other
         }
     }
@@ -1666,7 +1670,10 @@ class CHIRDeserializerImpl {
             targets.add(getValueAs<Block>(operands[i]))
         }
         let caseValues = collectArrayList<UInt64>(exprFormat.GetCaseValues())
-        return MultiBranch(condition, defaultTarget, targets, caseValues)
+        // Retain the source meaning of the default edge through plugin transformations.
+        let expr = MultiBranch(condition, defaultTarget, targets, caseValues)
+        expr._sourceExpr = convertSourceExpr(exprFormat.GetSourceExpr())
+        return expr
     }
 
     private func deserializeDebug(exprFormat: CHIRFormat_Debug): Debug {

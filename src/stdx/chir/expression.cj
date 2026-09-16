@@ -564,6 +564,7 @@ internal enum SourceExpr {
     | Quest
     | Binary
     | ForInExpr
+    | MatchCase
     | Other
 }
 
@@ -2637,6 +2638,8 @@ public class Load <: Expression & Equatable<Load> {
  */
 public class MultiBranch <: Expression & Equatable<MultiBranch> {
     internal let _caseValues: ArrayList<UInt64>
+    // Kept internal because this metadata is consumed only by compiler unreachable diagnostics after plugin return.
+    internal var _sourceExpr: SourceExpr = SourceExpr.Other
 
     /**
      * Gets the `caseValues` property.
@@ -2719,6 +2722,11 @@ public class MultiBranch <: Expression & Equatable<MultiBranch> {
             res.add("[" + caseValues[i].toString() + ", " + targetsWithoutDefault[i].identifier + "]")
         }
         return String.join(res.toArray(), delimiter: ", ")
+    }
+
+    // Keep MultiBranch source metadata visible in plugin-side CHIR dumps, matching Branch diagnostics.
+    protected override func getExtraCommentString(): String {
+        return "sourceExpr: " + _sourceExpr.toString()
     }
 
     /**
