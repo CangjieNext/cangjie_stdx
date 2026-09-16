@@ -2682,6 +2682,59 @@ private class FlatbufferNodeTranslator {
         return false
     }
 
+    // Check whether an annotation belongs to the text of this declaration itself.
+    // For members of a `foreign {}` block, the compiler propagates the block-level annotations
+    // and the FOREIGN modifier to every member. The cloned annotations keep the begin position
+    // of the block-level annotation (above the block), so such an annotation begins before the
+    // member's FOREIGN modifier and its text is not part of this declaration: it must not be
+    // expanded, otherwise the cursor would jump backwards and all following positions would drift.
+    // A standalone `foreign func` also carries a FOREIGN modifier, but there the declaration's
+    // own begin equals the FOREIGN modifier's begin (it IS the foreign keyword), and the annotation
+    // is really part of its text and must be kept. The same holds for the member's own annotations
+    // (e.g. `@Deprecated` written directly on a member), which always begin after the FOREIGN
+    // modifier since modifiers precede any annotation of the declaration itself.
+    private func isAnnotationInDeclText(db: SyntaxFormat_DeclBase, anno: SyntaxFormat_Annotation): Bool {
+        let modifiers = db.GetModifiers()
+        var hasForeign = false
+        var foreignBegin = SyntaxFormat_Position()
+        for (m in modifiers) {
+            if (let Some(mod) <- m) {
+                if (getSyntaxImplKind(mod.GetKind()) == SyntaxNodeKind.ForeignToken) {
+                    hasForeign = true
+                    if (let Some(mb) <- mod.GetBase()) {
+                        foreignBegin = mb.GetBegin()
+                    }
+                    break
+                }
+            }
+        }
+        if (!hasForeign) {
+            return true
+        }
+        // A member of a `foreign {}` block has its begin set to (or after) its own first
+        // token, which always comes after the propagated FOREIGN modifier's position.
+        // A standalone `foreign` declaration begins exactly at its FOREIGN modifier.
+        let declBegin = if (let Some(dbBase) <- db.GetBase()) {
+            dbBase.GetBegin()
+        } else {
+            return true
+        }
+        let modBeforeDecl = foreignBegin.line < declBegin.line ||
+            (foreignBegin.line == declBegin.line && foreignBegin.column < declBegin.column)
+        if (!modBeforeDecl) {
+            return true
+        }
+        let annoBeginPos = if (let Some(ab) <- anno.GetBase()) {
+            ab.GetBegin()
+        } else {
+            return true
+        }
+        // The propagated block-level annotation starts before the FOREIGN modifier,
+        // so it cannot be part of this member's text.
+        return !(annoBeginPos.line < foreignBegin.line ||
+            (annoBeginPos.line == foreignBegin.line && annoBeginPos.column < foreignBegin.column))
+    }
+
     func transFuncHeader(funcDecl: SyntaxFormat_FuncDecl, ret: ArrayList<SyntaxNodeImpl>, nodeKind: SyntaxNodeKind,
         innerCmts: Array<Option<SyntaxFormat_CommentGroup>>) {
         var identifier = ""
@@ -2697,8 +2750,20 @@ private class FlatbufferNodeTranslator {
                 kind = SyntaxNodeKind.StaticInit
             }
             // annotation
-            if (db.GetAnnotations().size != 0) {
-                addChild(ret, transAnnotations(db.GetAnnotations()))
+            // Filter out the propagated block-level annotations of `foreign {}` block members
+            // one by one, so that the member's own annotations (which may follow the cloned
+            // ones) are still expanded.
+            let annos = db.GetAnnotations()
+            var annosInText = ArrayList<Option<SyntaxFormat_Annotation>>()
+            for (a in annos) {
+                if (let Some(anno) <- a) {
+                    if (isAnnotationInDeclText(db, anno)) {
+                        annosInText.add(a)
+                    }
+                }
+            }
+            if (annosInText.size != 0) {
+                addChild(ret, transAnnotations(annosInText.toArray()))
             } else {
                 // The begin of FuncDecl is not begin of annotations
                 addWhitespaceAndMoveCursorToBegin(db.GetBase())
