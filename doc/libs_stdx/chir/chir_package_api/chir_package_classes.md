@@ -9191,39 +9191,6 @@ main() {
 prop_topLevelFunc: true
 ```
 
-### func isInitializer()
-
-```cangjie
-public func isInitializer(): Bool
-```
-
-功能：判断该基本块是否带有初始化标记。
-
-返回值：
-
-- Bool - 带有初始化标记时返回 `true`，否则返回 `false`。
-
-示例：
-
-<!-- verify -->
-```cangjie
-import stdx.chir.*
-
-main() {
-    let pkg = Package("demo", AccessLevel.Public)
-    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
-    f.initBody()
-    let block = f.body.getOrThrow().entryBlock
-    println("block_isInitializer: ${block.isInitializer()}")
-}
-```
-
-运行结果：
-
-```text
-block_isInitializer: false
-```
-
 ### func appendExpr(Expression)
 
 ```cangjie

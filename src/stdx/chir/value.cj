@@ -322,14 +322,6 @@ public class Block <: Value & Equatable<Block> {
         }
     }
 
-    /**
-     * Performs the public behavior of `isInitializer`.
-     * @return The `Bool` result.
-     */
-    public func isInitializer(): Bool {
-        return _attributes.isInitializer()
-    }
-
     internal init(identifier: String, owner: BlockGroup) {
         super(ValueKind.Block, identifier)
         this._owner = owner
