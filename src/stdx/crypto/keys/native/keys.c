@@ -588,6 +588,17 @@ extern int32_t CJX509DecryptPrivateKey(const void* keyBody, size_t length, char*
         *description = NULL;
     }
     EVP_PKEY* key = LoadEncryptedKey(keyBody, length, params, exception, dynMsg);
+    // the password buffer is heap-allocated by the Cangjie caller via mallocCString()
+    // and is released afterwards with free(), which does not clear the memory; wipe it
+    // here on every return path so that password material does not linger in the
+    // released heap block even when LoadEncryptedKey/DecryptKey returned early
+    // through one of their failure branches (see DecryptKey early returns)
+    if (params->password != NULL) {
+        size_t passwordLength = strlen(params->password);
+        if (passwordLength > 0) {
+            (void)memset_s((void*)params->password, passwordLength, 0, passwordLength);
+        }
+    }
     if (!key) {
         return CJ_FAIL;
     }
@@ -611,6 +622,10 @@ extern int32_t CJX509DecryptPrivateKey(const void* keyBody, size_t length, char*
         }
     }
     DYN_BIO_vfree(buffer, dynMsg);
+    // the parsed key is no longer needed, wipe its material before releasing it
+    // (mirrors the encryption path so plaintext private components do not
+    // linger in the heap after EVP_PKEY_free)
+    WipePrivateKeyData(key, dynMsg);
     DYN_EVP_PKEY_free(key, dynMsg);
     if (result == 1) {
         return CJ_OK;
