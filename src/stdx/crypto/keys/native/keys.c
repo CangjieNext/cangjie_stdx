@@ -515,6 +515,12 @@ extern int32_t DYN_CJX509EncryptPrivateKey(char* keyBody, size_t keySize, const 
         !X509CheckNotNull(exception, (void*)(resultSize), "resultSize", dynMsg) ||
         !X509CheckNotNull(exception, (void*)(password), "password", dynMsg) ||
         !X509CheckOrFillException(exception, password[0] != 0, "password[0] != 0", dynMsg)) {
+        // defense in depth: wipe the password if it was provided and non-empty,
+        // keeping the wipe-on-every-return invariant intact (unreachable through
+        // the public Cangjie API, which passes validated non-null pointers)
+        if (password != NULL && password[0] != 0) {
+            (void)memset_s((void*)password, strlen(password), 0, strlen(password));
+        }
         return CJ_FAIL;
     }
     *resultBody = NULL;
@@ -522,6 +528,10 @@ extern int32_t DYN_CJX509EncryptPrivateKey(char* keyBody, size_t keySize, const 
     // we expect input key is unencrypted
     EVP_PKEY* key = LoadPrivateKey(keyBody, keySize, exception, dynMsg);
     if (key == NULL) {
+        // defense in depth: unreachable through the public Cangjie API, which
+        // validates the key DER at construction time, but wipe the password on
+        // this early-return path too so every return path is covered
+        (void)memset_s((void*)password, strlen(password), 0, strlen(password));
         return CJ_FAIL;
     }
     ret = EncryptPrivateKey(key, password, resultBody, resultSize, exception, dynMsg);
