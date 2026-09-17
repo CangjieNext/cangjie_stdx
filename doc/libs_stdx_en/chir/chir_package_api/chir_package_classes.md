@@ -11035,6 +11035,105 @@ Output:
 fn_isAbstract: false
 ```
 
+### func isClassConstructor()
+
+```cangjie
+public func isClassConstructor(): Bool
+```
+
+Function: Checks whether this function is a class constructor, including regular and primary constructors.
+
+Return Value:
+
+- Bool - `true` if this is a regular or primary class constructor; otherwise, `false`.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    println("fn_isClassConstructor_before: ${f.isClassConstructor()}")
+    f.setClassConstructor()
+    println("fn_isClassConstructor: ${f.isClassConstructor()}")
+}
+```
+
+Output:
+
+```text
+fn_isClassConstructor_before: false
+fn_isClassConstructor: true
+```
+
+### func isStructConstructor()
+
+```cangjie
+public func isStructConstructor(): Bool
+```
+
+Function: Checks whether this function is a struct constructor, including regular and primary constructors.
+
+Return Value:
+
+- Bool - `true` if this is a regular or primary struct constructor; otherwise, `false`.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    println("fn_isStructConstructor_before: ${f.isStructConstructor()}")
+    f.setStructConstructor()
+    println("fn_isStructConstructor: ${f.isStructConstructor()}")
+}
+```
+
+Output:
+
+```text
+fn_isStructConstructor_before: false
+fn_isStructConstructor: true
+```
+
+### func isAnnoFactoryFunc()
+
+```cangjie
+public func isAnnoFactoryFunc(): Bool
+```
+
+Function: Checks whether this function is an annotation factory function.
+
+Return Value:
+
+- Bool - `true` if this is an annotation factory function; otherwise, `false`.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    println("fn_isAnnoFactoryFunc: ${f.isAnnoFactoryFunc()}")
+}
+```
+
+Output:
+
+```text
+fn_isAnnoFactoryFunc: false
+```
+
 ### func isDeclaredInCurPackage()
 
 ```cangjie
@@ -11157,6 +11256,68 @@ Output:
 
 ```text
 fn_isMemberMethod: false
+```
+
+### func isMut()
+
+```cangjie
+public func isMut(): Bool
+```
+
+Function: Checks whether this function has the `mut` attribute.
+
+Return Value:
+
+- Bool - `true` if the `mut` attribute is set; otherwise, `false`.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    println("fn_isMut: ${f.isMut()}")
+}
+```
+
+Output:
+
+```text
+fn_isMut: false
+```
+
+### func isInitializer()
+
+```cangjie
+public func isInitializer(): Bool
+```
+
+Function: Checks whether this function has the initializer attribute, as used for package, file, or variable initialization functions. This attribute is independent of the constructor kind; setting the constructor kind does not set this attribute.
+
+Return Value:
+
+- Bool - `true` if the initializer attribute is set; otherwise, `false`.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    println("fn_isInitializer: ${f.isInitializer()}")
+}
+```
+
+Output:
+
+```text
+fn_isInitializer: false
 ```
 
 ### func isOpen()
@@ -11351,6 +11512,62 @@ Output:
 fn_setAbstract: true
 ```
 
+### func setClassConstructor()
+
+```cangjie
+public func setClassConstructor(): Unit
+```
+
+Function: Sets this function's kind to a class constructor, replacing its previous kind. This only sets the function kind; it does not create a function body or set the initializer attribute.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.setClassConstructor()
+    println("fn_setClassConstructor: ${f.isClassConstructor()}")
+}
+```
+
+Output:
+
+```text
+fn_setClassConstructor: true
+```
+
+### func setStructConstructor()
+
+```cangjie
+public func setStructConstructor(): Unit
+```
+
+Function: Sets this function's kind to a struct constructor, replacing its previous kind. This only sets the function kind; it does not create a function body or set the initializer attribute.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.setStructConstructor()
+    println("fn_setStructConstructor: ${f.isStructConstructor()}")
+}
+```
+
+Output:
+
+```text
+fn_setStructConstructor: true
+```
+
 ### func isOverride()
 
 ```cangjie
@@ -11386,6 +11603,41 @@ Output:
 default: false
 enabled: true
 cleared: false
+```
+
+### func setOverride(Bool)
+
+```cangjie
+public func setOverride(enable: Bool): Unit
+```
+
+Function: Sets or clears this function's `override` attribute.
+
+Parameters:
+
+- enable: Bool - `true` to set the attribute, or `false` to clear it.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.setOverride(true)
+    println("fn_setOverride: ${f.isOverride()}")
+    f.setOverride(false)
+    println("fn_setOverride_cleared: ${!f.isOverride()}")
+}
+```
+
+Output:
+
+```text
+fn_setOverride: true
+fn_setOverride_cleared: true
 ```
 
 ### func isFinal()
@@ -11425,6 +11677,41 @@ enabled: true
 cleared: false
 ```
 
+### func setFinal(Bool)
+
+```cangjie
+public func setFinal(enable: Bool): Unit
+```
+
+Function: Sets or clears this function's `final` attribute.
+
+Parameters:
+
+- enable: Bool - `true` to set the attribute, or `false` to clear it.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.setFinal(true)
+    println("fn_setFinal: ${f.isFinal()}")
+    f.setFinal(false)
+    println("fn_setFinal_cleared: ${!f.isFinal()}")
+}
+```
+
+Output:
+
+```text
+fn_setFinal: true
+fn_setFinal_cleared: true
+```
+
 ### func isNoInline()
 
 ```cangjie
@@ -11462,6 +11749,41 @@ enabled: true
 cleared: false
 ```
 
+### func setNoInline(Bool)
+
+```cangjie
+public func setNoInline(enable: Bool): Unit
+```
+
+Function: Sets or clears this function's `noInline` attribute.
+
+Parameters:
+
+- enable: Bool - `true` to set the attribute, or `false` to clear it.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.setNoInline(true)
+    println("fn_setNoInline: ${f.isNoInline()}")
+    f.setNoInline(false)
+    println("fn_setNoInline_cleared: ${!f.isNoInline()}")
+}
+```
+
+Output:
+
+```text
+fn_setNoInline: true
+fn_setNoInline_cleared: true
+```
+
 ### func isSkipAnalysis()
 
 ```cangjie
@@ -11497,6 +11819,41 @@ Output:
 default: false
 enabled: true
 cleared: false
+```
+
+### func setSkipAnalysis(Bool)
+
+```cangjie
+public func setSkipAnalysis(enable: Bool): Unit
+```
+
+Function: Sets or clears this function's `skip_analysis` attribute.
+
+Parameters:
+
+- enable: Bool - `true` to set the attribute, or `false` to clear it.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.setSkipAnalysis(true)
+    println("fn_setSkipAnalysis: ${f.isSkipAnalysis()}")
+    f.setSkipAnalysis(false)
+    println("fn_setSkipAnalysis_cleared: ${!f.isSkipAnalysis()}")
+}
+```
+
+Output:
+
+```text
+fn_setSkipAnalysis: true
+fn_setSkipAnalysis_cleared: true
 ```
 
 ### func setOpen(Bool)
@@ -12892,8 +13249,6 @@ Output:
 ```text
 op_eq_UnitLiteral: true
 ```
-
-</task_result>
 
 ## class Expression
 
@@ -18602,7 +18957,6 @@ Output:
 ```text
 op_eq_RaiseException: true
 ```
-</task_result>
 
 ## class RawArrayAllocateBase
 
@@ -21399,8 +21753,6 @@ Output:
 ```text
 op_eq_VArrayExpr: true
 ```
-
-</task_result>
 
 ## class CHIRBuilder
 
@@ -24922,4 +25274,3 @@ public func freeSerializedMemory(): Unit
 ```
 
 Function: Resets the shared FlatBuffers builder state produced by the last serialization.
-</task_result>

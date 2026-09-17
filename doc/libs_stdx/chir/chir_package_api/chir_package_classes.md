@@ -11059,8 +11059,6 @@ main() {
     println("fn_isClassConstructor_before: ${f.isClassConstructor()}")
     f.setClassConstructor()
     println("fn_isClassConstructor: ${f.isClassConstructor()}")
-    f.setClassConstructor(true)
-    println("fn_isClassConstructor_primary: ${f.isClassConstructor()}")
 }
 ```
 
@@ -11069,7 +11067,6 @@ main() {
 ```text
 fn_isClassConstructor_before: false
 fn_isClassConstructor: true
-fn_isClassConstructor_primary: true
 ```
 
 ### func isStructConstructor()
@@ -11096,8 +11093,6 @@ main() {
     println("fn_isStructConstructor_before: ${f.isStructConstructor()}")
     f.setStructConstructor()
     println("fn_isStructConstructor: ${f.isStructConstructor()}")
-    f.setStructConstructor(true)
-    println("fn_isStructConstructor_primary: ${f.isStructConstructor()}")
 }
 ```
 
@@ -11106,7 +11101,6 @@ main() {
 ```text
 fn_isStructConstructor_before: false
 fn_isStructConstructor: true
-fn_isStructConstructor_primary: true
 ```
 
 ### func isAnnoFactoryFunc()
