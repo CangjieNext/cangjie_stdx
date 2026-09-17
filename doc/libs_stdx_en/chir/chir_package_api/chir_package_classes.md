@@ -11351,6 +11351,154 @@ Output:
 fn_setAbstract: true
 ```
 
+### func isOverride()
+
+```cangjie
+public func isOverride(): Bool
+```
+
+Function: Checks whether this function has the `override` attribute.
+
+Return Value:
+
+- Bool - `true` if the attribute is set; otherwise, `false`.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    println("default: ${f.isOverride()}")
+    f.setOverride(true)
+    println("enabled: ${f.isOverride()}")
+    f.setOverride(false)
+    println("cleared: ${f.isOverride()}")
+}
+```
+
+Output:
+
+```text
+default: false
+enabled: true
+cleared: false
+```
+
+### func isFinal()
+
+```cangjie
+public func isFinal(): Bool
+```
+
+Function: Checks whether this function has the `final` attribute.
+
+Return Value:
+
+- Bool - `true` if the attribute is set; otherwise, `false`.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    println("default: ${f.isFinal()}")
+    f.setFinal(true)
+    println("enabled: ${f.isFinal()}")
+    f.setFinal(false)
+    println("cleared: ${f.isFinal()}")
+}
+```
+
+Output:
+
+```text
+default: false
+enabled: true
+cleared: false
+```
+
+### func isNoInline()
+
+```cangjie
+public func isNoInline(): Bool
+```
+
+Function: Checks whether this function has the `noInline` attribute.
+
+Return Value:
+
+- Bool - `true` if the attribute is set; otherwise, `false`.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    println("default: ${f.isNoInline()}")
+    f.setNoInline(true)
+    println("enabled: ${f.isNoInline()}")
+    f.setNoInline(false)
+    println("cleared: ${f.isNoInline()}")
+}
+```
+
+Output:
+
+```text
+default: false
+enabled: true
+cleared: false
+```
+
+### func isSkipAnalysis()
+
+```cangjie
+public func isSkipAnalysis(): Bool
+```
+
+Function: Checks whether this function has the `skip_analysis` attribute.
+
+Return Value:
+
+- Bool - `true` if the attribute is set; otherwise, `false`.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    println("default: ${f.isSkipAnalysis()}")
+    f.setSkipAnalysis(true)
+    println("enabled: ${f.isSkipAnalysis()}")
+    f.setSkipAnalysis(false)
+    println("cleared: ${f.isSkipAnalysis()}")
+}
+```
+
+Output:
+
+```text
+default: false
+enabled: true
+cleared: false
+```
+
 ### func setOpen(Bool)
 
 ```cangjie

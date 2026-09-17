@@ -1178,12 +1178,28 @@ public class Function <: GlobalValue & Equatable<Function> {
     }
 
     /**
+     * Performs the public behavior of `isOverride`.
+     * @return The `Bool` result.
+     */
+    public func isOverride(): Bool {
+        return _attributes.isOverride()
+    }
+
+    /**
      * Performs the public behavior of `setOverride`.
      * @param enable The `enable` parameter.
      * @return The `Unit` result.
      */
     public func setOverride(enable: Bool): Unit {
         _attributes.setOverride(enable)
+    }
+
+    /**
+     * Performs the public behavior of `isFinal`.
+     * @return The `Bool` result.
+     */
+    public func isFinal(): Bool {
+        return _attributes.isFinal()
     }
 
     /**
@@ -1196,12 +1212,28 @@ public class Function <: GlobalValue & Equatable<Function> {
     }
 
     /**
+     * Performs the public behavior of `isNoInline`.
+     * @return The `Bool` result.
+     */
+    public func isNoInline(): Bool {
+        return _attributes.isNoInline()
+    }
+
+    /**
      * Performs the public behavior of `setNoInline`.
      * @param enable The `enable` parameter.
      * @return The `Unit` result.
      */
     public func setNoInline(enable: Bool): Unit {
         _attributes.setNoInline(enable)
+    }
+
+    /**
+     * Performs the public behavior of `isSkipAnalysis`.
+     * @return The `Bool` result.
+     */
+    public func isSkipAnalysis(): Bool {
+        return _attributes.isSkipAnalysis()
     }
 
     /**

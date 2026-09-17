@@ -331,16 +331,32 @@ internal struct AttributeInfo <: ToString {
         return testAttr(Attribute.Initializer)
     }
 
+    internal func isOverride(): Bool {
+        return testAttr(Attribute.Override)
+    }
+
     internal mut func setOverride(enable: Bool): Unit {
         setAttr(Attribute.Override, enable)
+    }
+
+    internal func isFinal(): Bool {
+        return testAttr(Attribute.Final)
     }
 
     internal mut func setFinal(enable: Bool): Unit {
         setAttr(Attribute.Final, enable)
     }
 
+    internal func isNoInline(): Bool {
+        return testAttr(Attribute.NoInline)
+    }
+
     internal mut func setNoInline(enable: Bool): Unit {
         setAttr(Attribute.NoInline, enable)
+    }
+
+    internal func isSkipAnalysis(): Bool {
+        return testAttr(Attribute.SkipAnalysis)
     }
 
     internal mut func setSkipAnalysis(enable: Bool): Unit {
