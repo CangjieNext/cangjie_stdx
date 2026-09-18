@@ -55,7 +55,7 @@ public class TarWriter<T> where T <: OutputStream {
 
     public func write(entry: TarEntry): Unit {
         if (this.finished) {
-            throw TarException("TarWriter is already finished, cannot write more entries.")
+            throw TarException("TarWriter has already finished.")
         }
         entry.writeTo(this.stream)
     }
@@ -68,7 +68,7 @@ public class TarWriter<T> where T <: OutputStream {
 
     public func flush(): Unit {
         if (this.finished) {
-            throw TarException("TarWriter is already finished, cannot flush.")
+            throw TarException("TarWriter has already finished.")
         }
         
         this.stream.flush()
@@ -76,7 +76,7 @@ public class TarWriter<T> where T <: OutputStream {
 
     public func finish(): Unit {
         if (this.finished) {
-            throw TarException("TarWriter is already finished, cannot finish again.")
+            throw TarException("TarWriter has already finished.")
         }
         
         // Write two 512-byte zero blocks as the end mark

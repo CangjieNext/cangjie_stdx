@@ -70,6 +70,7 @@ DEFINEFUNCTION6(PKCS5_pbe2_set_iv, NULL, X509_ALGOR*, const EVP_CIPHER*, int, un
 DEFINEFUNCTION0(EVP_aes_256_cbc, NULL, void*)
 DEFINEFUNCTION1(EVP_PKEY2PKCS8, NULL, PKCS8_PRIV_KEY_INFO*, const EVP_PKEY*)
 DEFINEFUNCTION1(X509_SIG_free, , void, void*)
+DEFINEFUNCTION1(X509_ALGOR_free, , void, void*)
 DEFINEFUNCTION4(X509_ALGOR_get0, , void, const void**, int*, const void**, const void*)
 DEFINEFUNCTION3(X509_SIG_get0, , void, const void*, const void**, const void**)
 DEFINEFUNCTION2(d2i_PKCS8_bio, NULL, X509_SIG*, BIO*, X509_SIG*)

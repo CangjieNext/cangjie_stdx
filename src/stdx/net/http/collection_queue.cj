@@ -25,7 +25,7 @@ open class DefaultQueue<T> {
 
     init(capacity: Int64) {
         if (capacity < 0) {
-            throw IllegalArgumentException("Failed to init queue, invalid capacity: ${capacity}.")
+            throw IllegalArgumentException("Invalid capacity: ${capacity}.")
         }
 
         buffer = Array<Option<T>>(capacity, repeat: Option<T>.None)
@@ -114,7 +114,7 @@ open class DefaultQueue<T> {
     protected func grow(newCapacity: Int64): Unit {
         evictCount = 0
         return match {
-            case newCapacity < capacity => throw IllegalArgumentException("Reduce size is not supported.")
+            case newCapacity < capacity => throw IllegalArgumentException("Reducing capacity is not supported.")
             case newCapacity > capacity => growCapacity(newCapacity)
             case _ => ()
         }

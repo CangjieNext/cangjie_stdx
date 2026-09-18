@@ -90,7 +90,7 @@ public class WebSocket {
      */
     public func read(): WebSocketFrame {
         if (isClosed.load()) {
-            throw WebSocketException("The connection is closed.")
+            throw WebSocketException("WebSocket connection is closed.")
         }
         let frame: WebSocketFrame
         synchronized(readMutex) {
@@ -106,7 +106,7 @@ public class WebSocket {
             // a server must not mask any frames that it sends to the client.
             // RFC 6455 5.1.
             if ((isClient && frame.mask) || (!isClient && !frame.mask)) {
-                failTheWebSocketConnection(WebSocketStatusCode.PROTOCOL_ERROR, "receiving an invalid mask message")
+                failTheWebSocketConnection(WebSocketStatusCode.PROTOCOL_ERROR, "invalid mask bit")
             }
             // if a nonzero value is received and none of the negotiated extensions
             // defines the meaning of such a nonzero value, the receiving endpoint
@@ -114,14 +114,13 @@ public class WebSocket {
             // RFC 6455 5.2.
             if (frame.rsv1 || frame.rsv2 || frame.rsv3) {
                 failTheWebSocketConnection(WebSocketStatusCode.PROTOCOL_ERROR,
-                    "extensions not supported yet, rsv must be 0")
+                    "RSV bits must be 0, extensions are not supported")
             }
             // if an unknown opcode is received, the receiving endpoint
             // must _fail the websocket connection_.
             // RFC 6455 5.2.
             if (frame.frameType == UnknownWebFrame) {
-                failTheWebSocketConnection(WebSocketStatusCode.UNSUPPORTED_DATA,
-                    "receiving a message with invalid frame type")
+                failTheWebSocketConnection(WebSocketStatusCode.UNSUPPORTED_DATA, "invalid frame type")
             }
 
             updatePayloadLen(frame)
@@ -137,11 +136,10 @@ public class WebSocket {
                 case PingWebFrame | PongWebFrame | CloseWebFrame =>
                     if (frame.payloadLength > 125) {
                         failTheWebSocketConnection(WebSocketStatusCode.PROTOCOL_ERROR,
-                            "receiving a control frame has a payload length more than 125 bytes")
+                            "control frame payload length '${frame.payloadLength}' exceeds maximum 125")
                     }
                     if (!frame.fin) {
-                        failTheWebSocketConnection(WebSocketStatusCode.PROTOCOL_ERROR,
-                            "receiving a control frame that is fragmented")
+                        failTheWebSocketConnection(WebSocketStatusCode.PROTOCOL_ERROR, "control frame is fragmented")
                     }
                 case _ => ()
             }
@@ -153,7 +151,7 @@ public class WebSocket {
     private func readExact(byteArray: Array<UInt8>, fieldName: String): Unit {
         let len = conn.readRaw(byteArray)
         if (len != byteArray.size) {
-            throw ConnectionException("Connection closed while reading websocket ${fieldName}.")
+            throw ConnectionException("Connection closed while reading websocket '${fieldName}'.")
         }
     }
 
@@ -176,7 +174,7 @@ public class WebSocket {
                 readExact(extendedPayloadLength, "extended payload length")
                 if ((extendedPayloadLength[0] & 0x80) != 0) {
                     failTheWebSocketConnection(WebSocketStatusCode.PROTOCOL_ERROR,
-                        "the most significant bit of extended payload length must be 0")
+                        "extended payload length, most significant bit must be 0")
                 }
                 frame.payloadLength = toInt64(extendedPayloadLength)
             case _ => frame.payloadLength = Int64(frame.payloadLen)
@@ -213,7 +211,7 @@ public class WebSocket {
     private func checkFramePayloadLimit(payloadLength: Int64) {
         if (payloadLength >= MAX_FRAME_PAYLOAD_LENGTH) {
             failTheWebSocketConnection(WebSocketStatusCode.MESSAGE_TOO_BIG,
-                "payload length too large, unexpected value: ${payloadLength}")
+                "payload length '${payloadLength}' exceeds maximum '${MAX_FRAME_PAYLOAD_LENGTH}'")
         }
     }
 
@@ -231,7 +229,7 @@ public class WebSocket {
      */
     public func write(frameType: WebSocketFrameType, byteArray: Array<UInt8>, frameSize!: Int64 = FRAMESIZE): Unit {
         if (isClosed.load()) {
-            throw WebSocketException("The connection is closed.")
+            throw WebSocketException("WebSocket connection is closed.")
         }
 
         match (frameType) {
@@ -241,14 +239,14 @@ public class WebSocket {
             //                          FIN = 1, Opcode != 0
             case PingWebFrame | PongWebFrame =>
                 if (byteArray.size > 125) {
-                    throw WebSocketException("All control frames must have a payload length of 125 bytes or less.")
+                    throw WebSocketException("Control frame payload length '${byteArray.size}' exceeds maximum 125.")
                 }
                 writeFrame(true, frameType, byteArray, isClient)
             case CloseWebFrame =>
                 match {
                     // the first two bytes of the body must be 2-byte unsigned integer.
                     case byteArray.size == 0 => writeFrame(true, CloseWebFrame, byteArray, isClient)
-                    case byteArray.size == 1 => throw WebSocketException("Invalid close payload.")
+                    case byteArray.size == 1 => throw WebSocketException("Invalid close frame payload: length is '1'.")
                     case byteArray.size <= 125 =>
                         let status = toUInt16(byteArray[..2])
                         // valid status code ranges defined in
@@ -257,11 +255,11 @@ public class WebSocket {
                         // 1005, 1006, 1015 are reserved values and must not be
                         // set as status code in a Close control frame by an endpoint.
                         if (status >= 5000 || status < 1000 || status == 1005 || status == 1006 || status == 1015) {
-                            throw WebSocketException("Invalid close status code.")
+                            throw WebSocketException("Invalid close status code '${status}'.")
                         }
                         writeFrame(true, CloseWebFrame, byteArray, isClient)
                     case _ => throw WebSocketException(
-                        "All control frames must have a payload length of 125 bytes or less.")
+                        "Control frame payload length '${byteArray.size}' exceeds maximum 125.")
                 }
                 isSentCloseFrame.store(true)
             // a fragmented message consists of a single frame with the FIN bit
@@ -272,10 +270,11 @@ public class WebSocket {
                 // must not send any more data frames after sending a Close frame
                 // RFC 6455 5.1.1.
                 if (isSentCloseFrame.load()) {
-                    throw WebSocketException("No more data frames can be sent after sending a Close frame.")
+                    throw WebSocketException("Cannot send data frames after Close frame.")
                 }
                 if (frameSize <= 0) {
-                    throw WebSocketException("FrameSize must > 0.")
+                    throw WebSocketException(
+                        "Invalid argument 'frameSize': expected a positive value, got '${frameSize}'.")
                 }
                 // unfragment
                 //                      FIN = 1, Opcode != 0
@@ -294,7 +293,7 @@ public class WebSocket {
                 }
                 // last frame:          FIN = 1, Opcode = 0
                 writeFrame(true, ContinuationWebFrame, byteArray.slice(sendLen, (byteArray.size - sendLen)), isClient)
-            case _ => throw WebSocketException("Invalid frame type, the type must be Text, Binary, Close, Ping, Pong.")
+            case _ => throw WebSocketException("Invalid frame type '${frameType}'.")
         }
     }
 
@@ -329,7 +328,7 @@ public class WebSocket {
      */
     public func writeCloseFrame(status!: ?UInt16 = None, reason!: String = ""): Unit {
         if (isClosed.load()) {
-            throw WebSocketException("The connection is closed.")
+            throw WebSocketException("WebSocket connection is closed.")
         }
 
         // status none means the Close frame contains no body.
@@ -344,12 +343,12 @@ public class WebSocket {
         // status must between 1000 and 4999,
         // 1005, 1006, 1015 are reserved values and must not be set as status code in a Close control frame by an endpoint.
         if (statusCode >= 5000 || statusCode < 1000 || statusCode == 1005 || statusCode == 1006 || statusCode == 1015) {
-            throw WebSocketException("Invalid status code.")
+            throw WebSocketException("Invalid close status code '${statusCode}'.")
         }
         // the first two bytes of the body must be 2-byte unsigned integer,
         // and the Close frame must have a payload length of 125 bytes or less.
         if (reason.size > 123) {
-            throw WebSocketException("All control frames must have a payload length of 125 bytes or less.")
+            throw WebSocketException("Close frame payload length '${reason.size + 2}' exceeds maximum 125.")
         }
 
         // the first two bytes of the body must be 2-byte unsigned integer (in network byte order).
@@ -414,7 +413,7 @@ public class WebSocket {
         writeCloseFrame(status: status)
         closeConn()
         // throw WebSocketException
-        throw WebSocketException("The websocket connection is failed, since ${message}." )
+        throw WebSocketException("WebSocket connection failed: ${message}.")
     }
 
     /**
@@ -441,13 +440,13 @@ public class WebSocket {
         userFunc!: (HttpRequest) -> HttpHeaders = {_: HttpRequest => HttpHeaders()}): WebSocket {
         synchronized(ctx.writerMtx) {
             if (ctx.upgraded) {
-                throw WebSocketException("Upgrade to websocket failed, the connection has been upgraded.")
+                throw WebSocketException("Connection already upgraded.")
             }
             if (ctx.responseFlushedByUser) {
-                throw WebSocketException("Upgrade to websocket failed, a response has been sent to the client.")
+                throw WebSocketException("Response already sent to client.")
             }
             if (ctx.responded) {
-                throw WebSocketException("Already responded.")
+                throw WebSocketException("Response already sent.")
             }
 
             let responseHeader = userFunc(ctx.request)
@@ -470,7 +469,7 @@ public class WebSocket {
                     // reading the Client's Opening Handshake
                     if (httpConn.upgrade != "websocket") {
                         responseAndThrows(ctx, HttpStatusCode.STATUS_BAD_REQUEST,
-                            "the upgrade request to websocket on http/2.0 must be a CONNECT request")
+                            "upgrade request must use CONNECT method for WebSocket over HTTP/2.0")
                     }
                     let subProtocol = parseUpgradeRequestCommon(ctx, origins, subProtocols)
                     // sending the Server's Opening Handshake
@@ -478,7 +477,8 @@ public class WebSocket {
                     let websocketConn = WebSocketConn2(httpConn)
                     ctx.upgraded = true
                     WebSocket(websocketConn, subProtocol, false)
-                case _ => throw WebSocketException("Only HTTP/1.1 or HTTP/2.0 to WebSocket upgrade is supported.")
+                case _ => throw WebSocketException(
+                    "Unsupported connection type: only HTTP/1.1 or HTTP/2.0 to WebSocket upgrade is supported.")
             }
         }
     }
@@ -499,14 +499,14 @@ public class WebSocket {
      * @throws WebSocketException, if handshake failed, including get conn from pool failed, check response from server failed.
      */
     public static func upgradeFromClient(client: Client, url: URL, version!: Protocol = HTTP1_1,
-        subProtocols!: ArrayList<String> = ArrayList<String>(), headers!: HttpHeaders = HttpHeaders()): (WebSocket,
+        subProtocols!: ArrayList<String> = ArrayList<String>(), headers!: HttpHeaders = HttpHeaders()): (WebSocket, 
         HttpHeaders) {
 
         // a client opens a connection and sends a handshake
         // only HTTP/1.1 and HTTP/2.0 are supported to upgrade to WebSocket.
         match (version) {
             case HTTP1_1 | HTTP2_0 => ()
-            case _ => throw WebSocketException("Only the upgrade from HTTP1_1 and HTTP2_0 to WebSocket is supported.")
+            case _ => throw WebSocketException("Unsupported protocol '${version}'.")
         }
         // generate sec-websocket-key
         let webSocketKey = generateKey()
@@ -519,7 +519,7 @@ public class WebSocket {
         // the client must wait for a response from the server
         // before sending any further data.
         if (client.isClosed.load()) {
-            throw WebSocketException("This client has already closed.")
+            throw WebSocketException("Client is closed.")
         }
         let resp = client.doRequest(upgradeRequest)
 
@@ -531,11 +531,11 @@ public class WebSocket {
             case HTTP1_1 =>
                 let connNode = match (resp.connNode.getOrThrow() as ConnNode) {
                     case Some(v) => v
-                    case None => throw WebSocketException("Get connection failed.")
+                    case None => throw WebSocketException("Failed to get connection.")
                 }
                 WebSocketConn1(connNode.h1Engine.extractFromConnInUse(connNode))
-            case HTTP2_0 => (resp.body as WebSocketConn) ?? throw HttpException("H2 body broken.")
-            case _ => throw WebSocketException("Not supported protocol.")
+            case HTTP2_0 => (resp.body as WebSocketConn) ?? throw HttpException("Invalid HTTP/2 response body type.")
+            case _ => throw WebSocketException("Unsupported protocol '${version}'.")
         }
 
         let websocket = WebSocket(conn, subProtocol, true)
@@ -557,11 +557,10 @@ func constructUpgradeRequest(url: URL, webSocketKey: String, subProtocols: Array
     let upgradeUrl = match (url.scheme) {
         case "ws" => url.replace(scheme: "http")
         case "wss" => url.replace(scheme: "https")
-        case _ => throw WebSocketException(
-            "Upgrade to websocket failed, invalid URL scheme, the scheme must be ws or wss.")
+        case _ => throw WebSocketException("Invalid URL scheme '${url.scheme}': expected 'ws' or 'wss'.")
     }
     if (url.hostName.isEmpty()) {
-        throw WebSocketException("Upgrade to websocket failed, no host in request URL.")
+        throw WebSocketException("Request URL has no host.")
     }
 
     // send an opening handshake, and read the server’s handshake in response.
@@ -611,7 +610,7 @@ func constructUpgradeRequest(url: URL, webSocketKey: String, subProtocols: Array
     // RFC 6455 4.1.11.
     if (!headers.isEmpty()) {
         if (!headers.get("sec-websocket-extensions").isEmpty()) {
-            throw WebSocketException("Upgrade to websocket failed, websocket extensions not supported yet.")
+            throw WebSocketException("WebSocket extensions are not supported.")
         }
         upgradeRequestBuilder.headers.addAll(headers)
     }
@@ -631,23 +630,23 @@ func validateUpgradeResponse(resp: HttpResponse, acceptValue: String, subProtoco
         case HTTP1_1 =>
             if (resp.status != HttpStatusCode.STATUS_SWITCHING_PROTOCOLS) {
                 // conn is not returned to HttpEngine1, should be disconnected
-                failTheWebSocketConnection(resp, "the status code should be 101, but received ${resp.status}")
+                failTheWebSocketConnection(resp, "invalid status code '${resp.status}', expected 101")
             }
 
             // if the response lacks an Upgrade header field or the Upgrade header field
             // contains a value that is not an ASCII case-insensitive match for the value "websocket",
             // the client must _fail the websocket connection_.
             let upgradeValues = resp.headers.getInternal("upgrade") ?? failTheWebSocketConnection(resp,
-                "the handshake response lacks Upgrade: websocket header field")
+                "missing 'Upgrade: websocket' header field")
             if (!(upgradeValues |> splitValuesByComma |> "websocket".caseInsensitiveMatchAll)) {
-                failTheWebSocketConnection(resp, "the handshake response has a wrong Upgrade header field")
+                failTheWebSocketConnection(resp, "invalid 'Upgrade' header field")
             }
 
             // if the response lacks an Connection header field or the Upgrade header field
             // doesn't contain a token that is not an ASCII case-insensitive match for the value "upgrade",
             // the client must _fail the websocket connection_.
             if (!(resp.headers.get("connection") |> splitValuesByComma |> "upgrade".caseInsensitiveMatchOne)) {
-                failTheWebSocketConnection(resp, "the handshake response lacks Connection: Upgrade header field")
+                failTheWebSocketConnection(resp, "missing 'Connection: Upgrade' header field")
             }
 
             // if the response lacks a Sec-WebSocket-Accept header field or the Sec-WebSocket-Accept header field
@@ -656,22 +655,21 @@ func validateUpgradeResponse(resp: HttpResponse, acceptValue: String, subProtoco
             // but ignoring any leading and trailing whitespace,
             // the client must _fail the websocket connection_.
             let acceptValues = resp.headers.getInternal("sec-websocket-accept") ?? failTheWebSocketConnection(resp,
-                "the handshake response lacks Sec-Websocket-Accept header field")
+                "missing 'Sec-WebSocket-Accept' header field")
             if (!(acceptValues |> splitValuesByComma |> acceptValue.matchAll)) {
-                failTheWebSocketConnection(resp, "the handshake response has a wrong accept string")
+                failTheWebSocketConnection(resp, "invalid 'Sec-WebSocket-Accept' header value")
             }
         case HTTP2_0 =>
             if (resp.status != HttpStatusCode.STATUS_OK) {
-                failTheWebSocketConnection(resp, "the status code should be 200, but received ${resp}")
+                failTheWebSocketConnection(resp, "invalid status code '${resp.status}', expected 200")
             }
         // an HTTP/1.1 upgrade request but receive an HTTP/1.0 response
-        case _ => failTheWebSocketConnection(resp,
-            "wrong http version ${resp.version} which cannot be upgraded to websocket")
+        case _ => failTheWebSocketConnection(resp, "invalid HTTP version '${resp.version}', cannot upgrade to WebSocket")
     }
 
     // websocket extensions not supported yet
     if (!resp.headers.get("sec-websocket-extensions").isEmpty()) {
-        failTheWebSocketConnection(resp, "websocket extensions not supported yet")
+        failTheWebSocketConnection(resp, "WebSocket extensions are not supported")
     }
 
     // if the response includes a sec-websocket-protocol header field and this header field indicates
@@ -683,10 +681,11 @@ func validateUpgradeResponse(resp: HttpResponse, acceptValue: String, subProtoco
         case Some(values) =>
             let subs = splitValuesByComma(values)
             if (subs.size != 1) {
-                failTheWebSocketConnection(resp, "the handshake response must have one or null subprotocol")
+                failTheWebSocketConnection(resp, "invalid 'Sec-WebSocket-Protocol' header, must have exactly one value")
             }
             if (!subProtocols.contains(subs[0].trimAscii())) {
-                failTheWebSocketConnection(resp, "the handshake response has wrong subprotocol")
+                failTheWebSocketConnection(resp,
+                    "invalid 'Sec-WebSocket-Protocol' header, unexpected protocol '${subs[0]}'")
             } else {
                 subs[0]
             }
@@ -703,35 +702,30 @@ func validateUpgradeResponse(resp: HttpResponse, acceptValue: String, subProtoco
 func parseUpgradeRequest1(ctx: HttpContext): String {
     // an HTTP/1.1 or higher GET request.
     if (ctx.request.version == HTTP1_0) {
-        responseAndThrows(ctx, HttpStatusCode.STATUS_BAD_REQUEST,
-            "the upgrade request to websocket must be an HTTP/1.1 or higher request")
+        responseAndThrows(ctx, HttpStatusCode.STATUS_BAD_REQUEST, "upgrade request requires HTTP/1.1 or higher")
     }
     if (ctx.request.method != "GET") {
-        responseAndThrows(ctx, HttpStatusCode.STATUS_BAD_REQUEST,
-            "the upgrade request to websocket must be a GET request")
+        responseAndThrows(ctx, HttpStatusCode.STATUS_BAD_REQUEST, "upgrade request must use GET method")
     }
 
     // Host header is checked when read request.
 
     // an Upgrade header field containing the value "websocket", case-insensitive.
     if (!(ctx.request.headers.get("upgrade") |> splitValuesByComma |> "websocket".caseInsensitiveMatchOne)) {
-        responseAndThrows(ctx, HttpStatusCode.STATUS_BAD_REQUEST,
-            "the upgrade request lacks Upgrade: websocket header field")
+        responseAndThrows(ctx, HttpStatusCode.STATUS_BAD_REQUEST, "missing 'Upgrade: websocket' header field")
     }
 
     // a Connection header field that include the token "Upgrade", case-insensitive.
     if (!(ctx.request.headers.get("connection") |> splitValuesByComma |> "upgrade".caseInsensitiveMatchOne)) {
-        responseAndThrows(ctx, HttpStatusCode.STATUS_BAD_REQUEST,
-            "the upgrade request lacks Connection: Upgrade header field")
+        responseAndThrows(ctx, HttpStatusCode.STATUS_BAD_REQUEST, "missing 'Connection: Upgrade' header field")
     }
 
     // a sec-websocket-key header field with a base64-encoded value that,
     // when decoded, is 16 bytes in length.
     let keyValues = ctx.request.headers.getInternal("sec-websocket-key") ?? responseAndThrows(ctx, // cjlint-ignore !G.EXP.03
-        HttpStatusCode.STATUS_BAD_REQUEST, "the upgrade request lacks sec-websocket-key header field")
+        HttpStatusCode.STATUS_BAD_REQUEST, "missing 'Sec-WebSocket-Key' header field")
     if (!keyValues.isSingle() || ((fromBase64String(keyValues.single)?.size ?? 0) != 16)) {
-        responseAndThrows(ctx, HttpStatusCode.STATUS_BAD_REQUEST,
-            "the upgrade request's sec-websocket-key header value is invalid")
+        responseAndThrows(ctx, HttpStatusCode.STATUS_BAD_REQUEST, "invalid 'Sec-WebSocket-Key' header value")
     }
 
     return keyValues.single
@@ -743,15 +737,15 @@ func parseUpgradeRequestCommon(ctx: HttpContext, origins: ArrayList<String>, sub
     // the server may use this information as part of a determination of whether to accept the incoming connection.
     // if the server does not validate the origin (origins.isEmpty() == true), it will accept connections from anywhere.
     if (origins.isEmpty()) {
-        httpLogWarn(mutexLogger(), "[WebSocket#upgradeFromServer] No origin restrictions configured. " +
-            "This enables Cross-Site WebSocket Hijacking (CSWSH) vulnerability. " +
-            "Consider setting allowed origins explicitly.")
+        httpLogWarn(mutexLogger(),
+            "[WebSocket#upgradeFromServer] No origin restrictions configured. " +
+                "This enables Cross-Site WebSocket Hijacking (CSWSH) vulnerability. " +
+                "Consider setting allowed origins explicitly.")
     } else {
         let originValues = ctx.request.headers.getInternal("origin") ?? responseAndThrows(ctx, // cjlint-ignore !G.EXP.03
-            HttpStatusCode.STATUS_FORBIDDEN, "the upgrade request lacks Origin field")
+            HttpStatusCode.STATUS_FORBIDDEN, "missing 'Origin' header field")
         if (!originValues.isSingle() || !origins.contains(originValues.single)) {
-            responseAndThrows(ctx, HttpStatusCode.STATUS_FORBIDDEN,
-                "the upgrade request's origin is not allowed by server")
+            responseAndThrows(ctx, HttpStatusCode.STATUS_FORBIDDEN, "origin '${originValues.single}' is not allowed")
         }
     }
 
@@ -771,10 +765,9 @@ func parseUpgradeRequestCommon(ctx: HttpContext, origins: ArrayList<String>, sub
 
     // a sec-websocket-version header field, with a value of 13
     let versionValues = ctx.request.headers.getInternal("sec-websocket-version") ?? responseAndThrows(ctx, // cjlint-ignore !G.EXP.03
-        HttpStatusCode.STATUS_BAD_REQUEST, "the upgrade request lacks sec-websocket-version header field")
+        HttpStatusCode.STATUS_BAD_REQUEST, "missing 'Sec-WebSocket-Version' header field")
     if (!versionValues.isSingle() || versionValues.single != "13") {
-        responseAndThrows(ctx, HttpStatusCode.STATUS_UPGRADE_REQUIRED,
-            "the upgrade request's sec-websocket-version must be 13")
+        responseAndThrows(ctx, HttpStatusCode.STATUS_UPGRADE_REQUIRED, "'Sec-WebSocket-Version' header must be 13")
     }
 
     // websocket extensions are not supported yet
@@ -851,7 +844,7 @@ func failTheWebSocketConnection(resp: HttpResponse, message: String) {
         case None => ()
     }
     // throw WebSocketException
-    throw WebSocketException("Upgrade to websocket failed, ${message}." )
+    throw WebSocketException("WebSocket upgrade failed: ${message}.")
 }
 
 func responseAndThrows(ctx: HttpContext, status: UInt16, message: String) {
@@ -869,7 +862,7 @@ func responseAndThrows(ctx: HttpContext, status: UInt16, message: String) {
         case _ => ()
     }
     ctx.upgraded = true
-    throw WebSocketException(message)
+    throw WebSocketException("WebSocket upgrade failed: ${message}.")
 }
 
 /**
@@ -895,14 +888,14 @@ func generateAcceptValue(key: String): String {
         if (dynMsgPtr.isNull()) {
             releaseArrayRawData(d)
             releaseArrayRawData(md)
-            throw WebSocketException("Malloc failed.")
+            throw WebSocketException("Failed to allocate memory for DynMsg.")
         }
 
         try {
             DYN_SHA1(d.pointer, Int32(data.size), md.pointer, dynMsgPtr)
             if (!dynMsgPtr.read().found) {
                 let funcName = CString(dynMsgPtr.read().funcName).toString()
-                throw WebSocketException("Can not load openssl library or function ${funcName}.")
+                throw WebSocketException("Failed to load OpenSSL library or function '${funcName}'.")
             }
         } finally {
             FreeDynMsg(dynMsgPtr)

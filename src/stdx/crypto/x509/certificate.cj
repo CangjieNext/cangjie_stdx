@@ -59,7 +59,7 @@ public class X509Certificate <: Certificate & Equatable<X509Certificate> & Hasha
                 mallocCString(keyUsageStr).asResource(), extKeyUsageCStr = LibC.mallocCString(extKeyUsageStr).asResource(
                 ), altNameCStr = LibC.mallocCString(altNameStr).asResource(), certInfo = malloc<X509CertInfo>()) {
                 if (!checkKeyType(rawPriKey, getKeyType(signatureAlgorithm))) {
-                    throw X509Exception("X509Cert init failed: Private key type not match to signatureAlgorithm.")
+                    throw X509Exception("X509Cert init failed: Private key type does not match signature algorithm.")
                 }
                 certInfo.pointer.write(
                     X509CertInfo(
@@ -81,7 +81,7 @@ public class X509Certificate <: Certificate & Equatable<X509Certificate> & Hasha
                 keyFree(rawPubKey)
             }
             if (cert.isNull()) {
-                throw X509Exception("X509Cert init failed: Cert info is null.")
+                throw X509Exception("X509Cert init failed: Certificate info is null.")
             }
             var certBody = getCertBody(cert)
             blob = X509Blob(certBody)
@@ -198,7 +198,7 @@ public class X509Certificate <: Certificate & Equatable<X509Certificate> & Hasha
         }
 
         if (result.isEmpty()) {
-            throw X509Exception("X509Cert decode failed: No ${PemEntry.LABEL_CERTIFICATE} entry found in PEM file.")
+            throw X509Exception("X509Cert decode failed: No '${PemEntry.LABEL_CERTIFICATE}' entry found in PEM file.")
         }
 
         return result.toArray()
@@ -236,7 +236,7 @@ public class X509Certificate <: Certificate & Equatable<X509Certificate> & Hasha
         match {
             case status == 0i32 => false
             case status > 0i32 => true
-            case _ => throw X509Exception("X509Cert verify failed: Internal resource problems or internal error.")
+            case _ => throw X509Exception("X509Cert verify failed: Internal resource problem or internal error.")
         }
     }
 
@@ -309,7 +309,7 @@ public class X509Name <: ToString {
     ) {
         var name = nameNew()
         if (name.isNull()) {
-            throw X509Exception("X509Name init failed: Cannot init a new X509Mame.")
+            throw X509Exception("X509Name init failed: Failed to initialize a new X509Name.")
         }
         try {
             setName(name, "countryName", nameString: countryName)
@@ -346,7 +346,7 @@ public class X509Name <: ToString {
                     nameStringPtr.value
                 )
                 if (ret <= 0) {
-                    throw X509Exception("X509Name init failed: Set ${nameType} error.")
+                    throw X509Exception("X509Name init failed: Failed to set '${nameType}'.")
                 }
             }
         }
@@ -356,7 +356,7 @@ public class X509Name <: ToString {
         unsafe {
             var namelen = getNameDer(name, CPointer<CPointer<Byte>>())
             if (namelen < 0) {
-                throw X509Exception("X509Name init failed: Cannot parse the X509 name body.")
+                throw X509Exception("X509Name init failed: Failed to parse the X509 name body.")
             }
             var nameBody = Array<Byte>(Int64(namelen), repeat: 0)
             let data: CPointerHandle<Byte> = acquireArrayRawData(nameBody)
@@ -364,7 +364,7 @@ public class X509Name <: ToString {
                 namePtr.pointer.write(data.pointer)
                 namelen = getNameDer(name, namePtr.pointer)
                 if (namelen < 0) {
-                    throw X509Exception("X509Name init failed: Cannot parse the X509 name body.")
+                    throw X509Exception("X509Name init failed: Failed to parse the X509 name body.")
                 }
             } finally {
                 releaseArrayRawData(data)
@@ -576,7 +576,7 @@ func getCertsRecursively(root: Path, result: HashSet<X509Certificate>): Unit {
             } catch (e: IllegalArgumentException) {
                 result.add(X509Certificate.decodeFromDer(DerBlob(File.readFrom(root))))
             } catch (e: X509Exception) {
-                throw X509Exception("${root} isn't a vaild certificate PEM file.")
+                throw X509Exception("'${root}' is not a valid certificate PEM file.")
             }
         }
     } else if (isDirectory(root)) {

@@ -26,7 +26,7 @@ func parsePem(content: Array<Byte>): Array<PemEntry> {
     let result = ArrayBuilder<PemEntry>()
 
     if (content.size == 0) {
-        throw CryptoException("Failed to parse PEM: Pem is empty.")
+        throw CryptoException("Failed to parse PEM: PEM is empty.")
     }
 
     while (current < content.size) {
@@ -45,24 +45,24 @@ func parsePem(content: Array<Byte>): Array<PemEntry> {
         checkIndex(content, current, bodyEnd)
         let body = String.fromUtf8(trimInnerSpaces(content[current..bodyEnd]))
         if (body.isEmpty()) {
-            throw CryptoException("Failed to parse PEM: PEM file body cannot be empty!")
+            throw CryptoException("Failed to parse PEM: PEM body is empty.")
         }
         let bodyBytes = fromBase64String(body) ?? throw CryptoException( // cjlint-ignore !G.EXP.03
-            "Failed to parse PEM: Failed to parse base64 encoded PEM body.")
+            "Failed to parse PEM: invalid base64 content.")
 
         current = afterEnd
         result.append(PemEntry(label, headers, DerBlob(bodyBytes)))
     }
 
     if (result.isEmpty()) {
-        throw CryptoException("Failed to parse PEM.")
+        throw CryptoException("Failed to parse PEM: No valid PEM entries found.")
     }
     return result.toArray()
 }
 
 func checkIndex(content: Array<Byte>, begin: Int64, end: Int64) {
     if (begin >= content.size || end > content.size || begin > end) {
-        throw CryptoException("Failed to parse PEM: Index check failed.")
+        throw CryptoException("Failed to parse PEM: index out of bounds, begin is '${begin}', end is '${end}', but content size is '${content.size}'.")
     }
 }
 
@@ -97,7 +97,7 @@ func parsePreeb(start: Int64, content: Array<Byte>): ?(String, Int64) {
 func searchEnd(start: Int64, content: Array<Byte>, label: String): (Int64, Int64) {
     let it = concat3(CLOSE_ARRAY, label.toArray(), END_ARRAY)
     let index = indexOf(content, start, it) ?? throw CryptoException( // cjlint-ignore !G.EXP.03
-        "Failed to parse PEM: Failed to find PEM entry end, ${String.fromUtf8(it)}.")
+        "Failed to parse PEM: failed to find PEM entry end marker '${String.fromUtf8(it)}'.")
     return (index, index + it.size)
 }
 
@@ -157,7 +157,7 @@ func parseHeader(index: Int64, content: Array<Byte>, builder: ArrayBuilder<(Stri
         if (line.isAsciiBlank()) {
             return (tempIndex, false)
         }
-        throw CryptoException("Failed to parse PEM: Unexpected line in PEM header, line ${line.trimAscii()}.")
+        throw CryptoException("Failed to parse PEM: Unexpected line in PEM header, line '${line.trimAscii()}'.")
     }
     let headerName = String.fromUtf8(content[start..delimiterIndex]).trimAsciiEnd()
     var headerValue = String.fromUtf8(content[delimiterIndex + 1..lineEnd]).trimAsciiStart()

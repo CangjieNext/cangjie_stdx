@@ -58,17 +58,17 @@ public abstract class PosixTarEntry <: TarEntry {
 
         const DEV_MAJOR_MINOR_MAX: Int32 = 0o77777777
         if (_header.devMajor > DEV_MAJOR_MINOR_MAX) {
-            throw TarException("DeviceMajor ${_header.devMajor} is too large.")
+            throw TarException("Device major '${_header.devMajor}' exceeds maximum '${DEV_MAJOR_MINOR_MAX}'.")
         }
         if (_header.devMajor < 0) {
-            throw TarException("DeviceMajor ${_header.devMajor} is negative.")
+            throw TarException("Device major cannot be negative: '${_header.devMajor}'.")
         }
         _header.devMajor.encodeOcatalTo(buffer[FieldLocation.DEV_MAJOR])
         if (_header.devMinor > DEV_MAJOR_MINOR_MAX) {
-            throw TarException("DeviceMinor ${_header.devMinor} is too large.")
+            throw TarException("Device minor '${_header.devMinor}' exceeds maximum '${DEV_MAJOR_MINOR_MAX}'.")
         }
         if (_header.devMinor < 0) {
-            throw TarException("DeviceMinor ${_header.devMinor} is negative.")
+            throw TarException("Device minor cannot be negative: '${_header.devMinor}'.")
         }
         _header.devMinor.encodeOcatalTo(buffer[FieldLocation.DEV_MINOR])
     }

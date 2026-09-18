@@ -1576,7 +1576,7 @@ sealed abstract class CustomType <: Type & Equatable<CustomType> {
     internal prop generic2InstTypeMap: HashMap<GenericType, Type> {
         get() {
             let genericTypeParams = def.genericTypeParams
-            assert(genericTypeParams.size == genericTypeArgs.size, "Generic type params size mismatch")
+            assert(genericTypeParams.size == genericTypeArgs.size, "Generic type parameter and argument counts do not match.")
             var replaceTable: HashMap<GenericType, Type> = HashMap<GenericType, Type>()
             for (i in 0..genericTypeParams.size) {
                 let genericTypeParam = genericTypeParams[i]
@@ -1616,7 +1616,7 @@ sealed abstract class CustomType <: Type & Equatable<CustomType> {
         var result: ArrayList<ClassLikeType> = ArrayList<ClassLikeType>()
         for (exDef in getExtendDefs(visited: visited)) {
             let (success, instMap) = exDef.extendedType.calculateGeneric2InstTypeMap(this)
-            assert(success, "Failed to calculate generic 2 inst type map")
+            assert(success, "Failed to calculate the generic-to-instantiated type mapping.")
             for (p in exDef.implementedInterfaceTypes) {
                 let instType = (getInstType(p, instMap) as ClassLikeType).getOrThrow()
                 result.add(instType)
@@ -1666,7 +1666,7 @@ sealed abstract class CustomType <: Type & Equatable<CustomType> {
     public func getMemberVarInstantiatedType(name: String): Type {
         let memberVarInstTypes = getInstantiatedMemberVarTypes()
         let memberVarNames = allMemberVarNames
-        assert(memberVarInstTypes.size == memberVarNames.size, "Member variable size mismatch")
+        assert(memberVarInstTypes.size == memberVarNames.size, "Member variable type and name counts do not match.")
         var index = memberVarNames.size - 1
         while (index >= 0) {
             if (memberVarNames[index] == name) {
@@ -1674,7 +1674,7 @@ sealed abstract class CustomType <: Type & Equatable<CustomType> {
             }
             index -= 1
         }
-        throw CHIRException("Member variable `" + name + "` not found in " + toString())
+        throw CHIRException("Member variable '${name}' was not found in '${toString()}'.")
     }
 
     /**
@@ -2066,7 +2066,7 @@ public class GenericType <: Type & Equatable<GenericType> {
         set(v) {
             for (bound in v) {
                 if (bound.stripAllRefs().isValueType()) {
-                    throw IllegalArgumentException("Generic type upper bound should NOT be value type!")
+                    throw IllegalArgumentException("Invalid generic type upper bound '${bound.qualifiedName}': expected a non-value type.")
                 }
             }
             _upperBounds = ArrayList<Type>.of(v)

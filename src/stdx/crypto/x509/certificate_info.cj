@@ -35,7 +35,7 @@ public struct X509CertificateInfo {
     ) {
         for (IPAddress in IPAddresses) {
             if (IPAddress.size != IPV4_SIZE && IPAddress.size != IPV6_SIZE) {
-                throw X509Exception("Illegal IP address.")
+                throw X509Exception("Invalid IP address: expected 4 or 16 bytes, got '${IPAddress.size}' bytes.")
             }
         }
 

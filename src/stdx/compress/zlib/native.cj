@@ -82,7 +82,6 @@ foreign func CJ_FreeZlibStream(zlibStream: CPointer<ZlibStream>): Unit
 foreign func CJ_ZlibStreamEncodeInit(level: Int32, winBits: Int32, memLevel: Int32, strategy: Int32,
     zlibStream: CPointer<ZlibStream>): Int32
 
-@FastNative
 foreign func CJ_ZlibStreamEncode(zlibStream: CPointer<ZlibStream>, flushType: Int32): Int32
 
 @FastNative
@@ -91,7 +90,6 @@ foreign func CJ_ZlibStreamEncodeFini(zlibStream: CPointer<ZlibStream>): Int32
 @FastNative
 foreign func CJ_ZlibStreamDecodeInit(zlibStream: CPointer<ZlibStream>, winBits: Int32): Int32
 
-@FastNative
 foreign func CJ_ZlibStreamDecode(zlibStream: CPointer<ZlibStream>, flushType: Int32): Int32
 
 @FastNative

@@ -37,15 +37,16 @@ func checkedTlsCipherSuites(suites: Map<TlsVersion, Array<String>>): Map<TlsVers
 
 func checkedTlsSecurityLevel(value: Int32): Int32 {
     if (value < 0 || value > 5) {
-        throw IllegalArgumentException("SecurityLevel should be from 0 to 5.")
+        throw IllegalArgumentException("Invalid securityLevel '${value}': expected 0-5.")
     }
     value
 }
 
 func checkedServerCertificate(cert: ?(Array<Certificate>, PrivateKey)): (Array<X509Certificate>, PrivateKey) {
-    let value = cert ?? throw TlsException("The server certificate cannot be null.")
-    return (value[0].map({c => c as X509Certificate ??
-        throw TlsException("Only certificates of type `X509Certificate` are allowed.")}), value[1])
+    let value = cert ?? throw TlsException("Server certificate is null.")
+    return (value[0].map({
+            c => c as X509Certificate ?? throw TlsException("Invalid certificate type: expected X509Certificate.")
+        }), value[1])
 }
 
 public struct TlsServerConfig <: TlsConfig {
@@ -252,13 +253,17 @@ extend TlsContext {
 
         setProtoVersions(context, cfg.supportedVersions)
 
-        if (cfg.supportedVersions.contains(V1_2) &&
-            let Some(cipherSuite) <- cfg.supportedCipherSuites.entryView(V1_2).value) {
+        if (cfg.supportedVersions.contains(V1_2) && let Some(cipherSuite) <- cfg
+            .supportedCipherSuites
+            .entryView(V1_2)
+            .value) {
             setCipherSuitesV1_2(context, cipherSuite)
         }
 
-        if (cfg.supportedVersions.contains(V1_3) &&
-            let Some(cipherSuite) <- cfg.supportedCipherSuites.entryView(V1_3).value) {
+        if (cfg.supportedVersions.contains(V1_3) && let Some(cipherSuite) <- cfg
+            .supportedCipherSuites
+            .entryView(V1_3)
+            .value) {
             setCipherSuitesV1_3(context, cipherSuite)
         }
 
@@ -294,15 +299,15 @@ extend TlsContext {
     }
 }
 
-
 /*
-* Keyless TLS server configuration.
-*/
-
+ * Keyless TLS server configuration.
+ */
 public type KeylessSignFunc = (hashValue: Array<Byte>) -> Array<Byte>
+
 public type KeylessDecryptFunc = (cipherText: Array<Byte>) -> Array<Byte>
 
 type CKeylessSignCallback = CFunc<(CString, CString, CPointer<Byte>, Int64, CPointer<Int64>) -> CPointer<Byte>>
+
 type CKeylessDecryptCallback = CFunc<(CString, CPointer<Byte>, Int64, CPointer<Int64>) -> CPointer<Byte>>
 
 public class KeylessTlsServerConfig <: TlsConfig {
@@ -432,9 +437,10 @@ public class KeylessTlsServerConfig <: TlsConfig {
         }
     }
 
-    public init(certChain: Array<X509Certificate>, signCallback: KeylessSignFunc, decryptCallback!: ?KeylessDecryptFunc = None<KeylessDecryptFunc>) {
+    public init(certChain: Array<X509Certificate>, signCallback: KeylessSignFunc,
+        decryptCallback!: ?KeylessDecryptFunc = None<KeylessDecryptFunc>) {
         if (certChain.isEmpty()) {
-            throw IllegalArgumentException("The server certificate cannot be empty.")
+            throw IllegalArgumentException("Server certificate chain is empty.")
         }
         this._keylessSignFunc = signCallback
         this._keylessDecryptFunc = decryptCallback

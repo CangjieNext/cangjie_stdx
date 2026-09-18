@@ -36,13 +36,13 @@ class X509CsrBlob <: Equatable<X509CsrBlob> & Hashable {
     init(content: DerBlob) {
         this.content = content
         if (content.content.size == 0) {
-            throw X509Exception("X509CSR init failed: the content is empty.")
+            throw X509Exception("X509CSR init failed: content is empty.")
         }
         let wholeCsr = DerSequence(content.content)[0].asSequence()
         csrInfo = wholeCsr[CSR_INFO_OFFSET].asSequence()
         checkCsrDerType(csrInfo[0].fieldType, DerType.ASN_INT)
         if (csrInfo.size != 4 || wholeCsr.size != 3) {
-            throw X509Exception("X509CSR init failed: the content is invalid.")
+            throw X509Exception("X509CSR init failed: content is invalid.")
         }
 
         algorithmSeq = wholeCsr[ALGORITHM_INFO_OFFSET].asSequence()
@@ -50,7 +50,7 @@ class X509CsrBlob <: Equatable<X509CsrBlob> & Hashable {
         checkCsrDerType(wholeCsr[SIGNATURE_OFFSET].fieldType, DerType.BIT_STREAM)
         signatureBit = wholeCsr[SIGNATURE_OFFSET].body
         if (signatureBit.size <= 1 || signatureBit[0] != 0) {
-            throw X509Exception("Wrong signature format: bit stream is not supported.")
+            throw X509Exception("Invalid signature format: bit stream format is invalid.")
         }
         signature = Signature(DerBlob(signatureBit[1..]))
 
@@ -99,7 +99,7 @@ class X509CsrBlob <: Equatable<X509CsrBlob> & Hashable {
 
 func checkCsrDerType(inDerType: DerType, defaultDerType: DerType) {
     if (inDerType != defaultDerType) {
-        throw X509Exception("X509CSR init failed: Unsupported field type: ${inDerType}.")
+        throw X509Exception("X509CSR init failed: unsupported field type '${inDerType}'.")
     }
 }
 

@@ -3551,7 +3551,7 @@ public static func get(paramTypes: Array<Type>, retType: Type, varArg!: Bool = f
 
 - paramTypes: Array\<Type> - 形参类型序列。
 - retType: Type - 返回类型。
-- varArg! - 是否为可变参数函数类型，默认 `false`。
+- varArg!: Bool - 是否为可变参数函数类型，默认 `false`。
 - cFunc! - 是否为 `CFunc<...>` 形式，默认 `false`。
 
 返回值：
@@ -8026,7 +8026,7 @@ walk_Function: true
 public func walk(bg: BlockGroup): Unit
 ```
 
-功能：按顺序遍历块组中的每个基本块；遇到 `STOP` 状态时提前终止。
+功能：按顺序遍历块组中的每个基本块；遇到 `Stop` 状态时提前终止。
 
 参数：
 
@@ -8061,7 +8061,7 @@ main() {
 public func walk(b: Block): Unit
 ```
 
-功能：遍历基本块中的每个表达式，并递归访问表达式内的嵌套块组；遇到 `STOP` 状态时提前终止。
+功能：遍历基本块中的每个表达式，并递归访问表达式内的嵌套块组；遇到 `Stop` 状态时提前终止。
 
 参数：
 
@@ -9564,7 +9564,8 @@ main() {
     let pkg = Package("demo", AccessLevel.Public)
     let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
     f.initBody()
-    println("fn_destroySelf_before: ${f.body.isSome()}")
+    f.body.getOrThrow().destroySelf() 
+    println("fn_destroySelf_after: ${f.body.isNone()}")
 }
 ```
 
@@ -9948,7 +9949,7 @@ main() {
 public func toString(): String
 ```
 
-功能：字符串形式，为数值后缀 `"f"`（如 `3.14f`）。
+功能：字符串形式，为数值后缀 `"f"`（如  \3.140000f\ ）。
 
 返回值：
 
@@ -19656,6 +19657,42 @@ main() {
 prop_fieldNames: 1
 ```
 
+### prop srcValue
+
+```cangjie
+public prop srcValue: Value
+```
+
+功能：源值。
+
+类型：Value
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+import std.collection.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([IntType.getInt32(), IntType.getInt32()], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let valParam = f.parameters[0]
+    let locParam = f.parameters[1]
+    let fieldNames = ArrayList<String>()
+    fieldNames.add("x")
+    let store = StoreElementByName.create(valParam, locParam, fieldNames)
+    println("prop_srcValue: ${store.srcValue == valParam}")
+}
+```
+
+运行结果：
+
+```text
+prop_srcValue: true
+```
+
 ### static func create(Value, Value, ArrayList\<String>)
 
 ```cangjie
@@ -19789,6 +19826,42 @@ main() {
 
 ```text
 prop_path: 1
+```
+
+### prop srcValue
+
+```cangjie
+public prop srcValue: Value
+```
+
+功能：源值。
+
+类型：Value
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+import std.collection.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([IntType.getInt32(), IntType.getInt32()], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let valParam = f.parameters[0]
+    let locParam = f.parameters[1]
+    let path = ArrayList<UInt64>()
+    path.add(0)
+    let store = StoreElementRef.create(valParam, locParam, path)
+    println("prop_srcValue: ${store.srcValue == valParam}")
+}
+```
+
+运行结果：
+
+```text
+prop_srcValue: true
 ```
 
 ### static func create(Value, Value, ArrayList\<UInt64>)

@@ -60,7 +60,7 @@ extend Int64 <: JsonDeserializable<Int64> {
     public static func fromJson(r: JsonReader): Int64 {
         let (res, overflow) = r.readInt()
         if (overflow) {
-            throw OverflowException("The next number is out of range for Int64.")
+            throw OverflowException("Number is out of range for Int64.")
         }
         return res
     }
@@ -70,7 +70,7 @@ extend Int32 <: JsonDeserializable<Int32> {
     public static func fromJson(r: JsonReader): Int32 {
         let (res, overflow) = r.readInt()
         if (overflow || res > Int64(MAXVAL_I32) || res < Int64(MINVAL_I32)) {
-            throw OverflowException("The next number is out of range for Int32.")
+            throw OverflowException("Number is out of range for Int32.")
         }
         return Int32(res)
     }
@@ -80,7 +80,7 @@ extend Int16 <: JsonDeserializable<Int16> {
     public static func fromJson(r: JsonReader): Int16 {
         let (res, overflow) = r.readInt()
         if (overflow || res > Int64(MAXVAL_I16) || res < Int64(MINVAL_I16)) {
-            throw OverflowException("The next number is out of range for Int16.")
+            throw OverflowException("Number is out of range for Int16.")
         }
         return Int16(res)
     }
@@ -90,7 +90,7 @@ extend Int8 <: JsonDeserializable<Int8> {
     public static func fromJson(r: JsonReader): Int8 {
         let (res, overflow) = r.readInt()
         if (overflow || res > Int64(MAXVAL_I8) || res < Int64(MINVAL_I8)) {
-            throw OverflowException("The next number is out of range for Int8.")
+            throw OverflowException("Number is out of range for Int8.")
         }
         return Int8(res)
     }
@@ -100,7 +100,7 @@ extend IntNative <: JsonDeserializable<IntNative> {
     public static func fromJson(r: JsonReader): IntNative {
         let (res, overflow) = r.readInt()
         if (overflow || (!isNative64 && (res > Int64(MAXVAL_I32) || res < Int64(MINVAL_I32)))) {
-            throw OverflowException("The next number is out of range for IntNative.")
+            throw OverflowException("Number is out of range for IntNative.")
         }
         return IntNative(res)
     }
@@ -110,7 +110,7 @@ extend UInt64 <: JsonDeserializable<UInt64> {
     public static func fromJson(r: JsonReader): UInt64 {
         let (res, overflow) = r.readUInt()
         if (overflow) {
-            throw OverflowException("The next number is out of range for UInt64.")
+            throw OverflowException("Number is out of range for UInt64.")
         }
         return res
     }
@@ -120,7 +120,7 @@ extend UInt32 <: JsonDeserializable<UInt32> {
     public static func fromJson(r: JsonReader): UInt32 {
         let (res, overflow) = r.readUInt()
         if (overflow || res > UInt64(MAXVAL_UI32)) {
-            throw OverflowException("The next number is out of range for UInt32.")
+            throw OverflowException("Number is out of range for UInt32.")
         }
         return UInt32(res)
     }
@@ -130,7 +130,7 @@ extend UInt16 <: JsonDeserializable<UInt16> {
     public static func fromJson(r: JsonReader): UInt16 {
         let (res, overflow) = r.readUInt()
         if (overflow || res > UInt64(MAXVAL_UI16)) {
-            throw OverflowException("The next number is out of range for UInt16.")
+            throw OverflowException("Number is out of range for UInt16.")
         }
         return UInt16(res)
     }
@@ -140,7 +140,7 @@ extend UInt8 <: JsonDeserializable<UInt8> {
     public static func fromJson(r: JsonReader): UInt8 {
         let (res, overflow) = r.readUInt()
         if (overflow || res > UInt64(MAXVAL_UI8)) {
-            throw OverflowException("The next number is out of range for UInt8.")
+            throw OverflowException("Number is out of range for UInt8.")
         }
         return UInt8(res)
     }
@@ -150,7 +150,7 @@ extend UIntNative <: JsonDeserializable<UIntNative> {
     public static func fromJson(r: JsonReader): UIntNative {
         let (res, overflow) = r.readUInt()
         if (overflow || (!isNative64 && (res > UInt64(MAXVAL_UI32)))) {
-            throw OverflowException("The next number is out of range for UIntNative.")
+            throw OverflowException("Number is out of range for UIntNative.")
         }
         return UIntNative(res)
     }

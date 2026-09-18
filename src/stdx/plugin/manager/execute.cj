@@ -24,7 +24,7 @@ public func executeCHIRPlugins(data: CPointer<UInt8>, length: Int64): PluginResu
         try {
             success = plugin.run(pkg) && success
         } catch (e: Exception) {
-            println("throw exception while running CHIR plugin: " + plugin.name)
+            println("Exception thrown while running CHIR plugin '${plugin.name}'.")
             println(e.printStackTrace())
             success &&= false
         }

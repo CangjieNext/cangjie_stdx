@@ -24,7 +24,7 @@ internal func calculateFunctionInstType(f: Function, instantiateTypes: ArrayList
         while (index < tmpTypeArgs.size) {
             let ty = tmpTypeArgs[index]
             if (ty.isGenericRelated()) {
-                assert(ty.calculateGeneric2InstTypeMapImpl(instantiateTypes[index], replaceTable), "Failed to calculate generic type to inst type")
+                assert(ty.calculateGeneric2InstTypeMapImpl(instantiateTypes[index], replaceTable), "Failed to calculate the generic type to instantiated type mapping.")
             }
             index++
         }
@@ -74,7 +74,7 @@ internal func createNewTypeWithArgs(oldType: Type, newTypeArgs: ArrayList<Type>)
             let size = (oldType as VArrayType).getOrThrow().size
             return VArrayType.get(elementType, size)
         case _ =>
-            throw CHIRException(oldType.toString() + " doesn't have type args")
+            throw CHIRException("Type '${oldType.toString()}' does not have type arguments.")
     }
 }
 
@@ -120,7 +120,7 @@ private func getFieldOfTypeImpl(baseTy: Type, index: Int64): Type {
     } else if (let Some(tt) <- (baseTy as TupleType)) {
         return tt.elementTypes[index]
     } else if (let Some(et) <- (baseTy as EnumType)) {
-        assert(index == 0, "Enum type can only have one element")
+        assert(index == 0, "Enum type field index must be 0.")
         if (getEnumSelectorType(et.enumDef) == TypeKind.`Bool`) {
             return BoolType.get()
         }
@@ -128,12 +128,12 @@ private func getFieldOfTypeImpl(baseTy: Type, index: Int64): Type {
     } else if (let Some(ct) <- (baseTy as CustomType)) {
         // only struct type and class type have member variables
         let memberVarTypes = ct.getInstantiatedMemberVarTypes()
-        assert(memberVarTypes.size > index, "Member variable size mismatch, ${memberVarTypes.size} vs ${index}")
+        assert(memberVarTypes.size > index, "Member variable index is out of range.")
         return memberVarTypes[index]
     } else if (let Some(rat) <- (baseTy as RawArrayType)) {
         return rat.elementType
     }
-    throw CHIRException("Invalid type: " + baseTy.toString())
+    throw CHIRException("Invalid type '${baseTy.toString()}'.")
 }
 
 private func getFieldOfTypeImpl(baseTy: Type, name: String): Type {
@@ -143,12 +143,12 @@ private func getFieldOfTypeImpl(baseTy: Type, name: String): Type {
         // only struct type and class type have member variables
         return ct.getMemberVarInstantiatedType(name)
     }
-    throw CHIRException("Invalid type: " + baseTy.toString())
+    throw CHIRException("Invalid type '${baseTy.toString()}'.")
 }
 
 internal func getInstMapFromCurDefAndExDefToCurType(curType: CustomType): HashMap<GenericType, Type> {
     let (res, instMap) = curType.def.ty.calculateGeneric2InstTypeMap(curType)
-    assert(res, "Failed to calculate generic 2 inst type map")
+    assert(res, "Failed to calculate the generic-to-instantiated type mapping.")
     for (exDef in curType.def.extends) {
         // maybe we can meet `extend<T> A<B<T>> {}`, and `curType` is A<Int32>, then ignore this def,
         // so not need to check `res`
@@ -241,7 +241,7 @@ internal func getInstParentCustomTypeOfCallee(v: Value, funcCallCtx: FuncCallCon
                 matchedTypes.add(parentType)
             }
         }
-        assert(!matchedTypes.isEmpty(), "No matched parent type found")
+        assert(!matchedTypes.isEmpty(), "No matching parent type was found.")
         return getInstParentType(matchedTypes.toArray(), f, funcCallCtx.args)
     }
 }
@@ -256,10 +256,10 @@ internal func getInstParentType(candidate: Array<ClassLikeType>, f: Function, ar
     if (f.isStatic()) {
         paramTypes.remove(at: 0)
     }
-    assert(argTypes.size == paramTypes.size, "Argument type size mismatch, ${argTypes.size} vs ${paramTypes.size}")
+    assert(argTypes.size == paramTypes.size, "Argument type and parameter type counts do not match.")
     for (p in candidate) {
         let (res, instMap) = p.def.ty.calculateGeneric2InstTypeMap(p)
-        assert(res, "Failed to calculate generic 2 inst type map")
+        assert(res, "Failed to calculate the generic-to-instantiated type mapping.")
         var argTypeMatched = true
         for (i in 0..paramTypes.size) {
             let instType = getInstType(paramTypes[i], instMap)
@@ -272,7 +272,7 @@ internal func getInstParentType(candidate: Array<ClassLikeType>, f: Function, ar
             return p
         }
     }
-    throw CHIRException("No matched parent type found")
+    throw CHIRException("No matching parent type was found.")
 }
 
 internal func getInstType(genericType: Type, f: Value, funcCallCtx: FuncCallContext): Type {
@@ -291,7 +291,7 @@ internal func getInstType(genericType: Type, f: Value, funcCallCtx: FuncCallCont
     }
 
     if (genericTypeParams.size != funcCallCtx.instTypeArgs.size) {
-        throw CHIRException("getInstType: genericTypeParams.size != instArgs.size")
+        throw CHIRException("Instantiation failed in getInstType: generic type parameter count '${genericTypeParams.size}' does not match instantiated argument count '${funcCallCtx.instTypeArgs.size}'.")
     }
     var replaceTable: HashMap<GenericType, Type> = HashMap<GenericType, Type>()
     let instParentType = getInstParentCustomTypeOfCallee(f, funcCallCtx)
@@ -363,7 +363,7 @@ internal func overflowStrategyPrefix(strategy: OverflowStrategy): String {
         case OverflowStrategy.Wrapping => "&"
         case OverflowStrategy.Throwing => "~"
         case OverflowStrategy.Saturating => "%"
-        case _ => throw CHIRException("Unsupported OverflowStrategy")
+        case _ => throw CHIRException("Unsupported OverflowStrategy.")
     }
 }
 

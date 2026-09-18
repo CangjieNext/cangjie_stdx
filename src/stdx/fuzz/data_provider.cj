@@ -86,7 +86,7 @@ public open class FuzzDataProvider {
     @OverflowWrapping
     func consumeByteInner(): Byte {
         if (this.remainingBytes < 1) {
-            throw ExhaustedException("Remaining data is not enough, please increase -max_len=N.")
+            throw ExhaustedException("Remaining data is not enough: need 1 byte, but remaining 0 bytes.")
         }
 
         let ret = this.data[offset]
@@ -98,10 +98,10 @@ public open class FuzzDataProvider {
     @OverflowWrapping
     func consumeBytesInner(count: Int64): Array<Byte> {
         if (count < 0) {
-            throw IllegalArgumentException("Negative count.")
+            throw IllegalArgumentException("Invalid argument 'count': expected a non-negative value, got ${count}.")
         }
         if (remainingBytes < count) {
-            throw ExhaustedException("Remaining data is not enough, please increase -max_len=N.")
+            throw ExhaustedException("Remaining data is not enough: need ${count} bytes, but remaining ${remainingBytes} bytes.")
         }
         let ret = this.data[offset..offset + count]
         this.offset += count
@@ -359,7 +359,7 @@ public open class FuzzDataProvider {
      */
     public open func consumeAsciiString(maxLength: Int64): String {
         if (maxLength < 0) {
-            throw IllegalArgumentException("Negative count.")
+            throw IllegalArgumentException("Invalid argument 'maxLength': expected a non-negative value, got ${maxLength}.")
         }
         let consumeCount = if (remainingBytes < maxLength) {
             remainingBytes
@@ -382,7 +382,7 @@ public open class FuzzDataProvider {
     public open func consumeString(maxLength: Int64): String {
         // Cangjie Rune range: [0x0000, 0xD7FF], [0xE000, 0x10FFFF], occupying 1 to 4 UTF8.
         if (maxLength < 0) {
-            throw IllegalArgumentException("Negative count.")
+            throw IllegalArgumentException("Invalid argument 'maxLength': expected a non-negative value, got ${maxLength}.")
         }
         // We assume every codepoint cost 3 bytes on average.
         let peekCount = if (this.remainingBytes < maxLength * 3) {

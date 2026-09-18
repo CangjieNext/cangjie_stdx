@@ -82,7 +82,7 @@ public open class ASTRewriter {
                     break
                 }
             }
-            case _ => throw Exception("RewriteException: SyntaxNodeImpl kind not match.")
+            case _ => throw IllegalArgumentException("Failed to rewrite node: expected a non-terminal node.")
         }
         let rewritedNode = if (hasRewritedChild) {
             let nodeImpl = NonTerminal(node.nodeImpl.kind, newNodeImpl.toArray())
@@ -177,8 +177,8 @@ public open class ASTRewriter {
 
     private func checkNodeKind(newNode: SyntaxTreeNode, oldNode: SyntaxTreeNode) {
         if (newNode.nodeImpl.kind != oldNode.nodeImpl.kind) {
-            throw Exception(
-                "RewriteException: The type of the rewritten node does not match the type of the original node.")
+            throw IllegalArgumentException(
+                "The kind of the rewritten node does not match the kind of the original node.")
         }
     }
 
@@ -323,7 +323,7 @@ class ChildCollector <: ASTVisitor {
                     case LetPatternCondition(letPattern) => childNodes.add(letPattern)
                     case Expression(expr) => childNodes.add(expr)
                     case ParenConditionConstructor(parenCondition) => childNodes.add(parenCondition)
-                    case _ => throw Exception()
+                    case _ => throw IllegalStateException("Internal error: unexpected 'AtomicCondition' value.")
                 }
             }
             case constPattern: ConstPattern => childNodes.add(constPattern.litConstExpr)
@@ -506,7 +506,7 @@ class ChildCollector <: ASTVisitor {
                 match (part) {
                     case StrLiteralPart.LitConstPart(lit) => childNodes.add(lit)
                     case StrLiteralPart.StrInterpolation(strInterpolation) => childNodes.add(strInterpolation)
-                    case _ => throw Exception()
+                    case _ => throw IllegalStateException("Internal error: unexpected 'StrLiteralPart' value.")
                 }
             }
             case macroDecl: MacroDecl =>
@@ -532,14 +532,14 @@ class ChildCollector <: ASTVisitor {
                 match (macroExpandDecl.macroInputs) {
                     case MacroExpandInput.WithoutParens(decl) => childNodes.add(decl)
                     case MacroExpandInput.WithParens(_) => return
-                    case _ => throw Exception()
+                    case _ => throw IllegalStateException("Internal error: unexpected 'MacroExpandInput' value.")
                 }
             case macroExpandExpr: MacroExpandExpr =>
                 childNodes.add(macroExpandExpr.calleeMacro)
                 match (macroExpandExpr.macroInputs) {
                     case MacroExpandInput.WithoutParens(decl) => childNodes.add(decl)
                     case MacroExpandInput.WithParens(_) => return
-                    case _ => throw Exception()
+                    case _ => throw IllegalStateException("Internal error: unexpected 'MacroExpandInput' value.")
                 }
             case macroExpandParam: MacroExpandParam =>
                 for (a in macroExpandParam.annotations) {
@@ -552,7 +552,7 @@ class ChildCollector <: ASTVisitor {
                 match (macroExpandParam.macroInputs) {
                     case MacroExpandInput.WithoutParens(decl) => childNodes.add(decl)
                     case MacroExpandInput.WithParens(_) => return
-                    case _ => throw Exception()
+                    case _ => throw IllegalStateException("Internal error: unexpected 'MacroExpandInput' value.")
                 }
             case mainDecl: MainDecl =>
                 for (a in mainDecl.annotations) {
@@ -630,7 +630,7 @@ class ChildCollector <: ASTVisitor {
                 match (content) {
                     case QuoteExprContent.TokenPart(tks) => childNodes.add(tks)
                     case QuoteExprContent.QuoteInterpolation(quoteInterpolation) => childNodes.add(quoteInterpolation)
-                    case _ => throw Exception()
+                    case _ => throw IllegalStateException("Internal error: unexpected 'QuoteExprContent' value.")
                 }
             }
             case quoteInterpolationExpr: QuoteInterpolationExpr => childNodes.add(quoteInterpolationExpr.expr)

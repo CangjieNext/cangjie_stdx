@@ -37,7 +37,7 @@ public struct TlsClientConfig <: TlsConfig {
         }
         set(value) {
             if (value < 0 || value > 5) {
-                throw IllegalArgumentException("SecurityLevel should be from 0 to 5.")
+                throw IllegalArgumentException("Invalid securityLevel '${value}': expected 0-5.")
             }
             _securityLevel = value
         }
@@ -133,7 +133,7 @@ public struct TlsClientConfig <: TlsConfig {
         set(v) {
             _certificate = match (v) {
                 case Some(cert) => (cert[0].map({c => c as X509Certificate ??
-                    throw TlsException("Only certificates of type `X509Certificate` are allowed.")}), cert[1])
+                    throw TlsException("Invalid certificate type: expected X509Certificate.")}), cert[1])
                 case None => None
             }
         }

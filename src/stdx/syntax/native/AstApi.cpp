@@ -49,7 +49,7 @@ void SetDiagEngine(DiagnosticEngine& diag, SourceManager& sm) {
 }
 
 ParseRes* createParseResult() {
-    ParseRes* result = (ParseRes*)malloc(sizeof(ParseRes));
+    ParseRes* result = static_cast<ParseRes*>(malloc(sizeof(ParseRes)));
     if (result == nullptr) {
         return nullptr;
     }
@@ -222,7 +222,7 @@ ParseRes* CJ_ParseAnnotationArguments(const uint8_t* tokensBytes)
     Parser parser(tokens, diag, sm, false, false);
     auto node = parser.ParseCustomAnnotation();
 
-    ParseRes* result = (ParseRes*)malloc(sizeof(ParseRes));
+    ParseRes* result = static_cast<ParseRes*>(malloc(sizeof(ParseRes)));
     // result free on cangjie side
     if (result == nullptr) {
         return nullptr;

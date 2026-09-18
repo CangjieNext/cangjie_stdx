@@ -22,7 +22,7 @@ abstract class HttpEngineConn {
 
     protected mut prop readTimeout: Duration {
         get() {
-            _readTimeout ?? throw HttpException("The readTimeout not set yet.")
+            _readTimeout ?? throw HttpException("ReadTimeout is not set.")
         }
         set(v) {
             _readTimeout = v
@@ -31,7 +31,7 @@ abstract class HttpEngineConn {
 
     protected mut prop writeTimeout: Duration {
         get() {
-            _writeTimeout ?? throw HttpException("The writeTimeout not set yet.")
+            _writeTimeout ?? throw HttpException("WriteTimeout is not set.")
         }
         set(v) {
             _writeTimeout = v
@@ -40,7 +40,7 @@ abstract class HttpEngineConn {
 
     protected mut prop readHeaderTimeout: Duration {
         get() {
-            _readHeaderTimeout ?? throw HttpException("The readHeaderTimeout not set yet.")
+            _readHeaderTimeout ?? throw HttpException("ReadHeaderTimeout is not set.")
         }
         set(v) {
             _readHeaderTimeout = v
@@ -49,7 +49,7 @@ abstract class HttpEngineConn {
 
     protected mut prop maxRequestHeaderSize: Int64 {
         get() {
-            _maxRequestHeaderSize ?? throw HttpException("The maxRequestHeaderSize not set yet.")
+            _maxRequestHeaderSize ?? throw HttpException("MaxRequestHeaderSize is not set.")
         }
         set(v) {
             _maxRequestHeaderSize = v
@@ -58,7 +58,7 @@ abstract class HttpEngineConn {
 
     protected mut prop maxRequestBodySize: Int64 {
         get() {
-            _maxRequestBodySize ?? throw HttpException("The maxRequestBodySize not set yet.")
+            _maxRequestBodySize ?? throw HttpException("MaxRequestBodySize is not set.")
         }
         set(v) {
             _maxRequestBodySize = v

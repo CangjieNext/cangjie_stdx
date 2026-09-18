@@ -99,7 +99,7 @@ public class CompressInputStream <: InputStream {
             return 0
         }
         if (outBuf.isEmpty()) {
-            throw ZlibException("The buffer for storing compressed data cannot be empty.")
+            throw ZlibException("Buffer for compressed data cannot be empty.")
         }
         var outBufCursor = 0
         while (outBufCursor < outBuf.size && !deflater.isFinished()) {
@@ -211,7 +211,7 @@ public class CompressOutputStream <: OutputStream {
      */
     public func write(inBuf: Array<Byte>): Unit {
         if (deflater.isFinished() || closed) {
-            throw ZlibException("The CompressOutputStream is closed.")
+            throw ZlibException("CompressOutputStream is closed.")
         }
         if (inBuf.size == 0) {
             return
@@ -351,7 +351,7 @@ public class DecompressInputStream <: InputStream {
             return 0
         }
         if (outBuf.isEmpty()) {
-            throw ZlibException("The buffer for storing decompressed data cannot be empty.")
+            throw ZlibException("Buffer for decompressed data cannot be empty.")
         }
         var outBufCursor = 0
         while (outBufCursor < outBuf.size && !inflater.isFinished()) {
@@ -420,7 +420,7 @@ public class DecompressInputStream <: InputStream {
             return
         }
         if (totalOutputBytes / totalInputBytes > MAX_DECOMPRESSION_RATIO) {
-            throw ZlibException("Decompressed output exceeds safety compression ratio ${MAX_DECOMPRESSION_RATIO}:1.")
+            throw ZlibException("Decompressed output exceeds safety compression ratio: '${MAX_DECOMPRESSION_RATIO}':1.")
         }
     }
 }
@@ -473,7 +473,7 @@ public class DecompressOutputStream <: OutputStream {
      */
     public func write(inBuf: Array<Byte>): Unit {
         if (inflater.isFinished() || closed) {
-            throw ZlibException("The DecompressOutputStream is closed.")
+            throw ZlibException("DecompressOutputStream is closed.")
         }
         if (inBuf.size == 0) {
             return
@@ -565,7 +565,7 @@ public class DecompressOutputStream <: OutputStream {
             return
         }
         if (totalOutputBytes / totalInputBytes > MAX_DECOMPRESSION_RATIO) {
-            throw ZlibException("Decompressed output exceeds safety compression ratio ${MAX_DECOMPRESSION_RATIO}:1.")
+            throw ZlibException("Decompressed output exceeds safety compression ratio: '${MAX_DECOMPRESSION_RATIO}':1.")
         }
     }
 }

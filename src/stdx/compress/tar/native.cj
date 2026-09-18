@@ -37,29 +37,29 @@ private func callNativeGetFunc(nativeFunc: CFunc<(CString) -> Int32>, funcName: 
     try (s = AutoCString(path)) {
         let result = unsafe { nativeFunc(s.str) }
         if (result == -1) {
-            throw TarException("Failed to call native function ${funcName} for path: ${path}.")
+            throw TarException("Failed to call native function '${funcName}' for path: '${path}'.")
         }
         return result
     }
-    throw TarException("Unreachable code.")
+    throw TarException("Internal error: unreachable code in native function call.")
 }
 
 private func callNativeGetFunc(nativeFunc: CFunc<(CString) -> CString>, funcName: String, path: Path): String {
     try (s = AutoCString(path)) {
         let result = unsafe { nativeFunc(s.str) }
         if (result.isNull()) {
-            throw TarException("Failed to call native function ${funcName} for path: ${path}.")
+            throw TarException("Failed to call native function '${funcName}' for path: '${path}'.")
         }
         return result.toString()
     }
-    throw TarException("Unreachable code.")
+    throw TarException("Internal error: unreachable code in native function call.")
 }
 
 private func callNativeSetFunc(nativeFunc: CFunc<(CString, Int32) -> Int32>, funcName: String, path: Path, value: Int32, ignoreFailure!: Bool = false): Unit {
     try (s = AutoCString(path)) {
         let result = unsafe { nativeFunc(s.str, value) }
         if (result == -1 && !ignoreFailure) {
-            throw TarException("Failed to call native function ${funcName} for path: ${path}, value: ${value}.")
+            throw TarException("Failed to call native function '${funcName}' for path: '${path}' with value: ${value}.")
         }
     }
 }
@@ -68,7 +68,7 @@ private func callNativeSetFunc(nativeFunc: CFunc<(CString, Int64) -> Int32>, fun
     try (s = AutoCString(path)) {
         let result = unsafe { nativeFunc(s.str, value) }
         if (result == -1) {
-            throw TarException("Failed to call native function ${funcName} for path: ${path}, value: ${value}.")
+            throw TarException("Failed to call native function '${funcName}' for path: '${path}' with value: ${value}.")
         }
     }
 }
@@ -77,7 +77,7 @@ private func callNativeSetFunc(nativeFunc: CFunc<(CString, CString) -> Int32>, f
     try (s = AutoCString(path), v = AutoCString(value)) {
         let result = unsafe { nativeFunc(s.str, v.str) }
         if (result == -1 && !ignoreFailure) {
-            throw TarException("Failed to call native function ${funcName} for path: ${path}, value: ${value}.")
+            throw TarException("Failed to call native function '${funcName}' for path: '${path}' with value: '${value}'.")
         }
     }
 }

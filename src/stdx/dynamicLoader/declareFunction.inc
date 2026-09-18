@@ -74,6 +74,7 @@ DECLAREFUNCTION6(PKCS5_pbe2_set_iv, X509_ALGOR*, const EVP_CIPHER*, int, unsigne
 DECLAREFUNCTION0(EVP_aes_256_cbc, void*)
 DECLAREFUNCTION1(EVP_PKEY2PKCS8, PKCS8_PRIV_KEY_INFO*, const EVP_PKEY*)
 DECLAREFUNCTION1(X509_SIG_free, void, void*)
+DECLAREFUNCTION1(X509_ALGOR_free, void, void*)
 DECLAREFUNCTION4(X509_ALGOR_get0, void, const void**, int*, const void**, const void*)
 DECLAREFUNCTION3(X509_SIG_get0, void, const void*, const void**, const void**)
 DECLAREFUNCTION2(d2i_PKCS8_bio, X509_SIG*, BIO*, X509_SIG*)

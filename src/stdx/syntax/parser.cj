@@ -26,14 +26,14 @@ class Parser {
             let path = canonicalize(filePath)
             FileInfo(path)
         } catch (e: Exception) {
-            throw Exception("IOException: ${e.message}")
+            throw IllegalArgumentException("Failed to read file '${filePath}'.")
         }
         if (fileInfo.path.extensionName != "cj") {
-            throw Exception("IOException: The file extension of the source file must be 'cj'.")
+            throw IllegalArgumentException("Invalid file extension: expected 'cj', got '${fileInfo.path.extensionName}'.")
         } else if (!fileInfo.canRead()) {
-            throw Exception("IOException: The file is not readable.")
+            throw IllegalArgumentException("The file '${fileInfo.path}' is not readable.")
         } else if (!fileInfo.isRegular()) {
-            throw Exception("IOException: The path ${fileInfo.path.toString()} is not a file!")
+            throw IllegalArgumentException("Invalid path: '${fileInfo.path}' is not a regular file.")
         }
         let (node, diags) = Parser(fileInfo.path.toString()).parse()
         let file: ?SourceFile = if (let Some(root) <- node) {
@@ -77,7 +77,7 @@ class Parser {
             sort(fileInfos, by: comparator)
             fileInfos
         } catch (e: Exception) {
-            throw Exception("IOException: ${e.message}")
+            throw IllegalArgumentException("Failed to read directory '${dirPath}'.")
         }
         for (fileInfo in fileInfos) {
             if (fileInfo.path.extensionName != "cj") {
@@ -159,10 +159,10 @@ func checkPackage(sourceFiles: ArrayList<SourceFile>): (Bool, String) {
     var isMacro: Bool = sourceFiles[0].isMacroPackage
     for (f in sourceFiles) {
         if (packageName != getPackageName(f)) {
-            throw Exception("ParseException: found more than one package declaration for the package.")
+            throw IllegalArgumentException("Found more than one package declaration in package '${packageName}'.")
         }
         if (isMacro != f.isMacroPackage) {
-            throw Exception("ParseException: found different macro package declaration.")
+            throw IllegalArgumentException("Found inconsistent macro package declarations among source files of package '${packageName}'.")
         }
     }
     return (isMacro, packageName)

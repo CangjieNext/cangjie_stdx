@@ -63,7 +63,8 @@ public init(arguments: Array<Argument>, identifier: String, opKind: AtOpKind, co
 
 异常：
 
-- Exception - 当输入的 `identifier` 不符合仓颉标识符规范时，抛出异常，异常中包含报错提示信息。
+- IllegalArgumentException - 当输入的 `identifier` 不符合仓颉标识符规范时，抛出异常，异常中包含报错提示信息。
+- IllegalMemoryException - 当标识符校验过程中内存分配失败时，抛出异常，异常中包含报错提示信息。
 
 示例：
 
@@ -446,7 +447,8 @@ public init(identifier: Option<String>, isInOut: Bool, value: Expr, comments!: A
 
 异常：
 
-- Exception - 当输入的 `identifier` 不为 `None` 且不符合仓颉标识符规范时，抛出异常，异常中包含报错提示信息。
+- IllegalArgumentException - 当输入的 `identifier` 不为 `None` 且不符合仓颉标识符规范时，抛出异常，异常中包含报错提示信息。
+- IllegalMemoryException - 当标识符校验过程中内存分配失败时，抛出异常，异常中包含报错提示信息。
 
 示例：
 
@@ -1169,7 +1171,7 @@ public func walk(startPoint: SyntaxTreeNode, detach!: Bool = false): SyntaxTreeN
 
 异常：
 
-- Exception - 当重写后的节点类型与原始节点类型不一致时，抛出异常。
+- IllegalArgumentException - 当重写后的节点类型与原始节点类型不一致时，抛出异常。
 
 示例：
 
@@ -1351,6 +1353,10 @@ public func walk(root: SyntaxTreeNode): Unit
 参数：
 
 - root: [SyntaxTreeNode](#class-syntaxtreenode) - 遍历的起始节点。
+
+异常：
+
+- IllegalStateException - 当遍历过程中遇到当前版本不支持的节点类型（枚举值无法匹配）时，抛出异常。
 
 示例：
 
@@ -1632,7 +1638,7 @@ public init(nodes: Array<SyntaxTreeNode>, comments!: Array<Comment> = [])
 
 异常：
 
-- Exception - 当 `nodes` 中的节点不是表达式类型、函数声明或变量声明时，抛出异常，异常中包含报错提示信息。
+- IllegalArgumentException - 当 `nodes` 中的节点不是表达式类型、函数声明或变量声明时，抛出异常，异常中包含报错提示信息。
 
 示例：
 
@@ -1985,7 +1991,7 @@ public init(callee: Expr, arguments: Array<Argument>, comments!: Array<Comment> 
 
 异常：
 
-- Exception - 当调用表达式不是成员访问或引用表达式时，抛出异常，异常中包含报错提示信息。
+- IllegalArgumentException - 当调用表达式不是成员访问或引用表达式时，抛出异常，异常中包含报错提示信息。
 
 示例：
 
@@ -2202,7 +2208,7 @@ public init(pattern: Pattern, exceptionType: Array<TypeAnnotation>, comments!: A
 
 异常：
 
-- Exception - 当输入的 `pattern` 不为 [WildcardPattern](#class-wildcardpattern) 或 [VarPattern](#class-varpattern)，或当 `pattern` 为 [VarPattern](#class-varpattern) 但 `exceptionType` 为空时，抛出异常，异常中包含报错提示信息。
+- IllegalArgumentException - 当输入的 `pattern` 不为 [WildcardPattern](#class-wildcardpattern) 或 [VarPattern](#class-varpattern)，或当 `pattern` 为 [VarPattern](#class-varpattern) 但 `exceptionType` 为空时，抛出异常，异常中包含报错提示信息。
 
 示例：
 
@@ -2413,7 +2419,8 @@ public init(body: Body, genericConstraints: Option<GenericConstraints>, genericP
 
 异常：
 
-- Exception - 当输入的 `body` 中有除静态初始化器、函数声明、变量声明、宏展开声明和属性声明外的声明或当泛型约束与泛型参数不对应，或输入的 `name` 不符合仓颉标识符规范时，抛出异常，异常中包含报错提示信息。
+- IllegalArgumentException - 当输入的 `body` 中有除静态初始化器、函数声明、变量声明、宏展开声明和属性声明外的声明或当泛型约束与泛型参数不对应，或输入的 `name` 不符合仓颉标识符规范时，抛出异常，异常中包含报错提示信息。
+- IllegalMemoryException - 当标识符校验过程中内存分配失败时，抛出异常，异常中包含报错提示信息。
 
 示例：
 
@@ -3024,7 +3031,8 @@ public init(name: String, prefixes: Array<String>, typeArguments: Array<TypeAnno
 
 异常：
 
-- Exception - 当输入的 `name` 不符合仓颉标识符规范时，抛出异常，异常中包含报错提示信息。
+- IllegalArgumentException - 当输入的 `name` 不符合仓颉标识符规范时，抛出异常，异常中包含报错提示信息。
+- IllegalMemoryException - 当标识符校验过程中内存分配失败时，抛出异常，异常中包含报错提示信息。
 
 示例：
 
@@ -3248,7 +3256,7 @@ public init(cond: Array<AtomicCondition>, comments!: Array<Comment> = [])
 
 异常：
 
-- Exception - 当输入的 `cond` 为空时，抛出异常，异常中包含报错提示信息。
+- IllegalArgumentException - 当输入的 `cond` 为空时，抛出异常，异常中包含报错提示信息。
 
 示例：
 
@@ -3535,7 +3543,7 @@ public init(cond: Array<ConjunctionCondition>, comments!: Array<Comment> = [])
 
 异常：
 
-- Exception - 当输入的 `cond` 为空时，抛出异常，异常中包含报错提示信息。
+- IllegalArgumentException - 当输入的 `cond` 为空时，抛出异常，异常中包含报错提示信息。
 
 示例：
 
@@ -3906,7 +3914,8 @@ public init(name: String, paramTyAnnotations: Array<TypeAnnotation>, annotations
 
 异常：
 
-- Exception - 当输入的 `name` 不符合仓颉标识符规范时，抛出异常，异常中包含报错提示信息。
+- IllegalArgumentException - 当输入的 `name` 不符合仓颉标识符规范时，抛出异常，异常中包含报错提示信息。
+- IllegalMemoryException - 当标识符校验过程中内存分配失败时，抛出异常，异常中包含报错提示信息。
 
 示例：
 
@@ -4192,7 +4201,8 @@ public init(body: Body, constructors: Array<EnumConstructor>, genericConstraints
 
 异常：
 
-- Exception - 当输入的 `constructors` 为空，或输入的 `body` 中的节点不是函数声明、属性声明及宏展开声明，或当泛型约束与泛型参数不对应，或输入的 `name` 不符合仓颉标识符规范时，抛出异常，异常中包含报错提示信息。
+- IllegalArgumentException - 当输入的 `constructors` 为空，或输入的 `body` 中的节点不是函数声明、属性声明及宏展开声明，或当泛型约束与泛型参数不对应，或输入的 `name` 不符合仓颉标识符规范时，抛出异常，异常中包含报错提示信息。
+- IllegalMemoryException - 当标识符校验过程中内存分配失败时，抛出异常，异常中包含报错提示信息。
 
 示例：
 
@@ -4932,7 +4942,7 @@ public init(body: Body, extendedTyAnnotation: TypeAnnotation, genericConstraints
 
 异常：
 
-- Exception - 当输入的 `body` 中有除函数声明、宏展开声明和属性声明外的声明或当泛型约束与泛型参数不对应时，抛出异常，异常中包含报错提示信息。
+- IllegalArgumentException - 当输入的 `body` 中有除函数声明、宏展开声明和属性声明外的声明或当泛型约束与泛型参数不对应时，抛出异常，异常中包含报错提示信息。
 
 示例：
 
@@ -5391,7 +5401,8 @@ public init(identifiers: Array<String>, comments!: Array<Comment> = [])
 
 异常：
 
-- Exception - 当数组为空或包含空字符串时抛出异常，异常中包含报错提示信息。
+- IllegalArgumentException - 当数组为空或包含空字符串时抛出异常，异常中包含报错提示信息。
+- IllegalMemoryException - 当标识符校验过程中内存分配失败时，抛出异常，异常中包含报错提示信息。
 
 示例：
 
@@ -5550,10 +5561,6 @@ public init(annotations: Array<Annotation>, set: FeaturesSet, comments!: Array<C
 - annotations: Array\<[Annotation](#class-annotation)> - 一组在 feature directive 声明节点上的注解。
 - set: [FeaturesSet](#class-featuresset) - 一组 features 名称。
 - comments!: Array\<[Comment](#class-comment)> - 附加的注释列表，默认为空数组。
-
-异常：
-
-- Exception - 当 featureId 无法构造时抛出异常。
 
 示例：
 
@@ -5895,7 +5902,7 @@ public init(body: Block, expr: Expr, pattern: Pattern, patternGuard: Option<Expr
 
 异常：
 
-- Exception - 当 `pattern` 不是通配符模式、变量绑定模式、元组模式或枚举模式时，抛出异常，异常中包含报错提示信息。
+- IllegalArgumentException - 当 `pattern` 不是通配符模式、变量绑定模式、元组模式或枚举模式时，抛出异常，异常中包含报错提示信息。
 
 示例：
 
@@ -6222,7 +6229,8 @@ public init(body: Option<Block>, genericConstraints: Option<GenericConstraints>,
 
 异常：
 
-- Exception - 当函数种类和修饰符不对应，或输入的 `name` 不符合仓颉标识符规范时，抛出异常，异常中包含报错提示信息。
+- IllegalArgumentException - 当函数种类和修饰符不对应，或输入的 `name` 不符合仓颉标识符规范时，抛出异常，异常中包含报错提示信息。
+- IllegalMemoryException - 当标识符校验过程中内存分配失败时，抛出异常，异常中包含报错提示信息。
 
 示例：
 
@@ -6677,7 +6685,8 @@ public init(defaultValue: Option<Expr>, kind: Option<VarKind>, name: String, typ
 
 异常：
 
-- Exception - 当 `kind` 不代表 `var` 或 `let`，或 `kind` 为空但 `modifiers` 不为空，或没有传入参数名却为命名参数，或输入的 `name` 不符合仓颉标识符规范时，抛出异常，异常中包含报错提示信息。
+- IllegalArgumentException - 当 `kind` 不代表 `var` 或 `let`，或 `kind` 为空但 `modifiers` 不为空，或没有传入参数名却为命名参数，或有默认值却不为命名参数，或输入的 `name` 不符合仓颉标识符规范时，抛出异常，异常中包含报错提示信息。
+- IllegalMemoryException - 当标识符校验过程中内存分配失败时，抛出异常，异常中包含报错提示信息。
 
 示例：
 
@@ -6958,7 +6967,7 @@ public init(paramTypes: Array<TypeAnnotation>, labels: Array<String>, retType: T
 
 异常：
 
-- Exception - 当参数类型列表和参数名列表长度不一样时，抛出异常，异常中包含报错提示信息。
+- IllegalArgumentException - 当参数类型列表和参数名列表长度不一样时，抛出异常，异常中包含报错提示信息。
 
 示例：
 
@@ -7301,7 +7310,7 @@ public init(typeArgument: TypeAnnotation, upperBounds: Array<TypeAnnotation>, co
 
 异常：
 
-- Exception - 当输入的 `upperBounds` 为空时，抛出异常，异常中包含报错提示信息。
+- IllegalArgumentException - 当输入的 `upperBounds` 为空时，抛出异常，异常中包含报错提示信息。
 
 示例：
 
@@ -7448,7 +7457,7 @@ public init(constraints: Array<GenericConstraint>, comments!: Array<Comment> = [
 
 异常：
 
-- Exception - 当输入的 `constraints` 为空时，抛出异常，异常中包含报错提示信息。
+- IllegalArgumentException - 当输入的 `constraints` 为空时，抛出异常，异常中包含报错提示信息。
 
 示例：
 
@@ -7594,7 +7603,8 @@ public init(name: String, comments!: Array<Comment> = [])
 
 异常：
 
-- Exception - 当输入的 `name` 不符合仓颉标识符规范时，抛出异常，异常中包含报错提示信息。
+- IllegalArgumentException - 当输入的 `name` 不符合仓颉标识符规范时，抛出异常，异常中包含报错提示信息。
+- IllegalMemoryException - 当标识符校验过程中内存分配失败时，抛出异常，异常中包含报错提示信息。
 
 示例：
 
@@ -7693,7 +7703,7 @@ public init(condition: DisjunctionCondition, elseBlock: Option<Block>, elseIf: O
 
 异常：
 
-- Exception - 当输入中存在多个 `elseBlock` 时，抛出异常，异常中包含报错提示信息。
+- IllegalArgumentException - 当输入中存在多个 `elseBlock` 时，抛出异常，异常中包含报错提示信息。
 
 示例：
 
@@ -7951,7 +7961,8 @@ public init(prefixes: Array<String>, identifier: String, alias: String, comments
 
 异常：
 
-- Exception - 当输入的 `identifier` 不符合仓颉标识符规范时，抛出异常，异常中包含报错提示信息。
+- IllegalArgumentException - 当输入的 `identifier` 不符合仓颉标识符规范时，抛出异常，异常中包含报错提示信息。
+- IllegalMemoryException - 当标识符校验过程中内存分配失败时，抛出异常，异常中包含报错提示信息。
 
 示例：
 
@@ -8332,7 +8343,7 @@ public init(contents: ImportContent, modifier: Option<Modifier>, comments!: Arra
 
 异常：
 
-- Exception - 当 `modifier` 不为 [Public](syntax_package_enums.md#public)、[Protected](syntax_package_enums.md#protected)、[Private](syntax_package_enums.md#private) 或 [Internal](syntax_package_enums.md#internal) 时，抛出异常，异常中包含报错提示信息。
+- IllegalArgumentException - 当 `modifier` 不为 [Public](syntax_package_enums.md#public)、[Protected](syntax_package_enums.md#protected)、[Private](syntax_package_enums.md#private) 或 [Internal](syntax_package_enums.md#internal) 时，抛出异常，异常中包含报错提示信息。
 
 示例：
 
@@ -8438,7 +8449,7 @@ public init(prefixes: Array<String>, contents: Array<ImportContent>, comments!: 
 
 异常：
 
-- Exception - 当输入的 `contents` 为空时，抛出异常，异常中包含报错提示信息。
+- IllegalArgumentException - 当输入的 `contents` 为空时，抛出异常，异常中包含报错提示信息。
 
 示例：
 
@@ -8617,7 +8628,8 @@ public init(prefixes: Array<String>, identifier: String, comments!: Array<Commen
 
 异常：
 
-- Exception - 当输入的 `identifier` 不符合仓颉标识符规范时，抛出异常，异常中包含报错提示信息。
+- IllegalArgumentException - 当输入的 `identifier` 不符合仓颉标识符规范时，抛出异常，异常中包含报错提示信息。
+- IllegalMemoryException - 当标识符校验过程中内存分配失败时，抛出异常，异常中包含报错提示信息。
 
 示例：
 
@@ -8890,7 +8902,8 @@ public init(body: Body, genericConstraints: Option<GenericConstraints>, genericP
 
 异常：
 
-- Exception - 当输入的 `body` 中有除函数声明和宏展开声明外的声明，或泛型约束与泛型参数不对应，或输入的 `name` 不符合仓颉标识符规范时，抛出异常，异常中包含报错提示信息。
+- IllegalArgumentException - 当输入的 `body` 中有除函数声明和宏展开声明外的声明，或泛型约束与泛型参数不对应，或输入的 `name` 不符合仓颉标识符规范时，抛出异常，异常中包含报错提示信息。
+- IllegalMemoryException - 当标识符校验过程中内存分配失败时，抛出异常，异常中包含报错提示信息。
 
 示例：
 
@@ -9569,7 +9582,8 @@ public init(name: String, typeAnnotation: Option<TypeAnnotation>, comments!: Arr
 
 异常：
 
-- Exception - 当输入的 `name` 不符合仓颉标识符规范时，抛出异常，异常中包含报错提示信息。
+- IllegalArgumentException - 当输入的 `name` 不符合仓颉标识符规范时，抛出异常，异常中包含报错提示信息。
+- IllegalMemoryException - 当标识符校验过程中内存分配失败时，抛出异常，异常中包含报错提示信息。
 
 示例：
 
@@ -9722,7 +9736,7 @@ public init(expr: Expr, patterns: Array<Pattern>, comments!: Array<Comment> = []
 
 异常：
 
-- Exception - 当输入的 `patterns` 为空时，抛出异常，异常中包含报错提示信息。
+- IllegalArgumentException - 当输入的 `patterns` 为空时，抛出异常，异常中包含报错提示信息。
 
 示例：
 
@@ -9933,7 +9947,7 @@ public init(kind: LitConstKind, rawValue: String, comments!: Array<Comment> = []
 
 异常：
 
-- Exception - 当 `kind` 为 [RuneLiteral](syntax_package_enums.md#runeliteral) 或 [StringLiteral](syntax_package_enums.md#stringliteral) 时，或 `rawValue` 无法用于构建对应类型字面量时，抛出异常，异常中包含报错提示信息。
+- IllegalArgumentException - 当 `kind` 为 [RuneLiteral](syntax_package_enums.md#runeliteral) 或 [StringLiteral](syntax_package_enums.md#stringliteral) 时，或 `rawValue` 无法用于构建对应类型字面量时，抛出异常，异常中包含报错提示信息。
 
 > **注意：**
 >
@@ -10015,7 +10029,7 @@ public init(kind: LitConstKind, rawValue: String, isSingleQuote: Bool, comments!
 
 异常：
 
-- Exception - 当 `kind` 不是字符字面量类型时，抛出异常，异常中包含报错提示信息。
+- IllegalArgumentException - 当 `kind` 不是字符字面量类型时，抛出异常，异常中包含报错提示信息。
 
 示例：
 
@@ -10127,7 +10141,8 @@ public init(kind: LitConstKind, rawValue: String, delimiterNum: Int64, isSingleQ
 
 异常：
 
-- Exception - 当 `strKind` 为 [MultiLineRawString](syntax_package_enums.md#multilinerawstring) 且 `delimiterNum` 为 `0` 时，抛出异常，异常中包含报错提示信息。
+- IllegalArgumentException - 当 `strKind` 为 [MultiLineRawString](syntax_package_enums.md#multilinerawstring) 且 `delimiterNum` 为 `0` 时，抛出异常，异常中包含报错提示信息。
+- UnsupportedException - 当 `strKind` 为 [JStringLiteral](syntax_package_enums.md#jstringliteral) 时，抛出异常，异常中包含报错提示信息。
 
 示例：
 
@@ -10286,7 +10301,8 @@ public init(body: Block, name: String, params: ParameterList, retTyAnnotation: O
 
 异常：
 
-- Exception - 当输入的 `name` 不符合仓颉标识符规范时，抛出异常，异常中包含报错提示信息。
+- IllegalArgumentException - 当输入的 `name` 不符合仓颉标识符规范时，抛出异常，异常中包含报错提示信息。
+- IllegalMemoryException - 当标识符校验过程中内存分配失败时，抛出异常，异常中包含报错提示信息。
 
 示例：
 
@@ -10503,7 +10519,8 @@ public init(calleeMacro: Expr, macroAttrs: Tokens, macroInputs: MacroExpandInput
 
 异常：
 
-- Exception - 当宏调用表达式不是成员访问或引用表达式时，格式化过程中内存分配失败，或 `macroInputs` 不在 [MacroExpandInput](syntax_package_enums.md#enum-macroexpandinput) 中时，抛出异常，异常中包含报错提示信息。
+- IllegalArgumentException - 当宏调用表达式不是成员访问或引用表达式，或 `macroInputs` 不在 [MacroExpandInput](syntax_package_enums.md#enum-macroexpandinput) 中时，抛出异常，异常中包含报错提示信息。
+- IllegalMemoryException - Tokens 格式化过程中内存分配失败时，抛出异常，异常中包含报错提示信息。
 
 示例：
 
@@ -10901,7 +10918,8 @@ public init(calleeMacro: Expr, macroAttrs: Tokens, macroInputs: MacroExpandInput
 
 异常：
 
-- Exception - 当宏调用表达式不是成员访问或引用表达式时，格式化过程中内存分配失败，或 `macroInputs` 不在 [MacroExpandInput](syntax_package_enums.md#enum-macroexpandinput) 中时，抛出异常，异常中包含报错提示信息。
+- IllegalArgumentException - 当宏调用表达式不是成员访问或引用表达式，或 `macroInputs` 不在 [MacroExpandInput](syntax_package_enums.md#enum-macroexpandinput) 中时，抛出异常，异常中包含报错提示信息。
+- IllegalMemoryException - Tokens 格式化过程中内存分配失败时，抛出异常，异常中包含报错提示信息。
 
 示例：
 
@@ -11265,7 +11283,8 @@ public init(calleeMacro: Expr, macroAttrs: Tokens, macroInputs: MacroExpandInput
 
 异常：
 
-- Exception - 当宏调用表达式不是成员访问或引用表达式时，格式化过程中内存分配失败，或 `macroInputs` 不在 [MacroExpandInput](syntax_package_enums.md#enum-macroexpandinput) 中时，抛出异常，异常中包含报错提示信息。
+- IllegalArgumentException - 当宏调用表达式不是成员访问或引用表达式，或 `macroInputs` 不在 [MacroExpandInput](syntax_package_enums.md#enum-macroexpandinput) 中时，抛出异常，异常中包含报错提示信息。
+- IllegalMemoryException - Tokens 格式化过程中内存分配失败时，抛出异常，异常中包含报错提示信息。
 
 示例：
 
@@ -11805,7 +11824,7 @@ public init(patterns: Array<Pattern>, patternGuardCond: Option<Expr>, caseCond: 
 
 异常：
 
-- Exception - 当 `body` 中的节点不是表达式类型、函数声明或变量声明时，抛出异常，异常中包含报错提示信息。
+- IllegalArgumentException - 当 `body` 中的节点不是表达式类型、函数声明或变量声明时，抛出异常，异常中包含报错提示信息。
 
 示例：
 
@@ -12342,7 +12361,7 @@ public init(base: SyntaxTreeNode, field: SymbolRef, comments!: Array<Comment> = 
 
 异常：
 
-- Exception - 当 `base` 节点不是表达式或类型标注时，抛出异常，异常中包含报错提示信息。
+- IllegalArgumentException - 当 `base` 节点不是表达式或类型标注时，抛出异常，异常中包含报错提示信息。
 
 示例：
 
@@ -12635,7 +12654,7 @@ public init(isMacroPkg: Bool, name: String, srcFile: Array<SourceFile>)
 
 异常：
 
-- Exception - 当输入的 `name` 不符合仓颉标识符规范时，抛出异常，异常中包含报错提示信息。
+- IllegalArgumentException - 当输入的 `name` 不符合仓颉标识符规范时，抛出异常，异常中包含报错提示信息。
 
 示例：
 
@@ -12909,7 +12928,7 @@ public init(accessModifier: Option<Modifier>, isMacroPkg: Bool, packageNameIdent
 
 异常：
 
-- Exception - 当修饰符不是 `public`、`internal` 或 `protected`，或 `packageNameIdentifiers` 为空时，抛出异常，异常中包含报错提示信息。
+- IllegalArgumentException - 当修饰符不是 `public`、`internal` 或 `protected`，或 `packageNameIdentifiers` 为空时，抛出异常，异常中包含报错提示信息。
 
 示例：
 
@@ -14115,7 +14134,8 @@ public init(getter: Option<PropGetterOrSetter>, name: String, setter: Option<Pro
 
 异常：
 
-- Exception - 当 `setter` 存在但 `getter` 不存在，或输入的 `name` 不符合仓颉标识符规范时，抛出异常，异常中包含报错提示信息。
+- IllegalArgumentException - 当 `setter` 存在但 `getter` 不存在，或输入的 `name` 不符合仓颉标识符规范时，抛出异常，异常中包含报错提示信息。
+- IllegalMemoryException - 当标识符校验过程中内存分配失败时，抛出异常，异常中包含报错提示信息。
 
 示例：
 
@@ -14400,7 +14420,8 @@ public init(block: Block, identifier: Option<String>, isGetter: Bool, annotation
 
 异常：
 
-- Exception - 当 `isGetter` 为 `true` 但 `annotations` 不为空或 `identifier` 不为空，或 `isGetter` 为 `false` 但 `identifier` 为空或不符合仓颉标识符规范时，抛出异常，异常中包含报错提示信息。
+- IllegalArgumentException - 当 `isGetter` 为 `true` 但 `annotations` 不为空或 `identifier` 不为空，或 `isGetter` 为 `false` 但 `identifier` 为空或不符合仓颉标识符规范时，抛出异常，异常中包含报错提示信息。
+- IllegalMemoryException - 当标识符校验过程中内存分配失败时，抛出异常，异常中包含报错提示信息。
 
 示例：
 
@@ -15114,7 +15135,7 @@ public init(content: Tokens, comments!: Array<Comment> = [])
 
 异常：
 
-- Exception - 当格式化过程中内存分配失败时，抛出异常，异常中包含报错提示信息。
+- IllegalMemoryException - 当 Tokens 格式化过程中内存分配失败时，抛出异常，异常中包含报错提示信息。
 
 示例：
 
@@ -15583,10 +15604,6 @@ public init(importLists: Array<ImportList>, name: String, path: String, pkgHeade
 - topLevelDecls: Array\<[Decl](#class-decl)> - 顶层声明列表。
 - ftrDirective!: Option\<FeaturesDirective> - 特性指令，默认为 `None`。
 - comments!: Array\<[Comment](#class-comment)> - 附加的注释列表，默认为空数组。
-
-异常：
-
-- Exception - 当输入的 `name` 不符合仓颉标识符规范时，抛出异常，异常中包含报错提示信息。
 
 示例：
 
@@ -16351,7 +16368,8 @@ public init(body: Body, genericConstraints: Option<GenericConstraints>, genericP
 
 异常：
 
-- Exception - 当输入的 `body` 中有除静态初始化器、函数声明、变量声明、宏展开声明和属性声明外的声明，或泛型约束与泛型参数不对应，或输入的 `name` 不符合仓颉标识符规范时，抛出异常，异常中包含报错提示信息。
+- IllegalArgumentException - 当输入的 `body` 中有除静态初始化器、函数声明、变量声明、宏展开声明和属性声明外的声明，或泛型约束与泛型参数不对应，或输入的 `name` 不符合仓颉标识符规范时，抛出异常，异常中包含报错提示信息。
+- IllegalMemoryException - 当标识符校验过程中内存分配失败时，抛出异常，异常中包含报错提示信息。
 
 示例：
 
@@ -16924,7 +16942,7 @@ public init(base: Expr, indexs: Array<Expr>, comments!: Array<Comment> = [])
 
 异常：
 
-- Exception - 当 `indexs` 为空时，抛出异常，异常中包含报错提示信息。
+- IllegalArgumentException - 当 `indexs` 为空时，抛出异常，异常中包含报错提示信息。
 
 示例：
 
@@ -17136,7 +17154,8 @@ public init(name: String, typeArguments: Array<TypeAnnotation>, comments!: Array
 
 异常：
 
-- Exception - 当输入的 `name` 不符合仓颉标识符规范时，抛出异常，异常中包含报错提示信息。
+- IllegalArgumentException - 当输入的 `name` 不符合仓颉标识符规范时，抛出异常，异常中包含报错提示信息。
+- IllegalMemoryException - 当标识符校验过程中内存分配失败时，抛出异常，异常中包含报错提示信息。
 
 示例：
 
@@ -17930,7 +17949,7 @@ public init(callee: Expr, arguments: Array<Argument>, trailingLambdaExpr: Lambda
 
 异常：
 
-- Exception - 当 `callee` 不是成员访问或引用表达式时，抛出异常，异常中包含报错提示信息。
+- IllegalArgumentException - 当 `callee` 不是成员访问或引用表达式时，抛出异常，异常中包含报错提示信息。
 
 示例：
 
@@ -18210,7 +18229,7 @@ public init(catchBlocks: Array<Block>, catchPatterns: Array<CatchPattern>, final
 
 异常：
 
-- Exception - 当输入的 `catchPatterns`、`resourceSpec` 和 `finallyBlock` 同时为空时，抛出异常，异常中包含报错提示信息。
+- IllegalArgumentException - 当输入的 `catchPatterns`、`resourceSpec` 和 `finallyBlock` 同时为空时，抛出异常，异常中包含报错提示信息。
 
 示例：
 
@@ -19029,7 +19048,7 @@ public init(subPatterns: Array<Pattern>, comments!: Array<Comment> = [])
 
 异常：
 
-- Exception - 当输入的 `subPatterns` 包含的元素个数少于 `2` 时，抛出异常，异常中包含报错提示信息。
+- IllegalArgumentException - 当输入的 `subPatterns` 包含的元素个数少于 `2` 时，抛出异常，异常中包含报错提示信息。
 
 示例：
 
@@ -19225,7 +19244,7 @@ public init(labels: Array<String>, elements: Array<TypeAnnotation>, comments!: A
 
 异常：
 
-- Exception - 当元素类型列表和元素名列表长度不一样时，抛出异常，异常中包含报错提示信息。
+- IllegalArgumentException - 当元素类型列表和元素名列表长度不一样时，抛出异常，异常中包含报错提示信息。
 
 示例：
 
@@ -19545,7 +19564,8 @@ public init(aliasName: String, originalTyAnnotation: TypeAnnotation, typeParamet
 
 异常：
 
-- Exception - 当输入的 `aliasName` 不符合仓颉标识符规范时，抛出异常，异常中包含报错提示信息。
+- IllegalArgumentException - 当输入的 `aliasName` 不符合仓颉标识符规范时，抛出异常，异常中包含报错提示信息。
+- IllegalMemoryException - 当标识符校验过程中内存分配失败时，抛出异常，异常中包含报错提示信息。
 
 示例：
 
@@ -19951,7 +19971,7 @@ public init(subPattern: Pattern, patternType: TypeAnnotation, comments!: Array<C
 
 异常：
 
-- Exception - 当输入的 `subPattern` 不为 [WildcardPattern](#class-wildcardpattern) 或 [VarPattern](#class-varpattern) 时，抛出异常，异常中包含报错提示信息。
+- IllegalArgumentException - 当输入的 `subPattern` 不为 [WildcardPattern](#class-wildcardpattern) 或 [VarPattern](#class-varpattern) 时，抛出异常，异常中包含报错提示信息。
 
 示例：
 
@@ -20352,7 +20372,8 @@ public init(initializer: Option<Expr>, kind: VarKind, name: String, pattern: Pat
 
 异常：
 
-- Exception - 当 `pattern` 不是通配符模式、变量绑定模式、元组模式或枚举模式，或 `modifiers` 包含 `const`，或 `kind` 不代表 `var`、`let` 或 `const`，或输入的 `name` 不符合仓颉标识符规范时，抛出异常，异常中包含报错提示信息。
+- IllegalArgumentException - 当 `pattern` 不是通配符模式、变量绑定模式、元组模式或枚举模式，或 `modifiers` 包含 `const`，或 `kind` 不代表 `var`、`let` 或 `const`，或输入的 `name` 不符合仓颉标识符规范时，抛出异常，异常中包含报错提示信息。
+- IllegalMemoryException - 当标识符校验过程中内存分配失败时，抛出异常，异常中包含报错提示信息。
 
 示例：
 
@@ -20588,7 +20609,8 @@ public init(identifier: String, comments!: Array<Comment> = [])
 
 异常：
 
-- Exception - 当输入的 `identifier` 不符合仓颉标识符规范时，抛出异常，异常中包含报错提示信息。
+- IllegalArgumentException - 当输入的 `identifier` 不符合仓颉标识符规范时，抛出异常，异常中包含报错提示信息。
+- IllegalMemoryException - 当标识符校验过程中内存分配失败时，抛出异常，异常中包含报错提示信息。
 
 示例：
 
@@ -20654,7 +20676,8 @@ public init(name: String, comments!: Array<Comment> = [])
 
 异常：
 
-- Exception - 当输入的 `name` 不符合仓颉标识符规范时，抛出异常，异常中包含报错提示信息。
+- IllegalArgumentException - 当输入的 `name` 不符合仓颉标识符规范时，抛出异常，异常中包含报错提示信息。
+- IllegalMemoryException - 当标识符校验过程中内存分配失败时，抛出异常，异常中包含报错提示信息。
 
 示例：
 
@@ -20725,10 +20748,6 @@ public init(argument: Argument, vArrayType: VArrayType, comments!: Array<Comment
 - argument: [Argument](#class-argument) - 构造参数。
 - vArrayType: [VArrayType](#class-varraytype) - 定长数组类型。
 - comments!: Array\<[Comment](#class-comment)> - 附加的注释列表，默认为空数组。
-
-异常：
-
-- Exception - 当 `size` 小于 `0` 时，抛出异常，异常中包含报错提示信息。
 
 示例：
 
@@ -20939,7 +20958,7 @@ public init(elementType: TypeAnnotation, size: Int64, comments!: Array<Comment> 
 
 异常：
 
-- Exception - 当 `size` 小于等于 `0` 时，抛出异常，异常中包含报错提示信息。
+- IllegalArgumentException - 当 `size` 小于 `0` 时，抛出异常，异常中包含报错提示信息。
 
 示例：
 

@@ -138,7 +138,7 @@ public open class ASTVisitor {
             case featuresDirective: FeaturesDirective => visitFeaturesDirective(featuresDirective)
             case featuresSet: FeaturesSet => visitFeaturesSet(featuresSet)
             case featureId: FeatureId => visitFeatureId(featureId)
-            case _ => throw Exception()
+            case _ => throw IllegalStateException("Internal error: unexpected 'SyntaxTreeNode' kind during visiting.")
         }
     }
 
@@ -182,7 +182,7 @@ public open class ASTVisitor {
         match (macroInputs) {
             case MacroExpandInput.WithoutParens(decl) => walk(decl)
             case MacroExpandInput.WithParens(_) => return
-            case _ => throw Exception("VisitException: Failed to match the enumeration value")
+            case _ => throw IllegalStateException("Internal error: unexpected 'MacroExpandInput' value.")
         }
     }
 
@@ -294,7 +294,7 @@ public open class ASTVisitor {
                 case AtomicCondition.LetPatternCondition(letPattern) => walk(letPattern)
                 case AtomicCondition.Expression(expr) => walk(expr)
                 case AtomicCondition.ParenConditionConstructor(parenCondition) => walk(parenCondition)
-                case _ => throw Exception("VisitException: Failed to match the enumeration value")
+                case _ => throw IllegalStateException("Internal error: unexpected 'AtomicCondition' value.")
             }
         }
     }
@@ -540,7 +540,7 @@ public open class ASTVisitor {
             match (part) {
                 case StrLiteralPart.LitConstPart(lit) => walk(lit)
                 case StrLiteralPart.StrInterpolation(strInterpolation) => walk(strInterpolation)
-                case _ => throw Exception("VisitException: Failed to match the enumeration value")
+                case _ => throw IllegalStateException("Internal error: unexpected 'StrLiteralPart' value.")
             }
         }
     }
@@ -559,7 +559,7 @@ public open class ASTVisitor {
         match (node.macroInputs) {
             case MacroExpandInput.WithoutParens(decl) => walk(decl)
             case MacroExpandInput.WithParens(_) => return
-            case _ => throw Exception("VisitException: Failed to match the enumeration value")
+            case _ => throw IllegalStateException("Internal error: unexpected 'MacroExpandInput' value.")
         }
     }
 
@@ -677,7 +677,7 @@ public open class ASTVisitor {
             match (content) {
                 case QuoteExprContent.TokenPart(tks) => walk(tks)
                 case QuoteExprContent.QuoteInterpolation(quoteInterpolation) => walk(quoteInterpolation)
-                case _ => throw Exception("VisitException: Failed to match the enumeration value")
+                case _ => throw IllegalStateException("Internal error: unexpected 'QuoteExprContent' value.")
             }
         }
     }
