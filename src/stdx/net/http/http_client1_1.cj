@@ -382,6 +382,11 @@ class HttpEngine1 {
         if (connNode.isClosed.load()) {
             return
         }
+        let capturedState = connNode.lifeState.load()
+        if ((capturedState % 4) != 0 || !connNode.lifeState.compareAndSwap(capturedState, capturedState + 4)) {
+            closeConnInUse(connNode)
+            return
+        }
         if (connNode.shouldClose.load()) {
             closeConnInUse(connNode)
             return
@@ -557,6 +562,20 @@ class ConnNode <: BodyProviderConn {
     let shouldClose = AtomicBool(false)
     let continueMonitor = Monitor()
     var isClosed = AtomicBool(false)
+
+    // Lifecycle state resolving the timer cancel-vs-reuse race.
+    // - timer task (setReadTimer/setWriteTimer): CAS(captured, captured + 1).
+    //   Wins only if the value is unchanged since this timer was armed, i.e. the
+    //   conn is still in the SAME use - so a stale task can never kill a pooled
+    //   or reused connection. A write-timer win followed by a late read-timer fire
+    //   may add a second +1 (captured % 4 == 2) and misattribute the failure as a read
+    //   timeout - accepted: the error type is unchanged and the conn is closed
+    //   anyway.
+    // - returnConn: requires captured % 4 == 0 and CAS(v, v + 4); any
+    //   failure discards the conn instead of pooling it. Phase != 0 guarantees a
+    //   timer task won during this use, so a closed conn can never re-enter the
+    //   pool and affect the NEXT request - which is the actual invariant.
+    let lifeState = AtomicInt64(0)
 
     let conn: BufferedConn
     let logger: Logger
@@ -797,11 +816,15 @@ class ConnNode <: BodyProviderConn {
     }
 
     private func setWriteTimer(writeTimeout: Duration) {
+        let capturedState = lifeState.load()
         writeTimer = HttpTimer(
             start: writeTimeout,
             task: {
                 =>
                 if (isClosed.load()) {
+                    return
+                }
+                if (!lifeState.compareAndSwap(capturedState, capturedState + 1)) {
                     return
                 }
                 httpLogWarn(logger, "[ConnNode#sendRequestTimeout] Client1.1 write request timeout")
@@ -812,11 +835,15 @@ class ConnNode <: BodyProviderConn {
     }
 
     private func setReadTimer(readTimeout: Duration) {
+        let capturedState = lifeState.load()
         readTimer = HttpTimer(
             start: readTimeout,
             task: {
                 =>
                 if (isClosed.load()) {
+                    return
+                }
+                if (!lifeState.compareAndSwap(capturedState, capturedState + 1)) {
                     return
                 }
                 httpLogWarn(logger, "[ConnNode#sendRequestTimeout readTimer] Client1.1 read response timeout")
