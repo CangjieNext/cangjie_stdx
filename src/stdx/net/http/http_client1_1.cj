@@ -382,6 +382,18 @@ class HttpEngine1 {
         if (connNode.isClosed.load()) {
             return
         }
+        // Lifecycle arbitration (fixes the timer cancel-vs-fire race): a read/write
+        // timer that fired but lost the race to run may still be pending. Any non-zero
+        // phase (low 2 bits) means a timer task already won its CAS during this use -
+        // even twice, if both the write and the (late-armed) read timer won - and the
+        // conn was closed, so it MUST be discarded instead of pooled. CAS(v, v+4) both
+        // terminates this epoch and opens the next one, so any pending timer task armed
+        // during this use fails its CAS and silently gives up.
+        let capturedState = connNode.lifeState.load()
+        if ((capturedState % 4) != 0 || !connNode.lifeState.compareAndSwap(capturedState, capturedState + 4)) {
+            closeConnInUse(connNode)
+            return
+        }
         if (connNode.shouldClose.load()) {
             closeConnInUse(connNode)
             return
@@ -557,6 +569,25 @@ class ConnNode <: BodyProviderConn {
     let shouldClose = AtomicBool(false)
     let continueMonitor = Monitor()
     var isClosed = AtomicBool(false)
+
+    // Lifecycle state resolving the timer cancel-vs-fire race.
+    // Encoded as `epoch * 4 + phase` (phase = low 2 bits). getConn does NOT touch
+    // this value - returning to the pool (+4) itself opens the next epoch, so the
+    // captured value uniquely identifies ONE use of this conn. Physical ownership
+    // (pool vs in-use) is tracked by the connPool/connInUse lists:
+    // - timer task (setReadTimer/setWriteTimer): CAS(captured, captured + 1).
+    //   Wins only if the value is unchanged since this timer was armed, i.e. the
+    //   conn is still in the SAME use - so a stale task can never kill a pooled
+    //   or reused connection. A write-timer win followed by a late read-timer fire
+    //   may add a second +1 (phase 2) and misattribute the failure as a read
+    //   timeout - accepted: the error type is unchanged and the conn is closed
+    //   anyway.
+    // - returnConn: requires phase == 0 (value % 4 == 0) and CAS(v, v + 4); any
+    //   failure discards the conn instead of pooling it. Phase != 0 guarantees a
+    //   timer task won during this use, so a closed conn can never re-enter the
+    //   pool and affect the NEXT request - which is the actual invariant.
+    // Values only ever increase (+1/+4), so there is no ABA problem.
+    let lifeState = AtomicInt64(0)
 
     let conn: BufferedConn
     let logger: Logger
@@ -797,11 +828,18 @@ class ConnNode <: BodyProviderConn {
     }
 
     private func setWriteTimer(writeTimeout: Duration) {
+        let capturedState = lifeState.load()
         writeTimer = HttpTimer(
             start: writeTimeout,
             task: {
                 =>
                 if (isClosed.load()) {
+                    return
+                }
+                // CAS arbitration: act only if the conn is still in the same use
+                // this timer was armed for. Failure means the conn was already
+                // returned to the pool (or reused) - a stale task must give up.
+                if (!lifeState.compareAndSwap(capturedState, capturedState + 1)) {
                     return
                 }
                 httpLogWarn(logger, "[ConnNode#sendRequestTimeout] Client1.1 write request timeout")
@@ -812,11 +850,21 @@ class ConnNode <: BodyProviderConn {
     }
 
     private func setReadTimer(readTimeout: Duration) {
+        let capturedState = lifeState.load()
         readTimer = HttpTimer(
             start: readTimeout,
             task: {
                 =>
                 if (isClosed.load()) {
+                    return
+                }
+                // CAS arbitration: act only if the conn is still in the same use
+                // this timer was armed for. Failure means the conn was already
+                // returned to the pool (or reused) - a stale task must give up.
+                // This closes the cancel-vs-fire race: even when readTimer.cancel()
+                // arrives too late (the task is already spawned), the task will not
+                // poison a pooled/reused connection.
+                if (!lifeState.compareAndSwap(capturedState, capturedState + 1)) {
                     return
                 }
                 httpLogWarn(logger, "[ConnNode#sendRequestTimeout readTimer] Client1.1 read response timeout")
