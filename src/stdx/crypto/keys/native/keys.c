@@ -491,9 +491,15 @@ extern const char* DYN_CJX509DescribePrivateKey(
  * by description. If the description pointer is NULL, no description will be generated.
  *
  * Both resultBody and description (if not NULL) should be explicitly freed by caller.
+ *
+ * NOTE: this is the implementation half of the decryption entry point. It has multiple
+ * early-return paths that intentionally do NOT wipe the password buffer; wiping is
+ * centralized in the exported CJX509DecryptPrivateKey() wrapper below, which covers
+ * every return path of this function at a single point. Do not call this directly
+ * from outside this file, or password material will be left in the caller's buffer.
  * @return CJ_OK or CJ_FAIL
  */
-extern int32_t CJX509DecryptPrivateKey(const void* keyBody, size_t length, char** resultBody, size_t* resultSize,
+static int32_t DecryptPrivateKeyImpl(const void* keyBody, size_t length, char** resultBody, size_t* resultSize,
     EncryptedKeyParams* params, const char** description, ExceptionData* exception, DynMsg* dynMsg)
 {
     if (exception == NULL) {
@@ -542,6 +548,41 @@ extern int32_t CJX509DecryptPrivateKey(const void* keyBody, size_t length, char*
     } else {
         return CJ_FAIL;
     }
+}
+
+/**
+ * Decrypt private key located at keyBody:length using the specified password (required)
+ * and put the resulting decrypted key to a new allocated memory and put
+ * it's pointer and size to resultBody and resultSize (required).
+ * Optionally, it does describe the key and put the allocated text to the place pointed
+ * by description. If the description pointer is NULL, no description will be generated.
+ *
+ * Both resultBody and description (if not NULL) should be explicitly freed by caller.
+ *
+ * The password buffer is heap-allocated by the Cangjie caller via LibC.mallocCString()
+ * and is released afterwards with free(), which does not clear the memory; wipe it here
+ * on every return path so that password material does not linger in the released heap block.
+ * @return CJ_OK or CJ_FAIL
+ */
+extern int32_t CJX509DecryptPrivateKey(const void* keyBody, size_t length, char** resultBody, size_t* resultSize,
+    EncryptedKeyParams* params, const char** description, ExceptionData* exception, DynMsg* dynMsg)
+{
+    int32_t result =
+        DecryptPrivateKeyImpl(keyBody, length, resultBody, resultSize, params, description, exception, dynMsg);
+    // Wipe the caller's password buffer on every return path. DecryptPrivateKeyImpl()
+    // returns early on several error branches (cipherName is NULL, unknown cipher,
+    // oversized password, malformed IV, failed key derivation) without wiping, so doing
+    // it here is the single point that covers all of them. params->password is a
+    // NUL-terminated C string, so strlen() is the same length measurement that the
+    // implementation uses. On the success path the buffer has already been wiped by
+    // DecryptKey(), making strlen() return 0 and this a no-op.
+    if (params != NULL && params->password != NULL) {
+        size_t passwordLength = strlen(params->password);
+        if (passwordLength > 0) {
+            (void)memset_s((void*)params->password, passwordLength, 0, passwordLength);
+        }
+    }
+    return result;
 }
 
 extern int DYN_CJX509CheckPrivateKey(SSL_CTX* ctx, const char* file, DynMsg* dynMsg)
