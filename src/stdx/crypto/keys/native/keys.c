@@ -575,7 +575,8 @@ extern int32_t CJX509DecryptPrivateKey(const void* keyBody, size_t length, char*
     // it here is the single point that covers all of them. params->password is a
     // NUL-terminated C string, so strlen() is the same length measurement that the
     // implementation uses. On the success path the buffer has already been wiped by
-    // DecryptKey(), making strlen() return 0 and this a no-op.
+    // DecryptKey() or in the PKCS8 branch of LoadEncryptedKey(), making strlen() return 0
+    // and this a no-op.
     if (params != NULL && params->password != NULL) {
         size_t passwordLength = strlen(params->password);
         if (passwordLength > 0) {
