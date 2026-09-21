@@ -206,8 +206,12 @@ func buildPrivateFlatbuffers(): Int64 {
     let outLib = outDir + "/libflatbuffers.a"
     let outCjo = outDir + "/flatbuffers.cjo"
 
+    // Directory.create throws if the path already exists (unlike mkdir -p).
+    // cjpm may invoke pre-build more than once, so skip creation when present.
     try {
-        Directory.create(Path(outDir), recursive: true)
+        if (!exists(Path(outDir))) {
+            Directory.create(Path(outDir), recursive: true)
+        }
     } catch (e: Exception) {
         println("Error: failed to create ${outDir}: ${e}")
         return 1
