@@ -608,6 +608,9 @@ func parseJsonString(parser: JsonParser): JsonString {
         if (next == b'\\') {
             break
         }
+        if (next < 0x20) {
+            throw JsonException()
+        }
         parser.offset++
     }
 
@@ -623,6 +626,8 @@ func parseJsonString(parser: JsonParser): JsonString {
             parser.offset++
             handleEscape(parser)
             tmpStart = parser.offset + 1
+        } else if (next < 0x20) {
+            throw JsonException()
         }
         parser.offset++
         next = requireCurrentByte(parser)
@@ -1166,6 +1171,9 @@ exclave func parseJsonString(parser: JsonParser @local!): JsonString @local! {
         if (next == b'\\') {
             break
         }
+        if (next < 0x20) {
+            throw JsonException()
+        }
         parser.offset++
     }
 
@@ -1184,6 +1192,8 @@ exclave func parseJsonString(parser: JsonParser @local!): JsonString @local! {
             parser.offset++
             handleEscape(parser)
             tmpStart = parser.offset + 1
+        } else if (next < 0x20) {
+            throw JsonException()
         }
         parser.offset++
         next = requireCurrentByte(parser)

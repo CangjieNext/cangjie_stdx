@@ -18,6 +18,9 @@ extern int64_t CJ_ReadString(const uint8_t* str, int64_t left, int64_t right)
         unsigned char c = str[i];
         if (c <= 0x7F) {
             // ASCII character
+            if (c < 0x20) {
+                return -1;
+            }
             if (str[i] == '\"' || str[i] == '\\') {
                 return i;
             }

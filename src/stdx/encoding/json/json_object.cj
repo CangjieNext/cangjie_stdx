@@ -1328,7 +1328,7 @@ public class JsonObject <: JsonValue {
     }
 
     @Frozen
-    public func get(this @local?, key: String @local?): Option<JsonValue> @local? {
+    public exclave func get(this @local?, key: String @local?): Option<JsonValue> @local? {
         for ((storedKey, value) in fields) {
             if (storedKey == key) {
                 return Option<JsonValue>.Some(value) @local?
