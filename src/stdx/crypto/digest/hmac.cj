@@ -9,6 +9,7 @@
 package stdx.crypto.digest
 
 import std.crypto.digest.Digest
+import std.sync.Mutex
 import stdx.crypto.common.CryptoException
 
 public struct HashType <: ToString & Equatable<HashType> {
@@ -107,6 +108,10 @@ public class HMAC <: Digest {
     private var hash: Digest
     private var hasFinished: Bool = false
     private var key: Array<Byte>
+    // Serializes write/finish/reset: the native HMAC_CTX is documented
+    // NOT thread-safe; concurrent use of one instance corrupts the MAC
+    // silently (authentication bypass). Same pattern as secure_random.cj.
+    private let lock = Mutex()
 
     public prop size: Int64 {
         get() {
@@ -191,10 +196,12 @@ public class HMAC <: Digest {
      * @throw CryptoException
      */
     public func write(buffer: Array<Byte>): Unit {
-        if (this.hasFinished) {
-            throw CryptoException("Digest calculation already completed.")
+        synchronized(lock) {
+            if (this.hasFinished) {
+                throw CryptoException("Digest calculation already completed.")
+            }
+            hmacUpdateC(this.ctxPtr, buffer, UIntNative(buffer.size))
         }
-        hmacUpdateC(this.ctxPtr, buffer, UIntNative(buffer.size))
     }
 
     /*
@@ -210,15 +217,21 @@ public class HMAC <: Digest {
     }
 
     public func finish(to!: Array<Byte>): Unit {
-        if (this.hasFinished) {
-            throw CryptoException("Digest calculation already completed.")
+        synchronized(lock) {
+            if (this.hasFinished) {
+                throw CryptoException("Digest calculation already completed.")
+            }
+            if (to.size != size) {
+                throw CryptoException("Output length '${to.size}' does not match digest length '${size}'.")
+            }
+            // hmacFinalC checks errors BEFORE freeing the native ctx: on failure
+            // it throws with the ctx still alive, so hasFinished stays false and
+            // ctxPtr remains valid — the caller can reset() or retry, and the
+            // finalizer releases the ctx exactly once.
+            hmacFinalC(this.ctxPtr, to)
+            this.hasFinished = true
+            this.ctxPtr = CPointer<Unit>()
         }
-        if (to.size != size) {
-            throw CryptoException("Output length '${to.size}' does not match digest length '${size}'.")
-        }
-        hmacFinalC(this.ctxPtr, to)
-        this.hasFinished = true
-        this.ctxPtr = CPointer<Unit>()
     }
 
     /*
@@ -227,23 +240,27 @@ public class HMAC <: Digest {
      * @throw CryptoException
      */
     public func reset(): Unit {
-        if (!this.hasFinished) {
-            hmacCtxFree(this.ctxPtr)
-            this.ctxPtr = CPointer<Unit>()
+        synchronized(lock) {
+            // Allocate and initialize the new ctx FIRST; only after success
+            // release the old one. If allocation/init fails, the old ctx stays
+            // valid and the object remains usable (no dangling pointer, no
+            // double free by the finalizer).
+            var newCtx = hmacCtxNew()
+            if (newCtx.isNull()) {
+                throw CryptoException("Failed to allocate HMAC context.")
+            }
+            try {
+                hmacInitC(newCtx, this.key, Int32(this.key.size), this.hashName)
+            } catch (e: Exception) {
+                hmacCtxFree(newCtx)
+                throw e
+            }
+            if (!this.hasFinished) {
+                hmacCtxFree(this.ctxPtr)
+            }
+            this.ctxPtr = newCtx
+            this.hasFinished = false
         }
-        var ctxPtr = hmacCtxNew()
-        if (ctxPtr.isNull()) {
-            throw CryptoException("Failed to allocate HMAC context.")
-        }
-        this.ctxPtr = ctxPtr
-        try {
-            hmacInitC(this.ctxPtr, this.key, Int32(this.key.size), this.hashName)
-        } catch (e: Exception) {
-            hmacCtxFree(this.ctxPtr)
-            this.ctxPtr = CPointer<Unit>()
-            throw e
-        }
-        this.hasFinished = false
     }
 
     /*
@@ -322,10 +339,14 @@ func hmacFinalC(ctx: CPointer<Unit>, md: Array<Byte>): Unit {
         } finally {
             releaseArrayRawData(mdptr)
         }
-        hmacCtxFree(ctx)
+        // Check for errors BEFORE releasing the native ctx: if the final
+        // step fails (missing OpenSSL symbol, internal error), the ctx must
+        // stay alive so the caller can reset()/retry, and so the finalizer
+        // and a later explicit release cannot double-free the same pointer.
         checkError(dynMsgPtr)
         if (res != 1) {
             throw CryptoException("HMAC finish operation failed.")
         }
+        hmacCtxFree(ctx)
     }
 }
