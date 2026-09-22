@@ -9,11 +9,16 @@
 package stdx.crypto.digest
 
 import std.crypto.digest.Digest
+import std.sync.Mutex
 import stdx.crypto.common.CryptoException
 
 public class SM3 <: Digest {
     private var sm3Ctx = CPointer<Unit>()
     private var hasFinished = false
+    // Serializes write/finish/reset: the native SM3 ctx is NOT thread-safe;
+    // concurrent use of one instance corrupts the digest silently.
+    // Same pattern as secure_random.cj.
+    private let lock = Mutex()
 
     public init() {
         unsafe {
@@ -57,10 +62,12 @@ public class SM3 <: Digest {
     }
 
     public func write(buffer: Array<Byte>): Unit {
-        if (hasFinished) {
-            throw CryptoException("Digest calculation already completed.")
+        synchronized(lock) {
+            if (hasFinished) {
+                throw CryptoException("Digest calculation already completed.")
+            }
+            sm3Update(sm3Ctx, buffer)
         }
-        sm3Update(sm3Ctx, buffer)
     }
 
     public func finish(): Array<Byte> {
@@ -70,38 +77,42 @@ public class SM3 <: Digest {
     }
 
     public func finish(to!: Array<Byte>): Unit {
-        if (hasFinished) {
-            throw CryptoException("Digest calculation already completed.")
+        synchronized(lock) {
+            if (hasFinished) {
+                throw CryptoException("Digest calculation already completed.")
+            }
+            if (to.size != size) {
+                throw CryptoException("Output length '${to.size}' does not match digest length '${size}'.")
+            }
+            sm3Final(sm3Ctx, to)
+            hasFinished = true
         }
-        if (to.size != size) {
-            throw CryptoException("Output length '${to.size}' does not match digest length '${size}'.")
-        }
-        sm3Final(sm3Ctx, to)
-        hasFinished = true
     }
 
     public func reset(): Unit {
-        unsafe {
-            if (!sm3Ctx.isNull()) {
-                mdCtxFree(sm3Ctx)
-                sm3Ctx = CPointer<Unit>()
-            }
-            sm3Ctx = mdCtxNew()
-            if (sm3Ctx.isNull()) {
-                throw CryptoException("Failed to create SM3 context.")
-            }
-            try {
-                var res = digestInitEx(sm3Ctx, sm3())
-                if (res != 1) {
-                    throw CryptoException("Failed to initialize SM3 context.")
+        synchronized(lock) {
+            unsafe {
+                if (!sm3Ctx.isNull()) {
+                    mdCtxFree(sm3Ctx)
+                    sm3Ctx = CPointer<Unit>()
                 }
-            } catch (e: Exception) {
-                mdCtxFree(sm3Ctx)
-                sm3Ctx = CPointer<Unit>()
-                throw e
+                sm3Ctx = mdCtxNew()
+                if (sm3Ctx.isNull()) {
+                    throw CryptoException("Failed to create SM3 context.")
+                }
+                try {
+                    var res = digestInitEx(sm3Ctx, sm3())
+                    if (res != 1) {
+                        throw CryptoException("Failed to initialize SM3 context.")
+                    }
+                } catch (e: Exception) {
+                    mdCtxFree(sm3Ctx)
+                    sm3Ctx = CPointer<Unit>()
+                    throw e
+                }
             }
+            hasFinished = false
         }
-        hasFinished = false
     }
 }
 

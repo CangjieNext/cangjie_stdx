@@ -9,11 +9,16 @@
 package stdx.crypto.digest
 
 import std.crypto.digest.Digest
+import std.sync.Mutex
 import stdx.crypto.common.CryptoException
 
 public class SHA512 <: Digest {
     var sha512Ctx: SHA512CTX
     var hasFinished: Bool
+    // Serializes write/finish/reset: the native SHA512 ctx is NOT thread-safe;
+    // concurrent use of one instance corrupts the digest silently.
+    // Same pattern as secure_random.cj.
+    private let lock = Mutex()
 
     public init() {
         sha512Ctx = SHA512CTX()
@@ -39,10 +44,12 @@ public class SHA512 <: Digest {
     }
 
     public func write(buffer: Array<Byte>): Unit {
-        if (this.hasFinished) {
-            throw CryptoException("Digest calculation already completed.")
+        synchronized(lock) {
+            if (this.hasFinished) {
+                throw CryptoException("Digest calculation already completed.")
+            }
+            sha512Update(sha512Ctx, buffer)
         }
-        sha512Update(sha512Ctx, buffer)
     }
 
     public func finish(): Array<Byte> {
@@ -52,19 +59,23 @@ public class SHA512 <: Digest {
     }
 
     public func finish(to!: Array<Byte>): Unit {
-        if (this.hasFinished) {
-            throw CryptoException("Digest calculation already completed.")
+        synchronized(lock) {
+            if (this.hasFinished) {
+                throw CryptoException("Digest calculation already completed.")
+            }
+            if (to.size != size) {
+                throw CryptoException("Output length '${to.size}' does not match digest length '${size}'.")
+            }
+            sha512Final(sha512Ctx, to)
+            this.hasFinished = true
         }
-        if (to.size != size) {
-            throw CryptoException("Output length '${to.size}' does not match digest length '${size}'.")
-        }
-        sha512Final(sha512Ctx, to)
-        this.hasFinished = true
     }
 
     public func reset(): Unit {
-        sha512Init(this.sha512Ctx.ptr)
-        this.hasFinished = false
+        synchronized(lock) {
+            sha512Init(this.sha512Ctx.ptr)
+            this.hasFinished = false
+        }
     }
 }
 

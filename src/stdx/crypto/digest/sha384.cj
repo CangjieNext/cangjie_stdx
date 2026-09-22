@@ -9,11 +9,16 @@
 package stdx.crypto.digest
 
 import std.crypto.digest.Digest
+import std.sync.Mutex
 import stdx.crypto.common.CryptoException
 
 public class SHA384 <: Digest {
     var sha384Ctx: SHA384CTX
     var hasFinished: Bool
+    // Serializes write/finish/reset: the native SHA384 ctx is NOT thread-safe;
+    // concurrent use of one instance corrupts the digest silently.
+    // Same pattern as secure_random.cj.
+    private let lock = Mutex()
 
     public init() {
         sha384Ctx = SHA384CTX()
@@ -39,10 +44,12 @@ public class SHA384 <: Digest {
     }
 
     public func write(buffer: Array<Byte>): Unit {
-        if (this.hasFinished) {
-            throw CryptoException("Digest calculation already completed.")
+        synchronized(lock) {
+            if (this.hasFinished) {
+                throw CryptoException("Digest calculation already completed.")
+            }
+            sha384Update(sha384Ctx, buffer)
         }
-        sha384Update(sha384Ctx, buffer)
     }
 
     public func finish(): Array<Byte> {
@@ -52,19 +59,23 @@ public class SHA384 <: Digest {
     }
 
     public func finish(to!: Array<Byte>): Unit {
-        if (this.hasFinished) {
-            throw CryptoException("Digest calculation already completed.")
+        synchronized(lock) {
+            if (this.hasFinished) {
+                throw CryptoException("Digest calculation already completed.")
+            }
+            if (to.size != size) {
+                throw CryptoException("Output length '${to.size}' does not match digest length '${size}'.")
+            }
+            sha384Final(sha384Ctx, to)
+            this.hasFinished = true
         }
-        if (to.size != size) {
-            throw CryptoException("Output length '${to.size}' does not match digest length '${size}'.")
-        }
-        sha384Final(sha384Ctx, to)
-        this.hasFinished = true
     }
 
     public func reset(): Unit {
-        sha384Init(this.sha384Ctx.ptr)
-        this.hasFinished = false
+        synchronized(lock) {
+            sha384Init(this.sha384Ctx.ptr)
+            this.hasFinished = false
+        }
     }
 }
 

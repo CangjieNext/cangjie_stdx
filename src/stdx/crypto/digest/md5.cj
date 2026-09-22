@@ -9,11 +9,16 @@
 package stdx.crypto.digest
 
 import std.crypto.digest.Digest
+import std.sync.Mutex
 import stdx.crypto.common.CryptoException
 
 public class MD5 <: Digest {
     var md5Ctx: MD5CTX
     var hasFinished: Bool
+    // Serializes write/finish/reset: the native MD5 ctx is NOT thread-safe;
+    // concurrent use of one instance corrupts the digest silently.
+    // Same pattern as secure_random.cj.
+    private let lock = Mutex()
 
     public init() {
         md5Ctx = MD5CTX()
@@ -39,10 +44,12 @@ public class MD5 <: Digest {
     }
 
     public func write(buffer: Array<Byte>): Unit {
-        if (this.hasFinished) {
-            throw CryptoException("Digest calculation already completed.")
+        synchronized(lock) {
+            if (this.hasFinished) {
+                throw CryptoException("Digest calculation already completed.")
+            }
+            md5Update(md5Ctx, buffer)
         }
-        md5Update(md5Ctx, buffer)
     }
 
     public func finish(): Array<Byte> {
@@ -52,19 +59,23 @@ public class MD5 <: Digest {
     }
 
     public func finish(to!: Array<Byte>): Unit {
-        if (this.hasFinished) {
-            throw CryptoException("Digest calculation already completed.")
+        synchronized(lock) {
+            if (this.hasFinished) {
+                throw CryptoException("Digest calculation already completed.")
+            }
+            if (to.size != size) {
+                throw CryptoException("Output length '${to.size}' does not match digest length '${size}'.")
+            }
+            md5Final(md5Ctx, to)
+            this.hasFinished = true
         }
-        if (to.size != size) {
-            throw CryptoException("Output length '${to.size}' does not match digest length '${size}'.")
-        }
-        md5Final(md5Ctx, to)
-        this.hasFinished = true
     }
 
     public func reset(): Unit {
-        md5Init(this.md5Ctx.ptr)
-        this.hasFinished = false
+        synchronized(lock) {
+            md5Init(this.md5Ctx.ptr)
+            this.hasFinished = false
+        }
     }
 }
 
