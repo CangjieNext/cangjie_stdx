@@ -75,7 +75,7 @@ func getRawPubKey(key: PublicKey): CPointer<Unit> {
             pubPtr.pointer.write(dataHandle.pointer)
             keyPtr = getPubKeyPtr(pubPtr.pointer, data.size)
             if (keyPtr.isNull()) {
-                throw X509Exception("Fail to load public key.")
+                throw X509Exception("Failed to load public key.")
             }
         } finally {
             releaseArrayRawData(dataHandle)
@@ -93,7 +93,7 @@ func getRawPriKey(key: PrivateKey): CPointer<Unit> {
             priPtr.pointer.write(dataHandle.pointer)
             keyPtr = getPriKeyPtr(priPtr.pointer, data.size)
             if (keyPtr.isNull()) {
-                throw X509Exception("Fail to load private key.")
+                throw X509Exception("Failed to load private key.")
             }
         } finally {
             releaseArrayRawData(dataHandle)
@@ -111,7 +111,7 @@ func getRawName(name: X509Name): CPointer<Unit> {
             priPtr.pointer.write(dataHandle.pointer)
             namePtr = getNamePtr(priPtr.pointer, data.size)
             if (namePtr.isNull()) {
-                throw X509Exception("Fail to load X509Name.")
+                throw X509Exception("Failed to load X509Name.")
             }
         } finally {
             releaseArrayRawData(dataHandle)
@@ -124,7 +124,7 @@ func getCertBody(cert: CPointer<Unit>): Array<Byte> {
     unsafe {
         var certlen = getCertLen(cert, CPointer<CPointer<Byte>>())
         if (certlen < 0) {
-            throw X509Exception("Fail to init X509.")
+            throw X509Exception("Failed to initialize X509.")
         }
         var certBody = Array<Byte>(certlen, repeat: 0)
         let data: CPointerHandle<Byte> = acquireArrayRawData(certBody)
@@ -132,7 +132,7 @@ func getCertBody(cert: CPointer<Unit>): Array<Byte> {
             certPtr.pointer.write(data.pointer)
             certlen = getCertLen(cert, certPtr.pointer)
             if (certlen < 0) {
-                throw X509Exception("Fail to init X509.")
+                throw X509Exception("Failed to initialize X509.")
             }
         } finally {
             releaseArrayRawData(data)
@@ -197,7 +197,7 @@ func ipAddressToString(ipAddress: IP): String {
         case 4 => return ipAddress |> collectString<Byte>(delimiter: ".")
         // IPv6
         case 16 => return formIpv6(ipAddress)
-        case _ => throw X509Exception("Illegal IP address.")
+        case _ => throw X509Exception("Invalid IP address length: expected '4' or '16', got '${ipAddress.size}'.")
     }
 }
 
@@ -692,7 +692,7 @@ func generateDynMsg(): CPointer<DynMsg> {
     unsafe {
         let dynMsgPtr = MallocDynMsg()
         if (dynMsgPtr.isNull()) {
-            throw X509Exception("malloc failed")
+            throw X509Exception("Failed to allocate memory.")
         }
         return dynMsgPtr
     }
@@ -701,12 +701,12 @@ func generateDynMsg(): CPointer<DynMsg> {
 func checkError(dynMsgPtr: CPointer<DynMsg>): Unit {
     unsafe {
         if (dynMsgPtr.isNull()) {
-            throw X509Exception("Null pointer check failed.")
+            throw X509Exception("Null pointer encountered.")
         }
         try {
             if (!dynMsgPtr.read().found) {
                 let funcName = CString(dynMsgPtr.read().funcName).toString()
-                throw X509Exception("Can not load openssl library or function ${funcName}.")
+                throw X509Exception("Cannot load OpenSSL library or function '${funcName}'.")
             }
         } finally {
             FreeDynMsg(dynMsgPtr)

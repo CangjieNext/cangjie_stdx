@@ -231,13 +231,22 @@ sealed abstract class Value <: Base & ToString & Hashable & Equatable<Value> {
             return
         }
         _users.add(user)
+        if (let Some(block) <- (this as Block)) {
+            block.addPredecessor(user)
+        }
     }
 
     internal func removeUser(user: Expression): Unit {
         if (user._operands.contains(this)) {
             return
         }
+        let wasUser = _users.contains(user)
         _users.removeIf({ u => u == user })
+        if (wasUser) {
+            if (let Some(block) <- (this as Block)) {
+                block.removePredecessor(user)
+            }
+        }
     }
 }
 
@@ -330,6 +339,7 @@ public class Block <: Value & Equatable<Block> {
         if (let Some(v) <- expr._result) {
             updateLocalVarIdAndHashCode(v)
         }
+        linkTerminatorPredecessors(expr)
     }
 
     /**
@@ -359,7 +369,7 @@ public class Block <: Value & Equatable<Block> {
      */
     public func insertExpr(expr: Expression, at: Int64): Unit {
         if (at < 0) {
-            throw CHIRException("Invalid insert position: ${at}")
+            throw CHIRException("Invalid insert position: expected a non-negative value, got '${at}'.")
         }
         if (at >= _exprs.size) {
             _exprs.add(expr)
@@ -369,6 +379,53 @@ public class Block <: Value & Equatable<Block> {
         expr._owner = this
         if (let Some(v) <- expr._result) {
             updateLocalVarIdAndHashCode(v)
+        }
+        linkTerminatorPredecessors(expr)
+    }
+
+    // Register the terminator's owner as a predecessor of this block.
+    internal func addPredecessor(user: Expression): Unit {
+        if (!user.isTerminator()) {
+            return
+        }
+        if (let Some(bb) <- user._owner) {
+            if (!_predecessors.contains(bb)) {
+                _predecessors.add(bb)
+            }
+        }
+    }
+
+    // After a terminator is attached to this block, link this block as a predecessor
+    // of each successor (uses addPredecessor).
+    internal func linkTerminatorPredecessors(expr: Expression): Unit {
+        if (!expr.isTerminator()) {
+            return
+        }
+        for (successor in expr.successors) {
+            successor.addPredecessor(expr)
+        }
+    }
+
+    // Drop the terminator's owner from this block's predecessors unless another
+    // terminator in the same owner still targets this block.
+    internal func removePredecessor(user: Expression): Unit {
+        if (!user.isTerminator()) {
+            return
+        }
+        if (let Some(bb) <- user._owner) {
+            var stillPred = false
+            for (u in _users) {
+                if (!u.isTerminator()) {
+                    continue
+                }
+                if (let Some(ownerBb) <- u._owner && ownerBb == bb) {
+                    stillPred = true
+                    break
+                }
+            }
+            if (!stillPred) {
+                _predecessors.removeIf({ p => p == bb })
+            }
         }
     }
 
@@ -422,7 +479,7 @@ public class BlockGroup <: Value & Equatable<BlockGroup> {
             if (let Some(b) <- _entryBlock) {
                 return b
             } else {
-                throw CHIRException("Entry block is not set")
+                throw CHIRException("Entry block is not set.")
             }
         }
     }
@@ -448,7 +505,7 @@ public class BlockGroup <: Value & Equatable<BlockGroup> {
             } else if (let Some(lv) <- (_owner as LocalVar)) {
                 return lv.topLevelFunc
             } else {
-                throw CHIRException("Invalid owner: ${_owner.toString()}")
+                throw CHIRException("Invalid owner '${_owner.toString()}'.")
             }
         }
     }
@@ -490,7 +547,7 @@ public class BlockGroup <: Value & Equatable<BlockGroup> {
             } else if (let Some(lv) <- (_owner as LocalVar)) {
                 lv.expr._blockGroups.removeIf({ bg => bg == this })
             } else {
-                throw CHIRException("Invalid owner: ${_owner.toString()}")
+                throw CHIRException("Invalid owner '${_owner.toString()}'.")
             }
         }
         _kind = ValueKind.Invalid
@@ -503,7 +560,7 @@ public class BlockGroup <: Value & Equatable<BlockGroup> {
      */
     public func setEntryBlock(block: Block): Unit {
         if (!_blocks.contains(block)) {
-            throw CHIRException("Entry block must push into BlockGroup first")
+            throw CHIRException("Entry block is not present in the block group.")
         }
         _entryBlock = block
     }
@@ -1074,7 +1131,7 @@ public class Function <: GlobalValue & Equatable<Function> {
 
     internal func addBody(): BlockGroup {
         if (_body.isSome()) {
-            throw CHIRException("Function body already set")
+            throw CHIRException("Function body is already set.")
         }
         let identifier = generateBlockGroupId().toString()
         let b = BlockGroup(identifier, this)
@@ -1772,7 +1829,7 @@ public class Parameter <: Value & Equatable<Parameter> {
             } else if (let Some(lv) <- (_owner as LocalVar)) {
                 return lv.topLevelFunc
             } else {
-                throw CHIRException("Invalid owner: ${_owner.toString()}")
+                throw CHIRException("Invalid owner '${_owner.toString()}'.")
             }
         }
     }

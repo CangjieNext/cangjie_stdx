@@ -17,10 +17,10 @@ import std.collection.*
 
 func validateJsonStringFormat(depth: Int64, indent: String): Unit {
     if (depth < 0) {
-        throw IllegalArgumentException("Depth cannot be negative.")
+        throw IllegalArgumentException("Invalid argument 'depth': value cannot be negative, got '${depth}'.")
     }
     if (!indent.isContainOnlySpaceAndTab()) {
-        throw IllegalArgumentException("Indent must be an empty string or any combination of spaces and tabs.")
+        throw IllegalArgumentException("Invalid argument 'indent': contains characters other than spaces and tabs.")
     }
 }
 
@@ -658,7 +658,7 @@ public class JsonArray <: JsonValue {
     public operator func [](index: Int64): JsonValue {
         return match (items.get(index)) {
             case Some(v) => v
-            case None => throw JsonException("The index ${index} of JsonArray does not exist.")
+            case None => throw JsonException("Index '${index}' does not exist in JsonArray.")
         }
     }
 
@@ -864,7 +864,7 @@ public class JsonObject <: JsonValue {
     public operator func [](key: String): JsonValue {
         return match (fields.get(key)) {
             case Some(v) => v
-            case None => throw JsonException("The Value of JsonObject does not exist")
+            case None => throw JsonException("Key '${key}' does not exist in JsonObject.")
         }
     }
 

@@ -21,7 +21,7 @@ public macro CHIREnumToString(input: Tokens): Tokens {
     for (superType in superTypes) {
         let superName = (superType as RefType).getOrThrow().identifier.value
         if (superName == "ToString") {
-            diagReport(DiagReportLevel.ERROR, superType.toTokens(), "can't inherit from interface ToString manually.", "")
+            diagReport(DiagReportLevel.ERROR, superType.toTokens(), "Enum '${enumDecl.identifier.value}' must not inherit from ToString manually; the @CHIREnumToString macro adds this interface.", "")
             return Tokens(Token(TokenKind.ILLEGAL))
         }
     }
@@ -38,8 +38,10 @@ public macro CHIREnumToString(input: Tokens): Tokens {
         )
     }
     if (enumDecl.ellipsis.kind == TokenKind.ELLIPSIS) {
+        let unknownEnumMessage = Token(TokenKind.STRING_LITERAL,
+            "Unknown element of enum '" + enumDecl.identifier.value + "'.")
         caseTokens += quote(
-            case _ => throw CHIRException($(enumDecl.identifier.value) + ": Unknown enum element")
+            case _ => throw CHIRException($unknownEnumMessage)
         )
     }
 

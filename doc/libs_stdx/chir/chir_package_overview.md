@@ -136,7 +136,7 @@ chir（Cangjie High-level IR）包提供类型系统与 CHIR 声明表示，包�
 | [TupleType](./chir_package_api/chir_package_classes.md#class-tupletype) | 元组类型。 |
 | [Type](./chir_package_api/chir_package_classes.md#class-type) | 所有类型的密封抽象基类，提供 `isXxx` 类型判断方法。 |
 | [TypeCast](./chir_package_api/chir_package_classes.md) | 类型转换表达式的密封抽象基类。 |
-| [TypeVisitor](./chir_package_api/chir_package_classes.md) | CHIR 类型节点的抽象访问器。 |
+| [TypeVisitor](./chir_package_api/chir_package_classes.md#class-typevisitor) | CHIR 类型节点的抽象访问器。 |
 | [UnaryExpression](./chir_package_api/chir_package_classes.md#class-unaryexpression) | 一元运算表达式。 |
 | [UnaryExpressionBase](./chir_package_api/chir_package_classes.md) | 一元运算表达式的密封抽象基类。 |
 | [UnboxToRef](./chir_package_api/chir_package_classes.md#class-unboxtoref) | 拆箱为引用的类型转换表达式。 |

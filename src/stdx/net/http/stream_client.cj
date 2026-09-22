@@ -83,9 +83,9 @@ class ClientStream {
             start: req.writeTimeout ?? engine.writeTimeout,
             task: {
                 =>
-                // close stream and throw exception
-                close(Cancel)
-                timeout = HttpTimeoutException("Client2_0 write request timeout.")
+                    // close stream and throw exception
+                    close(Cancel)
+                    timeout = HttpTimeoutException("Write request timeout.")
             }
         )
         try {
@@ -103,7 +103,7 @@ class ClientStream {
 
     private func writeRequest(): Unit {
         httpLogDebug(logger, "[ClientStream#writeRequest] start write request of stream: ${streamId}")
-        let req = request ?? throw HttpException("InternalError, request of stream ${streamId} is none.")
+        let req = request ?? throw HttpException("Internal error: request of stream '${streamId}' is None.")
         let hasTrailer = !req.trailers.isEmpty()
         let bodySize = req.bodySize ?? -1
 
@@ -149,7 +149,8 @@ class ClientStream {
                 maxFrameSize = blockForWindowUpdate()
                 continue
             }
-            httpLogDebug(logger,
+            httpLogDebug(
+                logger,
                 "[ClientStream#writeRequest] maxFrameSize=${maxFrameSize} index=${index} remoteWindow=${remoteWindow.load()}"
             )
             engineConn?.writeBody(rb.rawBody[index..maxFrameSize + index], false)
@@ -157,7 +158,8 @@ class ClientStream {
             index += maxFrameSize
             maxFrameSize = min(Int64(engine.remoteSettings[SettingsMaxFrameSize.code]), remoteWindow.load())
         }
-        httpLogDebug(logger,
+        httpLogDebug(
+            logger,
             "[ClientStream#writeRequest] maxFrameSize=${maxFrameSize} index=${index} remoteWindow=${remoteWindow.load()}"
         )
         engineConn?.writeBody(rb.rawBody[index..], !hasTrailer)
@@ -189,7 +191,8 @@ class ClientStream {
     private func blockForWindowUpdate(): Int64 {
         while (remoteWindow.load() <= 0 && status != Closed && !(engineConn?.quit ?? false)) {
             remoteWindowMonitor.lock()
-            httpLogDebug(logger,
+            httpLogDebug(
+                logger,
                 "[ClientStream#blockForWindowUpdate] stream wait for window update, current window:${remoteWindow.load()}, stream.status: ${status}"
             )
             remoteWindowMonitor.wait(timeout: Duration.millisecond * 10)
@@ -198,7 +201,7 @@ class ClientStream {
 
         let maxFrameSize = min(Int64(engine.remoteSettings[SettingsMaxFrameSize.code]), remoteWindow.load())
         if (maxFrameSize == 0 && status != Closed && !(engineConn?.quit ?? false)) {
-            throw HttpStreamException(FlowControlError, "Client2_0 stream remote window is zero.")
+            throw HttpStreamException(FlowControlError, "Stream remote window is 0.")
         }
         return maxFrameSize
     }
@@ -206,7 +209,7 @@ class ClientStream {
     private func writeHeaders(streamEnd: Bool): Unit {
         let headers = FieldsList()
         let req = request.getOrThrow()
-        let host = req.headers.getFirst("host") ?? throw HttpException("Host not set.")
+        let host = req.headers.getFirst("host") ?? throw HttpException("Required header 'Host' is not set.")
         let isWebsocket: Bool = match (req.headers.getFirst(":protocol")) {
             case Some(v) =>
                 headers.add((":protocol", v))
@@ -287,8 +290,8 @@ class ClientStream {
             start: (request?.readTimeout ?? None) ?? engine.readTimeout,
             task: {
                 =>
-                close(StreamClosed)
-                timeout = HttpTimeoutException("Client2_0 receive response for stream ${streamId} timeout.")
+                    close(StreamClosed)
+                    timeout = HttpTimeoutException("Receive response timeout for stream '${streamId}'.")
             }
         )
 
@@ -356,7 +359,7 @@ class ClientStream {
         // this request is from push frame, which doesn't have streamEnd flag
         let frame = match (inputQueue.dequeue().getOrThrow({=> HttpException("Response queue closed.")}) as FieldsFrame) {
             case Some(v) => v
-            case None => throw HttpException("Push request lost.")
+            case None => throw HttpException("Push request not found.")
         }
         let headers = HttpHeaders()
         let requestBuilder = HttpRequestBuilder()
@@ -368,7 +371,7 @@ class ClientStream {
                 case ":path" => requestBuilder.url(values)
                 case ":scheme" =>
                     if (values != "https") {
-                        throw HttpException("Scheme must be https!")
+                        throw HttpException("Scheme must be 'https'.")
                     }
                 case ":method" => requestBuilder.method(values)
                 case _ =>
@@ -391,7 +394,7 @@ class ClientStream {
         httpLogDebug(logger, "[ClientStream#decodeResponseHeader] start decode headers")
         let frame = match (inputQueue.dequeue().getOrThrow({=> HttpException("Stream closed.")}) as FieldsFrame) {
             case Some(v) => v
-            case None => throw HttpException("Response header lost.")
+            case None => throw HttpException("Response header not found.")
         }
         let headers = HttpHeaders()
         var status: UInt16 = 0
@@ -443,7 +446,7 @@ class ClientStream {
             case _: WindowUpdateFrame => ()
             case _ =>
                 close(ProtocolError)
-                throw HttpStreamException(ProtocolError, "Unexpected frame:${frame}.")
+                throw HttpStreamException(ProtocolError, "Unexpected frame: '${frame}'.")
         }
     }
 
@@ -458,7 +461,7 @@ class ClientStream {
                     status = Closed
                     engine.purgeStream(streamId)
                 }
-            case _ => throw HttpConnectionException(ProtocolError, "Write data in ${status} status.")
+            case _ => throw HttpConnectionException(ProtocolError, "Write data in '${status}' status.")
         }
     }
 
@@ -472,8 +475,7 @@ class ClientStream {
                 }
             case Open =>
                 if (request?.trailers.isEmpty() ?? false) {
-                    throw HttpConnectionException(ProtocolError,
-                        "Send header in Open state, but request don't have trailer.")
+                    throw HttpConnectionException(ProtocolError, "Sent headers in 'Open' state: request has no trailer.")
                 }
                 if (!frame.streamEnd) {
                     throw HttpConnectionException(ProtocolError, "Trailer must have streamEnd flag.")
@@ -482,7 +484,7 @@ class ClientStream {
             case HalfClosedRemote =>
                 if (request?.trailers.isEmpty() ?? false) {
                     throw HttpConnectionException(ProtocolError,
-                        "Send header in Open state, but request don't have trailer.")
+                        "Sent headers in 'HalfClosedRemote' state: request has no trailer.")
                 }
                 if (!frame.streamEnd) {
                     throw HttpConnectionException(ProtocolError, "Trailer must have streamEnd flag.")
@@ -490,7 +492,7 @@ class ClientStream {
                 status = Closed
                 engine.purgeStream(streamId)
             case _ => throw HttpConnectionException(ProtocolError,
-                "Headers frame can only send in Idle or Open or HalfClosedRemote.")
+                "Headers frame can only be sent in 'Idle', 'Open', or 'HalfClosedRemote' states.")
         }
     }
 
@@ -510,7 +512,7 @@ class ClientStream {
             case frame: DataFrame => onDataRead(frame)
             case frame: RstStreamFrame => onRstRead(frame)
             case frame: WindowUpdateFrame => onWindowUpdateRead(frame)
-            case _ => throw HttpStreamException(ProtocolError, "Unexpected frame: ${frame}.")
+            case _ => throw HttpStreamException(ProtocolError, "Unexpected frame: '${frame}'.")
         }
         if ((status == Closed || status == HalfClosedRemote) && !inputQueue.isClosed()) {
             inputQueue.close()
@@ -532,8 +534,9 @@ class ClientStream {
                     status = Closed
                     engine.purgeStream(streamId)
                 }
-            case HalfClosedRemote | Closed => throw HttpStreamException(StreamClosed, "Receive data when remote closed.")
-            case _ => throw HttpConnectionException(ProtocolError, "Receive data in state ${status}.")
+            case HalfClosedRemote | Closed => throw HttpStreamException(StreamClosed,
+                "Received data when remote closed.")
+            case _ => throw HttpConnectionException(ProtocolError, "Received data in state '${status}'.")
         }
         if (localWindow.load() < 5 * 1024 * 1024) {
             sendWindowUpdate(5 * 1024 * 1024)
@@ -564,11 +567,9 @@ class ClientStream {
             inputQueue.enqueue(frame)
         } else {
             onPushRead()
-            let pushStream = engine
-                .getStream(frame.pushId)
-                .getOrThrow({
-                    => HttpException("Stream not found, id:${frame.pushId}.")
-                })
+            let pushStream = engine.getStream(frame.pushId).getOrThrow({
+                => HttpException("Stream not found: push ID is '${frame.pushId}'.")
+            })
             let fieldsFrame = FieldsFrame(frame.pushId, frame.fields)
             pushStream.inputQueue.enqueue(fieldsFrame)
         }
@@ -592,15 +593,15 @@ class ClientStream {
                     status = Closed
                     engine.purgeStream(streamId)
                 }
-            case Closed => throw HttpConnectionException(StreamClosed, "Receive headers frame on state Closed.")
-            case _ => throw HttpConnectionException(ProtocolError, "Receive headers frame on state ${status}.")
+            case Closed => throw HttpConnectionException(StreamClosed, "Received headers frame in state 'Closed'.")
+            case _ => throw HttpConnectionException(ProtocolError, "Received headers frame in state '${status}'.")
         }
     }
 
     private func onRstRead(frame: RstStreamFrame): Unit {
         httpLogDebug(logger, "[ClientStream#onRstRead] stream received reset: ${frame}")
         match (status) {
-            case Idle => throw HttpConnectionException(ProtocolError, "Read rstStream on idle stream.")
+            case Idle => throw HttpConnectionException(ProtocolError, "Received rstStream frame on idle stream.")
             case _ =>
                 status = Closed
                 writeTimer.cancel()
@@ -613,21 +614,22 @@ class ClientStream {
     /* http_client will throw push if setting not allowed */
     private func onPushRead(): Unit {
         match (status) {
-            case Idle => throw HttpConnectionException(ProtocolError, "Idle stream received push.")
+            case Idle => throw HttpConnectionException(ProtocolError, "Received push frame on idle stream.")
             case HalfClosedLocal | Open => ()
-            case HalfClosedRemote => throw HttpStreamException(StreamClosed, "Push frame read in ${status} status.")
-            case Closed => throw HttpConnectionException(StreamClosed, "Push frame read in ${status} status.")
-            case _ => throw HttpConnectionException(ProtocolError, "Push frame read in ${status} status.")
+            case HalfClosedRemote => throw HttpStreamException(StreamClosed,
+                "Received push frame in '${status}' status.")
+            case Closed => throw HttpConnectionException(StreamClosed, "Received push frame in '${status}' status.")
+            case _ => throw HttpConnectionException(ProtocolError, "Received push frame in '${status}' status.")
         }
     }
 
     private func onWindowUpdateRead(frame: WindowUpdateFrame): Unit {
         match (status) {
-            case Idle => throw HttpConnectionException(ProtocolError, "Read window update frame on idle stream.")
+            case Idle => throw HttpConnectionException(ProtocolError, "Received window update frame on idle stream.")
             case _ => ()
         }
         if (remoteWindow.load() + Int64(frame.increment) > Int64(MAX_WINDOW)) {
-            throw HttpConnectionException(FlowControlError, "Window over flow.")
+            throw HttpConnectionException(FlowControlError, "Window overflow.")
         }
         remoteWindow.fetchAdd(Int64(frame.increment))
         // locked at func writeRequest write body
@@ -687,7 +689,7 @@ class Http2ClientEngineConn <: StreamingSocket {
             return None
         }
         set(_) {
-            throw HttpException("Should not set timeout on h2 stream.")
+            throw HttpException("Cannot set timeout on HTTP/2 stream.")
         }
     }
 
@@ -696,14 +698,14 @@ class Http2ClientEngineConn <: StreamingSocket {
             return None
         }
         set(_) {
-            throw HttpException("Should not set timeout on h2 stream.")
+            throw HttpException("Cannot set timeout on HTTP/2 stream.")
         }
     }
 
     /* read raw bytes, normally used in upgraded protocol, e.g. websocket. */
     public func read(buf: Array<UInt8>): Int64 {
         if (buf.size == 0) {
-            throw HttpException("Read use empty buf.")
+            throw HttpException("Invalid argument 'buf': buffer is empty.")
         }
         if (remaining.remainLength > 0) {
             return remaining.read(buf)
@@ -723,11 +725,11 @@ class Http2ClientEngineConn <: StreamingSocket {
                 }
                 case _ =>
                     quit = true
-                    throw HttpStreamException(ProtocolError, "The ws meet unexpected frame ${frame}.")
+                    throw HttpStreamException(ProtocolError, "WebSocket received unexpected frame: '${frame}'.")
             }
             case None =>
                 quit = true
-                throw HttpException("Failed to fetch data, the connection is closed.")
+                throw HttpException("Failed to fetch data: connection is closed.")
         }
     }
 
@@ -748,7 +750,7 @@ class Http2ClientEngineConn <: StreamingSocket {
         }
         let fieldsFrame = FieldsFrame(streamId, fieldBlock, last: streamEnd)
         if (!outputQueue.send(fieldsFrame, MESSAGE_PRIORITY)) {
-            throw HttpException("OutputQueue closed while writing headers.")
+            throw HttpException("Output queue closed while writing headers.")
         }
     }
 
@@ -758,7 +760,7 @@ class Http2ClientEngineConn <: StreamingSocket {
         }
         let data = DataFrame(streamId, bytes, bytes.size, last: streamEnd)
         if (!outputQueue.send(data, MESSAGE_PRIORITY)) {
-            throw HttpException("OutputQueue closed while writing body.")
+            throw HttpException("Output queue closed while writing body.")
         }
         if (bytes.size > 0) {
             stream.remoteWindow.fetchSub(bytes.size)
@@ -767,7 +769,7 @@ class Http2ClientEngineConn <: StreamingSocket {
 
     func readBody(buf: Array<UInt8>): Int64 {
         if (buf.size == 0) {
-            throw HttpException("Read buffer size can not be zero!")
+            throw HttpException("Invalid argument 'buf': size is 0.")
         }
         if (bodyReadEnd && remaining.remainLength == 0) {
             return 0
@@ -782,7 +784,7 @@ class Http2ClientEngineConn <: StreamingSocket {
                     throw t
                 }
                 stream.readTimer.cancel()
-                throw HttpException("Failed to fetch data, the connection or stream is closed.")
+                throw HttpException("Failed to fetch data: connection or stream is closed.")
         }
         match (frame) {
             case f: DataFrame =>
@@ -807,7 +809,7 @@ class Http2ClientEngineConn <: StreamingSocket {
                 bodyReadEnd = true
                 stream.decodeTrailer(f.fields)
                 return 0
-            case _ => throw HttpStreamException(ProtocolError, "Meet unexpected frame: ${frame}.")
+            case _ => throw HttpStreamException(ProtocolError, "Unexpected frame: '${frame}'.")
         }
     }
 
@@ -840,7 +842,7 @@ class Http2ClientBodyProvider <: InputStream & WebSocketConn & Resource {
 
     public func read(buf: Array<Byte>): Int64 {
         if (isConnect) {
-            throw HttpException("Call readRaw & writeRaw for tunnel.")
+            throw HttpException("Cannot call read() on a CONNECT tunnel.")
         }
         if (readEnd) {
             return 0
@@ -852,7 +854,7 @@ class Http2ClientBodyProvider <: InputStream & WebSocketConn & Resource {
 
     public func readRaw(byteArray: Array<UInt8>): Int64 {
         if (!isConnect) {
-            throw HttpException("Not Connect response, call read.")
+            throw HttpException("Cannot call readRaw() on non-CONNECT response.")
         }
         try {
             var len: Int64 = 0
@@ -871,7 +873,7 @@ class Http2ClientBodyProvider <: InputStream & WebSocketConn & Resource {
 
     public func writeRaw(byteArray: Array<UInt8>): Unit {
         if (!isConnect) {
-            throw HttpException("Not Connect response, call read.")
+            throw HttpException("Cannot write to non-CONNECT response.")
         }
         if (conn.quit) {
             throw ConnectionException("Connection closed.")

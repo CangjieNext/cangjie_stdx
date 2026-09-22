@@ -226,13 +226,16 @@ class HttpChunkedBodyProvider <: InputStream & Resource {
     var contentLength = 0
     var remainChunkSize = 0
     var isLastChunk = false
+    var maxRequestBodySize: Int64 = 0
     let header: HttpHeaders
     let trailer: HttpHeaders
     let isReq: Bool
     let conn: BufferedConn
 
-    HttpChunkedBodyProvider(let providerConn: BodyProviderConn, let msg: Object, let timer: HttpTimer) {
+    HttpChunkedBodyProvider(let providerConn: BodyProviderConn, let msg: Object, let timer: HttpTimer,
+        let maxBodySize: Int64) {
         conn = providerConn.getBufferConn()
+        maxRequestBodySize = maxBodySize
         match (msg) {
             case req: HttpRequest =>
                 header = req.headers
@@ -242,7 +245,7 @@ class HttpChunkedBodyProvider <: InputStream & Resource {
                 header = rsp.headers
                 trailer = rsp.trailers
                 isReq = false
-            case _ => throw HttpException("Unsupported msg type!")
+            case _ => throw HttpException("Internal error: unsupported message type.")
         }
     }
 
@@ -294,11 +297,15 @@ class HttpChunkedBodyProvider <: InputStream & Resource {
         if (remainChunkSize == 0) {
             let chunkSize = readChunkSize()
             this.contentLength += chunkSize
+            if (maxRequestBodySize != 0 && this.contentLength > maxRequestBodySize) {
+                throw HttpStatusException(HttpStatusCode.STATUS_REQUEST_CONTENT_TOO_LARGE, "Content too large.")
+            }
             // last-chunk = 1*("0") [ chunk-ext ] CRLF
             if (chunkSize == 0) {
                 eof = true
                 readTrailer()
                 clearHeader()
+                updateBodySize()
                 timer.cancel()
                 providerConn.returnConn()
             }
@@ -363,6 +370,14 @@ class HttpChunkedBodyProvider <: InputStream & Resource {
         }
     }
 
+    private func updateBodySize(): Unit {
+        match (msg) {
+            case req: HttpRequest => req._bodySize = contentLength
+            case rsp: HttpResponse => rsp._bodySize = contentLength
+            case _ => ()
+        }
+    }
+
     private func validTrailerName(name: String): Bool {
         let trailersArray = header.getInternal("Trailer") ?? return false
         return trailersArray |> splitValuesByComma |> name.toAsciiLower().caseInsensitiveMatchOne
@@ -381,9 +396,9 @@ class HttpChunkedBodyProvider <: InputStream & Resource {
         }
         if (line.contains(CR)) {
             if (isReq) {
-                throw HttpStatusException(HttpStatusCode.STATUS_BAD_REQUEST, "Invalid line.")
+                throw HttpStatusException(HttpStatusCode.STATUS_BAD_REQUEST, "Invalid line: contains raw CR.")
             } else {
-                throw HttpException("Trailer section can not contain raw CR.")
+                throw HttpException("Trailer section cannot contain raw CR.")
             }
         }
         return line
@@ -396,7 +411,7 @@ class HttpChunkedBodyProvider <: InputStream & Resource {
      */
     private func readChunkSize(): Int64 {
         let line = readLine()
-        let chunkSize = line.splitFirst(SEMICOLON) ?? throw HttpException("Failed to extract chunk-size.") // extract chunk-size
+        let chunkSize = line.splitFirst(SEMICOLON) ?? throw HttpException("Failed to extract chunk-size from line '${line}'.") // extract chunk-size
         try {
             return Int64.fromHexStr(chunkSize)
         } catch (e: Exception) {
@@ -415,18 +430,18 @@ class HttpExpectBodyProvider <: InputStream {
     var context: ?HttpContext = None
 
     HttpExpectBodyProvider(let conn: HttpEngineConn1, let request: HttpRequest, let chunked: Bool,
-        let contentLength: ?Int64, let timer: HttpTimer) {
+        let contentLength: ?Int64, let timer: HttpTimer, let maxRequestBodySize: Int64) {
         realBody = match {
             case chunked =>
                 request._bodySize = None
-                HttpChunkedBodyProvider(conn, request, timer)
+                HttpChunkedBodyProvider(conn, request, timer, maxRequestBodySize)
             case _ => match (contentLength) {
                 case Some(length) =>
                     request._bodySize = length
                     HttpNormalBodyProvider(conn, length, timer)
                 case None =>
                     timer.cancel()
-                    throw HttpException(" The content-length should not be none!")
+                    throw HttpException("Content-length is missing.")
             }
         }
     }

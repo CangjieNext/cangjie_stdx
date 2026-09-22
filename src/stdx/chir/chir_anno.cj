@@ -474,3 +474,31 @@ internal class OverrideSrcFuncType <: CHIRAnno<Option<FuncType>> {
         return "OverrideSrcFuncType: " + v.getOrThrow().toString()
     }
 }
+
+internal class MatchCaseId <: CHIRAnno<UInt64> {
+    private var v: UInt64
+
+    internal init(value: UInt64) {
+        this.v = value
+    }
+
+    static public func create(value: UInt64): CHIRAnno<UInt64> {
+        return MatchCaseId(value)
+    }
+
+    static public func defaultValue(): UInt64 {
+        return UInt64(0)
+    }
+
+    public func get(): UInt64 {
+        return v
+    }
+
+    public func set(value: UInt64): Unit {
+        this.v = value
+    }
+
+    public func toString(): String {
+        return "MatchCaseId: " + v.toString()
+    }
+}

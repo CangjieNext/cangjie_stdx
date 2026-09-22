@@ -659,6 +659,7 @@ static int KeylessAcEncrypt(void* vctx, unsigned char* out, size_t* outlen, size
     em[1] = 0x02;
     size_t psLen = modlen - inlen - 3; /* 2 prefix + 1 separator */
     if (psLen < 8) {
+        DYN_OPENSSL_cleanse(em, modlen, dynMsg);
         DYN_OPENSSL_secure_free(em, dynMsg);
         return 0;
     }
@@ -667,6 +668,7 @@ static int KeylessAcEncrypt(void* vctx, unsigned char* out, size_t* outlen, size
     while (filled < psLen) {
         unsigned char b = 0;
         if (DYN_RAND_bytes(&b, 1, dynMsg) <= 0) {
+            DYN_OPENSSL_cleanse(em, modlen, dynMsg);
             DYN_OPENSSL_secure_free(em, dynMsg);
             return 0;
         }
@@ -678,6 +680,7 @@ static int KeylessAcEncrypt(void* vctx, unsigned char* out, size_t* outlen, size
     }
     em[2 + psLen] = 0x00;
     if (memcpy_s(em + 3 + psLen, modlen - (3 + psLen), in, inlen) != EOK) {
+        DYN_OPENSSL_cleanse(em, modlen, dynMsg);
         DYN_OPENSSL_secure_free(em, dynMsg);
         return 0;
     }
@@ -715,7 +718,7 @@ static int KeylessAcEncrypt(void* vctx, unsigned char* out, size_t* outlen, size
         DYN_BN_free(bnC, dynMsg);
     }
     if (bnM) {
-        DYN_BN_free(bnM, dynMsg);
+        DYN_BN_clear_free(bnM, dynMsg);
     }
     if (bnE) {
         DYN_BN_free(bnE, dynMsg);
@@ -723,6 +726,7 @@ static int KeylessAcEncrypt(void* vctx, unsigned char* out, size_t* outlen, size
     if (bnN) {
         DYN_BN_free(bnN, dynMsg);
     }
+    DYN_OPENSSL_cleanse(em, modlen, dynMsg);
     DYN_OPENSSL_secure_free(em, dynMsg);
     KeylessCheckDynMsg(dynMsg, "KeylessAcEncrypt");
     return ret;

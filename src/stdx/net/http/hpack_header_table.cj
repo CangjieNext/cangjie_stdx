@@ -157,7 +157,7 @@ class HeaderTable {
             return dynamicTable.latest(dynamicIndex).getOrThrow()
         }
         throw HpackException(
-            "[${name}.HeaderTable#get] Invalid index: ${index}, staticTableSize: ${STATIC_TABLE.size}, dynamicTableSize: ${dynamicTable.size}."
+            "Invalid index '${index}': static table size is '${STATIC_TABLE.size}', dynamic table size is '${dynamicTable.size}'."
         )
     }
 
@@ -267,7 +267,7 @@ class HeaderTable {
     private func reduceSizeTo(limit: Int64) {
         while (size > limit && !dynamicTable.isEmpty()) { // evict fields until the max size is met, or dynamic table is empty
             let evictedField = dynamicTable.dequeue() ?? throw HpackException(  // cjlint-ignore !G.EXP.03
-                "Dynamic table not empty but dequeue failed.")
+                "Internal error: failed to dequeue from non-empty dynamic table.")
             removeFromMap(evictedField)
 
             let decSize = fieldSize(evictedField)

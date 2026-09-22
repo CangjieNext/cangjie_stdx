@@ -28,7 +28,7 @@ struct AddrPort <: ToString & Hashable & Equatable<AddrPort> {
         this.port = try {
             UInt16.parse(portString)
         } catch (e: IllegalArgumentException) {
-            throw HttpException("Invalid url address or proxy address.")
+            throw HttpException("Invalid port '${portString}' in address.")
         }
     }
 

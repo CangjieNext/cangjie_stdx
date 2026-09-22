@@ -59,25 +59,23 @@ class CollectAspects {
         if (annoInstances.isEmpty()) {
             return true
         }
-        let whiteList1 = ["InsertAtEntry", "InsertAtExit"]
-        let whiteList2 = ["ReplaceFuncBody"]
-        var inWhiteList1 = false
-        var inWhiteList2 = false
+        var hasInsertAnno = false
+        var hasReplaceBodyAnno = false
         var result = true
         for (anno in annoInstances) {
-            let isInsertAnno = whiteList1.contains(anno.classSrcCodeName)
-            let isReplaceBodyAnno = whiteList2.contains(anno.classSrcCodeName)
-            inWhiteList1 ||= isInsertAnno
-            inWhiteList2 ||= isReplaceBodyAnno
-            if (inWhiteList1 && inWhiteList2) {
-                printError("${f.srcCodeName}: Annotations @InsertAtEntry/@InsertAtExit and @ReplaceFuncBody are mutually exclusive and must not be applied to the same function.")
+            let isInsert = isInsertAnno(anno.classSrcCodeName)
+            let isReplaceBody = isReplaceBodyAnno(anno.classSrcCodeName)
+            hasInsertAnno ||= isInsert
+            hasReplaceBodyAnno ||= isReplaceBody
+            if (hasInsertAnno && hasReplaceBodyAnno) {
+                printError("Function '${f.srcCodeName}' cannot have both @InsertAtEntry/@InsertAtExit and @ReplaceFuncBody annotations.")
                 return false
             }
-            if (!isInsertAnno && !isReplaceBodyAnno) {
+            if (!isInsert && !isReplaceBody) {
                 continue
             }
             if (!globalVarsArePrimitiveLiterals(pkg)) {
-                printError("In `${pkg.name}` package where AOP annotations are used, all global variables must be initialized with literals of primitive types only.")
+                printError("Global variables in package '${pkg.name}' must be initialized with primitive literal values when AOP annotations are used.")
                 return false
             }
             if (!checkAspectFunction(f)) {
@@ -86,10 +84,10 @@ class CollectAspects {
             if (!checkAnnotationArgs(f, anno)) {
                 return false
             }
-            if (isInsertAnno && !checkInsertAnnoFuncType(f, anno.argValues)) {
+            if (isInsert && !checkInsertAnnoFuncType(f, anno.argValues)) {
                 return false
             }
-            if (isReplaceBodyAnno && !checkReplaceBodyAnnoFuncType(f, anno.argValues)) {
+            if (isReplaceBody && !checkReplaceBodyAnnoFuncType(f, anno.argValues)) {
                 return false
             }
             let insert = Insert(
@@ -98,7 +96,7 @@ class CollectAspects {
                 f.parameters.size,
                 f.isMemberMethod(),
                 f.isStatic())
-            let funcTypeStr = if (isInsertAnno) {
+            let funcTypeStr = if (isInsert) {
                 anno.argValues[5]
             } else {
                 f.parameters[f.parameters.size - 1].ty.qualifiedName
@@ -117,7 +115,7 @@ class CollectAspects {
 
     private func writeAnnoInfoToFile(curPackage: Package, output: OutputInfo): Bool {
         if (!isValidPackageName(output.to.packageName)) {
-            printError("Invalid packageName `${output.to.packageName}`: must be a valid Cangjie package name without path separators (/, \\, ..).")
+            printError("Invalid package name '${output.to.packageName}': expected a non-empty valid Cangjie package name with valid segments and no path separators (/, \\, ..).")
             return false
         }
         let fileName = curPackage.name + PACKAGE_NAME_CONNECTOR + output.to.packageName + ANNO_INFO_FILE_SUFFIX
@@ -144,7 +142,7 @@ class CollectAspects {
             outFile.write((output.to.recursively.toString() + "\n").toArray())
             outFile.close()
         } catch (_: Exception) {
-            printError("Failed to access file: ${fileName}")
+            printError("Failed to prepare or write annotation information for package '${curPackage.name}' to file '${fileName}'.")
             return false
         }
         return true
@@ -152,20 +150,20 @@ class CollectAspects {
 
     private func checkAspectFunction(f: Function): Bool {
         if (!f.isPublic() || !f.isExternalLinkage()) {
-            printError("${f.srcCodeName}: Function with AOP annotations must be public.")
+            printError("Function '${f.srcCodeName}' with AOP annotations must be public and have external linkage.")
             return false
         }
         if (f.isForeign()) {
-            printError("${f.srcCodeName}: Function with AOP annotations must not be foreign.")
+            printError("Function '${f.srcCodeName}' with AOP annotations cannot be foreign.")
             return false
         }
         if (f.isAbstract()) {
-            printError("${f.srcCodeName}: Function with AOP annotations must not be abstract.")
+            printError("Function '${f.srcCodeName}' with AOP annotations cannot be abstract.")
             return false
         }
         let outerDef = getFuncOuterDeclaredOrExtendedDef(f)
         if (f.isGeneric() || (outerDef.isSome() && outerDef.getOrThrow().isGeneric())) {
-            printError("${f.srcCodeName}: Function with AOP annotations must not be generic.")
+            printError("Function '${f.srcCodeName}' with AOP annotations cannot be generic or belong to a generic type.")
             return false
         }
         return true
@@ -175,7 +173,7 @@ class CollectAspects {
         let argValues = anno.argValues
         let packageName = argValues[0]
         if (!isValidPackageName(packageName)) {
-            printError("${f.srcCodeName}: Invalid packageName `${packageName}`: must be a valid Cangjie package name without path separators (/, \\, ..).")
+            printError("Function '${f.srcCodeName}' has an invalid package name '${packageName}': expected a non-empty valid Cangjie package name with valid segments and no path separators (/, \\, ..).")
             return false
         }
         let className = argValues[1]
@@ -184,16 +182,16 @@ class CollectAspects {
         let isRecursive = argValues[4]
         if (f.isInstanceMemberMethod()) {
             if (className.isEmpty() || isStatic == "true") {
-                printError("${f.srcCodeName}: Instance member function must not be woven into global function or static member function.")
+                printError("Instance member function '${f.srcCodeName}' cannot be woven into a global or static member function.")
                 return false
             }
             if (f.packageName != packageName || getFuncOuterTypeName(f) != className) {
-                printError("${f.srcCodeName}: Don't weave an instance method into another instance method with different `this` type.")
+                printError("Instance method '${f.srcCodeName}' has an incompatible receiver type: got '${f.packageName}.${getFuncOuterTypeName(f)}', expected '${packageName}.${className}'.")
                 return false
             }
         }
         if (className.isEmpty() && isRecursive == "true") {
-            printError("${f.srcCodeName}: The `recursive` field must be false if `className` is an empty string.")
+            printError("Invalid annotation arguments for function '${f.srcCodeName}': 'recursive' is true while 'className' is empty.")
             return false
         }
         return true
@@ -204,7 +202,7 @@ class CollectAspects {
         let isStatic = Bool.parse(annoArgValues[3])
         let wovenFuncTypeStr = annoArgValues[5]
         if (f.funcType.returnType != UnitType.get()) {
-            printError("${f.srcCodeName}: Return type of the function annotated with @InsertAtEntry must be Unit.")
+            printError("Function '${f.srcCodeName}' annotated with @InsertAtEntry/@InsertAtExit has return type '${f.funcType.returnType.qualifiedName}', expected Unit.")
             return false
         }
         if (funcExplicitParamSize(f) == 0) {
@@ -220,11 +218,11 @@ class CollectAspects {
             let thisParamType = thisParamTypes[0]
             if (let Some(c) <- (thisParamType as CustomType)) {
                 if (c.def.srcCodeName != className) {
-                    printError("${f.srcCodeName}: The first parameter of the function annotated with @InsertAtEntry/@InsertAtExit must be the same as the type indicated by packageName and className.")
+                    printError("Function '${f.srcCodeName}' annotated with @InsertAtEntry/@InsertAtExit has first parameter type '${thisParamType.qualifiedName}', expected a type named '${className}'.")
                     return false
                 }
             } else {
-                printError("${f.srcCodeName}: The first parameter of the function annotated with @InsertAtEntry/@InsertAtExit must be the same as the type indicated by packageName and className.")
+                printError("Function '${f.srcCodeName}' annotated with @InsertAtEntry/@InsertAtExit has first parameter type '${thisParamType.qualifiedName}', expected a type named '${className}'.")
                 return false
             }
             paramTypes = explicitParamTypes
@@ -233,7 +231,7 @@ class CollectAspects {
         rightParenthesisIndex = aspectFuncTypeStr.lastIndexOf(")").getOrThrow()
         let funcType2 = aspectFuncTypeStr[0..rightParenthesisIndex + 1]  // remove return type
         if (funcType1 != funcType2) {
-            printError("The aspect function ${f.srcCodeName} has different FuncType with the woven.")
+            printError("Aspect function '${f.srcCodeName}' has parameter types '${funcType2}', expected '${funcType1}'.")
             return false
         }
         return true
@@ -242,7 +240,7 @@ class CollectAspects {
     private func checkReplaceBodyAnnoFuncType(f: Function, annoArgValues: Array<String>): Bool {
         let params = f.parameters
         if (params.isEmpty()) {
-            printError("${f.srcCodeName}: Function annotated with @ReplaceFuncBody must have at least one parameter.")
+            printError("Function '${f.srcCodeName}' annotated with @ReplaceFuncBody has invalid parameter count: got 0, expected at least 1.")
             return false
         }
         let className = annoArgValues[1]
@@ -250,18 +248,18 @@ class CollectAspects {
         if (!className.isEmpty() && !isStatic) {
             let packageName = annoArgValues[0]
             if (params[0].ty.qualifiedName != "${packageName}.${className}") {
-                printError("The first parameter of the function ${f.srcCodeName} annotated with @ReplaceFuncBody must be the same as the type indicated by packageName and className.")
+                printError("Function '${f.srcCodeName}' annotated with @ReplaceFuncBody has first parameter type '${params[0].ty.qualifiedName}', expected '${packageName}.${className}'.")
                 return false
             }
         }
         let lastParamType = params[params.size - 1].ty
         if (!lastParamType.isFuncType()) {
-            printError("${f.srcCodeName}: Last parameter of the function annotated with @ReplaceBody must be of function type.")
+            printError("Function '${f.srcCodeName}' annotated with @ReplaceFuncBody has last parameter type '${lastParamType.qualifiedName}', expected a function type.")
             return false
         }
         let wovenFuncType = (lastParamType as FuncType).getOrThrow()
         if (wovenFuncType.returnType != f.funcType.returnType) {
-            printError("${f.srcCodeName}: Return type of the function annotated with @ReplaceFuncBody must be the same as the return type of the function it is woven into.")
+            printError("Function '${f.srcCodeName}' annotated with @ReplaceFuncBody has return type '${f.funcType.returnType.qualifiedName}', expected '${wovenFuncType.returnType.qualifiedName}'.")
             return false
         }
         var (aspectParams, wovenFunc) = params.splitAt(params.size - 1)
@@ -275,7 +273,7 @@ class CollectAspects {
         let aspectFuncTypeStr = FuncType.get(aspectParamsType, f.funcType.returnType).toString()
         let wovenFuncTypeStr = wovenFunc[0].ty.toString()
         if (aspectFuncTypeStr != wovenFuncTypeStr) {
-            printError("The aspect function ${f.srcCodeName} has different FuncType with the woven.")
+            printError("Aspect function '${f.srcCodeName}' has function type '${aspectFuncTypeStr}', expected '${wovenFuncTypeStr}'.")
             return false
         }
         return true

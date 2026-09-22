@@ -127,7 +127,7 @@ protected class NativePointerResource<T> <: Resource where T <: CType {
     protected init(count: Int64, sample: ?T) {
         unsafe {
             if (count <= 0) {
-                throw IllegalArgumentException("Count should be positive: ${count}.")
+                throw IllegalArgumentException("Invalid argument 'count': must be positive, got '${count}'.")
             }
             nativePointer = LibC.malloc(count: count)
             if (nativePointer.isNull()) {
@@ -157,7 +157,7 @@ protected class NativePointerResource<T> <: Resource where T <: CType {
 
 protected unsafe func toArray(ptr: CPointer<Byte>, size: UIntNative): Array<Byte> {
     if (ptr.isNull() && size != 0) {
-        throw NoneValueException("Native pointer is NULL.")
+        throw NoneValueException()
     }
 
     let result = Array<Byte>(Int64(size), repeat: 0)
@@ -173,7 +173,7 @@ func copy(source!: CPointer<Byte>, destination!: Array<Byte>, count!: UIntNative
         let result = memcpy_s(acq.pointer, UIntNative(destination.size), source, count)
         releaseArrayRawData(acq)
         if (result != 0) {
-            throw CryptoException("Failed to copy ${count} bytes.")
+            throw CryptoException("Failed to copy '${count}' bytes.")
         }
     }
 }
