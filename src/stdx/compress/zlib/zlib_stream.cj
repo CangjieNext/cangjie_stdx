@@ -543,12 +543,20 @@ public class DecompressOutputStream <: OutputStream {
     }
 
     private func finishInflate(): Unit {
+        var produced: Int64 = 0
         while (!inflater.isFinished()) {
             if (outBufCursor == outBuf.size) {
                 flushOutBuf()
             }
             var singleOutLen = min(outBuf.size - outBufCursor, MAX_BUFFER_LENGTH_OUT)
-            let produced = inflater.inflate(outBuf.slice(outBufCursor, singleOutLen), NoFlush)
+            try {
+                produced = inflater.inflate(outBuf.slice(outBufCursor, singleOutLen), NoFlush)
+            } catch (e: ZlibException) {
+                if (e.message.contains("ZLIB_BUFFER_ERROR")) {
+                    break
+                }
+                throw e
+            }
             onOutputProduced(produced)
             outBufCursor += produced
         }
