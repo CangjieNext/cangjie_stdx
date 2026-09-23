@@ -17,7 +17,7 @@ macro package stdx.actors.macros
 
 class MacroException <: Exception {
     public init(message: String) {
-        super("macro failed to expand.\n" + message)
+        super("Failed to expand macro:\n" + message)
     }
 
     protected override func getClassName(): String {

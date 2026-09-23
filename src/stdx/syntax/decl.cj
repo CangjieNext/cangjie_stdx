@@ -1401,7 +1401,7 @@ public open class FuncParam <: Parameter {
             let varKindSize = match (k) {
                 case VarKind.Let => SyntaxNodeKind.LetToken.size
                 case VarKind.Var => SyntaxNodeKind.VarToken.size
-                case _ => throw Exception("ParseException: " + "unexpected VarKind keyword")
+                case _ => throw IllegalStateException("Internal error: unexpected 'VarKind' keyword.")
             }
             return CodePositionRange(v, v + varKindSize)
         }
@@ -2883,7 +2883,7 @@ public class VarDecl <: Decl {
             case VarKind.Const => SyntaxNodeKind.ConstToken.size
             case VarKind.Let => SyntaxNodeKind.LetToken.size
             case VarKind.Var => SyntaxNodeKind.VarToken.size
-            case _ => throw Exception("ParseException: " + "unexpected VarKind keyword")
+            case _ => throw IllegalStateException("Internal error: unexpected 'VarKind' keyword.")
         }
         let endPos = posInfos.varKindKeyWordPos + varKindSize
         return CodePositionRange(posInfos.varKindKeyWordPos, endPos)

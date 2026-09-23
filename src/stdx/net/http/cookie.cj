@@ -72,18 +72,18 @@ public class Cookie {
         path!: String = "", secure!: Bool = false, httpOnly!: Bool = false) {
         // cookie-name = token
         if (!isCookieNameValid(name)) {
-            throw IllegalArgumentException("Invalid cookie name.")
+            throw IllegalArgumentException("Invalid cookie name: '${name}'.")
         }
         // cookie-value = *cookie-octet / ( DQUOTE *cookie-octet DQUOTE )
         if (!isCookieValueValid(value)) {
-            throw IllegalArgumentException("Invalid cookie value.")
+            throw IllegalArgumentException("Invalid cookie value: '${value}'.")
         }
         _cookieName = name
         _cookieValue = value
         // expires-av
         if (let Some(expiresTime) <- expires) {
             if (!isCookieExpiresValid(expiresTime.year)) {
-                throw IllegalArgumentException("Invalid cookie expires.")
+                throw IllegalArgumentException("Invalid cookie expires: year is ${expiresTime.year}, but minimum is 1601.")
             }
         }
         _expires = expires
@@ -95,18 +95,18 @@ public class Cookie {
         //                ; digits 0 through 9
         if (let Some(maxAgeValue) <- maxAge) {
             if (maxAgeValue <= 0) {
-                throw IllegalArgumentException("Invalid cookie maxAge.")
+                throw IllegalArgumentException("Invalid cookie maxAge: ${maxAgeValue}, but must be positive.")
             }
         }
         _maxAge = maxAge
         // <domain> ::= <subdomain> | " "
         if (!isCookieDomainValid(domain)) {
-            throw IllegalArgumentException("Invalid cookie domain.")
+            throw IllegalArgumentException("Invalid cookie domain: '${domain}'.")
         }
         _domain = domain
         // path-value = <any CHAR except CTLs or ";">
         if (!isCookiePathValid(path)) {
-            throw IllegalArgumentException("Invalid cookie path.")
+            throw IllegalArgumentException("Invalid cookie path: '${path}'.")
         }
         _path = path
         _secure = secure

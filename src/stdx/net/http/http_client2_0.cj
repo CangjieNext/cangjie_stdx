@@ -81,7 +81,7 @@ class HttpClient2 <: HttpClient {
     public func request(req: HttpRequest): HttpResponse {
         // get engine, check engine status(rebuild if stream overflow or exception ocurred)
         if (req.url.scheme != "https") {
-            throw HttpException("Must use https scheme for HTTP/2 request.")
+            throw HttpException("HTTP/2 requires HTTPS scheme.")
         }
         let (targetAddrPort, proxyAddrPort, isToProxy) = parseHostAndPort(req.url)
         if (req.headers.get("host").isEmpty()) {
@@ -152,7 +152,7 @@ class HttpClient2 <: HttpClient {
         }
         let ips = IPAddress.resolve(addrPort.addr)
         if (ips.size == 0) {
-            throw HttpException("Failed to resolve address ${addrPort.addr}.")
+            throw HttpException("Failed to resolve address '${addrPort.addr}'.")
         }
         let sa = IPSocketAddress(ips[0], addrPort.port)
         let tmpConn = match (isToProxy) {
@@ -302,13 +302,13 @@ class HttpClientEngine2 {
             case Some(v) => v as SettingsFrame
             case None =>
                 conn.close()
-                throw HttpException("HTTP/2 connection initial failed.")
+                throw HttpException("HTTP/2 connection initialization failed.")
         }
         match (initialSettingFrame) {
             case Some(v) => onSettingsRead(v)
             case None =>
                 conn.close()
-                throw HttpException("HTTP/2 connection initial failed.")
+                throw HttpException("HTTP/2 connection initialization failed.")
         }
         httpLogDebug(logger, "[HttpClientEngine2#exchangePreface] HTTP/2 connection initial success")
     }
@@ -433,7 +433,7 @@ class HttpClientEngine2 {
                 }
                 frame.writeTo(conn.bufferedWriter)
                 remoteWindow.fetchSub(frame.payloadLen)
-            case _ => throw HttpException("This frame should not appear ${frame}.")
+            case _ => throw HttpException("Frame '${frame}' should not appear in this context.")
         }
         return true
     }
@@ -488,7 +488,7 @@ class HttpClientEngine2 {
             case hf: HeadersFrame => readAndDecodeHeaders(hf.streamId, hf.fieldBlock, hf.headerEnd, hf.streamEnd)
             case pf: PushFrame =>
                 if (localSettings[SettingsEnablePush.code] == 0) {
-                    throw HttpConnectionException(ProtocolError, "Should not receive PushPromise.")
+                    throw HttpConnectionException(ProtocolError, "Received unexpected PushPromise frame.")
                 }
                 createPushStream(pf)
                 readAndDecodeHeaders(pf.streamId, pf.fieldBlock, pf.headerEnd, false, pushId: pf.promisedId)
@@ -523,7 +523,7 @@ class HttpClientEngine2 {
                 "Headers and continuation frames should be continuous on connection level.")
 
             if (cf.streamId != streamId) {
-                throw HttpConnectionException(ProtocolError, "Unexpected Continuation on stream ${streamId}.")
+                throw HttpConnectionException(ProtocolError, "Unexpected Continuation on stream '${streamId}'.")
             }
             fieldsBlocks.add(all: cf.fieldBlock)
             headerEnd = cf.headerEnd
@@ -558,17 +558,17 @@ class HttpClientEngine2 {
     func createPushStream(frame: PushFrame): Unit {
         let pushId = frame.promisedId
         if (pushId % 2 != 0) {
-            throw HttpConnectionException(ProtocolError, "Illegal odd Id.")
+            throw HttpConnectionException(ProtocolError, "Push stream identifier '${pushId}' must be even.")
         }
         if (pushId <= lastPPStreamId.load()) {
-            throw HttpConnectionException(ProtocolError, "Unexpected push id.")
+            throw HttpConnectionException(ProtocolError, "Push stream identifier '${pushId}' is not greater than previous.")
         }
         if (activePPStreamNum.load() >= remoteSettings[SettingsMaxConcurrentStreams.code]) {
             return
         }
         let stream = match (getStream(frame)) {
             case Some(v) => v
-            case None => throw HttpConnectionException(ProtocolError, "Receive push from unknown stream ${frame}.")
+            case None => throw HttpConnectionException(ProtocolError, "Received push from unknown stream '${frame}'.")
         }
         lastPPStreamId.store(pushId)
         activePPStreamNum.fetchAdd(1)
@@ -606,7 +606,7 @@ class HttpClientEngine2 {
             activeClientStreamNum.fetchSub(1)
             // try to block follow requests instead of throw exception
             throw HttpException(
-                "Active streams reach limit: ${remoteSettings[SettingsMaxConcurrentStreams.code]}, please wait a second."
+                "Active streams count '${remoteSettings[SettingsMaxConcurrentStreams.code]}' reaches limit."
             )
         }
 
@@ -637,10 +637,10 @@ class HttpClientEngine2 {
             response = stream.constructResponse()
         } catch (e: HttpConnectionException) {
             close(code: e.h2Error, msg: e.message)
-            throw HttpException("Transport error on connection: ${e}.")
+            throw HttpException("Transport error on connection: ${e.message}")
         } catch (e: HttpStreamException) {
             stream.close(e.h2Error)
-            throw HttpException("Transport error on stream: ${e}.")
+            throw HttpException("Transport error on stream: ${e.message}")
         }
         if (stream.streamId == MAX_STREAM_ID) {
             sendGoaway(MAX_STREAM_ID, NoError, debugMsg: "stream id used up")
@@ -656,10 +656,10 @@ class HttpClientEngine2 {
             }
         }
         if (isPushStream(id) && id > lastPPStreamId.load()) {
-            throw HttpConnectionException(ProtocolError, "Unknown stream :${frame}.")
+            throw HttpConnectionException(ProtocolError, "Unknown stream: '${frame}'.")
         }
         if (!isPushStream(id) && id > lastStreamId.load()) {
-            throw HttpConnectionException(ProtocolError, "Unknown stream :${frame}.")
+            throw HttpConnectionException(ProtocolError, "Unknown stream: '${frame}'.")
         }
         // purged stream can ignore frames
         return None
@@ -848,7 +848,7 @@ class HttpClientEngine2 {
      */
     private func onWindowUpdateRead(frame: WindowUpdateFrame): Unit {
         if (remoteWindow.load() + frame.increment > MAX_WINDOW) {
-            throw HttpConnectionException(FlowControlError, "Window over flow.")
+            throw HttpConnectionException(FlowControlError, "Window overflow.")
         }
         remoteWindow.fetchAdd(frame.increment)
         remoteWindowMonitor.lock()
@@ -937,7 +937,7 @@ class HttpClientEngine2 {
             for (stream in streams.values()) {
                 if (stream.remoteWindow.load() + increment > Int64(MAX_WINDOW)) {
                     throw HttpConnectionException(FlowControlError,
-                        "SettingsInitialWindowSize cause remote window of stream ${stream.streamId} exceeds max value.")
+                        "SettingsInitialWindowSize causes remote window of stream '${stream.streamId}' to exceed maximum value.")
                 } else {
                     stream.remoteWindow.fetchAdd(increment)
                 }

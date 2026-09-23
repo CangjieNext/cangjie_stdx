@@ -1369,7 +1369,8 @@ Function: Retrieve the length of the request body.
 
 - If the body is not set, bodySize is Some(0);
 - If the body length is known (i.e., the body is passed via Array\<UInt8> or String, or the provided InputStream has a definite length (length >= 0)), bodySize is Some(Int64);
-- If the body length is unknown (i.e., the body is passed via a custom InputStream instance with an indefinite length (length < 0)), bodySize is None.
+- If the body length is unknown (i.e., the body is passed via a custom InputStream instance with an indefinite length (length < 0)), bodySize is None;
+- For a received request (e.g. with a chunked body), bodySize is None before the body is fully read, and becomes the decoded length afterwards (consistent with the content-length header added at that time).
 
 Type: Option\<Int64>
 
@@ -1521,7 +1522,7 @@ Function: Construct a new [HttpRequestBuilder](http_package_classes.md#class-htt
 public init(request: HttpRequest)
 ```
 
-Function: Construct an [HttpRequestBuilder](http_package_classes.md#class-httprequestbuilder) with the properties of the provided request. Since the body member is an InputStream, operations on the original request's body will affect the copied [HttpRequest](http_package_classes.md#class-httprequest)'s body. The headers and trailers of the [HttpRequestBuilder](http_package_classes.md#class-httprequestbuilder) are deep copies of the input request's headers and trailers. All other elements are shallow copies (as they are immutable objects, deep copying is unnecessary).
+Function: Construct an [HttpRequestBuilder](http_package_classes.md#class-httprequestbuilder) with the properties of the provided request. Since the body member is an InputStream, operations on the original request's body will affect the copied [HttpRequest](http_package_classes.md#class-httprequest)'s body. The headers and trailers of the [HttpRequestBuilder](http_package_classes.md#class-httprequestbuilder) are deep copies of the input request's headers and trailers. All other elements are shallow copies (as they are immutable objects, deep copying is unnecessary). The bodySize of the newly built request is a snapshot of the input request's bodySize taken at copy time, reflecting only the size known before the copy; updates after the copy are not picked up. If the body is replaced by body(...), the size is computed from the new body instead.
 
 Parameters:
 
@@ -1955,6 +1956,7 @@ Function: Retrieves the length of the response body.
 > - If the body is not set, `bodySize` will be `Some(0)`.
 > - If the body length is known (i.e., passed via `Array<UInt8>` or `String`, or the provided `InputStream` has a determined length (`length >= 0`)), `bodySize` will be `Some(Int64)`.
 > - If the body length is unknown (i.e., passed via a user-defined `InputStream` instance without a determined length (`length < 0`)), `bodySize` will be `None`.
+> - For a received response (e.g. with a chunked body), `bodySize` will be `None` before the body is fully read, and becomes the decoded length afterwards (consistent with the `content-length` header added at that time).
 
 Type: `Option<Int64>`
 
@@ -2489,7 +2491,7 @@ Type: [Logger](../../../log/log_package_api/log_package_classes.md#class-logger)
 protected prop maxRequestBodySize: Int64
 ```
 
-Function: Retrieves the server-configured maximum request body size for reading requests. Only applies to HTTP/1.1 requests without "Transfer-Encoding: chunked" header.
+Function: Retrieves the server-configured maximum request body size for reading requests. Only applies to HTTP/1.1 requests, including requests with "Transfer-Encoding: chunked" header.
 
 Type: Int64
 
@@ -2742,7 +2744,7 @@ Type: UInt32
 public prop maxRequestBodySize: Int64
 ```
 
-Functionality: Gets the server-set maximum size for reading request bodies, only effective for HTTP/1.1 requests without "Transfer-Encoding: chunked".
+Functionality: Gets the server-set maximum size for reading request bodies, only effective for HTTP/1.1 requests, including requests with "Transfer-Encoding: chunked".
 
 Type: Int64
 
@@ -2895,6 +2897,7 @@ h1 Request Validation and Processing:
 - Headers must include "host" header with a unique value, otherwise returns 400 response; Headers cannot simultaneously contain "content-length" and "transfer-encoding", otherwise returns 400 response;
 - For "transfer-encoding" header, the last value after splitting by "," must be "chunked", and previous values cannot contain "chunked", otherwise returns 400 response;
 - For "content-length" header, value must be parsable as Int64 type and non-negative, otherwise returns 400 response. If value exceeds server's maxRequestBodySize, returns 413 response;
+- For requests with "transfer-encoding: chunked", the cumulative size of the chunked request body is checked while reading, and if it exceeds server's maxRequestBodySize, returns 413 response;
 - If headers lack both "content-length" and "transfer-encoding: chunked", body is assumed absent by default;
 - For "trailer" header, values cannot include "transfer-encoding", "trailer", or "content-length";
 - For "expect" header, values containing anything other than "100-continue" will return 417 response;
@@ -3286,7 +3289,7 @@ Return Value:
 public func maxRequestBodySize(size: Int64): ServerBuilder
 ```
 
-Function: Sets the maximum allowed request body size for client requests. Returns a 413 status code if exceeded. Default is 2MB. Only applies to HTTP/1.1 requests without "Transfer-Encoding: chunked".
+Function: Sets the maximum allowed request body size for client requests. Returns a 413 status code if exceeded. Default is 2MB. Only applies to HTTP/1.1 requests, including requests with "Transfer-Encoding: chunked" (the cumulative body size is checked as the chunked body is read).
 
 Parameters:
 

@@ -62,7 +62,7 @@ extend TlsContext {
     private func signCallbackWrapper(): CKeylessSignCallback {
         return {
             key: CString, alg: CString, digestPtr: CPointer<Byte>, digestLen: Int64, written: CPointer<Int64> =>
-                let (signCb, _) = TlsSocket.keylessCallback.get(key.toString()) ?? throw TlsException("Missing keyless sign callback.")
+                let (signCb, _) = TlsSocket.keylessCallback.get(key.toString()) ?? throw TlsException("Keyless sign callback not found.")
 
                 let digest = Array<Byte>(digestLen, repeat: 0)
                 for (i in 0..digestLen) {
@@ -86,8 +86,8 @@ extend TlsContext {
     private func decryptCallbackWrapper(): CKeylessDecryptCallback {
         return {
             key: CString, ciphertextPtr: CPointer<Byte>, ciphertextLen: Int64, written: CPointer<Int64> =>
-                let (_, decryptCbOpt) = TlsSocket.keylessCallback.get(key.toString()) ?? throw TlsException("Missing keyless decrypt callback.")
-                let decryptCb = decryptCbOpt ?? throw TlsException("Decrypt callback is not provided.")
+                let (_, decryptCbOpt) = TlsSocket.keylessCallback.get(key.toString()) ?? throw TlsException("Keyless decrypt callback not found.")
+                let decryptCb = decryptCbOpt ?? throw TlsException("Keyless decrypt callback not provided.")
 
                 let ciphertext = Array<Byte>(ciphertextLen, repeat: 0)
                 for (i in 0..ciphertextLen) {
@@ -130,7 +130,7 @@ extend TlsContext {
         exception: CPointer<ExceptionData>
     ): Unit {
         if (chain.isEmpty()) {
-            throw IllegalArgumentException("Certificate chain is empty: at least one certificate required.")
+            throw IllegalArgumentException("Invalid argument 'chain': is empty.")
         }
 
         setPrivateKeyImpl(context, key.encodeToDer(), exception)
@@ -145,7 +145,7 @@ extend TlsContext {
         unsafe {
             let ret = CJ_TLS_CheckPrivateKey(context)
             if (ret <= 0) {
-                throw TlsException("The Certificate chain doesn't match the private key.")
+                throw TlsException("Certificate chain does not match private key.")
             }
         }
     }
@@ -249,12 +249,12 @@ extend TlsContext {
             case TrustAll => setContextTrustAll(context)
             case CustomCA(items) =>
                 let ca = items.map({c => c as X509Certificate ??
-                    throw TlsException("Only certificates of type `X509Certificate` are allowed.")})
+                    throw TlsException("Invalid argument 'items': expected X509Certificate type.")})
 
                 configureCustomCA(context, ca, exception)
                 configureCustomCA(context, X509Certificate.systemRootCerts(), exception)
             case CustomVerify(callback) => setContextCustomVerify(callback)
-            case _ => TlsException("Unsupported verify mode.")
+            case _ => throw TlsException("Invalid argument 'verifyMode': unsupported verify mode.")
         }
     }
 
@@ -281,7 +281,7 @@ extend TlsContext {
     private func setContextTrustAll(context: CPointer<Ctx>) {
         let ret = unsafe { CJ_TLS_SetTrustAll(context) }
         if (ret == 0) {
-            throw TlsException("Failed to set tls socket verify mode to trust all.")
+            throw TlsException("Failed to set verify mode to trust all.")
         }
     }
 
@@ -295,7 +295,7 @@ extend TlsContext {
         }
 
         if (result == 0) {
-            throw TlsException("Failed to configure TlsClientIdentificationMode.")
+            throw TlsException("Failed to configure client identification mode.")
         }
     }
 

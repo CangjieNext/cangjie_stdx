@@ -129,7 +129,7 @@ class TextLogWriter <: LogWriter {
     public func endArray(): Unit {
         match (top()) {
             case EmptyArray | NoEmptyArray => bo.write([b']'])
-            case _ => throw IllegalStateException("End array must be directly after Start array")
+            case _ => throw IllegalStateException("Cannot end array: startArray() must be called first.")
         }
         pop()
     }
@@ -140,18 +140,18 @@ class TextLogWriter <: LogWriter {
     }
     public func endObject(): Unit {
         if (haveName) {
-            throw IllegalStateException("End object cannot directly after a name.")
+            throw IllegalStateException("Cannot end object: a name was written but no value follows.")
         }
         match (top()) {
             case EmptyObject | NoEmptyObject => bo.write([b'}'])
-            case _ => throw IllegalStateException("End object must be directly after Start object.")
+            case _ => throw IllegalStateException("Cannot end object: startObject() must be called first.")
         }
         pop()
     }
 
     func beforeName(): Unit {
         if (haveName) {
-            throw IllegalStateException("Already wrote a name, expecting a value.")
+            throw IllegalStateException("Cannot write name: a name was already written but no value follows.")
         }
         match (top()) {
             case EmptyObject => stack[stack.size - 1] = NoEmptyObject
@@ -161,7 +161,7 @@ class TextLogWriter <: LogWriter {
                 } else {
                     bo.write([b' '])
                 }
-            case _ => throw IllegalStateException("The name must be within an object.")
+            case _ => throw IllegalStateException("Cannot write name: current position is not in an object.")
         }
     }
 
@@ -169,12 +169,12 @@ class TextLogWriter <: LogWriter {
         match (top()) {
             case NoEmptyArray => bo.write([b','])
             case EmptyArray => stack[stack.size - 1] = NoEmptyArray
-            case NoEmptyText => throw IllegalStateException("Text must have only one top-level value.")
+            case NoEmptyText => throw IllegalStateException("Cannot write value: text already has a top-level value.")
             case EmptyText => stack[stack.size - 1] = NoEmptyText
             case EmptyObject => stack[stack.size - 1] = NoEmptyObject
             case NoEmptyObject => // write value in object must write name first
                 if (!haveName) {
-                    throw IllegalStateException("Value in object must after a name.")
+                    throw IllegalStateException("Cannot write value in object: name must be written first.")
                 }
                 haveName = false
         }

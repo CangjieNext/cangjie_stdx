@@ -25,7 +25,7 @@ class Offset {
                 this.column = this.column + a.column
             }
         } else {
-            throw Exception("expect offset, found none")
+            throw IllegalStateException("Internal error: expected an offset, found none.")
         }
     }
     func moveString(str: String) {
@@ -46,11 +46,11 @@ class Offset {
                     case SyntaxNodeKind.NewlineToken =>
                         this.line += Int32(rt.repeat)
                         this.column = 1
-                    case _ => throw Exception("moveNode failed!")
+                    case _ => throw IllegalStateException("Internal error: unexpected repeated terminal kind: '${rt.kind}'.")
                 }
                 case t: Terminal => moveString(t.toString())
                 case nt: NonTerminal => move(nt.offset)
-                case _ => throw Exception("moveNode for Offset failed!")
+                case _ => throw IllegalStateException("Internal error: unexpected node kind during offset movement.")
             }
         }
     }

@@ -10,7 +10,7 @@ package stdx.effect
 
 public class DoubleResumeException <: Exception {
     public init() {
-        super("Resumption resumed multiple times")
+        super("Cannot resume: resumption has already been resumed.")
     }
     protected override func getClassName(): String {
         "DoubleResumeException"
@@ -19,7 +19,7 @@ public class DoubleResumeException <: Exception {
 
 public class UnhandledCommandException <: Exception {
     public init() {
-        super("Unhandled command")
+        super("Unhandled command: no enclosing handler handles this command.")
     }
     protected override func getClassName(): String {
         "UnhandledCommand"

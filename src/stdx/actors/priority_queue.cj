@@ -35,7 +35,7 @@ class ConcurrentPriorityQueue<T> {
 
     func add(item: T, priority: Int64): Unit {
         if (priority <= 0 || priority > numOfPriorities) {
-            throw IllegalArgumentException("Priority must be in the range [1..${numOfPriorities}].")
+            throw IllegalArgumentException("Invalid argument 'priority': expected a value in [1..${numOfPriorities}], got '${priority}'.")
         }
         queuePool[priority - 1].add(item)
         semaphore.signal()

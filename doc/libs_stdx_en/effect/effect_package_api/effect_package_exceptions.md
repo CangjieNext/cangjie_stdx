@@ -20,7 +20,7 @@ public class DoubleResumeException <: Exception {
 public init()
 ```
 
-**Description:** Constructor for `DoubleResumeException`. Initializes the exception with the default message `"Resumption resumed multiple times"`.
+**Description:** Constructor for `DoubleResumeException`. Initializes the exception with the default message `"Cannot resume: resumption has already been resumed."`.
 
 ## class UnhandledCommandException
 
@@ -42,4 +42,4 @@ public class UnhandledCommandException <: Exception {
 public init()
 ```
 
-**Description:** Constructor for `UnhandledCommandException`. Initializes the exception with the default message `"Unhandled command"`.
+**Description:** Constructor for `UnhandledCommandException`. Initializes the exception with the default message `"Unhandled command: no enclosing handler handles this command."`.
