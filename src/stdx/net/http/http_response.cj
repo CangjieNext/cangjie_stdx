@@ -58,7 +58,7 @@ public class HttpResponseBuilder {
      */
     public func status(status: UInt16): HttpResponseBuilder {
         if (status < 100 || status > 599) {
-            throw HttpException("Valid status codes are within the range of 100 to 599.")
+            throw HttpException("Invalid status code: ${status}, but valid range is 100 to 599.")
         }
         this._status = status
         return this
@@ -290,6 +290,10 @@ public class HttpResponse <: ToString {
      *                  or InputStream whose length is valid.
      * @return None, means the body size is unknown, that is, the body is self-implemented InputStream
      *                  whose length is invalid.
+     *
+     * Note: for a received response with a chunked body, bodySize is None before the body is
+     * fully read, and becomes the decoded length afterwards (consistent with the content-length
+     * header added at that time).
      */
     public prop bodySize: Option<Int64> {
         get() {

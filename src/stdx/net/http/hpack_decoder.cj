@@ -149,7 +149,7 @@ class Decoder {
                 case (b & 0x20) == 0x20 =>
                     if (!isFirstByte) {
                         throw HpackException(
-                            "Dynamic table size update MUST occur at the beginning of the first header block.")
+                            "Dynamic table size update must occur at the beginning of the first header block.")
                     }
                     let size = decodeInt(b, 5, iterator)
                     updateDynamicTableSize(size)
@@ -233,7 +233,7 @@ class Decoder {
                 totalHeaderListSize += fieldSize(field)
                 if (totalHeaderListSize > maxHeaderListSize) {
                     throw HpackException(
-                        "Total size:${totalHeaderListSize} out of SettingsMaxHeaderListSize :${maxHeaderListSize}.")
+                        "Total header list size '${totalHeaderListSize}' exceeds maximum '${maxHeaderListSize}'.")
                 }
             }
             // append to header list
@@ -269,8 +269,7 @@ class Decoder {
     func updateDynamicTableSize(newMaxSize: Int64): Unit {
         if (newMaxSize > this.headerTableSizeLimit) {
             throw HpackException(
-                "Failed to update dynamic table size, new size: ${newMaxSize} exceeds the limit: ${this.headerTableSizeLimit}."
-            )
+                "Dynamic table size '${newMaxSize}' exceeds limit '${headerTableSizeLimit}'.")
         }
         headerTable.headerTableSize = newMaxSize
     }
@@ -293,8 +292,7 @@ class Decoder {
         // check header size
         if (maxHeaderListSize != -1 && maxHeaderListSize < len) {
             throw HpackException(
-                "Failed to decode String, header string size:${len} out of SettingsMaxHeaderListSize :${maxHeaderListSize}."
-            )
+                "Header string length '${len}' exceeds maximum header list size '${maxHeaderListSize}'.")
         }
         var bytes = Array<Byte>(len, {_ => nextBytes.nextByte()})
 
@@ -306,7 +304,7 @@ class Decoder {
         try {
             return String.fromUtf8(bytes)
         } catch (e: Exception) {
-            throw HpackException("Failed to decode string: ${e.message}.")
+            throw HpackException("Failed to decode header string: ${e.message}")
         }
     }
 }
@@ -349,7 +347,7 @@ func decodeInt(b: Byte, n: Int64, nextBytes: ByteIterator): Int64 {
         value += (t & mask7) * m
         m <<= 7
         if (m < 0) {
-            throw HpackException("Failed to decode integer, number too large.")
+            throw HpackException("Failed to decode integer: value exceeds maximum representable size.")
         }
     } while ((t & 0x80) == 0x80)
     return value
@@ -359,7 +357,7 @@ class ByteIterator {
     ByteIterator(let it: Iterator<Byte>) {}
 
     func nextByte(): Byte {
-        return it.next() ?? throw HpackException("Failed to decode data, next byte required but not found.") // cjlint-ignore !G.EXP.03
+        return it.next() ?? throw HpackException("Failed to decode header block: unexpected end of data.") // cjlint-ignore !G.EXP.03
     }
 
     func next(): Option<Byte> {

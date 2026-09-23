@@ -33,7 +33,7 @@ struct DerParser {
 
     func checkOutOfIndex() {
         if (offset >= body.size) {
-            throw X509Exception("X509 parse derfield failed: Failed to parse DER.")
+            throw X509Exception("Failed to parse DER: offset '${offset}' exceeds body size '${body.size}'.")
         }
     }
 
@@ -42,7 +42,7 @@ struct DerParser {
         let length = Int64(parseDerLength())
         let content: Array<Byte> = if (length > 0) {
             if (offset + length > body.size) {
-                throw X509Exception("X509 parse derfield failed: Failed to parse DER.")
+                throw X509Exception("Failed to parse DER: content length '${length}' from offset '${offset}' exceeds body size '${body.size}'.")
             }
             body[offset..offset + length]
         } else {
@@ -57,7 +57,7 @@ struct DerParser {
         let ty = parseDerType()
         let length = Int64(parseDerLength())
         if (offset + length > body.size) {
-            throw X509Exception("X509 parse derfield failed: Failed to parse DER.")
+            throw X509Exception("Failed to parse DER: field length '${length}' from offset '${offset}' exceeds body size '${body.size}'.")
         }
         offset += length
 
@@ -83,7 +83,7 @@ struct DerParser {
             case 1 => Application
             case 2 => ContextSpecific
             case 3 => Private
-            case _ => throw X509Exception("X509 parse type failed: Impossible class num.")
+            case _ => throw X509Exception("Failed to parse DER type: invalid class number '${derClassNum}'.")
         }
 
         DerType(derClass, typeIdentifier, primitive: isPrimitive)
@@ -95,7 +95,7 @@ struct DerParser {
         const maxIterations = 10
         while (true) {
             if (iterations >= maxIterations) {
-                throw X509Exception("X509 parse derfield failed: Base-128 integer overflow.")
+                throw X509Exception("Failed to parse DER: Base-128 integer overflow after '${maxIterations}' iterations.")
             }
             checkOutOfIndex()
             let next = body[offset]
@@ -120,11 +120,11 @@ struct DerParser {
         }
         let count = Int64(first & 0x7f)
         if (count == 0) {
-            throw X509Exception("X509 parse derfield failed: indefinite length encoding not allowed in DER.")
+            throw X509Exception("Failed to parse DER: indefinite length encoding is not allowed.")
         }
         let maxDerLength = 7
         if (count > maxDerLength) {
-            throw X509Exception("X509 parse derfield failed: unsupport derlength.")
+            throw X509Exception("Failed to parse DER: length byte count '${count}' exceeds maximum '${maxDerLength}'.")
         }
         var result = 0i64
         offset++
@@ -134,13 +134,13 @@ struct DerParser {
             offset++
         }
         if (result > body.size) {
-            throw X509Exception("X509 parse derfield failed: Failed to parse DER.")
+            throw X509Exception("Failed to parse DER: length '${result}' exceeds body size '${body.size}'.")
         }
         if (result < 128) {
-            throw X509Exception("X509 parse derfield failed: length must use shortest form in DER.")
+            throw X509Exception("Failed to parse DER: length '${result}' should use short form encoding.")
         }
         if (result < (1 << (8 * (count - 1)))) {
-            throw X509Exception("X509 parse derfield failed: length must use shortest form in DER.")
+            throw X509Exception("Failed to parse DER: length '${result}' is not in shortest form for '${count}'-byte encoding.")
         }
         return result
     }

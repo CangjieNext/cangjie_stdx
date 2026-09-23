@@ -20,7 +20,7 @@ public class DoubleResumeException <: Exception {
 public init()
 ```
 
-功能： 这是 `DoubleResumeException` 的构造函数。它会用默认信息 `"Resumption resumed multiple times"` 初始化该异常。
+功能： 这是 `DoubleResumeException` 的构造函数。它会用默认信息 `"Cannot resume: resumption has already been resumed."` 初始化该异常。
 
 ## class UnhandledCommandException
 
@@ -42,4 +42,4 @@ public class UnhandledCommandException <: Exception {
 public init()
 ```
 
-功能： 这是 `UnhandledCommandException` 的构造函数。它使用默认信息 `"Unhandled command"` 来初始化异常对象。
+功能： 这是 `UnhandledCommandException` 的构造函数。它使用默认信息 `"Unhandled command: no enclosing handler handles this command."` 来初始化异常对象。

@@ -410,13 +410,13 @@ func parseIPv6(src: String): (Array<UInt8>, String, Bool) {
             zone = s[v + 1..]
             s = s[..v]
             if (zone.size == 0) {
-                throw UrlSyntaxException(s, "zone must be a non-empty string")
+                throw UrlSyntaxException(s, "Zone is empty.")
             }
         case _ => ()
     }
 
     if (s[0] == b':' && s[1] != b':') {
-        throw UrlSyntaxException(src, "each colon-separated field must have at least one digit", s[offset..])
+        throw UrlSyntaxException(src, "Each colon-separated field must have at least one digit.", s[offset..])
     }
 
     var ellipsis: ?Int64 = None
@@ -429,7 +429,7 @@ func parseIPv6(src: String): (Array<UInt8>, String, Bool) {
                 return (Array<UInt8>(SOCK_ADDR_IPV6_LEN, repeat: 0), zone, false)
             }
         } else {
-            throw UrlSyntaxException(src, "unexpected character, want colon", s[1..])
+            throw UrlSyntaxException(src, "Unexpected character, expected colon.", s[1..])
         }
     }
     let (ok, o, i, e, ip) = innerParseIPv6(s, src, offset, ellipsis)
@@ -439,10 +439,10 @@ func parseIPv6(src: String): (Array<UInt8>, String, Bool) {
     offset = o
     ellipsis = e
     if (offset < s.size) {
-        throw UrlSyntaxException(src, "address contain garbage", s[offset..])
+        throw UrlSyntaxException(src, "Address contains invalid characters.", s[offset..])
     }
     if (i == 16 && ellipsis.isSome()) {
-        throw UrlSyntaxException(src, "does not contain a valid network address", s[offset..])
+        throw UrlSyntaxException(src, "Address does not contain a valid network address.", s[offset..])
     }
     if (i < 16) {
         if (let Some(ellipsis_index) <- ellipsis) {
@@ -454,7 +454,7 @@ func parseIPv6(src: String): (Array<UInt8>, String, Bool) {
                 ip[index] = 0
             }
         } else {
-            throw UrlSyntaxException(src, "address string too short", s)
+            throw UrlSyntaxException(src, "Address string is too short.", s)
         }
     }
     return (ip, zone, false)
@@ -469,14 +469,14 @@ func innerParseIPv6(s: String, src: String, begin: Int64, e: ?Int64) {
     while (offset < s.size) {
         let (bytes_read, hextet) = readHextet(s[offset..])
         if (hextet > UInt32(UInt16.Max)) {
-            throw UrlSyntaxException(src, "IPv6 field has value >=2^16", s[offset..])
+            throw UrlSyntaxException(src, "IPv6 field value exceeds 65535.", s[offset..])
         }
         if (bytes_read == 0) {
             if (s[offset] != b':') {
-                throw UrlSyntaxException(src, "each colon-separated field must have at least one digit", s[offset..])
+                throw UrlSyntaxException(src, "Each colon-separated field must have at least one digit.", s[offset..])
             }
             if (ellipsis.isSome()) {
-                throw UrlSyntaxException(src, "an IPv6 address can only have one ellipsis", s[offset..])
+                throw UrlSyntaxException(src, "IPv6 address can only have one ellipsis.", s[offset..])
             }
             ellipsis = i
             offset += 1
@@ -494,10 +494,10 @@ func innerParseIPv6(s: String, src: String, begin: Int64, e: ?Int64) {
             case ':' => offset += 1
             case '.' =>
                 if (ellipsis.isNone() && i != 12) {
-                    throw UrlSyntaxException(src, "embedded IPv4 address must replace the final 2 fields of the address", s[offset..])
+                    throw UrlSyntaxException(src, "Embedded IPv4 address must replace the final 2 fields.", s[offset..])
                 }
                 if (i + 4 > 16) {
-                    throw UrlSyntaxException(src, "too many hex fields to fit an embedded IPv4 at the end of the address", s[offset..])
+                    throw UrlSyntaxException(src, "Too many hex fields to fit an embedded IPv4.", s[offset..])
                 }
                 var (arr, err) = parseIPv4(s[(offset - bytes_read)..])
                 if (err) {
@@ -507,7 +507,7 @@ func innerParseIPv6(s: String, src: String, begin: Int64, e: ?Int64) {
                 i += 2
                 offset += s.size - offset + bytes_read
                 break
-            case _ => throw UrlSyntaxException(src, "contain invalid character", s[offset..])
+            case _ => throw UrlSyntaxException(src, "Contains invalid character.", s[offset..])
         }
     }
     return (true, offset, i, ellipsis, ip)

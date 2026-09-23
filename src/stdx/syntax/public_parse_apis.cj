@@ -16,7 +16,7 @@ import std.collection.HashSet
  * @param filePath The file path to the source file that needs to be parsed.
  * @return A ParsingResult object containing the parsed SourceFile or an error.
  *
- * @throws Exception if there is an issue reading the file.
+ * @throws IllegalArgumentException if there is an issue reading the file.
  */
 public func parseFile(filePath: String): ParsingResult<SourceFile> {
     let (file, diags) = Parser.parseFile(filePath)
@@ -29,7 +29,7 @@ public func parseFile(filePath: String): ParsingResult<SourceFile> {
  * @param dirPath The directory path to the source files that needs to be parsed.
  * @return A ParsingResult object containing the parsed Package or an error.
  *
- * @throws Exception if there is an issue reading the file.
+ * @throws IllegalArgumentException if there is an issue reading the file.
  */
 public func parsePackage(dirPath: String): ParsingResult<Package> {
     let (pkg, diags) = Parser.parsePackage(dirPath)
@@ -46,14 +46,15 @@ func skipRedundancy(text: String) {
  * @param text The text that needs to be parsed.
  * @return A ParsingResult object containing the parsed node or an error.
  *
- * @throws Exception if there is an issue parsing the text.
+ * @throws IllegalArgumentException if the text includes multiple syntax nodes.
+ * @throws UnsupportedException if there is an issue parsing the text.
  */
 public func parseText(programText: String): ParsingResult<SyntaxTreeNode> {
     let (res, diags) = Parser.parseText(programText)
     // If the content of the parsed node is less than that of the input content, 
     // there are multiple input nodes.
     if (let Some(result) <- res && skipRedundancy(result.toString()).size < skipRedundancy(programText).size) {
-        throw Exception("parseText function not support parse more than one node.")
+        throw UnsupportedException("Invalid argument 'programText': the input contains more than one syntax node.")
     }
     ParsingResult<SyntaxTreeNode>(res, diags)
 }
@@ -89,14 +90,14 @@ func checkPos(tokens: Tokens): Bool {
  * @param tokens The tokens that need to be parsed.
  * @return A ParsingResult object containing the parsed node or an error.
  *
- * @throws Exception if there is an issue parsing the tokens.
+ * @throws IllegalArgumentException if there is an issue parsing the tokens.
  */
 public func parseTokens(tokens: Tokens, refreshPos!: Bool = true): ParsingResult<SyntaxTreeNode> {
     if (tokens.size == 0) {
-        throw Exception("the input tokens is empty.")
+        throw IllegalArgumentException("The input token list is empty.")
     }
     if (!refreshPos && !checkPos(tokens)) { // check if the position of tokens is valid
-        throw Exception("the position of the input tokens is invalid, you may open the refreshPos option.")
+        throw IllegalArgumentException("Invalid token positions.")
     }
     let (res, diags) = Parser.parseTokens(tokens, refreshPos)
     ParsingResult<SyntaxTreeNode>(res, diags)

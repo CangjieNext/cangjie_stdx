@@ -67,6 +67,8 @@ internal enum Attribute <: ToString {
     HasInitedField | ///< Mark whether a node is a special flag, which marks the class instance as initialized.
     JavaHasDefault | ///< Mark whether JAVA_MIRROR interface has default method.
     PreviouslyDeserialized | ///< Mark that deserialization occurs not in the newly created node, but in an existing one.
+    DoesNotThrow | ///< Mark that the function does not throw any exceptions by construction.
+    MatchPattern | ///< Mark CFG nodes that evaluate patterns, excluding case bodies and nested expressions.
     PluginAdded | ///< Mark that the declaration is added by chir plugin.
 
     AttrEnd
@@ -115,6 +117,8 @@ internal enum Attribute <: ToString {
             case HasInitedField         => "hasInitedField"
             case JavaHasDefault         => "javaHasDefault"
             case PreviouslyDeserialized => "previouslyDeserialized"
+            case DoesNotThrow           => "doesNotThrow"
+            case MatchPattern           => "matchPattern"
             case PluginAdded            => "pluginAdded"
             case AttrBegin | AttrEnd => "UNKNOWN"
         }
@@ -160,7 +164,9 @@ internal enum Attribute <: ToString {
             case ObjCMirror             => HasInitedField
             case HasInitedField         => JavaHasDefault
             case JavaHasDefault         => PreviouslyDeserialized
-            case PreviouslyDeserialized => PluginAdded
+            case PreviouslyDeserialized => DoesNotThrow
+            case DoesNotThrow           => MatchPattern
+            case MatchPattern           => PluginAdded
             case PluginAdded            => AttrEnd
             case AttrEnd                => AttrEnd
         }
@@ -207,7 +213,9 @@ internal enum Attribute <: ToString {
             case HasInitedField         => 35
             case JavaHasDefault         => 36
             case PreviouslyDeserialized => 37
-            case PluginAdded            => 38
+            case DoesNotThrow           => 38
+            case MatchPattern           => 39
+            case PluginAdded            => 40
             case AttrEnd                => ATTR_SIZE  // Invalid, return size to indicate error
         }
     }
@@ -260,14 +268,14 @@ internal struct AttributeInfo <: ToString {
             if (bitIndex < ATTR_SIZE) {
                 _attributesInfo |= UInt64(1)  << bitIndex
             } else {
-                throw CHIRException("set failed, Attribute index out of range")
+                throw CHIRException("Invalid attribute index: expected a value less than '${ATTR_SIZE}', got '${bitIndex}'.")
             }
         } else {
             let bitIndex = attr.toUInt64()
             if (bitIndex < ATTR_SIZE) {
                 _attributesInfo &= !(UInt64(1) << bitIndex)
             } else {
-                throw CHIRException("set failed, Attribute index out of range")
+                throw CHIRException("Invalid attribute index: expected a value less than '${ATTR_SIZE}', got '${bitIndex}'.")
             }
         }
     }

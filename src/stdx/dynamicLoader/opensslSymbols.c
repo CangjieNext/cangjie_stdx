@@ -295,6 +295,8 @@ CANGJIE_PRAGMA_WEAK(BIO_ctrl)
 CANGJIE_PRAGMA_WEAK(BIO_clear_flags)
 CANGJIE_PRAGMA_WEAK(BIO_new)
 CANGJIE_PRAGMA_WEAK(BIO_s_mem)
+CANGJIE_PRAGMA_WEAK(SHA1)
+CANGJIE_PRAGMA_WEAK(EVP_PKEY_CTX_set1_id)
 
 /* Used by DynPopFree() call sites. */
 CANGJIE_PRAGMA_WEAK(GENERAL_NAME_free)
@@ -913,9 +915,9 @@ long DYN_BIO_pending(BIO* b, DynMsg* dynMsg)
 
 int DYN_BIO_eof(BIO* b, DynMsg* dynMsg)
 {
-    typedef int (*SSLFunc)(BIO*, int, long, void*);
+    typedef long (*SSLFunc)(BIO*, int, long, void*);
     FINDFUNCTION(dynMsg, BIO_ctrl, 0)
-    return func(b, BIO_CTRL_EOF, 0, NULL);
+    return (int)func(b, BIO_CTRL_EOF, 0, NULL);
 }
 
 void DYN_BIO_clear_retry_flags(BIO* b, DynMsg* dynMsg)
@@ -927,16 +929,30 @@ void DYN_BIO_clear_retry_flags(BIO* b, DynMsg* dynMsg)
 
 long DYN_BIO_get_mem_ptr(BIO* b, BUF_MEM** pp, DynMsg* dynMsg)
 {
-    typedef int (*SSLFunc)(BIO*, int, long, void*);
+    typedef long (*SSLFunc)(BIO*, int, long, void*);
     FINDFUNCTION(dynMsg, BIO_ctrl, 0)
     return func(b, BIO_C_GET_BUF_MEM_PTR, 0, (void*)pp);
 }
 
 int DYN_SSL_set_tlsext_host_name(SSL* ssl, const char* name, DynMsg* dynMsg)
 {
-    typedef int (*SSLFunc)(SSL*, int, long, void*);
+    typedef long (*SSLFunc)(SSL*, int, long, void*);
     FINDFUNCTION(dynMsg, SSL_ctrl, -1)
-    return func(ssl, SSL_CTRL_SET_TLSEXT_HOSTNAME, TLSEXT_NAMETYPE_host_name, (void*)name);
+    return (int)func(ssl, SSL_CTRL_SET_TLSEXT_HOSTNAME, TLSEXT_NAMETYPE_host_name, (void*)name);
+}
+
+unsigned char* DYN_SHA1(char* d, int32_t n, char* md, DynMsg* dynMsg)
+{
+    typedef unsigned char* (*SSLFunc)(const unsigned char*, size_t, unsigned char*);
+    FINDFUNCTION(dynMsg, SHA1, NULL)
+    return func((const unsigned char*)d, (size_t)n, (unsigned char*)md);
+}
+
+int DYN_EVP_PKEY_CTX_set1_id(EVP_PKEY_CTX* ctx, void* id, size_t len, DynMsg* dynMsg)
+{
+    typedef int (*SSLFunc)(EVP_PKEY_CTX*, const void*, int);
+    FINDFUNCTION(dynMsg, EVP_PKEY_CTX_set1_id, 0)
+    return func(ctx, id, (int)len);
 }
 
 long DYN_SSL_CTX_set_tlsext_servername_callback(SSL_CTX* ctx, int (*cb)(void* s, int* al, void* arg), DynMsg* dynMsg)
@@ -1074,7 +1090,7 @@ bool LoadFuncForNewSessionCallback(DynMsg* dynMsg)
     FINDFUNCTIONI(dynMsg, 3, d2i_SSL_SESSION, false)
     typedef void (*SSLFunc4)(void*, const char*, int);
     FINDFUNCTIONI(dynMsg, 4, CRYPTO_free, false)
-    typedef const unsigned char* (*SSLFunc5)(void*, const char*, int);
+    typedef const unsigned char* (*SSLFunc5)(const SSL_SESSION*, unsigned int*);
     FINDFUNCTIONI(dynMsg, 5, SSL_SESSION_get0_id_context, false)
     typedef int (*SSLFunc6)(SSL_SESSION*, const unsigned char*, unsigned int);
     FINDFUNCTIONI(dynMsg, 6, SSL_SESSION_set1_id_context, false)

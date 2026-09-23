@@ -48,7 +48,7 @@ public class ExtendDef <: CustomTypeDef {
         if (extendedType.isCustomType()) {
             typeStr = GLOBAL_SYMBOL_PREFIX + typeStr
         }
-        var result = "extend" + typeVecToString("<", _genericTypeParams.toArray(), ">") + " " + typeStr
+        var result = _kind.toString() + typeVecToString("<", _genericTypeParams.toArray(), ">") + " " + typeStr
         if (!implementedInterfaceTypes.isEmpty()) {
             result += " <: "
             var superTypeStr = ArrayList<String>()

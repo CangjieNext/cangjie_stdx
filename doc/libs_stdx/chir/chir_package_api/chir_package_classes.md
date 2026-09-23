@@ -3551,7 +3551,7 @@ public static func get(paramTypes: Array<Type>, retType: Type, varArg!: Bool = f
 
 - paramTypes: Array\<Type> - 形参类型序列。
 - retType: Type - 返回类型。
-- varArg! - 是否为可变参数函数类型，默认 `false`。
+- varArg!: Bool - 是否为可变参数函数类型，默认 `false`。
 - cFunc! - 是否为 `CFunc<...>` 形式，默认 `false`。
 
 返回值：
@@ -8026,7 +8026,7 @@ walk_Function: true
 public func walk(bg: BlockGroup): Unit
 ```
 
-功能：按顺序遍历块组中的每个基本块；遇到 `STOP` 状态时提前终止。
+功能：按顺序遍历块组中的每个基本块；遇到 `Stop` 状态时提前终止。
 
 参数：
 
@@ -8061,7 +8061,7 @@ main() {
 public func walk(b: Block): Unit
 ```
 
-功能：遍历基本块中的每个表达式，并递归访问表达式内的嵌套块组；遇到 `STOP` 状态时提前终止。
+功能：遍历基本块中的每个表达式，并递归访问表达式内的嵌套块组；遇到 `Stop` 状态时提前终止。
 
 参数：
 
@@ -8136,6 +8136,92 @@ main() {
 
 ```text
 visitor_done
+```
+
+## class TypeVisitor
+
+```cangjie
+public abstract class TypeVisitor {}
+```
+
+功能：CHIR 类型节点的**抽象访问器**。按深度优先顺序访问类型及其 `typeArgs`；子类可重写 [`action`](#func-actiontype) 以观察每个类型节点，`walk` 根据返回的 [`TypeActionMode`](chir_package_enums.md#enum-typeactionmode) 决定继续、跳过或终止。
+
+### func walk(Type)
+
+```cangjie
+public func walk(ty: Type): Unit
+```
+
+功能：递归遍历给定类型及其类型实参；遇到 `STOP` 状态时提前终止。
+
+参数：
+
+- ty: [Type](#class-type) - 待遍历的根类型。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let i32 = IntType.getInt32()
+    let ft = FuncType.get([i32], i32)
+    println("walk_Type: ${ft.typeArgs.size}")
+}
+```
+
+运行结果：
+
+```text
+walk_Type: 2
+```
+
+### func action(Type)
+
+```cangjie
+public open func action(ty: Type): TypeActionMode
+```
+
+功能：对每个访问到的类型节点调用，决定是否继续遍历。默认返回 `TypeActionMode.CONTINUE`；子类可重写以实现自定义观察逻辑、跳过子节点或提前终止。
+
+参数：
+
+- ty: [Type](#class-type) - 当前类型节点。
+
+返回值：
+
+- [TypeActionMode](chir_package_enums.md#enum-typeactionmode) - 访问器控制模式（`CONTINUE` 继续遍历子类型，`SKIP` 跳过当前类型的子节点，`STOP` 终止遍历）。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+class MyTypeVisitor <: TypeVisitor {
+    public open func action(ty: Type): TypeActionMode {
+        println(ty.toString().size > 0)
+        return TypeActionMode.CONTINUE
+    }
+}
+
+main() {
+    let i32 = IntType.getInt32()
+    let ft = FuncType.get([i32], i32)
+    let v = MyTypeVisitor()
+    v.walk(ft)
+    println("type_visitor_done")
+}
+```
+
+运行结果：
+
+```text
+true
+true
+true
+type_visitor_done
 ```
 
 ## class FuncCallContext
@@ -9478,7 +9564,8 @@ main() {
     let pkg = Package("demo", AccessLevel.Public)
     let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
     f.initBody()
-    println("fn_destroySelf_before: ${f.body.isSome()}")
+    f.body.getOrThrow().destroySelf() 
+    println("fn_destroySelf_after: ${f.body.isNone()}")
 }
 ```
 
@@ -9862,7 +9949,7 @@ main() {
 public func toString(): String
 ```
 
-功能：字符串形式，为数值后缀 `"f"`（如 `3.14f`）。
+功能：字符串形式，为数值后缀 `"f"`（如  \3.140000f\ ）。
 
 返回值：
 
@@ -15018,12 +15105,47 @@ op_eq_FuncCall: true
 sealed abstract class ApplyBase <: FuncCall & Equatable<ApplyBase> {}
 ```
 
-功能：Apply（普通函数调用）类表达式的抽象基类，是 [Apply](#class-apply)、[TryApply](#class-tryapply) 的父类型，提供被调用函数值（callee）的查询能力。
+功能：Apply（普通函数调用）类表达式的抽象基类，是 [Apply](#class-apply)、[TryApply](#class-tryapply) 的父类型，提供被调用函数值（callee）查询，以及是否为 `super` 调用的标记。
 
 父类型：
 
 - [FuncCall](#class-funccall)
 - Equatable\<[ApplyBase](#class-applybase)>
+
+### prop isSuperCall
+
+```cangjie
+public prop isSuperCall: Bool
+```
+
+功能：是否为 `super` 调用（只读）。为 `true` 时，转储/打印会额外标注 `isSuperCall`；创建时默认为 `false`，反序列化时可能为 `true`。
+
+类型：Bool
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let fType = FuncType.get([], UnitType.get())
+    let f = pkg.addFunction(fType, "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let callCtx = FuncCallContext([], [], None)
+    let expr = Apply.create(f, callCtx)
+    block.appendExpr(expr)
+    println("prop_isSuperCall: ${expr.isSuperCall}")
+}
+```
+
+运行结果：
+
+```text
+prop_isSuperCall: false
+```
 
 ### prop callee
 
@@ -17236,6 +17358,46 @@ public mut prop returnValue: LocalVar
 
 类型：[LocalVar](#class-localvar)
 
+### prop paramDftValHostFunc
+
+```cangjie
+public mut prop paramDftValHostFunc: ?Lambda
+```
+
+功能：用于默认参数求值的宿主 Lambda（若有）；无时为 `None`。
+
+类型：?[Lambda](#class-lambda)
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+import std.collection.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let lambdaType = FuncType.get([], UnitType.get())
+    let expr = Lambda.create(lambdaType, "lambda_m", "myLambda", ArrayList<GenericType>())
+    block.appendExpr(expr)
+    let host = Lambda.create(lambdaType, "host_m", "host", ArrayList<GenericType>())
+    block.appendExpr(host)
+    println("prop_paramDftValHostFunc_none: ${expr.paramDftValHostFunc.isNone()}")
+    expr.paramDftValHostFunc = Some(host)
+    println("prop_paramDftValHostFunc_some: ${expr.paramDftValHostFunc.getOrThrow().identifier}")
+}
+```
+
+运行结果：
+
+```text
+prop_paramDftValHostFunc_none: true
+prop_paramDftValHostFunc_some: host_m
+```
+
 ### static func create(FuncType, String, String, ArrayList\<GenericType>)
 
 ```cangjie
@@ -17817,14 +17979,14 @@ op_eq_MultiBranch: true
 ## class NumericCastBase
 
 ```cangjie
-sealed abstract class NumericCastBase <: Expression & Equatable<NumericCastBase> {}
+sealed abstract class NumericCastBase <: TypeCast & Equatable<NumericCastBase> {}
 ```
 
 功能：数值类型转换表达式的抽象基类，是 [NumericCast](#class-numericcast)、[TryNumericCast](#class-trynumericcast) 的父类型，提供溢出策略的查询与设置能力。
 
 父类型：
 
-- [Expression](#class-expression)
+- [TypeCast](#class-typecast)
 - Equatable\<[NumericCastBase](#class-numericcastbase)>
 
 ### prop overflow
@@ -19495,6 +19657,42 @@ main() {
 prop_fieldNames: 1
 ```
 
+### prop srcValue
+
+```cangjie
+public prop srcValue: Value
+```
+
+功能：源值。
+
+类型：Value
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+import std.collection.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([IntType.getInt32(), IntType.getInt32()], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let valParam = f.parameters[0]
+    let locParam = f.parameters[1]
+    let fieldNames = ArrayList<String>()
+    fieldNames.add("x")
+    let store = StoreElementByName.create(valParam, locParam, fieldNames)
+    println("prop_srcValue: ${store.srcValue == valParam}")
+}
+```
+
+运行结果：
+
+```text
+prop_srcValue: true
+```
+
 ### static func create(Value, Value, ArrayList\<String>)
 
 ```cangjie
@@ -19628,6 +19826,42 @@ main() {
 
 ```text
 prop_path: 1
+```
+
+### prop srcValue
+
+```cangjie
+public prop srcValue: Value
+```
+
+功能：源值。
+
+类型：Value
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+import std.collection.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([IntType.getInt32(), IntType.getInt32()], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let valParam = f.parameters[0]
+    let locParam = f.parameters[1]
+    let path = ArrayList<UInt64>()
+    path.add(0)
+    let store = StoreElementRef.create(valParam, locParam, path)
+    println("prop_srcValue: ${store.srcValue == valParam}")
+}
+```
+
+运行结果：
+
+```text
+prop_srcValue: true
 ```
 
 ### static func create(Value, Value, ArrayList\<UInt64>)
@@ -19858,7 +20092,7 @@ op_eq_Tuple: true
 sealed abstract class TypeCast <: Expression & Equatable<TypeCast> {}
 ```
 
-功能：类型转换表达式的抽象基类，是 [Box](#class-box)、[StaticCast](#class-staticcast)、[CastToConcrete](#class-casttoconcrete)、[CastToGeneric](#class-casttogeneric) 等的父类型，提供源值、源类型与目标类型的查询能力。
+功能：类型转换表达式的抽象基类，是 [Box](#class-box)、[StaticCast](#class-staticcast)、[CastToConcrete](#class-casttoconcrete)、[CastToGeneric](#class-casttogeneric)、[NumericCastBase](#class-numericcastbase) 等的父类型，提供源值、源类型与目标类型的查询能力。
 
 父类型：
 
@@ -22690,6 +22924,47 @@ main() {
 createGoTo: true
 ```
 
+### func createInout(Type, Value)
+
+```cangjie
+public func createInout(retTy: Type, param: Value): Intrinsic
+```
+
+功能：创建 `inout` 参数内建调用表达式。
+
+参数：
+
+- retTy: Type - 返回类型，通常为引用类型。
+- param: Value - 传入的参数值。
+
+返回值：
+
+- [Intrinsic](#class-intrinsic) - `inout` 内建调用表达式。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let builder = CHIRBuilder(InsertPosition.AtEnd(block))
+    let alloc = builder.createAllocate(IntType.getInt32())
+    let expr = builder.createInout(RefType.get(IntType.getInt32()), alloc.result)
+    println("createInout: ${expr.toString().size > 0}")
+}
+```
+
+运行结果：
+
+```text
+createInout: true
+```
+
 ### func createInstanceOf(Value, Type)
 
 ```cangjie
@@ -23861,6 +24136,52 @@ main() {
 
 ```text
 createTryBinarySub: true
+```
+
+### func createTryInout(Type, Value, Block, Block)
+
+```cangjie
+public func createTryInout(retTy: Type, param: Value, normal: Block, err: Block): TryIntrinsic
+```
+
+功能：创建带异常处理的 `inout` 参数内建调用表达式。
+
+参数：
+
+- retTy: Type - 返回类型，通常为引用类型。
+- param: Value - 传入的参数值。
+- normal: Block - 正常分支目标基本块。
+- err: Block - 异常分支目标基本块。
+
+返回值：
+
+- [TryIntrinsic](#class-tryintrinsic) - 带异常处理的 `inout` 内建调用表达式。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let bg = f.body.getOrThrow()
+    let entryBlock = bg.entryBlock
+    let normalBlock = bg.appendBlock()
+    let errBlock = bg.appendBlock()
+    let builder = CHIRBuilder(InsertPosition.AtEnd(entryBlock))
+    let alloc = builder.createAllocate(IntType.getInt32())
+    let expr = builder.createTryInout(RefType.get(IntType.getInt32()), alloc.result, normalBlock, errBlock)
+    println("createTryInout: ${expr.toString().size > 0}")
+}
+```
+
+运行结果：
+
+```text
+createTryInout: true
 ```
 
 ### func createTryInvoke(Type, InvokeCallContext, Block, Block)

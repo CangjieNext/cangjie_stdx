@@ -78,10 +78,10 @@ public class SecureRandom <: RandomGenerator {
      */
     private func okOrThrow(ret: Int32): Unit {
         if (ret == CRYPTO_ERR) {
-            throw SecureRandomException("Generation failure.")
+            throw SecureRandomException("Random number generation failed.")
         }
         if (ret == CRYPTO_NOT_SUPPORTED) {
-            throw SecureRandomException("Uninitialized.")
+            throw SecureRandomException("SecureRandom is not initialized.")
         }
     }
 
@@ -95,7 +95,7 @@ public class SecureRandom <: RandomGenerator {
         unsafe {
             let dynMsgPtr = MallocDynMsg()
             if (dynMsgPtr.isNull()) {
-                throw SecureRandomException("Malloc failed.")
+                throw SecureRandomException("Failed to allocate memory.")
             }
             var cph = acquireArrayRawData(bytes)
             var ret = try {
@@ -110,7 +110,7 @@ public class SecureRandom <: RandomGenerator {
             try {
                 if (!dynMsgPtr.read().found) {
                     let funcName = CString(dynMsgPtr.read().funcName).toString()
-                    throw SecureRandomException("Can not load openssl library or function ${funcName}.")
+                    throw SecureRandomException("Cannot load OpenSSL library or function '${funcName}'.")
                 }
             } finally {
                 FreeDynMsg(dynMsgPtr)
@@ -127,7 +127,7 @@ public class SecureRandom <: RandomGenerator {
      */
     public func nextBytes(length: Int32): Array<Byte> {
         if (length <= 0) {
-            throw IllegalArgumentException("Invalid argument.")
+            throw IllegalArgumentException("Invalid argument 'length': must be positive, got '${length}'.")
         }
         var bytes = Array<Byte>(Int64(length), repeat: 0)
         nextBytes(bytes)
@@ -142,10 +142,10 @@ public class SecureRandom <: RandomGenerator {
      */
     public func nextBits(bits: UInt64): UInt64 {
         if (bits > 64) {
-            throw IllegalArgumentException("Bits must be less than or equal to 64.")
+            throw IllegalArgumentException("Invalid argument 'bits': must be less than or equal to 64, got '${bits}'.")
         }
         if (bits == 0) {
-            throw IllegalArgumentException("Bits cannot be 0.")
+            throw IllegalArgumentException("Invalid argument 'bits': cannot be 0.")
         }
         // Calculate the number of bytes required for bits
         var bytes = nextBytes((Int32(bits) - 1) / 8 + 1)
@@ -266,7 +266,7 @@ public class SecureRandom <: RandomGenerator {
      */
     public func nextUInt8(max: UInt8): UInt8 {
         if (max == 0) {
-            throw IllegalArgumentException("Invalid argument.")
+            throw IllegalArgumentException("Invalid argument 'max': cannot be 0.")
         }
         const range: UInt16 = 256 // UInt8.Max + 1
         let threshold: UInt16 = range - range % UInt16(max)
@@ -285,7 +285,7 @@ public class SecureRandom <: RandomGenerator {
      */
     public func nextUInt16(max: UInt16): UInt16 {
         if (max == 0) {
-            throw IllegalArgumentException("Invalid argument.")
+            throw IllegalArgumentException("Invalid argument 'max': cannot be 0.")
         }
         const range: UInt32 = 65536 // UInt16.Max + 1
         let threshold: UInt32 = range - range % UInt32(max)
@@ -304,7 +304,7 @@ public class SecureRandom <: RandomGenerator {
      */
     public func nextUInt32(max: UInt32): UInt32 {
         if (max == 0) {
-            throw IllegalArgumentException("Invalid argument.")
+            throw IllegalArgumentException("Invalid argument 'max': cannot be 0.")
         }
         const range: UInt64 = 4294967296 // UInt32.Max + 1
         let threshold: UInt64 = range - range % UInt64(max)
@@ -323,7 +323,7 @@ public class SecureRandom <: RandomGenerator {
      */
     public func nextUInt64(max: UInt64): UInt64 {
         if (max == 0) {
-            throw IllegalArgumentException("Invalid argument.")
+            throw IllegalArgumentException("Invalid argument 'max': cannot be 0.")
         }
         let limit: UInt64 = UInt64.Max - UInt64.Max % max
         var value: UInt64
@@ -341,7 +341,7 @@ public class SecureRandom <: RandomGenerator {
      */
     public func nextInt8(max: Int8): Int8 {
         if (max <= 0) {
-            throw IllegalArgumentException("Invalid argument.")
+            throw IllegalArgumentException("Invalid argument 'max': must be positive, got '${max}'.")
         }
         const range: Int16 = 128 // Int8.Max + 1
         let threshold: Int16 = range - range % Int16(max)
@@ -360,7 +360,7 @@ public class SecureRandom <: RandomGenerator {
      */
     public func nextInt16(max: Int16): Int16 {
         if (max <= 0) {
-            throw IllegalArgumentException("Invalid argument.")
+            throw IllegalArgumentException("Invalid argument 'max': must be positive, got '${max}'.")
         }
         const range: Int32 = 32768 // Int16.Max + 1
         let threshold: Int32 = range - range % Int32(max)
@@ -379,7 +379,7 @@ public class SecureRandom <: RandomGenerator {
      */
     public func nextInt32(max: Int32): Int32 {
         if (max <= 0) {
-            throw IllegalArgumentException("Invalid argument.")
+            throw IllegalArgumentException("Invalid argument 'max': must be positive, got '${max}'.")
         }
         const range: Int64 = 2147483648 // Int32.Max + 1
         let threshold: Int64 = range - range % Int64(max)
@@ -398,7 +398,7 @@ public class SecureRandom <: RandomGenerator {
      */
     public func nextInt64(max: Int64): Int64 {
         if (max <= 0) {
-            throw IllegalArgumentException("Invalid argument.")
+            throw IllegalArgumentException("Invalid argument 'max': must be positive, got '${max}'.")
         }
         let limit: Int64 = Int64.Max - Int64.Max % max
         var value: Int64

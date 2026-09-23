@@ -35,7 +35,7 @@ public struct PSSOption {
     let saltLen: Int32
     public init(saltLen: Int32) {
         if (saltLen < 0) {
-            throw CryptoException("Salt length can not less than 0.")
+            throw CryptoException("Salt length cannot be negative.")
         }
         this.saltLen = saltLen
     }
@@ -48,23 +48,21 @@ let RSA_MAX_EXPONENT = BigInt(true, Array<Byte>(32, repeat: 255))
 
 public class RSAPrivateKey <: PrivateKey {
     var pkey = CPointer<UInt64>()
-    var evpKeyCtx: EVPKEYCTX
+    var evpKeyCtx: EVPKEYCTX = unsafe { zeroValue<EVPKEYCTX>() } // redundant member, kept for ABI compatibility, concurrent reuse causes crash
 
     init(blob: DerBlob) {
         pkey = loadPrivateKey(RSA_id, blob.body)
         if (pkey.isNull()) {
-            throw CryptoException("Init RSA PrivateKey failed.")
+            throw CryptoException("Failed to load RSA private key from DER.")
         }
-        evpKeyCtx = EVPKEYCTX(pkey)
     }
 
     public init(bits: Int32) {
         checkBits(bits)
         pkey = unsafe { generateRSA(bits, BigInt.parse("65537")) }
         if (pkey.isNull()) {
-            throw CryptoException("Init RSA PrivateKey failed.")
+            throw CryptoException("Failed to generate RSA private key.")
         }
-        evpKeyCtx = EVPKEYCTX(pkey)
     }
 
     public init(bits: Int32, e: BigInt) {
@@ -72,9 +70,8 @@ public class RSAPrivateKey <: PrivateKey {
         checkPublicExponent(e)
         pkey = unsafe { generateRSA(bits, e) }
         if (pkey.isNull()) {
-            throw CryptoException("Init RSA PrivateKey failed.")
+            throw CryptoException("Failed to generate RSA private key.")
         }
-        evpKeyCtx = EVPKEYCTX(pkey)
     }
 
     public func encodeToDer(password!: ?String): DerBlob {
@@ -146,20 +143,22 @@ public class RSAPrivateKey <: PrivateKey {
     }
 
     public func sign(hash: Digest, digest: Array<Byte>, padType!: PadOption): Array<Byte> {
+        let ctx = EVPKEYCTX(pkey)
         let result = match (padType) {
-            case PKCS1 => signPKCS1(evpKeyCtx, pkey, hash, digest)
-            case PSS(pss) => signPSS(evpKeyCtx, pkey, hash, digest, pss.saltLen)
-            case OAEP(_) => throw CryptoException("OAEPOption only use in encrypt or decrypt.")
+            case PKCS1 => signPKCS1(ctx, pkey, hash, digest)
+            case PSS(pss) => signPSS(ctx, pkey, hash, digest, pss.saltLen)
+            case OAEP(_) => throw CryptoException("OAEPOption is only applicable to encryption or decryption operations.")
         }
         keepAlive(this)
         result
     }
 
     public func decrypt(input: InputStream, output: OutputStream, padType!: PadOption): Unit {
+        let ctx = EVPKEYCTX(pkey)
         match (padType) {
-            case PKCS1 => unsafe { decryptPKCS1(evpKeyCtx, pkey, input, output) }
-            case OAEP(oaep) => unsafe { decryptOAEP(evpKeyCtx, pkey, input, output, oaep.label, oaep.hash, oaep.mgfHash) }
-            case PSS(_) => throw CryptoException("PSSOption only use in sign or verify.")
+            case PKCS1 => unsafe { decryptPKCS1(ctx, pkey, input, output) }
+            case OAEP(oaep) => unsafe { decryptOAEP(ctx, pkey, input, output, oaep.label, oaep.hash, oaep.mgfHash) }
+            case PSS(_) => throw CryptoException("PSSOption is only applicable to signing or verification operations.")
         }
         keepAlive(this)
     }
@@ -177,23 +176,21 @@ public class RSAPrivateKey <: PrivateKey {
 
 public class RSAPublicKey <: PublicKey {
     var pkey: CPointer<UInt64>
-    var evpKeyCtx: EVPKEYCTX
+    var evpKeyCtx: EVPKEYCTX = unsafe { zeroValue<EVPKEYCTX>() } // redundant member, kept for ABI compatibility, concurrent reuse causes crash
 
     init(blob: DerBlob) {
         pkey = loadPublicKey(RSA_id, blob.body)
         if (pkey.isNull()) {
-            throw CryptoException("Init RSA PublicKey failed.")
+            throw CryptoException("Failed to initialize RSA public key.")
         }
-        evpKeyCtx = EVPKEYCTX(pkey)
     }
 
     public init(pri: RSAPrivateKey) {
         var content = getPublicKeyDer(pri.pkey)
         pkey = loadPublicKey(RSA_id, content)
         if (pkey.isNull()) {
-            throw CryptoException("Init RSA PublicKey failed.")
+            throw CryptoException("Failed to initialize RSA public key.")
         }
-        evpKeyCtx = EVPKEYCTX(pkey)
     }
 
     public func encodeToDer(): DerBlob {
@@ -219,19 +216,21 @@ public class RSAPublicKey <: PublicKey {
     }
 
     public func verify(hash: Digest, digest: Array<Byte>, sig: Array<Byte>, padType!: PadOption): Bool {
+        let ctx = EVPKEYCTX(pkey)
         let result = match (padType) {
-            case PKCS1 => verifyPKCS1(evpKeyCtx, hash, digest, sig)
-            case PSS(pss) => verifyPSS(evpKeyCtx, hash, digest, sig, pss.saltLen)
-            case OAEP(_) => throw CryptoException("OAEPOption only use in encrypt or decrypt.")
+            case PKCS1 => verifyPKCS1(ctx, hash, digest, sig)
+            case PSS(pss) => verifyPSS(ctx, hash, digest, sig, pss.saltLen)
+            case OAEP(_) => throw CryptoException("OAEPOption is only applicable to encryption or decryption operations.")
         }
         result
     }
 
     public func encrypt(input: InputStream, output: OutputStream, padType!: PadOption): Unit {
+        let ctx = EVPKEYCTX(pkey)
         match (padType) {
-            case PKCS1 => unsafe { encryptPKCS1(evpKeyCtx, pkey, input, output) }
-            case OAEP(oaep) => unsafe { encryptOAEP(evpKeyCtx, pkey, input, output, oaep.label, oaep.hash, oaep.mgfHash) }
-            case PSS(_) => throw CryptoException("PSSOption only use in sign or verify.")
+            case PKCS1 => unsafe { encryptPKCS1(ctx, pkey, input, output) }
+            case OAEP(oaep) => unsafe { encryptOAEP(ctx, pkey, input, output, oaep.label, oaep.hash, oaep.mgfHash) }
+            case PSS(_) => throw CryptoException("PSSOption is only applicable to signing or verification operations.")
         }
         keepAlive(this)
     }
@@ -249,23 +248,23 @@ public class RSAPublicKey <: PublicKey {
 
 func checkBits(bits: Int32) {
     if (bits < RSA_MIN_MODULUS_BITS) {
-        throw CryptoException("Key size too small, low security level.")
+        throw CryptoException("Key size is too small: '${bits}' bits, minimum is '${RSA_MIN_MODULUS_BITS}' bits.")
     }
     if (bits > RSA_MAX_MODULUS_BITS) {
-        throw CryptoException("Key size too long.")
+        throw CryptoException("Key size is too large: '${bits}' bits, maximum is '${RSA_MAX_MODULUS_BITS}' bits.")
     }
 }
 
 func checkPublicExponent(e: BigInt) {
     let lastBit = e & BigInt(1)
     if (lastBit == BigInt(0)) {
-        throw CryptoException("Public exponent value is invalid because it is an even number.")
+        throw CryptoException("Invalid public exponent '${e}': must be odd.")
     }
     if (e < RSA_MIN_EXPONENT) {
-        throw CryptoException("Public exponent value is too small.")
+        throw CryptoException("Invalid public exponent '${e}': expected at least '${RSA_MIN_EXPONENT}'.")
     }
     if (e > RSA_MAX_EXPONENT) {
-        throw CryptoException("Public exponent value is too large.")
+        throw CryptoException("Invalid public exponent '${e}': expected at most '${RSA_MAX_EXPONENT}'.")
     }
 }
 
@@ -275,34 +274,34 @@ unsafe func generateRSA(bits: Int32, e: BigInt) {
     var exp = CPointer<BIGNUM>()
     var ctx = keyCtxNewId(RSA_id, engine)
     if (ctx.isNull()) {
-        throw CryptoException("Init RSA PrivateKey failed.")
+        throw CryptoException("Failed to initialize RSA private key.")
     }
     let binPtr: CPointerHandle<Byte> = acquireArrayRawData(e.toBytes())
     try (ppkey = LibC.malloc<CPointer<UInt64>>().asResource()) {
         if (ppkey.value.isNull()) {
-            throw CryptoException("Init RSA PrivateKey failed, malloc failed.")
+            throw CryptoException("Failed to initialize RSA private key: failed to allocate memory.")
         }
 
         var ret = keygenInit(ctx)
         if (ret != 1) {
-            throw CryptoException("Init RSA PrivateKey failed.")
+            throw CryptoException("Failed to initialize RSA private key.")
         }
         ret = setRSABits(ctx, bits)
         if (ret != 1) {
-            throw CryptoException("Set RSA bits error.")
+            throw CryptoException("Failed to set RSA key bits.")
         }
         exp = bin2bn(binPtr.pointer, Int32(e.toBytes().size), exp)
         if (exp.isNull()) {
-            throw CryptoException("Set RSA public exponent error.")
+            throw CryptoException("Failed to set RSA public exponent.")
         }
         ret = setRSAPubExp(ctx, exp)
         if (ret != 1) {
-            throw CryptoException("Set RSA public exponent error.")
+            throw CryptoException("Failed to set RSA public exponent.")
         }
         ppkey.value.write(pkey)
         ret = keyGenerate(ctx, ppkey.value)
         if (ret != 1) {
-            throw CryptoException("Generate RSA PrivateKey failed.")
+            throw CryptoException("Failed to generate RSA private key.")
         }
         pkey = ppkey.value.read()
     } finally {
@@ -322,13 +321,13 @@ func getPrivateKeyDer(pkey: CPointer<UInt64>) {
         var readPtr = LibC.malloc<CPointer<Byte>>()
         if (readPtr.isNull()) {
             releaseArrayRawData(read)
-            throw CryptoException("Init PrivateKey failed.")
+            throw CryptoException("Failed to initialize private key.")
         }
         readPtr.write(read.pointer)
         try {
             readLen = privateKey2d(pkey, readPtr)
             if (readLen < 0 || Int64(readLen) > readBuf.size) {
-                throw CryptoException("Fail to load private key.")
+                throw CryptoException("Failed to load private key.")
             }
         } finally {
             LibC.free(readPtr)
@@ -347,13 +346,13 @@ func getPublicKeyDer(pkey: CPointer<UInt64>) {
         var readPtr = LibC.malloc<CPointer<Byte>>()
         if (readPtr.isNull()) {
             releaseArrayRawData(read)
-            throw CryptoException("Init PublicKey failed.")
+            throw CryptoException("Failed to initialize public key.")
         }
         readPtr.write(read.pointer)
         try {
             readLen = pubKey2d(pkey, readPtr)
             if (readLen < 0 || Int64(readLen) > readBuf.size) {
-                throw CryptoException("Fail to load public key.")
+                throw CryptoException("Failed to load public key.")
             }
         } finally {
             LibC.free(readPtr)
@@ -371,21 +370,21 @@ func loadPrivateKey(id: Int32, der: Array<Byte>) {
         var readPtr = LibC.malloc<CPointer<Byte>>()
         if (readPtr.isNull()) {
             releaseArrayRawData(derHandle)
-            throw CryptoException("Init PrivateKey failed.")
+            throw CryptoException("Failed to initialize private key.")
         }
         readPtr.write(derHandle.pointer)
         try {
             pkey = d2PrivateKey(id, ppkey, readPtr, der.size)
             if (pkey.isNull()) {
-                throw CryptoException("Load private key error.")
+                throw CryptoException("Failed to load private key.")
             }
             if (readPtr.read().toUIntNative() != derHandle.pointer.toUIntNative() + UIntNative(der.size)) {
                 keyFree(pkey)
-                throw CryptoException("Load private key error.")
+                throw CryptoException("Failed to load private key.")
             }
             if (!keyTypeCheck(id, pkey)) {
                 keyFree(pkey)
-                throw CryptoException("Private key type error.")
+                throw CryptoException("Private key type mismatch.")
             }
         } finally {
             LibC.free(readPtr)
@@ -403,21 +402,21 @@ func loadPublicKey(id: Int32, der: Array<Byte>) {
         var readPtr = LibC.malloc<CPointer<Byte>>()
         if (readPtr.isNull()) {
             releaseArrayRawData(derHandle)
-            throw CryptoException("Init PublicKey failed.")
+            throw CryptoException("Failed to initialize public key.")
         }
         readPtr.write(derHandle.pointer)
         try {
             pkey = d2Pubkey(ppkey, readPtr, der.size)
             if (pkey.isNull()) {
-                throw CryptoException("Load PublicKey error.")
+                throw CryptoException("Failed to load public key.")
             }
             if (readPtr.read().toUIntNative() != derHandle.pointer.toUIntNative() + UIntNative(der.size)) {
                 keyFree(pkey)
-                throw CryptoException("Load PublicKey error.")
+                throw CryptoException("Failed to load public key.")
             }
             if (!keyTypeCheck(id, pkey)) {
                 keyFree(pkey)
-                throw CryptoException("Public key type error.")
+                throw CryptoException("Public key type mismatch.")
             }
         } finally {
             LibC.free(readPtr)
@@ -450,7 +449,7 @@ func getDigest(hash: Digest) {
         case _: SHA384 => sha384()
         case _: SHA512 => sha512()
         case _: SM3 => sm3()
-        case _ => throw CryptoException("Digest type error.")
+        case _ => throw CryptoException("Unsupported digest type.")
     }
     return md
 }
@@ -470,31 +469,31 @@ func signWithPadding(
         let dataHandle: CPointerHandle<Byte> = acquireArrayRawData(data)
         try (sizePtr = LibC.malloc<UIntNative>().asResource()) {
             if (sizePtr.value.isNull()) {
-                throw CryptoException("Sign init error, malloc failed.")
+                throw CryptoException("Failed to initialize signing: failed to allocate memory.")
             }
 
             sizePtr.value.write(UIntNative(rsaSize))
             if (signInit(ctx.ptr) <= 0) {
-                throw CryptoException("Sign init error.")
+                throw CryptoException("Failed to initialize signing.")
             }
 
             if (setRSAPadding(ctx.ptr, padding) <= 0) {
-                throw CryptoException("Set rsa padding error.")
+                throw CryptoException("Failed to set RSA padding.")
             }
 
             if (setSignatureMD(ctx.ptr, getDigest(hash)) <= 0) {
-                throw CryptoException("Set signature md error.")
+                throw CryptoException("Failed to set signature digest algorithm.")
             }
 
             if (let Some(len) <- saltLen) {
                 if (setRSAPssSaltLen(ctx.ptr, len) <= 0) {
-                    throw CryptoException("Set rsa pss saltlen error.")
+                    throw CryptoException("Failed to set RSA PSS salt length.")
                 }
             }
 
             let ret = sign(ctx.ptr, sigHandle.pointer, sizePtr.value, dataHandle.pointer, UIntNative(data.size))
             if (ret != 1 || sizePtr.value.read() > UIntNative(rsaSize)) {
-                throw CryptoException("Sign error.")
+                throw CryptoException("Failed to sign data.")
             }
             rsaSize = Int64(sizePtr.value.read())
         } finally {
@@ -528,20 +527,20 @@ func verifyWithPadding(
         try {
             var ret = verifyInit(ctx.ptr)
             if (ret <= 0) {
-                throw CryptoException("Verify init error.")
+                throw CryptoException("Failed to initialize verification.")
             }
             ret = setRSAPadding(ctx.ptr, padding)
             if (ret <= 0) {
-                throw CryptoException("Set rsa padding error.")
+                throw CryptoException("Failed to set RSA padding.")
             }
             ret = setSignatureMD(ctx.ptr, getDigest(hash))
             if (ret <= 0) {
-                throw CryptoException("Set signature md error.")
+                throw CryptoException("Failed to set signature digest algorithm.")
             }
             if (let Some(len) <- saltLen) {
                 ret = setRSAPssSaltLen(ctx.ptr, len)
                 if (ret <= 0) {
-                    throw CryptoException("Set rsa pss saltlen error.")
+                    throw CryptoException("Failed to set RSA PSS salt length.")
                 }
             }
             result = verify(ctx.ptr, sigHandle.pointer, UIntNative(sig.size), dataHandle.pointer, UIntNative(data.size))
@@ -575,7 +574,7 @@ unsafe func encryptPKCS1(ctx: EVPKEYCTX, pkey: CPointer<UInt64>, input: InputStr
     var keySize = getSize(pkey)
     var blockSize = Int64(keySize - PKCS1_PADDING_SIZE)
     if (blockSize < 0) {
-        throw CryptoException("Encounter invalid block size.")
+        throw CryptoException("Invalid block size: '${blockSize}'.")
     }
     var readbuff = Array<Byte>(blockSize, repeat: 0)
     var writebuff = Array<Byte>(Int64(keySize), repeat: 0)
@@ -583,15 +582,15 @@ unsafe func encryptPKCS1(ctx: EVPKEYCTX, pkey: CPointer<UInt64>, input: InputStr
     var outBlock: CPointerHandle<Byte> = acquireArrayRawData(writebuff)
     try (outlenPtr = LibC.malloc<UIntNative>().asResource()) {
         if (outlenPtr.value.isNull()) {
-            throw CryptoException("Encrypt init error, malloc failed.")
+            throw CryptoException("Failed to initialize encryption: failed to allocate memory.")
         }
 
         if (encryInit(ctx.ptr) <= 0) {
-            throw CryptoException("Encrypt init error.")
+            throw CryptoException("Failed to initialize encryption.")
         }
 
         if (setRSAPadding(ctx.ptr, RSA_PKCS1_PADDING) <= 0) {
-            throw CryptoException("Set rsa padding type error.")
+            throw CryptoException("Failed to set RSA padding type.")
         }
 
         var inLength = UIntNative(input.read(readbuff))
@@ -599,7 +598,7 @@ unsafe func encryptPKCS1(ctx: EVPKEYCTX, pkey: CPointer<UInt64>, input: InputStr
             outlenPtr.value.write(UIntNative(keySize))
             let ret = encrypt(ctx.ptr, outBlock.pointer, outlenPtr.value, inBlock.pointer, inLength)
             if (ret != 1 || outlenPtr.value.read() > UIntNative(keySize)) {
-                throw CryptoException("Encrypt error.")
+                throw CryptoException("Failed to encrypt data.")
             }
             output.write(writebuff[..Int64(outlenPtr.value.read())])
             inLength = UIntNative(input.read(readbuff))
@@ -622,7 +621,7 @@ unsafe func encryptOAEP(
     var keySize = getSize(pkey)
     var blockSize = Int64(keySize) - 2 * hash.size - 2
     if (blockSize < 0) {
-        throw CryptoException("RSA_key_size smaller that (2 * hash_size - 2).")
+        throw CryptoException("RSA key size is smaller than (2 * hash size - 2).")
     }
     var readbuff = Array<Byte>(blockSize, repeat: 0)
     var writebuff = Array<Byte>(Int64(keySize), repeat: 0)
@@ -630,27 +629,27 @@ unsafe func encryptOAEP(
     var outBlock: CPointerHandle<Byte> = acquireArrayRawData(writebuff)
     try (outlenPtr = LibC.malloc<UIntNative>().asResource(), lablePtr = LibC.mallocCString(label).asResource()) {
         if (outlenPtr.value.isNull() || lablePtr.value.isNull()) {
-            throw CryptoException("Encrypt init error, malloc failed.")
+            throw CryptoException("Failed to initialize encryption: failed to allocate memory.")
         }
 
         if (encryInit(ctx.ptr) <= 0) {
-            throw CryptoException("Encrypt init error.")
+            throw CryptoException("Failed to initialize encryption.")
         }
 
         if (setRSAPadding(ctx.ptr, RSA_PKCS1_OAEP_PADDING) <= 0) {
-            throw CryptoException("Set rsa padding type error.")
+            throw CryptoException("Failed to set RSA padding type.")
         }
 
         var ret = keysOAEPSetting(ctx.ptr, lablePtr.value, label.size, getDigest(hash), getDigest(mgfHash))
         if (ret == -1) {
-            throw CryptoException("Set rsa OAEP option error.")
+            throw CryptoException("Failed to set RSA OAEP options.")
         }
         var inLen = UIntNative(input.read(readbuff))
         do {
             outlenPtr.value.write(UIntNative(keySize))
             ret = encrypt(ctx.ptr, outBlock.pointer, outlenPtr.value, inBlock.pointer, inLen)
             if (ret != 1 || outlenPtr.value.read() > UIntNative(keySize)) {
-                throw CryptoException("Encrypt error.")
+                throw CryptoException("Failed to encrypt data.")
             }
             output.write(writebuff[..Int64(outlenPtr.value.read())])
             inLen = UIntNative(input.read(readbuff))
@@ -670,15 +669,15 @@ unsafe func decryptPKCS1(ctx: EVPKEYCTX, pkey: CPointer<UInt64>, input: InputStr
     var outBlock: CPointerHandle<Byte> = acquireArrayRawData(writebuff)
     try (outlenPtr = LibC.malloc<UIntNative>().asResource()) {
         if (outlenPtr.value.isNull()) {
-            throw CryptoException("Decrypt init error, malloc failed.")
+            throw CryptoException("Failed to initialize decryption: failed to allocate memory.")
         }
 
         if (decryptInit(ctx.ptr) <= 0) {
-            throw CryptoException("Decrypt init error.")
+            throw CryptoException("Failed to initialize decryption.")
         }
 
         if (setRSAPadding(ctx.ptr, RSA_PKCS1_PADDING) <= 0) {
-            throw CryptoException("Set rsa padding error.")
+            throw CryptoException("Failed to set RSA padding.")
         }
 
         var inLen = UIntNative(input.read(readbuff))
@@ -686,7 +685,7 @@ unsafe func decryptPKCS1(ctx: EVPKEYCTX, pkey: CPointer<UInt64>, input: InputStr
             outlenPtr.value.write(UIntNative(keySize))
             let ret = decrypt(ctx.ptr, outBlock.pointer, outlenPtr.value, inBlock.pointer, inLen)
             if (ret != 1 || outlenPtr.value.read() > UIntNative(keySize)) {
-                throw CryptoException("Decrypt error.")
+                throw CryptoException("Failed to decrypt data.")
             }
             output.write(writebuff[..Int64(outlenPtr.value.read())])
             inLen = UIntNative(input.read(readbuff))
@@ -714,27 +713,27 @@ unsafe func decryptOAEP(
     var outBlock: CPointerHandle<Byte> = acquireArrayRawData(writebuff)
     try (outlenPtr = LibC.malloc<UIntNative>().asResource(), lablePtr = LibC.mallocCString(label).asResource()) {
         if (outlenPtr.value.isNull() || lablePtr.value.isNull()) {
-            throw CryptoException("Decrypt init error, malloc failed.")
+            throw CryptoException("Failed to initialize decryption: failed to allocate memory.")
         }
 
         var ret = decryptInit(ctx.ptr)
         if (ret <= 0) {
-            throw CryptoException("Decrypt init error.")
+            throw CryptoException("Failed to initialize decryption.")
         }
         ret = setRSAPadding(ctx.ptr, RSA_PKCS1_OAEP_PADDING)
         if (ret <= 0) {
-            throw CryptoException("Set rsa padding type error.")
+            throw CryptoException("Failed to set RSA padding type.")
         }
         ret = keysOAEPSetting(ctx.ptr, lablePtr.value, label.size, getDigest(hash), getDigest(mgfHash))
         if (ret == -1) {
-            throw CryptoException("Set rsa OAEP option error.")
+            throw CryptoException("Failed to set RSA OAEP options.")
         }
         var inLen = UIntNative(input.read(readbuff))
         while (inLen > 0) {
             outlenPtr.value.write(UIntNative(keySize))
             ret = decrypt(ctx.ptr, outBlock.pointer, outlenPtr.value, inBlock.pointer, inLen)
             if (ret != 1 || outlenPtr.value.read() > UIntNative(keySize)) {
-                throw CryptoException("Decrypt error.")
+                throw CryptoException("Failed to decrypt data.")
             }
             output.write(writebuff[..Int64(outlenPtr.value.read())])
             inLen = UIntNative(input.read(readbuff))

@@ -99,8 +99,10 @@ class HttpServer2 <: ProtocolService {
 
         // stream pool
         if (server.streamPools.isNone() && server.maxConcurrentStreams > 0) {
-            server.streamPools = ConcurrentRingPool<PutSafeRingPool<Any>>(MAX_STREAM_POOLS_CAPACITY,
-                STREAM_POOLS_THRESHOLD, newFn: {=> PutSafeRingPool<Any>(MAX_STREAM_POOL_CAPACITY, newFn: {=> Stream()})}
+            server.streamPools = ConcurrentRingPool<PutSafeRingPool<Any>>(
+                MAX_STREAM_POOLS_CAPACITY,
+                STREAM_POOLS_THRESHOLD,
+                newFn: {=> PutSafeRingPool<Any>(MAX_STREAM_POOL_CAPACITY, newFn: {=> Stream()})}
             )
         }
         streamPool = server.streamPools?.get()
@@ -196,7 +198,7 @@ class HttpServer2 <: ProtocolService {
         var prefaceReceived = Array<UInt8>(PREFACE.size, repeat: 0)
         let _ = conn.readFull(prefaceReceived)
         if (prefaceReceived != PREFACE) {
-            throw HttpConnectionException(ProtocolError, "Initialize h2 connection failed, client preface is required.")
+            throw HttpConnectionException(ProtocolError, "Invalid HTTP/2 connection preface.")
         }
 
         sendSettings()
@@ -204,17 +206,17 @@ class HttpServer2 <: ProtocolService {
         let firstFrameReceived = match (Frame.read(conn, headerBuf: frameHeaderBuffer)) {
             case Some(v) => v as SettingsFrame
             case None => throw HttpConnectionException(ProtocolError,
-                "Initialize h2 connection failed, settings frame is required.")
+                "HTTP/2 connection requires SETTINGS frame as first frame.")
         }
         match (firstFrameReceived) {
             case Some(settingsFrame) =>
                 if (settingsFrame.payloadLen > localMaxFrameSize) {
                     throw HttpConnectionException(ProtocolError,
-                        "Size of initial settings exceeds default max frame size ${MIN_FRAME_SIZE}.")
+                        "Initial SETTINGS frame size '${settingsFrame.payloadLen}' exceeds default max frame size '${MIN_FRAME_SIZE}'.")
                 }
                 onSettingsRead(settingsFrame)
             case None => throw HttpConnectionException(ProtocolError,
-                "Initialize h2 connection failed, settings frame is required.")
+                "HTTP/2 connection initialization failed: SETTINGS frame is required.")
         }
 
         if (logger.enabled(LogLevel.DEBUG)) {
@@ -243,7 +245,7 @@ class HttpServer2 <: ProtocolService {
 
         if (frame.payloadLen > localMaxFrameSize) {
             throw HttpConnectionException(ProtocolError,
-                "Frame size exceeds max frame size ${localMaxFrameSize}, which is set by server.")
+                "Frame size '${frame.payloadLen}' exceeds max frame size '${localMaxFrameSize}'.")
         }
 
         // read and process HEADERS + CONTINUATION, which may be headers/trailers of request
@@ -269,13 +271,14 @@ class HttpServer2 <: ProtocolService {
                 if (isPurged) {
                     if (frame is DataFrame) {
                         if (logger.enabled(LogLevel.TRACE)) {
-                            httpLogTrace(logger, "[HttpServer2#readFrames] Stream ${frame.streamId} is purged. Data frame received.")
+                            httpLogTrace(logger,
+                                "[HttpServer2#readFrames] Stream ${frame.streamId} is purged. Data frame received.")
                         }
                         processDataFlow(frame.payloadLen)
                         windowUpdateOnDataConsumed(frame.payloadLen)
                     }
                 } else {
-                    throw HttpConnectionException(ProtocolError, "Unexpected frame on idle stream ${frame.streamId}.")
+                    throw HttpConnectionException(ProtocolError, "Unexpected frame on idle stream '${frame.streamId}'.")
                 }
             case Some(stream) =>
                 if (frame is DataFrame) {
@@ -302,7 +305,7 @@ class HttpServer2 <: ProtocolService {
         // Local window should decrease when receiving data frame, increase when sending windowUpdate frame,
         if (localWindow.load() < len) {
             throw HttpConnectionException(FlowControlError,
-                "PayloadLen of DATA frame exceeds local window on connection level.")
+                "DATA frame payload length '${len}' exceeds local window '${localWindow.load()}' on connection level.")
         }
         localWindow.fetchSub(len)
     }
@@ -357,16 +360,13 @@ class HttpServer2 <: ProtocolService {
             fieldsBlocks.add(all: hf.fieldBlock)
             var headerEnd = false
             while (!headerEnd) {
-                let cf = Frame
-                    .read(conn, arrayPool: arrayPool)
-                    .getOrThrow(
-                        {
-                            => HttpConnectionException(ProtocolError,
-                                "Headers and continuation frames should be continuous on connection level.")
-                        }) as ContinuationFrame ?? throw HttpConnectionException(ProtocolError, // cjlint-ignore !G.EXP.03
-                    "Headers and continuation frames should be continuous on connection level.")
+                let cf = Frame.read(conn, arrayPool: arrayPool).getOrThrow({
+                    => HttpConnectionException(ProtocolError, "Expected CONTINUATION frame.")
+                }) as ContinuationFrame ?? throw HttpConnectionException(ProtocolError, // cjlint-ignore !G.EXP.03
+                    "Expected CONTINUATION frame.")
                 if (cf.streamId != streamId) {
-                    throw HttpConnectionException(ProtocolError, "Unexpected Continuation on stream ${streamId}.")
+                    throw HttpConnectionException(ProtocolError,
+                        "Unexpected CONTINUATION frame on stream '${streamId}'.")
                 }
                 cfs.add(cf)
                 fieldsBlocks.add(all: cf.fieldBlock)
@@ -558,7 +558,8 @@ class HttpServer2 <: ProtocolService {
                 if (f.streamEnd) {
                     stream.writeTimer.cancel()
                     if (logger.enabled(LogLevel.DEBUG)) {
-                        httpLogDebug(logger,
+                        httpLogDebug(
+                            logger,
                             "[HttpServer2#writeFrames] cancel write timer after write body on stream ${stream.streamId}"
                         )
                     }
@@ -569,7 +570,8 @@ class HttpServer2 <: ProtocolService {
                 if (f.streamEnd) {
                     stream.writeTimer.cancel()
                     if (logger.enabled(LogLevel.DEBUG)) {
-                        httpLogDebug(logger,
+                        httpLogDebug(
+                            logger,
                             "[HttpServer2#writeFrames] cancel write timer after write fields (headers or trailers) on stream ${stream.streamId}"
                         )
                     }
@@ -580,7 +582,7 @@ class HttpServer2 <: ProtocolService {
                 if (logger.enabled(LogLevel.DEBUG)) {
                     httpLogDebug(logger, "[HttpServer2#writeFrames] write frame: ${f}")
                 }
-            case _ => throw HttpException("Unexpected frame: ${frame}.") //should never come here
+            case _ => throw HttpException("Internal error: unexpected frame type '${frame}'.")
         }
         true
     }
@@ -642,7 +644,8 @@ class HttpServer2 <: ProtocolService {
             verifyClientStreamId(streamId)
             stream = match (streamPool) {
                 case None => Stream(this, streamId)
-                case Some(pool) => (pool.get() as Stream) ?? throw Exception("The pool get not Stream.")
+                case Some(pool) => (pool.get() as Stream) ?? throw Exception(
+                    "Internal error: pool returned non-Stream object.")
             }
             stream.reset(this, streamId)
             streams.add(streamId, stream)
@@ -655,7 +658,8 @@ class HttpServer2 <: ProtocolService {
         // close the stream immediately, if num of client streams exceeds SettingsMaxConcurrentStreams
         // when closing, we inform client that the request hasn't been handled, and client can send it again
         if (activeClientStreamOverLimit()) {
-            stream.close(RefusedStream,
+            stream.close(
+                RefusedStream,
                 "received frame on stream ${streamId}, num of active client streams exceeds SettingsMaxConcurrentStreams, which is set by server"
             )
             return None
@@ -699,13 +703,14 @@ class HttpServer2 <: ProtocolService {
      */
     private func verifyClientStreamId(id: UInt32) {
         if (isPushStream(id)) {
-            throw HttpConnectionException(ProtocolError, "Stream initiated by client should be identified with odd num.")
+            throw HttpConnectionException(ProtocolError, "Client-initiated stream ID '${id}' is even, expected odd.")
         }
         if (id <= lastClientStreamId) {
-            throw HttpConnectionException(ProtocolError, "Id of new stream should be the largest.")
+            throw HttpConnectionException(ProtocolError,
+                "Stream ID '${id}' is not greater than previous ID '${lastClientStreamId}'.")
         }
         if (id > MAX_STREAM_ID) {
-            throw HttpConnectionException(ProtocolError, "Stream id reaches the max, 2^31 - 1.")
+            throw HttpConnectionException(ProtocolError, "Stream ID '${id}' exceeds maximum '2^31-1'.")
         }
     }
 
@@ -715,11 +720,10 @@ class HttpServer2 <: ProtocolService {
     private func verifyPushStreamId(id: UInt32) {
         if (activePushStreamOverLimit()) {
             throw HttpException(
-                "Write push related to stream ${id}, num of active push streams exceeds SettingsMaxConcurrentStreams, which is set by client."
-            )
+                "Number of active push streams for push stream ID '${id}' exceeds SettingsMaxConcurrentStreams '${remoteSettings[SettingsMaxConcurrentStreams.code]}'.")
         }
         if (id > MAX_STREAM_ID) {
-            throw HttpException("Push stream id exceeds 2^31-1.") //to user handler
+            throw HttpException("Push stream ID '${id}' exceeds maximum 2^31-1.")
         }
     }
 
@@ -737,7 +741,8 @@ class HttpServer2 <: ProtocolService {
             case f: GoawayFrame => onGoawayRead(f)
             case f: PriorityUpdateFrame => onPriorityUpdateRead(f)
             case f: PingFrame => onPingRead(f)
-            case _ => throw HttpConnectionException(ProtocolError, "Received invalid frame on stream 0.")
+            case _ => throw HttpConnectionException(ProtocolError,
+                "Invalid frame type '${frame}' on stream 0.")
         }
     }
 
@@ -778,10 +783,10 @@ class HttpServer2 <: ProtocolService {
         // ack settings, will be read only once
         if (frame.ack) {
             if (frame.payloadLen != 0) {
-                throw HttpConnectionException(FrameSizeError, "Settings with ack should not have payload.")
+                throw HttpConnectionException(FrameSizeError, "ACK SETTINGS frame has non-zero payload.")
             }
             if (!clearSettingsTimer()) {
-                throw HttpConnectionException(ProtocolError, "Unexpected ack settings.")
+                throw HttpConnectionException(ProtocolError, "Unexpected ACK SETTINGS frame.")
             }
 
             localMaxFrameSize = server.maxFrameSize
@@ -798,19 +803,19 @@ class HttpServer2 <: ProtocolService {
                 case SettingsEnablePush =>
                     if (v != 0 && v != 1) {
                         throw HttpConnectionException(ProtocolError,
-                            "Invalid client settings, SettingsEnablePush should be 0 or 1.")
+                            "Invalid SettingsEnablePush value '${v}': expected 0 or 1.")
                     }
                 case SettingsMaxConcurrentStreams => ()
                 case SettingsInitialWindowSize =>
                     if (v > MAX_WINDOW) {
                         throw HttpConnectionException(FlowControlError,
-                            "Invalid client settings, SettingsInitialWindowSize should not exceeds 2^31.")
+                            "Invalid SettingsInitialWindowSize value '${v}': exceeds 2^31-1.")
                     }
                     setActiveStreamWindow(v)
                 case SettingsMaxFrameSize =>
                     if (v < UInt32(2 ** 14) || v > UInt32(2 ** 24 - 1)) {
                         throw HttpConnectionException(ProtocolError,
-                            "Invalid client settings, SettingsMaxFrameSize should be in range [2^14..2^24-1].")
+                            "Invalid SettingsMaxFrameSize value '${v}': expected between 2^14 and 2^24-1.")
                     }
                 case SettingsMaxHeaderListSize => encoder.maxHeaderListSize = Int64(v)
                 case _ => ()
@@ -839,7 +844,7 @@ class HttpServer2 <: ProtocolService {
             for ((_, stream) in streams) {
                 if (stream.remoteWindow.load() + increment > Int64(MAX_WINDOW)) {
                     throw HttpConnectionException(FlowControlError,
-                        "SettingsInitialWindowSize cause remote window of stream ${stream.streamId} exceeds max value")
+                        "SettingsInitialWindowSize causes remote window of stream '${stream.streamId}' to exceed maximum value.")
                 } else {
                     stream.remoteWindow.fetchAdd(increment)
                 }
@@ -864,7 +869,7 @@ class HttpServer2 <: ProtocolService {
         remoteWindow.fetchAdd(frame.increment) //never overflow
         if (remoteWindow.load() > MAX_WINDOW) {
             throw HttpConnectionException(FlowControlError,
-                "The WINDOW_UPDATE frame cause remote window exceeds 2^31-1 on connection level.")
+                "WINDOW_UPDATE frame causes remote window to exceed 2^31-1 on connection level.")
         }
         // unblock write thread
 
@@ -875,7 +880,8 @@ class HttpServer2 <: ProtocolService {
 
     private func onGoawayRead(frame: GoawayFrame) {
         if (logger.enabled(LogLevel.DEBUG)) {
-            httpLogDebug(logger,
+            httpLogDebug(
+                logger,
                 "[HttpServer2#onGoawayRead] connection closing, received goaway frame, errCode = ${frame.errorCode}, debugMsg = ${sanitizeForLog(frame.debugData)}"
             )
         }
@@ -918,8 +924,8 @@ class HttpServer2 <: ProtocolService {
     private func onSettingsWrite() {
         settingsTimer = Timer.once(Duration.second * 10) {
             =>
-            httpLogWarn(logger, "[HttpServer2#onSettingsWrite] connection closing, wait ack settings timeout")
-            shutdown(shouldSleep: false)
+                httpLogWarn(logger, "[HttpServer2#onSettingsWrite] connection closing, wait ack settings timeout")
+                shutdown(shouldSleep: false)
         }
     }
 
@@ -956,7 +962,8 @@ class HttpServer2 <: ProtocolService {
         }
 
         if (logger.enabled(LogLevel.TRACE)) {
-            httpLogTrace(logger, "[HttpServer2#purgeStream] activePushRstStreamNum = ${activePushRstStreamNum.load()}, activeClientRstStreamNum = ${activeClientRstStreamNum.load()}.")
+            httpLogTrace(logger,
+                "[HttpServer2#purgeStream] activePushRstStreamNum = ${activePushRstStreamNum.load()}, activeClientRstStreamNum = ${activeClientRstStreamNum.load()}.")
         }
     }
 
@@ -1038,8 +1045,8 @@ class HttpServer2 <: ProtocolService {
         if (shouldSleep) { // allow client to receive goaway
             Timer.once(Duration.second) {
                 =>
-                quit.store(true)
-                conn.close()
+                    quit.store(true)
+                    conn.close()
             }
         } else {
             quit.store(true)

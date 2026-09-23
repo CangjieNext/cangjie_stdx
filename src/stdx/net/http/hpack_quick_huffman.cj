@@ -96,7 +96,7 @@ class QuickHuffmanDecoder {
             }
             if (isPadding(buffer, bufferLen)) {
                 if (bufferLen > 7) { // padding size should not greater than 7
-                    throw HpackException("Invalid padding size: ${bufferLen}.")
+                    throw HpackException("Invalid padding size '${bufferLen}'.")
                 }
                 break // ignore the padding
             }
@@ -153,7 +153,7 @@ class QuickHuffman {
     private static func decode(buffer: UInt64, node: NodeHuffman): (Byte, Int64) {
         if (node.isLeaf()) {
             if (node.isEOS()) {
-                throw HpackException("Got EOS! buffer: ${buffer}.")
+                throw HpackException("Unexpected EOS in encoded data, buffer value '${buffer}'.")
             }
             return (UInt8(node.sym), Int64(node.bitsLen))
         }
@@ -539,7 +539,7 @@ class BytesBuilder {
 
         if (bufferLen != 0 || i != byteLen) {
             throw HpackException(
-                "Failed to build bytes, should get byteLen:${byteLen}, but found buffer:${buffer}, bufferLen:${bufferLen}, i:${i}"
+                "Internal error: failed to build bytes, expected length '${byteLen}', got buffer '${buffer}', bufferLen '${bufferLen}', i '${i}'."
             )
         }
     }

@@ -108,7 +108,7 @@ class Encoder {
                 totalHeaderListSize += fieldSize(field) //k.size + v.size + 32
                 if (totalHeaderListSize > maxHeaderListSize) {
                     throw HpackException(
-                        "Total size:${totalHeaderListSize} out of SettingsMaxHeaderListSize :${maxHeaderListSize}.")
+                        "Total header list size '${totalHeaderListSize}' exceeds maximum '${maxHeaderListSize}'.")
                 }
             }
 
@@ -359,7 +359,7 @@ class Encoder {
     func encodeIntTo(value: Int64, prefix: String, writer: FieldsWriter): Unit {
         let n = 8 - prefix.size
         if (n <= 0) {
-            throw HpackException("Invalid prefix: ${prefix}.")
+            throw HpackException("Invalid prefix: '${prefix}'.")
         }
 
         let maskN = (1 << n) - 1
@@ -389,7 +389,7 @@ class Encoder {
         var mask: Byte = 0x80
         for (i in 0..n) {
             if (mask == 0) {
-                throw HpackException("Invalid strValue: ${strValue}.")
+                throw HpackException("Invalid strValue: '${strValue}'.")
             }
 
             match (strValue.get(i)) {
@@ -397,7 +397,7 @@ class Encoder {
                     () // continue
                 case Some(49) => // r'1'
                     value |= mask
-                case _ => throw HpackException("Invalid strValue: ${strValue}.")
+                case _ => throw HpackException("Invalid strValue: '${strValue}'.")
             }
             mask >>= 1
         }

@@ -45,7 +45,7 @@ class SPMCLevelQueue<T> {
 
     func send(elem: T, priority: Int64): Bool {
         if (priority >= levels || priority < 0) {
-            throw IllegalArgumentException("Priority can't be negative or larger than ${levels}, received ${priority}.")
+            throw IllegalArgumentException("Invalid argument 'priority': expected value in range [0, ${levels - 1}], got ${priority}.")
         }
 
         if (queues[priority].enqueue(elem)) {

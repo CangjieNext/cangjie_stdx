@@ -33,7 +33,7 @@ public class Form {
 
     private func ensureCanAddItem(addition: Int64): Unit {
         if (itemCount() + addition > MAX_URL_FORM_ITEMS) {
-            throw IllegalStateException("Form item count exceeds ${MAX_URL_FORM_ITEMS}.")
+            throw IllegalStateException("Form item count '${itemCount() + addition}' exceeds maximum '${MAX_URL_FORM_ITEMS}'.")
         }
     }
 

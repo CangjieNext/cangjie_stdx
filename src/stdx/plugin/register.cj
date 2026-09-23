@@ -18,18 +18,21 @@ public macro CHIRPlugin(input: Tokens): Tokens {
     } else {
         throw Exception("CHIRPlugin must be applied to a class declaration.")
     }
+    if (subClassDecl.isGenericDecl) {
+        throw Exception("CHIRPlugin cannot be applied to a generic class.")
+    }
     var superTypes = subClassDecl.superTypes
     for (superType in superTypes) {
         if (let Some(refType) <- (superType as RefType)) {
             let superName = refType.identifier.value
             if (superName == "CHIRPluginBase") {
-                throw Exception(subClassDecl.identifier.value + " can't inherit from class CHIRPluginBase manually.")
+                throw Exception("Class '${subClassDecl.identifier.value}' must not inherit from CHIRPluginBase manually; the @CHIRPlugin macro adds this base class.")
             }
         }
     }
 
-    // 1. add super type
-    superTypes.add(RefType(quote(CHIRPluginBase)))
+    // 1. add super type (class must be first in the supertype list)
+    superTypes.add(RefType(quote(CHIRPluginBase)), at: 0)
 
     // 2. add init func
     let subClassName = Token(TokenKind.STRING_LITERAL, subClassDecl.identifier.value)

@@ -88,10 +88,10 @@ public class RedirectHandler <: HttpRequestHandler {
      */
     public init(url: String, code: UInt16) {
         if (code >= 400 || code < 300 || code == HttpStatusCode.STATUS_NOT_MODIFIED) {
-            throw HttpException("Status code should be 3xx besides 304.")
+            throw HttpException("Invalid status code '${code}': expected a 3xx redirect code except '304'.")
         }
         if (url.size == 0) {
-            throw HttpException("Redirect url cannot be empty.")
+            throw HttpException("Redirect URL is empty.")
         }
         this.code = code
         // resolve url path
@@ -209,14 +209,14 @@ public class FileHandler <: HttpRequestHandler {
             case DownLoad => ()
             case UpLoad =>
                 if (!exists(path)) {
-                    throw HttpException("No such file or directory.")
+                    throw HttpException("File or directory not found: '${path}'.")
                 }
                 var info = FileInfo(path)
                 if (info.isSymbolicLink()) {
                     info = FileInfo(SymbolicLink.readFrom(path, recursive: true))
                 }
                 if (!info.isDirectory()) {
-                    throw HttpException("No such file or directory.")
+                    throw HttpException("Path is not a directory: '${path}'.")
                 }
         }
     }
@@ -598,7 +598,7 @@ class MultipartParser {
 
         // if filenameValidator is set, validate the filename
         if (let Some(validator) <- filenameValidator && !validator(fileName)) {
-            throw HttpStatusException(HttpStatusCode.STATUS_BAD_REQUEST, "The filename `${fileName}` is invalid.") /*cjlint-ignore !G.ERR.01 */
+            throw HttpStatusException(HttpStatusCode.STATUS_BAD_REQUEST, "Invalid filename '${fileName}'.") /*cjlint-ignore !G.ERR.01 */
         }
 
         // strip any directory info in the fileName
@@ -657,7 +657,7 @@ class MultipartParser {
     private func parseHeaderLine(header: Array<UInt8>) {
         let colonIndex = match (header.indexOf(b':')) {
             case Some(i) => i
-            case None => throw HttpStatusException(HttpStatusCode.STATUS_BAD_REQUEST, "No `:` in header.")
+            case None => throw HttpStatusException(HttpStatusCode.STATUS_BAD_REQUEST, "Missing ':' in header line.")
         }
         let key = String.fromUtf8(header[0..colonIndex])
         let val = String.fromUtf8(header[colonIndex + 1..header.size]).trimAscii()
@@ -693,21 +693,21 @@ class MultipartParser {
                 let elements = v.split(";")
                 if (!(elements[0].trimAscii() == "form-data")) {
                     throw HttpStatusException(HttpStatusCode.STATUS_BAD_REQUEST,
-                        "Not supported content-disposition type.")
+                        "Unsupported content-disposition type: '${elements[0].trimAscii()}'.")
                 }
                 for (i in 1..elements.size) {
                     let element = elements[i].trimAscii().split("=", 2)
                     if (element.size < 2) {
-                        throw HttpStatusException(HttpStatusCode.STATUS_BAD_REQUEST, "Illegal multipart header value.")
+                        throw HttpStatusException(HttpStatusCode.STATUS_BAD_REQUEST, "Invalid multipart header value.")
                     }
                     let key = element[0]
                     let value = element[1]
                     if (value[0] != b'\"' || value[value.size - 1] != b'\"') {
-                        throw HttpStatusException(HttpStatusCode.STATUS_BAD_REQUEST, "Illegal multipart header value.")
+                        throw HttpStatusException(HttpStatusCode.STATUS_BAD_REQUEST, "Invalid multipart header value.")
                     }
                     header.set(key, value[1..value.size - 1])
                 }
-            case _ => throw HttpStatusException(HttpStatusCode.STATUS_BAD_REQUEST, "The content-disposition not found.")
+            case _ => throw HttpStatusException(HttpStatusCode.STATUS_BAD_REQUEST, "Content-disposition header not found.")
         }
     }
 }
