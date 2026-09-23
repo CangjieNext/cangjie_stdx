@@ -779,7 +779,7 @@ JsonArray 内容: [null,true,123,"hello\u0026world",{"hello":"world"}]
 索引 1 的值: true
 索引 3 的值: "hello\u0026world"
 测试越界访问:
-捕获到异常: The index 10 of JsonArray does not exist.
+捕获到异常: Index '10' does not exist in JsonArray.
 ```
 
 ## class JsonBool
@@ -2735,8 +2735,7 @@ JsonValue 是 JsonObject?: true
 解析后的JsonValue: {"name":"张三","age":25,"student":true}
 解析JsonString: "\n"
 解析JsonString: "A"
-异常信息: The json data is Non-standard, please check:
-Parse Error: [Line]: 1, [Pos]: 3, [Error]: Unexpected character: 'x'.
+异常信息: Invalid JSON data: Parse Error: [Line]: 1, [Pos]: 3, [Error]: Unexpected character: 'x'.
 ```
 
 ### func asArray()
@@ -2786,7 +2785,7 @@ main() {
 ```text
 JsonValue转换为JsonArray: [1,2,3,"hello"]
 数组大小: 4
-转换异常: Fail to convert to JsonArray
+转换异常: Failed to convert JsonValue to JsonArray.
 ```
 
 ### func asBool()
@@ -2836,7 +2835,7 @@ main() {
 ```text
 JsonValue转换为JsonBool: true
 JsonBool的值: true
-转换异常: Fail to convert to JsonBool
+转换异常: Failed to convert JsonValue to JsonBool.
 ```
 
 ### func asFloat()
@@ -2886,7 +2885,7 @@ main() {
 ```text
 JsonValue转换为JsonFloat: 3.141590
 JsonFloat的值: 3.141590
-转换异常: Fail to convert to JsonFloat
+转换异常: Failed to convert JsonValue to JsonFloat.
 ```
 
 ### func asInt()
@@ -2936,7 +2935,7 @@ main() {
 ```text
 JsonValue转换为JsonInt: 42
 JsonInt的值: 42
-转换异常: Fail to convert to JsonInt
+转换异常: Failed to convert JsonValue to JsonInt.
 ```
 
 ### func asNull()
@@ -3024,7 +3023,7 @@ main() {
 ```text
 JsonValue转换为JsonObject: {"name":"张三","age":25,"student":true}
 JsonObject的大小: 3
-转换异常: Fail to convert to JsonObject
+转换异常: Failed to convert JsonValue to JsonObject.
 ```
 
 ### func asString()
@@ -3074,7 +3073,7 @@ main() {
 ```text
 JsonValue转换为JsonString: "Hello, 世界"
 JsonString的值: Hello, 世界
-转换异常: Fail to convert to JsonString
+转换异常: Failed to convert JsonValue to JsonString.
 ```
 
 ### func kind()

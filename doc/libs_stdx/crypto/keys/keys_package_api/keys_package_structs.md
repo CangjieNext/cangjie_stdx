@@ -88,5 +88,5 @@ main() {
 运行结果：
 
 ```text
-异常信息: Salt length can not less than 0.
+异常信息: Salt length cannot be negative.
 ```

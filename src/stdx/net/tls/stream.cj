@@ -59,14 +59,14 @@ class TlsRawSocket <: IOStream & Resource & ToString {
         server!: Bool
     ) {
         if (ssl.isNull() || context.isNull()) {
-            throw IllegalArgumentException("SSL pointer shouldn't be null.")
+            throw IllegalArgumentException("Invalid argument: ssl or context is null.")
         }
 
         this.exceptionData = ExceptionData.create()
         unsafe {
             let counters = LibC.malloc<UIntNative>(count: 3)
             if (counters.isNull()) {
-                throw IllegalMemoryException("Malloc memory failed.")
+                throw IllegalMemoryException("Failed to allocate memory.")
             }
             this.bytesProcessed = counters
             this.bytesConsumed = counters + 1
@@ -292,7 +292,7 @@ class TlsRawSocket <: IOStream & Resource & ToString {
             result = tryReadImpl(buffer)
 
             if (result == CJTLS_FAIL) {
-                exception = unsafe { exceptionData.read().getException(fallback: "TLS failed to read data.") }
+                exception = unsafe { exceptionData.read().getException(fallback: "Failed to read data.") }
             }
 
             if (result == CJTLS_NEED_READ) {
@@ -352,7 +352,7 @@ class TlsRawSocket <: IOStream & Resource & ToString {
 
             result = tryWriteImpl(data)
             if (result == CJTLS_FAIL) {
-                exception = unsafe { exceptionData.read().getException(fallback: "TLS failed to write data.") }
+                exception = unsafe { exceptionData.read().getException(fallback: "Failed to write data.") }
             }
             if (result == CJTLS_NEED_READ) {
                 pendingRead++
@@ -409,9 +409,9 @@ class TlsRawSocket <: IOStream & Resource & ToString {
             match {
                 case result == CJTLS_FAIL =>
                     let fallbackMessage = if (server) {
-                        "TLS handshake failed (server)"
+                        "Server handshake failed."
                     } else {
-                        "TLS handshake failed (client)"
+                        "Client handshake failed."
                     }
                     unsafe { exceptionData.read() }.throwException(fallback: fallbackMessage)
                 case result == CJTLS_OK => return true
@@ -601,7 +601,7 @@ class TlsRawSocket <: IOStream & Resource & ToString {
 
             let result = tryShutdownImpl()
             match {
-                case result == CJTLS_FAIL => exceptionData.read().throwException(fallback: "TLS failed to do shutdown.")
+                case result == CJTLS_FAIL => exceptionData.read().throwException(fallback: "Failed to shutdown.")
                 case result == CJTLS_NEED_WRITE => false
                 case result == CJTLS_NEED_READ =>
                     pendingRead++
@@ -731,7 +731,7 @@ class TlsRawSocket <: IOStream & Resource & ToString {
     }
 
     private static func throwClosedException(): Nothing {
-        throw TlsException("closed")
+        throw TlsException("SSL is closed.")
     }
 }
 

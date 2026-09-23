@@ -15,7 +15,7 @@ endmacro()
 
 function(make_cangjie_lib target_name)
     set(options IS_SHARED IS_MACRO ALLOW_UNDEFINED)
-    set(oneValueArgs)
+    set(oneValueArgs IOS_DEPLOYMENT_VERSION)
     set(multiValueArgs
         DEPENDS
         OBJECTS
@@ -70,12 +70,22 @@ function(make_cangjie_lib target_name)
             list(APPEND flags_to_compile -arch x86_64)
         endif()
         if(IOS)
+            # Default minimum iOS deployment target is 11. Libraries that link against C++
+            # (libc++ is only available from iOS 12 onward), e.g. syntax, override it via
+            # IOS_DEPLOYMENT_VERSION.
+            if(NOT CANGJIE_LIBRARY_IOS_DEPLOYMENT_VERSION)
+                set(CANGJIE_LIBRARY_IOS_DEPLOYMENT_VERSION "11.0.0")
+            endif()
             if(IOS_PLATFORM MATCHES "SIMULATOR")
                 list(APPEND flags_to_compile -syslibroot "${CMAKE_IOS_SDK_ROOT}")
-                list(APPEND flags_to_compile -platform_version ios-simulator 17.5.0 17.5)
+                set(ios_sim_deployment_version "${CANGJIE_LIBRARY_IOS_DEPLOYMENT_VERSION}")
+                if(ios_sim_deployment_version VERSION_LESS "13.0.0")
+                    set(ios_sim_deployment_version "13.0.0")
+                endif()
+                list(APPEND flags_to_compile -platform_version ios-simulator ${ios_sim_deployment_version} 17.5)
             else()
                 list(APPEND flags_to_compile -syslibroot "${CMAKE_IOS_SDK_ROOT}")
-                list(APPEND flags_to_compile -platform_version ios 17.5.0 17.5)
+                list(APPEND flags_to_compile -platform_version ios ${CANGJIE_LIBRARY_IOS_DEPLOYMENT_VERSION} 17.5)
             endif()
         else()
             list(APPEND flags_to_compile -syslibroot "${CANGJIE_MACOSX_SDK_PATH}")

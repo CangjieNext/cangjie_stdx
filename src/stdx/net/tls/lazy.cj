@@ -45,7 +45,7 @@ struct Lazy<T> {
             case _ => ()
         }
 
-        throw TlsException("Lazy is already configured")
+        throw TlsException("Lazy is already configured.")
     }
 
     private func compute(): T {
@@ -57,13 +57,12 @@ struct Lazy<T> {
                     if (holder.compareAndSwap(start, box)) {
                         return box.value
                     }
-                case _: Uninitialized<T> => throw TlsException(
-                    "This lazy is not yet initialized. Invoke configure first.")
+                case _: Uninitialized<T> => throw TlsException("Lazy is not initialized.")
                 case _ => break // workaround compiler bug
             }
         } while (true)
 
-        throw TlsException("should never reach here.")
+        throw TlsException("Internal error: unreachable code path.")
     }
 }
 

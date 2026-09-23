@@ -43,12 +43,16 @@ public class HttpRequestBuilder {
     var priorityValue: String = ""
     var _readTimeout: ?Duration = None
     var _writeTimeout: ?Duration = None
+    var bodySizeInherited: Bool = false
+    var bodySizeSnapshot: ?Int64 = None
     public init() {}
 
     /**
      * Init an HttpRequestBuilder with the input request's attributes.
      * Headers and trailers are deep copy of the input request.
      * Body is the same stream as the input request.
+     * BodySize is a snapshot of the input request's bodySize.
+     * The snapshot is dropped if the body is replaced by body(...).
      */
     public init(request: HttpRequest) {
         this._method = request.method
@@ -61,6 +65,8 @@ public class HttpRequestBuilder {
         this.priorityValue = request.priorityValue
         this._readTimeout = request.readTimeout
         this._writeTimeout = request.writeTimeout
+        this.bodySizeInherited = true
+        this.bodySizeSnapshot = request._bodySize
     }
 
     /**
@@ -77,7 +83,7 @@ public class HttpRequestBuilder {
             return this
         }
         if (!isTokenString(method)) {
-            throw HttpException("Method should be tokens.")
+            throw HttpException("Method must be tokens.")
         }
         this._method = method
         return this
@@ -164,6 +170,7 @@ public class HttpRequestBuilder {
      */
     public func body(body: Array<UInt8>): HttpRequestBuilder {
         _body = HttpRawBody(body)
+        bodySizeInherited = false
         return this
     }
 
@@ -176,6 +183,7 @@ public class HttpRequestBuilder {
      */
     public func body(body: InputStream): HttpRequestBuilder {
         _body = body
+        bodySizeInherited = false
         return this
     }
 
@@ -188,6 +196,7 @@ public class HttpRequestBuilder {
      */
     public func body(body: String): HttpRequestBuilder {
         _body = HttpRawBody(body)
+        bodySizeInherited = false
         return this
     }
 
@@ -243,7 +252,7 @@ public class HttpRequestBuilder {
     // cjlint-ignore -end
     public func priority(urg: Int64, inc: Bool): HttpRequestBuilder {
         if (urg < 0 || urg > 7) {
-            throw HttpException("Illegal header, priority urgency should be in range [0, 7].")
+            throw HttpException("Invalid header: priority urgency '${urg}' is out of range [0, 7].")
         }
         priorityValue = if (inc) {
             "u=${urg}, i"
@@ -374,7 +383,7 @@ public class HttpRequestBuilder {
      * @return HttpRequest whose arguments are set by the builder.
      */
     public func build(): HttpRequest {
-        let bodySize: ?Int64 = sizeOf(_body)
+        let bodySize: ?Int64 = if (bodySizeInherited) { bodySizeSnapshot } else { sizeOf(_body) }
         if (!priorityValue.isEmpty() && (_headers.isNone() || headers.get("priority").isEmpty())) { // cjlint-ignore !G.EXP.03
             headers.add("priority", priorityValue)
         }
@@ -525,6 +534,10 @@ public class HttpRequest <: ToString {
      *                  or InputStream whose length is valid.
      * @return None, means the body size is unknown, that is, the body is self-implemented InputStream
      *                  whose length is invalid.
+     *
+     * Note: for a received request with a chunked body, bodySize is None before the body is
+     * fully read, and becomes the decoded length afterwards (consistent with the content-length
+     * header added at that time).
      */
     public prop bodySize: Option<Int64> {
         get() {

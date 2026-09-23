@@ -22,9 +22,7 @@ class WeaveAspects {
     var pkgInitFuncMangledNames = HashMap<String, String>()
 
     public override func run(pkg: Package): Bool {
-        if (!readAnnoInfo(pkg.name)) {
-            return false
-        }
+        readAnnoInfo(pkg.name)
         callUpstreamPkgInitFunc(pkg)
         for (f in pkg.functions) {
             if (f.body.isNone()) {
@@ -47,13 +45,13 @@ class WeaveAspects {
         }
         let callee = getCallee(pkg, pi, f, args)
         let funcCallCxt = FuncCallContext(args, Array<Type>(), computeThisTypeOfCallee(callee, args))
-        if (pi.annoClassName == "InsertAtEntry") {
+        if (pi.annoClassName == INSERT_AT_ENTRY_ANNO_CLASS_NAME) {
             let builder = CHIRBuilder(InsertPosition.AtStart(f.body.getOrThrow().entryBlock))
             builder.createApply(callee, funcCallCxt)
-        } else if (pi.annoClassName == "InsertAtExit") {
+        } else if (pi.annoClassName == INSERT_AT_EXIT_ANNO_CLASS_NAME) {
             let visitor = InsertAtExitVisitor(callee, funcCallCxt)
             visitor.walk(f.body.getOrThrow())
-        } else if (pi.annoClassName == "ReplaceFuncBody") {
+        } else if (isReplaceBodyAnno(pi.annoClassName)) {
             let wrapperFunc = pkg.addFunction(f.funcType, f.identifierWithoutPrefix, f.srcCodeName, f.packageName)
             f.replaceWith(wrapperFunc)
             wrapperFunc.initBody()
@@ -70,7 +68,7 @@ class WeaveAspects {
             builder.createExit()
             f.identifier = wrapperFunc.identifier + ".original"
         } else {
-            printError("Unknown annotation class name: ${pi.annoClassName}")
+            printError("Unknown annotation class name '${pi.annoClassName}'.")
         }
     }
 
@@ -90,7 +88,7 @@ class WeaveAspects {
         }
         let paramTypes = mapArrayTo(args, {arg => arg.ty})
         var returnType: Type = UnitType.get()
-        if (pi.annoClassName.isReplaceBodyAnno()) {
+        if (isReplaceBodyAnno(pi.annoClassName)) {
             returnType = f.funcType.returnType
         }
         let funcType = FuncType.get(paramTypes, returnType)
@@ -105,20 +103,20 @@ class WeaveAspects {
 
     private func prepareArguments(f: Function, pi: OutputInfo): (Array<Value>, Bool) {
         var expectedParamsNum = pi.insert.paramsNum
-        if (pi.annoClassName.isReplaceBodyAnno()) {
+        if (isReplaceBodyAnno(pi.annoClassName)) {
             expectedParamsNum -= 1
         }
         let args = ArrayList<Value>()
         if (expectedParamsNum != 0) {
             if (f.parameters.size != expectedParamsNum) {
-                printError("${f.srcCodeName} and ${pi.insert.methodMangledName} have unmatched number of parameters.")
+                printError("Parameter count mismatch: target function '${f.srcCodeName}' has '${f.parameters.size}' parameters, expected '${expectedParamsNum}' parameters from aspect metadata '${pi.insert.methodMangledName}'.")
                 return (Array<Value>(), false)
             }
             for (param in f.parameters) {
                 args.add(param)
             }
         }
-        if (pi.annoClassName.isReplaceBodyAnno()) {
+        if (isReplaceBodyAnno(pi.annoClassName)) {
             args.add(f)
         }
         return (args.toArray(), true)
@@ -132,9 +130,19 @@ class WeaveAspects {
             if (pkgName == pkg.name) {
                 continue
             }
-            let funcType = FuncType.get(Array<Type>(), UnitType.get())
-            let importedInitFunc = pkg.addFunction(funcType, initFuncMangledName, "", pkgName)
-            importedInitFunc.setImported(true)
+            // Reuse an existing declaration when present (e.g. target already imported the
+            // aspect package) to avoid duplicated CHIR identifiers. Always emit the apply:
+            // presence of the symbol does not guarantee the current package init already
+            // calls it (indirect import / opt / DCE). Package inits are expected to be
+            // idempotent, so an extra apply is safe.
+            let importedInitFunc = if (let Some(existing) <- pkg.getSpecifiedFunction(initFuncMangledName)) {
+                existing
+            } else {
+                let funcType = FuncType.get(Array<Type>(), UnitType.get())
+                let added = pkg.addFunction(funcType, initFuncMangledName, "", pkgName)
+                added.setImported(true)
+                added
+            }
             let funcCallCxt = FuncCallContext(Array<Value>(), Array<Type>(), None)
             builder.createApply(importedInitFunc, funcCallCxt)
         }
@@ -187,7 +195,7 @@ class WeaveAspects {
         return false
     }
 
-    private func readAnnoInfo(curPkgName: String): Bool {
+    private func readAnnoInfo(curPkgName: String): Unit {
         Directory.walk(
             Path("."),
             {
@@ -231,16 +239,6 @@ class WeaveAspects {
                 return true
             }
         )
-        return true
-    }
-}
-
-extend String {
-    internal func isInsertAnno(): Bool {
-        return this == "InsertAtEntry" || this == "InsertAtExit"
-    }
-    internal func isReplaceBodyAnno(): Bool {
-        return this == "ReplaceFuncBody"
     }
 }
 

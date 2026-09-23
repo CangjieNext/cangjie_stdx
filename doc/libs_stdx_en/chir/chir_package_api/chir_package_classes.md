@@ -8138,6 +8138,92 @@ Output:
 visitor_done
 ```
 
+## class TypeVisitor
+
+```cangjie
+public abstract class TypeVisitor {}
+```
+
+Function: **Abstract visitor** for CHIR type nodes. Visits a type and its `typeArgs` in depth-first order; subclasses can override [`action`](#func-actiontype) to observe each type node, and `walk` continues, skips children, or stops according to the returned [`TypeActionMode`](chir_package_enums.md#enum-typeactionmode).
+
+### func walk(Type)
+
+```cangjie
+public func walk(ty: Type): Unit
+```
+
+Function: Recursively traverses the given type and its type arguments; terminates early when `STOP` status is encountered.
+
+Parameters:
+
+- ty: [Type](#class-type) - The root type to traverse.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let i32 = IntType.getInt32()
+    let ft = FuncType.get([i32], i32)
+    println("walk_Type: ${ft.typeArgs.size}")
+}
+```
+
+Output:
+
+```text
+walk_Type: 2
+```
+
+### func action(Type)
+
+```cangjie
+public open func action(ty: Type): TypeActionMode
+```
+
+Function: Called for each visited type node, determining whether to continue traversal. Defaults to returning `TypeActionMode.CONTINUE`; subclasses can override to implement custom observation logic, skip children, or terminate early.
+
+Parameters:
+
+- ty: [Type](#class-type) - The current type node.
+
+Return Value:
+
+- [TypeActionMode](chir_package_enums.md#enum-typeactionmode) - Visitor control mode (`CONTINUE` to continue traversing child types, `SKIP` to skip children of the current type, `STOP` to terminate traversal).
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+class MyTypeVisitor <: TypeVisitor {
+    public open func action(ty: Type): TypeActionMode {
+        println(ty.toString().size > 0)
+        return TypeActionMode.CONTINUE
+    }
+}
+
+main() {
+    let i32 = IntType.getInt32()
+    let ft = FuncType.get([i32], i32)
+    let v = MyTypeVisitor()
+    v.walk(ft)
+    println("type_visitor_done")
+}
+```
+
+Output:
+
+```text
+true
+true
+true
+type_visitor_done
+```
+
 ## class FuncCallContext
 
 ```cangjie
@@ -15020,12 +15106,47 @@ op_eq_FuncCall: true
 sealed abstract class ApplyBase <: FuncCall & Equatable<ApplyBase> {}
 ```
 
-Function: Abstract base class of Apply (plain function call) expressions; parent type of [Apply](#class-apply) and [TryApply](#class-tryapply); provides query of the callee value.
+Function: Abstract base class of Apply (plain function call) expressions; parent type of [Apply](#class-apply) and [TryApply](#class-tryapply); provides callee value query and the super-call flag.
 
 Parent Types:
 
 - [FuncCall](#class-funccall)
 - Equatable\<[ApplyBase](#class-applybase)>
+
+### prop isSuperCall
+
+```cangjie
+public prop isSuperCall: Bool
+```
+
+Function: Whether this apply is a `super` call (read-only). When `true`, dumps/prints include an `isSuperCall` marker; newly created applies default to `false`, and deserialization may set it to `true`.
+
+Type: Bool
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let fType = FuncType.get([], UnitType.get())
+    let f = pkg.addFunction(fType, "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let callCtx = FuncCallContext([], [], None)
+    let expr = Apply.create(f, callCtx)
+    block.appendExpr(expr)
+    println("prop_isSuperCall: ${expr.isSuperCall}")
+}
+```
+
+Output:
+
+```text
+prop_isSuperCall: false
+```
 
 ### prop callee
 
@@ -17238,6 +17359,46 @@ Function: The return value variable of the Lambda.
 
 Type: [LocalVar](#class-localvar)
 
+### prop paramDftValHostFunc
+
+```cangjie
+public mut prop paramDftValHostFunc: ?Lambda
+```
+
+Function: Host lambda used for default-parameter evaluation, when present; `None` if unset.
+
+Type: ?[Lambda](#class-lambda)
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+import std.collection.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let lambdaType = FuncType.get([], UnitType.get())
+    let expr = Lambda.create(lambdaType, "lambda_m", "myLambda", ArrayList<GenericType>())
+    block.appendExpr(expr)
+    let host = Lambda.create(lambdaType, "host_m", "host", ArrayList<GenericType>())
+    block.appendExpr(host)
+    println("prop_paramDftValHostFunc_none: ${expr.paramDftValHostFunc.isNone()}")
+    expr.paramDftValHostFunc = Some(host)
+    println("prop_paramDftValHostFunc_some: ${expr.paramDftValHostFunc.getOrThrow().identifier}")
+}
+```
+
+Output:
+
+```text
+prop_paramDftValHostFunc_none: true
+prop_paramDftValHostFunc_some: host_m
+```
+
 ### static func create(FuncType, String, String, ArrayList\<GenericType>)
 
 ```cangjie
@@ -17819,14 +17980,14 @@ op_eq_MultiBranch: true
 ## class NumericCastBase
 
 ```cangjie
-sealed abstract class NumericCastBase <: Expression & Equatable<NumericCastBase> {}
+sealed abstract class NumericCastBase <: TypeCast & Equatable<NumericCastBase> {}
 ```
 
 Function: Abstract base class of numeric-cast expressions; parent type of [NumericCast](#class-numericcast) and [TryNumericCast](#class-trynumericcast); provides query and set of the overflow strategy.
 
 Parent Types:
 
-- [Expression](#class-expression)
+- [TypeCast](#class-typecast)
 - Equatable\<[NumericCastBase](#class-numericcastbase)>
 
 ### prop overflow
@@ -19498,6 +19659,42 @@ Output:
 prop_fieldNames: 1
 ```
 
+### prop srcValue
+
+```cangjie
+public prop srcValue: Value
+```
+
+Function: Source value.
+
+Type: Value
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+import std.collection.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([IntType.getInt32(), IntType.getInt32()], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let valParam = f.parameters[0]
+    let locParam = f.parameters[1]
+    let fieldNames = ArrayList<String>()
+    fieldNames.add("x")
+    let store = StoreElementByName.create(valParam, locParam, fieldNames)
+    println("prop_srcValue: ${store.srcValue == valParam}")
+}
+```
+
+Output:
+
+```text
+prop_srcValue: true
+```
+
 ### static func create(Value, Value, ArrayList\<String>)
 
 ```cangjie
@@ -19631,6 +19828,42 @@ Output:
 
 ```text
 prop_path: 1
+```
+
+### prop srcValue
+
+```cangjie
+public prop srcValue: Value
+```
+
+Function: Source value.
+
+Type: Value
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+import std.collection.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([IntType.getInt32(), IntType.getInt32()], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let valParam = f.parameters[0]
+    let locParam = f.parameters[1]
+    let path = ArrayList<UInt64>()
+    path.add(0)
+    let store = StoreElementRef.create(valParam, locParam, path)
+    println("prop_srcValue: ${store.srcValue == valParam}")
+}
+```
+
+Output:
+
+```text
+prop_srcValue: true
 ```
 
 ### static func create(Value, Value, ArrayList\<UInt64>)
@@ -19861,7 +20094,7 @@ op_eq_Tuple: true
 sealed abstract class TypeCast <: Expression & Equatable<TypeCast> {}
 ```
 
-Function: Abstract base class of type-cast expressions; parent type of [Box](#class-box), [StaticCast](#class-staticcast), [CastToConcrete](#class-casttoconcrete), [CastToGeneric](#class-casttogeneric), etc.; provides query of source value, source type and target type.
+Function: Abstract base class of type-cast expressions; parent type of [Box](#class-box), [StaticCast](#class-staticcast), [CastToConcrete](#class-casttoconcrete), [CastToGeneric](#class-casttogeneric), [NumericCastBase](#class-numericcastbase), etc.; provides query of source value, source type and target type.
 
 Parent Types:
 
@@ -22695,6 +22928,47 @@ Output:
 createGoTo: true
 ```
 
+### func createInout(Type, Value)
+
+```cangjie
+public func createInout(retTy: Type, param: Value): Intrinsic
+```
+
+Function: Creates an `inout` parameter intrinsic call expression.
+
+Parameters:
+
+- retTy: Type - Return type, typically a reference type.
+- param: Value - The argument value.
+
+Return Value:
+
+- [Intrinsic](#class-intrinsic) - `inout` intrinsic call expression.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let block = f.body.getOrThrow().entryBlock
+    let builder = CHIRBuilder(InsertPosition.AtEnd(block))
+    let alloc = builder.createAllocate(IntType.getInt32())
+    let expr = builder.createInout(RefType.get(IntType.getInt32()), alloc.result)
+    println("createInout: ${expr.toString().size > 0}")
+}
+```
+
+Output:
+
+```text
+createInout: true
+```
+
 ### func createInstanceOf(Value, Type)
 
 ```cangjie
@@ -23866,6 +24140,52 @@ Output:
 
 ```text
 createTryBinarySub: true
+```
+
+### func createTryInout(Type, Value, Block, Block)
+
+```cangjie
+public func createTryInout(retTy: Type, param: Value, normal: Block, err: Block): TryIntrinsic
+```
+
+Function: Creates an `inout` parameter intrinsic call expression with exception handling.
+
+Parameters:
+
+- retTy: Type - Return type, typically a reference type.
+- param: Value - The argument value.
+- normal: Block - Normal branch target basic block.
+- err: Block - Exception branch target basic block.
+
+Return Value:
+
+- [TryIntrinsic](#class-tryintrinsic) - `inout` intrinsic call expression with exception handling.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.initBody()
+    let bg = f.body.getOrThrow()
+    let entryBlock = bg.entryBlock
+    let normalBlock = bg.appendBlock()
+    let errBlock = bg.appendBlock()
+    let builder = CHIRBuilder(InsertPosition.AtEnd(entryBlock))
+    let alloc = builder.createAllocate(IntType.getInt32())
+    let expr = builder.createTryInout(RefType.get(IntType.getInt32()), alloc.result, normalBlock, errBlock)
+    println("createTryInout: ${expr.toString().size > 0}")
+}
+```
+
+Output:
+
+```text
+createTryInout: true
 ```
 
 ### func createTryInvoke(Type, InvokeCallContext, Block, Block)

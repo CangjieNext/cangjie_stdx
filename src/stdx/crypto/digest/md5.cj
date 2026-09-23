@@ -40,7 +40,7 @@ public class MD5 <: Digest {
 
     public func write(buffer: Array<Byte>): Unit {
         if (this.hasFinished) {
-            throw CryptoException("MD5 write failed, digest calculation has been completed.")
+            throw CryptoException("Digest calculation already completed.")
         }
         md5Update(md5Ctx, buffer)
     }
@@ -53,10 +53,10 @@ public class MD5 <: Digest {
 
     public func finish(to!: Array<Byte>): Unit {
         if (this.hasFinished) {
-            throw CryptoException("MD5 finish failed, digest calculation has been completed.")
+            throw CryptoException("Digest calculation already completed.")
         }
         if (to.size != size) {
-            throw CryptoException("The length of output is not equal to the digest length.")
+            throw CryptoException("Output length '${to.size}' does not match digest length '${size}'.")
         }
         md5Final(md5Ctx, to)
         this.hasFinished = true
@@ -79,7 +79,7 @@ func md5Update(c: MD5CTX, data: Array<Byte>): Unit {
         }
         checkError(dynMsgPtr)
         if (res != 1) {
-            throw CryptoException("MD5 write error")
+            throw CryptoException("MD5 write operation failed.")
         }
     }
 }
@@ -95,7 +95,7 @@ func md5Final(c: MD5CTX, md: Array<Byte>): Unit {
         }
         checkError(dynMsgPtr)
         if (res != 1) {
-            throw CryptoException("MD5 finish error")
+            throw CryptoException("MD5 finish operation failed.")
         }
     }
 }

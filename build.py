@@ -45,7 +45,8 @@ TARGET_DICTIONARY = {
     "ios-simulator-aarch64": "arm64-apple-ios11-simulator",
     "ios-simulator-x86_64": "x86_64-apple-ios11-simulator",
     "ios-aarch64": "arm64-apple-ios11",
-    "android-aarch64": "aarch64-linux-android",
+    "android-aarch64": "aarch64-linux-android23",
+    "android23-aarch64": "aarch64-linux-android23",
     "android31-aarch64": "aarch64-linux-android31",
     "android26-aarch64": "aarch64-linux-android26",
     "android23-arm": "arm-linux-android23",
@@ -308,6 +309,14 @@ def clean(args):
             shutil.rmtree(abs_file_path, ignore_errors=False, onerror=redo_with_write)
         if os.path.isfile(abs_file_path):
             os.remove(abs_file_path)
+    # Flatbuffers-generated Cangjie sources live under src/; remove them on clean.
+    generated_files = [
+        os.path.join(HOME_DIR, "src", "stdx", "syntax", "StdxSyntaxFormat_generated.cj"),
+        os.path.join(HOME_DIR, "src", "stdx", "chir", "StdxChirFormat_generated.cj"),
+    ]
+    for generated_file in generated_files:
+        if os.path.isfile(generated_file):
+            os.remove(generated_file)
     LOG.info("end clean\n")
 
 def init_log(name):

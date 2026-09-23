@@ -40,7 +40,7 @@ public class SHA512 <: Digest {
 
     public func write(buffer: Array<Byte>): Unit {
         if (this.hasFinished) {
-            throw CryptoException("SHA512 write failed, digest calculation has been completed.")
+            throw CryptoException("Digest calculation already completed.")
         }
         sha512Update(sha512Ctx, buffer)
     }
@@ -53,10 +53,10 @@ public class SHA512 <: Digest {
 
     public func finish(to!: Array<Byte>): Unit {
         if (this.hasFinished) {
-            throw CryptoException("SHA512 finish failed, digest calculation has been completed.")
+            throw CryptoException("Digest calculation already completed.")
         }
         if (to.size != size) {
-            throw CryptoException("The length of output is not equal to the digest length.")
+            throw CryptoException("Output length '${to.size}' does not match digest length '${size}'.")
         }
         sha512Final(sha512Ctx, to)
         this.hasFinished = true
@@ -79,7 +79,7 @@ func sha512Update(c: SHA512CTX, data: Array<Byte>): Unit {
         }
         checkError(dynMsgPtr)
         if (res != 1) {
-            throw CryptoException("SHA512 write error.")
+            throw CryptoException("SHA512 write operation failed.")
         }
     }
 }
@@ -95,7 +95,7 @@ func sha512Final(c: SHA512CTX, md: Array<Byte>): Unit {
         }
         checkError(dynMsgPtr)
         if (res != 1) {
-            throw CryptoException("SHA512 finish error.")
+            throw CryptoException("SHA512 finish operation failed.")
         }
     }
 }

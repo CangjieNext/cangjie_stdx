@@ -115,7 +115,7 @@ class TarHeader {
 
         let size = Int64.parseNumeric(buffer[FieldLocation.SIZE])
         if (size < 0) {
-            throw TarException("Invalid size field ${buffer[FieldLocation.SIZE]}.")
+            throw TarException("Invalid size field: ${buffer[FieldLocation.SIZE]}.")
         }
 
         let entryType = TarEntryType.fromFlag(buffer[FieldLocation.TYPE_FLAG][0])
@@ -184,7 +184,7 @@ class TarHeader {
         } else if (versionBuffer == GNU_VERSION) {
             version = GNU_VERSION
         } else {
-            throw TarException("Invalid version ${versionBuffer}.")
+            throw TarException("Invalid version: '${versionBuffer}'.")
         }
     }
 

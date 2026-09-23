@@ -18,7 +18,9 @@ public func parseFile(filePath: String): ParsingResult<SourceFile>
 
 异常：
 
-- Exception - 当输入的 `filePath` 不是正确的仓颉源码路径时，抛出异常，异常中包含报错提示信息。
+- IllegalArgumentException - 当输入的 `filePath` 不是正确的仓颉源码路径时，抛出异常，异常中包含报错提示信息。
+- IllegalMemoryException - 当为节点分配内存失败，或底层解析出错时，抛出异常，异常中包含报错提示信息。
+- UnsupportedException - 当遇到当前不支持的节点类型时，抛出异常，异常中包含报错提示信息。
 
 示例：
 
@@ -54,7 +56,9 @@ public func parsePackage(dirPath: String): ParsingResult<Package>
 
 异常：
 
-- Exception - 当输入的 `dirPath` 不是正确的仓颉包路径时，抛出异常，异常中包含报错提示信息。
+- IllegalArgumentException - 当输入的 `dirPath` 不是正确的仓颉包路径，或文件之间包声明冲突时，抛出异常，异常中包含报错提示信息。
+- IllegalMemoryException - 当为节点分配内存失败，或底层解析出错时，抛出异常，异常中包含报错提示信息。
+- UnsupportedException - 当输入中包含当前不支持的节点类型时，抛出异常，异常中包含报错提示信息。
 
 示例：
 
@@ -96,7 +100,9 @@ public func parseText(programText: String): ParsingResult<SyntaxTreeNode>
 
 异常：
 
-- Exception - 当根据输入文本无法正确解析出单个语法树节点时（包括解析出错和输入包含多个节点等情况），抛出异常，异常中包含报错提示消息。
+- IllegalArgumentException - 当底层解析出错时，抛出异常，异常中包含报错提示信息。
+- IllegalMemoryException - 当为节点分配内存失败，或输入中包含不支持的节点类型时，抛出异常，异常中包含报错提示信息。
+- UnsupportedException - 当输入文本包含多个节点时，抛出异常，异常中包含报错提示信息。
 
 示例：
 
@@ -147,7 +153,9 @@ public func parseTokens(tokens: Tokens, refreshPos!: Bool = true): ParsingResult
 
 异常：
 
-- Exception - 当根据输入词法单元无法正确解析出单个语法树节点（包括解析出错和输入包含多个节点等情况）或输入词法单元的位置信息有误时，抛出异常，异常中包含报错提示消息。
+- IllegalArgumentException - 当输入为空，或输入词法单元的位置信息有误，或底层解析出错时，抛出异常，异常中包含报错提示信息。
+- IllegalMemoryException - 当为节点分配内存失败，或输入中包含不支持的节点类型时，抛出异常，异常中包含报错提示信息。
+- UnsupportedException - 当输入包含多个节点时，抛出异常，异常中包含报错提示信息。
 
 示例：
 
