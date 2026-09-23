@@ -152,7 +152,7 @@ Parameters:
 
 Return value:
 
-- Option\<String> - If Pax data exists for the corresponding key, returns its value; otherwise, returns None.
+- ?String - If Pax data exists for the corresponding key, returns its value; otherwise, returns None.
 
 ### func writeTo(OutputStream)
 

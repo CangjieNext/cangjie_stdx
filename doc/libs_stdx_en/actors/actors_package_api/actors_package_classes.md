@@ -169,14 +169,14 @@ Parameters:
 ### func post\<T>(() -> T, Int64)
 
 ```cangjie
-public func post<T>(task: () -> T, priority!: Int64 = 5): ActorFuture<T>
+public func post<T>(f: () -> T, priority!: Int64 = 5): ActorFuture<T>
 ```
 
 Function: Submits a closure to the dispatcher, which will be queued and executed on the dispatcher thread. This method returns an [ActorFuture\<T>](actors_package_classes.md#class-actorfuture), representing the pending result of the closure. If the dispatcher was created with `enableReceiverPriority` set to true, closures with higher priority will be executed first. If `enableReceiverPriority` is set to false, the `priority` value will have no effect.
 
 Parameters:
 
-- task: () -> T - The closure submitted to the actor.
+- f: () -> T - The closure submitted to the actor.
 - priority!: Int64 - The priority of the submitted task, where 1 <= priority <= 10, with a default value of 5.
 
 Return Value:
