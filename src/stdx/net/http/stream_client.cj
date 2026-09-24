@@ -228,9 +228,10 @@ class ClientStream {
         } else if (req.url.path.isEmpty() && req.method == "OPTIONS") {
             path = ASTERISK
         } else {
-            path = canonicalPath(req.url.path)
-            if (let Some(query) <- req.url.query && !query.isEmpty()) {
-                path += "?${query}"
+            path = canonicalPath(req.url.rawPath)
+            if (let Some(rawQuery) <- req.url.rawQuery && !rawQuery.isEmpty()) {
+                _ = req.url.query // decode query to check if the query is valid
+                path += "?${rawQuery}"
             }
         }
         headers.add((":authority", authority))
