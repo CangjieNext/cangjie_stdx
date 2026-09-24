@@ -182,7 +182,11 @@ class HttpClient2 <: HttpClient {
         }
         let tlsConn: TlsConnection
         try {
-            tlsConn = getGlobalTlsKit().getTlsClient(tmpConn, tlsConfig, session: None)
+            // The TLS handshake always targets the origin server (also when it
+            // happens inside a proxy tunnel), so certificates are verified
+            // against the request host name.
+            tlsConn = getGlobalTlsKit().getTlsClient(tmpConn, tlsConfig, session: None,
+                hostName: Some(key.addrPort.addr))
         } catch (e: Exception) {
             tmpConn.close()
             throw e
