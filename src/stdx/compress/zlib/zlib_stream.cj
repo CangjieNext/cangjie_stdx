@@ -105,18 +105,25 @@ public class CompressInputStream <: InputStream {
         while (outBufCursor < outBuf.size && !deflater.isFinished()) {
             if (deflater.needsInput()) {
                 if (!getInput()) {
-                    return outBufCursor
+                    if (!readStarted) {
+                        return outBufCursor
+                    }
+                } else {
+                    var singleInLen = min(inBufEnd - inBufCursor, MAX_BUFFER_LENGTH_IN)
+                    deflater.addInputBytes(inBuf.slice(inBufCursor, singleInLen), singleInLen)
+                    inBufCursor += singleInLen
                 }
-                var singleInLen = min(inBufEnd - inBufCursor, MAX_BUFFER_LENGTH_IN)
-                deflater.addInputBytes(inBuf.slice(inBufCursor, singleInLen), singleInLen)
-                inBufCursor += singleInLen
             }
             var singleOutLen = min(outBuf.size - outBufCursor, MAX_BUFFER_LENGTH_OUT)
-            outBufCursor += if (readEnd) {
+            var produced = if (readEnd) {
                 deflater.deflate(outBuf.slice(outBufCursor, singleOutLen), Finish)
             } else {
                 deflater.deflate(outBuf.slice(outBufCursor, singleOutLen), NoFlush)
             }
+            if (readEnd && produced == 0) {
+                break
+            }
+            outBufCursor += produced
         }
         outBufCursor
     }
@@ -364,19 +371,21 @@ public class DecompressInputStream <: InputStream {
         while (outBufCursor < outBuf.size && !inflater.isFinished()) {
             if (inflater.needsInput()) {
                 if (!getInput()) {
-                    return outBufCursor
+                    if (!readStarted) {
+                        return outBufCursor
+                    }
+                } else {
+                    var singleInLen = min(inBufEnd - inBufCursor, MAX_BUFFER_LENGTH_IN)
+                    inflater.addInputBytes(inBuf.slice(inBufCursor, singleInLen), singleInLen)
+                    inBufCursor += singleInLen
                 }
-                var singleInLen = min(inBufEnd - inBufCursor, MAX_BUFFER_LENGTH_IN)
-                inflater.addInputBytes(inBuf.slice(inBufCursor, singleInLen), singleInLen)
-                inBufCursor += singleInLen
             }
             var singleOutLen = min(outBuf.size - outBufCursor, MAX_BUFFER_LENGTH_OUT)
-            let produced = if (readEnd) {
-                inflater.inflate(outBuf.slice(outBufCursor, singleOutLen), Finish)
-            } else {
-                inflater.inflate(outBuf.slice(outBufCursor, singleOutLen), NoFlush)
-            }
+            let produced = inflater.inflate(outBuf.slice(outBufCursor, singleOutLen), NoFlush)
             onOutputProduced(produced)
+            if (readEnd && produced == 0) {
+                break
+            }
             outBufCursor += produced
         }
         return outBufCursor
