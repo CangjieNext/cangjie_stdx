@@ -13,6 +13,18 @@ import std.net.StreamingSocket
 public interface TlsKit {
     func getTlsServer(socket: StreamingSocket, config: TlsConfig, session!: ?TlsSession): TlsConnection
     func getTlsClient(socket: StreamingSocket, config: TlsConfig, session!: ?TlsSession): TlsConnection
+
+    /*
+     * Same as `getTlsClient`, except that `hostName`, when not `None` and the
+     * config does not specify a server name itself, is used as the certificate
+     * verification target (and SNI) for the handshake. The default
+     * implementation ignores `hostName` and delegates to `getTlsClient`.
+     */
+    func getTlsClient(socket: StreamingSocket, config: TlsConfig, session!: ?TlsSession,
+        hostName!: ?String): TlsConnection {
+        getTlsClient(socket, config, session: session)
+    }
+
     func getTlsServerSession(name: String): TlsSession
 }
 

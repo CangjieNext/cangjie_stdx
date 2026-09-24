@@ -422,7 +422,17 @@ class HttpEngine1 {
         }
         httpLogDebug(logger,"[HttpEngine1#connect] get conn finish")
         if (isTls) {
-            let tlsConn = getGlobalTlsKit().getTlsClient(conn, tlsConfig.getOrThrow(), session: None)
+            // When tunneling through an HTTPS proxy, the TLS handshake targets
+            // the origin server inside the tunnel, so the certificate must be
+            // verified against the request host; otherwise the TLS peer is the
+            // engine peer address itself.
+            let tlsHost = if (isToHttpsProxy) {
+                request.url.hostName
+            } else {
+                addrport.addr
+            }
+            let tlsConn = getGlobalTlsKit().getTlsClient(conn, tlsConfig.getOrThrow(), session: None,
+                hostName: Some(tlsHost))
             try {
                 tlsConn.handshake(timeout: None)
             } catch (e: Exception) {

@@ -38,6 +38,38 @@ public class DefaultTlsKit <: TlsKit {
         TlsSocket.client(socket, clientConfig: clientConfig, session: clientSession)
     }
 
+    public func getTlsClient(socket: StreamingSocket, config: TlsConfig, session!: ?TlsSession,
+        hostName!: ?String): TlsConnection {
+        let effectiveConfig = applyServerNameFallback(config, hostName)
+        getTlsClient(socket, effectiveConfig, session: session)
+    }
+
+    /*
+     * When the user has not configured `serverName` for the client config,
+     * derive a per-connection config that falls back to verifying the server
+     * certificate against `hostName` (also used as SNI). The user config is
+     * never mutated because `TlsClientConfig` is a value type.
+     */
+    private func applyServerNameFallback(config: TlsConfig, hostName: ?String): TlsConfig {
+        match (hostName) {
+            case Some(host) =>
+                if (host.isEmpty()) {
+                    return config
+                }
+                match (config as TlsClientConfig) {
+                    case Some(clientConfig) =>
+                        if (clientConfig.serverName.isSome()) {
+                            return config
+                        }
+                        var effective = clientConfig
+                        effective.serverName = Some(host)
+                        return effective
+                    case None => return config
+                }
+            case None => return config
+        }
+    }
+
     public func getTlsServerSession(name: String): TlsSession {
         TlsServerSession.fromName(name)
     }
