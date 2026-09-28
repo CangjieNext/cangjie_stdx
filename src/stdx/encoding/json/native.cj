@@ -591,7 +591,7 @@ func parseJsonString(parser: JsonParser): JsonString {
         // JSON strings must escape all control characters (U+0000..U+001F).
         // Accepting them here creates values that strict JSON parsers reject.
         if (next < 0x20) {
-            throw JsonException()
+            throw JsonException("Unescaped control character in JSON string.")
         }
         parser.offset++
     }
@@ -605,7 +605,7 @@ func parseJsonString(parser: JsonParser): JsonString {
     while (next != b'\"') {
         // Control characters are not allowed unescaped inside a JSON string.
         if (next < 0x20) {
-            throw JsonException()
+            throw JsonException("Unescaped control character in JSON string.")
         }
         if (next == b'\\') {
             parser.strCache.add(all: parser.data[tmpStart..parser.offset])
