@@ -210,13 +210,27 @@ class Encoder {
                      */
                     // cjlint-ignore -end
                     case NameIndex(idx) =>
-                        encodeIntTo(idx, "01", writer)
-                        encodeStringTo(field[1], writer)
+                        if (fieldSize(field) > headerTable.headerTableSize) {
+                            // The entry can never fit into the dynamic table. Emit it
+                            // as Literal Header Field without Indexing
+                            // (RFC 7541 section 6.2.2) and keep the dynamic table
+                            // untouched; inserting it would force the peer decoder to
+                            // empty its table (RFC 7541 section 4.4).
+                            encodeIntTo(idx, "0000", writer)
+                            encodeStringTo(field[1], writer)
+                            if (logger.enabled(LogLevel.TRACE)) {
+                                httpLogTrace(logger,
+                                    "[${this.name}.Encoder#encode] oversized header:(${field[0]}: ${field[1]}), without indexing, NameIndex(${idx})")
+                            }
+                        } else {
+                            encodeIntTo(idx, "01", writer)
+                            encodeStringTo(field[1], writer)
 
-                        headerTable.insert(field) // add entry to table
-                        if (logger.enabled(LogLevel.TRACE)) {
-                            httpLogTrace(logger,
-                                "[${this.name}.Encoder#encode] header:(${field[0]}: ${field[1]}), NameIndex(${idx})")
+                            headerTable.insert(field) // add entry to table
+                            if (logger.enabled(LogLevel.TRACE)) {
+                                httpLogTrace(logger,
+                                    "[${this.name}.Encoder#encode] header:(${field[0]}: ${field[1]}), NameIndex(${idx})")
+                            }
                         }
 
                     // cjlint-ignore -start !G.OTH.03
@@ -239,14 +253,29 @@ class Encoder {
                      */
                     // cjlint-ignore -end
                     case NoneIndex =>
-                        0x40 |> writer.write
-                        encodeStringTo(field[0], writer)
-                        encodeStringTo(field[1], writer)
+                        if (fieldSize(field) > headerTable.headerTableSize) {
+                            // The entry can never fit into the dynamic table. Emit it
+                            // as Literal Header Field without Indexing
+                            // (RFC 7541 section 6.2.2) and keep the dynamic table
+                            // untouched; inserting it would force the peer decoder to
+                            // empty its table (RFC 7541 section 4.4).
+                            0x00 |> writer.write
+                            encodeStringTo(field[0], writer)
+                            encodeStringTo(field[1], writer)
+                            if (logger.enabled(LogLevel.TRACE)) {
+                                httpLogTrace(logger,
+                                    "[${this.name}.Encoder#encode] oversized header:(${field[0]}: ${field[1]}), without indexing, NoneIndex")
+                            }
+                        } else {
+                            0x40 |> writer.write
+                            encodeStringTo(field[0], writer)
+                            encodeStringTo(field[1], writer)
 
-                        headerTable.insert(field) // add entry to table
-                        if (logger.enabled(LogLevel.TRACE)) {
-                            httpLogTrace(logger,
-                                "[${this.name}.Encoder#encode] header:(${field[0]}: ${field[1]}), NoneIndex")
+                            headerTable.insert(field) // add entry to table
+                            if (logger.enabled(LogLevel.TRACE)) {
+                                httpLogTrace(logger,
+                                    "[${this.name}.Encoder#encode] header:(${field[0]}: ${field[1]}), NoneIndex")
+                            }
                         }
                 }
             }

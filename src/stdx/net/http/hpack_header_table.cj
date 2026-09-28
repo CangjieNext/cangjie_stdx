@@ -175,6 +175,14 @@ class HeaderTable {
     // cjlint-ignore -end
     func insert(field: HeaderField): Unit {
         let incrSize = fieldSize(field)
+        // cjlint-ignore -start !G.OTH.03
+        // RFC 7541 §4.4: an attempt to add an entry larger than the maximum table size
+        // causes the table to be emptied of all existing entries and results in an empty table.
+        // cjlint-ignore -end
+        if (incrSize > maxSize) {
+            reduceSizeTo(0)
+            return
+        }
         reduceSizeTo(maxSize - incrSize) // make sure `size + incrSize <= maxSize`
 
         dynamicTable.enqueue(field)
