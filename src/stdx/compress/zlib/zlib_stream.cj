@@ -344,7 +344,8 @@ public class DecompressInputStream <: InputStream {
      * @return Int64 The actual number of decompressed data in outBuf
      * @return Int64(0) The bound inputStream has been decompressed or the stream has been closed
      *
-     * @throws ZlibException if outBuf is empty or failed to decode stream.
+     * @throws ZlibException if outBuf is empty, failed to decode stream,
+     * or the compressed data ends before the decompression is finished.
      */
     public func read(outBuf: Array<Byte>): Int64 {
         if (inflater.isFinished() || closed || (!readStarted && readEnd)) {
@@ -356,8 +357,8 @@ public class DecompressInputStream <: InputStream {
         var outBufCursor = 0
         while (outBufCursor < outBuf.size && !inflater.isFinished()) {
             if (inflater.needsInput()) {
-                if (!getInput()) {
-                    return 0
+                if (!getInput() || readEnd) {
+                    throw ZlibException("Unexpected end of compressed data.")
                 }
                 var singleInLen = min(inBufEnd - inBufCursor, MAX_BUFFER_LENGTH_IN)
                 inflater.addInputBytes(inBuf.slice(inBufCursor, singleInLen), singleInLen)
@@ -397,14 +398,21 @@ public class DecompressInputStream <: InputStream {
     /**
      * Closes this stream and release internal decompressor resourecs.
      *
-     * @throws ZlibException if failed to release decompressed resources.
+     * @throws ZlibException if the decompression is not finished (the compressed
+     * data ends prematurely) or failed to release decompressed resources.
      */
     public func close(): Unit {
         if (closed) {
             return
         }
-        inflater.inflateEnd()
-        closed = true
+        try {
+            if (!inflater.isFinished()) {
+                throw ZlibException("Unexpected end of compressed data.")
+            }
+        } finally {
+            inflater.inflateEnd()
+            closed = true
+        }
     }
 
     private func onOutputProduced(produced: Int64): Unit {
@@ -512,7 +520,8 @@ public class DecompressOutputStream <: OutputStream {
     /**
      * Closes this stream and release internal decompressor resourecs.
      *
-     * @throws ZlibException if the DecompressOutputStream failed to decode stream,
+     * @throws ZlibException if the compressed data ends before the decompression
+     * is finished, the DecompressOutputStream failed to decode stream,
      * or failed to release decompressed resources.
      */
     public func close(): Unit {
@@ -523,6 +532,9 @@ public class DecompressOutputStream <: OutputStream {
             if (writeStarted) {
                 finishInflate()
             }
+            if (!inflater.isFinished()) {
+                throw ZlibException("Unexpected end of compressed data.")
+            }
         } finally {
             inflater.inflateEnd()
             closed = true
@@ -531,6 +543,9 @@ public class DecompressOutputStream <: OutputStream {
 
     private func finishInflate(): Unit {
         while (!inflater.isFinished()) {
+            if (inflater.needsInput()) {
+                throw ZlibException("Unexpected end of compressed data.")
+            }
             if (outBufCursor == outBuf.size) {
                 flushOutBuf()
             }
