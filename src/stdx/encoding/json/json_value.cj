@@ -98,12 +98,13 @@ sealed abstract class JsonValue <: ToString {
     }
 
     // std proposal 9.2 boundary form: a `@local?` parameter keeps `JsonValue.fromStr("1")`
-    // unambiguous, which a `String @local!` twin breaks. Mirrors std
-    // `String.fromUtf8(utf8Data: Array<UInt8> @local?): String @local!` (core/string.cj:513):
-    // the `@local!` intermediate carries local-ness into the local `parseString`, because a
-    // half-mode value cannot be passed to a `@local!` parameter directly.
+    // unambiguous, which a `String @local!` twin breaks. `String.toString(this @local?)`
+    // is the documented way to materialise a `@local!` view. The earlier form
+    // `s.rawData().cloneToLocal()` relied on `String.rawData(this @local?)` and
+    // `Array.cloneToLocal(this @local?)`, neither of which is in the std local-mode
+    // change list.
     public exclave static func fromStr(s: String @local?): JsonValue @local! {
-        let ls: String @local! = unsafe { String.fromUtf8Unchecked(s.rawData().cloneToLocal()) }
+        let ls: String @local! = s.toString()
         parseString(ls)
     }
 
