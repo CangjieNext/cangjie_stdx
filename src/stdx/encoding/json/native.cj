@@ -1203,7 +1203,7 @@ exclave func parseJsonString(parser: JsonParser @local!): JsonString @local! {
     for (index in 0..segment.size) {
         parser.strCache.add(segment[index])
     }
-    let value: String @local! = unsafe { String.fromUtf8Unchecked(parser.strCache.getRawArray()[0..parser.strCache.size]) }
+    let value: String @local! = unsafe { String.fromUtf8Unchecked(parser.strCache.toArray()) }
     parser.strCache.clear()
     JsonString(value) @local!
 }

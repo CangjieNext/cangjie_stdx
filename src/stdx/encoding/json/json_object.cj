@@ -1298,7 +1298,9 @@ public class JsonObject <: JsonValue {
 
     @Frozen
     public exclave func put(this @local!, key: String @local?, v: JsonValue @local!): Unit {
-        fields.add(unsafe { String.fromUtf8Unchecked(key.rawData()) }, v)
+        // Keys are stored as owned heap Strings. `String.rawData(this @local?)` is not in
+        // the std local-mode change list, so materialise the key to `@local!` first.
+        fields.add(unsafe { String.fromUtf8Unchecked(key.toString().rawData()) }, v)
     }
 
     /**

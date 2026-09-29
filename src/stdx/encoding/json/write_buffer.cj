@@ -229,7 +229,9 @@ class WriteBuffer {
     }
 
     public exclave func append(this @local!, str: String @local?): WriteBuffer @local! {
-        append(unsafe { str.rawData() })
+        // `String.rawData(this @local?)` is not in the std local-mode change list;
+        // materialise to `@local!` first, then use the documented `rawData(this @local!)`.
+        append(unsafe { str.toString().rawData() })
     }
 
     public exclave func append(this @local!, byte: Byte): WriteBuffer @local! {
@@ -296,24 +298,27 @@ class WriteBuffer {
     }
 
     public exclave func appendEscape(this @local!, str: String @local?, htmlSafe!: Bool = true): WriteBuffer @local! {
+        // `String.rawData(this @local?)` is not in the std local-mode change list;
+        // materialise once to `@local!` and use the documented `rawData(this @local!)`.
+        let materialised: String @local! = str.toString()
         var escapenum = 0
 
         unsafe {
-            let input = acquireArrayRawData(str.rawData())
-            escapenum = CJ_JSON_StringEscapeCharNumGet(input.pointer, str.size, htmlSafe)
+            let input = acquireArrayRawData(materialised.rawData())
+            escapenum = CJ_JSON_StringEscapeCharNumGet(input.pointer, materialised.size, htmlSafe)
             releaseArrayRawData(input)
         }
 
         if (escapenum == 0) {
-            append(str)
+            append(materialised)
             return this
         }
 
-        checkAndExpend(str.size + escapenum)
+        checkAndExpend(materialised.size + escapenum)
         unsafe {
-            let input = acquireArrayRawData(str.rawData())
+            let input = acquireArrayRawData(materialised.rawData())
             let buff = acquireArrayRawData<Byte>(_buffer)
-            let len = CJ_JSON_ReplaceEscapeChar(input.pointer, str.size, buff.pointer + _size, htmlSafe)
+            let len = CJ_JSON_ReplaceEscapeChar(input.pointer, materialised.size, buff.pointer + _size, htmlSafe)
             releaseArrayRawData(input)
             releaseArrayRawData(buff)
             _size += len
