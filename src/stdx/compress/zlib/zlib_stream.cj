@@ -128,8 +128,8 @@ public class CompressInputStream <: InputStream {
 
         var readRet = inputStream.read(inBuf)
         if (readRet <= 0) {
-             readEnd = true
-             if (!readStarted) {
+            readEnd = true
+            if (!readStarted) {
                 return false
             }
         }
@@ -344,7 +344,8 @@ public class DecompressInputStream <: InputStream {
      * @return Int64 The actual number of decompressed data in outBuf
      * @return Int64(0) The bound inputStream has been decompressed or the stream has been closed
      *
-     * @throws ZlibException if outBuf is empty or failed to decode stream.
+     * @throws ZlibException if outBuf is empty, failed to decode stream,
+     * or the compressed data ends before the decompression is finished.
      */
     public func read(outBuf: Array<Byte>): Int64 {
         if (inflater.isFinished() || closed || (!readStarted && readEnd)) {
@@ -356,8 +357,8 @@ public class DecompressInputStream <: InputStream {
         var outBufCursor = 0
         while (outBufCursor < outBuf.size && !inflater.isFinished()) {
             if (inflater.needsInput()) {
-                if (!getInput()) {
-                    return 0
+                if (!getInput() || readEnd) {
+                    throw ZlibException("Unexpected end of compressed data.")
                 }
                 var singleInLen = min(inBufEnd - inBufCursor, MAX_BUFFER_LENGTH_IN)
                 inflater.addInputBytes(inBuf.slice(inBufCursor, singleInLen), singleInLen)
@@ -447,6 +448,9 @@ public class DecompressOutputStream <: OutputStream {
     /* Flag whether the current class is closed */
     private var closed: Bool
 
+    /* Flag whether an error has been reported by write() */
+    private var errorOccurred: Bool
+
     private var totalInputBytes: Int64 = 0
 
     private var totalOutputBytes: Int64 = 0
@@ -462,6 +466,7 @@ public class DecompressOutputStream <: OutputStream {
         this.outputStream = outputStream
         writeStarted = false
         closed = false
+        errorOccurred = false
     }
 
     /**
@@ -490,7 +495,13 @@ public class DecompressOutputStream <: OutputStream {
                     flushOutBuf()
                 }
                 var singleOutLen = min(outBuf.size - outBufCursor, MAX_BUFFER_LENGTH_OUT)
-                let produced = inflater.inflate(outBuf.slice(outBufCursor, singleOutLen), NoFlush)
+                var produced: Int64 = 0
+                try {
+                    produced = inflater.inflate(outBuf.slice(outBufCursor, singleOutLen), NoFlush)
+                } catch (e: ZlibException) {
+                    errorOccurred = true
+                    throw e
+                }
                 onOutputProduced(produced)
                 outBufCursor += produced
             }
@@ -512,7 +523,8 @@ public class DecompressOutputStream <: OutputStream {
     /**
      * Closes this stream and release internal decompressor resourecs.
      *
-     * @throws ZlibException if the DecompressOutputStream failed to decode stream,
+     * @throws ZlibException if the compressed data ends before the decompression
+     * is finished, the DecompressOutputStream failed to decode stream,
      * or failed to release decompressed resources.
      */
     public func close(): Unit {
@@ -523,6 +535,9 @@ public class DecompressOutputStream <: OutputStream {
             if (writeStarted) {
                 finishInflate()
             }
+            if (!errorOccurred && !inflater.isFinished()) {
+                throw ZlibException("Unexpected end of compressed data.")
+            }
         } finally {
             inflater.inflateEnd()
             closed = true
@@ -531,6 +546,9 @@ public class DecompressOutputStream <: OutputStream {
 
     private func finishInflate(): Unit {
         while (!inflater.isFinished()) {
+            if (inflater.needsInput()) {
+                throw ZlibException("Unexpected end of compressed data.")
+            }
             if (outBufCursor == outBuf.size) {
                 flushOutBuf()
             }
