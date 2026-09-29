@@ -398,21 +398,14 @@ public class DecompressInputStream <: InputStream {
     /**
      * Closes this stream and release internal decompressor resourecs.
      *
-     * @throws ZlibException if the decompression is not finished (the compressed
-     * data ends prematurely) or failed to release decompressed resources.
+     * @throws ZlibException if failed to release decompressed resources.
      */
     public func close(): Unit {
         if (closed) {
             return
         }
-        try {
-            if (!inflater.isFinished()) {
-                throw ZlibException("Unexpected end of compressed data.")
-            }
-        } finally {
-            inflater.inflateEnd()
-            closed = true
-        }
+        inflater.inflateEnd()
+        closed = true
     }
 
     private func onOutputProduced(produced: Int64): Unit {
@@ -455,6 +448,9 @@ public class DecompressOutputStream <: OutputStream {
     /* Flag whether the current class is closed */
     private var closed: Bool
 
+    /* Flag whether an error has been reported by write() */
+    private var errorOccurred: Bool
+
     private var totalInputBytes: Int64 = 0
 
     private var totalOutputBytes: Int64 = 0
@@ -470,6 +466,7 @@ public class DecompressOutputStream <: OutputStream {
         this.outputStream = outputStream
         writeStarted = false
         closed = false
+        errorOccurred = false
     }
 
     /**
@@ -498,7 +495,13 @@ public class DecompressOutputStream <: OutputStream {
                     flushOutBuf()
                 }
                 var singleOutLen = min(outBuf.size - outBufCursor, MAX_BUFFER_LENGTH_OUT)
-                let produced = inflater.inflate(outBuf.slice(outBufCursor, singleOutLen), NoFlush)
+                var produced: Int64 = 0
+                try {
+                    produced = inflater.inflate(outBuf.slice(outBufCursor, singleOutLen), NoFlush)
+                } catch (e: ZlibException) {
+                    errorOccurred = true
+                    throw e
+                }
                 onOutputProduced(produced)
                 outBufCursor += produced
             }
@@ -532,7 +535,7 @@ public class DecompressOutputStream <: OutputStream {
             if (writeStarted) {
                 finishInflate()
             }
-            if (!inflater.isFinished()) {
+            if (!errorOccurred && !inflater.isFinished()) {
                 throw ZlibException("Unexpected end of compressed data.")
             }
         } finally {
