@@ -1272,12 +1272,9 @@ public class JsonObject <: JsonValue {
     }
     @Frozen
     public func containsKey(this @local?, key: String @local?): Bool {
-        for ((storedKey, _) in fields) {
-            if (storedKey == key) {
-                return true
-            }
-        }
-        false
+        // Hash lookup via HashMap.contains(this @local?, key: K @local?), same as the heap
+        // path above; a linear scan would make this O(n) per lookup.
+        fields.contains(key)
     }
 
     /**
@@ -1316,27 +1313,23 @@ public class JsonObject <: JsonValue {
     }
     @Frozen
     public exclave func get(this @local!, key: String @local?): Option<JsonValue> @local! {
-        for ((storedKey, value) in fields) {
-            if (storedKey == key) {
-                // Explicit `Some<T>(v)` construction loses the payload's dynamic type in a
-                // `@local!` context (CMP-3, see std/core/string.cj:560); wrap implicitly through
-                // a typed variable instead.
-                let localValue: JsonValue @local! = value
+        // Hash lookup via HashMap.get(this @local!, key: K @local?) -- O(1) like the heap
+        // path above. Match with a typed local binding: an explicit
+        // `Option<JsonValue>.Some(v) @local!` loses the payload's dynamic type in a
+        // `@local!` context (CMP-3, see std/core/string.cj:560).
+        match (fields.get(key)) {
+            case Some(found) =>
+                let localValue: JsonValue @local! = found
                 let result: Option<JsonValue> @local! = localValue
-                return result
-            }
+                result
+            case None => None
         }
-        None
     }
 
     @Frozen
     public exclave func get(this @local?, key: String @local?): Option<JsonValue> @local? {
-        for ((storedKey, value) in fields) {
-            if (storedKey == key) {
-                return Option<JsonValue>.Some(value) @local?
-            }
-        }
-        None
+        // Hash lookup; the `@local?` receiver selects HashMap.get(this @local?, key: K @local?).
+        fields.get(key)
     }
 
     /**
