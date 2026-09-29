@@ -41,7 +41,7 @@ sealed abstract class JsonValue <: ToString {
      */
     public func toString(): String
     public open func toString(this @local?): String @local! {
-        throw UnImplementedException("JsonValue.toString(this @local?) not implemented")
+        throw UnimplementedException("JsonValue.toString(this @local?) not implemented")
     }
 
     /**
@@ -55,7 +55,7 @@ sealed abstract class JsonValue <: ToString {
      */
     public func toJsonString(): String
     public open func toJsonString(this @local!): String @local! {
-        throw UnImplementedException("JsonValue.toJsonString(this @local!) not implemented")
+        throw UnimplementedException("JsonValue.toJsonString(this @local!) not implemented")
     }
 
     /**
@@ -67,7 +67,7 @@ sealed abstract class JsonValue <: ToString {
      */
     public func toStringWithoutEscaping(): String
     public open func toStringWithoutEscaping(this @local!): String @local! {
-        throw UnImplementedException("JsonValue.toStringWithoutEscaping(this @local!) not implemented")
+        throw UnimplementedException("JsonValue.toStringWithoutEscaping(this @local!) not implemented")
     }
 
     /**
@@ -79,7 +79,7 @@ sealed abstract class JsonValue <: ToString {
      */
     public func toJsonStringWithoutEscaping(): String
     public open func toJsonStringWithoutEscaping(this @local!): String @local! {
-        throw UnImplementedException("JsonValue.toJsonStringWithoutEscaping(this @local!) not implemented")
+        throw UnimplementedException("JsonValue.toJsonStringWithoutEscaping(this @local!) not implemented")
     }
 
     /**
@@ -116,7 +116,7 @@ sealed abstract class JsonValue <: ToString {
      */
     public func kind(): JsonKind
     public open func kind(this @local?): JsonKind {
-        throw UnImplementedException("JsonValue.kind(this @local?) not implemented")
+        throw UnimplementedException("JsonValue.kind(this @local?) not implemented")
     }
 
     /**
