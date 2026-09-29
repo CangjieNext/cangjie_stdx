@@ -321,51 +321,35 @@ public class SM4 <: BlockCipher {
                 }
                 var inLen = input.read(readbuff)
                 if (optMode == OperationMode.GCM) {
-                    var tag = Array<Byte>(tagSize, repeat: 0)
-                    var readbuffNext = Array<Byte>(SM4_BUFFER_SIZE, repeat: 0)
-                    var inLenNext = input.read(readbuffNext)
                     let decryptedData = ArrayList<Byte>()
-                    do {
-                        if (inLenNext >= tagSize) {
-                            var inBlockDe: CPointerHandle<Byte> = acquireArrayRawData(readbuff)
+                    // Keep the trailing tag in memory while decrypting preceding ciphertext.
+                    var pending = Array<Byte>()
+                    while (inLen > 0) {
+                        pending = pending.concat(readbuff[..inLen])
+                        if (pending.size > tagSize) {
+                            let cipherLen = pending.size - tagSize
+                            let cipherData = pending[..cipherLen]
                             outlenPtr.value.write(0)
+                            var inBlockTemp: CPointerHandle<Byte> = acquireArrayRawData(cipherData)
                             try {
-                                if (decryptUpdate(ctx, outBlock.pointer, outlenPtr.value, inBlockDe.pointer, inLen) != 1) {
+                                if (decryptUpdate(ctx, outBlock.pointer, outlenPtr.value, inBlockTemp.pointer,
+                                    cipherLen) != 1) {
                                     throw CryptoException("Decryption update failed.")
                                 }
                             } finally {
-                                releaseArrayRawData(inBlockDe)
+                                releaseArrayRawData(inBlockTemp)
                             }
                             if (outlenPtr.value.read() > 0) {
                                 decryptedData.add(all: writebuff[..Int64(outlenPtr.value.read())])
                             }
-                        } else {
-                            var readbuffTemp = Array<Byte>()
-                            readbuffNext = readbuff[(inLen - (tagSize - inLenNext))..inLen].concat(
-                                readbuffNext[..inLenNext])
-                            readbuffTemp = readbuff[..(inLen - (tagSize - inLenNext))]
-                            if (readbuffTemp.size != 0) {
-                                outlenPtr.value.write(0)
-                                var inBlockTemp: CPointerHandle<Byte> = acquireArrayRawData(readbuffTemp)
-                                try {
-                                    if (decryptUpdate(ctx, outBlock.pointer, outlenPtr.value, inBlockTemp.pointer,
-                                        readbuffTemp.size) != 1) {
-                                        throw CryptoException("Decryption update failed.")
-                                    }
-                                } finally {
-                                    releaseArrayRawData(inBlockTemp)
-                                }
-                                if (outlenPtr.value.read() > 0) {
-                                    decryptedData.add(all: writebuff[..Int64(outlenPtr.value.read())])
-                                }
-                            }
-                            tag = readbuffNext.clone()
-                            break
+                            pending = pending[cipherLen..]
                         }
-                        readbuff = readbuffNext.clone()
-                        inLen = inLenNext
-                        inLenNext = input.read(readbuffNext)
-                    } while (inLenNext >= 0)
+                        inLen = input.read(readbuff)
+                    }
+                    if (pending.size < tagSize) {
+                        throw CryptoException("Decrypt failed: input is shorter than GCM tag.")
+                    }
+                    let tag = pending[..tagSize]
                     var tagM: CPointerHandle<Byte> = acquireArrayRawData(tag)
                     try {
                         if (cipherCtx(ctx, AEAD_SET_TAG, Int32(tagSize), tagM.pointer) != 1) {
