@@ -13,7 +13,12 @@ if(NOT DEFINED ENV{CANGJIE_HOME} OR "$ENV{CANGJIE_HOME}" STREQUAL "")
 endif()
 
 set(CANGJIE_FLATBUFFERS_DIR "$ENV{CANGJIE_HOME}/third_party/flatbuffers")
-set(CANGJIE_FLATBUFFERS_FLATC "${CANGJIE_FLATBUFFERS_DIR}/bin/flatc")
+# flatc runs on the build host, so the host platform decides the executable name.
+if(CMAKE_HOST_WIN32)
+    set(CANGJIE_FLATBUFFERS_FLATC "${CANGJIE_FLATBUFFERS_DIR}/bin/flatc.exe")
+else()
+    set(CANGJIE_FLATBUFFERS_FLATC "${CANGJIE_FLATBUFFERS_DIR}/bin/flatc")
+endif()
 set(CANGJIE_FLATBUFFERS_INCLUDE_DIR "${CANGJIE_FLATBUFFERS_DIR}/include")
 set(CANGJIE_FLATBUFFERS_CANGJIE_DIR "${CANGJIE_FLATBUFFERS_DIR}/cangjie")
 set(CANGJIE_CHIR_FORMAT_FBS "$ENV{CANGJIE_HOME}/schema/StdxChirFormat.fbs")
@@ -40,9 +45,13 @@ message(STATUS "Cangjie flatbuffers flatc: ${CANGJIE_FLATBUFFERS_FLATC}")
 #       TARGET <custom_target_name>
 #       SCHEMA <path/to/Foo.fbs>
 #       OUTPUT_DIR <dir for Foo_generated.cj>
-#       [OUTPUT_VAR <var>])   # optional: set var to the generated .cj path
+#       [OUTPUT_VAR <var>]    # optional: set var to the generated .cj path
+#       [PACKAGE <name>])     # optional: Cangjie package overriding the .fbs namespace
+#                             # PACKAGE must not contain a semicolon: it is forwarded through an
+#                             # unquoted list expansion, and ';' would split it into extra flatc
+#                             # arguments. Spaces are safe (kept inside one list element).
 function(cangjie_add_flatbuffers_cj_outputs)
-    set(one_value_args TARGET SCHEMA OUTPUT_DIR OUTPUT_VAR)
+    set(one_value_args TARGET SCHEMA OUTPUT_DIR OUTPUT_VAR PACKAGE)
     cmake_parse_arguments(FB "" "${one_value_args}" "" ${ARGN})
     if(NOT FB_TARGET OR NOT FB_SCHEMA OR NOT FB_OUTPUT_DIR)
         message(FATAL_ERROR "cangjie_add_flatbuffers_cj_outputs requires TARGET, SCHEMA, OUTPUT_DIR")
@@ -55,9 +64,16 @@ function(cangjie_add_flatbuffers_cj_outputs)
     set(_fb_gen_cj "${FB_OUTPUT_DIR}/${_fb_name}_generated.cj")
     set(_fb_tmp_cj "${CMAKE_BINARY_DIR}/${_fb_name}_generated.cj")
 
+    # Generated into a package that already exists, so the .fbs namespace must not be
+    # used as-is; the caller passes the real package name.
+    set(_fb_package_arg)
+    if(FB_PACKAGE)
+        set(_fb_package_arg --cangjie-package "${FB_PACKAGE}")
+    endif()
+
     add_custom_command(
         OUTPUT "${_fb_gen_cj}"
-        COMMAND "${CANGJIE_FLATBUFFERS_FLATC}" --no-warnings --cangjie
+        COMMAND "${CANGJIE_FLATBUFFERS_FLATC}" --no-warnings --cangjie ${_fb_package_arg}
                 -o "${CMAKE_BINARY_DIR}" "${FB_SCHEMA}"
         COMMAND ${CMAKE_COMMAND} -E copy_if_different "${_fb_tmp_cj}" "${_fb_gen_cj}"
         DEPENDS "${CANGJIE_FLATBUFFERS_FLATC}" "${FB_SCHEMA}"

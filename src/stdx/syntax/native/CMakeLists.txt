@@ -38,7 +38,7 @@ set(SYNTAX_GENERATED_CJ "${SYNTAX_CJ_DIR}/${FILENAME}_generated.cj")
 set(FLATC_CJ_TMP "${CMAKE_BINARY_DIR}/${FILENAME}_generated.cj")
 add_custom_command(
     OUTPUT ${SYNTAX_GENERATED_CJ}
-    COMMAND ${FLATC_EXECUTABLE} --no-warnings --cangjie -o "${CMAKE_BINARY_DIR}" ${SCHEMA_SRC}
+    COMMAND ${FLATC_EXECUTABLE} --no-warnings --cangjie --cangjie-package stdx.syntax -o "${CMAKE_BINARY_DIR}" ${SCHEMA_SRC}
     COMMAND ${CMAKE_COMMAND} -E copy_if_different ${FLATC_CJ_TMP} ${SYNTAX_GENERATED_CJ}
     DEPENDS ${FLATC_EXECUTABLE} ${SCHEMA_SRC}
     COMMENT "generate and install StdxSyntaxFormat_generated.cj"
