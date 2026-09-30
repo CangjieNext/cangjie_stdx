@@ -169,17 +169,19 @@ func generateFlatbuffersCjSources(): Int64 {
     }
 
     // Local schema for stdx.syntax; chir schema is shipped with the compiler SDK.
-    let jobs: Array<(String, String)> = [
-        ("schema/StdxSyntaxFormat.fbs", "src/stdx/syntax"),
-        (home + "/schema/StdxChirFormat.fbs", "src/stdx/chir")
+    // The package name is passed explicitly: both schemas are generated into
+    // packages that already exist, so the .fbs namespace must not be used as-is.
+    let jobs: Array<(String, String, String)> = [
+        ("schema/StdxSyntaxFormat.fbs", "src/stdx/syntax", "stdx.syntax"),
+        (home + "/schema/StdxChirFormat.fbs", "src/stdx/chir", "stdx.chir")
     ]
-    for ((schema, outDir) in jobs) {
+    for ((schema, outDir, packageName) in jobs) {
         if (!exists(Path(schema))) {
             println("Error: flatbuffers schema not found: ${schema}")
             return 1
         }
         println("generating flatbuffers Cangjie sources from ${schema} ...")
-        let code = execute(flatc, "--no-warnings", "--cangjie", "-o", outDir, schema)
+        let code = execute(flatc, "--no-warnings", "--cangjie", "--cangjie-package", packageName, "-o", outDir, schema)
         if (code != 0) {
             println("Error: flatc failed for ${schema} (exit ${code})")
             return code
