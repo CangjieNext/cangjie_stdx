@@ -15,6 +15,7 @@ if(NOT CANGJIE_CJPM_BUILD_TYPE)
         TARGET CHIR_FLATC_OUTPUTS
         SCHEMA "${CANGJIE_CHIR_FORMAT_FBS}"
         OUTPUT_DIR "${CMAKE_CURRENT_SOURCE_DIR}"
+        PACKAGE "stdx.chir"
         OUTPUT_VAR _chir_generated_cj)
 
     set(_chir_flatbuffer_sources StdxChirFormat_generated.cj)
