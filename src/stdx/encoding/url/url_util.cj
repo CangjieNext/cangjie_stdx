@@ -493,10 +493,10 @@ func innerParseIPv6(s: String, src: String, begin: Int64, e: ?Int64) {
         match (s[offset]) {
             case ':' => offset += 1
             case '.' =>
-                if (ellipsis.isNone() && i != 12) {
+                if (ellipsis.isNone() && i != 14) {
                     throw UrlSyntaxException(src, "Embedded IPv4 address must replace the final 2 fields.", s[offset..])
                 }
-                if (i + 4 > 16) {
+                if (i + 2 > 16) {
                     throw UrlSyntaxException(src, "Too many hex fields to fit an embedded IPv4.", s[offset..])
                 }
                 var (arr, err) = parseIPv4(s[(offset - bytes_read)..])
