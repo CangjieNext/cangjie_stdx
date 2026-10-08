@@ -702,8 +702,8 @@ class ConnNode <: BodyProviderConn {
             if (this.shouldClose.load() && !isUpgraded && request.method != "CONNECT") {
                 match (response.body) {
                     case body: HttpNormalBodyProvider =>
+                        // 正文按需读取，连接由 provider 读尽后归还，此处不能提前关闭
                         response._body = HttpNormalBody(body)
-                        h1Engine.closeConnInUse(this)
                     case _: HttpEmptyBody => h1Engine.closeConnInUse(this)
                     case _ => ()
                 }

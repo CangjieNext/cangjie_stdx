@@ -108,21 +108,10 @@ class HttpBufferedBody <: SeekableInputStream {
 }
 
 class HttpNormalBody <: SeekableInputStream {
-    private let data: Array<Byte>
     private let contentLength: Int64
-    private var remainingLength: Int64
 
     HttpNormalBody(let body: HttpNormalBodyProvider) {
         contentLength = body.length
-        remainingLength = contentLength
-        let buf = Array<Byte>(READ_CHUNK_SIZE, repeat: 0)
-        let chunks = ArrayList<Byte>()
-        var len = body.read(buf)
-        while (len != 0) {
-            chunks.add(all: buf[..len])
-            len = body.read(buf)
-        }
-        data = chunks.toArray()
     }
 
     public prop length: Int64 {
@@ -132,17 +121,15 @@ class HttpNormalBody <: SeekableInputStream {
     }
 
     public func read(buf: Array<Byte>): Int64 {
-        if (remainingLength == 0) {
-            return 0
-        }
-        let copyLen = min(buf.size, remainingLength)
-        data.copyTo(buf, contentLength - remainingLength, 0, copyLen)
-        remainingLength -= copyLen
-        return copyLen
+        body.read(buf)
     }
 
     public func seek(_: SeekPosition): Int64 {
         0
+    }
+
+    public func close(): Unit {
+        body.close()
     }
 }
 
