@@ -139,6 +139,12 @@ class HttpNormalBody <: SeekableInputStream {
     public func seek(_: SeekPosition): Int64 {
         0
     }
+
+    // 转发给 provider：resp.close() 需要能取消读超时 timer 并关闭连接，
+    // 否则本类持有的活动连接与已武装的 timer 无人回收。
+    public func close(): Unit {
+        body.close()
+    }
 }
 
 class HttpNormalBodyProvider <: SeekableInputStream & Resource {
