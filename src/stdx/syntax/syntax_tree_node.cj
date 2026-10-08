@@ -41,6 +41,8 @@ sealed abstract class SyntaxTreeNode <: ToString & ToTokens & Hashable & Equatab
 
     let commentsPropInfo: Array<PropInfo>
 
+    private var leadingComments: Array<Comment> = Array<Comment>()
+
     /**
      * @brief Returns a string representation of the node.
      *
@@ -218,6 +220,10 @@ sealed abstract class SyntaxTreeNode <: ToString & ToTokens & Hashable & Equatab
         elements.toArray()
     }
 
+    func setLeadingComments(comments: Array<Comment>) {
+        leadingComments = comments
+    }
+
     /**
      * @brief The comments array of the SyntaxTreeNode.
      *
@@ -226,6 +232,7 @@ sealed abstract class SyntaxTreeNode <: ToString & ToTokens & Hashable & Equatab
     public prop comments: Array<Comment> {
         get() {
             let cmts = ArrayList<Comment>()
+            cmts.add(all: leadingComments)
 
             for (propInfo in commentsPropInfo) {
                 let curNode = (nodeImpl as NonTerminal).getOrThrow().children[propInfo.index]
@@ -684,9 +691,11 @@ class EnumBodyPosInfos {
 
 class BodyPropInfos {
     let memberDeclsPropInfo: Array<PropInfo>
+    let memberLeadingCommentsPropInfo: Array<Array<PropInfo>>
 
-    init(memberDeclsPropInfo: Array<PropInfo>) {
+    init(memberDeclsPropInfo: Array<PropInfo>, memberLeadingCommentsPropInfo: Array<Array<PropInfo>>) {
         this.memberDeclsPropInfo = memberDeclsPropInfo
+        this.memberLeadingCommentsPropInfo = memberLeadingCommentsPropInfo
     }
 }
 
@@ -754,6 +763,24 @@ public class Body <: SyntaxTreeNode {
         this.enumBodyPosInfos = redNode.enumBodyPosInfos
     }
 
+    func buildMemberLeadingComments(index: Int64, parent: SyntaxTreeNode): Array<Comment> {
+        let cmts = ArrayList<Comment>()
+        if (index < propInfos.memberLeadingCommentsPropInfo.size) {
+            for (propInfo in propInfos.memberLeadingCommentsPropInfo[index]) {
+                let curNode = (nodeImpl as NonTerminal).getOrThrow().children[propInfo.index]
+                let offset = propInfo.offset
+                let stPos = CodePosition(nodePos.beginLine, nodePos.beginColumn,
+                    FileInfos(nodePos.fileName, nodePos.filePath))
+                let commentGroupList = transCommentGroupList((curNode as NonTerminal).getOrThrow(), stPos + offset,
+                    parent)
+                for (commentGroup in commentGroupList) {
+                    cmts.add(all: commentGroup.elements)
+                }
+            }
+        }
+        cmts.toArray()
+    }
+
     /**
      * @brief The array of member declarations in the body.
      *
@@ -762,10 +789,16 @@ public class Body <: SyntaxTreeNode {
     public prop memberDecls: Array<Decl> {
         get() {
             let decls = ArrayList<Decl>()
-            for (propInfo in propInfos.memberDeclsPropInfo) {
+            for (i in 0..propInfos.memberDeclsPropInfo.size) {
+                let propInfo = propInfos.memberDeclsPropInfo[i]
                 let curNode = (nodeImpl as NonTerminal).getOrThrow().children[propInfo.index]
                 let offset = propInfo.offset
-                decls.add(cast<Decl>(SyntaxNodeImplTranslator.translate(curNode, startPos + offset, this)).getOrThrow())
+                let decl = cast<Decl>(SyntaxNodeImplTranslator.translate(curNode, startPos + offset, this)).getOrThrow()
+                let leadingComments = buildMemberLeadingComments(i, decl)
+                if (leadingComments.size > 0) {
+                    decl.setLeadingComments(leadingComments)
+                }
+                decls.add(decl)
             }
             decls.toArray()
         }

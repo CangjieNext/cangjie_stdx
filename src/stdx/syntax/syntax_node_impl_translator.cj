@@ -1357,6 +1357,7 @@ class SyntaxNodeImplTranslator {
 
     private func transBody(node: NonTerminal, startPos: CodePosition, parent: ?SyntaxTreeNode): Body {
         var memberDeclsPropInfo = ArrayList<PropInfo>()
+        let memberLeadingCommentsPropInfo = ArrayList<Array<PropInfo>>()
         let bitOrsPos = ArrayList<CodePosition>()
         var ellipsisPos: ?CodePosition = None
         let lp = LocalParser(node.children)
@@ -1367,18 +1368,31 @@ class SyntaxNodeImplTranslator {
         let predictDecl = {
             kind: SyntaxNodeKind => kind.isDecl()
         }
+        // Comments located before a member decl prefixed by '|' (e.g. the doc comment of
+        // an enum constructor written as '| Ctor') belong to that member instead of the body.
+        var commentMark = lp.commentsCount()
+        var bitOrBeforeMember = false
         if (let Some(v) <- lp.lookAndConsume(SyntaxNodeKind.BitOrToken)) {
             bitOrsPos.add(startPos + lp.offset)
             lp.offset.move(v.offset)
+            bitOrBeforeMember = true
         }
         while (lp.look(predictDecl)) {
             let declNode = lp.consume()
             memberDeclsPropInfo.add(PropInfo(lp.cur - 1, lp.offset))
+            if (bitOrBeforeMember) {
+                memberLeadingCommentsPropInfo.add(lp.takeCommentsFrom(commentMark))
+            } else {
+                memberLeadingCommentsPropInfo.add(Array<PropInfo>())
+            }
+            commentMark = lp.commentsCount()
+            bitOrBeforeMember = false
             lp.offset.move(declNode?.offset)
 
             if (let Some(v) <- lp.lookAndConsume(SyntaxNodeKind.BitOrToken)) {
                 bitOrsPos.add(startPos + lp.offset)
                 lp.offset.move(v.offset)
+                bitOrBeforeMember = true
             }
             if (let Some(v) <- lp.lookAndConsume(SyntaxNodeKind.EllipsisToken)) {
                 ellipsisPos = startPos + lp.offset
@@ -1390,7 +1404,7 @@ class SyntaxNodeImplTranslator {
         let rCurlPos = startPos + lp.offset
         lp.offset.move(rCurlNode?.offset)
 
-        let propInfos = BodyPropInfos(memberDeclsPropInfo.toArray())
+        let propInfos = BodyPropInfos(memberDeclsPropInfo.toArray(), memberLeadingCommentsPropInfo.toArray())
         let enumBodyPosInfos = EnumBodyPosInfos(bitOrsPos.toArray(), ellipsisPos)
         let posInfos = BodyPosInfos(lCurlPos, rCurlPos)
         lp.consumeToEnd()
@@ -3903,6 +3917,23 @@ class LocalParser {
                 break
             }
         }
+    }
+
+    func commentsCount(): Int64 {
+        commentGroupListPropInfos.size
+    }
+
+    // Take out the comment PropInfos collected after `mark`. They are the comments
+    // located before the member decl about to be consumed and should be attached
+    // to that member instead of the enclosing node.
+    func takeCommentsFrom(mark: Int64): Array<PropInfo> {
+        let total = commentGroupListPropInfos.size
+        if (total <= mark) {
+            return Array<PropInfo>()
+        }
+        let all = commentGroupListPropInfos.toArray()
+        commentGroupListPropInfos.remove(mark..total)
+        all[mark..total]
     }
 
     func consumeToEnd() {
