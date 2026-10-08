@@ -158,7 +158,7 @@ class Stream {
                 "Payload length of data frame exceeds window on stream '${streamId}'.")
         }
 
-        receivedBodySize += frame.data.size
+        receivedBodySize += frame.size
         if (reqContentLength >= 0) {
             if (receivedBodySize > reqContentLength) {
                 throw HttpStreamException(ProtocolError, "Body size exceeds content-length '${reqContentLength}'.")
