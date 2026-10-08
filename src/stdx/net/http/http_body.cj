@@ -108,21 +108,22 @@ class HttpBufferedBody <: SeekableInputStream {
 }
 
 class HttpNormalBody <: SeekableInputStream {
-    private let data: Array<Byte>
+    // 响应体按需从连接读取，不再在构造时把整个 body 收进内存。
+    //
+    // 原先的实现在构造里读完整个响应体并缓存在 `Array<Byte>` 中，内存占用与响应体大小
+    // 成正比：接收大响应（大文件、大制品）时直接顶到堆上限并抛 OutOfMemoryError，
+    // 使"协议允许的报文体积"无法兑现。而缓存对调用方没有任何语义价值 —— 本类继承
+    // SeekableInputStream，但 `seek` 是空实现（不移动读位置），调用方无法回退读取，
+    // 因此"先收全再交付"只带来内存开销。
+    //
+    // 底层 `HttpNormalBodyProvider.read` 本来就是按需从连接分块读取的，这里直接透传即可；
+    // 连接归还、超时取消、EOF 判定仍由 provider 负责，语义不变。
+    private let body: HttpNormalBodyProvider
     private let contentLength: Int64
-    private var remainingLength: Int64
 
     HttpNormalBody(let body: HttpNormalBodyProvider) {
-        contentLength = body.length
-        remainingLength = contentLength
-        let buf = Array<Byte>(READ_CHUNK_SIZE, repeat: 0)
-        let chunks = ArrayList<Byte>()
-        var len = body.read(buf)
-        while (len != 0) {
-            chunks.add(all: buf[..len])
-            len = body.read(buf)
-        }
-        data = chunks.toArray()
+        this.body = body
+        this.contentLength = body.length
     }
 
     public prop length: Int64 {
@@ -132,17 +133,17 @@ class HttpNormalBody <: SeekableInputStream {
     }
 
     public func read(buf: Array<Byte>): Int64 {
-        if (remainingLength == 0) {
-            return 0
-        }
-        let copyLen = min(buf.size, remainingLength)
-        data.copyTo(buf, contentLength - remainingLength, 0, copyLen)
-        remainingLength -= copyLen
-        return copyLen
+        body.read(buf)
     }
 
     public func seek(_: SeekPosition): Int64 {
         0
+    }
+
+    // 转发给 provider：resp.close() 需要能取消读超时 timer 并关闭连接，
+    // 否则本类持有的活动连接与已武装的 timer 无人回收。
+    public func close(): Unit {
+        body.close()
     }
 }
 
