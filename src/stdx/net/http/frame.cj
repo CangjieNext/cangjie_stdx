@@ -262,19 +262,28 @@ class DataFrame <: Frame {
 
     prop size: Int64 {
         get() {
-            Int64(payloadLen) - Int64(padLen)
+            var dataSize = Int64(payloadLen) - Int64(padLen)
+            if (padded) {
+                dataSize -= 1
+            }
+            dataSize
         }
     }
 
     prop data: Array<Byte> {
         get() {
-            payloadWrapper.data
+            return if (padded) {
+                payloadWrapper.data[1..(Int64(payloadLen) - Int64(padLen))]
+            } else {
+                payloadWrapper.data[..Int64(payloadLen)]
+            }
         }
     }
 
     public func writeTo(conn: BufferedWriter): Unit {
         writeHead(conn, Data, streamId, flags, payloadLen)
-        conn.write(data[..Int64(payloadLen)])
+        // data excludes padding for consumers, but the complete payload must be sent on the wire.
+        conn.write(payloadWrapper.data[..Int64(payloadLen)])
         conn.flush()
     }
 
