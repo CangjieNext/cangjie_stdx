@@ -1163,7 +1163,12 @@ public class JsonReader {
             if (!hasExpDigit) {
                 throw IllegalStateException("Invalid number format.")
             }
-            if (expOverflow || expMag > MAXABSVAL_I64) {
+            // `>=` (not `>`): a magnitude of exactly 2^63 must throw as well —
+            // for a positive sign Int64(expMag) would wrap to Int64.Min under
+            // @OverflowWrapping and silently turn the overflow into an
+            // underflow to 0.0; for a negative sign this restores the same
+            // OverflowException the pre-RFC8259 readInt-based path reported.
+            if (expOverflow || expMag >= MAXABSVAL_I64) {
                 throw OverflowException("Overflow while reading JSON number.")
             }
             checkNumberBoundary()
