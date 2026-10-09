@@ -109,6 +109,9 @@ class WriteBuffer {
     }
 
     func append(fl: Float64): WriteBuffer {
+        if (isJsonFloatInfinite(fl)) {
+            throw JsonException("Failed to serialize JSON float.")
+        }
         unsafe {
             let p: CPointer<UInt8> = CJ_CORE_Float64ToCPointer(fl)
             if (p.isNull()) {

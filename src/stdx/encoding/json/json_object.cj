@@ -15,6 +15,13 @@ package stdx.encoding.json
 
 import std.collection.*
 
+func jsonFloatToString(value: Float64): String {
+    if (isJsonFloatInfinite(value)) {
+        throw JsonException("Failed to serialize JSON float.")
+    }
+    return value.toString()
+}
+
 /**
  * JsonNull class used for encapsulate JSON data: null.
  */
@@ -243,7 +250,7 @@ public class JsonFloat <: JsonValue {
      * @since 0.17.4
      */
     public func toString(): String {
-        return value.toString()
+        return jsonFloatToString(value)
     }
 
     /**

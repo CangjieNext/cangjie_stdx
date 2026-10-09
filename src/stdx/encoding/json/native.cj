@@ -113,6 +113,14 @@ class JsonParser {
     }
 }
 
+// NaN and Infinity are not valid JSON number literals (RFC 8259); serializing
+// them verbatim would produce output that no JSON parser can read back.
+// Call sites keep their own exception type and message (read/parse side and
+// write side deliberately differ).
+func isJsonFloatInfinite(value: Float64): Bool {
+    return value.isNaN() || value.isInf()
+}
+
 func skipWhiteSpace(parser: JsonParser): Unit {
     var tmp = parser.data[parser.offset]
     while (tmp == b' ' || tmp == b'\t' || tmp == b'\n' || tmp == b'\r') {
@@ -321,7 +329,11 @@ func parseJsonNumber(parser: JsonParser): JsonValue {
     rightIndex = parser.offset
     let numStr = unsafe { String.fromUtf8Unchecked(parser.data[leftIndex..rightIndex]) }
     if (isFloat) {
-        return JsonFloat(Float64.parse(numStr))
+        let value = Float64.parse(numStr)
+        if (isJsonFloatInfinite(value)) {
+            throw JsonException("Invalid float detected.")
+        }
+        return JsonFloat(value)
     }
     return JsonInt(Int64.parse(numStr))
 }

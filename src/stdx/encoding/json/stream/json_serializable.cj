@@ -96,6 +96,9 @@ extend UIntNative <: JsonSerializable {
 extend Float64 <: JsonSerializable {
     @OverflowWrapping
     public func toJson(w: JsonWriter): Unit {
+        if (isJsonFloatInfinite(this)) {
+            throw IllegalStateException("Failed to serialize JSON float.")
+        }
         w.beforeValue()
         unsafe {
             let dest = acquireArrayRawData(w.buffer)
