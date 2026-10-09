@@ -110,6 +110,11 @@ class WriteBuffer {
     }
 
     func append(fl: Float64): WriteBuffer {
+        // NaN and Infinity are not valid JSON number literals (RFC 8259);
+        // emitting them verbatim would produce unparseable output.
+        if (fl.isNaN() || fl.isInf()) {
+            throw JsonException("Failed to serialize JSON float.")
+        }
         unsafe {
             let p: CPointer<UInt8> = CJ_CORE_Float64ToCPointer(fl)
             if (p.isNull()) {
