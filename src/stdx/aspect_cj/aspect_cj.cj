@@ -373,6 +373,9 @@ protected func matchTypePattern(pattern: String, value: String): Bool {
     if (pattern == "*") {
         return true
     }
+    if (pattern.startsWith("(") || value.startsWith("(")) {
+        return matchFunctionTypePattern(pattern, value)
+    }
     // A non-parameterized name retains the legacy behaviour of matching the
     // generic type constructor, even when another parameter in the same
     // signature requests detailed type-argument matching.
