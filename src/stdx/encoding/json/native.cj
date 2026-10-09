@@ -148,11 +148,12 @@ func isLowSurrogate(num: UInt32): Bool {
     return num >= 0xDC00u32 && num <= 0xDFFFu32 // UTF-16 low-surrogate range: DC00..DFFF.
 }
 
-func ensureFiniteJsonFloat(value: Float64): Float64 {
-    if (value.isNaN() || value.isInf()) {
-        throw JsonException("Invalid float detected.")
-    }
-    return value
+// NaN and Infinity are not valid JSON number literals (RFC 8259); serializing
+// them verbatim would produce output that no JSON parser can read back.
+// Call sites keep their own exception type and message (read/parse side and
+// write side deliberately differ).
+func isJsonFloatInfinite(value: Float64): Bool {
+    return value.isNaN() || value.isInf()
 }
 
 func skipWhiteSpace(parser: JsonParser): Unit {
@@ -436,7 +437,10 @@ func parseJsonNumberSlow(parser: JsonParser): JsonValue {
             let ptr = acquireArrayRawData(parser.data)
             let value = CJ_JSON_ParseFloat64(ptr.pointer, leftIndex, rightIndex)
             releaseArrayRawData(ptr)
-            return JsonFloat(ensureFiniteJsonFloat(value))
+            if (isJsonFloatInfinite(value)) {
+                throw JsonException("Invalid float detected.")
+            }
+            return JsonFloat(value)
         }
     }
     let numStr = unsafe { String.fromUtf8Unchecked(parser.data[leftIndex..rightIndex]) }
