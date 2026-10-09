@@ -16,13 +16,19 @@ import stdx.aspect_cj.*
 import stdx.chir.*
 import stdx.plugin.*
 
+private class MetadataReadState {
+    var success: Bool = true
+}
+
 @CHIRPlugin
 class WeaveAspects {
     var processInfos = ArrayList<OutputInfo>()
     var pkgInitFuncMangledNames = HashMap<String, String>()
 
     public override func run(pkg: Package): Bool {
-        readAnnoInfo(pkg.name)
+        if (!readAnnoInfo(pkg.name)) {
+            return false
+        }
         callUpstreamPkgInitFunc(pkg)
         for (f in pkg.functions) {
             if (f.body.isNone()) {
@@ -39,14 +45,19 @@ class WeaveAspects {
     }
 
     private func weaveFuncBody(pkg: Package, f: Function, pi: OutputInfo): Unit {
-        let (args, success) = prepareArguments(f, pi)
+        let (args, success) = prepareArguments(pkg, f, pi)
         if (!success) {
             return
         }
         let callee = getCallee(pkg, pi, f, args)
         let funcCallCxt = FuncCallContext(args, Array<Type>(), computeThisTypeOfCallee(callee, args))
         if (pi.annoClassName == INSERT_AT_ENTRY_ANNO_CLASS_NAME) {
-            let builder = CHIRBuilder(InsertPosition.AtStart(f.body.getOrThrow().entryBlock))
+            let insertPosition = if (pi.insert.usesPointcutArgsArray) {
+                InsertPosition.After((args[args.size - 1] as LocalVar).getOrThrow().expr)
+            } else {
+                InsertPosition.AtStart(f.body.getOrThrow().entryBlock)
+            }
+            let builder = CHIRBuilder(insertPosition)
             builder.createApply(callee, funcCallCxt)
         } else if (pi.annoClassName == INSERT_AT_EXIT_ANNO_CLASS_NAME) {
             let visitor = InsertAtExitVisitor(callee, funcCallCxt)
@@ -101,7 +112,19 @@ class WeaveAspects {
         println(message)
     }
 
-    private func prepareArguments(f: Function, pi: OutputInfo): (Array<Value>, Bool) {
+    private func readRequiredMetadataLine<T>(reader: StringReader<T>, fieldName: String, fileName: String): String
+        where T <: InputStream {
+        if (let Some(value) <- reader.readln()) {
+            return value
+        }
+        printError("Missing `${fieldName}` in aspect metadata `${fileName}`.")
+        throw IllegalArgumentException("Missing aspect metadata field: ${fieldName}")
+    }
+
+    private func prepareArguments(pkg: Package, f: Function, pi: OutputInfo): (Array<Value>, Bool) {
+        if (pi.insert.usesPointcutArgsArray) {
+            return preparePointcutArgsArray(pkg, f, pi)
+        }
         var expectedParamsNum = pi.insert.paramsNum
         if (isReplaceBodyAnno(pi.annoClassName)) {
             expectedParamsNum -= 1
@@ -119,6 +142,75 @@ class WeaveAspects {
         if (isReplaceBodyAnno(pi.annoClassName)) {
             args.add(f)
         }
+        return (args.toArray(), true)
+    }
+
+    private func preparePointcutArgsArray(pkg: Package, f: Function, pi: OutputInfo): (Array<Value>, Bool) {
+        let anyDef = pkg.getSpecifiedClassDef("std.core", "Any")
+        let arrayDef = pkg.getSpecifiedStructDef("std.core", "Array")
+        if (anyDef.isNone() || arrayDef.isNone()) {
+            printError("Failed to prepare Array<Any> for ${f.srcCodeName}: required std.core definitions are unavailable.")
+            return (Array<Value>(), false)
+        }
+        let anyType = RefType.get(anyDef.getOrThrow().ty)
+        let arrayType = StructType.get(arrayDef.getOrThrow(), [anyType])
+        let entry = f.body.getOrThrow().entryBlock
+        let builder = CHIRBuilder(InsertPosition.AtStart(entry))
+        var params = f.parameters
+        if (f.isInstanceMemberMethod()) {
+            (_, params) = params.splitAt(1)
+        }
+
+        let size = builder.createConstant(IntLiteral.get(IntType.getInt64(), UInt64(params.size)))
+        let rawArray = builder.createRawArrayAllocate(anyType, size.result)
+        var index: UInt64 = 0
+        for (param in params) {
+            var element: Value = param
+            let sourceType = param.ty
+            var sourceIsValueType = sourceType.isValueType()
+            if (let Some(refType) <- (sourceType as RefType)) {
+                sourceIsValueType = refType.baseType.isValueType()
+            }
+            if (sourceIsValueType) {
+                if (sourceType.isRefType()) {
+                    element = builder.createLoad(param).result
+                }
+                element = builder.createBox(element, anyType).result
+            }
+            builder.createStoreElementRef(element, rawArray.result, ArrayList<UInt64>([index]))
+            index++
+        }
+
+        let arrayRef = builder.createAllocate(arrayType)
+        let zero = builder.createConstant(IntLiteral.get(IntType.getInt64(), 0))
+        var arrayInit: ?Function = None
+        for (method in arrayDef.getOrThrow().methods) {
+            if (method.srcCodeName == "init" && method.parameters.size == 4) {
+                arrayInit = Some(method)
+                break
+            }
+        }
+        if (arrayInit.isNone()) {
+            printError("Failed to prepare Array<Any> for ${f.srcCodeName}: Array constructor is unavailable.")
+            return (Array<Value>(), false)
+        }
+        let arrayRefType = arrayRef.result.ty
+        let initContext = FuncCallContext(
+            [arrayRef.result, rawArray.result, zero.result, size.result],
+            Array<Type>(),
+            Some(arrayRefType))
+        builder.createApply(arrayInit.getOrThrow(), initContext)
+        let arrayValue = builder.createLoad(arrayRef.result).result
+
+        let args = ArrayList<Value>()
+        if (pi.insert.isMemberFunc && !pi.insert.isStatic) {
+            if (!f.isInstanceMemberMethod()) {
+                printError("Do not weave ${pi.insert.methodMangledName}, which is an instance advice, into a global or static function.")
+                return (Array<Value>(), false)
+            }
+            args.add(f.parameters[0])
+        }
+        args.add(arrayValue)
         return (args.toArray(), true)
     }
 
@@ -149,13 +241,13 @@ class WeaveAspects {
     }
 
     private func meets(f: Function, pi: OutputInfo): Bool {
-        if (pi.to.packageName != f.packageName) {
+        if (!matchQualifiedNamePattern(pi.to.packageName, f.packageName)) {
             return false
         }
         if (!outerTypeNameMeets(f, pi)) {
             return false
         }
-        if (pi.to.methodName != f.srcCodeName) {
+        if (!matchNamePattern(pi.to.methodName, f.srcCodeName)) {
             return false
         }
         if (pi.to.isStatic != f.isStatic()) {
@@ -167,14 +259,14 @@ class WeaveAspects {
         }
         let paramTypes = mapArrayTo(params, {param => param.ty})
         let funcTypeStr = FuncType.get(paramTypes, f.funcType.returnType).qualifiedName
-        if (pi.to.funcTypeStr != funcTypeStr) {
+        if (!matchFunctionTypePattern(pi.to.funcTypeStr, funcTypeStr)) {
             return false
         }
         return true
     }
 
     private func outerTypeNameMeets(f: Function, pi: OutputInfo): Bool {
-        if (getFuncOuterTypeName(f) == pi.to.className) {
+        if (matchNamePattern(pi.to.className, getFuncOuterTypeName(f))) {
             return true
         }
         if (let Some(outerType) <- f.outerType && pi.to.recursively) {
@@ -187,7 +279,7 @@ class WeaveAspects {
                 return false
             }
             for (superType in superTypes) {
-                if (superType.def.srcCodeName == pi.to.className) {
+                if (matchNamePattern(pi.to.className, superType.def.srcCodeName)) {
                     return true
                 }
             }
@@ -195,50 +287,84 @@ class WeaveAspects {
         return false
     }
 
-    private func readAnnoInfo(curPkgName: String): Unit {
+    private func readAnnoInfo(curPkgName: String): Bool {
+        let state = MetadataReadState()
         Directory.walk(
             Path("."),
             {
                 fileInfo =>
                 let fileName = fileInfo.name
-                let results = fileName.split(PACKAGE_NAME_CONNECTOR)
-                if (results.size != 2) {
-                    return true
-                }
-                if (results[1] != curPkgName + ANNO_INFO_FILE_SUFFIX) {
+                let exactSuffix = PACKAGE_NAME_CONNECTOR + curPkgName + ANNO_INFO_FILE_SUFFIX
+                let wildcardSuffix = PACKAGE_NAME_CONNECTOR + WILDCARD_ANNO_INFO_TARGET + ANNO_INFO_FILE_SUFFIX
+                if (!fileName.endsWith(exactSuffix) && !fileName.endsWith(wildcardSuffix)) {
                     return true
                 }
                 try (f = File(Path(fileName), OpenMode.Read)) {
                     let reader = StringReader(f)
-                    while (let Some(pkgName) <- reader.readln()) {
+                    let firstLine = reader.readln()
+                    if (firstLine.isNone()) {
+                        printError("Empty aspect metadata `${fileName}`.")
+                        state.success = false
+                        return false
+                    }
+                    let firstValue = firstLine.getOrThrow()
+                    let isVersion2 = firstValue == ANNO_INFO_VERSION_HEADER
+                    if (firstValue.startsWith("#aspect_cj_annoinfo_") && !isVersion2) {
+                        printError("Unsupported aspect metadata version `${firstValue}` in `${fileName}`.")
+                        state.success = false
+                        return false
+                    }
+                    var pendingPkgName: ?String = if (isVersion2) {
+                        reader.readln()
+                    } else {
+                        Some(firstValue)
+                    }
+                    while (let Some(pkgName) <- pendingPkgName) {
                         // Package init function mangled name
-                        let initFuncMangledName = reader.readln().getOrThrow()
+                        let initFuncMangledName = readRequiredMetadataLine(reader, "initFuncMangledName", fileName)
                         pkgInitFuncMangledNames.add(pkgName, initFuncMangledName)
                         // Anno class name
-                        let annoClassName = reader.readln().getOrThrow()
+                        let annoClassName = readRequiredMetadataLine(reader, "annoClassName", fileName)
                         // Insert
-                        let inPackageName = reader.readln().getOrThrow()
-                        let methodMangledName = reader.readln().getOrThrow()
-                        let paramsNum = Int64.parse(reader.readln().getOrThrow())
-                        let isMemberFunc = Bool.parse(reader.readln().getOrThrow())
-                        let inIsStatic = Bool.parse(reader.readln().getOrThrow())
-                        let insert = Insert(inPackageName, methodMangledName, paramsNum, isMemberFunc, inIsStatic)
+                        let inPackageName = readRequiredMetadataLine(reader, "insertPackageName", fileName)
+                        let methodMangledName = readRequiredMetadataLine(reader, "methodMangledName", fileName)
+                        let paramsNumText = readRequiredMetadataLine(reader, "paramsNum", fileName)
+                        let paramsNum = Int64.parse(paramsNumText)
+                        if (paramsNum < 0) {
+                            printError("Invalid `paramsNum` value `${paramsNumText}` in aspect metadata `${fileName}`.")
+                            throw IllegalArgumentException("Negative aspect metadata parameter count")
+                        }
+                        let isMemberFunc = Bool.parse(readRequiredMetadataLine(reader, "isMemberFunc", fileName))
+                        let inIsStatic = Bool.parse(readRequiredMetadataLine(reader, "insertIsStatic", fileName))
+                        let usesPointcutArgsArray = if (isVersion2) {
+                            Bool.parse(readRequiredMetadataLine(reader, "usesPointcutArgsArray", fileName))
+                        } else {
+                            false
+                        }
+                        let insert = Insert(inPackageName, methodMangledName, paramsNum,
+                            isMemberFunc, inIsStatic, usesPointcutArgsArray: usesPointcutArgsArray)
                         // To
-                        let toPackageName = reader.readln().getOrThrow()
-                        let className = reader.readln().getOrThrow()
-                        let methodName = reader.readln().getOrThrow()
-                        let funcTypeStr = reader.readln().getOrThrow()
-                        let toIsStatic = Bool.parse(reader.readln().getOrThrow())
-                        let recursively = Bool.parse(reader.readln().getOrThrow())
+                        let toPackageName = readRequiredMetadataLine(reader, "packageName", fileName)
+                        let className = readRequiredMetadataLine(reader, "className", fileName)
+                        let methodName = readRequiredMetadataLine(reader, "methodName", fileName)
+                        let funcTypeStr = readRequiredMetadataLine(reader, "funcTypeStr", fileName)
+                        let toIsStatic = Bool.parse(readRequiredMetadataLine(reader, "isStatic", fileName))
+                        let recursively = Bool.parse(readRequiredMetadataLine(reader, "recursive", fileName))
                         let to = To(toPackageName, className, methodName, funcTypeStr, toIsStatic, recursively)
                         // OutputInfo
                         let processInfo = OutputInfo(annoClassName, insert, to)
                         processInfos.add(processInfo)
+                        pendingPkgName = reader.readln()
                     }
-                } catch (_: Exception) {}
+                } catch (e: Exception) {
+                    printError("Invalid aspect metadata `${fileName}`: ${e.message}")
+                    state.success = false
+                    return false
+                }
                 return true
             }
         )
+        return state.success
     }
 }
 

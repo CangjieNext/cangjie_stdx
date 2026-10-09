@@ -95,7 +95,8 @@ class CollectAspects {
                 f.identifierWithoutPrefix,
                 f.parameters.size,
                 f.isMemberMethod(),
-                f.isStatic())
+                f.isStatic(),
+                usesPointcutArgsArray: usesPointcutArgsArray(f))
             let funcTypeStr = if (isInsert) {
                 anno.argValues[5]
             } else {
@@ -114,17 +115,25 @@ class CollectAspects {
     }
 
     private func writeAnnoInfoToFile(curPackage: Package, output: OutputInfo): Bool {
-        if (!isValidPackageName(output.to.packageName)) {
-            printError("Invalid package name '${output.to.packageName}': expected a non-empty valid Cangjie package name with valid segments and no path separators (/, \\, ..).")
+        if (!isValidPackageNamePattern(output.to.packageName)) {
+            printError("Invalid package name pattern '${output.to.packageName}'.")
             return false
         }
-        let fileName = curPackage.name + PACKAGE_NAME_CONNECTOR + output.to.packageName + ANNO_INFO_FILE_SUFFIX
+        let annoInfoTarget = if (output.to.packageName.contains("*")) {
+            WILDCARD_ANNO_INFO_TARGET
+        } else {
+            output.to.packageName
+        }
+        let fileName = curPackage.name + PACKAGE_NAME_CONNECTOR + annoInfoTarget + ANNO_INFO_FILE_SUFFIX
         let mode = if (annoInfoFilePaths.add(fileName)) {
             OpenMode.Write
         } else {
             OpenMode.Append
         }
         try (outFile = File(Path(fileName), mode)) {
+            if (mode == OpenMode.Write) {
+                outFile.write((ANNO_INFO_VERSION_HEADER + "\n").toArray())
+            }
             outFile.write((curPackage.name + "\n").toArray())
             let initFunc = curPackage.packageInitFunc.getOrThrow()
             outFile.write((initFunc.identifierWithoutPrefix + "\n").toArray())
@@ -134,6 +143,7 @@ class CollectAspects {
             outFile.write((output.insert.paramsNum.toString() + "\n").toArray())
             outFile.write((output.insert.isMemberFunc.toString() + "\n").toArray())
             outFile.write((output.insert.isStatic.toString() + "\n").toArray())
+            outFile.write((output.insert.usesPointcutArgsArray.toString() + "\n").toArray())
             outFile.write((output.to.packageName + "\n").toArray())
             outFile.write((output.to.className + "\n").toArray())
             outFile.write((output.to.methodName + "\n").toArray())
@@ -172,8 +182,8 @@ class CollectAspects {
     private func checkAnnotationArgs(f: Function, anno: CustomAnnoInstance): Bool {
         let argValues = anno.argValues
         let packageName = argValues[0]
-        if (!isValidPackageName(packageName)) {
-            printError("Function '${f.srcCodeName}' has an invalid package name '${packageName}': expected a non-empty valid Cangjie package name with valid segments and no path separators (/, \\, ..).")
+        if (!isValidPackageNamePattern(packageName)) {
+            printError("Function '${f.srcCodeName}' has an invalid package name pattern '${packageName}'.")
             return false
         }
         let className = argValues[1]
@@ -181,6 +191,10 @@ class CollectAspects {
         let isStatic = argValues[3]
         let isRecursive = argValues[4]
         if (f.isInstanceMemberMethod()) {
+            if (packageName.contains("*") || className.contains("*")) {
+                printError("${f.srcCodeName}: An instance advice requires exact packageName and className patterns because its `this` type is statically fixed.")
+                return false
+            }
             if (className.isEmpty() || isStatic == "true") {
                 printError("Instance member function '${f.srcCodeName}' cannot be woven into a global or static member function.")
                 return false
@@ -204,6 +218,18 @@ class CollectAspects {
         if (f.funcType.returnType != UnitType.get()) {
             printError("Function '${f.srcCodeName}' annotated with @InsertAtEntry/@InsertAtExit has return type '${f.funcType.returnType.qualifiedName}', expected Unit.")
             return false
+        }
+        if (!isValidFunctionTypePattern(wovenFuncTypeStr)) {
+            printError("${f.srcCodeName}: Invalid funcTypeStr pattern `${wovenFuncTypeStr}`.")
+            return false
+        }
+        let usesArgsArray = usesPointcutArgsArray(f)
+        if (wovenFuncTypeStr.contains("*") && !usesArgsArray) {
+            printError("${f.srcCodeName}: A wildcard funcTypeStr requires the Array<Any> advice-parameter mode.")
+            return false
+        }
+        if (usesArgsArray) {
+            return true
         }
         if (funcExplicitParamSize(f) == 0) {
             return true
@@ -279,42 +305,6 @@ class CollectAspects {
         return true
     }
 
-    private func isValidPackageName(name: String): Bool {
-        if (name.isEmpty()) {
-            return false
-        }
-        if (name.contains("/") || name.contains("\\") || name.contains("..")) {
-            return false
-        }
-        let segments = name.split(".", removeEmpty: false)
-        if (segments.isEmpty()) {
-            return false
-        }
-        for (segment in segments) {
-            if (!isValidPackageNameSegment(segment)) {
-                return false
-            }
-        }
-        return true
-    }
-
-    private func isValidPackageNameSegment(segment: String): Bool {
-        if (segment.isEmpty()) {
-            return false
-        }
-        var idx: Int64 = 0
-        for (c in segment) {
-            if (idx == 0) {
-                if (!c.isAsciiLetter() && UInt32(c) != UInt32(r'_')) {
-                    return false
-                }
-            } else if (!c.isAsciiNumberOrLetter() && UInt32(c) != UInt32(r'_') && UInt32(c) != UInt32(r'-')) {
-                return false
-            }
-            idx += 1
-        }
-        return true
-    }
 }
 
 private func getFuncOuterDeclaredOrExtendedDef(f: Function): ?CustomTypeDef {
@@ -338,4 +328,22 @@ private func funcExplicitParamSize(f: Function): Int64 {
         paramSize -= 1
     }
     return paramSize
+}
+private func isArrayOfAny(ty: Type): Bool {
+    let strippedType = ty.stripAllRefs()
+    if (let Some(arrayType) <- (strippedType as StructType)) {
+        let typeArgs = arrayType.typeArgs
+        return arrayType.structDef.packageName == "std.core" &&
+            arrayType.structDef.srcCodeName == "Array" &&
+            typeArgs.size == 1 && typeArgs[0].stripAllRefs().isAnyTypeInStd()
+    }
+    return false
+}
+
+private func usesPointcutArgsArray(f: Function): Bool {
+    var paramTypes = f.funcType.paramTypes
+    if (f.isInstanceMemberMethod()) {
+        (_, paramTypes) = paramTypes.splitAt(1)
+    }
+    return paramTypes.size == 1 && isArrayOfAny(paramTypes[0])
 }
