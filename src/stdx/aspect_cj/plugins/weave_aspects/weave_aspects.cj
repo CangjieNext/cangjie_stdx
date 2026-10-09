@@ -38,16 +38,18 @@ class WeaveAspects {
                 if (!meets(f, pi)) {
                     continue
                 }
-                weaveFuncBody(pkg, f, pi)
+                if (!weaveFuncBody(pkg, f, pi)) {
+                    return false
+                }
             }
         }
         return true
     }
 
-    private func weaveFuncBody(pkg: Package, f: Function, pi: OutputInfo): Unit {
+    private func weaveFuncBody(pkg: Package, f: Function, pi: OutputInfo): Bool {
         let (args, success) = prepareArguments(pkg, f, pi)
         if (!success) {
-            return
+            return false
         }
         let callee = getCallee(pkg, pi, f, args)
         let funcCallCxt = FuncCallContext(args, Array<Type>(), computeThisTypeOfCallee(callee, args))
@@ -80,7 +82,9 @@ class WeaveAspects {
             f.identifier = wrapperFunc.identifier + ".original"
         } else {
             printError("Unknown annotation class name '${pi.annoClassName}'.")
+            return false
         }
+        return true
     }
 
     private func computeThisTypeOfCallee(callee: Function, args: Array<Value>): ?Type {
@@ -318,6 +322,11 @@ class WeaveAspects {
                         reader.readln()
                     } else {
                         Some(firstValue)
+                    }
+                    if (isVersion2 && pendingPkgName.isNone()) {
+                        printError("Missing aspect record in metadata `${fileName}`.")
+                        state.success = false
+                        return false
                     }
                     while (let Some(pkgName) <- pendingPkgName) {
                         // Package init function mangled name

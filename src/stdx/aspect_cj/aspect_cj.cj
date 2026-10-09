@@ -342,6 +342,12 @@ protected func isValidFunctionTypePattern(value: String): Bool {
     if (parsed.isNone() || parsed.getOrThrow().returnType == "**") {
         return false
     }
+    // The return type is one type, not another parameter list. Reuse the
+    // delimiter-depth check so malformed nested types fail during collection.
+    let returnTypes = splitTopLevelParameters(parsed.getOrThrow().returnType)
+    if (returnTypes.isNone() || returnTypes.getOrThrow().size != 1) {
+        return false
+    }
     var variadicWildcards: Int64 = 0
     for (parameter in parsed.getOrThrow().parameters) {
         if (parameter == "**") {
