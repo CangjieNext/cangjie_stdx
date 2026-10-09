@@ -10,7 +10,7 @@ package stdx.encoding.json.stream
 
 import std.math.numeric.*
 
-const MAX_JSON_BIGINT_LENGTH: Int64 = 16384
+const MAX_JSON_BIG_NUMBER_LENGTH: Int64 = 16384
 
 func readJsonNumberAsString(r: JsonReader): String {
     match (r.peek()) {
@@ -33,8 +33,8 @@ extend BigInt <: JsonSerializable {
 extend BigInt <: JsonDeserializable<BigInt> {
     public static func fromJson(r: JsonReader): BigInt {
         let value = readJsonNumberAsString(r)
-        if (value.size > MAX_JSON_BIGINT_LENGTH) {
-            throw IllegalStateException("BigInt length '${value.size}' exceeds maximum '${MAX_JSON_BIGINT_LENGTH}'.")
+        if (value.size > MAX_JSON_BIG_NUMBER_LENGTH) {
+            throw IllegalStateException("BigInt length '${value.size}' exceeds maximum '${MAX_JSON_BIG_NUMBER_LENGTH}'.")
         }
         return BigInt.parse(value, radix: 10)
     }
@@ -48,6 +48,13 @@ extend Decimal <: JsonSerializable {
 
 extend Decimal <: JsonDeserializable<Decimal> {
     public static func fromJson(r: JsonReader): Decimal {
-        return Decimal.parse(readJsonNumberAsString(r))
+        // Same length cap as BigInt.fromJson: Decimal.parse converts the
+        // coefficient with quadratic schoolbook base conversion, so an
+        // unbounded token burns CPU super-linearly on untrusted input.
+        let value = readJsonNumberAsString(r)
+        if (value.size > MAX_JSON_BIG_NUMBER_LENGTH) {
+            throw IllegalStateException("Decimal length '${value.size}' exceeds maximum '${MAX_JSON_BIG_NUMBER_LENGTH}'.")
+        }
+        return Decimal.parse(value)
     }
 }
