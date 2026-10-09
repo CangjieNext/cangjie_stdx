@@ -1408,7 +1408,7 @@ class SyntaxNodeImplTranslator {
         let enumBodyPosInfos = EnumBodyPosInfos(bitOrsPos.toArray(), ellipsisPos)
         let posInfos = BodyPosInfos(lCurlPos, rCurlPos)
         lp.consumeToEnd()
-        let commentsPropInfos = lp.commentGroupListPropInfos.toArray()
+        let commentsPropInfos = lp.remainingComments()
         Body(node, startPos, parent, posInfos, enumBodyPosInfos, propInfos, commentsPropInfos)
     }
 
@@ -3919,6 +3919,11 @@ class LocalParser {
         }
     }
 
+    // Ranges [start, end) of comment PropInfos already handed out by
+    // takeCommentsFrom. Kept instead of removing entries eagerly so each call
+    // stays O(range length), not O(list size).
+    private let takenCommentRanges = ArrayList<(Int64, Int64)>()
+
     func commentsCount(): Int64 {
         commentGroupListPropInfos.size
     }
@@ -3931,9 +3936,36 @@ class LocalParser {
         if (total <= mark) {
             return Array<PropInfo>()
         }
-        let all = commentGroupListPropInfos.toArray()
-        commentGroupListPropInfos.remove(mark..total)
-        all[mark..total]
+        takenCommentRanges.add((mark, total))
+        let ret = ArrayList<PropInfo>()
+        for (i in mark..total) {
+            ret.add(commentGroupListPropInfos[i])
+        }
+        ret.toArray()
+    }
+
+    // Comment PropInfos left for the enclosing node, in green order, excluding
+    // those already handed out via takeCommentsFrom.
+    func remainingComments(): Array<PropInfo> {
+        let ret = ArrayList<PropInfo>()
+        var rangeIdx = 0
+        var i = 0
+        while (i < commentGroupListPropInfos.size) {
+            if (rangeIdx < takenCommentRanges.size) {
+                let (start, end) = takenCommentRanges[rangeIdx]
+                if (i >= end) {
+                    rangeIdx += 1
+                    continue
+                }
+                if (i >= start) {
+                    i = end
+                    continue
+                }
+            }
+            ret.add(commentGroupListPropInfos[i])
+            i += 1
+        }
+        ret.toArray()
     }
 
     func consumeToEnd() {

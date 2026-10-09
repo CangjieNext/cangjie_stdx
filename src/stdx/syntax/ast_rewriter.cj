@@ -58,7 +58,7 @@ public open class ASTRewriter {
         if (collectChildNodeList.size == 0) {
             return cast<T>(rewrite(node)).getOrThrow()
         }
-        let comments = ArrayList<Comment>(node.comments)
+        let comments = ArrayList<Comment>(node.commentsForRewrite())
         let newNodeImpl = ArrayList<SyntaxNodeImpl>()
         match (node.nodeImpl) {
             case nt: NonTerminal => for (child in nt.children) {
@@ -143,6 +143,13 @@ public open class ASTRewriter {
         var newCommentGroup = ArrayList<SyntaxNodeImpl>()
         for (comment in nt.children) {
             if (comment is NonTerminal) {
+                // Defensive: when the red-tree queue runs dry, keep the green
+                // comment as-is instead of throwing. A consistent tree always
+                // pairs queue entries with green comments one by one.
+                if (comments.size == 0) {
+                    newCommentGroup.add(comment)
+                    continue
+                }
                 let n = comments.remove(at: 0)
                 let newNode = walkAndRewrite(n)
                 hasRewritedChild = isRewritedChild(hasRewritedChild, newNode.nodeImpl, comment)

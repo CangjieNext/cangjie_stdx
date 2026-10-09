@@ -11,6 +11,7 @@ package stdx.syntax
 import std.collection.ArrayList
 import std.deriving.*
 import std.ast.ToTokens
+import std.sort.*
 
 extend Token {
     func addPosition(pos: CodePosition) {
@@ -224,6 +225,30 @@ sealed abstract class SyntaxTreeNode <: ToString & ToTokens & Hashable & Equatab
         leadingComments = comments
     }
 
+    func commentsFromPropInfos(propInfos: Array<PropInfo>): Array<Comment> {
+        let cmts = ArrayList<Comment>()
+        for (propInfo in propInfos) {
+            let curNode = (nodeImpl as NonTerminal).getOrThrow().children[propInfo.index]
+            let offset = propInfo.offset
+            let stPos = CodePosition(nodePos.beginLine, nodePos.beginColumn,
+                FileInfos(nodePos.fileName, nodePos.filePath))
+            let commentGroupList = transCommentGroupList((curNode as NonTerminal).getOrThrow(), stPos + offset, this)
+            for (commentGroup in commentGroupList) {
+                cmts.add(all: commentGroup.elements)
+            }
+        }
+        cmts.toArray()
+    }
+
+    // Comments paired with the CommentGroupList children in this node's green
+    // tree when rewriting. Leading comments attached by the enclosing Body are
+    // excluded here: their green CommentGroupList nodes are children of the
+    // Body, so the rewriter pairs them through the Body's queue instead (see
+    // Body.commentsForRewrite).
+    protected open func commentsForRewrite(): Array<Comment> {
+        commentsFromPropInfos(commentsPropInfo)
+    }
+
     /**
      * @brief The comments array of the SyntaxTreeNode.
      *
@@ -233,17 +258,7 @@ sealed abstract class SyntaxTreeNode <: ToString & ToTokens & Hashable & Equatab
         get() {
             let cmts = ArrayList<Comment>()
             cmts.add(all: leadingComments)
-
-            for (propInfo in commentsPropInfo) {
-                let curNode = (nodeImpl as NonTerminal).getOrThrow().children[propInfo.index]
-                let offset = propInfo.offset
-                let stPos = CodePosition(nodePos.beginLine, nodePos.beginColumn,
-                    FileInfos(nodePos.fileName, nodePos.filePath))
-                let commentGroupList = transCommentGroupList((curNode as NonTerminal).getOrThrow(), stPos + offset, this)
-                for (commentGroup in commentGroupList) {
-                    cmts.add(all: commentGroup.elements)
-                }
-            }
+            cmts.add(all: commentsFromPropInfos(commentsPropInfo))
             cmts.toArray()
         }
     }
@@ -761,6 +776,21 @@ public class Body <: SyntaxTreeNode {
         this.propInfos = redNode.propInfos
         this.posInfos = redNode.posInfos
         this.enumBodyPosInfos = redNode.enumBodyPosInfos
+    }
+
+    // The green tree keeps member leading comments as CommentGroupList children
+    // of the Body even though they are reported through the members' comments.
+    // The rewriter pairs every green CommentGroupList child of the Body with
+    // this queue, so it must contain both parts, merged in green child order.
+    protected override func commentsForRewrite(): Array<Comment> {
+        let propInfoList = ArrayList<PropInfo>(commentsPropInfo)
+        for (memberLeading in propInfos.memberLeadingCommentsPropInfo) {
+            propInfoList.add(all: memberLeading)
+        }
+        let merged = propInfoList.toArray()
+        let comparator = {l: PropInfo, r: PropInfo => l.index.compare(r.index)}
+        sort(merged, by: comparator)
+        commentsFromPropInfos(merged)
     }
 
     func buildMemberLeadingComments(index: Int64, parent: SyntaxTreeNode): Array<Comment> {
