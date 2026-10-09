@@ -946,13 +946,43 @@ public class JsonReader {
                     availLen--
                     return readUIntRadix(16, HEXADECIMAL_OVERFLOW_LIMIT_UI64)
                 case b'd' | b'D' =>
+                    // `0d` decimal prefix: a Cangjie extension covered by the
+                    // radix-path LLT tests (0d33 -> 33), same family as 0b/0o/0x.
                     index++
                     availLen--
                     return readUIntDecimal()
                 case _ => ()
             }
+            // Strict JSON (RFC 8259) forbids leading zeros: `01` is invalid,
+            // matching the String-based parser.
+            if (isDecimalDigit(prefix)) {
+                throw IllegalStateException("Invalid number format.")
+            }
         }
         return readUIntDecimal(result: 0)
+    }
+
+    // After a complete number token the next byte (WITHOUT skipping whitespace)
+    // must be a token boundary: whitespace, a structural character, or the start
+    // of the next JSON value. Rejects garbage suffixes like `123x` / `1.5d`,
+    // matching the String-based parser. allowFloatTail keeps the legacy behavior
+    // of reading an Int64/UInt64 from the integer prefix of a float token
+    // (e.g. 0.5 -> 0).
+    private func checkNumberBoundary(allowFloatTail!: Bool = false): Unit {
+        if (availLen <= 0) {
+            fillInBuf()
+            if (availLen <= 0) {
+                return // end of stream
+            }
+        }
+        let c = buffer[index]
+        let boundary = c == b',' || c == b'}' || c == b']' || c == b'\"' ||
+            c == b'{' || c == b'[' || c == b't' || c == b'f' || c == b'n' ||
+            isJsonWhiteSpace(c) ||
+            (allowFloatTail && (c == b'.' || c == b'e' || c == b'E'))
+        if (!boundary) {
+            throw IllegalStateException("Invalid number format.")
+        }
     }
 
     @OverflowWrapping
@@ -981,6 +1011,7 @@ public class JsonReader {
             index++
             availLen--
         }
+        checkNumberBoundary(allowFloatTail: true)
         return (res, false)
     }
 
@@ -1010,6 +1041,9 @@ public class JsonReader {
             index++
             availLen--
         }
+        // Radix literals keep the lenient truncation semantics locked by the
+        // existing LLT tests (`0b12` -> 1, `0o18` -> 1, `0x1g` -> 1): the
+        // in-radix prefix is returned without a boundary check.
         return (result, false)
     }
 
@@ -1019,23 +1053,33 @@ public class JsonReader {
                 index++
                 availLen--
                 -1.0
-            case b'+' =>
-                index++
-                availLen--
-                1.0
-            case _ => 1.0
+            case _ => 1.0 // a leading '+' is invalid, matching the String parser
         }
 
         fillInBuf()
         var result = 0.0
         var pointNum = 0
         var leftMove = 1.0
+        var hasIntDigit = false
+        var hasFracDigit = false
+        var leadingZero = false
         while (availLen > 0) {
             if (pointNum > 1) {
                 throw IllegalStateException("Invalid number format.")
             }
             let c = buffer[index]
             if (c >= b'0' && c <= b'9') {
+                if (pointNum == 0) {
+                    if (!hasIntDigit) {
+                        leadingZero = (c == b'0')
+                        hasIntDigit = true
+                    } else if (leadingZero) {
+                        // Strict JSON forbids leading zeros in the integer part.
+                        throw IllegalStateException("Invalid number format.")
+                    }
+                } else {
+                    hasFracDigit = true
+                }
                 result = result * 10.0 + Float64(c - b'0')
                 if (pointNum == 1) {
                     leftMove = leftMove * 10.0
@@ -1049,6 +1093,11 @@ public class JsonReader {
             availLen--
             fillInBuf()
         }
+        if (!hasIntDigit || (pointNum == 1 && !hasFracDigit)) {
+            // Rejects bare signs, `.5`, `5.` and similar fragments the
+            // String-based parser rejects as well.
+            throw IllegalStateException("Invalid number format.")
+        }
         return sign * result / leftMove
     }
 
@@ -1059,17 +1108,69 @@ public class JsonReader {
         }
 
         let result = ensureFiniteJsonFloat(readFloatEx())
-        if (let Some(c) <- tryNextNonJsonWhitespace()) {
-            if (c == b'e' || c == b'E') {
+        // Exponent is parsed from the direct byte (no whitespace skipping):
+        // JSON numbers contain no internal whitespace, so `1e +5` is invalid,
+        // exactly like in the String-based parser.
+        if (availLen <= 0) {
+            fillInBuf()
+        }
+        if (availLen > 0 && (buffer[index] == b'e' || buffer[index] == b'E')) {
+            index++
+            availLen--
+            if (availLen <= 0) {
+                fillInBuf()
+            }
+            var negative = false
+            if (availLen > 0 && buffer[index] == b'+') {
                 index++
                 availLen--
-                let (exponent, overflow) = readInt()
-                if (overflow) {
-                    throw OverflowException("Overflow while reading JSON number.")
-                }
-                return ensureFiniteJsonFloat(result * (10.0 ** exponent))
+            } else if (availLen > 0 && buffer[index] == b'-') {
+                negative = true
+                index++
+                availLen--
             }
+            // RFC 8259: exp = [ sign ] 1*DIGIT — leading zeros are allowed (`1e05`).
+            var expMag: UInt64 = 0
+            var hasExpDigit = false
+            var expOverflow = false
+            while (true) {
+                if (availLen <= 0) {
+                    fillInBuf()
+                    if (availLen <= 0) {
+                        break
+                    }
+                }
+                let c = buffer[index]
+                if (!isDecimalDigit(c)) {
+                    break
+                }
+                hasExpDigit = true
+                if (!expOverflow) {
+                    if (expMag > DECIMAL_OVERFLOW_LIMIT_UI64) {
+                        expOverflow = true
+                    } else {
+                        expMag = expMag * 10
+                        if (MAXVAL_UI64 - expMag < UInt64(c - b'0')) {
+                            expOverflow = true
+                        } else {
+                            expMag += UInt64(c - b'0')
+                        }
+                    }
+                }
+                index++
+                availLen--
+            }
+            if (!hasExpDigit) {
+                throw IllegalStateException("Invalid number format.")
+            }
+            if (expOverflow || expMag > MAXABSVAL_I64) {
+                throw OverflowException("Overflow while reading JSON number.")
+            }
+            checkNumberBoundary()
+            let exponent = if (negative) { -Int64(expMag) } else { Int64(expMag) }
+            return ensureFiniteJsonFloat(result * (10.0 ** exponent))
         }
+        checkNumberBoundary()
         return result
     }
 

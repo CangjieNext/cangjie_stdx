@@ -38,6 +38,15 @@ func jsonPrimitiveToString<T>(value: T): String where T <: ToString {
     value.toString()
 }
 
+// NaN and Infinity are not valid JSON number literals (RFC 8259); serializing
+// them verbatim would produce output that no JSON parser can read back.
+func jsonFloatToString(value: Float64): String {
+    if (value.isNaN() || value.isInf()) {
+        throw JsonException("Failed to serialize JSON float.")
+    }
+    return value.toString()
+}
+
 func jsonArrayToFormattedString(
     value: JsonArray,
     depth: Int64,
@@ -346,7 +355,7 @@ public class JsonFloat <: JsonValue {
      * @since 0.17.4
      */
     public func toString(): String {
-        return jsonPrimitiveToString(value)
+        return jsonFloatToString(value)
     }
 
     /**
@@ -366,7 +375,7 @@ public class JsonFloat <: JsonValue {
      * @return json-converted String is value string data.
      */
     public func toStringWithoutEscaping(): String {
-        return jsonPrimitiveToString(value)
+        return jsonFloatToString(value)
     }
 
     /**
