@@ -126,6 +126,7 @@ func getCertBody(cert: CPointer<Unit>): Array<Byte> {
         if (certlen < 0) {
             throw X509Exception("Failed to initialize X509.")
         }
+        let expectedLen = certlen
         var certBody = Array<Byte>(Int64(certlen), repeat: 0)
         let data: CPointerHandle<Byte> = acquireArrayRawData(certBody)
         try (certPtr = malloc<CPointer<Byte>>()) {
@@ -133,6 +134,9 @@ func getCertBody(cert: CPointer<Unit>): Array<Byte> {
             certlen = getCertLen(cert, certPtr.pointer)
             if (certlen < 0) {
                 throw X509Exception("Failed to initialize X509.")
+            }
+            if (certlen != expectedLen) {
+                throw X509Exception("Failed to initialize X509: DER length mismatch.")
             }
         } finally {
             releaseArrayRawData(data)
@@ -369,7 +373,7 @@ foreign {
 
     func DYN_CJNameStackFree(nameStack: CPointer<Unit>, msg: CPointer<DynMsg>): Unit
 
-    func DYN_CJAddName(nameStack: CPointer<Unit>, nid: Int64, value: CString, msg: CPointer<DynMsg>): Int32
+    func DYN_CJAddName(nameStack: CPointer<Unit>, nid: Int32, value: CString, msg: CPointer<DynMsg>): Int32
 
     func DYN_CJReqAddExtension(req: CPointer<Unit>, nameStack: CPointer<Unit>, msg: CPointer<DynMsg>): Int32
 
@@ -554,7 +558,7 @@ func reqAddExtension(req: CPointer<Unit>, nameStack: CPointer<Unit>): Int32 {
     return res
 }
 
-func addName(nameStack: CPointer<Unit>, nid: Int64, value: CString): Int32 {
+func addName(nameStack: CPointer<Unit>, nid: Int32, value: CString): Int32 {
     let dynMsgPtr = generateDynMsg()
     let res = unsafe { DYN_CJAddName(nameStack, nid, value, dynMsgPtr) }
     checkError(dynMsgPtr)
