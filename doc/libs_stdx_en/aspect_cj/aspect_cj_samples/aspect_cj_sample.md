@@ -88,6 +88,58 @@ bye
 done
 ```
 
+## Wildcard Pointcut and Argument Snapshot Example
+
+The following aspect uses wildcard configuration to match two functions with different signatures and receives all explicit target arguments through `Array<Any>`:
+
+<!-- compile -->
+
+```cangjie
+package AOP_demo4
+
+import stdx.aspect_cj.*
+
+@InsertAtEntry[packageName: "AOP_*", className: "*", methodName: "handle*", isStatic: false,
+    recursive: false, funcTypeStr: "(**)->*"]
+public func traceArguments(args: Array<Any>) {
+    println("arguments=${args.size}")
+}
+
+public func handleOne(id: Int64): Unit {
+    println("handleOne")
+}
+
+public func handleTwo(id: Int64, name: String): String {
+    println("handleTwo")
+    "done"
+}
+
+main() {
+    handleOne(1)
+    println(handleTwo(2, "Cangjie"))
+    0
+}
+```
+
+Compilation commands on Linux:
+
+```shell
+cjc aop_demo4.cj -L $CANGJIE_STDX_PATH --import-path $CANGJIE_STDX_PATH -lstdx.aspect_cj --plugin=$CANGJIE_STDX_PATH/libstdx.collect_aspects.so -o main
+cjc aop_demo4.cj -L $CANGJIE_STDX_PATH --import-path $CANGJIE_STDX_PATH -lstdx.aspect_cj --plugin=$CANGJIE_STDX_PATH/libstdx.weave_aspects.so -o main
+```
+
+The output is:
+
+```text
+arguments=1
+handleOne
+arguments=2
+handleTwo
+done
+```
+
+`Array<Any>` excludes the implicit `this` of an instance method. It is a shallow snapshot of arguments at target-function entry, and changing an array element does not write back to the target parameter.
+
 ## ReplaceFuncBody Function Body Replacement Example
 
 The following is an example code demonstrating function body replacement using `@ReplaceFuncBody`:

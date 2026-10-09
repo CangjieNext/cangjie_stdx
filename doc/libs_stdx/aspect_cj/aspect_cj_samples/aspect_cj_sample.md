@@ -90,6 +90,58 @@ bye
 done
 ```
 
+## 通配切点和实参快照示例
+
+下面的切面使用通配配置匹配两个不同签名的函数，并通过 `Array<Any>` 接收目标函数的全部显式实参：
+
+<!-- compile -->
+
+```cangjie
+package AOP_demo4
+
+import stdx.aspect_cj.*
+
+@InsertAtEntry[packageName: "AOP_*", className: "*", methodName: "handle*", isStatic: false,
+    recursive: false, funcTypeStr: "(**)->*"]
+public func traceArguments(args: Array<Any>) {
+    println("arguments=${args.size}")
+}
+
+public func handleOne(id: Int64): Unit {
+    println("handleOne")
+}
+
+public func handleTwo(id: Int64, name: String): String {
+    println("handleTwo")
+    "done"
+}
+
+main() {
+    handleOne(1)
+    println(handleTwo(2, "Cangjie"))
+    0
+}
+```
+
+linux 平台编译命令：
+
+```shell
+cjc aop_demo4.cj -L $CANGJIE_STDX_PATH --import-path $CANGJIE_STDX_PATH -lstdx.aspect_cj --plugin=$CANGJIE_STDX_PATH/libstdx.collect_aspects.so -o main
+cjc aop_demo4.cj -L $CANGJIE_STDX_PATH --import-path $CANGJIE_STDX_PATH -lstdx.aspect_cj --plugin=$CANGJIE_STDX_PATH/libstdx.weave_aspects.so -o main
+```
+
+运行结果如下：
+
+```text
+arguments=1
+handleOne
+arguments=2
+handleTwo
+done
+```
+
+`Array<Any>` 不包含实例方法的隐式 `this`。它是目标函数入口处实参的浅快照，修改数组元素不会回写目标函数形参。
+
 ## ReplaceFuncBody 替换函数体示例
 
 下面是使用 @ReplaceFuncBody 完成替换指定函数函数体的示例代码：

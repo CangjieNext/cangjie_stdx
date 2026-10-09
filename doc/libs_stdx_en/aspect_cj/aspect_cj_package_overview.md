@@ -49,6 +49,16 @@ The `stdx.aspect_cj` package provides annotations for Aspect-Oriented Programmin
 - If functions annotated with @InsertAtEntry/@InsertAtExit/@ReplaceFuncBody have parameters, their parameter list should match the source parameter list of the function being woven into. Additionally:
     - Specifically, if the function being woven into is an instance member function, the `this` parameter must be explicitly included in the parameter list;
     - For functions annotated with @ReplaceFuncBody, an additional parameter must be added. The type of this parameter should match the function being woven into, representing the closure of the original version of the function.
+- An @InsertAtEntry/@InsertAtExit aspect may instead declare exactly one explicit `Array<Any>` parameter. The array contains a shallow snapshot of the target function's explicit arguments in source order at function entry. It excludes the implicit `this`, and changing an array element does not write back to the target parameter;
+- The `Array<Any>` argument mode does not apply to @ReplaceFuncBody.
+
+**Pointcut Wildcards:**
+
+- `*` in `packageName`, `className`, and `methodName` matches zero or more characters within one name segment;
+- A complete `**` segment in `packageName` matches zero or more package-name segments;
+- In `funcTypeStr`, a standalone `*` matches one type and a standalone `**` in the parameter list matches zero or more parameters. Qualified type names use the same `*` and `**` rules;
+- At most one standalone `**` is allowed in a parameter list. A wildcard `funcTypeStr` must be used with the `Array<Any>` argument mode;
+- The `this` type of an instance-member aspect is statically fixed, so its `packageName` and `className` must be exact.
 
 ### Usage
 

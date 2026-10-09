@@ -28,12 +28,12 @@ See the [InsertAtEntry example tutorial](../aspect_cj_samples/aspect_cj_sample.m
 
 Parameters:
 
-- packageName!: String - The package name of the target function, e.g., "default", "std.core";
-- className!: String - For member functions, specifies the class name; for global functions, leave empty;
-- methodName!: String - The name of the target function, e.g., "foo";
+- packageName!: String - The package name of the target function, e.g., "default", "std.core". Supports `*` within a name segment and a complete `**` package segment;
+- className!: String - For member functions, specifies the class name; for global functions, leave empty. Supports `*` within the name segment;
+- methodName!: String - The name of the target function, e.g., "foo". Supports `*` within the name segment;
 - isStatic!: Bool - Indicates whether the target function is a static member function;
 - recursive!: Bool - For member functions, indicates whether to weave into override versions in subclasses; otherwise, this field should be false.
-- funcTypeStr!: String - The type signature string of the target function (without spaces). For custom types, the package name must be included and separated by `.`. Does not include the implicit this parameter type. Example: "(Int64,std.core.Object)->Unit";
+- funcTypeStr!: String - The type signature string of the target function (without spaces). For custom types, the package name must be included and separated by `.`. Does not include the implicit this parameter type. Example: "(Int64,std.core.Object)->Unit". A standalone `*` matches one type, a standalone `**` in the parameter list matches zero or more parameters, and qualified type names support `*` within a segment and a complete `**` segment. A wildcard function type requires the aspect function to have exactly one explicit `Array<Any>` parameter;
 
 ## class InsertAtExit
 
@@ -63,12 +63,12 @@ See the [InsertAtExit example tutorial](../aspect_cj_samples/aspect_cj_sample.md
 
 Parameters:
 
-- packageName!: String - The package name of the target function, e.g., "default", "std.core";
-- className!: String - For member functions, specifies the class name; for global functions, leave empty;
-- methodName!: String - The name of the target function, e.g., "foo";
+- packageName!: String - The package name of the target function, e.g., "default", "std.core". Supports `*` within a name segment and a complete `**` package segment;
+- className!: String - For member functions, specifies the class name; for global functions, leave empty. Supports `*` within the name segment;
+- methodName!: String - The name of the target function, e.g., "foo". Supports `*` within the name segment;
 - isStatic!: Bool - Indicates whether the target function is a static member function;
 - recursive!: Bool - For member functions, indicates whether to weave into override versions in subclasses; otherwise, this field should be false.
-- funcTypeStr!: String - The type signature string of the target function (without spaces). For custom types, the package name must be included and separated by `.`. Does not include the implicit this parameter type. Example: "(Int64,std.core.Object)->Unit";
+- funcTypeStr!: String - The type signature string of the target function (without spaces). For custom types, the package name must be included and separated by `.`. Does not include the implicit this parameter type. Example: "(Int64,std.core.Object)->Unit". A standalone `*` matches one type, a standalone `**` in the parameter list matches zero or more parameters, and qualified type names support `*` within a segment and a complete `**` segment. A wildcard function type requires the aspect function to have exactly one explicit `Array<Any>` parameter;
 
 ## class ReplaceFuncBody
 

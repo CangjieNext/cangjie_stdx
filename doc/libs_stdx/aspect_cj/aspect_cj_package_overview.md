@@ -49,6 +49,16 @@
 - 被标注 @InsertAtEntry/@InsertAtExit/@ReplaceFuncBody 的函数如果有形参，其形参列表应和被织入函数的源码形参列表相同，此外：
     - 特别地，如果被织入的函数是实例成员函数，那么需要将 this 参数显式地写在形参中；
     - 对于被标注 @ReplaceFuncBody 的函数，需要额外添加一个形参，形参的类型和被织入的函数相同，该形参表示被织入函数原始版本的闭包。
+- 对于 @InsertAtEntry/@InsertAtExit，切面函数也可以只声明一个 `Array<Any>` 显式形参。此时数组按源码显式形参顺序保存目标函数入口处的实参浅快照，不包含隐式 `this`，修改数组元素不会回写目标函数形参；
+- `Array<Any>` 实参模式不适用于 @ReplaceFuncBody。
+
+**切点通配符：**
+
+- `packageName`、`className` 和 `methodName` 中的 `*` 匹配同一名称段内零个或多个字符；
+- `packageName` 中的完整 `**` 段匹配零个或多个包名段；
+- `funcTypeStr` 中独立的 `*` 匹配一个类型，参数列表中独立的 `**` 匹配零个或多个参数，限定类型名中的 `*` 和 `**` 与上述规则相同；
+- 参数列表中最多使用一个独立的 `**`。包含通配符的 `funcTypeStr` 必须与 `Array<Any>` 实参模式组合使用；
+- 实例成员切面函数的 `this` 类型静态确定，因此其 `packageName` 和 `className` 必须精确配置。
 
 ### 使用
 
