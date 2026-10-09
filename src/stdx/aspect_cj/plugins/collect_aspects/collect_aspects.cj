@@ -261,10 +261,22 @@ class CollectAspects {
             }
             paramTypes = explicitParamTypes
         }
-        let aspectFuncTypeStr = FuncType.get(paramTypes, UnitType.get()).qualifiedName
+        let aspectFuncType = FuncType.get(paramTypes, UnitType.get())
+        let aspectFuncTypeStr = if (wovenFuncTypeStr.contains("<")) {
+            qualifiedNameWithTypeArgs(aspectFuncType)
+        } else {
+            aspectFuncType.qualifiedName
+        }
         rightParenthesisIndex = aspectFuncTypeStr.lastIndexOf(")").getOrThrow()
         let funcType2 = aspectFuncTypeStr[0..rightParenthesisIndex + 1]  // remove return type
-        if (funcType1 != funcType2) {
+        let parametersMatch = if (wovenFuncTypeStr.contains("<")) {
+            let configured = parseFunctionTypePattern(wovenFuncTypeStr).getOrThrow()
+            let parameterPattern = "(" + String.join(configured.parameters, delimiter: ",") + ")->Unit"
+            matchFunctionTypePattern(parameterPattern, aspectFuncTypeStr)
+        } else {
+            funcType1 == funcType2
+        }
+        if (!parametersMatch) {
             printError("Aspect function '${f.srcCodeName}' has parameter types '${funcType2}', expected '${funcType1}'.")
             return false
         }
