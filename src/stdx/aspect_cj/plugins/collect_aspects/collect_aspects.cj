@@ -188,6 +188,10 @@ class CollectAspects {
         }
         let className = argValues[1]
         let methodName = argValues[2]
+        if (containsMetadataControlCharacter(className) || containsMetadataControlCharacter(methodName)) {
+            printError("Function '${f.srcCodeName}' has a className or methodName containing a control character unsupported by aspect metadata.")
+            return false
+        }
         let isStatic = argValues[3]
         let isRecursive = argValues[4]
         if (f.isInstanceMemberMethod()) {
@@ -215,6 +219,10 @@ class CollectAspects {
         let className = annoArgValues[1]
         let isStatic = Bool.parse(annoArgValues[3])
         let wovenFuncTypeStr = annoArgValues[5]
+        if (containsMetadataControlCharacter(wovenFuncTypeStr)) {
+            printError("${f.srcCodeName}: funcTypeStr contains a control character unsupported by aspect metadata.")
+            return false
+        }
         if (f.funcType.returnType != UnitType.get()) {
             printError("Function '${f.srcCodeName}' annotated with @InsertAtEntry/@InsertAtExit has return type '${f.funcType.returnType.qualifiedName}', expected Unit.")
             return false

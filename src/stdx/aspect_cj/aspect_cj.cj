@@ -357,6 +357,15 @@ protected func isValidFunctionTypePattern(value: String): Bool {
     return variadicWildcards <= 1
 }
 
+protected func containsMetadataControlCharacter(value: String): Bool {
+    for (ch in value.toArray()) {
+        if (ch == 0 || ch == 10 || ch == 13) {
+            return true
+        }
+    }
+    return false
+}
+
 protected func isValidPackageNamePattern(value: String): Bool {
     if (value.isEmpty() || value.contains("/") || value.contains("\\") || value.contains("..")) {
         return false

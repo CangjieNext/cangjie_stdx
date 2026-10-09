@@ -331,7 +331,6 @@ class WeaveAspects {
                     while (let Some(pkgName) <- pendingPkgName) {
                         // Package init function mangled name
                         let initFuncMangledName = readRequiredMetadataLine(reader, "initFuncMangledName", fileName)
-                        pkgInitFuncMangledNames.add(pkgName, initFuncMangledName)
                         // Anno class name
                         let annoClassName = readRequiredMetadataLine(reader, "annoClassName", fileName)
                         // Insert
@@ -360,9 +359,13 @@ class WeaveAspects {
                         let toIsStatic = Bool.parse(readRequiredMetadataLine(reader, "isStatic", fileName))
                         let recursively = Bool.parse(readRequiredMetadataLine(reader, "recursive", fileName))
                         let to = To(toPackageName, className, methodName, funcTypeStr, toIsStatic, recursively)
-                        // OutputInfo
-                        let processInfo = OutputInfo(annoClassName, insert, to)
-                        processInfos.add(processInfo)
+                        // A wildcard-indexed file can also contain an exact package name
+                        // equal to the reserved index. Do not import an unrelated advice
+                        // package's initializer into the current package.
+                        if (matchQualifiedNamePattern(toPackageName, curPkgName)) {
+                            pkgInitFuncMangledNames.add(pkgName, initFuncMangledName)
+                            processInfos.add(OutputInfo(annoClassName, insert, to))
+                        }
                         pendingPkgName = reader.readln()
                     }
                 } catch (e: Exception) {
