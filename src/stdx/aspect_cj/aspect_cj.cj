@@ -136,6 +136,37 @@ protected func mapArrayTo<T, R>(array: Array<T>, f: (T) -> R): Array<R> {
     return result.toArray()
 }
 
+// Type.qualifiedName intentionally omits the arguments of CustomType. Keep its
+// existing behaviour for callers, but retain those arguments when matching an
+// explicitly parameterized pointcut signature.
+protected func qualifiedNameWithTypeArgs(ty: Type): String {
+    match (ty) {
+        case t: RawArrayType =>
+            return "RawArray<" + qualifiedNameWithTypeArgs(t.elementType) + ">"
+        case t: RefType =>
+            return qualifiedNameWithTypeArgs(t.baseType)
+        case t: VArrayType =>
+            return "VArray<" + qualifiedNameWithTypeArgs(t.elementType) + "," + t.size.toString() + ">"
+        case t: CPointerType =>
+            return "CPointer<" + qualifiedNameWithTypeArgs(t.elementType) + ">"
+        case t: TupleType =>
+            return "Tuple<" + String.join(mapArrayTo(t.elementTypes, {item => qualifiedNameWithTypeArgs(item)}), delimiter: ",") + ">"
+        case t: CustomType =>
+            let name = t.qualifiedName
+            if (t.genericTypeArgs.isEmpty()) {
+                return name
+            }
+            return name + "<" + String.join(mapArrayTo(t.genericTypeArgs, {item => qualifiedNameWithTypeArgs(item)}), delimiter: ",") + ">"
+        case t: FuncType =>
+            let parameters = String.join(mapArrayTo(t.paramTypes, {item => qualifiedNameWithTypeArgs(item)}), delimiter: ",")
+            return "(" + parameters + ")->" + qualifiedNameWithTypeArgs(t.returnType)
+        case t: BoxType =>
+            return "Box<" + qualifiedNameWithTypeArgs(t.baseType) + ">"
+        case _ =>
+            return ty.qualifiedName
+    }
+}
+
 protected func isInsertAnno(item: String): Bool {
     return item == INSERT_AT_ENTRY_ANNO_CLASS_NAME || item == INSERT_AT_EXIT_ANNO_CLASS_NAME
 }
@@ -298,8 +329,77 @@ private func normalizeStdCoreTypeName(value: String): String {
     }
 }
 
+private struct ParameterizedTypeName {
+    let base: String
+    let arguments: Array<String>
+    public init(base: String, arguments: Array<String>) {
+        this.base = base
+        this.arguments = arguments
+    }
+}
+
+private func parseParameterizedTypeName(value: String): ?ParameterizedTypeName {
+    let text = value.trimAscii()
+    let bytes = text.toArray()
+    var open: ?Int64 = None
+    var depth: Int64 = 0
+    for (index in 0..bytes.size) {
+        if (bytes[index] == 60) {
+            if (depth == 0 && open.isNone()) {
+                open = Some(index)
+            }
+            depth++
+        } else if (bytes[index] == 62 && (index == 0 || bytes[index - 1] != 45)) {
+            depth--
+            if (depth < 0 || (depth == 0 && index != bytes.size - 1)) {
+                return None
+            }
+        }
+    }
+    if (open.isNone() || depth != 0) {
+        return None
+    }
+    let openIndex = open.getOrThrow()
+    let base = unsafe { String.fromUtf8Unchecked(bytes[0..openIndex]) }.trimAscii()
+    let inner = unsafe { String.fromUtf8Unchecked(bytes[openIndex + 1..bytes.size - 1]) }
+    let arguments = splitTopLevelParameters(inner)
+    if (base.isEmpty() || arguments.isNone() || arguments.getOrThrow().isEmpty()) {
+        return None
+    }
+    return Some(ParameterizedTypeName(base, arguments.getOrThrow()))
+}
+
 protected func matchTypePattern(pattern: String, value: String): Bool {
-    return pattern == "*" || matchQualifiedNamePattern(pattern, value) ||
+    if (pattern == "*") {
+        return true
+    }
+    // A non-parameterized name retains the legacy behaviour of matching the
+    // generic type constructor, even when another parameter in the same
+    // signature requests detailed type-argument matching.
+    if (!pattern.contains("<") && value.contains("<")) {
+        let actual = parseParameterizedTypeName(value)
+        return actual.isSome() && matchTypePattern(pattern, actual.getOrThrow().base)
+    }
+    if (pattern.contains("<") || value.contains("<")) {
+        let expected = parseParameterizedTypeName(pattern)
+        let actual = parseParameterizedTypeName(value)
+        if (expected.isNone() || actual.isNone()) {
+            return false
+        }
+        let expectedType = expected.getOrThrow()
+        let actualType = actual.getOrThrow()
+        if (expectedType.arguments.size != actualType.arguments.size ||
+            !matchTypePattern(expectedType.base, actualType.base)) {
+            return false
+        }
+        for (index in 0..expectedType.arguments.size) {
+            if (!matchTypePattern(expectedType.arguments[index], actualType.arguments[index])) {
+                return false
+            }
+        }
+        return true
+    }
+    return matchQualifiedNamePattern(pattern, value) ||
         normalizeStdCoreTypeName(pattern) == normalizeStdCoreTypeName(value)
 }
 

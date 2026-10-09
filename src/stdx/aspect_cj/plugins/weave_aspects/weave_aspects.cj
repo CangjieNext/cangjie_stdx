@@ -262,7 +262,12 @@ class WeaveAspects {
             (_, params) = params.splitAt(1)
         }
         let paramTypes = mapArrayTo(params, {param => param.ty})
-        let funcTypeStr = FuncType.get(paramTypes, f.funcType.returnType).qualifiedName
+        let funcType = FuncType.get(paramTypes, f.funcType.returnType)
+        let funcTypeStr = if (pi.to.funcTypeStr.contains("<")) {
+            qualifiedNameWithTypeArgs(funcType)
+        } else {
+            funcType.qualifiedName
+        }
         if (!matchFunctionTypePattern(pi.to.funcTypeStr, funcTypeStr)) {
             return false
         }
