@@ -62,49 +62,86 @@ extend TlsContext {
     private func signCallbackWrapper(): CKeylessSignCallback {
         return {
             key: CString, alg: CString, digestPtr: CPointer<Byte>, digestLen: Int64, written: CPointer<Int64> =>
-                let (signCb, _) = TlsSocket.keylessCallback.get(key.toString()) ?? throw TlsException("Keyless sign callback not found.")
-
-                let digest = Array<Byte>(digestLen, repeat: 0)
-                for (i in 0..digestLen) {
-                    unsafe { digest[i] = digestPtr.read(i) }
+                if (written.isNull() || digestLen < 0 || (digestLen > 0 && digestPtr.isNull())) {
+                    return CPointer<Byte>()
                 }
+                unsafe { written.write(0) }
 
-                var signature: Array<Byte> = signCb(digest)
-                let sigPtr = unsafe { LibC.malloc<Byte>(count: signature.size) }
+                var result = CPointer<Byte>()
+                try {
+                    let (signCb, _) = TlsSocket.keylessCallback.get(key.toString()) ??
+                        throw TlsException("Keyless sign callback not found.")
 
-                unsafe {
-                    for (i in 0..signature.size) {
-                        sigPtr.write(i, signature[i])
+                    let digest = Array<Byte>(digestLen, repeat: 0)
+                    for (i in 0..digestLen) {
+                        unsafe { digest[i] = digestPtr.read(i) }
                     }
 
-                    written.write(signature.size)
+                    let signature: Array<Byte> = signCb(digest)
+                    result = unsafe { LibC.malloc<Byte>(count: signature.size) }
+                    if (result.isNull()) {
+                        return CPointer<Byte>()
+                    }
+
+                    unsafe {
+                        for (i in 0..signature.size) {
+                            result.write(i, signature[i])
+                        }
+                        written.write(signature.size)
+                    }
+                    return result
+                } catch (_: Exception) {
+                    if (result.isNotNull()) {
+                        unsafe { LibC.free(result) }
+                    }
+                    unsafe { written.write(0) }
+                    return CPointer<Byte>()
                 }
-                return sigPtr
         }
     }
 
     private func decryptCallbackWrapper(): CKeylessDecryptCallback {
         return {
             key: CString, ciphertextPtr: CPointer<Byte>, ciphertextLen: Int64, written: CPointer<Int64> =>
-                let (_, decryptCbOpt) = TlsSocket.keylessCallback.get(key.toString()) ?? throw TlsException("Keyless decrypt callback not found.")
-                let decryptCb = decryptCbOpt ?? throw TlsException("Keyless decrypt callback not provided.")
-
-                let ciphertext = Array<Byte>(ciphertextLen, repeat: 0)
-                for (i in 0..ciphertextLen) {
-                    unsafe { ciphertext[i] = ciphertextPtr.read(i) }
+                if (written.isNull() || ciphertextLen < 0 || (ciphertextLen > 0 && ciphertextPtr.isNull())) {
+                    return CPointer<Byte>()
                 }
-                let plain: Array<Byte> = decryptCb(ciphertext)
-                let cipherPtr = unsafe { LibC.malloc<Byte>(count: plain.size) }
+                unsafe { written.write(0) }
 
-                unsafe {
-                    for (i in 0..plain.size) {
-                        cipherPtr.write(i, plain[i])
+                var result = CPointer<Byte>()
+                var plain = Array<Byte>()
+                try {
+                    let (_, decryptCbOpt) = TlsSocket.keylessCallback.get(key.toString()) ??
+                        throw TlsException("Keyless decrypt callback not found.")
+                    let decryptCb = decryptCbOpt ?? throw TlsException("Keyless decrypt callback not provided.")
+
+                    let ciphertext = Array<Byte>(ciphertextLen, repeat: 0)
+                    for (i in 0..ciphertextLen) {
+                        unsafe { ciphertext[i] = ciphertextPtr.read(i) }
                     }
-                    written.write(plain.size)
-                }
-                plain.fill(0)
-                return cipherPtr
+                    plain = decryptCb(ciphertext)
+                    result = unsafe { LibC.malloc<Byte>(count: plain.size) }
+                    if (result.isNull()) {
+                        plain.fill(0)
+                        return CPointer<Byte>()
+                    }
 
+                    unsafe {
+                        for (i in 0..plain.size) {
+                            result.write(i, plain[i])
+                        }
+                        written.write(plain.size)
+                    }
+                    plain.fill(0)
+                    return result
+                } catch (_: Exception) {
+                    plain.fill(0)
+                    if (result.isNotNull()) {
+                        unsafe { LibC.free(result) }
+                    }
+                    unsafe { written.write(0) }
+                    return CPointer<Byte>()
+                }
         }
     }
 
@@ -315,7 +352,7 @@ foreign {
         ca: CPointer<Unit>,
         length: UIntNative,
         exception: CPointer<ExceptionData>,
-        dynMsg: CPointer<DynMsg>
+        dynMsgPtr: CPointer<DynMsg>
     ): Int32
 
     func CJ_TLS_DYN_Add_Cert(
@@ -323,7 +360,7 @@ foreign {
         pem: CPointer<Unit>,
         length: UIntNative,
         exception: CPointer<ExceptionData>,
-        dynMsg: CPointer<DynMsg>
+        dynMsgPtr: CPointer<DynMsg>
     ): Int32
 
     func CJ_TLS_DYN_Use_Cert(
@@ -331,7 +368,7 @@ foreign {
         pem: CPointer<Unit>,
         length: UIntNative,
         exception: CPointer<ExceptionData>,
-        dynMsg: CPointer<DynMsg>
+        dynMsgPtr: CPointer<DynMsg>
     ): Int32
 
     func CJ_TLS_DYN_SetPrivateKey(
@@ -339,13 +376,13 @@ foreign {
         key: CPointer<Byte>,
         length: UIntNative,
         exception: CPointer<ExceptionData>,
-        dynMsg: CPointer<DynMsg>
+        dynMsgPtr: CPointer<DynMsg>
     ): Int32
 
     func CJ_TLS_DYN_SetKeylessPrivateKey(
         context: CPointer<Ctx>,
         exception: CPointer<ExceptionData>,
-        dynMsg: CPointer<DynMsg>
+        dynMsgPtr: CPointer<DynMsg>
     ): Int32
 
     func CJ_TLS_DYN_SetDHParam(
@@ -356,16 +393,17 @@ foreign {
         dynMsgPtr: CPointer<DynMsg>
     ): Int32
 
-    func CJ_TLS_DYN_SetTrustAll(context: CPointer<Ctx>, dynMsg: CPointer<DynMsg>): Int32
+    func CJ_TLS_DYN_SetTrustAll(context: CPointer<Ctx>, dynMsgPtr: CPointer<DynMsg>): Int32
 
-    func CJ_TLS_DYN_SetClientVerifyMode(context: CPointer<Ctx>, required: Int32, verify: Int32, dynMsg: CPointer<DynMsg>): Int32
+    func CJ_TLS_DYN_SetClientVerifyMode(context: CPointer<Ctx>, required: Int32, verify: Int32,
+        dynMsgPtr: CPointer<DynMsg>): Int32
 
-    func CJ_TLS_DYN_SetSecurityLevel(context: CPointer<Ctx>, level: Int32, dynMsg: CPointer<DynMsg>): Int32
+    func CJ_TLS_DYN_SetSecurityLevel(context: CPointer<Ctx>, level: Int32, dynMsgPtr: CPointer<DynMsg>): Int32
 
     func CJ_TLS_DYN_SetCustomVerifyMode(
         context: CPointer<Ctx>,
         verifyCallback: CFunc<(context: CPointer<Ctx>, chain: CPointer<CertChainItem>, count: Int32) -> Int32>,
-        dynMsg: CPointer<DynMsg>): Int32
+        dynMsgPtr: CPointer<DynMsg>): Int32
 }
 
 func CJ_TLS_Add_CA(
@@ -479,23 +517,28 @@ func CJ_TLS_Use_Cert(
 
 @C
 func customVerifyCallback(context: CPointer<Ctx>, chain: CPointer<CertChainItem>, count: Int32): Int32 {
-    let certificatesToVerify: Array<Certificate>
-    if (chain.isNull() || count == 0) {
-        certificatesToVerify = []
-    } else {
-        try {
-            let certificates = unsafe { TlsRawSocket.convertNativeChain(chain, Int64(count)) } ?? []
-            certificatesToVerify = certificates.map({c => c})
-        } finally {
-            unsafe { CJ_TLS_DYN_CertChainFree(chain, Int64(count), CPointer()) }
+    try {
+        let certificatesToVerify: Array<Certificate>
+        if (chain.isNull() || count == 0) {
+            certificatesToVerify = []
+        } else {
+            try {
+                let certificates = unsafe { TlsRawSocket.convertNativeChain(chain, Int64(count)) } ?? []
+                certificatesToVerify = certificates.map({c => c})
+            } finally {
+                unsafe { CJ_TLS_DYN_CertChainFree(chain, Int64(count), CPointer()) }
+            }
         }
-    }
 
-    if (let Some(bridge) <- Bridge.findByContext(context)) {
-        if (let Some(verify) <- bridge.certificateVerifyCallback) {
-            let passed = verify(certificatesToVerify)
-            return if (passed) { 1 } else { 0 }
+        if (let Some(bridge) <- Bridge.findByContext(context)) {
+            if (let Some(verify) <- bridge.certificateVerifyCallback) {
+                let passed = verify(certificatesToVerify)
+                return if (passed) { 1 } else { 0 }
+            }
         }
+        return 1
+    } catch (_: Exception) {
+        // Verification errors, including user callback exceptions, reject the certificate.
+        return 0
     }
-    return 1
 }

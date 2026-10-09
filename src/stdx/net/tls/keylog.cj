@@ -12,9 +12,13 @@ type KeylogCallbackFunction = (TlsSocket, String) -> Unit
 
 @C
 func keylogCallback(ssl: CPointer<Ssl>, data: CString): Unit {
-    if (let Some(bridge) <- Bridge.findByStream(ssl)) {
-        if (let Some(callback) <- bridge.keylogCalback) {
-            callback(bridge.socket, data.toString())
+    try {
+        if (let Some(bridge) <- Bridge.findByStream(ssl)) {
+            if (let Some(callback) <- bridge.keylogCalback) {
+                callback(bridge.socket, data.toString())
+            }
         }
+    } catch (_: Exception) {
+        // Exceptions must not cross the C callback boundary.
     }
 }
