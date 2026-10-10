@@ -907,8 +907,8 @@ if(NOT CANGJIE_CJPM_BUILD_TYPE AND NOT CANGJIE_BUILD_WITHOUT_CHIR AND NOT CANGJI
     make_cangjie_lib(
         aspect_cj IS_SHARED
         DEPENDS cangjie${BACKEND_TYPE}AspectCj
-        CANGJIE_STDX_LIB_DEPENDS chir
-        CANGJIE_STD_LIB_LINK std-core std-collection
+        CANGJIE_STDX_LIB_DEPENDS chir encoding.json.stream encoding.hex crypto.digest
+        CANGJIE_STD_LIB_LINK std-core std-collection std-fs std-env std-io std-sort
         OBJECTS ${output_cj_object_dir}/stdx/aspect_cj.o)
 
     add_library(stdx.aspect_cj STATIC ${output_cj_object_dir}/stdx/aspect_cj.o)
@@ -959,6 +959,44 @@ if(NOT CANGJIE_CJPM_BUILD_TYPE AND NOT CANGJIE_BUILD_WITHOUT_CHIR AND NOT CANGJI
             CANGJIE_STDX_LIB_DEPENDS chir aspect_cj plugin.manager
             CANGJIE_STD_LIB_LINK std-core std-collection std-fs std-convert std-io
             OBJECTS ${output_cj_object_dir}/stdx/aspect_cj.plugins.weave_aspects.o)
+
+        add_cangjie_library(
+            cangjie${BACKEND_TYPE}CollectRules
+            NO_SUB_PKG
+            IS_PACKAGE
+            IS_CJNATIVE_BACKEND
+            PACKAGE_NAME "aspect_cj.plugins.collect_rules"
+            MODULE_NAME "stdx"
+            SOURCES ${COLLECT_RULES_SRCS}
+            SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/stdx/aspect_cj/plugins/collect_rules
+            DEPENDS ${ASPECT_CJ_PLUGINS_DEPENDENCIES}
+            LINK_MACRO_LIBS -l-macro_stdx.plugin)
+
+        make_cangjie_lib(
+            collect_rules IS_SHARED
+            DEPENDS cangjie${BACKEND_TYPE}CollectRules
+            CANGJIE_STDX_LIB_DEPENDS chir aspect_cj plugin.manager
+            CANGJIE_STD_LIB_LINK std-core
+            OBJECTS ${output_cj_object_dir}/stdx/aspect_cj.plugins.collect_rules.o)
+
+        add_cangjie_library(
+            cangjie${BACKEND_TYPE}WeaveRules
+            NO_SUB_PKG
+            IS_PACKAGE
+            IS_CJNATIVE_BACKEND
+            PACKAGE_NAME "aspect_cj.plugins.weave_rules"
+            MODULE_NAME "stdx"
+            SOURCES ${WEAVE_RULES_SRCS}
+            SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/stdx/aspect_cj/plugins/weave_rules
+            DEPENDS ${ASPECT_CJ_PLUGINS_DEPENDENCIES}
+            LINK_MACRO_LIBS -l-macro_stdx.plugin)
+
+        make_cangjie_lib(
+            weave_rules IS_SHARED
+            DEPENDS cangjie${BACKEND_TYPE}WeaveRules
+            CANGJIE_STDX_LIB_DEPENDS chir aspect_cj plugin.manager
+            CANGJIE_STD_LIB_LINK std-core
+            OBJECTS ${output_cj_object_dir}/stdx/aspect_cj.plugins.weave_rules.o)
     endif()
 endif()
 
@@ -1003,6 +1041,35 @@ add_cangjie_library(
     SOURCES ${JSON_STREAM_SRCS}
     SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/stdx/encoding/json/stream
     DEPENDS ${ENCODING_JSON_STREAM_DEPENDENCIES})
+
+# The staged aspect_cj driver is a host tool. Build and install it only when
+# the matching CHIR/plugin packages can run on this native Linux host.
+if(NOT CANGJIE_CJPM_BUILD_TYPE AND NOT CANGJIE_BUILD_WITHOUT_CHIR
+        AND NOT CANGJIE_BUILD_WITHOUT_ASPECT_CJ AND NOT CANGJIE_BUILD_WITHOUT_PLUGIN
+        AND CMAKE_SYSTEM_NAME STREQUAL "Linux" AND NOT CMAKE_CROSSCOMPILING)
+    string(TOLOWER "${TARGET_TRIPLE_DIRECTORY_PREFIX}_${CJNATIVE_BACKEND}" _aspect_driver_triple)
+    set(_aspect_driver_module_dir "${CMAKE_BINARY_DIR}/modules/${_aspect_driver_triple}")
+    set(_aspect_driver_lib_dir "${CMAKE_BINARY_DIR}/lib/${_aspect_driver_triple}${SANITIZER_SUBPATH}")
+    set(_aspect_driver_output "${CMAKE_BINARY_DIR}/bin/aspect-cj-driver")
+    add_custom_command(
+        OUTPUT ${_aspect_driver_output}
+        COMMAND ${CMAKE_COMMAND} -E make_directory "${CMAKE_BINARY_DIR}/bin"
+        COMMAND ${CMAKE_COMMAND} -E env
+            "CANGJIE_PATH=${_aspect_driver_module_dir}"
+            "LD_LIBRARY_PATH=${_aspect_driver_lib_dir}:$ENV{LD_LIBRARY_PATH}"
+            cjc "${CMAKE_SOURCE_DIR}/build/aspect_cj_driver/main.cj" --experimental
+            --import-path "${_aspect_driver_module_dir}/stdx" -L "${_aspect_driver_lib_dir}"
+            -lstdx.aspect_cj -lstdx.encoding.json -lstdx.encoding.json.stream
+            -o "${_aspect_driver_output}"
+        DEPENDS "${CMAKE_SOURCE_DIR}/build/aspect_cj_driver/main.cj"
+            aspect_cj collect_rules weave_rules
+            cangjie${BACKEND_TYPE}Json cangjie${BACKEND_TYPE}JsonStream
+        VERBATIM
+        COMMENT "Generating aspect-cj-driver")
+    add_custom_target(aspect_cj_driver ALL DEPENDS ${_aspect_driver_output})
+    install(PROGRAMS ${_aspect_driver_output}
+        DESTINATION ${_aspect_driver_triple}${SANITIZER_SUBPATH}/bin)
+endif()
 
 if(NOT WIN32)
     # Fuzz library is not expect to be sancov instrumented:

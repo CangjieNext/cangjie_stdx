@@ -49,8 +49,32 @@ public class Package <: ToString {
     internal var _structDefs = ArrayList<StructDef>()
     internal var _packageInitFunc: ?Function = None
     internal var _packageLiteralInitFunc: ?Function = None
+    internal var _annotationMetadataVersion: UInt8 = 0
+    internal var _aspectWeaveState: UInt8 = 0
+    internal var _aspectWeavePlanDigest: String = ""
     private let _accessLevel: AccessLevel
     private let _name: String
+
+    /** 0 means legacy/unknown annotation metadata; 1 means resolved snapshots are available. */
+    public prop annotationMetadataVersion: UInt8 {
+        get() { _annotationMetadataVersion }
+    }
+
+    /** 0 is Raw; 1 means a rule plan has already been applied. */
+    public prop aspectWeaveState: UInt8 { get() { _aspectWeaveState } }
+
+    public prop aspectWeavePlanDigest: String { get() { _aspectWeavePlanDigest } }
+
+    public func markAspectWeaveApplied(digest: String): Unit {
+        if (_aspectWeaveState != 0 || _aspectWeavePlanDigest != "") {
+            throw IllegalArgumentException("already-woven: ${name}")
+        }
+        if (digest.size != 64) {
+            throw IllegalArgumentException("invalid rule plan digest")
+        }
+        _aspectWeaveState = 1
+        _aspectWeavePlanDigest = digest
+    }
 
     /**
      * Gets the access level of this package.

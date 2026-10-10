@@ -9,4 +9,14 @@ add_subdirectory(plugins)
 
 set(ASPECT_CJ_SRCS
     aspect_cj.cj
+    rule_annotations.cj
+    rule_expression.cj
+    rule_graph.cj
+    rule_match.cj
+    rule_control.cj
+    rule_wire.cj
+    rule_plan.cj
+    rule_collect.cj
+    rule_apply.cj
+    rule_context.cj
     CACHE INTERNAL "")

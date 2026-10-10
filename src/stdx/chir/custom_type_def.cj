@@ -248,6 +248,11 @@ sealed abstract class CustomTypeDef <: Base & Equatable<CustomTypeDef> & Hashabl
         }
     }
 
+    /** Compiler-resolved annotations on this type, or Unknown for legacy CHIR. */
+    public prop annotationSnapshot: AnnotationSnapshot {
+        get() { _annoInfo.snapshot }
+    }
+
     /**
      * Gets or sets the extend definitions nested under this type (e.g. inner extend blocks).
      * @type { Array<ExtendDef> }

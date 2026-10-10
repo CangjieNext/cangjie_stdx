@@ -320,7 +320,7 @@ protected func parseFunctionTypePattern(value: String): ?FunctionTypePattern {
     return Some(FunctionTypePattern(parameters.getOrThrow(), returnType))
 }
 
-private func normalizeStdCoreTypeName(value: String): String {
+protected func normalizeStdCoreTypeName(value: String): String {
     let prefix = "std.core."
     return if (!value.contains("*") && value.startsWith(prefix)) {
         value[prefix.size..]
@@ -329,7 +329,7 @@ private func normalizeStdCoreTypeName(value: String): String {
     }
 }
 
-private struct ParameterizedTypeName {
+protected struct ParameterizedTypeName {
     let base: String
     let arguments: Array<String>
     public init(base: String, arguments: Array<String>) {
@@ -338,7 +338,7 @@ private struct ParameterizedTypeName {
     }
 }
 
-private func parseParameterizedTypeName(value: String): ?ParameterizedTypeName {
+protected func parseParameterizedTypeName(value: String): ?ParameterizedTypeName {
     let text = value.trimAscii()
     let bytes = text.toArray()
     var open: ?Int64 = None

@@ -17,6 +17,9 @@
 | [InsertAtEntry](./aspect_cj_package_api/aspect_cj_package_classes.md#class-insertatentry) | 一个注解类，提供一种切面能力。在注解所指定方法的入口，织入对被注解标注的函数的调用。 |
 | [InsertAtExit](./aspect_cj_package_api/aspect_cj_package_classes.md#class-insertatexit) | 一个注解类，提供一种切面能力。在注解所指定方法的退出点，织入对被注解标注的函数的调用。 |
 | [ReplaceFuncBody](./aspect_cj_package_api/aspect_cj_package_classes.md#class-replacefuncbody) | 一个注解类，提供一种切面能力。将注解所指定方法的方法体，替换为对被注解标注的函数的调用。 |
+| [PointcutRule](./aspect_cj_package_api/aspect_cj_package_classes.md#class-pointcutrule) | 定义可复用的原子切点；可按业务注解的解析后全名过滤目标。 |
+| [PointcutExpression](./aspect_cj_package_api/aspect_cj_package_classes.md#class-pointcutexpression) | 以 AND、OR、NOT 组合当前切面包中的切点规则。 |
+| [InsertAtEntryByRule](./aspect_cj_package_api/aspect_cj_package_classes.md#class-insertatentrybyrule) / [InsertAtExitByRule](./aspect_cj_package_api/aspect_cj_package_classes.md#class-insertatexitbyrule) | 用规则选择入口或正常出口的织入目标。 |
 
 ## 规格和使用
 
@@ -71,3 +74,5 @@
 这两个编译插件以动态库的形式在 stdx.aspect_cj 中提供，不同平台提供不同版本。
 
 应先使用 libstdx.collect_aspects，在编译时收集所有切面、连接点信息；再使用 libstdx.weave_aspects 进行二次编译，把之前收集的切面织入到连接点。
+
+新式规则模式还需要 `libstdx.collect_rules`、`libstdx.weave_rules` 与匹配版本的编译器。其设计、配置、阶段屏障及兼容边界见[规则切点实现设计](./aspect_cj_rule_design.md)。旧的两个插件不自动升级到规则模式。

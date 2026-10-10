@@ -16,7 +16,9 @@ package stdx.chir
  * also builds these when lowering source annotations.
  */
 public class CustomAnnoInstance <: ToString {
-    internal var _argValues = ArrayList<String>()
+    private var _argValues = ArrayList<String>()
+    internal var _revision: UInt64 = 0
+    internal var _revisionExhausted = false
     internal let _classSrcCodeName: String
     internal let _loc: DebugLocation
 
@@ -29,6 +31,9 @@ public class CustomAnnoInstance <: ToString {
             _argValues.toArray()
         }
         set(v) {
+            // Saturate and poison instead of wrapping around to an old baseline.
+            if (_revision == UInt64.Max) { _revisionExhausted = true }
+            else { _revision++ }
             _argValues = ArrayList<String>.of(v)
         }
     }
@@ -92,18 +97,38 @@ internal class AnnoInfo <: ToString {
     // @class1Name[v1, v2, ...]
     // @class2Name[v1, v2, ...]
     // func foo() { ... }
-    internal var _annoInstances = ArrayList<CustomAnnoInstance>()
+    private var instances = ArrayList<CustomAnnoInstance>()
+    private let snapshotGuard = AnnotationSnapshotGuard()
+    internal mut prop _annoInstances: ArrayList<CustomAnnoInstance> {
+        // Container mutations must use the setter/addInstance. Keep element
+        // references shared, as required by the existing public API.
+        get() { instances.clone() }
+        set(value) {
+            snapshotGuard.invalidate()
+            instances = value
+        }
+    }
+    internal prop snapshot: AnnotationSnapshot {
+        get() { snapshotGuard.read(instances.toArray()) }
+    }
+
+    internal func installSnapshot(snapshot: AnnotationSnapshot): Unit {
+        snapshotGuard.install(snapshot, instances.toArray())
+    }
+
+    internal func addInstance(instance: CustomAnnoInstance): Unit {
+        snapshotGuard.invalidate()
+        instances.add(instance)
+    }
     // annotation factory function mangled name
     internal var _identifier: String = "none"
 
     internal init() {
         this._identifier = "none"
-        this._annoInstances = ArrayList<CustomAnnoInstance>()
     }
 
     internal init(identifier: String) {
         this._identifier = identifier
-        this._annoInstances = ArrayList<CustomAnnoInstance>()
     }
 
     /**
