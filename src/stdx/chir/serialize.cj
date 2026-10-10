@@ -387,10 +387,11 @@ class CHIRSerializerImpl {
 
     private func serializeCustomAnnoInstance(anno: CustomAnnoInstance): UInt32 {
         let annoClassName = fbBuilder.createString(anno._classSrcCodeName)
-        let argValuesVec: UInt32 = if (anno._argValues.isEmpty()) {
+        let args = anno.argValues
+        let argValuesVec: UInt32 = if (args.isEmpty()) {
             UInt32(0)
         } else {
-            let strOffsets = Array<UInt32>(anno._argValues.size, { i => fbBuilder.createString(anno._argValues[i]) })
+            let strOffsets = Array<UInt32>(args.size, { i => fbBuilder.createString(args[i]) })
             fbBuilder.createVectorOfTables(strOffsets)
         }
         let loc: UInt32 = serializeDebugLocation(anno._loc)
@@ -398,6 +399,7 @@ class CHIRSerializerImpl {
     }
 
     private func serializeAnnoInfo(obj: AnnoInfo): UInt32 {
+        let snapshot = obj.snapshot
         let mangledName = fbBuilder.createString(obj._identifier)
         let annoInstancesVec: UInt32 = if (obj._annoInstances.isEmpty()) {
             UInt32(0)
@@ -405,7 +407,38 @@ class CHIRSerializerImpl {
             let instanceOffsets = Array<UInt32>(obj._annoInstances.size, { i => serializeCustomAnnoInstance(obj._annoInstances[i]) })
             fbBuilder.createVectorOfTables(instanceOffsets)
         }
-        return CHIRFormat_AnnoInfo.createAnnoInfo(fbBuilder, mangledName, annoInstancesVec)
+        let resolvedOffsets = ArrayList<UInt32>()
+        if (let Some(items) <- snapshot.items) {
+            for (annotation in items) {
+                let fieldOffsets = ArrayList<UInt32>()
+                if (let Some(fields) <- annotation.scalarFields) {
+                    for (field in fields) {
+                        let name = fbBuilder.createString(field.name)
+                        let (kind, stringValue, boolValue) = match (field.value) {
+                            case AnnotationScalarValue.StringValue(value) =>
+                                (CHIRFormat_AnnotationScalarKind.AnnotationScalarKind_STRING,
+                                    fbBuilder.createString(value), false)
+                            case AnnotationScalarValue.BoolValue(value) =>
+                                (CHIRFormat_AnnotationScalarKind.AnnotationScalarKind_BOOL, UInt32(0), value)
+                        }
+                        fieldOffsets.add(CHIRFormat_AnnotationScalarField.createAnnotationScalarField(
+                            fbBuilder, name, kind, stringValue, boolValue))
+                    }
+                }
+                let fieldVector = if (fieldOffsets.isEmpty()) { UInt32(0) }
+                    else { fbBuilder.createVectorOfTables(fieldOffsets.toArray()) }
+                resolvedOffsets.add(CHIRFormat_ResolvedAnnotation.createResolvedAnnotation(fbBuilder,
+                    fbBuilder.createString(annotation.qualifiedClassName),
+                    fbBuilder.createString(annotation.declarationSymbol),
+                    serializeDebugLocation(annotation.location), annotation.scalarFields.isSome(), fieldVector))
+            }
+        }
+        let resolvedVector = if (resolvedOffsets.isEmpty()) { UInt32(0) }
+            else { fbBuilder.createVectorOfTables(resolvedOffsets.toArray()) }
+        let sourcePackage = if (snapshot.isComplete) { fbBuilder.createString(snapshot.sourcePackage) } else { UInt32(0) }
+        let sourceDeclId = if (snapshot.isComplete) { fbBuilder.createString(snapshot.sourceDeclId) } else { UInt32(0) }
+        return CHIRFormat_AnnoInfo.createAnnoInfo(fbBuilder, mangledName, annoInstancesVec,
+            snapshot.isComplete, sourcePackage, sourceDeclId, resolvedVector)
     }
 
     private func serializeValue(obj: Value): UInt32 {
@@ -445,8 +478,10 @@ class CHIRSerializerImpl {
             fbBuilder.createVectorOfTables(featOffsets)
         }
         let annoInfo = serializeAnnoInfo(obj._annoInfo)
+        let aspectSourceOrigin = fbBuilder.createString(obj._aspectSourceOrigin)
         return CHIRFormat_GlobalValue.createGlobalValue(
-            fbBuilder, base, srcCodeName, rawMangledName, packageName, declaredParent, featuresVec, annoInfo
+            fbBuilder, base, srcCodeName, rawMangledName, packageName, declaredParent, featuresVec, annoInfo,
+            aspectSourceOrigin
         )
     }
 
@@ -1497,7 +1532,10 @@ class CHIRSerializerImpl {
             defsVec,
             packageInitFunc,
             CHIRFormat_Phase.Phase_RAW,
-            packageLiteralInitFunc
+            packageLiteralInitFunc,
+            pkg._annotationMetadataVersion,
+            pkg._aspectWeaveState,
+            fbBuilder.createString(pkg._aspectWeavePlanDigest)
         )
 
         fbBuilder.finishWithFileIdentifier(rootTable, "CHIR".toArray())

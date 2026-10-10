@@ -25,7 +25,7 @@ internal func annoInstanceToString(obj: CustomAnnoInstance, indent: UInt64): Str
     result.append("@")
     result.append(obj._classSrcCodeName)
     result.append("[")
-    result.append(String.join(obj._argValues.toArray(), delimiter: ", "))
+    result.append(String.join(obj.argValues, delimiter: ", "))
     result.append("]")
     return result.toString()
 }

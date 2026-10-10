@@ -595,6 +595,7 @@ sealed abstract class GlobalValue <: Value & Equatable<GlobalValue> {
     internal var _declaredParent: ?CustomTypeDef = None
     internal let _packageName: String
     internal var _rawMangledName: String = ""
+    internal var _aspectSourceOrigin: String = ""
     internal let _srcCodeName: String
     internal var _features = ArrayList<String>()
 
@@ -609,6 +610,11 @@ sealed abstract class GlobalValue <: Value & Equatable<GlobalValue> {
         set(v) {
             _annoInfo._annoInstances = ArrayList<CustomAnnoInstance>.of(v)
         }
+    }
+
+    /** Compiler-resolved annotations on this declaration, or Unknown for legacy CHIR. */
+    public prop annotationSnapshot: AnnotationSnapshot {
+        get() { _annoInfo.snapshot }
     }
 
     /**
@@ -660,6 +666,9 @@ sealed abstract class GlobalValue <: Value & Equatable<GlobalValue> {
             return _srcCodeName
         }
     }
+
+    /** Original source declaration for a concrete generic execution body. */
+    public prop aspectSourceOrigin: String { get() { _aspectSourceOrigin } }
 
     internal init(kind: ValueKind, ty: Type, identifier: String, srcName: String, pkgName: String) {
         super(kind, ty, identifier)
@@ -1014,6 +1023,16 @@ public class Function <: GlobalValue & Equatable<Function> {
      */
     public func isAnnoFactoryFunc(): Bool {
         return _funcKind == FuncKind.AnnoFactoryFunc
+    }
+
+    /** Whether this is a normal executable source body rather than a template or compiler helper. */
+    public func isAspectExecutableSourceBody(): Bool {
+        if (let Some(parent) <- _declaredParent) {
+            if (parent.isGeneric()) { return false }
+        }
+        return _funcKind == FuncKind.Default && !isGeneric() && !isImported() &&
+            !isForeign() && !isAbstract() && _body.isSome() &&
+            (!isCompilerAdd() || !_aspectSourceOrigin.isEmpty())
     }
 
     /**

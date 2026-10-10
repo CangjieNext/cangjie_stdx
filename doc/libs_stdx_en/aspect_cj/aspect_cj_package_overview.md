@@ -17,6 +17,9 @@ The `stdx.aspect_cj` package provides annotations for Aspect-Oriented Programmin
 | [InsertAtEntry](./aspect_cj_package_api/aspect_cj_package_classes.md#class-insertatentry) | An annotation class that provides aspect capability. Injects a call to the annotated function at the entry point of the specified method. |
 | [InsertAtExit](./aspect_cj_package_api/aspect_cj_package_classes.md#class-insertatexit) | An annotation class that provides aspect capability. Injects a call to the annotated function at the exit point of the specified method. |
 | [ReplaceFuncBody](./aspect_cj_package_api/aspect_cj_package_classes.md#class-replacefuncbody) | An annotation class that provides aspect capability. Replaces the method body of the specified method with a call to the annotated function. |
+| [PointcutRule](./aspect_cj_package_api/aspect_cj_package_classes.md#class-pointcutrule) | Defines a reusable atomic pointcut, including a resolved business-annotation filter. |
+| [PointcutExpression](./aspect_cj_package_api/aspect_cj_package_classes.md#class-pointcutexpression) | Combines rules in the same aspect package with AND, OR, and NOT. |
+| [InsertAtEntryByRule](./aspect_cj_package_api/aspect_cj_package_classes.md#class-insertatentrybyrule) / [InsertAtExitByRule](./aspect_cj_package_api/aspect_cj_package_classes.md#class-insertatexitbyrule) | Selects entry or normal-exit join points by rule. |
 
 ## Specifications and Usage
 
@@ -71,3 +74,5 @@ To fully implement AOP functionality, in addition to using the aforementioned an
 These compilation plugins are provided as dynamic libraries in stdx.aspect_cj, with different versions for different platforms.
 
 First, use libstdx.collect_aspects to collect all aspect and join point information during compilation. Then use libstdx.weave_aspects for secondary compilation to weave the collected aspects into the join points.
+
+Rule-based pointcuts additionally require `libstdx.collect_rules`, `libstdx.weave_rules`, and a matching compiler. The installed Linux/cjnative `aspect-cj-driver` coordinates source collection, pure source selection, preflight, application, and final publication; the original two plugins do not automatically switch to rule mode. The implementation design and current platform boundary are described in the [Chinese design document](../../libs_stdx/aspect_cj/aspect_cj_rule_design.md).

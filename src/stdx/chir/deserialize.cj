@@ -139,6 +139,9 @@ class CHIRDeserializerImpl {
         // 7. fill in package's information
         pkg._packageInitFunc = tryGetValueAs<Function>(pkgFormat.GetPackageInitFunc())
         pkg._packageLiteralInitFunc = tryGetValueAs<Function>(pkgFormat.GetPackageLiteralInitFunc())
+        pkg._annotationMetadataVersion = pkgFormat.GetAnnotationMetadataVersion()
+        pkg._aspectWeaveState = pkgFormat.GetAspectWeaveState()
+        pkg._aspectWeavePlanDigest = pkgFormat.GetAspectWeavePlanDigest()
 
         // 8. add all extends
         addAllExtends()
@@ -534,7 +537,7 @@ class CHIRDeserializerImpl {
         }
         let anno = CustomAnnoInstance(className, loc)
         let argValues = annoFormat.GetArgValues()
-        anno._argValues = ArrayList<String>(argValues.size, { i => argValues[i].getOrThrow() })
+        anno.argValues = Array<String>(argValues.size, { i => argValues[i].getOrThrow() })
         return anno
     }
 
@@ -543,8 +546,55 @@ class CHIRDeserializerImpl {
         let annoInfo = AnnoInfo(mangledName)
         if (let annoInstanceFormat <- annoInfoFormat.GetAnnoInstances() && !annoInstanceFormat.isEmpty()) {
             for (anno in annoInstanceFormat) {
-                annoInfo._annoInstances.add(deserializeAnnoInstance(anno.getOrThrow()))
+                annoInfo.addInstance(deserializeAnnoInstance(anno.getOrThrow()))
             }
+        }
+        if (annoInfoFormat.GetSnapshotComplete()) {
+            let sourcePackage = annoInfoFormat.GetSourcePackage()
+            let sourceDeclId = annoInfoFormat.GetSourceDeclId()
+            if (sourcePackage.isEmpty() || sourceDeclId.isEmpty()) {
+                throw CHIRException("complete annotation snapshot is missing its source identity")
+            }
+            let items = ArrayList<ResolvedAnnotation>()
+            for (rawItem in annoInfoFormat.GetResolvedAnnotations()) {
+                let item = rawItem.getOrThrow()
+                let qualifiedName = item.GetQualifiedClassName()
+                let symbol = item.GetDeclarationSymbol()
+                if (qualifiedName.isEmpty() || symbol.isEmpty()) {
+                    throw CHIRException("malformed resolved annotation identity")
+                }
+                let location = if (let Some(rawLocation) <- item.GetLoc()) {
+                    deserializeDebugLocation(rawLocation)
+                } else {
+                    throw CHIRException("resolved annotation is missing its location")
+                }
+                let fields: ?Array<AnnotationScalarField> = if (item.GetScalarFieldsComplete()) {
+                    let decoded = ArrayList<AnnotationScalarField>()
+                    for (rawField in item.GetScalarFields()) {
+                        let field = rawField.getOrThrow()
+                        if (field.GetName().isEmpty()) {
+                            throw CHIRException("annotation scalar field has no name")
+                        }
+                        let value = match (field.GetKind()) {
+                            case CHIRFormat_AnnotationScalarKind.AnnotationScalarKind_STRING =>
+                                AnnotationScalarValue.StringValue(field.GetStringValue())
+                            case CHIRFormat_AnnotationScalarKind.AnnotationScalarKind_BOOL =>
+                                AnnotationScalarValue.BoolValue(field.GetBoolValue())
+                        }
+                        decoded.add(AnnotationScalarField(field.GetName(), value))
+                    }
+                    Some(decoded.toArray())
+                } else {
+                    if (!item.GetScalarFields().isEmpty()) {
+                        throw CHIRException("unavailable annotation fields have serialized values")
+                    }
+                    None
+                }
+                items.add(ResolvedAnnotation(qualifiedName, symbol, location, fields))
+            }
+            annoInfo.installSnapshot(AnnotationSnapshot(sourcePackage, sourceDeclId, items.toArray()))
+        } else if (!annoInfoFormat.GetResolvedAnnotations().isEmpty()) {
+            throw CHIRException("unknown annotation snapshot has serialized values")
         }
         return annoInfo
     }
@@ -1790,6 +1840,7 @@ class CHIRDeserializerImpl {
 
         // Set rawManlgedName
         globalValue._rawMangledName = globalValueFormat.GetRawMangledName()
+        globalValue._aspectSourceOrigin = globalValueFormat.GetAspectSourceOrigin()
 
         // Set declaredParent
         if (let Some(v) <- tryGetCustomTypeDef(globalValueFormat.GetDeclaredParent())) {

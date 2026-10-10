@@ -7,3 +7,5 @@
 
 add_subdirectory(collect_aspects)
 add_subdirectory(weave_aspects)
+add_subdirectory(collect_rules)
+add_subdirectory(weave_rules)

@@ -103,3 +103,44 @@ Parameters:
 - methodName!: String - The name of the target function, e.g., "foo";
 - isStatic!: Bool - Indicates whether the target function is a static member function;
 - recursive!: Bool - For member functions, indicates whether to apply to override versions in subclasses; otherwise, this field should be false.
+
+## class PointcutRule
+
+```cangjie
+public class PointcutRule {
+    public const init(packageName!: String, className!: String, methodName!: String,
+        funcTypeStr!: String, targetKind!: String, recursive!: Bool, annotationName!: String)
+}
+```
+
+Defines a reusable atomic pointcut on a top-level ordinary class in the aspect package. The first four fields follow the existing wildcard syntax. `targetKind` is `any`, `global`, `static`, or `instance`. A nonempty `annotationName` matches the resolved fully qualified class name of a direct business annotation, not a source alias or an unrelated class with the same short name. `recursive` extends receiver-type matching to ancestors; it does not inherit annotations. All named arguments are required.
+
+## class PointcutExpression
+
+```cangjie
+public class PointcutExpression {
+    public const init(packageScope!: String, expression!: String)
+}
+```
+
+Combines rule class names from the same aspect package using parentheses, `NOT`, `AND`, and `OR` (in descending precedence). `packageScope` limits this rule's own target-package scope. Both named arguments are required.
+
+## class InsertAtEntryByRule
+
+```cangjie
+public class InsertAtEntryByRule {
+    public const init(rule!: String)
+}
+```
+
+Calls the annotated public global or static advice at the entry of targets selected by the fully qualified `rule` ID. Advice returns `Unit` and accepts either no explicit argument or one exact `Array<Any>`. The array excludes implicit `this` and does not write back target parameters.
+
+## class InsertAtExitByRule
+
+```cangjie
+public class InsertAtExitByRule {
+    public const init(rule!: String)
+}
+```
+
+Uses the same rule and advice signature as `InsertAtEntryByRule`, but runs only at normal exits. An uncaught target exception does not run this exit advice.
