@@ -469,6 +469,14 @@ protected func containsMetadataControlCharacter(value: String): Bool {
     return false
 }
 
+protected func isValidMetadataPatternText(value: String): Bool {
+    // CHIR stores annotation string arguments as source literal text, so an
+    // escaped newline may arrive as two bytes ('\\' and 'n'), not byte 10.
+    // Pattern fields are names/types, not an escape language. Reject escapes
+    // explicitly instead of silently writing an unmatchable metadata record.
+    return !containsMetadataControlCharacter(value) && !value.contains("\\")
+}
+
 protected func isValidPackageNamePattern(value: String): Bool {
     if (value.isEmpty() || value.contains("/") || value.contains("\\") || value.contains("..")) {
         return false

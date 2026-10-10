@@ -59,6 +59,7 @@ The `stdx.aspect_cj` package provides annotations for Aspect-Oriented Programmin
 - In `funcTypeStr`, a standalone `*` matches one type and a standalone `**` in the parameter list matches zero or more parameters. Qualified type names use the same `*` and `**` rules;
 - At most one standalone `**` is allowed in a parameter list. A wildcard `funcTypeStr` must be used with the `Array<Any>` argument mode;
 - The `this` type of an instance-member aspect is statically fixed, so its `packageName` and `className` must be exact.
+- Write names and type patterns directly in configuration fields. Backslash escapes (including `\n`, `\r`, and `\u{...}` in string literals) are not supported. Control characters or escape text are rejected during collection rather than producing rules that cannot match.
 
 ### Usage
 
