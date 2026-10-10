@@ -86,8 +86,8 @@ sealed abstract class JsonValue <: ToString {
     public static func fromStr(s: String): JsonValue {
         parseString(s)
     }
-    public static exclave func fromStrLocal(s: String): JsonValue @local! {
-        parseStringLocal(s)
+    public static exclave func fromStr(s: String @local!): JsonValue @local! {
+        parseString(s)
     }
 
     /**
