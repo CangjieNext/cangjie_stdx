@@ -188,8 +188,8 @@ class CollectAspects {
         }
         let className = argValues[1]
         let methodName = argValues[2]
-        if (containsMetadataControlCharacter(className) || containsMetadataControlCharacter(methodName)) {
-            printError("Function '${f.srcCodeName}' has a className or methodName containing a control character unsupported by aspect metadata.")
+        if (!isValidMetadataPatternText(className) || !isValidMetadataPatternText(methodName)) {
+            printError("Function '${f.srcCodeName}' has a className or methodName containing a control character or escape sequence unsupported by aspect metadata.")
             return false
         }
         let isStatic = argValues[3]
@@ -219,8 +219,8 @@ class CollectAspects {
         let className = annoArgValues[1]
         let isStatic = Bool.parse(annoArgValues[3])
         let wovenFuncTypeStr = annoArgValues[5]
-        if (containsMetadataControlCharacter(wovenFuncTypeStr)) {
-            printError("${f.srcCodeName}: funcTypeStr contains a control character unsupported by aspect metadata.")
+        if (!isValidMetadataPatternText(wovenFuncTypeStr)) {
+            printError("${f.srcCodeName}: funcTypeStr contains a control character or escape sequence unsupported by aspect metadata.")
             return false
         }
         if (f.funcType.returnType != UnitType.get()) {
