@@ -346,14 +346,17 @@ function(add_cangjie_library target_name
     set(COMPILE_CMD ${COMPILE_CMD} ${output_argument} ${output_full_name})
     
     if(CANGJIE_CODEGEN_CJNATIVE_BACKEND)
+        # use -O0 to avoid llc errors
+        # to be fffixed by llvm team
         if(TRIPLE STREQUAL "arm-linux-ohos")
             list(APPEND COMPILE_CMD "$<IF:$<CONFIG:MinSizeRel>,-Os,-O0>")
             # .bc files is for LTO mode and LTO mode does not support -Os and -Oz.
             list(APPEND COMPILE_BC_CMD "-O0")
         else()
-            list(APPEND COMPILE_CMD "$<IF:$<CONFIG:MinSizeRel>,-Os,-O2>")
+            #list(APPEND COMPILE_CMD "$<IF:$<CONFIG:MinSizeRel>,-Os,-O2>")
+            list(APPEND COMPILE_CMD -O0 -g)
             # The .bc files is for LTO mode and LTO mode does not support -Os and -Oz.
-            list(APPEND COMPILE_BC_CMD "-O2")
+            list(APPEND COMPILE_BC_CMD "-O0" -g)
         endif()
     endif()
     

@@ -3,7 +3,7 @@ package stdx.encoding.json
 import std.collection.*
 import std.convert.*
 
-exclave func parseStringLocal(str: String): JsonValue @local! {
+exclave func parseString(str: String @local!): JsonValue @local! {
     if (str.size == 0) {
         throw JsonException("Json String is empty!")
     }
@@ -23,7 +23,7 @@ exclave func parseStringLocal(str: String): JsonValue @local! {
     }
 }
 
-exclave func parseJson(parser: JsonParser @local!): JsonValue @local! {
+private exclave func parseJson(parser: JsonParser @local!): JsonValue @local! {
     skipWhiteSpace(parser)
     let start = requireCurrentByte(parser)
     match {
@@ -38,7 +38,7 @@ exclave func parseJson(parser: JsonParser @local!): JsonValue @local! {
     }
 }
 
-exclave func parseNestedJson(parser: JsonParser @local!, block: (JsonParser @local!) -> JsonValue @local!)
+private exclave func parseNestedJson(parser: JsonParser @local!, block: (JsonParser @local!) -> JsonValue @local!)
     : JsonValue @local! {
     parser.depth++
     if (parser.depth > MAX_JSON_PARSE_DEPTH) {
@@ -51,7 +51,7 @@ exclave func parseNestedJson(parser: JsonParser @local!, block: (JsonParser @loc
     }
 }
 
-exclave func parseJsonObject(parser: JsonParser @local!): JsonObject @local! {
+private exclave func parseJsonObject(parser: JsonParser @local!): JsonObject @local! {
     parser.offset++
     skipWhiteSpace(parser)
     let obj = JsonObject(INITIAL_JSON_OBJECT_CAPACITY) @local!
@@ -79,7 +79,7 @@ exclave func parseJsonObject(parser: JsonParser @local!): JsonObject @local! {
     return obj
 }
 
-exclave func parseJsonArray(parser: JsonParser @local!): JsonArray @local! {
+private exclave func parseJsonArray(parser: JsonParser @local!): JsonArray @local! {
     parser.offset++
     skipWhiteSpace(parser)
     let arr = JsonArray(INITIAL_JSON_ARRAY_CAPACITY) @local!
@@ -100,7 +100,7 @@ exclave func parseJsonArray(parser: JsonParser @local!): JsonArray @local! {
     return arr
 }
 
-exclave func parseJsonNull(parser: JsonParser @local!): JsonNull @local! {
+private exclave func parseJsonNull(parser: JsonParser @local!): JsonNull @local! {
     if (requireCurrentByte(parser) != b'n') {
         throw JsonException()
     }
@@ -140,7 +140,7 @@ private exclave func parseJsonTrue(parser: JsonParser @local!): JsonBool @local!
     return JsonBool(true)
 }
 
-exclave func parseJsonFalse(parser: JsonParser @local!): JsonBool @local! {
+private exclave func parseJsonFalse(parser: JsonParser @local!): JsonBool @local! {
     if (requireCurrentByte(parser) != b'f') {
         throw JsonException()
     }
@@ -164,7 +164,7 @@ exclave func parseJsonFalse(parser: JsonParser @local!): JsonBool @local! {
     return JsonBool(false)
 }
 
-exclave func tryParseJsonIntFast(parser: JsonParser @local!): (Bool, Int64) {
+private exclave func tryParseJsonIntFast(parser: JsonParser @local!): (Bool, Int64) {
     let start = parser.offset
     var isNegative = false
     if (parser.data[parser.offset] == b'-') {
@@ -239,7 +239,7 @@ exclave func tryParseJsonIntFast(parser: JsonParser @local!): (Bool, Int64) {
     return (true, Int64(result))
 }
 
-exclave func parseJsonNumberSlow(parser: JsonParser @local!): JsonValue @local! {
+private exclave func parseJsonNumberSlow(parser: JsonParser @local!): JsonValue @local! {
     var isFloat = false
     let leftIndex = parser.offset
     var rightIndex = parser.offset
@@ -262,7 +262,7 @@ exclave func parseJsonNumberSlow(parser: JsonParser @local!): JsonValue @local! 
             return JsonFloat(ensureFiniteJsonFloat(value))
         }
     }
-    let numStr = unsafe { String.fromUtf8Unchecked(parser.data[leftIndex..rightIndex]) }
+    let numStr = unsafe { String.fromUtf8UncheckedLocal(parser.data[leftIndex..rightIndex]) }
     return JsonInt(Int64.parse(numStr))
 }
 
@@ -274,13 +274,13 @@ private exclave func parseJsonNumber(parser: JsonParser @local!): JsonValue @loc
     return parseJsonNumberSlow(parser)
 }
 
-exclave func parseSign(parser: JsonParser @local!): Unit {
+private exclave func parseSign(parser: JsonParser @local!): Unit {
     if (parser.offset < parser.size && parser.data[parser.offset] == b'-') {
         parser.offset++
     }
 }
 
-exclave func parseNumberSystem(parser: JsonParser @local!): NumberSystem {
+private exclave func parseNumberSystem(parser: JsonParser @local!): NumberSystem {
     if (requireCurrentByte(parser) == b'0') {
         parser.offset++
         if (parser.offset >= parser.size) {
@@ -303,7 +303,7 @@ exclave func parseNumberSystem(parser: JsonParser @local!): NumberSystem {
     return Decimal
 }
 
-exclave func parseInteger(parser: JsonParser @local!, isNumber: (Byte) -> Bool): Unit {
+private exclave func parseInteger(parser: JsonParser @local!, isNumber: (Byte) -> Bool): Unit {
     var nextByte = requireCurrentByte(parser)
     var hasNumber = false
     if (nextByte == b'0') {
@@ -323,7 +323,7 @@ exclave func parseInteger(parser: JsonParser @local!, isNumber: (Byte) -> Bool):
     }
 }
 
-exclave func parseDecimal(parser: JsonParser @local!, numSystem: NumberSystem): Bool {
+private exclave func parseDecimal(parser: JsonParser @local!, numSystem: NumberSystem): Bool {
     if (parser.offset >= parser.size) {
         return false
     }
@@ -338,7 +338,7 @@ exclave func parseDecimal(parser: JsonParser @local!, numSystem: NumberSystem): 
     return parseDigit(parser)
 }
 
-exclave func parseExponent(parser: JsonParser @local!, numSystem: NumberSystem): Bool {
+private exclave func parseExponent(parser: JsonParser @local!, numSystem: NumberSystem): Bool {
     if (parser.offset >= parser.size) {
         return false
     }
@@ -358,7 +358,7 @@ exclave func parseExponent(parser: JsonParser @local!, numSystem: NumberSystem):
     return parseDigit(parser)
 }
 
-exclave func parseDigit(parser: JsonParser @local!): Bool {
+private exclave func parseDigit(parser: JsonParser @local!): Bool {
     var nextByte = requireCurrentByte(parser)
     var hasNumber = false
     while (nextByte >= b'0' && nextByte <= b'9') {
@@ -402,8 +402,11 @@ private exclave func parseJsonString(parser: JsonParser @local!): JsonString @lo
     var tmpStart = start
     while (next != b'\"') {
         if (next == b'\\') {
-            for (d in parser.data[tmpStart..parser.offset]) {
-                parser.strCache.add(d)
+            // Array @local! has no iterator; copy by index.
+            var i = tmpStart
+            while (i < parser.offset) {
+                parser.strCache.add(parser.data[i])
+                i++
             }
             parser.offset++
             handleEscape(parser)
@@ -413,15 +416,17 @@ private exclave func parseJsonString(parser: JsonParser @local!): JsonString @lo
         next = requireCurrentByte(parser)
     }
     parser.offset++
-    for (d in parser.data[tmpStart..parser.offset - 1]) {
-        parser.strCache.add(d)
+    var j = tmpStart
+    while (j < parser.offset - 1) {
+        parser.strCache.add(parser.data[j])
+        j++
     }
     let res = unsafe { JsonString(String.fromUtf8UncheckedLocal(parser.strCache.getRawArray()[0..parser.strCache.size])) @local! }
     parser.strCache.clear()
     return res
 }
 
-exclave func getNextHexNum(parser: JsonParser @local!): Byte {
+private exclave func getNextHexNum(parser: JsonParser @local!): Byte {
     parser.offset++
     let byte = requireCurrentByte(parser)
     if (!isHexNum(byte)) {
@@ -430,7 +435,7 @@ exclave func getNextHexNum(parser: JsonParser @local!): Byte {
     return byte
 }
 
-exclave func handleEscape(parser: JsonParser @local!): Unit {
+private exclave func handleEscape(parser: JsonParser @local!): Unit {
     match (requireCurrentByte(parser)) {
         case '\"' => parser.strCache.add(b'\"')
         case '\\' => parser.strCache.add(b'\\')
@@ -448,14 +453,18 @@ exclave func handleEscape(parser: JsonParser @local!): Unit {
             let arr: Array<Byte> @local! = [b'\'', b'\\', b'u', b'{',
                 byte1, byte2, byte3, byte4, b'}', b'\'']
             try {
-                let chr = unsafe { Rune.parse(String.fromUtf8UncheckedLocal(arr)) }
+                // Rune.parse has no local! overload yet; clone escape text to ~local for parse only.
+                let chr = unsafe { Rune.parse(String.fromUtf8Unchecked(arr)) }
                 if (UInt32(chr) <= 127) {
                     parser.strCache.add(UInt8(UInt32(chr)))
                 } else {
                     let str = chr.toString()
-                    unsafe { 
-                        for (d in str.rawData()) {
-                            parser.strCache.add(d)
+                    unsafe {
+                        let raw = str.rawData()
+                        var k = 0
+                        while (k < raw.size) {
+                            parser.strCache.add(raw[k])
+                            k++
                         }
                     }
                 }
@@ -472,8 +481,10 @@ exclave func handleEscape(parser: JsonParser @local!): Unit {
                 let byte6 = getNextHexNum(parser)
                 let byte7 = getNextHexNum(parser)
                 let byte8 = getNextHexNum(parser)
-                let str1 = unsafe { String.fromUtf8Unchecked([b'0', b'x', byte1, byte2, byte3, byte4]) }
-                let str2 = unsafe { String.fromUtf8Unchecked([b'0', b'x', byte5, byte6, byte7, byte8]) }
+                let hex1: Array<Byte> @local! = [b'0', b'x', byte1, byte2, byte3, byte4]
+                let hex2: Array<Byte> @local! = [b'0', b'x', byte5, byte6, byte7, byte8]
+                let str1 = unsafe { String.fromUtf8UncheckedLocal(hex1) }
+                let str2 = unsafe { String.fromUtf8UncheckedLocal(hex2) }
                 let rawNum1 = UInt32.parse(str1)
                 let rawNum2 = UInt32.parse(str2)
                 if (!isHighSurrogate(rawNum1) || !isLowSurrogate(rawNum2)) {
@@ -482,7 +493,14 @@ exclave func handleEscape(parser: JsonParser @local!): Unit {
                 let num1 = rawNum1 & 0b0000001111111111
                 let num2 = rawNum2 & 0b0000001111111111
                 let str = Rune((((UInt32(num1)) << 10) | (UInt32(num2))) + 0x10000).toString()
-                unsafe { for (d in str.rawData()) { parser.strCache.add(d) } }
+                unsafe {
+                    let raw = str.rawData()
+                    var k = 0
+                    while (k < raw.size) {
+                        parser.strCache.add(raw[k])
+                        k++
+                    }
+                }
             }
         case _ => throw JsonException("Fail to parseJsonString")
     }
