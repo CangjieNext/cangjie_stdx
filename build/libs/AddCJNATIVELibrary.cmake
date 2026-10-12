@@ -907,7 +907,7 @@ if(NOT CANGJIE_CJPM_BUILD_TYPE AND NOT CANGJIE_BUILD_WITHOUT_CHIR AND NOT CANGJI
     make_cangjie_lib(
         aspect_cj IS_SHARED
         DEPENDS cangjie${BACKEND_TYPE}AspectCj
-        CANGJIE_STDX_LIB_DEPENDS chir encoding.json.stream encoding.hex crypto.digest
+        CANGJIE_STDX_LIB_DEPENDS chir encoding.json encoding.json.stream encoding.hex crypto.digest
         CANGJIE_STD_LIB_LINK std-core std-collection std-fs std-env std-io std-sort
         OBJECTS ${output_cj_object_dir}/stdx/aspect_cj.o)
 

@@ -6,6 +6,7 @@
 package stdx.aspect_cj
 
 import std.collection.*
+import std.env.*
 
 var checks = 0
 var failures = 0
@@ -103,8 +104,13 @@ private func graphTests(): Unit {
     })
     let dag = RuleGraph("p", diamond, validateAtom, validateScope)
     let work = RuleWorkBudget(limit: 1000)
-    check(dag.evaluate(["p.R63"], true, scope, atom, work) == [true] && work.used == 378,
+    check(dag.evaluate(["p.R63"], true, scope, atom, work) == [true] && work.used == 635,
         "shared exponential expression remains a linear DAG with exact work accounting")
+    dag.validateRoots(["p.R0", "p.R63"])
+    check(rejected({ => dag.validateRoots(["p.Absent"]); () }, "unknown-root"),
+        "root validation rejects an unknown ID without evaluating targets")
+    check(rejected({ => dag.evaluate(["p.R63"], true, {_, _ => false}, atom,
+        RuleWorkBudget(limit: 256)); () }, "scratch"), "zero-match evaluation charges scratch before allocation")
     check(RuleGraph("p", Array<RuleDefinition>(4096, {i => RuleDefinition("p.A${i}", "shop")}),
         validateAtom, validateScope).size == 4096, "4096 rules")
     check(rejected({ => RuleGraph("p", Array<RuleDefinition>(4097, {i => RuleDefinition("p.A${i}", "shop")}),
@@ -294,6 +300,10 @@ private func selectionTests(): Unit {
     let target = RuleTargetSpec("shop.service", "UserService", [], "handleLogin",
         "(std.core.Array<Int64>)->Unit", true, false, ["shop.auth.RequireLogin"])
     let chosen = selectRuleAdvices(wire, target, true, RuleWorkBudget())
+    let prepared = PreparedRuleSource(wire)
+    check(prepared.encodedSize == encodeRuleWire(wire).size, "prepared metadata size matches the wire bytes")
+    check(prepared.select(target, true, RuleWorkBudget()).size == chosen.size,
+        "prepared source preserves selection")
     check(chosen.size == 2 && chosen[0].fields[1] == "_before" && chosen[1].fields[1] == "_after",
         "rule DAG selects both advices once for generic annotated method")
     let internalTarget = RuleTargetSpec("shop.service", "UserService", [], "handleInternalLogin",
@@ -357,7 +367,30 @@ private func selectionTests(): Unit {
         "PENDING is never selectable")
 }
 
+private func benchmarkPreparedSource(): Int64 {
+    let session = String.fromUtf8(Array<UInt8>(32, repeat: 97))
+    let hash = String.fromUtf8(Array<UInt8>(64, repeat: 97))
+    let records = ArrayList<RuleWireRecord>()
+    for (i in 0..1024) {
+        records.add(RuleWireRecord("R", "", 0, 0, ["bench.R${i}", "shop", "", "*",
+            "(**)->*", "global", "false", ""]))
+    }
+    for (i in 0..512) {
+        records.add(RuleWireRecord("A", "", 0, 0,
+            ["ENTRY", "advice${i}", "global", "none", "bench.R${i}"]))
+    }
+    let prepared = PreparedRuleSource(RuleWirePackage("READY", session, "bench", hash, hash, "init", records.toArray()))
+    let target = RuleTargetSpec("elsewhere", "", [], "business", "()->Unit", false, false, [])
+    let budget = RuleWorkBudget()
+    for (_ in 0..1000) {
+        if (!prepared.select(target, true, budget).isEmpty()) { return 1 }
+    }
+    println("prepared-sources=1 rules=1024 advices=512 targets=1000 work=${budget.used}")
+    return 0
+}
+
 main() {
+    if (getCommandLine().contains("--benchmark")) { return benchmarkPreparedSource() }
     contextTests()
     for (a in [false, true]) {
         for (b in [false, true]) {

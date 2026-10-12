@@ -17,6 +17,26 @@ import stdx.aspect_cj.*
 import stdx.encoding.json.*
 import stdx.encoding.json.stream.*
 
+@When[arch == "x86_64"]
+private const DRIVER_TRIPLE = "linux_x86_64_cjnative"
+@When[arch == "aarch64"]
+private const DRIVER_TRIPLE = "linux_aarch64_cjnative"
+
+private struct DependencySpec {
+    let name: String
+    let module: String
+    let library: String
+    let compilerSha256: String
+    let targetTriple: String
+    let dependencies: Array<String>
+    public init(name: String, module: String, library: String, compilerSha256: String,
+        targetTriple: String, dependencies: Array<String>) {
+        this.name = name; this.module = module; this.library = library
+        this.compilerSha256 = compilerSha256; this.targetTriple = targetTriple
+        this.dependencies = dependencies.clone()
+    }
+}
+
 private struct PackageSpec {
     let name: String
     let files: Array<String>
@@ -37,15 +57,47 @@ private struct BuildSpec {
     let stdxDir: String
     let sources: Array<PackageSpec>
     let targets: Array<PackageSpec>
+    let dependencies: Array<DependencySpec>
     public init(sessionId: String, sessionRoot: String, compiler: String, stdxDir: String,
-        sources: Array<PackageSpec>, targets: Array<PackageSpec>) {
+        sources: Array<PackageSpec>, targets: Array<PackageSpec>, dependencies: Array<DependencySpec>) {
         this.sessionId = sessionId
         this.sessionRoot = sessionRoot
         this.compiler = compiler
         this.stdxDir = stdxDir
         this.sources = sources.clone()
         this.targets = targets.clone()
+        this.dependencies = dependencies.clone()
     }
+}
+
+private func readDependency(reader: JsonReader): DependencySpec {
+    reader.startObject()
+    let seen = HashSet<String>()
+    var name = ""; var module = ""; var library = ""; var compilerSha256 = ""; var triple = ""
+    var dependencies: Array<String> = []
+    while (reader.peek() != EndObject) {
+        let key = reader.readName()
+        if (!seen.add(key)) { throw IllegalArgumentException("driver-config: duplicate dependency key") }
+        match (key) {
+            case "packageName" => name = reader.readValue<String>()
+            case "module" => module = reader.readValue<String>()
+            case "library" => library = reader.readValue<String>()
+            case "compilerSha256" => compilerSha256 = reader.readValue<String>()
+            case "targetTriple" => triple = reader.readValue<String>()
+            case "dependencies" => dependencies = readStrings(reader)
+            case _ => throw IllegalArgumentException("driver-config: unknown dependency key ${key}")
+        }
+    }
+    reader.endObject()
+    validateRuleSourcePackage(name)
+    if (seen.size != 6 || name.startsWith("std.") || name.startsWith("stdx.") ||
+        !module.startsWith("/") || !library.startsWith("/") || !module.endsWith(".cjo") ||
+        !library.endsWith(".a") || !exists(Path(module)) || !exists(Path(library)) ||
+        triple != DRIVER_TRIPLE || compilerSha256.size != 64) {
+        throw IllegalArgumentException("driver-config: invalid dependency ${name}")
+    }
+    for (dependency in dependencies) { validateRuleSourcePackage(dependency) }
+    return DependencySpec(name, module, library, compilerSha256, triple, dependencies)
 }
 
 private func readStrings(reader: JsonReader): Array<String> {
@@ -115,6 +167,7 @@ private func parseBuildSpec(bytes: Array<Byte>): BuildSpec {
     var stdxDir = ""
     var sources: Array<PackageSpec> = []
     var targets: Array<PackageSpec> = []
+    var dependencies: Array<DependencySpec> = []
     while (reader.peek() != EndObject) {
         let key = reader.readName()
         if (!seen.add(key)) { throw IllegalArgumentException("driver-config: duplicate key ${key}") }
@@ -142,11 +195,22 @@ private func parseBuildSpec(bytes: Array<Byte>): BuildSpec {
                 }
                 reader.endArray()
                 targets = values.toArray()
+            case "dependencies" =>
+                reader.startArray()
+                let values = ArrayList<DependencySpec>()
+                while (reader.peek() != EndArray) {
+                    if (values.size >= 128) { throw IllegalArgumentException("driver-limit: dependencies") }
+                    values.add(readDependency(reader))
+                }
+                reader.endArray()
+                dependencies = values.toArray()
             case _ => throw IllegalArgumentException("driver-config: unknown key ${key}")
         }
     }
     reader.endObject()
-    if (reader.peek().isSome() || seen.size != 7 || version != 1 || sessionId.size != 32 ||
+    if (reader.peek().isSome() ||
+        !((version == 1 && seen.size == 7 && !seen.contains("dependencies")) ||
+          (version == 2 && seen.size == 8 && seen.contains("dependencies"))) || sessionId.size != 32 ||
         !sessionRoot.startsWith("/") || !compiler.startsWith("/") ||
         !stdxDir.startsWith("/") ||
         sources.isEmpty() || targets.isEmpty()) {
@@ -168,7 +232,23 @@ private func parseBuildSpec(bytes: Array<Byte>): BuildSpec {
     for (target in targets) {
         if (!targetNames.add(target.name)) { throw IllegalArgumentException("driver-config: duplicate target") }
     }
-    return BuildSpec(sessionId, sessionRoot, compiler, stdxDir, sources, targets)
+    let dependencyNames = HashSet<String>()
+    let compilerDigest = digest(compiler)
+    for (dependency in dependencies) {
+        if (names.contains(dependency.name) || targetNames.contains(dependency.name) ||
+            !dependencyNames.add(dependency.name) || dependency.compilerSha256 != compilerDigest) {
+            throw IllegalArgumentException("driver-config: conflicting dependency or compiler ${dependency.name}")
+        }
+    }
+    for (dependency in dependencies) {
+        for (next in dependency.dependencies) {
+            if (!next.startsWith("std.") && !next.startsWith("stdx.") &&
+                !names.contains(next) && !dependencyNames.contains(next)) {
+                throw IllegalArgumentException("driver-config: unknown dependency ${next}")
+            }
+        }
+    }
+    return BuildSpec(sessionId, sessionRoot, compiler, stdxDir, sources, targets, dependencies)
 }
 
 private func writeNew(path: Path, content: String): Unit {
@@ -213,8 +293,13 @@ private func toolchainDigest(spec: BuildSpec): String {
     if (!sdk.startsWith("/")) {
         throw IllegalArgumentException("driver-config: CANGJIE_HOME must be an absolute SDK path")
     }
-    let inputs = [sdk + "/lib", sdk + "/runtime/lib", sdk + "/modules",
-        sdk + "/tools", spec.stdxDir]
+    let inputs = ArrayList<String>([sdk + "/lib", sdk + "/runtime/lib", sdk + "/modules",
+        sdk + "/tools", spec.stdxDir])
+    // The SDK's private declaration module is embedded in std.ast/stdx.chir,
+    // rather than shipped as an independently linkable runtime library.
+    if (exists(Path(sdk + "/third_party/flatbuffers/modules"))) {
+        inputs.add(sdk + "/third_party/flatbuffers/modules")
+    }
     let lines = ArrayList<String>([spec.compiler, digest(spec.compiler)])
     for (directory in inputs) {
         lines.add(directory)
@@ -238,8 +323,10 @@ private func sourceKey(spec: PackageSpec, abi: String): String {
 
 private func actionKey(spec: PackageSpec, abi: String, dependencies: Array<String>, root: Path): String {
     var text = sourceKey(spec, abi) + "\n"
+    text += directoryDigest(root.join("inputs").toString()) + "\n"
     for (name in dependencies) {
-        text += name + "\n" + digest(root.join("artifacts/lib${name}.a").toString()) + "\n"
+        text += name + "\n" + digest(root.join("baseline/lib${name}.a").toString()) + "\n" +
+            digest(root.join("baseline/${name}.cjo").toString()) + "\n"
     }
     return ruleSha256(text.toArray())
 }
@@ -265,21 +352,67 @@ private func actionContext(spec: BuildSpec, action: String, packageName: String,
     return obj
 }
 
-private func runCompiler(spec: BuildSpec, label: String, args: Array<String>,
-    context: JsonObject, dependencyReport: String): Unit {
-    let contextPath = Path(spec.sessionRoot).join(label + ".json")
-    writeNew(contextPath, context.toString() + "\n")
+private func compilerEnvironment(spec: BuildSpec): HashMap<String, String> {
     let env = HashMap<String, String>()
-    env["ASPECT_CJ_BUILD_CONTEXT"] = contextPath.toString()
-    env["ASPECT_CJ_DEPENDENCY_REPORT"] = dependencyReport
     env["PATH"] = getVariable("PATH") ?? ""
     env["CANGJIE_HOME"] = getVariable("CANGJIE_HOME") ?? ""
     let stdxPath = spec.stdxDir
     let sdkRuntime = getVariable("LD_LIBRARY_PATH") ?? ""
     env["LD_LIBRARY_PATH"] = stdxPath + ":" + sdkRuntime
+    return env
+}
+
+private func runCompiler(spec: BuildSpec, label: String, args: Array<String>,
+    context: JsonObject, dependencyReport: String): Unit {
+    let contextPath = Path(spec.sessionRoot).join(label + ".json")
+    writeNew(contextPath, context.toString() + "\n")
+    let env = compilerEnvironment(spec)
+    env["ASPECT_CJ_BUILD_CONTEXT"] = contextPath.toString()
+    env["ASPECT_CJ_DEPENDENCY_REPORT"] = dependencyReport
     let status = execute(spec.compiler, args, environment: env)
     if (status != 0) {
         throw IllegalArgumentException("driver-build: ${label} compiler exit ${status}")
+    }
+}
+
+private func runLink(spec: BuildSpec, label: String, args: Array<String>): Unit {
+    // Object-only actions do not load a CHIR plugin or repeat source weaving.
+    let status = execute(spec.compiler, args, environment: compilerEnvironment(spec))
+    if (status != 0) { throw IllegalArgumentException("driver-build: ${label} compiler exit ${status}") }
+}
+
+private func copyInput(source: String, destination: Path): Unit {
+    if (exists(destination)) { throw IllegalArgumentException("driver-output: input overwrite") }
+    try (input = File(Path(source), OpenMode.Read), output = File(destination, OpenMode.Write)) {
+        copy(input, to: output)
+    }
+}
+
+private func snapshotDependencies(spec: BuildSpec, root: Path): HashMap<String, String> {
+    let hashes = HashMap<String, String>()
+    for (dependency in spec.dependencies) {
+        let module = root.join("inputs/${dependency.name}.cjo")
+        let library = root.join("inputs/lib${dependency.name}.a")
+        let before = digest(dependency.module) + digest(dependency.library)
+        copyInput(dependency.module, module)
+        copyInput(dependency.library, library)
+        if (digest(module.toString()) + digest(library.toString()) != before ||
+            digest(dependency.module) + digest(dependency.library) != before) {
+            throw IllegalArgumentException("build-input-mismatch: dependency changed during copy ${dependency.name}")
+        }
+        hashes[dependency.name] = before
+    }
+    return hashes
+}
+
+private func verifyDependencies(spec: BuildSpec, root: Path, hashes: HashMap<String, String>): Unit {
+    for (dependency in spec.dependencies) {
+        let original = digest(dependency.module) + digest(dependency.library)
+        let snapshot = digest(root.join("inputs/${dependency.name}.cjo").toString()) +
+            digest(root.join("inputs/lib${dependency.name}.a").toString())
+        if (original != hashes[dependency.name] || snapshot != original) {
+            throw IllegalArgumentException("build-input-mismatch: dependency changed ${dependency.name}")
+        }
     }
 }
 
@@ -320,6 +453,8 @@ private func commonArgs(spec: BuildSpec, unit: PackageSpec): ArrayList<String> {
     result.add("-L")
     result.add(spec.stdxDir)
     result.add("-lstdx.aspect_cj")
+    result.add("--import-path")
+    result.add(Path(spec.sessionRoot).join("inputs").toString())
     for (option in unit.options) { result.add(option) }
     return result
 }
@@ -414,12 +549,15 @@ private func rejectDependencyCycles(graph: HashMap<String, Array<String>>): Unit
 
 private func verifySourceState(spec: BuildSpec, abi: String, root: Path,
     keys: HashMap<String, String>, metadata: HashMap<String, String>,
-    artifacts: HashMap<String, String>, dependencies: HashMap<String, String>): Unit {
+    artifacts: HashMap<String, String>, modules: HashMap<String, String>,
+    dependencies: HashMap<String, String>, external: HashMap<String, String>): Unit {
+    verifyDependencies(spec, root, external)
     let prior = ArrayList<String>()
     for (source in spec.sources) {
         if (actionKey(source, abi, prior.toArray(), root) != keys[source.name] ||
             digest(root.join("metadata/${source.name}.annoinfo").toString()) != metadata[source.name] ||
-            digest(root.join("artifacts/lib${source.name}.a").toString()) != artifacts[source.name] ||
+            digest(root.join("baseline/lib${source.name}.a").toString()) != artifacts[source.name] ||
+            digest(root.join("baseline/${source.name}.cjo").toString()) != modules[source.name] ||
             digest(root.join("dependencies-collect-${source.name}.txt").toString()) !=
                 dependencies[source.name]) {
             throw IllegalArgumentException("build-input-mismatch: source changed ${source.name}")
@@ -428,34 +566,130 @@ private func verifySourceState(spec: BuildSpec, abi: String, root: Path,
     }
 }
 
+private func readAbi(root: Path, action: String, packageName: String): String {
+    let value = String.fromUtf8(File.readFrom(root.join("metadata/abi-${action}-${packageName}.digest")))
+    if (!value.endsWith("\n") || value.size != 65) {
+        throw IllegalArgumentException("driver-build: invalid declaration ABI report ${packageName}")
+    }
+    for (byte in value[0..64].toArray()) {
+        if (!((byte >= 48 && byte <= 57) || (byte >= 97 && byte <= 102))) {
+            throw IllegalArgumentException("driver-build: invalid declaration ABI report ${packageName}")
+        }
+    }
+    return value[0..64]
+}
+
+private func verifyPinnedFiles(hashes: HashMap<String, String>): Unit {
+    for ((path, expected) in hashes) {
+        if (digest(path) != expected) {
+            throw IllegalArgumentException("build-input-mismatch: staged file changed ${path}")
+        }
+    }
+}
+
+private func verifyTargetObjects(spec: BuildSpec, root: Path, objects: HashMap<String, String>,
+    modules: HashMap<String, String>): Unit {
+    for (target in spec.targets) {
+        if (!objects.contains(target.name)) { continue }
+        if (digest(root.join("objects/${target.name}/unit.o").toString()) != objects[target.name] ||
+            digest(root.join("objects/${target.name}/${target.name}.cjo").toString()) != modules[target.name]) {
+            throw IllegalArgumentException("build-input-mismatch: woven object or module ${target.name}")
+        }
+    }
+}
+
+private func verifyFinalLibraries(root: Path, libraries: HashMap<String, String>): Unit {
+    for ((name, expected) in libraries) {
+        if (digest(root.join("artifacts/final-${name}.a").toString()) != expected) {
+            throw IllegalArgumentException("build-input-mismatch: final library ${name}")
+        }
+    }
+}
+
+private func appendDependencyOrder(name: String, graph: HashMap<String, Array<String>>,
+    seen: HashSet<String>, ordered: ArrayList<String>): Unit {
+    if (!seen.add(name)) { return }
+    for (dependency in graph.get(name) ?? []) { appendDependencyOrder(dependency, graph, seen, ordered) }
+    ordered.add(name)
+}
+
+private func finalLinkInputs(spec: BuildSpec, target: PackageSpec, root: Path,
+    graph: HashMap<String, Array<String>>): Array<String> {
+    let seen = HashSet<String>()
+    seen.add(target.name)
+    let ordered = ArrayList<String>()
+    for (name in graph.get(target.name) ?? []) { appendDependencyOrder(name, graph, seen, ordered) }
+    let values = ordered.toArray()
+    let inputs = ArrayList<String>()
+    let targetKinds = HashMap<String, String>()
+    for (unit in spec.targets) { targetKinds[unit.name] = unit.outputType }
+    let sourceNames = HashSet<String>()
+    for (unit in spec.sources) { sourceNames.add(unit.name) }
+    let externalNames = HashSet<String>()
+    for (unit in spec.dependencies) { externalNames.add(unit.name) }
+    let sdk = getVariable("CANGJIE_HOME") ?? ""
+    // Static archives are supplied in consumer-before-dependency order.
+    for (i in 0..values.size) {
+        let name = values[values.size - i - 1]
+        if (name == "flatbuffers" && !sourceNames.contains(name) && !externalNames.contains(name)) { continue }
+        let path = if (targetKinds.contains(name)) {
+            if (targetKinds[name] != "staticlib") {
+                throw IllegalArgumentException("driver-build: executable package used as library ${name}")
+            }
+            root.join("artifacts/final-${name}.a").toString()
+        } else if (sourceNames.contains(name)) { root.join("baseline/lib${name}.a").toString() }
+        else if (externalNames.contains(name)) { root.join("inputs/lib${name}.a").toString() }
+        else if (name.startsWith("std.")) {
+            "${sdk}/runtime/lib/${DRIVER_TRIPLE}/libcangjie-std-${name[4..]}.so"
+        } else if (name.startsWith("stdx.")) { "${spec.stdxDir}/lib${name}.so" }
+        else { throw IllegalArgumentException("driver-build: undeclared dependency ${name}") }
+        if (!exists(Path(path))) { throw IllegalArgumentException("driver-build: missing link input ${path}") }
+        inputs.add(path)
+    }
+    // These are compiler-injected dependencies and may not appear in a source import report.
+    for (path in ["${sdk}/runtime/lib/${DRIVER_TRIPLE}/libcangjie-std-core.so",
+        "${spec.stdxDir}/libstdx.aspect_cj.so"]) {
+        if (!inputs.contains(path)) { inputs.add(path) }
+    }
+    return inputs.toArray()
+}
+
 private func runBuild(spec: BuildSpec): Unit {
     let root = Path(spec.sessionRoot)
     Directory.create(root)
     Directory.create(root.join("metadata"))
     Directory.create(root.join("artifacts"))
+    Directory.create(root.join("baseline"))
+    Directory.create(root.join("inputs"))
+    Directory.create(root.join("preselect"))
+    Directory.create(root.join("preflight"))
+    Directory.create(root.join("objects"))
     let abi = toolchainDigest(spec)
+    let externalDigests = snapshotDependencies(spec, root)
     let sourceInputs = JsonArray()
     let sourceKeys = HashMap<String, String>()
     let metadataDigests = HashMap<String, String>()
     let artifactDigests = HashMap<String, String>()
+    let moduleDigests = HashMap<String, String>()
     let sourceDependencyDigests = HashMap<String, String>()
     let graph = HashMap<String, Array<String>>()
     let sourceManifest = JsonObject()
-    sourceManifest.put("schemaVersion", JsonInt(1))
+    sourceManifest.put("schemaVersion", JsonInt(2))
     stringField(sourceManifest, "sessionId", spec.sessionId)
     stringField(sourceManifest, "state", "SOURCES_READY")
     stringField(sourceManifest, "toolchainAbiKey", abi)
     let sourceArtifacts = JsonArray()
     let priorSources = ArrayList<String>()
+    for (dependency in spec.dependencies) { graph[dependency.name] = dependency.dependencies }
     for (source in spec.sources) {
         let key = actionKey(source, abi, priorSources.toArray(), root)
         let metadata = "metadata/${source.name}.annoinfo"
-        let artifact = "artifacts/lib${source.name}.a"
+        let artifact = "baseline/lib${source.name}.a"
         let args = commonArgs(spec, source)
         args.add("--import-path")
-        args.add(root.join("artifacts").toString())
+        args.add(root.join("baseline").toString())
         args.add("-L")
-        args.add(root.join("artifacts").toString())
+        args.add(root.join("baseline").toString())
         for (name in priorSources) { args.add("-l:lib${name}.a") }
         args.add("--plugin=${spec.stdxDir}/libstdx.collect_rules.so")
         args.add("--output-type=staticlib")
@@ -486,6 +720,7 @@ private func runBuild(spec: BuildSpec): Unit {
         sourceKeys[source.name] = key
         metadataDigests[source.name] = digest(metaPath)
         artifactDigests[source.name] = digest(artifactPath)
+        moduleDigests[source.name] = digest(root.join("baseline/${source.name}.cjo").toString())
         sourceDependencyDigests[source.name] = digest(dependencyPath.toString())
         let entry = JsonObject()
         stringField(entry, "packageName", source.name)
@@ -493,12 +728,28 @@ private func runBuild(spec: BuildSpec): Unit {
         stringField(entry, "metadataSha256", digest(metaPath))
         stringField(entry, "artifactPath", artifact)
         stringField(entry, "artifactSha256", digest(artifactPath))
+        stringField(entry, "modulePath", "baseline/${source.name}.cjo")
+        stringField(entry, "moduleSha256", moduleDigests[source.name])
+        stringField(entry, "declarationAbiSha256", readAbi(root, "collect", source.name))
         stringField(entry, "dependencyReportSha256", digest(dependencyPath.toString()))
         stringField(entry, "sourceActionKey", key)
         sourceArtifacts.add(entry)
         priorSources.add(source.name)
     }
     sourceManifest.put("sources", sourceArtifacts)
+    let dependencyManifest = JsonArray()
+    for (dependency in spec.dependencies) {
+        let entry = JsonObject()
+        stringField(entry, "packageName", dependency.name)
+        stringField(entry, "moduleSha256", digest(root.join("inputs/${dependency.name}.cjo").toString()))
+        stringField(entry, "librarySha256", digest(root.join("inputs/lib${dependency.name}.a").toString()))
+        stringField(entry, "compilerSha256", dependency.compilerSha256)
+        stringField(entry, "targetTriple", dependency.targetTriple)
+        dependencyManifest.add(entry)
+    }
+    sourceManifest.put("dependencies", dependencyManifest)
+    verifySourceState(spec, abi, root, sourceKeys, metadataDigests, artifactDigests,
+        moduleDigests, sourceDependencyDigests, externalDigests)
     verifyToolchainState(spec, abi)
     let sourcesDigest = publish(spec.sessionRoot, "sources.json", sourceManifest)
 
@@ -506,32 +757,43 @@ private func runBuild(spec: BuildSpec): Unit {
     let digests = HashMap<String, String>()
     let targetDependencyDigests = HashMap<String, String>()
     let targetPlanFileDigests = HashMap<String, String>()
+    let pinnedReports = HashMap<String, String>()
+    pinnedReports[root.join("sources.json").toString()] = sourcesDigest
+    for (source in spec.sources) {
+        let path = root.join("metadata/abi-collect-${source.name}.digest").toString()
+        pinnedReports[path] = digest(path)
+    }
     let knownSources = HashSet<String>()
     for (source in spec.sources) { knownSources.add(source.name) }
     for (target in spec.targets) {
+        Directory.create(root.join("preselect/${target.name}"))
+        Directory.create(root.join("preflight/${target.name}"))
+        Directory.create(root.join("objects/${target.name}"))
         let importedSources = sourceList(spec, target.name)
         let key = actionKey(target, abi, importedSources, root)
         let selectionPath = root.join("metadata/selected-${target.name}.txt")
         let selectionArgs = commonArgs(spec, target)
         selectionArgs.add("--plugin=${spec.stdxDir}/libstdx.weave_rules.so")
         selectionArgs.add("--import-path")
-        selectionArgs.add(root.join("artifacts").toString())
+        selectionArgs.add(root.join("baseline").toString())
         selectionArgs.add("-L")
-        selectionArgs.add(root.join("artifacts").toString())
+        selectionArgs.add(root.join("baseline").toString())
         for (name in importedSources) { selectionArgs.add("-l:lib${name}.a") }
-        selectionArgs.add("--output-type=staticlib")
+        selectionArgs.add("--output-type=obj")
+        selectionArgs.add("--compile-target=${target.outputType}")
         selectionArgs.add("-o")
-        selectionArgs.add(root.join("artifacts/preselect-${target.name}.a").toString())
+        selectionArgs.add(root.join("preselect/${target.name}/unit.o").toString())
         verifySourceState(spec, abi, root, sourceKeys, metadataDigests, artifactDigests,
-            sourceDependencyDigests)
+            moduleDigests, sourceDependencyDigests, externalDigests)
+        verifyPinnedFiles(pinnedReports)
         runCompiler(spec, "preselect-${target.name}", selectionArgs.toArray(),
             actionContext(spec, "preselect", target.name, key, abi,
                 "metadata/selected-${target.name}.txt", sourceInputs, ""),
             root.join("dependencies-preselect-${target.name}.txt").toString())
         verifySourceState(spec, abi, root, sourceKeys, metadataDigests, artifactDigests,
-            sourceDependencyDigests)
+            moduleDigests, sourceDependencyDigests, externalDigests)
         if (actionKey(target, abi, importedSources, root) != key ||
-            !exists(root.join("artifacts/preselect-${target.name}.a"))) {
+            !exists(root.join("preselect/${target.name}/unit.o"))) {
             throw IllegalArgumentException("build-input-mismatch: target changed during preselection")
         }
         let selectedSources = readSelectedSources(selectionPath, spec)
@@ -550,30 +812,31 @@ private func runBuild(spec: BuildSpec): Unit {
         args.add("--aspect-import-symbols")
         args.add(symbols.toString())
         args.add("--import-path")
-        args.add(root.join("artifacts").toString())
+        args.add(root.join("baseline").toString())
         args.add("-L")
-        args.add(root.join("artifacts").toString())
+        args.add(root.join("baseline").toString())
         for (name in importedSources) { args.add("-l:lib${name}.a") }
-        // Preflight produces a temporary archive. Linking is deliberately
-        // deferred to apply so a link failure cannot publish COMPLETE.
-        args.add("--output-type=staticlib")
+        // Preflight and apply use the same compilation role. Final linking
+        // consumes objects only after every target has been woven successfully.
+        args.add("--output-type=obj")
+        args.add("--compile-target=${target.outputType}")
         args.add("-o")
-        args.add(root.join("artifacts/preflight-${target.name}.a").toString())
+        args.add(root.join("preflight/${target.name}/unit.o").toString())
         let report = "metadata/plan-${target.name}.digest"
         let importDigest = digest(importPath.toString())
         let symbolDigest = digest(symbols.toString())
         let dependencyPath = root.join("dependencies-preflight-${target.name}.txt")
         verifySourceState(spec, abi, root, sourceKeys, metadataDigests, artifactDigests,
-            sourceDependencyDigests)
+            moduleDigests, sourceDependencyDigests, externalDigests)
         runCompiler(spec, "preflight-${target.name}", args.toArray(),
             actionContext(spec, "preflight", target.name, key, abi, report, sourceInputs, ""),
             dependencyPath.toString())
         verifySourceState(spec, abi, root, sourceKeys, metadataDigests, artifactDigests,
-            sourceDependencyDigests)
+            moduleDigests, sourceDependencyDigests, externalDigests)
         if (actionKey(target, abi, importedSources, root) != key ||
             digest(importPath.toString()) != importDigest ||
             digest(symbols.toString()) != symbolDigest ||
-            !exists(root.join("artifacts/preflight-${target.name}.a"))) {
+            !exists(root.join("preflight/${target.name}/unit.o"))) {
             throw IllegalArgumentException("build-input-mismatch: target changed during preflight")
         }
         let reportLines = String.fromUtf8(File.readFrom(root.join(report))).split("\n", removeEmpty: false)
@@ -583,6 +846,15 @@ private func runBuild(spec: BuildSpec): Unit {
         digests[target.name] = reportLines[0]
         targetDependencyDigests[target.name] = digest(dependencyPath.toString())
         targetPlanFileDigests[target.name] = digest(root.join(report).toString())
+        let targetAbi = readAbi(root, "preflight", target.name)
+        if (sourceKeys.contains(target.name) && targetAbi != readAbi(root, "collect", target.name)) {
+            throw IllegalArgumentException("build-input-mismatch: source/target declaration ABI ${target.name}")
+        }
+        let summary = "metadata/matches-${target.name}.json"
+        let summaryDigest = digest(root.join(summary).toString())
+        pinnedReports[root.join(summary).toString()] = summaryDigest
+        let abiPath = root.join("metadata/abi-preflight-${target.name}.digest").toString()
+        pinnedReports[abiPath] = digest(abiPath)
         let dependencies = ArrayList<String>()
         let dependencySeen = HashSet<String>()
         for (name in readDependencies(dependencyPath, target.name)) {
@@ -615,6 +887,9 @@ private func runBuild(spec: BuildSpec): Unit {
         stringField(entry, "planDigest", reportLines[0])
         stringField(entry, "reportSha256", digest(root.join(report).toString()))
         stringField(entry, "dependencyReportSha256", digest(dependencyPath.toString()))
+        stringField(entry, "declarationAbiSha256", targetAbi)
+        stringField(entry, "matchingSummary", summary)
+        stringField(entry, "matchingSummarySha256", summaryDigest)
         let edges = JsonArray()
         for (name in dependencies) { edges.add(JsonString(name)) }
         entry.put("actualSourceEdges", edges)
@@ -623,20 +898,23 @@ private func runBuild(spec: BuildSpec): Unit {
     rejectDependencyCycles(graph)
     verifyToolchainState(spec, abi)
     let planManifest = JsonObject()
-    planManifest.put("schemaVersion", JsonInt(1))
+    planManifest.put("schemaVersion", JsonInt(2))
     stringField(planManifest, "sessionId", spec.sessionId)
     stringField(planManifest, "state", "PLAN_READY")
     stringField(planManifest, "sourcesSha256", sourcesDigest)
     planManifest.put("targets", plans)
     let planDigest = publish(spec.sessionRoot, "plan.json", planManifest)
+    pinnedReports[root.join("plan.json").toString()] = planDigest
 
     let complete = JsonObject()
-    complete.put("schemaVersion", JsonInt(1))
+    complete.put("schemaVersion", JsonInt(2))
     stringField(complete, "sessionId", spec.sessionId)
     stringField(complete, "state", "COMPLETE")
     stringField(complete, "sourcesSha256", sourcesDigest)
     stringField(complete, "planSha256", planDigest)
     let outputs = JsonArray()
+    let objectDigests = HashMap<String, String>()
+    let targetModules = HashMap<String, String>()
     for (target in spec.targets) {
         let imports = root.join("imports-${target.name}.cj")
         let symbols = root.join("aspect-import-symbols-${target.name}.txt")
@@ -648,19 +926,21 @@ private func runBuild(spec: BuildSpec): Unit {
         args.add("--aspect-import-symbols")
         args.add(symbols.toString())
         args.add("--import-path")
-        args.add(root.join("artifacts").toString())
+        args.add(root.join("baseline").toString())
         args.add("-L")
-        args.add(root.join("artifacts").toString())
+        args.add(root.join("baseline").toString())
         for (name in importedSources) { args.add("-l:lib${name}.a") }
-        args.add("--output-type=${target.outputType}")
+        args.add("--output-type=obj")
+        args.add("--compile-target=${target.outputType}")
         args.add("-o")
-        let output = root.join("artifacts/final-${target.name}").toString()
+        let output = root.join("objects/${target.name}/unit.o").toString()
         args.add(output)
         let dependencyPath = root.join("dependencies-apply-${target.name}.txt")
         let importDigest = digest(imports.toString())
         let symbolDigest = digest(symbols.toString())
         verifySourceState(spec, abi, root, sourceKeys, metadataDigests, artifactDigests,
-            sourceDependencyDigests)
+            moduleDigests, sourceDependencyDigests, externalDigests)
+        verifyPinnedFiles(pinnedReports)
         if (digest(root.join("dependencies-preflight-${target.name}.txt").toString()) !=
             targetDependencyDigests[target.name] ||
             digest(root.join("metadata/plan-${target.name}.digest").toString()) !=
@@ -677,21 +957,84 @@ private func runBuild(spec: BuildSpec): Unit {
             throw IllegalArgumentException("build-input-mismatch: dependency closure changed")
         }
         verifySourceState(spec, abi, root, sourceKeys, metadataDigests, artifactDigests,
-            sourceDependencyDigests)
+            moduleDigests, sourceDependencyDigests, externalDigests)
+        verifyPinnedFiles(pinnedReports)
         if (actionKey(target, abi, importedSources, root) != key ||
             digest(imports.toString()) != importDigest ||
             digest(symbols.toString()) != symbolDigest) {
             throw IllegalArgumentException("build-input-mismatch: target changed during apply")
         }
         if (!exists(Path(output))) { throw IllegalArgumentException("driver-build: missing final artifact") }
+        if (readAbi(root, "apply", target.name) != readAbi(root, "preflight", target.name)) {
+            throw IllegalArgumentException("build-input-mismatch: declaration ABI changed during apply ${target.name}")
+        }
+        objectDigests[target.name] = digest(output)
+        targetModules[target.name] = digest(root.join("objects/${target.name}/${target.name}.cjo").toString())
+    }
+    // Every library target exists before any executable is linked. Configuration
+    // order cannot select a stale baseline or affect a downstream executable.
+    let libraryDigests = HashMap<String, String>()
+    let outputDigests = HashMap<String, String>()
+    for (target in spec.targets) {
+        if (target.outputType != "staticlib") { continue }
+        let args = [root.join("objects/${target.name}/unit.o").toString(), "--experimental",
+            "--output-type=staticlib", "-o", root.join("artifacts/final-${target.name}.a").toString()]
+        verifyTargetObjects(spec, root, objectDigests, targetModules)
+        runLink(spec, "archive-${target.name}", args)
+        libraryDigests[target.name] = digest(root.join("artifacts/final-${target.name}.a").toString())
+    }
+    for (target in spec.targets) {
+        let linked = finalLinkInputs(spec, target, root, graph)
+        let suffix = if (target.outputType == "staticlib") { ".a" } else { "" }
+        let output = root.join("artifacts/final-${target.name}${suffix}").toString()
+        var linkKey = objectDigests[target.name] + "\n" + abi + "\n" + target.outputType + "\n"
+        let libraries = JsonArray()
+        let requirements = JsonArray()
+        for (library in linked) {
+            let item = JsonObject()
+            stringField(item, "path", library); stringField(item, "sha256", digest(library))
+            if (target.outputType == "exe") {
+                linkKey += library + "\n" + digest(library) + "\n"
+                libraries.add(item)
+            } else { requirements.add(item) }
+        }
+        verifySourceState(spec, abi, root, sourceKeys, metadataDigests, artifactDigests,
+            moduleDigests, sourceDependencyDigests, externalDigests)
+        verifyTargetObjects(spec, root, objectDigests, targetModules)
+        verifyFinalLibraries(root, libraryDigests)
+        verifyPinnedFiles(pinnedReports)
+        verifyPinnedFiles(outputDigests)
+        if (target.outputType == "exe") {
+            let args = ArrayList<String>([root.join("objects/${target.name}/unit.o").toString(),
+                "--experimental", "--output-type=exe", "-o", output])
+            for (library in linked) {
+                if (library.endsWith(".so")) {
+                    args.add("-L"); args.add(Path(library).parent.toString())
+                    args.add("-l:" + Path(library).fileName)
+                } else { args.add(library) }
+            }
+            runLink(spec, "link-${target.name}", args.toArray())
+        }
+        if (!exists(Path(output))) { throw IllegalArgumentException("driver-build: missing linked artifact") }
         let entry = JsonObject()
         stringField(entry, "packageName", target.name)
         stringField(entry, "path", output)
-        stringField(entry, "sha256", digest(output))
-        stringField(entry, "targetActionKey", key)
+        let outputDigest = digest(output)
+        outputDigests[output] = outputDigest
+        stringField(entry, "sha256", outputDigest)
+        stringField(entry, "compileKey", actionKey(target, abi, sourceList(spec, target.name), root))
+        stringField(entry, "linkKey", ruleSha256(linkKey.toArray()))
+        stringField(entry, "objectSha256", objectDigests[target.name])
+        stringField(entry, "moduleSha256", targetModules[target.name])
+        stringField(entry, "modulePath", root.join("objects/${target.name}/${target.name}.cjo").toString())
+        stringField(entry, "declarationAbiSha256", readAbi(root, "apply", target.name))
+        entry.put("linkInputs", libraries)
+        entry.put("requiredLinkInputs", requirements)
         stringField(entry, "planDigest", digests[target.name])
         stringField(entry, "toolchainAbiKey", abi)
-        stringField(entry, "dependencyReportSha256", digest(dependencyPath.toString()))
+        stringField(entry, "dependencyReportSha256", digest(root.join("dependencies-apply-${target.name}.txt").toString()))
+        stringField(entry, "matchingSummary", "metadata/matches-${target.name}.json")
+        stringField(entry, "matchingSummarySha256", digest(root.join("metadata/matches-${target.name}.json").toString()))
         if (sourceKeys.contains(target.name)) {
             stringField(entry, "sourceActionKey", sourceKeys[target.name])
             stringField(entry, "sourceBaselineSha256", artifactDigests[target.name])
@@ -699,6 +1042,12 @@ private func runBuild(spec: BuildSpec): Unit {
         outputs.add(entry)
     }
     complete.put("outputs", outputs)
+    verifySourceState(spec, abi, root, sourceKeys, metadataDigests, artifactDigests,
+        moduleDigests, sourceDependencyDigests, externalDigests)
+    verifyTargetObjects(spec, root, objectDigests, targetModules)
+    verifyFinalLibraries(root, libraryDigests)
+    verifyPinnedFiles(pinnedReports)
+    verifyPinnedFiles(outputDigests)
     verifyToolchainState(spec, abi)
     publish(spec.sessionRoot, "complete.json", complete)
     println("aspect_cj build complete: ${spec.sessionRoot}")

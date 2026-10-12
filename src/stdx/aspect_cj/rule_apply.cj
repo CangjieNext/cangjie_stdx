@@ -30,6 +30,12 @@ protected struct RuleTargetPlan {
     }
 }
 
+protected class RuleMatchStatistics {
+    var preparedSources: Int64 = 0
+    var evaluatedTargets: Int64 = 0
+    var workUnits: Int64 = 0
+}
+
 private func isRuleTarget(f: Function): Bool {
     if (!f.isAspectExecutableSourceBody() || f.srcCodeName == "main") { return false }
     let snapshot = f.annotationSnapshot
@@ -118,7 +124,7 @@ protected func preselectRuleSources(pkg: Package, wires: Array<RuleWirePackage>)
     if (pkg.aspectWeaveState != 0 || pkg.aspectWeavePlanDigest != "") {
         throw IllegalArgumentException("already-woven: target package ${pkg.name}")
     }
-    validateRuleSourceSet(wires)
+    let sources = prepareRuleSourceSet(wires)
     let selectedSources = HashSet<String>()
     let budget = RuleWorkBudget()
     let instantiatedOrigins = HashSet<String>()
@@ -131,7 +137,7 @@ protected func preselectRuleSources(pkg: Package, wires: Array<RuleWirePackage>)
         if (f.isGeneric() && instantiatedOrigins.contains(f.identifierWithoutPrefix)) { continue }
         if (!isRuleTarget(f)) { continue }
         let target = ruleTargetFromFunction(f)
-        for (selection in selectPreparedRuleAdvicesAcrossSources(wires, target, true, budget)) {
+        for (selection in selectPreparedRuleAdvicesAcrossSources(sources, target, true, budget)) {
             selectedSources.add(selection.sourcePackage)
         }
     }
@@ -143,14 +149,16 @@ protected func preselectRuleSources(pkg: Package, wires: Array<RuleWirePackage>)
 }
 
 /** Freeze and check every selected call before any target CHIR is changed. */
-protected func preflightRuleWeave(pkg: Package, wires: Array<RuleWirePackage>): Array<RuleTargetPlan> {
+protected func preflightRuleWeave(pkg: Package, wires: Array<RuleWirePackage>,
+    statistics!: ?RuleMatchStatistics = None): Array<RuleTargetPlan> {
     if (pkg.annotationMetadataVersion != 1) {
         throw IllegalArgumentException("annotation-metadata-unavailable: target package ${pkg.name}")
     }
     if (pkg.aspectWeaveState != 0 || pkg.aspectWeavePlanDigest != "") {
         throw IllegalArgumentException("already-woven: target package ${pkg.name}")
     }
-    validateRuleSourceSet(wires)
+    let sources = prepareRuleSourceSet(wires)
+    if (let Some(stats) <- statistics) { stats.preparedSources = sources.size }
     let plans = ArrayList<RuleTargetPlan>()
     let budget = RuleWorkBudget()
     var total: Int64 = 0
@@ -164,7 +172,8 @@ protected func preflightRuleWeave(pkg: Package, wires: Array<RuleWirePackage>): 
         if (f.isGeneric() && instantiatedOrigins.contains(f.identifierWithoutPrefix)) { continue }
         if (!isRuleTarget(f)) { continue }
         let target = ruleTargetFromFunction(f)
-        let selected = selectPreparedRuleAdvicesAcrossSources(wires, target, true, budget)
+        if (let Some(stats) <- statistics) { stats.evaluatedTargets++ }
+        let selected = selectPreparedRuleAdvicesAcrossSources(sources, target, true, budget)
         if (selected.isEmpty()) { continue }
         let calls = ArrayList<RulePlannedCall>()
         for (selection in selected) {
@@ -242,6 +251,7 @@ protected func preflightRuleWeave(pkg: Package, wires: Array<RuleWirePackage>): 
             }
         }
     }
+    if (let Some(stats) <- statistics) { stats.workUnits = budget.used }
     return plans.toArray()
 }
 
