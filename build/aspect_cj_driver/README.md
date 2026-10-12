@@ -15,11 +15,12 @@ cjc build/aspect_cj_driver/main.cj --experimental \
 
 ```json
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "sessionId": "0123456789abcdef0123456789abcdef",
   "sessionRoot": "/tmp/aspect-cj-session-001",
   "compiler": "/opt/cangjie/bin/cjc",
   "stdxDirectory": "/opt/stdx/dynamic/stdx",
+  "dependencies": [],
   "sources": [
     {
       "packageName": "example.aspect",
@@ -40,9 +41,28 @@ cjc build/aspect_cj_driver/main.cj --experimental \
 
 运行前设置指向配套 SDK 的绝对 `CANGJIE_HOME`，将 `stdxDirectory` 加入 `LD_LIBRARY_PATH`，然后执行 `aspect-cj-driver config.json`。目标可选 `exe` 或 `staticlib`；来源包按配置顺序构建，较后的来源包可以使用较早来源包的静态库。同一包可以既是来源又是目标，最终产物与来源基线分别校验。驱动把编译器文件、SDK 的 `lib`/`runtime/lib`/`modules`/`tools` 树及整个 stdx 库目录纳入工具链摘要，在来源、预检和最终发布前复核。
 
-配置中的编译器、stdx 目录、会话目录和源码文件路径必须是 Linux 绝对路径。每个包的 `options` 目前仅接受 `-O0`、`-O1`、`-O2`、`-Os`、`-Oz` 和 `--disable-reflection`；额外导入路径、外部库或第二个插件尚未纳入输入摘要，不得通过任意编译选项绕过构建闭包。
+配置中的编译器、stdx 目录、会话目录和源码文件路径必须是 Linux 绝对路径。每个包的 `options` 目前仅接受 `-O0`、`-O1`、`-O2`、`-Os`、`-Oz` 和 `--disable-reflection`；不得通过任意编译选项注入导入路径、外部库或第二个插件。
 
-驱动只接受全新的会话目录，并按以下顺序发布成功标志：全部来源包编译且候选文件校验成功后写 `sources.json`；各目标先在不生成切面包导入的情况下确定真正命中的来源，再只导入这些来源做正式预检、计划摘要与依赖图校验，完成后写 `plan.json`；所有目标正式编译/链接和摘要复核后才写 `complete.json`。看到 `sources.json` 或 `plan.json` **不等于**代码已成功交付。任何阶段失败均返回非零；不复用旧会话目录，也不覆盖已有标志文件。
+配置 v1 仍可使用，但不接受 `dependencies` 字段；v2 必须显式填写该数组，无外部依赖时使用 `[]`。每项预编译依赖声明包名、匹配的 `.cjo`/`.a` 绝对路径、构建编译器 SHA-256、目标三元组和直接依赖包名列表，例如：
+
+```json
+{
+  "packageName": "example.support",
+  "module": "/absolute/example.support.cjo",
+  "library": "/absolute/libexample.support.a",
+  "compilerSha256": "<实际构建所用cjc文件的64位小写SHA-256>",
+  "targetTriple": "linux_x86_64_cjnative",
+  "dependencies": ["std.core"]
+}
+```
+
+目前只接受匹配当前 Linux 原生架构的静态库；aarch64 使用 `linux_aarch64_cjnative`。非标准库间接依赖也必须纳入顶层依赖数组或来源集合，不得占用 `std.*`/`stdx.*` 名称或与来源/目标重名。驱动校验声明闭包、工具链与平台，将外部模块和库复制到会话私有输入目录，并在后续阶段核验原文件及副本摘要。编译器哈希是受信提供方的构建声明，不是任意二进制的 ABI 证明；最终编译和链接仍必须通过。
+
+驱动只接受全新的会话目录，并按以下顺序发布成功标志：全部来源包编译且候选文件校验成功后写 `sources.json`；各目标先在不生成切面包导入的情况下确定真正命中的来源，再只导入这些来源做正式预检、计划摘要与依赖图校验，完成后写 `plan.json`；所有目标正式编译/链接和摘要复核后才写 `complete.json`。正式产物先生成对象文件及模块，再归档全部织入后的静态库，最后链接可执行文件；同包既为来源又为目标时，下游只链接最终库，不回退到未织入的基线库，也不依赖目标列表顺序。静态归档不合并依赖库，其下游依赖记录为 `requiredLinkInputs`；可执行文件的 `linkInputs` 记录实际链接输入。
+
+同包来源/目标的源声明接口、基线模块、对象文件、预检报告及最终产物均做一致性检查，任何变化都会阻止成功发布。看到 `sources.json` 或 `plan.json` **不等于**代码已成功交付。任何阶段失败均返回非零；不复用旧会话目录，也不覆盖已有标志文件。
+
+`metadata/matches-<目标包>.json` 给出规则根及切面的命中目标数、来源准备次数、求值目标数、预算消耗和零命中提示。合法零命中不算失败；未知注解元数据、非法规则和预算超限仍失败。摘要不记录业务实参，内容哈希与计划及最终清单绑定。
 
 对同一目标同时使用旧式与新式切面时，共用一份预检计划；同一切面函数上旧新控制注解混用会被拒绝。预检发现依赖环、候选元数据不匹配、来源/目标输入在阶段间变化或重复织入时均停止，不发布最终成功标志。
 
@@ -55,7 +75,7 @@ python3 tests/aspect_cj_driver/smoke.py \
     --driver /absolute/path/to/aspect-cj-driver
 ```
 
-测试会保留并打印临时工作目录，覆盖跨包调用与参数快照、AND/OR/NOT、共享规则去重、空注解取反、字面量字符串拼接、命名 `const func` 字段、解析后注解身份/别名/同短名、复杂业务注解字段、非法规则载体、旧新 Entry/Exit 同时织入、旧 Replace 冲突、来源兼目标、真实依赖环、零命中不产生假环及收集/预检/最终链接三个失败屏障。它使用配套工具链的真实编译和运行结果，不以模拟的 `.annoinfo` 文件代替正式 Collector。
+测试会保留并打印临时工作目录，覆盖跨包调用与参数快照、AND/OR/NOT、共享规则去重、空注解取反、字面量字符串拼接、命名 `const func` 字段、解析后注解身份/别名/同短名、复杂业务注解字段、非法规则载体、旧新 Entry/Exit 同时织入、旧 Replace 冲突、来源兼目标、真实依赖环、零命中不产生假环及收集/预检/最终链接三个失败屏障。另覆盖最终库链接的正逆序及多应用、源声明接口不一致、模块/报告/最终输出篡改拒绝，以及 v2 预编译依赖的真实编译和错误闭包拒绝。它使用配套工具链的真实编译和运行结果，不以模拟的 `.annoinfo` 文件代替正式 Collector。
 
 泛型候选和异常传播另用一个仅用于测试的同包插件验证：
 

@@ -107,14 +107,14 @@ private func checkRuleReference(sourcePackage: String, id: String): Unit {
     validateRuleProgram(sourcePackage, [RuleToken(String.join(["REF:", id], delimiter: ""))])
 }
 
-protected func validateWirePackage(wire: RuleWirePackage): Unit {
+protected func validatedRuleWireGraph(wire: RuleWirePackage,
+    records: Array<RuleWireRecord>): RuleGraph {
     if (wire.state != "READY" && wire.state != "PENDING") { badWire("unknown state") }
     if (!lowerHex(wire.sessionId, 32) || !lowerHex(wire.sourceActionKey, 64) ||
         !lowerHex(wire.toolchainAbiKey, 64)) { badWire("invalid session or key") }
     validateRuleSourcePackage(wire.sourcePackage)
     checkWireField(wire.sourcePackage)
     checkWireField(wire.initSymbol)
-    let records = wire.records
     if (records.size > RULE_WIRE_RECORD_LIMIT) { badWire("record limit") }
     if (wire.state == "PENDING" && !records.isEmpty()) { badWire("PENDING has records") }
     let definitions = ArrayList<RuleDefinition>()
@@ -183,12 +183,28 @@ protected func validateWirePackage(wire: RuleWirePackage): Unit {
     let graph = RuleGraph(wire.sourcePackage, definitions.toArray(),
         {id => if (!atoms.contains(id)) { badWire("missing R atom") } },
         {scope => if (!isValidPackageNamePattern(scope)) { badWire("invalid rule scope") } })
+    let roots = ArrayList<String>()
+    for (record in records) { if (record.kind == "A") { roots.add(record.fields[4]) } }
+    graph.validateRoots(roots.toArray())
+    return graph
+}
+
+protected func validateWirePackage(wire: RuleWirePackage): Unit {
+    validatedRuleWireGraph(wire, wire.records)
+}
+
+/** Exact encoded size of already validated records, without another graph build. */
+protected func validatedRuleWireSize(wire: RuleWirePackage, records: Array<RuleWireRecord>): Int64 {
+    var size = RULE_WIRE_V4_MAGIC.size + wire.state.size + wire.sessionId.size + wire.sourcePackage.size +
+        wire.sourceActionKey.size + wire.toolchainAbiKey.size + wire.initSymbol.size +
+        "1".size + records.size.toString().size + 9
     for (record in records) {
-        if (record.kind == "A") {
-            // Graph construction validated every definition; this checks roots.
-            graph.evaluate([record.fields[4]], false, {_, _ => false}, {_, _ => false}, RuleWorkBudget())
-        }
+        size += record.kind.size + record.fields.size.toString().size + record.sourceFile.size +
+            record.line.toString().size + record.column.toString().size + 5
+        for (field in record.fields) { size += field.size + 1 }
+        if (size > RULE_WIRE_FILE_LIMIT) { badWire("file limit") }
     }
+    return size
 }
 
 protected func encodeRuleWire(wire: RuleWirePackage): String {

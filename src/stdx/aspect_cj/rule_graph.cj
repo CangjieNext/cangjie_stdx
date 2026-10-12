@@ -100,6 +100,16 @@ protected class RuleGraph {
 
     public prop size: Int64 { get() { nodes.size } }
 
+    /** Root validation is an index lookup, not a whole-graph evaluation. */
+    public func validateRoots(roots: Array<String>): Unit {
+        if (roots.size > RULE_PACKAGE_COUNT) {
+            throw IllegalArgumentException("rule-limit: source package exceeds 4096 advice roots")
+        }
+        for (id in roots) {
+            if (!byId.contains(id)) { throw IllegalArgumentException("unknown-root: ${id}") }
+        }
+    }
+
     /**
      * One call evaluates all advice roots for ONE eligible target. Scratch
      * arrays are local to the call, so memoized values cannot leak across
@@ -112,6 +122,9 @@ protected class RuleGraph {
         if (roots.size > RULE_PACKAGE_COUNT) {
             throw IllegalArgumentException("rule-limit: source package exceeds 4096 advice roots")
         }
+        // Account for scratch initialization and the complete order scan even
+        // when no scope matches. Charge before allocating per-target arrays.
+        budget.charge(nodes.size * 4 + roots.size, "rule evaluation scratch and order scan")
         let selected = ArrayList<Int64>()
         // Validate every root before performing matching work.
         for (id in roots) {

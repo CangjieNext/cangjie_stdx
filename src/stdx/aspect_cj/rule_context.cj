@@ -15,6 +15,8 @@ import std.sort.*
 import stdx.crypto.digest.*
 import stdx.encoding.hex.*
 import stdx.encoding.json.stream.*
+import stdx.encoding.json.*
+import stdx.chir.*
 
 protected struct RuleSourceInput {
     let packageName: String
@@ -301,4 +303,92 @@ protected func writeRuleCandidate(context: RuleActionContext, value: String): Un
         output.close()
     }
     rename(temporary, to: path, overwrite: false)
+}
+
+private func writeRuleSidecar(context: RuleActionContext, relative: String, value: String): Unit {
+    let output = RuleActionContext(context.sessionId, context.action, context.packageName,
+        context.sourceActionKey, context.toolchainAbiKey, context.sessionRoot, relative,
+        context.expectedPlanDigest, context.sources)
+    writeRuleCandidate(output, value)
+}
+
+/** Source declaration interface, independent of optimization and imported aliases. */
+protected func writeRuleDeclarationAbi(context: RuleActionContext, pkg: Package): Unit {
+    let lines = ArrayList<String>(["aspect-declaration-abi-v1", pkg.name])
+    for (f in pkg.functions) {
+        if (f.packageName != pkg.name || f.isImported() || f.isCompilerAdd() ||
+            !f.isPublic() || !f.isExternalLinkage()) { continue }
+        lines.add(String.join(["F", f.identifierWithoutPrefix, qualifiedNameWithTypeArgs(f.funcType),
+            f.isStatic().toString(), f.isForeign().toString(), f.isMut().toString(),
+            f.isOpen().toString(), f.isOverride().toString()], delimiter: "\u{1f}"))
+    }
+    for (def in pkg.allCustomTypeDefs) {
+        if (def.packageName != pkg.name || def.isImported() || !def.isPublic()) { continue }
+        let details = ArrayList<String>(["T", def.identifier, qualifiedNameWithTypeArgs(def.ty),
+            def.isClass().toString(), def.isStruct().toString(), def.isInterface().toString(),
+            def.isEnum().toString()])
+        for (field in def.instanceVars) {
+            details.add(field.name + ":" + qualifiedNameWithTypeArgs(field.ty) + ":" + field.isReadOnly().toString())
+        }
+        for (parent in def.getSuperTypesRecusively()) { details.add(qualifiedNameWithTypeArgs(parent)) }
+        lines.add(String.join(details.toArray(), delimiter: "\u{1f}"))
+    }
+    for (variable in pkg.globalVars) {
+        if (variable.packageName != pkg.name || variable.isImported() || variable.isCompilerAdd() ||
+            !variable.isPublic() || !variable.isExternalLinkage()) { continue }
+        lines.add(String.join(["V", variable.identifierWithoutPrefix, qualifiedNameWithTypeArgs(variable.ty),
+            variable.isConst().toString()], delimiter: "\u{1f}"))
+    }
+    let ordered = lines.toArray()
+    sort(ordered, by: {left: String, right: String => left.compare(right)})
+    writeRuleSidecar(context, "metadata/abi-${context.action}-${pkg.name}.digest",
+        ruleSha256((String.join(ordered, delimiter: "\n") + "\n").toArray()) + "\n")
+}
+
+/** Counts only referenced roots, once per matched target; never inspects argument values. */
+protected func writeRuleMatchingSummary(context: RuleActionContext, wires: Array<RuleWirePackage>,
+    plans: Array<RuleTargetPlan>, statistics: RuleMatchStatistics): Unit {
+    let roots = HashMap<String, Int64>()
+    let advices = HashMap<String, Int64>()
+    for (wire in wires) {
+        for (record in wire.records) {
+            if (record.kind != "A") { continue }
+            let fields = record.fields
+            roots[fields[4]] = 0
+            advices[wire.sourcePackage + ":" + fields[1] + ":" + fields[0]] = 0
+        }
+    }
+    for (plan in plans) {
+        let matchedRoots = HashSet<String>()
+        for (call in plan.calls) {
+            if (call.record.kind != "A") { continue }
+            let fields = call.record.fields
+            let advice = call.sourcePackage + ":" + fields[1] + ":" + fields[0]
+            advices[advice] = advices[advice] + 1
+            if (matchedRoots.add(fields[4])) { roots[fields[4]] = roots[fields[4]] + 1 }
+        }
+    }
+    let report = JsonObject()
+    report.put("schemaVersion", JsonInt(1))
+    report.put("targetPackage", JsonString(context.packageName))
+    report.put("preparedSources", JsonInt(statistics.preparedSources))
+    report.put("evaluatedTargets", JsonInt(statistics.evaluatedTargets))
+    report.put("workUnits", JsonInt(statistics.workUnits))
+    for ((label, counts) in [("ruleRoots", roots), ("advices", advices)]) {
+        let names = ArrayList<String>()
+        for ((name, _) in counts) { names.add(name) }
+        let ordered = names.toArray()
+        sort(ordered, by: {left: String, right: String => left.compare(right)})
+        let entries = JsonArray()
+        for (name in ordered) {
+            let item = JsonObject()
+            item.put("id", JsonString(name)); item.put("matchedTargets", JsonInt(counts[name]))
+            entries.add(item)
+            if (label == "ruleRoots" && counts[name] == 0) {
+                println("aspect_cj zero-match rule: ${name} in ${context.packageName}")
+            }
+        }
+        report.put(label, entries)
+    }
+    writeRuleSidecar(context, "metadata/matches-${context.packageName}.json", report.toString() + "\n")
 }

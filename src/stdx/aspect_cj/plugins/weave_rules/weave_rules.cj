@@ -20,6 +20,7 @@ class WeaveRules {
                 throw IllegalArgumentException("build-phase-invalid: Weaver action")
             }
             let wires = readRuleSourceInputs(context)
+            writeRuleDeclarationAbi(context, pkg)
             if (context.action == "preselect") {
                 let selected = preselectRuleSources(pkg, wires)
                 let names = if (selected.isEmpty()) { "" } else { String.join(selected, delimiter: "\n") + "\n" }
@@ -27,9 +28,11 @@ class WeaveRules {
                 writeRuleCandidate(context, report)
                 return true
             }
-            let plan = preflightRuleWeave(pkg, wires)
+            let statistics = RuleMatchStatistics()
+            let plan = preflightRuleWeave(pkg, wires, statistics: Some(statistics))
             let digest = ruleBuildPlanDigest(plan, context)
             if (context.action == "preflight") {
+                writeRuleMatchingSummary(context, wires, plan, statistics)
                 var report = digest + "\n"
                 for (source in rulePlanSourcePackages(plan, pkg.name)) { report += source + "\n" }
                 writeRuleCandidate(context, report)

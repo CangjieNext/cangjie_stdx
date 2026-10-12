@@ -16,6 +16,7 @@ class CollectRules {
     public override func run(pkg: Package): Bool {
         try {
             let context = readRuleActionContext("collect", pkg.name)
+            writeRuleDeclarationAbi(context, pkg)
             let wire = collectRuleWirePackage(pkg, context.sessionId,
                 context.sourceActionKey, context.toolchainAbiKey)
             writeRuleCandidate(context, encodeRuleWire(wire))

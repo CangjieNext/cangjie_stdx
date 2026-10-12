@@ -45,6 +45,7 @@ def main():
     parser.add_argument("--chir-generated-file", type=Path)
     parser.add_argument("--modules-directory", type=Path)
     parser.add_argument("--flatbuffers-archive", type=Path)
+    parser.add_argument("--benchmark", action="store_true")
     args = parser.parse_args()
     optional = (args.chir_source_dir, args.chir_generated_file,
                 args.modules_directory,
@@ -69,10 +70,13 @@ def main():
             run([str(args.compiler), *(str(path) for path in rule_sources),
                  str(HERE / "rule_unit.cj"), "--import-path", str(args.stdx_directory),
                  "-L", str(args.stdx_directory), "-lstdx.chir",
-                 "-lstdx.encoding.json.stream", "-lstdx.encoding.hex",
+                 "-lstdx.encoding.json", "-lstdx.encoding.json.stream", "-lstdx.encoding.hex",
                  "-lstdx.crypto.digest", *flags, "-o", str(output)], env,
                 f"rule {mode} build")
             run([str(output)], env, f"rule {mode} run")
+            if args.benchmark:
+                run(["/usr/bin/time", "-f", "elapsed=%e seconds peak-rss=%M KiB", str(output), "--benchmark"],
+                    env, f"rule {mode} benchmark run")
 
         if all(value is not None for value in optional):
             for path in optional:
