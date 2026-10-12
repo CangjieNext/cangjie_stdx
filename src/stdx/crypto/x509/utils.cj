@@ -126,13 +126,17 @@ func getCertBody(cert: CPointer<Unit>): Array<Byte> {
         if (certlen < 0) {
             throw X509Exception("Fail to init X509.")
         }
-        var certBody = Array<Byte>(certlen, repeat: 0)
+        let expectedLen = certlen
+        var certBody = Array<Byte>(Int64(certlen), repeat: 0)
         let data: CPointerHandle<Byte> = acquireArrayRawData(certBody)
         try (certPtr = malloc<CPointer<Byte>>()) {
             certPtr.pointer.write(data.pointer)
             certlen = getCertLen(cert, certPtr.pointer)
             if (certlen < 0) {
                 throw X509Exception("Fail to init X509.")
+            }
+            if (certlen != expectedLen) {
+                throw X509Exception("Failed to initialize X509: DER length mismatch.")
             }
         } finally {
             releaseArrayRawData(data)
@@ -258,7 +262,7 @@ func getDigest(signatureAlgorithm: ?SignatureAlgorithm) {
 
 func getKeyType(signatureAlgorithm: ?SignatureAlgorithm) {
     match (signatureAlgorithm) {
-        case None => 0
+        case None => Int32(0)
         case Some(signatureAlgorithm) => signatureAlgorithm.getKeyType()
     }
 }
@@ -305,7 +309,7 @@ foreign {
         msg: CPointer<DynMsg>
     ): CPointer<Unit>
 
-    func DYN_CJGetCertLen(cert: CPointer<Unit>, out: CPointer<CPointer<Byte>>, msg: CPointer<DynMsg>): Int64
+    func DYN_CJGetCertLen(cert: CPointer<Unit>, out: CPointer<CPointer<Byte>>, msg: CPointer<DynMsg>): Int32
 
     func DYN_CJCertFree(cert: CPointer<Unit>, msg: CPointer<DynMsg>): Unit
 
@@ -317,7 +321,7 @@ foreign {
 
     func DYN_CJGetNamePtr(nameKey: CPointer<CPointer<Byte>>, lenght: Int64, msg: CPointer<DynMsg>): CPointer<Unit>
 
-    func DYN_CJCheckKeyType(key: CPointer<Unit>, keyType: Int64, msg: CPointer<DynMsg>): Bool
+    func DYN_CJCheckKeyType(key: CPointer<Unit>, keyType: Int32, msg: CPointer<DynMsg>): Bool
 
     func DYN_CJGetX509DnsNames(
         derBlob: CPointer<Byte>,
@@ -353,25 +357,25 @@ foreign {
 
     func DYN_CJX509ReqFree(req: CPointer<Unit>, msg: CPointer<DynMsg>): Unit
 
-    func DYN_CJGetX509ReqDer(req: CPointer<Unit>, c: CPointer<CPointer<Byte>>, msg: CPointer<DynMsg>): Int64
+    func DYN_CJGetX509ReqDer(req: CPointer<Unit>, c: CPointer<CPointer<Byte>>, msg: CPointer<DynMsg>): Int32
 
-    func DYN_OPENSSL_sk_num(nameStack: CPointer<Unit>, msg: CPointer<DynMsg>): Int64
+    func DYN_OPENSSL_sk_num(nameStack: CPointer<Unit>, msg: CPointer<DynMsg>): Int32
 
     func DYN_CJLoadPrivateKey(c: CPointer<CPointer<Byte>>, length: Int64, msg: CPointer<DynMsg>): CPointer<Unit>
 
-    func DYN_CJX509ReqSetSubject(req: CPointer<Unit>, name: CPointer<Unit>, msg: CPointer<DynMsg>): Int64
+    func DYN_CJX509ReqSetSubject(req: CPointer<Unit>, name: CPointer<Unit>, msg: CPointer<DynMsg>): Int32
 
-    func DYN_CJX509ReqSetPubkey(req: CPointer<Unit>, pkey: CPointer<Unit>, msg: CPointer<DynMsg>): Int64
+    func DYN_CJX509ReqSetPubkey(req: CPointer<Unit>, pkey: CPointer<Unit>, msg: CPointer<DynMsg>): Int32
 
-    func DYN_CJX509ReqSign(req: CPointer<Unit>, pkey: CPointer<Unit>, md: CPointer<Unit>, msg: CPointer<DynMsg>): Int64
+    func DYN_CJX509ReqSign(req: CPointer<Unit>, pkey: CPointer<Unit>, md: CPointer<Unit>, msg: CPointer<DynMsg>): Int32
 
     func DYN_CJNameStackNew(msg: CPointer<DynMsg>): CPointer<Unit>
 
     func DYN_CJNameStackFree(nameStack: CPointer<Unit>, msg: CPointer<DynMsg>): Unit
 
-    func DYN_CJAddName(nameStack: CPointer<Unit>, nid: Int64, value: CString, msg: CPointer<DynMsg>): Int64
+    func DYN_CJAddName(nameStack: CPointer<Unit>, nid: Int32, value: CString, msg: CPointer<DynMsg>): Int32
 
-    func DYN_CJReqAddExtension(req: CPointer<Unit>, nameStack: CPointer<Unit>, msg: CPointer<DynMsg>): Int64
+    func DYN_CJReqAddExtension(req: CPointer<Unit>, nameStack: CPointer<Unit>, msg: CPointer<DynMsg>): Int32
 
     func DYN_CJVerifyX509Cert(
         cert: CPointer<RawX509Cert>,
@@ -459,7 +463,7 @@ func sha512(): CPointer<Unit> {
     return res
 }
 
-func checkKeyType(key: CPointer<Unit>, keyType: Int64): Bool {
+func checkKeyType(key: CPointer<Unit>, keyType: Int32): Bool {
     let dynMsgPtr = generateDynMsg()
     let res = unsafe { DYN_CJCheckKeyType(key, keyType, dynMsgPtr) }
     checkError(dynMsgPtr)
@@ -480,28 +484,28 @@ func getNamePtr(nameKey: CPointer<CPointer<Byte>>, lenght: Int64): CPointer<Unit
     return res
 }
 
-func x509ReqSign(req: CPointer<Unit>, pkey: CPointer<Unit>, md: CPointer<Unit>): Int64 {
+func x509ReqSign(req: CPointer<Unit>, pkey: CPointer<Unit>, md: CPointer<Unit>): Int32 {
     let dynMsgPtr = generateDynMsg()
     let res = unsafe { DYN_CJX509ReqSign(req, pkey, md, dynMsgPtr) }
     checkError(dynMsgPtr)
     return res
 }
 
-func x509ReqSetPubkey(req: CPointer<Unit>, pkey: CPointer<Unit>): Int64 {
+func x509ReqSetPubkey(req: CPointer<Unit>, pkey: CPointer<Unit>): Int32 {
     let dynMsgPtr = generateDynMsg()
     let res = unsafe { DYN_CJX509ReqSetPubkey(req, pkey, dynMsgPtr) }
     checkError(dynMsgPtr)
     return res
 }
 
-func x509ReqSetSubject(req: CPointer<Unit>, name: CPointer<Unit>): Int64 {
+func x509ReqSetSubject(req: CPointer<Unit>, name: CPointer<Unit>): Int32 {
     let dynMsgPtr = generateDynMsg()
     let res = unsafe { DYN_CJX509ReqSetSubject(req, name, dynMsgPtr) }
     checkError(dynMsgPtr)
     return res
 }
 
-func getX509ReqDer(req: CPointer<Unit>, c: CPointer<CPointer<Byte>>): Int64 {
+func getX509ReqDer(req: CPointer<Unit>, c: CPointer<CPointer<Byte>>): Int32 {
     let dynMsgPtr = generateDynMsg()
     let res = unsafe { DYN_CJGetX509ReqDer(req, c, dynMsgPtr) }
     checkError(dynMsgPtr)
@@ -547,14 +551,14 @@ func nameNew(): CPointer<Unit> {
     return res
 }
 
-func reqAddExtension(req: CPointer<Unit>, nameStack: CPointer<Unit>): Int64 {
+func reqAddExtension(req: CPointer<Unit>, nameStack: CPointer<Unit>): Int32 {
     let dynMsgPtr = generateDynMsg()
     let res = unsafe { DYN_CJReqAddExtension(req, nameStack, dynMsgPtr) }
     checkError(dynMsgPtr)
     return res
 }
 
-func addName(nameStack: CPointer<Unit>, nid: Int64, value: CString): Int64 {
+func addName(nameStack: CPointer<Unit>, nid: Int32, value: CString): Int32 {
     let dynMsgPtr = generateDynMsg()
     let res = unsafe { DYN_CJAddName(nameStack, nid, value, dynMsgPtr) }
     checkError(dynMsgPtr)
@@ -609,7 +613,7 @@ func getX509ExtKeyUsage(derBlob: CPointer<Byte>, length: UIntNative, result: CPo
     checkError(dynMsgPtr)
 }
 
-func stackNameNum(nameStack: CPointer<Unit>): Int64 {
+func stackNameNum(nameStack: CPointer<Unit>): Int32 {
     let dynMsgPtr = generateDynMsg()
     let res = unsafe { DYN_OPENSSL_sk_num(nameStack, dynMsgPtr) }
     checkError(dynMsgPtr)
@@ -662,7 +666,7 @@ func getPriKeyPtr(priKey: CPointer<CPointer<Byte>>, length: Int64) {
     return res
 }
 
-func getCertLen(cert: CPointer<Unit>, out: CPointer<CPointer<Byte>>): Int64 {
+func getCertLen(cert: CPointer<Unit>, out: CPointer<CPointer<Byte>>): Int32 {
     let dynMsgPtr = generateDynMsg()
     let res = unsafe { DYN_CJGetCertLen(cert, out, dynMsgPtr) }
     checkError(dynMsgPtr)

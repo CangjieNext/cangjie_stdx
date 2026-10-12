@@ -10,9 +10,9 @@ package stdx.crypto.x509
 
 import stdx.crypto.common.*
 
-const GEN_EMAIL: Int64 = 1
-const GEN_DNS: Int64 = 2
-const GEN_IPADD: Int64 = 7
+const GEN_EMAIL: Int32 = 1
+const GEN_DNS: Int32 = 2
+const GEN_IPADD: Int32 = 7
 
 public struct X509CertificateRequestInfo {
     public var subject: ?X509Name
@@ -236,7 +236,7 @@ func setAttributes(req: CPointer<Unit>, dnsNames: Array<String>, emailAddresses:
     }
 }
 
-func addName(nameStack: CPointer<Unit>, nid: Int64, str: String) {
+func addName(nameStack: CPointer<Unit>, nid: Int32, str: String) {
     unsafe {
         try (strPtr = LibC.mallocCString(str).asResource()) {
             let ret = addName(nameStack, nid, strPtr.value)
@@ -253,6 +253,7 @@ func getReqBody(req: CPointer<Unit>): Array<Byte> {
         if (reqlen < 0) {
             throw X509Exception("X509CSR init failed: Cannot parse the X509 req body.")
         }
+        let expectedLen = reqlen
         var reqBody = Array<Byte>(Int64(reqlen), repeat: 0)
         let data: CPointerHandle<Byte> = acquireArrayRawData(reqBody)
         try (reqPtr = malloc<CPointer<Byte>>()) {
@@ -260,6 +261,9 @@ func getReqBody(req: CPointer<Unit>): Array<Byte> {
             reqlen = getX509ReqDer(req, reqPtr.pointer)
             if (reqlen < 0) {
                 throw X509Exception("X509CSR init failed: Cannot parse the X509 req body.")
+            }
+            if (reqlen != expectedLen) {
+                throw X509Exception("X509CSR init failed: DER length mismatch.")
             }
         } finally {
             releaseArrayRawData(data)
