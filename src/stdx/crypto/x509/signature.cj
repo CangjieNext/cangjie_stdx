@@ -8,9 +8,9 @@
 
 package stdx.crypto.x509
 
-const RSAN_ID: Int64 = 6
-const ECN_ID: Int64 = 408
-const DSAN_ID: Int64 = 116
+const RSAN_ID: Int32 = 6
+const ECN_ID: Int32 = 408
+const DSAN_ID: Int32 = 116
 
 public struct Signature <: Equatable<Signature> & Hashable {
     let signature_: DerBlob
