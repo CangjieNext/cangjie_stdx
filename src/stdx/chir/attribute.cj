@@ -68,6 +68,7 @@ internal enum Attribute <: ToString {
     JavaHasDefault | ///< Mark whether JAVA_MIRROR interface has default method.
     PreviouslyDeserialized | ///< Mark that deserialization occurs not in the newly created node, but in an existing one.
     DoesNotThrow | ///< Mark that the function does not throw any exceptions by construction.
+    ObjCImpl | ///< Mark a Cangjie class exported to Objective-C.
     MatchPattern | ///< Mark CFG nodes that evaluate patterns, excluding case bodies and nested expressions.
     PluginAdded | ///< Mark that the declaration is added by chir plugin.
 
@@ -118,6 +119,7 @@ internal enum Attribute <: ToString {
             case JavaHasDefault         => "javaHasDefault"
             case PreviouslyDeserialized => "previouslyDeserialized"
             case DoesNotThrow           => "doesNotThrow"
+            case ObjCImpl               => "objCImpl"
             case MatchPattern           => "matchPattern"
             case PluginAdded            => "pluginAdded"
             case AttrBegin | AttrEnd => "UNKNOWN"
@@ -165,7 +167,8 @@ internal enum Attribute <: ToString {
             case HasInitedField         => JavaHasDefault
             case JavaHasDefault         => PreviouslyDeserialized
             case PreviouslyDeserialized => DoesNotThrow
-            case DoesNotThrow           => MatchPattern
+            case DoesNotThrow           => ObjCImpl
+            case ObjCImpl               => MatchPattern
             case MatchPattern           => PluginAdded
             case PluginAdded            => AttrEnd
             case AttrEnd                => AttrEnd
@@ -214,8 +217,9 @@ internal enum Attribute <: ToString {
             case JavaHasDefault         => 36
             case PreviouslyDeserialized => 37
             case DoesNotThrow           => 38
-            case MatchPattern           => 39
-            case PluginAdded            => 40
+            case ObjCImpl               => 39
+            case MatchPattern           => 40
+            case PluginAdded            => 41
             case AttrEnd                => ATTR_SIZE  // Invalid, return size to indicate error
         }
     }

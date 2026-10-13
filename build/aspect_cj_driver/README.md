@@ -85,6 +85,16 @@ python3 tests/aspect_cj_driver/semantic_smoke.py \
     --stdx-directory "$STDX_DIR"
 ```
 
+元数据读取、会话路径约束和旧版织入限额另有真实编译测试：
+
+```sh
+python3 tests/aspect_cj_driver/hardening_smoke.py \
+    --compiler /absolute/path/to/matching/cjc \
+    --stdx-directory "$STDX_DIR"
+```
+
+测试覆盖会话内文件/别名、会话外同名前缀目录、父目录穿越、越界符号链接、8 MiB 文件读取边界、普通文件检查，以及 legacy 字段/记录/文件超限和截断元数据。仅用于 Linux 验证，不需要网络；所有输入在独立临时目录生成并清理。旧式单个目标编译动作的元数据合计上限为 8 MiB、8192 条记录，单字段上限 65536 字节；超限是编译错误而不是静默跳过织入。
+
 该脚本在默认及 `-O2` 下检查泛型函数、泛型类实例体的计划数和运行次数，以及 Entry/业务/Exit 异常、内部捕获、递归和重复织入拒绝。生产驱动仍只装载正式的 Collector 或 Weaver 插件，不使用测试插件。
 
 规则内核与 CHIR 快照的可复跑单元测试位于 `tests/aspect_cj_driver`。快照测试需要同版本 stdx 构建的 CHIR 源码、对应 schema 生成文件、模块目录和 `flatbuffers.a`；四项参数同时提供时运行快照测试，否则只运行规则内核默认及 `-O2`。脚本不会误用源码目录中遗留的旧生成文件：

@@ -64,8 +64,10 @@ protected func validateRuleAtom(spec: RuleAtomSpec): Unit {
         !isValidMetadataPatternText(spec.methodName) || spec.methodName.isEmpty()) {
         throw IllegalArgumentException("invalid-rule-field: className or methodName")
     }
-    if (!isValidMetadataPatternText(spec.funcTypeStr) ||
-        !isValidFunctionTypePattern(spec.funcTypeStr)) {
+    if (!isValidMetadataPatternText(spec.funcTypeStr)) {
+        throw IllegalArgumentException("invalid-rule-field: funcTypeStr")
+    }
+    if (!isValidFunctionTypePattern(spec.funcTypeStr)) {
         throw IllegalArgumentException("invalid-rule-field: funcTypeStr")
     }
     if (spec.targetKind != "any" && spec.targetKind != "global" &&
@@ -163,8 +165,8 @@ private func matchTypeBudgetedDepth(pattern: String, value: String,
     }
     if (!pattern.contains("<") && value.contains("<")) {
         let actual = parseParameterizedTypeName(value)
-        return actual.isSome() && matchTypeBudgetedDepth(pattern,
-            actual.getOrThrow().base, budget, depth + 1)
+        if (actual.isNone()) { return false }
+        return matchTypeBudgetedDepth(pattern, actual.getOrThrow().base, budget, depth + 1)
     }
     if (pattern.contains("<") || value.contains("<")) {
         let expected = parseParameterizedTypeName(pattern)
@@ -172,8 +174,8 @@ private func matchTypeBudgetedDepth(pattern: String, value: String,
         if (expected.isNone() || actual.isNone()) { return false }
         let left = expected.getOrThrow()
         let right = actual.getOrThrow()
-        if (left.arguments.size != right.arguments.size ||
-            !matchTypeBudgetedDepth(left.base, right.base, budget, depth + 1)) { return false }
+        if (left.arguments.size != right.arguments.size) { return false }
+        if (!matchTypeBudgetedDepth(left.base, right.base, budget, depth + 1)) { return false }
         for (index in 0..left.arguments.size) {
             if (!matchTypeBudgetedDepth(left.arguments[index], right.arguments[index], budget, depth + 1)) {
                 return false
@@ -215,9 +217,10 @@ private func matchFunctionTypeBudgetedDepth(pattern: String, value: String,
             }
         } else {
             for (actualIndex in 1..actual.parameters.size + 1) {
-                current[actualIndex] = previous[actualIndex - 1] &&
-                    matchTypeBudgetedDepth(expectedParameter,
+                if (previous[actualIndex - 1]) {
+                    current[actualIndex] = matchTypeBudgetedDepth(expectedParameter,
                         actual.parameters[actualIndex - 1], budget, depth + 1)
+                }
             }
         }
         previous = current

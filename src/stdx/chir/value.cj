@@ -996,6 +996,11 @@ public class Function <: GlobalValue & Equatable<Function> {
      * @return The `Unit` result.
      */
     public func initBody(): Unit {
+        // moveBodyTo transfers the old parameters along with their body.
+        // Reinitializing the source function must recreate its declared inputs.
+        if (_parameters.isEmpty()) {
+            for (paramTy in funcType.paramTypes) { appendParameter(paramTy) }
+        }
         let newBody = addBody()
         let bb = newBody.appendBlock()
         newBody.setEntryBlock(bb)
@@ -1027,6 +1032,8 @@ public class Function <: GlobalValue & Equatable<Function> {
 
     /** Whether this is a normal executable source body rather than a template or compiler helper. */
     public func isAspectExecutableSourceBody(): Bool {
+        if (_attributes.testAttr(Attribute.PluginAdded) && _srcCodeName.isEmpty() &&
+            _aspectSourceOrigin.isEmpty()) { return false }
         if (let Some(parent) <- _declaredParent) {
             if (parent.isGeneric()) { return false }
         }
@@ -1161,15 +1168,22 @@ public class Function <: GlobalValue & Equatable<Function> {
      * @return The `Unit` result.
      */
     public func moveBodyTo(other: Function): Unit {
+        if (this == other) { return }
+        if (funcType != other.funcType) {
+            throw CHIRException("Cannot move a function body to a different function type.")
+        }
         if (let Some(oBody) <- other._body) {
             oBody.destroySelf()
         }
         other._body = _body
+        if (let Some(moved) <- other._body) { moved._owner = other }
         this._body = None
+        // Transfer ownership without clearing the shared ArrayList instance.
         other._parameters = _parameters
-        this._parameters.clear()
+        for (parameter in other._parameters) { parameter._owner = other }
+        this._parameters = ArrayList<Parameter>()
         other._genericTypeParams = _genericTypeParams
-        this._genericTypeParams.clear()
+        this._genericTypeParams = ArrayList<GenericType>()
         other._retValue = _retValue
         this._retValue = None
         other._localId = _localId

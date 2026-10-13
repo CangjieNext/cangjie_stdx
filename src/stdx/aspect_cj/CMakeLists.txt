@@ -9,6 +9,7 @@ add_subdirectory(plugins)
 
 set(ASPECT_CJ_SRCS
     aspect_cj.cj
+    replace_body.cj
     rule_annotations.cj
     rule_expression.cj
     rule_graph.cj

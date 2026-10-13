@@ -18,14 +18,29 @@ import stdx.plugin.*
 
 private class MetadataReadState {
     var success: Bool = true
+    var records: Int64 = 0
+    var bytes: Int64 = 0
 }
 
 @CHIRPlugin
 class WeaveAspects {
     var processInfos = ArrayList<OutputInfo>()
     var pkgInitFuncMangledNames = HashMap<String, String>()
+    var workBudget = RuleWorkBudget()
 
     public override func run(pkg: Package): Bool {
+        try {
+            processInfos.clear()
+            pkgInitFuncMangledNames.clear()
+            workBudget = RuleWorkBudget()
+            return weavePackage(pkg)
+        } catch (error: Exception) {
+            printError("aspect_cj ${pkg.name} legacy weave failed: ${error.message}")
+            return false
+        }
+    }
+
+    private func weavePackage(pkg: Package): Bool {
         if (!readAnnoInfo(pkg.name)) {
             return false
         }
@@ -54,10 +69,16 @@ class WeaveAspects {
         let callee = getCallee(pkg, pi, f, args)
         let funcCallCxt = FuncCallContext(args, Array<Type>(), computeThisTypeOfCallee(callee, args))
         if (pi.annoClassName == INSERT_AT_ENTRY_ANNO_CLASS_NAME) {
-            let insertPosition = if (pi.insert.usesPointcutArgsArray) {
-                InsertPosition.After((args[args.size - 1] as LocalVar).getOrThrow().expr)
-            } else {
-                InsertPosition.AtStart(f.body.getOrThrow().entryBlock)
+            var insertPosition = InsertPosition.AtStart(f.body.getOrThrow().entryBlock)
+            if (pi.insert.usesPointcutArgsArray) {
+                if (args.isEmpty()) {
+                    throw IllegalArgumentException("invalid-advice-arguments: missing Array<Any> snapshot")
+                }
+                if (let Some(snapshot) <- (args[args.size - 1] as LocalVar)) {
+                    insertPosition = InsertPosition.After(snapshot.expr)
+                } else {
+                    throw IllegalArgumentException("invalid-advice-arguments: invalid Array<Any> snapshot")
+                }
             }
             let builder = CHIRBuilder(insertPosition)
             builder.createApply(callee, funcCallCxt)
@@ -65,21 +86,7 @@ class WeaveAspects {
             let visitor = InsertAtExitVisitor(callee, funcCallCxt)
             visitor.walk(f.body.getOrThrow())
         } else if (isReplaceBodyAnno(pi.annoClassName)) {
-            let wrapperFunc = pkg.addFunction(f.funcType, f.identifierWithoutPrefix, f.srcCodeName, f.packageName)
-            f.replaceWith(wrapperFunc)
-            wrapperFunc.initBody()
-            let builder = CHIRBuilder(wrapperFunc.body.getOrThrow().entryBlock)
-            let allocate = builder.createAllocate(f.funcType.returnType)
-            wrapperFunc.returnValue = allocate.result
-            if (args.size != 1) {
-                for (i in 0..wrapperFunc.parameters.size) {
-                    funcCallCxt.setArg(i, wrapperFunc.parameters[i])
-                }
-            }
-            let apply = builder.createApply(callee, funcCallCxt)
-            builder.createStore(apply.result, allocate.result)
-            builder.createExit()
-            f.identifier = wrapperFunc.identifier + ".original"
+            weaveReplacementBody(pkg, f, callee)
         } else {
             printError("Unknown annotation class name '${pi.annoClassName}'.")
             return false
@@ -118,11 +125,21 @@ class WeaveAspects {
 
     private func readRequiredMetadataLine<T>(reader: StringReader<T>, fieldName: String, fileName: String): String
         where T <: InputStream {
-        if (let Some(value) <- reader.readln()) {
+        if (let Some(value) <- readMetadataLine(reader)) {
             return value
         }
         printError("Missing `${fieldName}` in aspect metadata `${fileName}`.")
         throw IllegalArgumentException("Missing aspect metadata field: ${fieldName}")
+    }
+
+    private func readMetadataLine<T>(reader: StringReader<T>): ?String where T <: InputStream {
+        let line = reader.readln()
+        if (let Some(value) <- line) {
+            if (value.size > RULE_WIRE_FIELD_LIMIT) {
+                throw IllegalArgumentException("metadata-format: field size limit")
+            }
+        }
+        return line
     }
 
     private func prepareArguments(pkg: Package, f: Function, pi: OutputInfo): (Array<Value>, Bool) {
@@ -245,13 +262,13 @@ class WeaveAspects {
     }
 
     private func meets(f: Function, pi: OutputInfo): Bool {
-        if (!matchQualifiedNamePattern(pi.to.packageName, f.packageName)) {
+        if (!matchQualifiedNamePatternBudgeted(pi.to.packageName, f.packageName, workBudget)) {
             return false
         }
         if (!outerTypeNameMeets(f, pi)) {
             return false
         }
-        if (!matchNamePattern(pi.to.methodName, f.srcCodeName)) {
+        if (!matchNamePatternBudgeted(pi.to.methodName, f.srcCodeName, workBudget)) {
             return false
         }
         if (pi.to.isStatic != f.isStatic()) {
@@ -268,14 +285,14 @@ class WeaveAspects {
         } else {
             funcType.qualifiedName
         }
-        if (!matchFunctionTypePattern(pi.to.funcTypeStr, funcTypeStr)) {
+        if (!matchFunctionTypePatternBudgeted(pi.to.funcTypeStr, funcTypeStr, workBudget)) {
             return false
         }
         return true
     }
 
     private func outerTypeNameMeets(f: Function, pi: OutputInfo): Bool {
-        if (matchNamePattern(pi.to.className, getFuncOuterTypeName(f))) {
+        if (matchNamePatternBudgeted(pi.to.className, getFuncOuterTypeName(f), workBudget)) {
             return true
         }
         if (let Some(outerType) <- f.outerType && pi.to.recursively) {
@@ -288,7 +305,7 @@ class WeaveAspects {
                 return false
             }
             for (superType in superTypes) {
-                if (matchNamePattern(pi.to.className, superType.def.srcCodeName)) {
+                if (matchNamePatternBudgeted(pi.to.className, superType.def.srcCodeName, workBudget)) {
                     return true
                 }
             }
@@ -308,9 +325,16 @@ class WeaveAspects {
                 if (!fileName.endsWith(exactSuffix) && !fileName.endsWith(wildcardSuffix)) {
                     return true
                 }
-                try (f = File(Path(fileName), OpenMode.Read)) {
-                    let reader = StringReader(f)
-                    let firstLine = reader.readln()
+                try {
+                    let bytes = readBoundedAspectMetadata(Path(fileName))
+                    if (bytes.size > RULE_WIRE_FILE_LIMIT - state.bytes) {
+                        throw IllegalArgumentException("metadata-format: aggregate file size limit")
+                    }
+                    state.bytes += bytes.size
+                    let buffer = ByteBuffer()
+                    buffer.write(bytes)
+                    let reader = StringReader(buffer)
+                    let firstLine = readMetadataLine(reader)
                     if (firstLine.isNone()) {
                         printError("Empty aspect metadata `${fileName}`.")
                         state.success = false
@@ -324,7 +348,7 @@ class WeaveAspects {
                         return false
                     }
                     var pendingPkgName: ?String = if (isVersion2) {
-                        reader.readln()
+                        readMetadataLine(reader)
                     } else {
                         Some(firstValue)
                     }
@@ -334,6 +358,10 @@ class WeaveAspects {
                         return false
                     }
                     while (let Some(pkgName) <- pendingPkgName) {
+                        if (state.records >= RULE_WIRE_RECORD_LIMIT) {
+                            throw IllegalArgumentException("metadata-format: record limit")
+                        }
+                        state.records++
                         // Package init function mangled name
                         let initFuncMangledName = readRequiredMetadataLine(reader, "initFuncMangledName", fileName)
                         // Anno class name
@@ -367,11 +395,11 @@ class WeaveAspects {
                         // A wildcard-indexed file can also contain an exact package name
                         // equal to the reserved index. Do not import an unrelated advice
                         // package's initializer into the current package.
-                        if (matchQualifiedNamePattern(toPackageName, curPkgName)) {
+                        if (matchQualifiedNamePatternBudgeted(toPackageName, curPkgName, workBudget)) {
                             pkgInitFuncMangledNames.add(pkgName, initFuncMangledName)
                             processInfos.add(OutputInfo(annoClassName, insert, to))
                         }
-                        pendingPkgName = reader.readln()
+                        pendingPkgName = readMetadataLine(reader)
                     }
                 } catch (e: Exception) {
                     printError("Invalid aspect metadata `${fileName}`: ${e.message}")

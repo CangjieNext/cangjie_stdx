@@ -10983,7 +10983,7 @@ mut_prop_returnValue: true
 public func initBody(): Unit
 ```
 
-功能：初始化函数体，创建入口 BlockGroup 和 Block。
+功能：初始化函数体，创建入口 BlockGroup 和 Block。如果参数已通过 `moveBodyTo` 移走，则根据函数类型重新创建参数。
 
 示例：
 
@@ -11421,6 +11421,8 @@ public func moveBodyTo(other: Function): Unit
 ```
 
 功能：将函数体、参数、泛型形参和返回值移动到另一函数；调用后本函数的上述内容被清空。
+
+目标函数必须具有相同的函数类型，否则抛出 `CHIRException`。移动后，函数体及参数的所属函数为目标函数。传入本函数自身时不做修改；可调用本函数的 `initBody()` 重新创建函数体及参数。
 
 参数：
 

@@ -370,74 +370,11 @@ protected func parseParameterizedTypeName(value: String): ?ParameterizedTypeName
 }
 
 protected func matchTypePattern(pattern: String, value: String): Bool {
-    if (pattern == "*") {
-        return true
-    }
-    if (pattern.startsWith("(") || value.startsWith("(")) {
-        return matchFunctionTypePattern(pattern, value)
-    }
-    // A non-parameterized name retains the legacy behaviour of matching the
-    // generic type constructor, even when another parameter in the same
-    // signature requests detailed type-argument matching.
-    if (!pattern.contains("<") && value.contains("<")) {
-        let actual = parseParameterizedTypeName(value)
-        return actual.isSome() && matchTypePattern(pattern, actual.getOrThrow().base)
-    }
-    if (pattern.contains("<") || value.contains("<")) {
-        let expected = parseParameterizedTypeName(pattern)
-        let actual = parseParameterizedTypeName(value)
-        if (expected.isNone() || actual.isNone()) {
-            return false
-        }
-        let expectedType = expected.getOrThrow()
-        let actualType = actual.getOrThrow()
-        if (expectedType.arguments.size != actualType.arguments.size ||
-            !matchTypePattern(expectedType.base, actualType.base)) {
-            return false
-        }
-        for (index in 0..expectedType.arguments.size) {
-            if (!matchTypePattern(expectedType.arguments[index], actualType.arguments[index])) {
-                return false
-            }
-        }
-        return true
-    }
-    return matchQualifiedNamePattern(pattern, value) ||
-        normalizeStdCoreTypeName(pattern) == normalizeStdCoreTypeName(value)
+    return matchTypePatternBudgeted(pattern, value, RuleWorkBudget())
 }
 
 protected func matchFunctionTypePattern(pattern: String, value: String): Bool {
-    if (pattern.trimAscii() == value.trimAscii()) {
-        return true
-    }
-    let parsedPattern = parseFunctionTypePattern(pattern)
-    let parsedValue = parseFunctionTypePattern(value)
-    if (parsedPattern.isNone() || parsedValue.isNone()) {
-        return false
-    }
-    let expected = parsedPattern.getOrThrow()
-    let actual = parsedValue.getOrThrow()
-    if (!matchTypePattern(expected.returnType, actual.returnType)) {
-        return false
-    }
-    var previous = Array<Bool>(actual.parameters.size + 1, repeat: false)
-    previous[0] = true
-    for (expectedParameter in expected.parameters) {
-        var current = Array<Bool>(actual.parameters.size + 1, repeat: false)
-        if (expectedParameter == "**") {
-            current[0] = previous[0]
-            for (actualIndex in 1..actual.parameters.size + 1) {
-                current[actualIndex] = previous[actualIndex] || current[actualIndex - 1]
-            }
-        } else {
-            for (actualIndex in 1..actual.parameters.size + 1) {
-                current[actualIndex] = previous[actualIndex - 1] &&
-                    matchTypePattern(expectedParameter, actual.parameters[actualIndex - 1])
-            }
-        }
-        previous = current
-    }
-    return previous[actual.parameters.size]
+    return matchFunctionTypePatternBudgeted(pattern, value, RuleWorkBudget())
 }
 
 protected func isValidFunctionTypePattern(value: String): Bool {

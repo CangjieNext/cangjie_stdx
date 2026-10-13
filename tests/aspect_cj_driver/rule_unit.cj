@@ -179,6 +179,19 @@ private func atomTests(): Unit {
     check(rejected({ => matchFunctionTypePatternBudgeted("(Array<*>)->Unit",
         "(Array<Int64>)->Unit", RuleWorkBudget(limit: 10)); () }, "rule-limit"),
         "type parser charges work before unbounded nested scans")
+    check(matchFunctionTypePattern("(Array<*>)->Unit", "(Array<Int64>)->Unit"),
+        "legacy generic matching uses the shared matcher")
+    check(!matchTypePattern("Array<String>", "Array<Int64>"), "legacy generic mismatch")
+    check(matchTypePattern("Array", "Array<Int64>"), "legacy constructor matching preserved")
+    let opens = String.join(Array<String>(80, repeat: "Array<"), delimiter: "")
+    let closes = String.join(Array<String>(80, repeat: ">"), delimiter: "")
+    let nestedPattern = opens + "*" + closes
+    let nestedValue = opens + "Int64" + closes
+    check(rejected({ => matchTypePattern(nestedPattern, nestedValue); () }, "type nesting"),
+        "legacy type recursion rejects over-budget nesting")
+    check(rejected({ => matchFunctionTypePattern("(" + nestedPattern + ")->Unit",
+        "(" + nestedValue + ")->Unit"); () }, "type nesting"),
+        "legacy function recursion rejects over-budget nesting")
     for (bad in [
         RuleAtomSpec("", "", "*", "(**)->*", "any", false, ""),
         RuleAtomSpec("shop", "X", "*", "(**)->*", "global", false, ""),

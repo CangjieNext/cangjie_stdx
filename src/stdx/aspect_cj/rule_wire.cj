@@ -167,9 +167,8 @@ protected func validatedRuleWireGraph(wire: RuleWirePackage,
                 if (f[1] != wire.sourcePackage || f[2].isEmpty()) { badWire("L source identity") }
                 decimal(f[3])
                 boolText(f[4]); boolText(f[5]); boolText(f[6]); boolText(f[11]); boolText(f[12])
-                if (!isValidPackageNamePattern(f[7]) || !isValidFunctionTypePattern(f[10])) {
-                    badWire("L target pattern")
-                }
+                if (!isValidPackageNamePattern(f[7])) { badWire("L target pattern") }
+                if (!isValidFunctionTypePattern(f[10])) { badWire("L target pattern") }
                 legacySymbols.add(f[2])
                 adviceCount++
             case _ => badWire("unknown record kind")

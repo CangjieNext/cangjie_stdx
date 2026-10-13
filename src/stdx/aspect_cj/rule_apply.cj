@@ -205,7 +205,9 @@ protected func preflightRuleWeave(pkg: Package, wires: Array<RuleWirePackage>,
                 if (expected > 0) {
                     for (index in 0..expected) {
                         if (qualifiedNameWithTypeArgs(call.callee.parameters[index].ty) !=
-                            qualifiedNameWithTypeArgs(f.parameters[index].ty)) {
+                            qualifiedNameWithTypeArgs(f.parameters[index].ty) &&
+                            !(index == 0 && f.isInstanceMemberMethod() &&
+                            call.callee.parameters[index].ty.stripAllRefs() == f.parameters[index].ty.stripAllRefs())) {
                             throw IllegalArgumentException("legacy typed parameter mismatch: ${symbol}")
                         }
                     }
@@ -213,7 +215,7 @@ protected func preflightRuleWeave(pkg: Package, wires: Array<RuleWirePackage>,
                 if (record.fields[0] == REPLACE_FUNC_BODY_ANNO_CLASS_NAME) {
                     let originalType = call.callee.parameters[call.callee.parameters.size - 1].ty
                     if (let Some(functionType) <- (originalType as FuncType)) {
-                        if (qualifiedNameWithTypeArgs(functionType) != qualifiedNameWithTypeArgs(f.funcType)) {
+                        if (!replacementCallbackMatches(f, functionType)) {
                             throw IllegalArgumentException("legacy Replace original mismatch: ${symbol}")
                         }
                     } else { throw IllegalArgumentException("legacy Replace original is not function: ${symbol}") }
@@ -412,22 +414,7 @@ private func applyRuleTarget(pkg: Package, plan: RuleTargetPlan): Unit {
         if (call.record.kind != "L" || call.record.fields[0] != REPLACE_FUNC_BODY_ANNO_CLASS_NAME) {
             continue
         }
-        let target = plan.target
-        let wrapper = pkg.addFunction(target.funcType, target.identifierWithoutPrefix,
-            target.srcCodeName, target.packageName)
-        target.replaceWith(wrapper)
-        wrapper.initBody()
-        let builder = CHIRBuilder(wrapper.body.getOrThrow().entryBlock)
-        let resultSlot = builder.createAllocate(target.funcType.returnType)
-        wrapper.returnValue = resultSlot.result
-        let context = callContext(call.callee, args)
-        if (args.size != 1) {
-            for (i in 0..wrapper.parameters.size) { context.setArg(i, wrapper.parameters[i]) }
-        }
-        let result = builder.createApply(call.callee, context)
-        builder.createStore(result.result, resultSlot.result)
-        builder.createExit()
-        target.identifier = wrapper.identifier + ".original"
+        weaveReplacementBody(pkg, plan.target, call.callee)
     }
 }
 

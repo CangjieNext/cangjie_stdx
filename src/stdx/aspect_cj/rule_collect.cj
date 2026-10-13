@@ -198,7 +198,10 @@ private func checkLegacyInsert(f: Function, fields: RuleControlFields, usesArray
     let isStatic = fields.boolean("isStatic")
     let signature = fields.string("funcTypeStr")
     if (f.funcType.returnType != UnitType.get() || !isValidMetadataPatternText(signature) ||
-        !isValidFunctionTypePattern(signature) || (signature.contains("*") && !usesArray)) {
+        (signature.contains("*") && !usesArray)) {
+        throw IllegalArgumentException("invalid-advice-signature: legacy Insert ${f.srcCodeName}")
+    }
+    if (!isValidFunctionTypePattern(signature)) {
         throw IllegalArgumentException("invalid-advice-signature: legacy Insert ${f.srcCodeName}")
     }
     if (usesArray) { return }
@@ -213,7 +216,7 @@ private func checkLegacyInsert(f: Function, fields: RuleControlFields, usesArray
             throw IllegalArgumentException("invalid-advice-signature: legacy receiver ${f.srcCodeName}")
         }
         let (receiverParams, explicitParams) = params.splitAt(1)
-        if (let Some(custom) <- (receiverParams[0] as CustomType)) {
+        if (let Some(custom) <- (receiverParams[0].stripAllRefs() as CustomType)) {
             if (custom.def.srcCodeName != className) {
                 throw IllegalArgumentException("invalid-advice-signature: legacy receiver ${f.srcCodeName}")
             }
@@ -227,12 +230,9 @@ private func checkLegacyInsert(f: Function, fields: RuleControlFields, usesArray
     let actualName = if (signature.contains("<")) { qualifiedNameWithTypeArgs(actual) } else {
         actual.qualifiedName
     }
-    let expectedEnd = signature.lastIndexOf(")").getOrThrow()
-    let actualEnd = actualName.lastIndexOf(")").getOrThrow()
-    let matches = if (signature.contains("<")) {
-        let configured = parseFunctionTypePattern(signature).getOrThrow()
-        matchFunctionTypePattern("(" + String.join(configured.parameters, delimiter: ",") + ")->Unit", actualName)
-    } else { signature[0..expectedEnd + 1] == actualName[0..actualEnd + 1] }
+    let configured = parseFunctionTypePattern(signature).getOrThrow()
+    let matches = matchFunctionTypePattern(
+        "(" + String.join(configured.parameters, delimiter: ",") + ")->Unit", actualName)
     if (!matches) { throw IllegalArgumentException("invalid-advice-signature: legacy types ${f.srcCodeName}") }
 }
 
@@ -242,8 +242,10 @@ private func checkLegacyReplace(f: Function, fields: RuleControlFields): String 
         throw IllegalArgumentException("invalid-advice-signature: legacy Replace ${f.srcCodeName}")
     }
     let className = fields.string("className")
-    if (!className.isEmpty() && !fields.boolean("isStatic") &&
-        params[0].ty.qualifiedName != "${fields.string("packageName")}.${className}") {
+    let isStatic = fields.boolean("isStatic")
+    let packageName = fields.string("packageName")
+    if (!className.isEmpty() && !isStatic &&
+        params[0].ty.qualifiedName != "${packageName}.${className}") {
         throw IllegalArgumentException("invalid-advice-signature: legacy Replace receiver ${f.srcCodeName}")
     }
     let lastType = params[params.size - 1].ty
@@ -263,7 +265,7 @@ private func checkLegacyReplace(f: Function, fields: RuleControlFields): String 
             FuncType.get(aspectTypes, f.funcType.returnType).toString() != lastType.toString()) {
             throw IllegalArgumentException("invalid-advice-signature: legacy Replace types ${f.srcCodeName}")
         }
-        return lastType.qualifiedName
+        return replacementPointcutType(f, !className.isEmpty() && !isStatic).qualifiedName
     }
     throw IllegalArgumentException("invalid-advice-signature: legacy Replace function parameter ${f.srcCodeName}")
 }

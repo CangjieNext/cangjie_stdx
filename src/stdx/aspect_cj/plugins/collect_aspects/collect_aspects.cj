@@ -84,11 +84,11 @@ class CollectAspects {
             if (!checkAnnotationArgs(f, anno)) {
                 return false
             }
-            if (isInsert && !checkInsertAnnoFuncType(f, anno.argValues)) {
-                return false
+            if (isInsert) {
+                if (!checkInsertAnnoFuncType(f, anno.argValues)) { return false }
             }
-            if (isReplaceBody && !checkReplaceBodyAnnoFuncType(f, anno.argValues)) {
-                return false
+            if (isReplaceBody) {
+                if (!checkReplaceBodyAnnoFuncType(f, anno.argValues)) { return false }
             }
             let insert = Insert(
                 pkg.name,
@@ -100,7 +100,8 @@ class CollectAspects {
             let funcTypeStr = if (isInsert) {
                 anno.argValues[5]
             } else {
-                f.parameters[f.parameters.size - 1].ty.qualifiedName
+                replacementPointcutType(f, !anno.argValues[1].isEmpty() &&
+                    anno.argValues[3] == "false").qualifiedName
             }
             let to = To(
                 anno.argValues[0],
@@ -250,7 +251,7 @@ class CollectAspects {
         } else if (!className.isEmpty() && !isStatic) {
             let (thisParamTypes, explicitParamTypes) = paramTypes.splitAt(1)
             let thisParamType = thisParamTypes[0]
-            if (let Some(c) <- (thisParamType as CustomType)) {
+            if (let Some(c) <- (thisParamType.stripAllRefs() as CustomType)) {
                 if (c.def.srcCodeName != className) {
                     printError("Function '${f.srcCodeName}' annotated with @InsertAtEntry/@InsertAtExit has first parameter type '${thisParamType.qualifiedName}', expected a type named '${className}'.")
                     return false
@@ -269,13 +270,9 @@ class CollectAspects {
         }
         rightParenthesisIndex = aspectFuncTypeStr.lastIndexOf(")").getOrThrow()
         let funcType2 = aspectFuncTypeStr[0..rightParenthesisIndex + 1]  // remove return type
-        let parametersMatch = if (wovenFuncTypeStr.contains("<")) {
-            let configured = parseFunctionTypePattern(wovenFuncTypeStr).getOrThrow()
-            let parameterPattern = "(" + String.join(configured.parameters, delimiter: ",") + ")->Unit"
-            matchFunctionTypePattern(parameterPattern, aspectFuncTypeStr)
-        } else {
-            funcType1 == funcType2
-        }
+        let configured = parseFunctionTypePattern(wovenFuncTypeStr).getOrThrow()
+        let parameterPattern = "(" + String.join(configured.parameters, delimiter: ",") + ")->Unit"
+        let parametersMatch = matchFunctionTypePattern(parameterPattern, aspectFuncTypeStr)
         if (!parametersMatch) {
             printError("Aspect function '${f.srcCodeName}' has parameter types '${funcType2}', expected '${funcType1}'.")
             return false

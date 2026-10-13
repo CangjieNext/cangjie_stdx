@@ -22,6 +22,7 @@ HERE = Path(__file__).resolve().parent
 STDX = HERE.parents[1]
 RULE_FILES = (
     "aspect_cj.cj",
+    "replace_body.cj",
     "rule_annotations.cj",
     "rule_expression.cj",
     "rule_graph.cj",

@@ -199,11 +199,41 @@ protected func ruleSha256(bytes: Array<Byte>): String {
     return toHexString(sha.finish())
 }
 
+/** Bound allocation during the read itself, including files that grow after stat. */
+protected func readBoundedAspectMetadata(path: Path): Array<Byte> {
+    let resolved = canonicalize(path)
+    if (!FileInfo(resolved).isRegular()) {
+        throw IllegalArgumentException("metadata-format: expected a regular file")
+    }
+    let bytes = ArrayList<Byte>()
+    let chunk = Array<Byte>(RULE_WIRE_FIELD_LIMIT, repeat: 0)
+    try (input = File(resolved, OpenMode.Read)) {
+        var count = input.read(chunk)
+        while (count > 0) {
+            if (count > RULE_WIRE_FILE_LIMIT - bytes.size) {
+                throw IllegalArgumentException("metadata-format: file size limit")
+            }
+            bytes.add(all: chunk[..count])
+            count = input.read(chunk)
+        }
+    }
+    return bytes.toArray()
+}
+
+protected func ruleContextInputPath(context: RuleActionContext, path: String): Path {
+    let root = canonicalize(Path(context.sessionRoot))
+    let target = canonicalize(Path(path))
+    if (!target.toString().startsWith(root.toString() + Path.Separator)) {
+        throw IllegalArgumentException("build-phase-invalid: source input escapes session")
+    }
+    return target
+}
+
 protected func readRuleSourceInputs(context: RuleActionContext): Array<RuleWirePackage> {
     let result = ArrayList<RuleWirePackage>()
     for (input in context.sources) {
-        let bytes = File.readFrom(Path(input.path))
-        if (bytes.size > RULE_WIRE_FILE_LIMIT || ruleSha256(bytes) != input.sha256) {
+        let bytes = readBoundedAspectMetadata(ruleContextInputPath(context, input.path))
+        if (ruleSha256(bytes) != input.sha256) {
             throw IllegalArgumentException("build-input-mismatch: ${input.packageName} metadata digest")
         }
         let content = String.fromUtf8(bytes)

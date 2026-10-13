@@ -53,6 +53,7 @@ def main():
         ("generic-function", "aspect-v4-generic-smoke.cj", 2, 2, 1),
         ("generic-class", "aspect-v4-generic-class-smoke.cj", 2, 2, 1),
         ("exception-recursion", "aspect-v4-exception-smoke.cj", 5, None, None),
+        ("replacement-receiver", "aspect-replace-receiver-smoke.cj", 6, None, None),
     )
     for label, fixture, planned, broad_count, exact_count in cases:
         for optimized in (False, True):
@@ -80,6 +81,8 @@ def main():
                 assert output.count("box-any:1\n") == broad_count, output
                 assert output.count("box-int\n") == exact_count, output
                 assert output.count("box-body\n") == 2, output
+            elif label == "replacement-receiver":
+                assert output.splitlines() == ["111", "111", "121", "121", "131", "131"], output
             else:
                 assert output.splitlines() == [
                     "entry:99", "caught-entry",

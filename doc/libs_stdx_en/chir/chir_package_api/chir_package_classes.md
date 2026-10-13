@@ -10982,7 +10982,7 @@ mut_prop_returnValue: true
 public func initBody(): Unit
 ```
 
-Function: Initializes the function body, creating the entry BlockGroup and Block.
+Function: Initializes the function body, creating the entry BlockGroup and Block. If `moveBodyTo` transferred the parameters, recreates them from the function type.
 
 Example:
 
@@ -11420,6 +11420,8 @@ public func moveBodyTo(other: Function): Unit
 ```
 
 Function: Moves the function body, parameters, generic type parameters, and return value to another function; after calling, the above contents of this function are cleared.
+
+The destination must have the same function type; otherwise, throws `CHIRException`. The moved body and parameters belong to the destination. Moving to this function itself is a no-op. Call `initBody()` on the source to recreate its body and parameters.
 
 Parameters:
 

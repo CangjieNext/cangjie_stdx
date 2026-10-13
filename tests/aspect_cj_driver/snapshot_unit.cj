@@ -12,7 +12,43 @@ private func check(value: Bool, message: String): Unit {
     if (!value) { failures++; println("FAIL: ${message}") }
 }
 
+private func checkBodyTransfer(): Unit {
+    let pkg = Package("transfer", AccessLevel.Public)
+    let ty = FuncType.get([IntType.getInt64()], IntType.getInt64())
+    let source = pkg.addFunction(ty, "source", "source", "transfer")
+    let helper = pkg.addFunction(ty, "helper", "", "transfer")
+    source.initBody()
+    let builder = CHIRBuilder(source.body.getOrThrow().entryBlock)
+    let slot = builder.createAllocate(IntType.getInt64())
+    source.returnValue = slot.result
+    builder.createStore(source.parameters[0], slot.result)
+    builder.createExit()
+    let oldParameter = source.parameters[0]
+    source.moveBodyTo(helper)
+    check(source.body.isNone() && source.parameters.isEmpty(), "source ownership cleared after body move")
+    check(helper.parameters.size == 1 && helper.parameters[0] == oldParameter,
+        "destination parameter list is not cleared through an alias")
+    check(helper.body.getOrThrow().owner == helper && oldParameter.topLevelFunc == helper &&
+        helper.returnValue.getOrThrow().topLevelFunc == helper, "moved body and parameters belong to destination")
+    source.initBody()
+    check(source.parameters.size == 1 && source.parameters[0] != oldParameter &&
+        source.parameters[0].topLevelFunc == source, "reinitialized source has independent parameters")
+    let (data, length) = serializePackage(pkg)
+    let restored = deserializePackage(data, length)
+    check(restored.functions[1].parameters.size == 1 &&
+        restored.functions[1].body.getOrThrow().owner == restored.functions[1],
+        "moved ownership survives CHIR serialization")
+    unsafe { freeSerializedMemory() }
+    helper.moveBodyTo(helper)
+    check(helper.body.isSome() && helper.parameters.size == 1, "self move is non-destructive")
+    check(!helper.isAspectExecutableSourceBody() && source.isAspectExecutableSourceBody(),
+        "unnamed plugin helper is not a source candidate; named function remains a candidate")
+}
+
 main() {
+    check(Attribute.ObjCImpl.toUInt64() == 39 && Attribute.MatchPattern.toUInt64() == 40 &&
+        Attribute.PluginAdded.toUInt64() == 41, "attribute ABI matches current compiler including ObjCImpl")
+    checkBodyTransfer()
     let empty = AnnotationSnapshot("shop", "function1", [])
     check(empty.isComplete && empty.items.getOrThrow().isEmpty(), "known-empty is Complete")
     check(!AnnotationSnapshot().isComplete && AnnotationSnapshot().items.isNone(), "missing is Unknown")

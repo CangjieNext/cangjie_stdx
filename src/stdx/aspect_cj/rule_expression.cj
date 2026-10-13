@@ -132,7 +132,10 @@ protected func parseRuleExpression(sourcePackage: String, expression: String): A
         }
         if (!isRuleNameByte(bytes[index], true)) { expressionError(index, "invalid rule-name character") }
         index++
-        while (index < bytes.size && isRuleNameByte(bytes[index], false)) { index++ }
+        while (index < bytes.size) {
+            if (!isRuleNameByte(bytes[index], false)) { break }
+            index++
+        }
         let word = String.fromUtf8(bytes[start..index])
         tokenCount++
         if (tokenCount > RULE_EXPRESSION_TOKENS) { expressionError(start, "token count exceeds 256") }
