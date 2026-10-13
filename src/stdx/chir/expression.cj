@@ -842,10 +842,7 @@ sealed abstract class Expression <: Base & ToString & Hashable & Equatable<Expre
     public open func toString(): String {
         let res = StringBuilder()
         if (let Some(v) <- _result) {
-            if (v._isRetValue) {
-                res.append("[ret] ")
-            }
-            res.append(v.identifier + ": " + v.ty.toString() + " = ")
+            res.append(localVarResultToString(v))
         }
         res.append(kindToString() + "(" + operandsToString() + ")")
         res.append(getCommentString())
@@ -2491,7 +2488,7 @@ public class Lambda <: Expression & Equatable<Lambda> {
     internal let _identifier: String
     internal var _isCompileTimeValue: Bool = false
     internal var _isLocalFunc: Bool = false
-    internal var _paramDftValHostFunc: ?Lambda = None
+    internal var _paramDftValHostParam: ?Parameter = None
     internal var _parameters = ArrayList<Parameter>()
     internal var _returnValue: ?LocalVar = None
     internal let _srcCodeName: String
@@ -2601,15 +2598,15 @@ public class Lambda <: Expression & Equatable<Lambda> {
     }
 
     /**
-     * Host lambda used for default-parameter evaluation, when present.
-     * @type { ?Lambda }
+     * Host parameter of the default-value desugar function, when present.
+     * @type { ?Parameter }
      */
-    public mut prop paramDftValHostFunc: ?Lambda {
+    public mut prop paramDftValHostParam: ?Parameter {
         get() {
-            return _paramDftValHostFunc
+            return _paramDftValHostParam
         }
         set(v) {
-            _paramDftValHostFunc = v
+            _paramDftValHostParam = v
         }
     }
 
@@ -2675,8 +2672,8 @@ public class Lambda <: Expression & Equatable<Lambda> {
         if (!_srcCodeName.isEmpty()) {
             comments.add("srcCodeName: " + _srcCodeName)
         }
-        if (_paramDftValHostFunc.isSome()) {
-            comments.add("paramDftValHostFunc: " + _paramDftValHostFunc.getOrThrow().identifier)
+        if (let Some(host) <- _paramDftValHostParam) {
+            comments.add(paramDftValHostParamComment(host))
         }
         if (comments.isEmpty()) {
             return ""
