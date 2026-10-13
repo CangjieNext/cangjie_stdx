@@ -43,3 +43,41 @@
 - 编译器启用测试构建后运行 `ctest -R '^OptionTest$' --output-on-failure`。
 
 仍需社区 CI 验证其他操作系统和架构，并由 Owner/Committer 完成检视及合入；本记录不代表这些步骤已完成。
+
+## 后续 LLT 门禁失败复核与修复
+
+流水线 `1b17eab824a04932be7d23972b11cbd1` 的 `test_linux_llt_cjc_libs` 最终有 8 条失败。本节是该失败后的增量复核，不能用前一轮本地通过结果代替本节。
+
+前一轮本地环境额外设置了 stdx 动态库搜索路径，未覆盖门禁的完整链接配置；这会掩盖插件/辅助程序缺少运行库路径的问题。本轮直接使用 `cangjie_test/testsuites/LLT/configs/cjnative/cjnative_test.cfg` 的完整 `%import-cangjie-stdx` 配置，外层 `LD_LIBRARY_PATH` 仅保留 SDK runtime/tools，stdx 路径由用例显式设置。没有修改官方配置、移除失败用例或降低诊断断言。
+
+修复内容：
+
+- `metadata_hardening`、`late_source_candidate`、`replace_member_callback_regression` 使用 `%set_stdx_path` 执行依赖 stdx 的辅助程序或自定义插件；元数据测试初始化支持同目录重试。
+- 未知注解、参数数量不符、损坏 `.annoinfo` 继续作为编译错误；对应负向测试改为验证非零返回和原诊断，损坏元数据不得产生可执行文件。
+- `test_showall` 的完整黄金文本补齐两项新增实验选项，不改为模糊匹配。
+- 驱动区分普通文件和目录符号链接，递归读取子目录，并对 canonical 目录去重以终止链接环。此前既会误读目录链接，也会漏掉普通子目录内的内容变化。新增生产源码摘要回归，正式 LLT 使用临时 SDK 链接布局验证实际构建。
+- 驱动的文件读取及 ABI 读取移出短路布尔表达式，清理 `G.EXP.03` 强制告警；只有同包来源/目标才读取来源 ABI，保持原适用范围和失败屏障。
+
+本轮本地结果（Linux x86_64 / cjnative）：
+
+| 范围 | 结果 |
+|---|---|
+| 本次 CI 的 8 条失败用例，默认/O2 | 各 8/8；静态修正后的最终驱动再次验证通过 |
+| AOP 插件、stdx AOP API、CHIR 插件 API、帮助选项的完整目录，官方默认配置 | 168/168；另外 9 个辅助 `.cj` 文件无 EXEC 指令，框架记为 UNRESOLVED，不计入通过数 |
+| 同一组目录额外统一加 `-O2` | 164/168；4 条旧 CHIR 计数断言不适用该配置，见下表，不能报告为全通过 |
+| 生产驱动目录摘要回归，默认/O2 | 均通过：嵌套内容、文件/目录别名、外部目标、重定向、目录环、断链、FIFO、非法根 |
+| 驱动编译、`--self-test`、Python 语法检查 | 通过 |
+| 最终驱动 `smoke.py` 端到端 | 20 组通过，含跨包、默认/O2、链接正逆序、接口不一致及篡改拒绝 |
+| 本地 cjlint，`build/aspect_cj_driver` | MANDATORY 0；SUGGESTIONS 118，未声称所有告警清零 |
+| 两仓本轮差异的 `git diff --check` | 通过 |
+
+额外 O2 的 4 条失败均已用未修改的 SDK `cjc` 与本 PR 配套 `cjc` 对照，二者实测输出完全一致；默认配置全部通过。本次未调整这些上游测试的断言，避免为不适用的全局选项覆盖放宽原测试：
+
+| 上游用例（均在 `LLT/API/stdx/AOP_tests/custom_plugin`） | 固定断言 | 两种编译器的 O2 输出 |
+|---|---:|---:|
+| `case1.cj` | function count 3 | 59 |
+| `case2.cj` | function count 8 | 64 |
+| `case3.cj` | function count 5 | 7 |
+| `chir_anno/case_chir_anno.cj` | user non-ext linkage 6 | 90 |
+
+上述是有边界的本地复核，不是全量 LLT/所有平台门禁通过的声明。最终仍以关联三个 PR 的新一轮社区 CI 为准。

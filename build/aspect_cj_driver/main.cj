@@ -272,20 +272,38 @@ private func publish(root: String, name: String, body: JsonObject): String {
 private func digest(path: String): String { ruleSha256(File.readFrom(Path(path))) }
 
 private func directoryDigest(directory: String): String {
-    let root = Path(directory)
-    if (!exists(root)) { throw IllegalArgumentException("driver-config: missing toolchain directory ${directory}") }
-    let paths = ArrayList<String>()
-    Directory.walk(root) { entry =>
-        if (entry.isRegular() || entry.isSymbolicLink()) {
-            paths.add(entry.path.toString())
-        }
-        true
+    let root = canonicalize(Path(directory))
+    if (!FileInfo(root).isDirectory()) {
+        throw IllegalArgumentException("driver-config: expected toolchain directory ${directory}")
     }
-    let ordered = paths.toArray()
+    let pending = ArrayList<Path>([root])
+    let visited = HashSet<String>()
+    let lines = ArrayList<String>(["root\u{1f}" + root.toString()])
+    var index = 0
+    while (index < pending.size) {
+        let current = pending[index]
+        index++
+        // SDKs contain directory aliases, including links back to an ancestor.
+        // Record every link, but traverse each resolved directory only once.
+        if (!visited.add(current.toString())) { continue }
+        Directory.walk(current) { entry =>
+            let resolved = canonicalize(entry.path)
+            let info = FileInfo(resolved)
+            let identity = entry.path.toString() + "\u{1f}" + resolved.toString()
+            if (info.isDirectory()) {
+                lines.add("directory\u{1f}" + identity)
+                pending.add(resolved)
+            } else if (info.isRegular()) {
+                lines.add("file\u{1f}" + identity + "\u{1f}" + digest(resolved.toString()))
+            } else {
+                throw IllegalArgumentException("driver-config: unsupported toolchain entry ${entry.path}")
+            }
+            true
+        }
+    }
+    let ordered = lines.toArray()
     sort(ordered, by: {left: String, right: String => left.compare(right)})
-    let lines = ArrayList<String>()
-    for (path in ordered) { lines.add(path + "\u{1f}" + digest(path)) }
-    return ruleSha256((String.join(lines.toArray(), delimiter: "\n") + "\n").toArray())
+    return ruleSha256((String.join(ordered, delimiter: "\n") + "\n").toArray())
 }
 
 private func toolchainDigest(spec: BuildSpec): String {
@@ -396,8 +414,9 @@ private func snapshotDependencies(spec: BuildSpec, root: Path): HashMap<String, 
         let before = digest(dependency.module) + digest(dependency.library)
         copyInput(dependency.module, module)
         copyInput(dependency.library, library)
-        if (digest(module.toString()) + digest(library.toString()) != before ||
-            digest(dependency.module) + digest(dependency.library) != before) {
+        let copiedDigest = digest(module.toString()) + digest(library.toString())
+        let originalDigest = digest(dependency.module) + digest(dependency.library)
+        if (copiedDigest != before || originalDigest != before) {
             throw IllegalArgumentException("build-input-mismatch: dependency changed during copy ${dependency.name}")
         }
         hashes[dependency.name] = before
@@ -554,12 +573,14 @@ private func verifySourceState(spec: BuildSpec, abi: String, root: Path,
     verifyDependencies(spec, root, external)
     let prior = ArrayList<String>()
     for (source in spec.sources) {
-        if (actionKey(source, abi, prior.toArray(), root) != keys[source.name] ||
-            digest(root.join("metadata/${source.name}.annoinfo").toString()) != metadata[source.name] ||
-            digest(root.join("baseline/lib${source.name}.a").toString()) != artifacts[source.name] ||
-            digest(root.join("baseline/${source.name}.cjo").toString()) != modules[source.name] ||
-            digest(root.join("dependencies-collect-${source.name}.txt").toString()) !=
-                dependencies[source.name]) {
+        let currentKey = actionKey(source, abi, prior.toArray(), root)
+        let currentMetadata = digest(root.join("metadata/${source.name}.annoinfo").toString())
+        let currentArtifact = digest(root.join("baseline/lib${source.name}.a").toString())
+        let currentModule = digest(root.join("baseline/${source.name}.cjo").toString())
+        let currentDependencies = digest(root.join("dependencies-collect-${source.name}.txt").toString())
+        if (currentKey != keys[source.name] || currentMetadata != metadata[source.name] ||
+            currentArtifact != artifacts[source.name] || currentModule != modules[source.name] ||
+            currentDependencies != dependencies[source.name]) {
             throw IllegalArgumentException("build-input-mismatch: source changed ${source.name}")
         }
         prior.add(source.name)
@@ -591,8 +612,9 @@ private func verifyTargetObjects(spec: BuildSpec, root: Path, objects: HashMap<S
     modules: HashMap<String, String>): Unit {
     for (target in spec.targets) {
         if (!objects.contains(target.name)) { continue }
-        if (digest(root.join("objects/${target.name}/unit.o").toString()) != objects[target.name] ||
-            digest(root.join("objects/${target.name}/${target.name}.cjo").toString()) != modules[target.name]) {
+        let objectDigest = digest(root.join("objects/${target.name}/unit.o").toString())
+        let moduleDigest = digest(root.join("objects/${target.name}/${target.name}.cjo").toString())
+        if (objectDigest != objects[target.name] || moduleDigest != modules[target.name]) {
             throw IllegalArgumentException("build-input-mismatch: woven object or module ${target.name}")
         }
     }
@@ -833,9 +855,10 @@ private func runBuild(spec: BuildSpec): Unit {
             dependencyPath.toString())
         verifySourceState(spec, abi, root, sourceKeys, metadataDigests, artifactDigests,
             moduleDigests, sourceDependencyDigests, externalDigests)
-        if (actionKey(target, abi, importedSources, root) != key ||
-            digest(importPath.toString()) != importDigest ||
-            digest(symbols.toString()) != symbolDigest ||
+        let currentKey = actionKey(target, abi, importedSources, root)
+        let currentImportDigest = digest(importPath.toString())
+        let currentSymbolDigest = digest(symbols.toString())
+        if (currentKey != key || currentImportDigest != importDigest || currentSymbolDigest != symbolDigest ||
             !exists(root.join("preflight/${target.name}/unit.o"))) {
             throw IllegalArgumentException("build-input-mismatch: target changed during preflight")
         }
@@ -847,8 +870,11 @@ private func runBuild(spec: BuildSpec): Unit {
         targetDependencyDigests[target.name] = digest(dependencyPath.toString())
         targetPlanFileDigests[target.name] = digest(root.join(report).toString())
         let targetAbi = readAbi(root, "preflight", target.name)
-        if (sourceKeys.contains(target.name) && targetAbi != readAbi(root, "collect", target.name)) {
-            throw IllegalArgumentException("build-input-mismatch: source/target declaration ABI ${target.name}")
+        if (sourceKeys.contains(target.name)) {
+            let sourceAbi = readAbi(root, "collect", target.name)
+            if (targetAbi != sourceAbi) {
+                throw IllegalArgumentException("build-input-mismatch: source/target declaration ABI ${target.name}")
+            }
         }
         let summary = "metadata/matches-${target.name}.json"
         let summaryDigest = digest(root.join(summary).toString())
@@ -941,10 +967,10 @@ private func runBuild(spec: BuildSpec): Unit {
         verifySourceState(spec, abi, root, sourceKeys, metadataDigests, artifactDigests,
             moduleDigests, sourceDependencyDigests, externalDigests)
         verifyPinnedFiles(pinnedReports)
-        if (digest(root.join("dependencies-preflight-${target.name}.txt").toString()) !=
-            targetDependencyDigests[target.name] ||
-            digest(root.join("metadata/plan-${target.name}.digest").toString()) !=
-                targetPlanFileDigests[target.name]) {
+        let preflightDependencies = digest(root.join("dependencies-preflight-${target.name}.txt").toString())
+        let preflightPlan = digest(root.join("metadata/plan-${target.name}.digest").toString())
+        if (preflightDependencies != targetDependencyDigests[target.name] ||
+            preflightPlan != targetPlanFileDigests[target.name]) {
             throw IllegalArgumentException("build-input-mismatch: preflight dependency report changed")
         }
         runCompiler(spec, "apply-${target.name}", args.toArray(),
@@ -959,9 +985,10 @@ private func runBuild(spec: BuildSpec): Unit {
         verifySourceState(spec, abi, root, sourceKeys, metadataDigests, artifactDigests,
             moduleDigests, sourceDependencyDigests, externalDigests)
         verifyPinnedFiles(pinnedReports)
-        if (actionKey(target, abi, importedSources, root) != key ||
-            digest(imports.toString()) != importDigest ||
-            digest(symbols.toString()) != symbolDigest) {
+        let currentKey = actionKey(target, abi, importedSources, root)
+        let currentImportDigest = digest(imports.toString())
+        let currentSymbolDigest = digest(symbols.toString())
+        if (currentKey != key || currentImportDigest != importDigest || currentSymbolDigest != symbolDigest) {
             throw IllegalArgumentException("build-input-mismatch: target changed during apply")
         }
         if (!exists(Path(output))) { throw IllegalArgumentException("driver-build: missing final artifact") }
