@@ -238,7 +238,9 @@ class CsvParser {
                     currentRawColumnIdx = 0
                     bufferStartIdx += 2
                     return true
-                case _ => throw IllegalStateException("Unexpected character: '${buf[nextBufferIdx]}' after a column")
+                case _ =>
+                    throw IllegalStateException(
+                        "Unexpected character: '${buf[nextBufferIdx]}' after a column in row '${currentRowIdx + 1}'.")
             }
         }
 
@@ -262,14 +264,15 @@ class CsvParser {
             column =>
             if (currentColumnIdx >= UInt64(header.size)) {
                 throw IllegalStateException(
-                    "Expected ${header.size} columns in ${currentRowIdx + 1}'th row, but found one more: \"${String(currentColumnData)}\"")
+                    "Expected '${header.size}' columns in row '${currentRowIdx + 1}'," +
+                    " got one more: '${String(currentColumnData)}'.")
             }
             currentRowData[header[Int64(currentColumnIdx)]] = column
         }
 
         if (rowFinished && currentRowData.size != header.size) {
             throw IllegalStateException(
-                "Expected ${header.size} columns in ${currentRowIdx + 1}'th row, but found ${currentRowData.size}")
+                "Expected '${header.size}' columns in row '${currentRowIdx + 1}', got '${currentRowData.size}'.")
         }
 
         rowFinished
