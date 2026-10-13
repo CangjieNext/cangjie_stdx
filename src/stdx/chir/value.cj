@@ -894,7 +894,7 @@ public class Function <: GlobalValue & Equatable<Function> {
     internal var _isFastNative: Bool = false
     internal var _localId: UInt64 = 0
     internal var _originalLambdaInfo: ?FuncSigInfo = None
-    internal var _paramDftValHostFunc: ?Function = None
+    internal var _paramDftValHostParam: ?Parameter = None
     internal var _parameters = ArrayList<Parameter>()
     internal var _propLocation: DebugLocation = DebugLocation.invalid()
     internal var _retValue: ?LocalVar = None
@@ -1795,6 +1795,7 @@ public class LocalVar <: Value & Equatable<LocalVar> {
 public class Parameter <: Value & Equatable<Parameter> {
     internal var _annoInfo: AnnoInfo = AnnoInfo()
     internal var _owner: Value
+    internal var _paramDftValFunc: ?Value = None
     internal var _srcCodeName: String = ""
 
     /**

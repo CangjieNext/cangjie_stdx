@@ -482,7 +482,14 @@ class CHIRSerializerImpl {
         valueKind[Int64(valueId) - 1] = EnumPackageFormat_ValueElemValues(PackageFormat_ValueElem.ValueElem_PARAMETER)
         let srcCodeName = fbBuilder.createString(obj._srcCodeName)
         let annoInfo = serializeAnnoInfo(obj._annoInfo)
-        return PackageFormat_Parameter.createParameter(fbBuilder, base, ownedFunc, ownedLambda, srcCodeName, annoInfo)
+        var paramDftValFunc: UInt32 = 0
+        if (let Some(dftFunc) <- obj._paramDftValFunc) {
+            if (dftFunc.isFunction()) {
+                paramDftValFunc = getId(dftFunc)
+            }
+        }
+        return PackageFormat_Parameter.createParameter(
+            fbBuilder, base, ownedFunc, ownedLambda, srcCodeName, annoInfo, paramDftValFunc)
     }
 
     private func serializeLocalVar(obj: LocalVar, base: UInt32, valueId: UInt32): UInt32 {
@@ -523,9 +530,9 @@ class CHIRSerializerImpl {
         } else {
             fbBuilder.createUInt32Vector(genericTypeParams)
         }
-        var paramDftValHostFunc: UInt32 = 0
-        if (let Some(host) <- obj._paramDftValHostFunc) {
-            paramDftValHostFunc = getId(host)
+        var paramDftValHostParam: UInt32 = 0
+        if (let Some(host) <- obj._paramDftValHostParam) {
+            paramDftValHostParam = getId(host)
         }
         valueKind[Int64(valueId) - 1] = EnumPackageFormat_ValueElemValues(PackageFormat_ValueElem.ValueElem_FUNCTION)
         let globalValueBase = serializeGlobalValue(obj, base)
@@ -546,7 +553,7 @@ class CHIRSerializerImpl {
         let propLoc = serializeDebugLocation(obj._propLocation)
         return PackageFormat_Function.createFunction(
             fbBuilder, globalValueBase, genericDecl, funcKind, isFastNative, isCFFIWrapper,
-            originalLambdaInfo, genericTypeParamsVec, paramDftValHostFunc, body, paramsVec, retVal, propLoc,
+            originalLambdaInfo, genericTypeParamsVec, paramDftValHostParam, body, paramsVec, retVal, propLoc,
             obj._localId, obj._blockId, obj._blockGroupId
         )
     }
@@ -1245,7 +1252,11 @@ class CHIRSerializerImpl {
                 let body = getId(e.body)
                 let retVal = getId(e._returnValue.getOrThrow())
                 let isCompileTimeValue = e._isCompileTimeValue
-                PackageFormat_Lambda.createLambda(fbBuilder, base, funcTy, isLocalFunc, identifier, srcCodeName, paramsVec, genericTypeParamsVec, body, retVal, isCompileTimeValue)
+                var paramDftValHostParam: UInt32 = 0
+                if (let Some(host) <- e._paramDftValHostParam) {
+                    paramDftValHostParam = getId(host)
+                }
+                PackageFormat_Lambda.createLambda(fbBuilder, base, funcTy, isLocalFunc, identifier, srcCodeName, paramsVec, genericTypeParamsVec, body, retVal, isCompileTimeValue, paramDftValHostParam)
             case e: MultiBranch =>
                 exprKind[Int64(exprId) - 1] = EnumPackageFormat_ExpressionElemValues(PackageFormat_ExpressionElem.ExpressionElem_MULTIBRANCH)
                 let caseValues = Array<UInt64>(e.caseValues.size, { i => e.caseValues[i] })

@@ -915,6 +915,12 @@ class CHIRDeserializerImpl {
             lambda._parameters.add(getValueAs<Parameter>(id))
         }
         lambda._returnValue = getValueAs<LocalVar>(buffer.GetRetVal())
+        // Nested default-value funcs stay Lambda until closure conversion.
+        // The reverse edge points at the Lambda result LocalVar, same as compiler SetParamDftValHostParam.
+        if (let Some(v) <- tryGetValueAs<Parameter>(buffer.GetParamDftValHostParam())) {
+            lambda._paramDftValHostParam = v
+            v._paramDftValFunc = lambda.result
+        }
     }
 
     private func convertExprKind(kind: PackageFormat_CHIRExprKind): ExprKind {
@@ -1863,9 +1869,10 @@ class CHIRDeserializerImpl {
             function._originalLambdaInfo = deserializeFuncSigInfo(v)
         }
 
-        // Set paramDftValHostFunc
-        if (let Some(v) <- tryGetValueAs<Function>(funcFormat.GetParamDftValHostFunc())) {
-            function._paramDftValHostFunc = v
+        // Set paramDftValHostParam
+        if (let Some(v) <- tryGetValueAs<Parameter>(funcFormat.GetParamDftValHostParam())) {
+            function._paramDftValHostParam = v
+            v._paramDftValFunc = function
         }
 
         // Set parameters
