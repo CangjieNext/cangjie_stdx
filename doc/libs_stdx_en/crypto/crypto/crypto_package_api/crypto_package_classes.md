@@ -536,7 +536,7 @@ Currently, SM4 supports encryption and decryption modes defined by [OperationMod
 
 Different operation modes may have varying implementations and security levels. It is essential to choose the appropriate mode for the specific scenario.
 
-- **iv (Initialization Vector)**: Recommended length is 12 bytes in GCM mode. Length must be 16 bytes in CBC, OFB, CFB, and CTR modes. Optional in ECB mode.
+- **iv (Initialization Vector)**: Must not be empty in GCM mode, with a recommended length of 12 bytes. Must be exactly 16 bytes in CBC, OFB, CFB, and CTR modes; otherwise, a [CryptoException](../../common/crypto_common_package_api/crypto_common_package_exceptions.md#class-cryptoexception) is thrown. Optional in ECB mode as the iv is not used.
 
 - **paddingMode**: Defined by [PaddingMode](crypto_package_structs.md#struct-paddingmode), currently supporting `NoPadding`: No padding. `PKCS7Padding`: PKCS7 padding (default).
 
