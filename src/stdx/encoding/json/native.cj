@@ -704,37 +704,6 @@ func handleEscape(parser: JsonParser): Unit {
         case _ => throw JsonException("Failed to parse JSON string.")
     }
 }
-func getErrRowAndCol(strArr: Array<UInt8> @local?, errPos: Int64): (Int64, Int64) {
-    var tempPos: Int64 = 0
-    var errRow: Int64 = 1
-    var errCol: Int64 = 1
-    var lineStartPos: Int64 = 0
-    while (tempPos < errPos) {
-        let temp = Rune.fromUtf8(strArr, tempPos)
-        let tempChr = temp[0]
-        if (tempChr == r'\n') {
-            errRow++
-            lineStartPos = tempPos + 1
-        }
-        tempPos += temp[1]
-    }
-    while (lineStartPos < errPos) {
-        let tempChr = Rune.fromUtf8(strArr, lineStartPos)[0]
-        if (tempChr == r' ') {
-            lineStartPos++
-        } else {
-            break
-        }
-    }
-    while (lineStartPos < errPos) {
-        let temp = Rune.fromUtf8(strArr, lineStartPos)
-        errCol++
-        lineStartPos += temp[1]
-    }
-    (errRow, errCol)
-}
-
-
 @Frozen
 exclave func requireCurrentByte(parser: JsonParser @local!): Byte {
     if (parser.offset >= parser.size) {
@@ -759,7 +728,12 @@ exclave func skipWhiteSpace(parser: JsonParser @local!): Unit {
 }
 
 exclave func buildParseErrorMessage(parser: JsonParser @local!): String {
-    let strArr = parser.data
+    // parser.data may be bound to a local region; copy the bytes through String
+    // into a plain array so the plain getErrRowAndCol / Rune.fromUtf8 overloads
+    // apply. Unchecked conversion keeps the raw bytes (the JSON may be invalid
+    // UTF-8, which is why this error path is running at all).
+    let localRaw = unsafe { String.fromUtf8Unchecked(parser.data) }
+    let strArr: Array<UInt8> = String(localRaw).toArray()
     var errPos = parser.offset
     if (errPos >= strArr.size) {
         errPos = strArr.size - 1
@@ -1047,7 +1021,7 @@ exclave func parseJsonNumberSlow(parser: JsonParser @local!): JsonValue @local! 
         }
     }
     let numStr = unsafe { String.fromUtf8Unchecked(parser.data[leftIndex..rightIndex]) }
-    let localValue: Int64 @local! = Int64.parse(numStr)
+    let localValue = Int64.parse(String(numStr))
     JsonInt(localValue) @local!
 }
 
@@ -1246,8 +1220,7 @@ exclave func handleEscape(parser: JsonParser @local!): Unit {
             let arr: Array<Byte> @local! = [b'\'', b'\\', b'u', b'{',
                 byte1, byte2, byte3, byte4, b'}', b'\'']
             try {
-                // Copy to heap so the non-local Rune.parse(String) overload is selected:
-                // Parsable.parse(String @local?) is an interface fallback that always throws.
+                // Copy to heap so the non-local Rune.parse(String) overload is selected.
                 let chr = unsafe { Rune.parse(String(String.fromUtf8Unchecked(arr))) }
                 if (UInt32(chr) <= 127) {
                     parser.strCache.add(UInt8(UInt32(chr)))
