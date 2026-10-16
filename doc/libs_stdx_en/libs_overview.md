@@ -42,13 +42,15 @@ The APIs provided by the extension library support running on the following oper
 | import stdx.actors.* | stdx.actors |
 | import stdx.actors.macros.* | stdx.actors.macros |
 | import stdx.aspect_cj.* | stdx.aspect_cj |
+| import stdx.chir.* | stdx.chir |
 | import stdx.compress.zlib.* | stdx.compress.zlib |
+| import stdx.compress.tar.* | stdx.compress.tar |
 | import stdx.crypto.common.* | stdx.crypto.common、stdx.encoding.base64 |
-| import stdx.crypto.crypto.* | stdx.crypto.crypto、stdx.crypto.digest |
-| import stdx.crypto.digest.* | stdx.crypto.digest |
-| import stdx.crypto.keys.* | stdx.crypto.keys、stdx.crypto.x509、stdx.encoding.hex、stdx.encoding.base64、stdx.crypto.crypto、stdx.crypto.digest |
+| import stdx.crypto.crypto.* | stdx.crypto.crypto、stdx.crypto.digest、stdx.crypto.common、stdx.encoding.base64 |
+| import stdx.crypto.digest.* | stdx.crypto.digest、stdx.crypto.common、stdx.encoding.base64 |
+| import stdx.crypto.keys.* | stdx.crypto.keys、stdx.crypto.x509、stdx.encoding.hex、stdx.crypto.crypto、stdx.crypto.digest、stdx.crypto.common、stdx.encoding.base64 |
 | import stdx.crypto.kit.*  | stdx.crypto.keys、stdx.crypto.x509、stdx.encoding.hex、stdx.crypto.crypto、stdx.crypto.digest、stdx.crypto.common、stdx.encoding.base64 |
-| import stdx.crypto.x509.* | stdx.crypto.x509、stdx.encoding.hex、stdx.encoding.base64、stdx.crypto.crypto、stdx.crypto.digest |
+| import stdx.crypto.x509.* | stdx.crypto.x509、stdx.encoding.hex、stdx.crypto.crypto、stdx.crypto.digest、stdx.crypto.common、stdx.encoding.base64 |
 | import stdx.effect.*   | stdx.effect |
 | import stdx.encoding.hex.* | stdx.encoding.hex |
 | import stdx.encoding.base64.* | stdx.encoding.base64 |
@@ -59,9 +61,10 @@ The APIs provided by the extension library support running on the following oper
 | import stdx.logger.* | stdx.logger |
 | import stdx.serialization.serialization.* | stdx.serialization.serialization |
 | import stdx.fuzz.* | stdx.fuzz |
-| import stdx.net.http .* | stdx.net.http、stdx.net.tls、stdx.logger、stdx.log、stdx.encoding.url、stdx.encoding.json.stream、stdx.crypto.x509 、stdx.encoding.hex、stdx.encoding.base64、stdx.crypto.crypto、stdx.crypto.digest |
-| import stdx.net.tls.* | stdx.net.tls、stdx.crypto.x509、stdx.encoding.hex、stdx.encoding.base64、stdx.crypto.crypto、stdx.crypto.digest |
+| import stdx.net.http .* | stdx.net.http、stdx.net.tls.common、stdx.logger、stdx.log、stdx.encoding.url、stdx.encoding.json.stream、stdx.crypto.x509、stdx.encoding.hex、stdx.crypto.crypto、stdx.crypto.digest、stdx.crypto.common、stdx.encoding.base64 |
+| import stdx.net.tls.* | stdx.net.tls、stdx.net.tls.common、stdx.crypto.x509、stdx.encoding.hex、stdx.crypto.crypto、stdx.crypto.digest、stdx.crypto.common、stdx.encoding.base64 |
 | import stdx.net.tls.common.* | stdx.net.tls.common、stdx.crypto.x509、stdx.encoding.hex、stdx.crypto.crypto、stdx.crypto.digest、stdx.crypto.common、stdx.encoding.base64 |
+| import stdx.plugin.manager.* | stdx.plugin.manager |
 | import stdx.unittest.data.* | stdx.encoding.json、stdx.serialization.serialization |
 
 When importing the above packages in code and compiling with the `cjc` command, the linking order must strictly follow the package dependencies listed above. If using `cjpm`, this is not necessary.
@@ -99,13 +102,13 @@ main() {
 Compilation commands for Linux and macOS:
 
 ```shell
-cjc main.cj -L $CANGJIE_STDX_PATH -lstdx.actors -lstdx.aspect_cj -lstdx.encoding.json -lstdx.serialization.serialization -lstdx.net.http -lstdx.net.tls -lstdx.logger -lstdx.log -lstdx.encoding.url -lstdx.encoding.json.stream -lstdx.crypto.keys -lstdx.crypto.x509 -lstdx.encoding.hex -lstdx.encoding.base64 -lstdx.crypto.crypto -lstdx.crypto.digest -lstdx.compress.zlib -lstdx.compress -ldl --import-path $CANGJIE_STDX_PATH -o main.out
+cjc main.cj -L $CANGJIE_STDX_PATH -lstdx.actors -lstdx.aspect_cj -lstdx.effect -lstdx.encoding.json -lstdx.serialization.serialization -lstdx.net.http -lstdx.net.tls -lstdx.net.tls.common -lstdx.logger -lstdx.log -lstdx.encoding.url -lstdx.encoding.json.stream -lstdx.crypto.kit -lstdx.crypto.keys -lstdx.crypto.x509 -lstdx.encoding.hex -lstdx.crypto.crypto -lstdx.crypto.digest -lstdx.crypto.common -lstdx.encoding.base64 -lstdx.compress.zlib -lstdx.compress.tar -lstdx.syntax -lstdx.syntaxFFI -ldl --import-path $CANGJIE_STDX_PATH -o main.out
 ```
 
 Windows compilation command:
 
-```shell
-cjc main.cj -L $CANGJIE_STDX_PATH -lstdx.actors -lstdx.aspect_cj -lstdx.encoding.json -lstdx.serialization.serialization -lstdx.net.http -lstdx.net.tls -lstdx.logger -lstdx.log -lstdx.encoding.url -lstdx.encoding.json.stream -lstdx.crypto.keys -lstdx.crypto.x509 -lstdx.encoding.hex -lstdx.encoding.base64 -lstdx.crypto.crypto -lstdx.crypto.digest -lstdx.compress.zlib -lstdx.compress -lcrypt32 --import-path $CANGJIE_STDX_PATH -o main.out
+```bat
+cjc main.cj -L %CANGJIE_STDX_PATH% -lstdx.actors -lstdx.aspect_cj -lstdx.effect -lstdx.encoding.json -lstdx.serialization.serialization -lstdx.net.http -lstdx.net.tls -lstdx.net.tls.common -lstdx.logger -lstdx.log -lstdx.encoding.url -lstdx.encoding.json.stream -lstdx.crypto.kit -lstdx.crypto.keys -lstdx.crypto.x509 -lstdx.encoding.hex -lstdx.crypto.crypto -lstdx.crypto.digest -lstdx.crypto.common -lstdx.encoding.base64 -lstdx.compress.zlib -lstdx.compress.tar -lstdx.syntax -lstdx.syntaxFFI -lcrypt32 --import-path %CANGJIE_STDX_PATH% -o main.out
 ```
 
 `CANGJIE_STDX_PATH` is the path to the stdx library.
@@ -150,7 +153,9 @@ stdx includes several packages that offer rich extension functionalities:
 | [actors](./actors/actors_package_overview.md)    | The `actors` package provides the foundational capabilities for the actor programming model. |
 | [actors.macros](./actors/macros/macros_package_overview.md) | The `actors.macros` package provides the ability to transform a class into an active object. |
 | [aspect_cj](./aspect_cj/aspect_cj_package_overview.md) | The aspect_cj package provides Aspect-Oriented Programming (AOP) capabilities in Cangjie. |
+| [chir](./chir/chir_package_overview.md) | The chir package provides the type system and CHIR declaration representations for building and traversing the CHIR intermediate representation. |
 | [compress.zlib](./compress/zlib/zlib_package_overview.md)                        | The compress package provides compression and decompression functionalities. |
+| [compress.tar](./compress/tar/tar_package_overview.md)                        | The compress.tar package provides tar archive creation and reading capabilities. |
 | [crypto.common](./crypto/common/crypto_common_package_overview.md)             | The common package provides interfaces related to encryption and decryption.  |
 | [crypto.crypto](./crypto/crypto/crypto_package_overview.md)                        | The crypto package provides secure encryption capabilities. |
 | [crypto.digest](./crypto/digest/crypto_digest_package_overview.md)                        | The digest package provides commonly used message digest algorithms. |
@@ -169,5 +174,7 @@ stdx includes several packages that offer rich extension functionalities:
 | [net.http](./net/http/http_package_overview.md)                        | The http package provides server and client implementations for HTTP/1.1, HTTP/2, and WebSocket protocols. |
 | [net.tls](./net/tls/tls_package_overview.md)                        | The tls package is used for secure encrypted network communication, providing capabilities such as creating TLS servers, performing TLS handshakes based on protocols, sending and receiving encrypted data, and resuming TLS sessions.|
 | [net.tls.common](./net/tls/common/tls_common_package_overview.md)   | The common package provides TLS-related abstract interfaces for adapting to multiple TLS implementations. |
+| [plugin](./plugin/plugin_package_overview.md)   | The plugin package provides registration, management, and execution mechanisms for CHIR plugins. |
 | [serialization](./serialization/serialization_package_overview.md)                        | The serialization package provides serialization and deserialization capabilities. |
 | [unittest.data](./unittest/data/data_package_overview.md)                        | The unittest module provides extended unit testing capabilities. |
+| [string_intern](./string_intern/string_intern_package_overview.md)                        | The string_intern package provides pooled caching capability for string objects. |
