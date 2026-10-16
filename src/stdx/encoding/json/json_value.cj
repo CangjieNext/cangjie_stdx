@@ -126,7 +126,7 @@ sealed abstract class JsonValue <: ToString {
     public func asNull(): JsonNull {
         match (this) {
             case jsonNull: JsonNull => jsonNull
-            case _ => throw JsonException("Failed to convert JsonValue to JsonNull.")
+            case _ => throw JsonException("Fail to convert to JsonNull")
         }
     }
 
@@ -149,7 +149,7 @@ sealed abstract class JsonValue <: ToString {
     public func asBool(): JsonBool {
         match (this) {
             case jsonBool: JsonBool => jsonBool
-            case _ => throw JsonException("Failed to convert JsonValue to JsonBool.")
+            case _ => throw JsonException("Fail to convert to JsonBool")
         }
     }
 
@@ -172,7 +172,7 @@ sealed abstract class JsonValue <: ToString {
     public func asInt(): JsonInt {
         match (this) {
             case jsonInt: JsonInt => jsonInt
-            case _ => throw JsonException("Failed to convert JsonValue to JsonInt.")
+            case _ => throw JsonException("Fail to convert to JsonInt")
         }
     }
 
@@ -196,7 +196,7 @@ sealed abstract class JsonValue <: ToString {
         match (this) {
             case jsonFloat: JsonFloat => jsonFloat
             case jsonInt: JsonInt => JsonFloat(jsonInt.getValue())
-            case _ => throw JsonException("Failed to convert JsonValue to JsonFloat.")
+            case _ => throw JsonException("Fail to convert to JsonFloat")
         }
     }
 
@@ -222,7 +222,7 @@ sealed abstract class JsonValue <: ToString {
     public func asString(): JsonString {
         match (this) {
             case jsonString: JsonString => jsonString
-            case _ => throw JsonException("Failed to convert JsonValue to JsonString.")
+            case _ => throw JsonException("Fail to convert to JsonString")
         }
     }
 
@@ -245,7 +245,7 @@ sealed abstract class JsonValue <: ToString {
     public func asArray(): JsonArray {
         match (this) {
             case jsonArray: JsonArray => jsonArray
-            case _ => throw JsonException("Failed to convert JsonValue to JsonArray.")
+            case _ => throw JsonException("Fail to convert to JsonArray")
         }
     }
 
@@ -268,7 +268,7 @@ sealed abstract class JsonValue <: ToString {
     public func asObject(): JsonObject {
         match (this) {
             case jsonObject: JsonObject => jsonObject
-            case _ => throw JsonException("Failed to convert JsonValue to JsonObject.")
+            case _ => throw JsonException("Fail to convert to JsonObject")
         }
     }
 

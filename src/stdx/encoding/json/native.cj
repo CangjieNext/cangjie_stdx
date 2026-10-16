@@ -203,7 +203,7 @@ func buildParseErrorMessage(parser: JsonParser): String {
 
 func parseString(str: String): JsonValue {
     if (str.size == 0) {
-        throw JsonException("JSON string is empty.")
+        throw JsonException("Json String is empty!")
     }
     let parser = JsonParser(str)
     try {
@@ -217,7 +217,7 @@ func parseString(str: String): JsonValue {
         return res
     } catch (_: Exception) {
         let errMsg = buildParseErrorMessage(parser)
-        throw JsonException("Invalid JSON data: ${errMsg}")
+        throw JsonException("The json data is Non-standard, please check:\n${errMsg}")
     }
 }
 

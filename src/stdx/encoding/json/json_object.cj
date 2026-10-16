@@ -17,10 +17,10 @@ import std.collection.*
 
 func validateJsonStringFormat(depth: Int64, indent: String): Unit {
     if (depth < 0) {
-        throw IllegalArgumentException("Invalid argument 'depth': value cannot be negative, got '${depth}'.")
+        throw IllegalArgumentException("Depth cannot be negative.")
     }
     if (!indent.isContainOnlySpaceAndTab()) {
-        throw IllegalArgumentException("Invalid argument 'indent': contains characters other than spaces and tabs.")
+        throw IllegalArgumentException("Indent must be an empty string or any combination of spaces and tabs.")
     }
 }
 
