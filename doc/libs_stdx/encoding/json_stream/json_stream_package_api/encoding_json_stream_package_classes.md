@@ -285,7 +285,7 @@ public func readValue<T>(): T where T <: JsonDeserializable<T>
 >
 > - 当下一个 [JsonToken](encoding_json_stream_package_enums.md#enum-jsontoken) 是 [JsonInt](../../json/json_package_api/encoding_json_package_classes.md#class-jsonint) [JsonFloat](../../json/json_package_api/encoding_json_package_classes.md#class-jsonfloat) [JsonBool](../../json/json_package_api/encoding_json_package_classes.md#class-jsonbool) [JsonNull](../../json/json_package_api/encoding_json_package_classes.md#class-jsonnull) 其中一个时，将会读取下一个 `value` 字段的原始字符串并返回。
 >
-> - 当下一个 [JsonToken](encoding_json_stream_package_enums.md#enum-jsontoken) 是其它类型时，调用此接口会抛异常。
+> - 当下一个 [JsonToken](encoding_json_stream_package_enums.md#enum-jsontoken) 是其他类型时，调用此接口会抛异常。
 
 返回值：
 

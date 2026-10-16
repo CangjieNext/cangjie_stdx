@@ -712,7 +712,7 @@ public init(name: String, data: DataModel)
 
 参数：
 
-- name: String - `name` 字段值，`name` 字段为 `""` 时行为与为其它字符串时一致。
+- name: String - `name` 字段值，`name` 字段为 `""` 时行为与为其他字符串时一致。
 - data: [DataModel](serialization_package_classes.md#class-datamodel) - `data` 字段值。
 
 示例：

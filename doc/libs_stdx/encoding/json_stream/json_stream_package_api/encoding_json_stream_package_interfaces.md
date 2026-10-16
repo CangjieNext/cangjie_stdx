@@ -825,7 +825,7 @@ public static func fromJson(r: JsonReader): String
 
 - 当下一个 `JsonToken` 是 `JsonString` 时， 反序列化过程会按照标准[ECMA-404 The JSON Data Interchange Standard](https://www.ecma-international.org/publications-and-standards/standards/ecma-404/)对读到的 `String` 进行转义。
 - 当下一个 `JsonToken` 是 `JsonNumber` `JsonBool` `JsonNull` 其中一个时，将会读取下一个 `value` 字段的原始字符串并返回。
-- 当下一个 `JsonToken` 是其它类型时，调用此接口会抛异常。
+- 当下一个 `JsonToken` 是其他类型时，调用此接口会抛异常。
 
 参数：
 

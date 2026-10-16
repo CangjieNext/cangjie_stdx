@@ -12,7 +12,7 @@ json.stream 包主要用于仓颉对象和 JSON 数据流之间的互相转换�
 
 - 集合类型：Array\<T>、ArrayList\<T>、HashMap\<String, T>、HashSet\<T>、LinkedList\<T>、ArrayQueue\<T>、ArrayDeque\<T>、ArrayStack\<T>、TreeSet\<T>、TreeMap\<String, T>、ConcurrentHashMap\<String, T>。
 
-- 其它类型：Option\<T>、BigInt、Decimal。
+- 其他类型：Option\<T>、BigInt、Decimal。
 
 ## API 列表
 
