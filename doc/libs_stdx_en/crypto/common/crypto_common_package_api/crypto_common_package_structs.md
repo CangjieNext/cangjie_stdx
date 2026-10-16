@@ -146,7 +146,7 @@ Return Value:
 
 Exceptions:
 
-- [X509Exception](./x509_package_exceptions.md#class-x509exception) - Throws an exception when data is empty or decoding fails.
+- [X509Exception](../../x509/x509_package_api/x509_package_exceptions.md#class-x509exception) - Throws an exception when data is empty or decoding fails.
 
 ### func encode()
 

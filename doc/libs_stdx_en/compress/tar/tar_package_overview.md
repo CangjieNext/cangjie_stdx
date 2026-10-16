@@ -43,7 +43,7 @@ During extraction, the behavior for restoring file uid/gid is as follows:
 
 The one-click extraction method of [Tar](./tar_package_api/tar_package_classes.md#class-tar) does not limit the total number of extracted entries. If the archive contains a large number of entries, it may result in resource exhaustion or prolonged processing time.
 
-To limit the number of extracted entries, it is recommended to use [TarReader](./tar_package_api/tar_package_classes.md#class-tarreadert) and add custom limits during iteration.
+To limit the number of extracted entries, it is recommended to use [TarReader](./tar_package_api/tar_package_classes.md#class-tarreader) and add custom limits during iteration.
 
 ## API List
 
@@ -51,15 +51,15 @@ To limit the number of extracted entries, it is recommended to use [TarReader](.
 
 |                 Class Name              |                Function                 |
 | --------------------------------- | ---------------------------------- |
-| [Tar](./tar_package_api/tar_package_readerwriter.md#class-tar) |  tar file operation class.      |
-| [TarEntry](./tar_package_api/tar_package_entry.md#class-tarentry) | Represents a tar file entry.      |
-| [V7TarEntry](./tar_package_api/tar_package_entry.md#class-v7tarentry) | Represents a V7 tar file entry.      |
-| [PosixTarEntry](./tar_package_api/tar_package_entry.md#class-posixtarentry) | Represents a Posix tar file entry.      |
-| [UstarTarEntry](./tar_package_api/tar_package_entry.md#class-ustartarentry) | Represents a USTAR tar file entry.      |
-| [GnuTarEntry](./tar_package_api/tar_package_entry.md#class-gnutarentry) | Represents a GNU tar file entry.      |
-| [PaxTarEntry](./tar_package_api/tar_package_entry.md#class-paxtarentry) | Represents a Pax tar file entry.      |
-| [TarReader](./tar_package_api/tar_package_readerwriter.md#class-tarreadert) | Reader for reading tar files.      |
-| [TarWriter](./tar_package_api/tar_package_readerwriter.md#class-tarwritert) | Writer for writing tar files.      |
+| [Tar](./tar_package_api/tar_package_classes.md#class-tar) |  tar file operation class.      |
+| [TarEntry](./tar_package_api/tar_package_classes.md#class-tarentry) | Represents a tar file entry.      |
+| [V7TarEntry](./tar_package_api/tar_package_classes.md#class-v7tarentry) | Represents a V7 tar file entry.      |
+| [PosixTarEntry](./tar_package_api/tar_package_classes.md#class-posixtarentry) | Represents a Posix tar file entry.      |
+| [UstarTarEntry](./tar_package_api/tar_package_classes.md#class-ustartarentry) | Represents a USTAR tar file entry.      |
+| [GnuTarEntry](./tar_package_api/tar_package_classes.md#class-gnutarentry) | Represents a GNU tar file entry.      |
+| [PaxTarEntry](./tar_package_api/tar_package_classes.md#class-paxtarentry) | Represents a Pax tar file entry.      |
+| [TarReader](./tar_package_api/tar_package_classes.md#class-tarreader) | Reader for reading tar files.      |
+| [TarWriter](./tar_package_api/tar_package_classes.md#class-tarwriter) | Writer for writing tar files.      |
 
 ### Enums
 
