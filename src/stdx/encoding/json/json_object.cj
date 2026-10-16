@@ -24,7 +24,22 @@ func validateJsonStringFormat(depth: Int64, indent: String): Unit {
     }
 }
 
+func validateJsonStringFormat(depth: Int64, indent: String @local?): Unit {
+    if (depth < 0) {
+        throw IllegalArgumentException("Invalid argument 'depth': value cannot be negative, got '${depth}'.")
+    }
+    for (item in indent) {
+        if (item != b' ' && item != b'\t') {
+            throw IllegalArgumentException("Invalid argument 'indent': contains characters other than spaces and tabs.")
+        }
+    }
+}
+
 func bufferToString(buff: WriteBuffer): String {
+    unsafe { String.fromUtf8Unchecked(buff.getAndClear()) }
+}
+
+exclave func bufferToString(buff: WriteBuffer @local!): String @local! {
     unsafe { String.fromUtf8Unchecked(buff.getAndClear()) }
 }
 
@@ -32,6 +47,18 @@ func jsonValueToCompactString(value: JsonValue, htmlSafe!: Bool = true): String 
     let buff = WriteBuffer(asumecapacity(value))
     jsonWriteWithoutFormat(value, buff, htmlSafe: htmlSafe)
     return bufferToString(buff)
+}
+
+exclave func jsonValueToCompactString(value: JsonValue @local?, htmlSafe!: Bool = true): String @local! {
+    let buff = WriteBuffer(asumecapacity(value)) @local!
+    jsonWriteWithoutFormat(value, buff, htmlSafe: htmlSafe)
+    bufferToString(buff)
+}
+
+func jsonValueToCompactStringHeap(value: JsonValue @local?, htmlSafe!: Bool = true): String {
+    let buff = WriteBuffer(asumecapacity(value)) @local!
+    jsonWriteWithoutFormat(value, buff, htmlSafe: htmlSafe)
+    String(unsafe { String.fromUtf8Unchecked(buff.getAndClear()) })
 }
 
 func jsonPrimitiveToString<T>(value: T): String where T <: ToString {
@@ -51,6 +78,32 @@ func jsonArrayToFormattedString(
     return bufferToString(buff)
 }
 
+func jsonArrayToFormattedString(
+    value: JsonArray @local?,
+    depth: Int64,
+    bracketInNewLine: Bool,
+    indent: String @local?,
+    htmlSafe!: Bool = true
+): String {
+    validateJsonStringFormat(depth, indent)
+    let buff = WriteBuffer(asumecapacity(value, depth)) @local!
+    jsonWriteArray(value, buff, depth, bracketInNewLine, indent, htmlSafe: htmlSafe)
+    String(unsafe { String.fromUtf8Unchecked(buff.getAndClear()) })
+}
+
+exclave func jsonArrayToFormattedString(
+    value: JsonArray @local!,
+    depth: Int64,
+    bracketInNewLine: Bool,
+    indent: String @local?,
+    htmlSafe!: Bool = true
+): String @local! {
+    validateJsonStringFormat(depth, indent)
+    let buff = WriteBuffer(asumecapacity(value, depth)) @local!
+    jsonWriteArray(value, buff, depth, bracketInNewLine, indent, htmlSafe: htmlSafe)
+    bufferToString(buff)
+}
+
 func jsonObjectToFormattedString(
     value: JsonObject,
     depth: Int64,
@@ -64,6 +117,31 @@ func jsonObjectToFormattedString(
     return bufferToString(buff)
 }
 
+func jsonObjectToFormattedString(
+    value: JsonObject @local?,
+    depth: Int64,
+    bracketInNewLine: Bool,
+    indent: String @local?,
+    htmlSafe!: Bool = true
+): String {
+    validateJsonStringFormat(depth, indent)
+    let buff = WriteBuffer(asumecapacity(value, depth)) @local!
+    jsonWriteObject(value, buff, depth, bracketInNewLine, indent, htmlSafe: htmlSafe)
+    String(unsafe { String.fromUtf8Unchecked(buff.getAndClear()) })
+}
+
+exclave func jsonObjectToFormattedString(
+    value: JsonObject @local!,
+    depth: Int64,
+    bracketInNewLine: Bool,
+    indent: String @local?,
+    htmlSafe!: Bool = true
+): String @local! {
+    validateJsonStringFormat(depth, indent)
+    let buff = WriteBuffer(asumecapacity(value, depth)) @local!
+    jsonWriteObject(value, buff, depth, bracketInNewLine, indent, htmlSafe: htmlSafe)
+    bufferToString(buff)
+}
 /**
  * JsonNull class used for encapsulate JSON data: null.
  */
@@ -81,18 +159,9 @@ public class JsonNull <: JsonValue { // cjlint-ignore !G.ENU.01
     public func kind(): JsonKind {
         return JsNull
     }
-    public func kind(this @local?): JsonKind {
-        return JsNull
-    }
 
-    /**
-     * Optimized: Calculate capacity for null
-     */
-    protected func calculateCapacity(): Int64 {
-        return 4  // "null"
-    }
-    protected func calculateCapacity(this @local?): Int64 {
-        return 4  // "null"
+    public func kind(this @local?): JsonKind {
+        JsNull
     }
 
     /**
@@ -105,8 +174,9 @@ public class JsonNull <: JsonValue { // cjlint-ignore !G.ENU.01
     public func toString(): String {
         return "null"
     }
+
     public exclave func toString(this @local?): String @local! {
-        "null".toLocal()
+        "null"
     }
 
     /**
@@ -120,6 +190,10 @@ public class JsonNull <: JsonValue { // cjlint-ignore !G.ENU.01
         return toString()
     }
 
+    public exclave func toJsonString(this @local!): String @local! {
+        toString()
+    }
+
     /**
      * Convert JsonNull to String Without Escaping.
      *
@@ -129,6 +203,10 @@ public class JsonNull <: JsonValue { // cjlint-ignore !G.ENU.01
         return "null"
     }
 
+    public exclave func toStringWithoutEscaping(this @local!): String @local! {
+        "null"
+    }
+
     /**
      * Convert JsonNull to json-String Without Escaping.
      *
@@ -136,6 +214,10 @@ public class JsonNull <: JsonValue { // cjlint-ignore !G.ENU.01
      */
     public func toJsonStringWithoutEscaping(): String {
         return toJsonString()
+    }
+
+    public exclave func toJsonStringWithoutEscaping(this @local!): String @local! {
+        toJsonString()
     }
 }
 
@@ -157,6 +239,7 @@ public class JsonBool <: JsonValue { // cjlint-ignore !G.ENU.01
     public init(bv: Bool) {
         this.value = bv
     }
+
     public exclave init(this @local!, bv: Bool) {
         this.value = bv
     }
@@ -171,8 +254,9 @@ public class JsonBool <: JsonValue { // cjlint-ignore !G.ENU.01
     public func getValue(): Bool {
         return value
     }
+
     public func getValue(this @local?): Bool {
-        return value
+        value
     }
 
     /**
@@ -185,18 +269,9 @@ public class JsonBool <: JsonValue { // cjlint-ignore !G.ENU.01
     public func kind(): JsonKind {
         return JsBool
     }
-    public func kind(this @local?): JsonKind {
-        return JsBool
-    }
 
-    /**
-     * Optimized: Calculate capacity for bool
-     */
-    protected func calculateCapacity(): Int64 {
-        return 5  // max of "true" and "false"
-    }
-    protected func calculateCapacity(this @local?): Int64 {
-        return 5  // max of "true" and "false"
+    public func kind(this @local?): JsonKind {
+        JsBool
     }
 
     /**
@@ -207,8 +282,9 @@ public class JsonBool <: JsonValue { // cjlint-ignore !G.ENU.01
      * @since 0.17.4
      */
     public func toString(): String {
-        return value.toString()
+        return jsonPrimitiveToString(value)
     }
+
     public exclave func toString(this @local?): String @local! {
         value.toString()
     }
@@ -224,6 +300,10 @@ public class JsonBool <: JsonValue { // cjlint-ignore !G.ENU.01
         return toString()
     }
 
+    public exclave func toJsonString(this @local!): String @local! {
+        toString()
+    }
+
     /**
      * Convert JsonBool to String.
      *
@@ -233,6 +313,10 @@ public class JsonBool <: JsonValue { // cjlint-ignore !G.ENU.01
         return jsonPrimitiveToString(value)
     }
 
+    public exclave func toStringWithoutEscaping(this @local!): String @local! {
+        value.toString()
+    }
+
     /**
      * Convert JsonBool to json-String.
      *
@@ -240,6 +324,10 @@ public class JsonBool <: JsonValue { // cjlint-ignore !G.ENU.01
      */
     public func toJsonStringWithoutEscaping(): String {
         return toString()
+    }
+
+    public exclave func toJsonStringWithoutEscaping(this @local!): String @local! {
+        toJsonString()
     }
 }
 
@@ -261,8 +349,9 @@ public class JsonInt <: JsonValue {
     public init(iv: Int64) {
         this.value = iv
     }
+
     public exclave init(this @local!, iv: Int64) {
-        value = iv
+        this.value = iv
     }
 
     /**
@@ -275,8 +364,9 @@ public class JsonInt <: JsonValue {
     public func getValue(): Int64 {
         return value
     }
+
     public func getValue(this @local?): Int64 {
-        return value
+        value
     }
 
     /**
@@ -289,18 +379,9 @@ public class JsonInt <: JsonValue {
     public func kind(): JsonKind {
         return JsInt
     }
-    public func kind(this @local?): JsonKind {
-        return JsInt
-    }
 
-    /**
-     * Optimized: Calculate capacity for int
-     */
-    protected func calculateCapacity(): Int64 {
-        return 22  // max length of Int64 string
-    }
-    protected func calculateCapacity(this @local?): Int64 {
-        return 22  // max length of Int64 string
+    public func kind(this @local?): JsonKind {
+        JsInt
     }
 
     /**
@@ -311,8 +392,9 @@ public class JsonInt <: JsonValue {
      * @since 0.17.4
      */
     public func toString(): String {
-        return value.toString()
+        return jsonPrimitiveToString(value)
     }
+
     public exclave func toString(this @local?): String @local! {
         value.toString()
     }
@@ -328,6 +410,10 @@ public class JsonInt <: JsonValue {
         return toString()
     }
 
+    public exclave func toJsonString(this @local!): String @local! {
+        toString()
+    }
+
     /**
      * Convert JsonInt to String Without Escaping.
      *
@@ -337,6 +423,10 @@ public class JsonInt <: JsonValue {
         return jsonPrimitiveToString(value)
     }
 
+    public exclave func toStringWithoutEscaping(this @local!): String @local! {
+        value.toString()
+    }
+
     /**
      * Convert JsonInt to json-String Without Escaping.
      *
@@ -344,6 +434,10 @@ public class JsonInt <: JsonValue {
      */
     public func toJsonStringWithoutEscaping(): String {
         return toString()
+    }
+
+    public exclave func toJsonStringWithoutEscaping(this @local!): String @local! {
+        toJsonString()
     }
 }
 
@@ -365,8 +459,9 @@ public class JsonFloat <: JsonValue {
     public init(fv: Float64) {
         this.value = fv
     }
+
     public exclave init(this @local!, fv: Float64) {
-        value = fv
+        this.value = fv
     }
 
     /**
@@ -381,6 +476,10 @@ public class JsonFloat <: JsonValue {
         this.value = Float64(v)
     }
 
+    public exclave init(this @local!, v: Int64) {
+        this.value = Float64(v)
+    }
+
     /**
      * Get the value data of the JsonFloat.
      *
@@ -391,8 +490,9 @@ public class JsonFloat <: JsonValue {
     public func getValue(): Float64 {
         return value
     }
+
     public func getValue(this @local?): Float64 {
-        return value
+        value
     }
 
     /**
@@ -405,18 +505,9 @@ public class JsonFloat <: JsonValue {
     public func kind(): JsonKind {
         return JsFloat
     }
-    public func kind(this @local?): JsonKind {
-        return JsFloat
-    }
 
-    /**
-     * Optimized: Calculate capacity for float
-     */
-    protected func calculateCapacity(): Int64 {
-        return 200  // conservative estimate for float representation
-    }
-    protected func calculateCapacity(this @local?): Int64 {
-        return 200  // conservative estimate for float representation
+    public func kind(this @local?): JsonKind {
+        JsFloat
     }
 
     /**
@@ -427,8 +518,9 @@ public class JsonFloat <: JsonValue {
      * @since 0.17.4
      */
     public func toString(): String {
-        return value.toString()
+        return jsonPrimitiveToString(value)
     }
+
     public exclave func toString(this @local?): String @local! {
         value.toString()
     }
@@ -444,6 +536,10 @@ public class JsonFloat <: JsonValue {
         return toString()
     }
 
+    public exclave func toJsonString(this @local!): String @local! {
+        toString()
+    }
+
     /**
      * Convert JsonFloat to String Without Escaping.
      *
@@ -453,6 +549,10 @@ public class JsonFloat <: JsonValue {
         return jsonPrimitiveToString(value)
     }
 
+    public exclave func toStringWithoutEscaping(this @local!): String @local! {
+        value.toString()
+    }
+
     /**
      * Convert JsonFloat to json-String Without Escaping.
      *
@@ -460,6 +560,10 @@ public class JsonFloat <: JsonValue {
      */
     public func toJsonStringWithoutEscaping(): String {
         return toString()
+    }
+
+    public exclave func toJsonStringWithoutEscaping(this @local!): String @local! {
+        toJsonString()
     }
 }
 
@@ -481,8 +585,9 @@ public class JsonString <: JsonValue { // cjlint-ignore !G.ENU.01
     public init(sv: String) {
         this.value = sv
     }
+
     public exclave init(this @local!, sv: String @local!) {
-        value = sv
+        this.value = sv
     }
 
     /**
@@ -495,10 +600,12 @@ public class JsonString <: JsonValue { // cjlint-ignore !G.ENU.01
     public func getValue(): String {
         return value
     }
-    public func getValue(this @local!): String @local! {
+
+    public exclave func getValue(this @local!): String @local! {
         value
     }
-    public func getValue(this @local?): String @local? {
+
+    public exclave func getValue(this @local?): String @local? {
         value
     }
 
@@ -512,31 +619,9 @@ public class JsonString <: JsonValue { // cjlint-ignore !G.ENU.01
     public func kind(): JsonKind {
         return JsString
     }
+
     public func kind(this @local?): JsonKind {
-        return JsString
-    }
-
-    /**
-     * Optimized: Calculate capacity for string
-     */
-    protected func calculateCapacity(): Int64 {
-        var escapenum: Int64 = 0
-        unsafe {
-            let input = acquireArrayRawData(value.rawData())
-            escapenum = CJ_JSON_StringEscapeCharNumGet(input.pointer, value.size, true)
-            releaseArrayRawData(input)
-        }
-        return value.size + 2 + escapenum  // 2 bytes for the surrounding JSON quotes
-    }
-
-    protected func calculateCapacity(this @local?): Int64 {
-        var escapenum: Int64 = 0
-        unsafe {
-            let input = acquireArrayRawData(value.rawData())
-            escapenum = CJ_JSON_StringEscapeCharNumGet(input.pointer, value.size, true)
-            releaseArrayRawData(input)
-        }
-        return value.size + 2 + escapenum  // 2 bytes for the surrounding JSON quotes
+        JsString
     }
 
     /**
@@ -549,12 +634,13 @@ public class JsonString <: JsonValue { // cjlint-ignore !G.ENU.01
     public func toString(): String {
         let buff = WriteBuffer(value.size + 2)
         jsonWriteWithoutFormat(this, buff)
-        return unsafe { String.fromUtf8Unchecked(buff.getAndClear()) }
+        return bufferToString(buff)
     }
+
     public exclave func toString(this @local?): String @local! {
         let buff = WriteBuffer(value.size + 2) @local!
         jsonWriteWithoutFormat(this, buff)
-        unsafe { String.fromUtf8UncheckedLocal(buff.getAndClear()) }
+        bufferToString(buff)
     }
 
     /**
@@ -570,6 +656,12 @@ public class JsonString <: JsonValue { // cjlint-ignore !G.ENU.01
         return bufferToString(buff)
     }
 
+    public exclave func toJsonString(this @local!): String @local! {
+        let buff = WriteBuffer(value.size + 2) @local!
+        jsonWriteWithoutFormat(this, buff)
+        bufferToString(buff)
+    }
+
     /**
      * Convert JsonString to String Without Escaping.
      *
@@ -581,6 +673,12 @@ public class JsonString <: JsonValue { // cjlint-ignore !G.ENU.01
         return bufferToString(buff)
     }
 
+    public exclave func toStringWithoutEscaping(this @local!): String @local! {
+        let buff = WriteBuffer(value.size + 2) @local!
+        jsonWriteWithoutFormat(this, buff, htmlSafe: false)
+        bufferToString(buff)
+    }
+
     /**
      * Convert JsonString to json-String Without Escaping.
      *
@@ -590,6 +688,12 @@ public class JsonString <: JsonValue { // cjlint-ignore !G.ENU.01
         let buff = WriteBuffer(value.size + 2)
         jsonWriteWithoutFormat(this, buff, htmlSafe: false)
         return bufferToString(buff)
+    }
+
+    public exclave func toJsonStringWithoutEscaping(this @local!): String @local! {
+        let buff = WriteBuffer(value.size + 2) @local!
+        jsonWriteWithoutFormat(this, buff, htmlSafe: false)
+        bufferToString(buff)
     }
 }
 
@@ -610,14 +714,14 @@ public class JsonArray <: JsonValue {
         items = ArrayList<JsonValue>(capacity)
     }
     exclave init(this @local!, capacity: Int64) {
-        items = ArrayList<JsonValue>(capacity)
+        items = ArrayList<JsonValue>(capacity) @local!
     }
 
     public init() {
         items = ArrayList<JsonValue>()
     }
     public exclave init(this @local!) {
-        items = ArrayList<JsonValue>()
+        items = ArrayList<JsonValue>() @local!
     }
     /**
      * Create a new JsonArray object.
@@ -630,7 +734,7 @@ public class JsonArray <: JsonValue {
     public init(list: ArrayList<JsonValue>) {
         items = list
     }
-    public exclave init(this @local!, list: ArrayList<JsonValue>@local!) {
+    public exclave init(this @local!, list: ArrayList<JsonValue> @local!) {
         items = list
     }
 
@@ -645,6 +749,9 @@ public class JsonArray <: JsonValue {
     public init(list: Array<JsonValue>) {
         items = ArrayList<JsonValue>(list)
     }
+    public exclave init(this @local!, list: Array<JsonValue> @local!) {
+        items = ArrayList<JsonValue>(list) @local!
+    }
 
     /**
      * Determine the JSON type to which the JsonArray belongs.
@@ -657,25 +764,7 @@ public class JsonArray <: JsonValue {
         return JsArray
     }
     public func kind(this @local?): JsonKind {
-        return JsArray
-    }
-
-    /**
-     * Optimized: Calculate capacity for array
-     */
-    protected func calculateCapacity(): Int64 {
-        var sum: Int64 = 2  // []
-        for (v in items) {
-            sum += v.estimateCapacity() + 1  // value + comma
-        }
-        return sum
-    }
-    protected func calculateCapacity(this @local?): Int64 {
-        var sum: Int64 = 2  // []
-        for (v in items) {
-            sum += v.estimateCapacity() + 1  // value + comma
-        }
-        return sum
+        JsArray
     }
 
     /**
@@ -690,6 +779,12 @@ public class JsonArray <: JsonValue {
     public func toJsonString(): String {
         return toJsonStringBase(0)
     }
+    public exclave func toJsonString(this @local!): String @local! {
+        jsonArrayToFormattedString(this, 0, false, "  ")
+    }
+    public func toJsonString(this @local?): String {
+        jsonArrayToFormattedString(this, 0, false, "  ")
+    }
 
     /**
      * Convert JsonArray to Json-String Without Escaping.
@@ -700,6 +795,12 @@ public class JsonArray <: JsonValue {
      */
     public func toJsonStringWithoutEscaping(): String {
         return toJsonStringBase(0, htmlSafe: false)
+    }
+    public exclave func toJsonStringWithoutEscaping(this @local!): String @local! {
+        jsonArrayToFormattedString(this, 0, false, "  ", htmlSafe: false)
+    }
+    public func toJsonStringWithoutEscaping(this @local?): String {
+        jsonArrayToFormattedString(this, 0, false, "  ", htmlSafe: false)
     }
 
     /**
@@ -714,6 +815,14 @@ public class JsonArray <: JsonValue {
      */
     public func toJsonString(depth: Int64, bracketInNewLine!: Bool = false, indent!: String = "  "): String {
         return toJsonStringBase(depth, bracketInNewLine: bracketInNewLine, indent: indent)
+    }
+    public exclave func toJsonString(this @local!, depth: Int64, bracketInNewLine!: Bool = false,
+        indent!: String @~local = "  "): String @local! {
+        jsonArrayToFormattedString(this, depth, bracketInNewLine, indent)
+    }
+    public func toJsonString(this @local?, depth: Int64, bracketInNewLine!: Bool = false,
+        indent!: String @local? = "  "): String {
+        jsonArrayToFormattedString(this, depth, bracketInNewLine, indent)
     }
 
     /**
@@ -739,6 +848,14 @@ public class JsonArray <: JsonValue {
     public func toJsonStringWithoutEscaping(depth: Int64, bracketInNewLine!: Bool = false, indent!: String = "  "): String {
         return toJsonStringBase(depth, bracketInNewLine: bracketInNewLine, indent: indent, htmlSafe: false)
     }
+    public exclave func toJsonStringWithoutEscaping(this @local!, depth: Int64,
+        bracketInNewLine!: Bool = false, indent!: String @~local = "  "): String @local! {
+        jsonArrayToFormattedString(this, depth, bracketInNewLine, indent, htmlSafe: false)
+    }
+    public func toJsonStringWithoutEscaping(this @local?, depth: Int64,
+        bracketInNewLine!: Bool = false, indent!: String @local? = "  "): String {
+        jsonArrayToFormattedString(this, depth, bracketInNewLine, indent, htmlSafe: false)
+    }
 
     /**
      * Convert JsonArray to String.
@@ -750,14 +867,10 @@ public class JsonArray <: JsonValue {
      * @throws JsonException if there exists JsonValue which cannot be converted to String.
      */
     public func toString(): String {
-        let buff = WriteBuffer(asumecapacity(this))
-        jsonWriteWithoutFormat(this, buff)
-        return unsafe { String.fromUtf8Unchecked(buff.getAndClear()) }
+        return jsonValueToCompactString(this)
     }
     public exclave func toString(this @local?): String @local! {
-        let buff = WriteBuffer(asumecapacity(this)) @local!
-        jsonWriteWithoutFormat(this, buff)
-        return unsafe { String.fromUtf8UncheckedLocal(buff.getAndClear()) }
+        jsonValueToCompactString(this)
     }
 
     /**
@@ -769,6 +882,13 @@ public class JsonArray <: JsonValue {
      */
     public func toStringWithoutEscaping(): String {
         return jsonValueToCompactString(this, htmlSafe: false)
+    }
+    public exclave func toStringWithoutEscaping(this @local!): String @local! {
+        jsonValueToCompactString(this, htmlSafe: false)
+    }
+
+    public func toStringWithoutEscaping(this @local?): String {
+        jsonValueToCompactStringHeap(this, htmlSafe: false)
     }
 
     /**
@@ -782,7 +902,7 @@ public class JsonArray <: JsonValue {
         return items.size
     }
     public func size(this @local?): Int64 {
-        return items.size
+        items.size
     }
 
     /**
@@ -816,6 +936,10 @@ public class JsonArray <: JsonValue {
         items.get(index)
     }
 
+    public exclave func get(this @local?, index: Int64): Option<JsonValue> @local? {
+        items.get(index)
+    }
+
     /**
      * Obtains JsonValue data of JsonArray at a specified location.
      *
@@ -829,10 +953,17 @@ public class JsonArray <: JsonValue {
     public operator func [](index: Int64): JsonValue {
         return match (items.get(index)) {
             case Some(v) => v
-            case None => throw JsonException("The index ${index} of JsonArray does not exist.")
+            case None => throw JsonException("Index '${index}' does not exist in JsonArray.")
         }
     }
     public exclave operator func [](this @local!, index: Int64): JsonValue @local! {
+        match (items.get(index)) {
+            case Some(v) => v
+            case None => throw JsonException("The index ${index} of JsonArray does not exist.")
+        }
+    }
+
+    public exclave operator func [](this @local?, index: Int64): JsonValue @local? {
         match (items.get(index)) {
             case Some(v) => v
             case None => throw JsonException("The index ${index} of JsonArray does not exist.")
@@ -849,8 +980,12 @@ public class JsonArray <: JsonValue {
     public func getItems(): ArrayList<JsonValue> {
         return items
     }
-    public func getItems(this @local?): ArrayList<JsonValue>@local? {
-        return items
+    public exclave func getItems(this @local!): ArrayList<JsonValue> @local! {
+        items
+    }
+
+    public func getItems(this @local?): ArrayList<JsonValue> @local? {
+        items
     }
 }
 
@@ -871,14 +1006,14 @@ public class JsonObject <: JsonValue {
         fields = HashMap<String, JsonValue>()
     }
     public exclave init(this @local!) {
-        fields = HashMap<String, JsonValue>()
+        fields = HashMap<String, JsonValue>() @local!
     }
 
     init(capacity: Int64) {
         fields = HashMap<String, JsonValue>(capacity)
     }
     exclave init(this @local!, capacity: Int64) {
-        fields = HashMap<String, JsonValue>(capacity)
+        fields = HashMap<String, JsonValue>(capacity) @local!
     }
 
     /**
@@ -907,27 +1042,7 @@ public class JsonObject <: JsonValue {
         return JsObject
     }
     public func kind(this @local?): JsonKind {
-        return JsObject
-    }
-
-    /**
-     * Optimized: Calculate capacity for object
-     */
-    protected func calculateCapacity(): Int64 {
-        var sum: Int64 = 2  // {}
-        for ((k, v) in fields) {
-            sum += k.size + 4  // "key": ,
-            sum += v.estimateCapacity()
-        }
-        return sum
-    }
-    protected func calculateCapacity(this @local?): Int64 {
-        var sum: Int64 = 2  // {}
-        for ((k, v) in fields) {
-            sum += k.size + 4  // "key": ,
-            sum += v.estimateCapacity()
-        }
-        return sum
+        JsObject
     }
 
     /**
@@ -942,6 +1057,12 @@ public class JsonObject <: JsonValue {
     public func toJsonString(): String {
         return toJsonStringBase(0)
     }
+    public exclave func toJsonString(this @local!): String @local! {
+        jsonObjectToFormattedString(this, 0, false, "  ")
+    }
+    public func toJsonString(this @local?): String {
+        jsonObjectToFormattedString(this, 0, false, "  ")
+    }
 
      /**
      * Convert JsonObject to Json-String Without Escaping.
@@ -952,6 +1073,12 @@ public class JsonObject <: JsonValue {
      */
     public func toJsonStringWithoutEscaping(): String {
         return toJsonStringBase(0, htmlSafe: false)
+    }
+    public exclave func toJsonStringWithoutEscaping(this @local!): String @local! {
+        jsonObjectToFormattedString(this, 0, false, "  ", htmlSafe: false)
+    }
+    public func toJsonStringWithoutEscaping(this @local?): String {
+        jsonObjectToFormattedString(this, 0, false, "  ", htmlSafe: false)
     }
 
     /**
@@ -966,6 +1093,14 @@ public class JsonObject <: JsonValue {
      */
     public func toJsonString(depth: Int64, bracketInNewLine!: Bool = false, indent!: String = "  "): String {
         return toJsonStringBase(depth, bracketInNewLine: bracketInNewLine, indent: indent)
+    }
+    public exclave func toJsonString(this @local!, depth: Int64, bracketInNewLine!: Bool = false,
+        indent!: String @~local = "  "): String @local! {
+        jsonObjectToFormattedString(this, depth, bracketInNewLine, indent)
+    }
+    public func toJsonString(this @local?, depth: Int64, bracketInNewLine!: Bool = false,
+        indent!: String @local? = "  "): String {
+        jsonObjectToFormattedString(this, depth, bracketInNewLine, indent)
     }
 
     /**
@@ -991,6 +1126,14 @@ public class JsonObject <: JsonValue {
     public func toJsonStringWithoutEscaping(depth: Int64, bracketInNewLine!: Bool = false, indent!: String = "  "): String {
         return toJsonStringBase(depth, bracketInNewLine: bracketInNewLine, indent: indent, htmlSafe: false)
     }
+    public exclave func toJsonStringWithoutEscaping(this @local!, depth: Int64,
+        bracketInNewLine!: Bool = false, indent!: String @~local = "  "): String @local! {
+        jsonObjectToFormattedString(this, depth, bracketInNewLine, indent, htmlSafe: false)
+    }
+    public func toJsonStringWithoutEscaping(this @local?, depth: Int64,
+        bracketInNewLine!: Bool = false, indent!: String @local? = "  "): String {
+        jsonObjectToFormattedString(this, depth, bracketInNewLine, indent, htmlSafe: false)
+    }
 
     /**
      * Convert JsonObject to String.
@@ -1002,14 +1145,10 @@ public class JsonObject <: JsonValue {
      * @throws JsonException if there exists JsonValue which cannot be converted to String.
      */
     public func toString(): String {
-        let buff = WriteBuffer(asumecapacity(this))
-        jsonWriteWithoutFormat(this, buff)
-        return unsafe { String.fromUtf8Unchecked(buff.getAndClear()) }
+        return jsonValueToCompactString(this)
     }
     public exclave func toString(this @local?): String @local! {
-        let buff = WriteBuffer(asumecapacity(this)) @local!
-        jsonWriteWithoutFormat(this, buff)
-        return unsafe { String.fromUtf8UncheckedLocal(buff.getAndClear()) }
+        jsonValueToCompactString(this)
     }
 
     /**
@@ -1021,6 +1160,13 @@ public class JsonObject <: JsonValue {
      */
     public func toStringWithoutEscaping(): String {
         return jsonValueToCompactString(this, htmlSafe: false)
+    }
+    public exclave func toStringWithoutEscaping(this @local!): String @local! {
+        jsonValueToCompactString(this, htmlSafe: false)
+    }
+
+    public func toStringWithoutEscaping(this @local?): String {
+        jsonValueToCompactStringHeap(this, htmlSafe: false)
     }
 
     /**
@@ -1034,7 +1180,7 @@ public class JsonObject <: JsonValue {
         return fields.size
     }
     public func size(this @local?): Int64 {
-        return fields.size
+        fields.size
     }
 
     /**
@@ -1047,6 +1193,9 @@ public class JsonObject <: JsonValue {
      */
     public func containsKey(key: String): Bool {
         return fields.contains(key)
+    }
+    public func containsKey(this @local?, key: String @local?): Bool {
+        fields.contains(key)
     }
 
     /**
@@ -1064,6 +1213,11 @@ public class JsonObject <: JsonValue {
         fields.add(key, v)
     }
 
+    public exclave func put(this @local!, key: String @local?, v: JsonValue @local!): Unit {
+        // Keys are stored as owned heap Strings.
+        fields.add(unsafe { String.fromUtf8Unchecked(key.toString().rawData()) }, v)
+    }
+
     /**
      * Obtains the option version of JsonValue data of JsonObject at a specified location.
      *
@@ -1075,8 +1229,20 @@ public class JsonObject <: JsonValue {
     public func get(key: String): Option<JsonValue> {
         return fields.get(key)
     }
-    public exclave func get(this @local!, key: String @local!): Option<JsonValue> @local! {
-        return fields.get(key)
+    public exclave func get(this @local!, key: String @local?): Option<JsonValue> @local! {
+        // Bind through a typed local: an explicit `Option<JsonValue>.Some(v) @local!` loses
+        // the payload's dynamic type in a `@local!` context.
+        match (fields.get(key)) {
+            case Some(found) =>
+                let localValue: JsonValue @local! = found
+                let result: Option<JsonValue> @local! = localValue
+                result
+            case None => None
+        }
+    }
+
+    public exclave func get(this @local?, key: String @local?): Option<JsonValue> @local? {
+        fields.get(key)
     }
 
     /**
@@ -1092,12 +1258,19 @@ public class JsonObject <: JsonValue {
     public operator func [](key: String): JsonValue {
         return match (fields.get(key)) {
             case Some(v) => v
+            case None => throw JsonException("Key '${key}' does not exist in JsonObject.")
+        }
+    }
+    public exclave operator func [](this @local!, key: String @local?): JsonValue @local! {
+        match (get(key)) {
+            case Some(value) => value
             case None => throw JsonException("The Value of JsonObject does not exist")
         }
     }
-    public exclave operator func [](this @local!, key: String @local!): JsonValue @local! {
-        match (fields.get(key)) {
-            case Some(v) => v
+
+    public exclave operator func [](this @local?, key: String @local?): JsonValue @local? {
+        match (get(key)) {
+            case Some(value) => value
             case None => throw JsonException("The Value of JsonObject does not exist")
         }
     }
@@ -1112,11 +1285,12 @@ public class JsonObject <: JsonValue {
     public func getFields(): HashMap<String, JsonValue> {
         return fields
     }
-    public func getFields(this @local!): HashMap<String, JsonValue> @local! {
-        return fields
+    public exclave func getFields(this @local!): HashMap<String, JsonValue> @local! {
+        fields
     }
+
     public func getFields(this @local?): HashMap<String, JsonValue> @local? {
-        return fields
+        fields
     }
 }
 
