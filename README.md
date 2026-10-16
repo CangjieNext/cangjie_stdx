@@ -320,7 +320,7 @@ Use `static-static-link-extern/stdx` when you want an explicit static-link contr
 [dependencies]
 
 [package]
-  cjc-version = "0.59.4"
+  cjc-version = "0.60.5"
   compile-option = ""
   description = "nothing here"
   link-option = ""
@@ -357,7 +357,7 @@ Assuming that the developer is developing on Linux and wants to import the stati
 [dependencies]
 
 [package]
-  cjc-version = "0.59.4"
+  cjc-version = "0.60.5"
   compile-option = "-ldl"
   description = "nothing here"
   link-option = ""
