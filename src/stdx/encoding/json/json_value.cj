@@ -38,9 +38,8 @@ sealed abstract class JsonValue <: ToString {
      * @throws JsonException if there exists JsonValue which cannot be converted to String.
      */
     public func toString(): String
-
     public open func toString(this @local?): String @local! {
-        throw Exception()
+        throw UnimplementedException("JsonValue.toString(this @local?) not implemented")
     }
 
     /**
@@ -53,6 +52,9 @@ sealed abstract class JsonValue <: ToString {
      * @throws JsonException if there exists JsonValue which cannot be converted to String.
      */
     public func toJsonString(): String
+    public open func toJsonString(this @local!): String @local! {
+        throw UnimplementedException("JsonValue.toJsonString(this @local!) not implemented")
+    }
 
     /**
      * Convert JsonValue to String Without Escaping.
@@ -62,6 +64,9 @@ sealed abstract class JsonValue <: ToString {
      * @throws JsonException if there exists JsonValue which cannot be converted to String.
      */
     public func toStringWithoutEscaping(): String
+    public open func toStringWithoutEscaping(this @local!): String @local! {
+        throw UnimplementedException("JsonValue.toStringWithoutEscaping(this @local!) not implemented")
+    }
 
     /**
      * Convert JsonValue to json-String Without Escaping.
@@ -71,6 +76,9 @@ sealed abstract class JsonValue <: ToString {
      * @throws JsonException if there exists JsonValue which cannot be converted to String.
      */
     public func toJsonStringWithoutEscaping(): String
+    public open func toJsonStringWithoutEscaping(this @local!): String @local! {
+        throw UnimplementedException("JsonValue.toJsonStringWithoutEscaping(this @local!) not implemented")
+    }
 
     /**
      * Parses string data into JsonValue.
@@ -86,8 +94,12 @@ sealed abstract class JsonValue <: ToString {
     public static func fromStr(s: String): JsonValue {
         parseString(s)
     }
-    public static exclave func fromStr(s: String @local!): JsonValue @local! {
-        parseString(s)
+
+    // `@local?` keeps `JsonValue.fromStr("1")` unambiguous; a `String @local!` twin
+    // would match every string literal twice.
+    public exclave static func fromStr(s: String @local?): JsonValue @local! {
+        let ls: String @local! = s.toString()
+        parseString(ls)
     }
 
     /**
@@ -98,29 +110,8 @@ sealed abstract class JsonValue <: ToString {
      * @since 0.17.4
      */
     public func kind(): JsonKind
-    public func kind(this @local?): JsonKind
-
-    public func estimateCapacity(): Int64 {
-        return calculateCapacity()
-    }
-    public func estimateCapacity(this @local?): Int64 {
-        return calculateCapacity()
-    }
-
-    /**
-     * Calculate capacity (to be overridden by subclasses)
-     */
-    protected func calculateCapacity(): Int64
-    protected func calculateCapacity(this @local?): Int64
-
-    /**
-     * Invalidate cached capacity when structure changes
-     */
-    protected func invalidateCapacity(): Unit {
-        return
-    }
-    protected func invalidateCapacity(this @local!): Unit {
-        return
+    public open func kind(this @local?): JsonKind {
+        throw UnimplementedException("JsonValue.kind(this @local?) not implemented")
     }
 
     /**
@@ -138,6 +129,7 @@ sealed abstract class JsonValue <: ToString {
             case _ => throw JsonException("Fail to convert to JsonNull")
         }
     }
+
     public exclave func asNull(this @local!): JsonNull @local! {
         match (this) {
             case jsonNull: JsonNull => jsonNull
@@ -160,6 +152,7 @@ sealed abstract class JsonValue <: ToString {
             case _ => throw JsonException("Fail to convert to JsonBool")
         }
     }
+
     public exclave func asBool(this @local!): JsonBool @local! {
         match (this) {
             case jsonBool: JsonBool => jsonBool
@@ -182,6 +175,7 @@ sealed abstract class JsonValue <: ToString {
             case _ => throw JsonException("Fail to convert to JsonInt")
         }
     }
+
     public exclave func asInt(this @local!): JsonInt @local! {
         match (this) {
             case jsonInt: JsonInt => jsonInt
@@ -205,10 +199,13 @@ sealed abstract class JsonValue <: ToString {
             case _ => throw JsonException("Fail to convert to JsonFloat")
         }
     }
+
     public exclave func asFloat(this @local!): JsonFloat @local! {
         match (this) {
             case jsonFloat: JsonFloat => jsonFloat
-            case jsonInt: JsonInt => JsonFloat(Float64(jsonInt.getValue())) @local!
+            case jsonInt: JsonInt =>
+                let value: Int64 @local! = jsonInt.getValue()
+                JsonFloat(value) @local!
             case _ => throw JsonException("Fail to convert to JsonFloat")
         }
     }
@@ -228,6 +225,7 @@ sealed abstract class JsonValue <: ToString {
             case _ => throw JsonException("Fail to convert to JsonString")
         }
     }
+
     public exclave func asString(this @local!): JsonString @local! {
         match (this) {
             case jsonString: JsonString => jsonString
@@ -250,6 +248,7 @@ sealed abstract class JsonValue <: ToString {
             case _ => throw JsonException("Fail to convert to JsonArray")
         }
     }
+
     public exclave func asArray(this @local!): JsonArray @local! {
         match (this) {
             case jsonArray: JsonArray => jsonArray
@@ -272,6 +271,7 @@ sealed abstract class JsonValue <: ToString {
             case _ => throw JsonException("Fail to convert to JsonObject")
         }
     }
+
     public exclave func asObject(this @local!): JsonObject @local! {
         match (this) {
             case jsonObject: JsonObject => jsonObject
