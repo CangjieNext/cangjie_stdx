@@ -49,7 +49,7 @@ public class BinaryCounter <: ASTVisitor {
                 println("Found CallExpr, stop traversal")
                 return PreActionMode.Stop
 
-            // 其它节点保持默认行为
+            // 其他节点保持默认行为
             case _ => PreActionMode.Continue
         }
     }

@@ -1962,7 +1962,7 @@ fn_setInternal: true
 public func isImported(): Bool
 ```
 
-功能：是否为从其它包导入的定义。
+功能：是否为从其他包导入的定义。
 
 返回值：
 
@@ -4929,7 +4929,7 @@ prop_accessLevel: true
 public prop importedClassDefs: Array<ClassLikeDef>
 ```
 
-功能：从其它包导入的类/接口定义快照。
+功能：从其他包导入的类/接口定义快照。
 
 类型：Array\<[ClassLikeDef](#class-classlikedef)>
 
