@@ -162,7 +162,15 @@ func generateFlatbuffersCjSources(): Int64 {
         println("Error: CANGJIE_HOME is not set; cannot generate flatbuffers Cangjie sources.")
         return 1
     }
-    let flatc = home + "/third_party/flatbuffers/bin/flatc"
+    // The compiler installs target flatc as flatc${CMAKE_EXECUTABLE_SUFFIX}
+    // (flatc.exe on Windows). This script runs on the host; native stdx builds
+    // use a same-OS SDK, so the host OS selects the suffix. Do not hardcode "flatc".
+    let flatcName = if (isWin) {
+        "flatc.exe"
+    } else {
+        "flatc"
+    }
+    let flatc = home + "/third_party/flatbuffers/bin/" + flatcName
     if (!exists(Path(flatc))) {
         println("Error: flatc not found: ${flatc}")
         return 1

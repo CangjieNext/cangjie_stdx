@@ -52,7 +52,7 @@ internal enum Attribute <: ToString {
     Unreachable |     ///< Mark a Block is unreachable.
     NoSideEffect |  ///< Mark a Func does't have side effect.
     Common |          ///< Mark whether it's common declaration.
-    Platform |        ///< Mark whether it's platform declaration.
+    Specific |        ///< Mark whether it's specific declaration.
     SkipAnalysis |   ///< Mark node that is not used for analysis.
                      ///< e.g. Node can be skiped if it has no body when creating 'common part'
     Deserialized |    ///< Node deserialized from .chir file
@@ -68,6 +68,7 @@ internal enum Attribute <: ToString {
     JavaHasDefault | ///< Mark whether JAVA_MIRROR interface has default method.
     PreviouslyDeserialized | ///< Mark that deserialization occurs not in the newly created node, but in an existing one.
     DoesNotThrow | ///< Mark that the function does not throw any exceptions by construction.
+    ObjCImpl | ///< Mark whether a Cangjie class is exported to Objective-C (successor of an Objective-C mirror).
     MatchPattern | ///< Mark CFG nodes that evaluate patterns, excluding case bodies and nested expressions.
     PluginAdded | ///< Mark that the declaration is added by chir plugin.
 
@@ -106,7 +107,7 @@ internal enum Attribute <: ToString {
             case NoSideEffect           => "noSideEffect"
             case Final                  => "final"
             case Common                 => "common"
-            case Platform               => "platform"
+            case Specific               => "specific"
             case SkipAnalysis           => "skip_analysis"
             case Deserialized           => "deserialized"
             case Initializer            => "initializer"
@@ -118,6 +119,7 @@ internal enum Attribute <: ToString {
             case JavaHasDefault         => "javaHasDefault"
             case PreviouslyDeserialized => "previouslyDeserialized"
             case DoesNotThrow           => "doesNotThrow"
+            case ObjCImpl               => "objCImpl"
             case MatchPattern           => "matchPattern"
             case PluginAdded            => "pluginAdded"
             case AttrBegin | AttrEnd => "UNKNOWN"
@@ -153,8 +155,8 @@ internal enum Attribute <: ToString {
             case NonRecompile           => Unreachable
             case Unreachable            => NoSideEffect
             case NoSideEffect           => Common
-            case Common                 => Platform
-            case Platform               => SkipAnalysis
+            case Common                 => Specific
+            case Specific               => SkipAnalysis
             case SkipAnalysis           => Deserialized
             case Deserialized           => Initializer
             case Initializer            => Unsafe
@@ -165,7 +167,8 @@ internal enum Attribute <: ToString {
             case HasInitedField         => JavaHasDefault
             case JavaHasDefault         => PreviouslyDeserialized
             case PreviouslyDeserialized => DoesNotThrow
-            case DoesNotThrow           => MatchPattern
+            case DoesNotThrow           => ObjCImpl
+            case ObjCImpl               => MatchPattern
             case MatchPattern           => PluginAdded
             case PluginAdded            => AttrEnd
             case AttrEnd                => AttrEnd
@@ -202,7 +205,7 @@ internal enum Attribute <: ToString {
             case Unreachable            => 24
             case NoSideEffect           => 25
             case Common                 => 26
-            case Platform               => 27
+            case Specific               => 27
             case SkipAnalysis           => 28
             case Deserialized           => 29
             case Initializer            => 30
@@ -214,8 +217,9 @@ internal enum Attribute <: ToString {
             case JavaHasDefault         => 36
             case PreviouslyDeserialized => 37
             case DoesNotThrow           => 38
-            case MatchPattern           => 39
-            case PluginAdded            => 40
+            case ObjCImpl               => 39
+            case MatchPattern           => 40
+            case PluginAdded            => 41
             case AttrEnd                => ATTR_SIZE  // Invalid, return size to indicate error
         }
     }

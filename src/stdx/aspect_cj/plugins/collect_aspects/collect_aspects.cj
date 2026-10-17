@@ -215,7 +215,8 @@ class CollectAspects {
             (_, paramTypes) = paramTypes.splitAt(1)
         } else if (!className.isEmpty() && !isStatic) {
             let (thisParamTypes, explicitParamTypes) = paramTypes.splitAt(1)
-            let thisParamType = thisParamTypes[0]
+            // Class receivers are RefType in CHIR. qualifiedName already drops the ref.
+            let thisParamType = thisParamTypes[0].stripAllRefs()
             if (let Some(c) <- (thisParamType as CustomType)) {
                 if (c.def.srcCodeName != className) {
                     printError("Function '${f.srcCodeName}' annotated with @InsertAtEntry/@InsertAtExit has first parameter type '${thisParamType.qualifiedName}', expected a type named '${className}'.")
@@ -243,12 +244,16 @@ class CollectAspects {
             printError("Function '${f.srcCodeName}' annotated with @ReplaceFuncBody has invalid parameter count: got 0, expected at least 1.")
             return false
         }
+        let packageName = annoArgValues[0]
         let className = annoArgValues[1]
         let isStatic = Bool.parse(annoArgValues[3])
-        if (!className.isEmpty() && !isStatic) {
-            let packageName = annoArgValues[0]
-            if (params[0].ty.qualifiedName != "${packageName}.${className}") {
-                printError("Function '${f.srcCodeName}' annotated with @ReplaceFuncBody has first parameter type '${params[0].ty.qualifiedName}', expected '${packageName}.${className}'.")
+        // Instance target: the aspect's first parameter is the receiver (`this` or `self`).
+        // `original` is the target signature without that receiver.
+        let needsReceiver = !className.isEmpty() && !isStatic
+        let expectedReceiver = "${packageName}.${className}"
+        if (needsReceiver) {
+            if (params[0].ty.qualifiedName != expectedReceiver) {
+                printError("Function '${f.srcCodeName}' annotated with @ReplaceFuncBody has first parameter type '${params[0].ty.qualifiedName}', expected '${expectedReceiver}'.")
                 return false
             }
         }
@@ -262,18 +267,20 @@ class CollectAspects {
             printError("Function '${f.srcCodeName}' annotated with @ReplaceFuncBody has return type '${f.funcType.returnType.qualifiedName}', expected '${wovenFuncType.returnType.qualifiedName}'.")
             return false
         }
-        var (aspectParams, wovenFunc) = params.splitAt(params.size - 1)
-        if (f.isInstanceMemberMethod()) {
-            (_, aspectParams) = aspectParams.splitAt(1)
-        }
-        let aspectParamsType = mapArrayTo(aspectParams, {p => p.ty})
-        if (aspectParamsType.isEmpty()) {
+        var (aspectParams, _) = params.splitAt(params.size - 1)
+        // Only `original`, e.g. printCurrentTimeImpl(original: (String) -> String).
+        // There is no parameter list on the aspect to compare.
+        if (aspectParams.isEmpty()) {
             return true
         }
-        let aspectFuncTypeStr = FuncType.get(aspectParamsType, f.funcType.returnType).toString()
-        let wovenFuncTypeStr = wovenFunc[0].ty.toString()
-        if (aspectFuncTypeStr != wovenFuncTypeStr) {
-            printError("Aspect function '${f.srcCodeName}' has function type '${aspectFuncTypeStr}', expected '${wovenFuncTypeStr}'.")
+        // Drop the aspect's receiver. `original` keeps only the target's own parameters.
+        if (needsReceiver) {
+            (_, aspectParams) = aspectParams.splitAt(1)
+        }
+        let forwardedFuncTypeStr = FuncType.get(mapArrayTo(aspectParams, {p => p.ty}), f.funcType.returnType).toString()
+        let originalTypeStr = wovenFuncType.toString()
+        if (forwardedFuncTypeStr != originalTypeStr) {
+            printError("Aspect function '${f.srcCodeName}' has function type '${forwardedFuncTypeStr}', expected '${originalTypeStr}'.")
             return false
         }
         return true
