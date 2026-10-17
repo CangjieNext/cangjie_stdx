@@ -46,9 +46,9 @@ The `stdx.aspect_cj` package provides annotations for Aspect-Oriented Programmin
 - Functions annotated with @InsertAtEntry/@InsertAtExit must have a return type of Unit;
 - Functions annotated with @ReplaceFuncBody should have the same return type as the function being woven into;
 - If functions annotated with @InsertAtEntry/@InsertAtExit/@ReplaceFuncBody have no parameters, they will always be called without parameters after weaving;
-- If functions annotated with @InsertAtEntry/@InsertAtExit/@ReplaceFuncBody have parameters, their parameter list should match the source parameter list of the function being woven into. Additionally:
-    - Specifically, if the function being woven into is an instance member function, the `this` parameter must be explicitly included in the parameter list;
-    - For functions annotated with @ReplaceFuncBody, an additional parameter must be added. The type of this parameter should match the function being woven into, representing the closure of the original version of the function.
+- If functions annotated with @InsertAtEntry/@InsertAtExit/@ReplaceFuncBody have parameters, the parameter list matches the source parameter list of the function being woven into, except for the following two points:
+    - When the function being woven into is an instance member, the aspect's first parameter is the receiver (`this` or `self`), and its type is that instance type;
+    - A function annotated with @ReplaceFuncBody takes one more parameter at the end. That parameter is the original implementation. Its function type contains only the woven function's source parameters and return type; the receiver is not part of it. A global aspect woven into the instance member `func foo(x: Int64): Int64` is written as `func aspect(self: C, x: Int64, original: (Int64) -> Int64)`.
 
 ### Usage
 

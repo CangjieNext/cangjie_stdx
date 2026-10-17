@@ -45,10 +45,10 @@
 
 - 被标注 @InsertAtEntry/@InsertAtExit 的函数，其返回类型只能是 Unit；
 - 被标注 @ReplaceFuncBody 的函数，其返回类型应和被织入的函数的返回类型相同；
-- 被标注 @InsertAtEntry/@InsertAtExit/@ReplaceFuncBody 的函数如果没有形参，那么其织入后总是被无参调用 ；
-- 被标注 @InsertAtEntry/@InsertAtExit/@ReplaceFuncBody 的函数如果有形参，其形参列表应和被织入函数的源码形参列表相同，此外：
-    - 特别地，如果被织入的函数是实例成员函数，那么需要将 this 参数显式地写在形参中；
-    - 对于被标注 @ReplaceFuncBody 的函数，需要额外添加一个形参，形参的类型和被织入的函数相同，该形参表示被织入函数原始版本的闭包。
+- 被标注 @InsertAtEntry/@InsertAtExit/@ReplaceFuncBody 的函数如果没有形参，那么其织入后总是被无参调用；
+- 被标注 @InsertAtEntry/@InsertAtExit/@ReplaceFuncBody 的函数如果有形参，除下面两点外，形参列表和被织入函数的源码形参列表相同：
+    - 被织入的函数是实例成员函数时，切面的第一个形参是 receiver（`this` 或 `self`），类型为该实例类型；
+    - 被标注 @ReplaceFuncBody 的函数在最后再增加一个形参，表示被织入函数的原始实现。这个形参是函数类型，只包含被织入函数的源码形参和返回类型，receiver 不在其中。全局切面织入实例成员 `func foo(x: Int64): Int64` 时写作 `func aspect(self: C, x: Int64, original: (Int64) -> Int64)`。
 
 ### 使用
 

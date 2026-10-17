@@ -13,7 +13,14 @@ if(NOT DEFINED ENV{CANGJIE_HOME} OR "$ENV{CANGJIE_HOME}" STREQUAL "")
 endif()
 
 set(CANGJIE_FLATBUFFERS_DIR "$ENV{CANGJIE_HOME}/third_party/flatbuffers")
-set(CANGJIE_FLATBUFFERS_FLATC "${CANGJIE_FLATBUFFERS_DIR}/bin/flatc")
+# Shipped flatc is named for the compiler target (flatc.exe on Windows).
+# This file runs flatc on the host. Use the host suffix, not CMAKE_EXECUTABLE_SUFFIX
+# (that follows the stdx target and is wrong when cross-compiling).
+if(CMAKE_HOST_WIN32)
+    set(CANGJIE_FLATBUFFERS_FLATC "${CANGJIE_FLATBUFFERS_DIR}/bin/flatc.exe")
+else()
+    set(CANGJIE_FLATBUFFERS_FLATC "${CANGJIE_FLATBUFFERS_DIR}/bin/flatc")
+endif()
 set(CANGJIE_FLATBUFFERS_INCLUDE_DIR "${CANGJIE_FLATBUFFERS_DIR}/include")
 set(CANGJIE_FLATBUFFERS_CANGJIE_DIR "${CANGJIE_FLATBUFFERS_DIR}/cangjie")
 set(CANGJIE_CHIR_FORMAT_FBS "$ENV{CANGJIE_HOME}/schema/StdxChirFormat.fbs")
