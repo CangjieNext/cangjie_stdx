@@ -26,7 +26,7 @@ class HttpServer2 <: ProtocolService {
     // requests to be handled, queued by 7 - urgency
     let requestQueue = SPMCLevelQueue<Stream>(8)
 
-    // local settings can be set by serverBuilder
+    // local settings can be set by serverBufilder
     // remote settings are set to default, they will be reset when receiving SETTINGS frame from client
     var localSettings = HashMap<UInt16, UInt32>()
     var remoteSettings = initializeSettings()
@@ -525,16 +525,29 @@ class HttpServer2 <: ProtocolService {
             toWriteFrames.add(frame)
         }
         while (!toWriteFrames.isEmpty()) {
-            let waitingFrame = toWriteFrames.remove(at: 0)
-            stream.value = streams.get(waitingFrame.streamId) ?? continue
+            // peek the first frame instead of removing it: the frame must stay queued until
+            // it is written successfully, so that when the connection-level flow-control
+            // window is exhausted, the UnblockFrame triggered by a later connection-level
+            // WINDOW_UPDATE can retry writing it
+            let waitingFrame = toWriteFrames[0]
+            stream.value = match (streams.get(waitingFrame.streamId)) {
+                case Some(v) => v
+                case None =>
+                    toWriteFrames.remove(at: 0)
+                    continue
+            }
             // when stream is closed, but hasn't been purged yet, for example, write timeout,
             // queued data and fields frames should be discarded, in order to avoid blocking due to connection flow control
             if (stream.value.isClosed()) {
+                toWriteFrames.remove(at: 0)
                 continue
             }
             if (!writeFrame(waitingFrame, stream.value)) {
+                // not enough window on connection level: keep the frame queued and wait for
+                // the next UnblockFrame triggered by a connection-level WINDOW_UPDATE
                 break
             }
+            toWriteFrames.remove(at: 0)
         }
         return true
     }
