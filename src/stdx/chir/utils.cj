@@ -375,6 +375,18 @@ internal func updateLocalVarIdAndHashCode(v: LocalVar): Unit {
     }
 }
 
+// Same rule as AST2CHIR AddRefIfFuncIsMutOrClass: a class or raw-array receiver,
+// and a mut or constructor callee, is passed as a reference.
+public func addRefIfFuncIsMutOrClass(thisType: Type, callee: Function): Type {
+    if (thisType.isRefType()) {
+        return thisType
+    }
+    if (thisType.isClassLikeType() || thisType.isRawArrayType() || callee.isMut() || callee.isClassConstructor() || callee.isStructConstructor()) {
+        return RefType.get(thisType)
+    }
+    return thisType
+}
+
 extend<T> Array<T> {
     internal func mapTo<R>(f: (T) -> R): Array<R> {
         var result = ArrayList<R>()
