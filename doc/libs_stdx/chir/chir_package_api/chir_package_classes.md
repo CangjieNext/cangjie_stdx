@@ -8647,6 +8647,41 @@ main() {
 prop_users: 0
 ```
 
+### func appendAttributesFrom(Value)
+
+```cangjie
+public func appendAttributesFrom(src: Value): Unit
+```
+
+功能：把 `src` 已置位的属性合并到当前值上。当前值已经置位的属性保留。
+
+参数：
+
+- src: [Value](#class-value) - 提供属性位的值。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let src = pkg.addFunction(FuncType.get([], UnitType.get()), "src_m", "src", "demo")
+    src.setPublic()
+    src.setStatic(true)
+    let dst = pkg.addFunction(FuncType.get([], UnitType.get()), "dst_m", "dst", "demo")
+    dst.appendAttributesFrom(src)
+    println("appendAttributesFrom: ${dst.isPublic() && dst.isStatic()}")
+}
+```
+
+运行结果：
+
+```text
+appendAttributesFrom: true
+```
+
 ### func dump()
 
 ```cangjie
@@ -25347,3 +25382,20 @@ public func freeSerializedMemory(): Unit
 ```
 
 功能：释放上次序列化产生的共享 FlatBuffers 构建器状态。
+
+## func addRefIfFuncIsMutOrClass(Type, Function)
+
+```cangjie
+public func addRefIfFuncIsMutOrClass(thisType: Type, callee: Function): Type
+```
+
+功能：按成员调用的 `ThisType` 规则，决定 receiver 类型是否需要再包一层 [RefType](#class-reftype)。`thisType` 已经是引用类型时原样返回。`thisType` 是类或原始数组，或者 `callee` 是 `mut` 函数、类构造函数或结构体构造函数时，返回 `RefType.get(thisType)`，否则返回 `thisType`。
+
+参数：
+
+- thisType: [Type](#class-type) - 调用点上的 receiver 类型；静态成员没有 receiver 时，传入该函数的外部类型。
+- callee: [Function](#class-function) - 被调用的函数。
+
+返回值：
+
+- [Type](#class-type) - 写入 `Apply` 的 `ThisType` 的类型。

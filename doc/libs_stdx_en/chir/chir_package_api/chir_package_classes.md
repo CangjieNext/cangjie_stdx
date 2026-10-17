@@ -8647,6 +8647,41 @@ Output:
 prop_users: 0
 ```
 
+### func appendAttributesFrom(Value)
+
+```cangjie
+public func appendAttributesFrom(src: Value): Unit
+```
+
+Function: Merges the attribute bits set on `src` onto this value. Bits already set on this value stay set.
+
+Parameters:
+
+- src: [Value](#class-value) - The value whose attribute bits are added.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let src = pkg.addFunction(FuncType.get([], UnitType.get()), "src_m", "src", "demo")
+    src.setPublic()
+    src.setStatic(true)
+    let dst = pkg.addFunction(FuncType.get([], UnitType.get()), "dst_m", "dst", "demo")
+    dst.appendAttributesFrom(src)
+    println("appendAttributesFrom: ${dst.isPublic() && dst.isStatic()}")
+}
+```
+
+Output:
+
+```text
+appendAttributesFrom: true
+```
+
 ### func dump()
 
 ```cangjie
@@ -25346,3 +25381,20 @@ public func freeSerializedMemory(): Unit
 ```
 
 Function: Resets the shared FlatBuffers builder state produced by the last serialization.
+
+## func addRefIfFuncIsMutOrClass(Type, Function)
+
+```cangjie
+public func addRefIfFuncIsMutOrClass(thisType: Type, callee: Function): Type
+```
+
+Function: Applies the member-call `ThisType` rule and decides whether the receiver type needs another [RefType](#class-reftype) wrapper. Returns `thisType` unchanged when it is already a reference type. Returns `RefType.get(thisType)` when `thisType` is a class or a raw array, or when `callee` is a `mut` function, a class constructor, or a struct constructor. Otherwise returns `thisType`.
+
+Parameters:
+
+- thisType: [Type](#class-type) - The receiver type at the call site. For a static member with no receiver, pass the function's outer type.
+- callee: [Function](#class-function) - The callee.
+
+Return Value:
+
+- [Type](#class-type) - The type to store as the `Apply` `ThisType`.

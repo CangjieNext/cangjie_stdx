@@ -46,9 +46,13 @@ The `stdx.aspect_cj` package provides annotations for Aspect-Oriented Programmin
 - Functions annotated with @InsertAtEntry/@InsertAtExit must have a return type of Unit;
 - Functions annotated with @ReplaceFuncBody should have the same return type as the function being woven into;
 - If functions annotated with @InsertAtEntry/@InsertAtExit/@ReplaceFuncBody have no parameters, they will always be called without parameters after weaving;
-- If functions annotated with @InsertAtEntry/@InsertAtExit/@ReplaceFuncBody have parameters, their parameter list should match the source parameter list of the function being woven into. Additionally:
-    - Specifically, if the function being woven into is an instance member function, the `this` parameter must be explicitly included in the parameter list;
-    - For functions annotated with @ReplaceFuncBody, an additional parameter must be added. The type of this parameter should match the function being woven into, representing the closure of the original version of the function.
+- If a function annotated with @InsertAtEntry/@InsertAtExit/@ReplaceFuncBody has parameters, collection first removes the receiver according to the aspect form, then compares the remaining parameters with the source parameters of the function being woven into:
+    - When the aspect itself is an instance member of the woven type, the receiver is that aspect's implicit `this` and is not declared again in the source parameter list. After collection drops this implicit `this`, the remaining parameters match the woven function's source parameters. This form of aspect can only weave into an instance member of the same type;
+    - When the aspect is a global function or a static member and the woven function is an instance member, the first source parameter is written explicitly with that instance type, for example `self: T`. The check is on the type: it must equal `packageName.className` from the annotation. The parameter name is not checked. After this parameter is dropped, the remaining parameters match the woven function's source parameters;
+    - When the woven function is a global function or a static member, the aspect cannot be an instance member, and its parameter list matches the woven function's source parameters directly.
+- A function annotated with @ReplaceFuncBody takes one more parameter after the parameters above. That last parameter is the original implementation. Its function type contains only the woven function's source parameters and return type; the receiver is not part of it. The aspect's return type must match both the woven function and this parameter. For a woven `func foo(x: Int64): Int64`:
+    - a member aspect is written as `func aspect(x: Int64, original: (Int64) -> Int64): Int64`;
+    - a global or static aspect is written as `func aspect(self: T, x: Int64, original: (Int64) -> Int64): Int64`.
 
 ### Usage
 
