@@ -52,8 +52,11 @@ private func isRuleTarget(f: Function): Bool {
 }
 
 private func needsSnapshot(call: RulePlannedCall): Bool {
-    return (call.record.kind == "A" && call.record.fields[3] == "array-any") ||
-        (call.record.kind == "L" && call.record.fields[6] == "true")
+    match (call.record.kind) {
+        case "A" => return call.record.fields[3] == "array-any"
+        case "L" => return call.record.fields[6] == "true"
+        case _ => return false
+    }
 }
 
 private func isActualArrayAny(ty: Type): Bool {
@@ -73,28 +76,30 @@ private func checkActualAdvice(call: RulePlannedCall): Unit {
         throw IllegalArgumentException("invalid exported advice: ${callee.identifierWithoutPrefix}")
     }
     if (record.kind == "A") {
+        let fields = record.fields
         if (callee.funcType.returnType != UnitType.get() ||
-            (record.fields[2] == "global" && callee.isMemberMethod()) ||
-            (record.fields[2] == "static" && !callee.isStaticMemberMethod())) {
+            (fields[2] == "global" && callee.isMemberMethod()) ||
+            (fields[2] == "static" && !callee.isStaticMemberMethod())) {
             throw IllegalArgumentException("invalid A export: ${callee.identifierWithoutPrefix}")
         }
         let params = callee.parameters
-        if ((record.fields[3] == "none" && !params.isEmpty()) ||
-            (record.fields[3] == "array-any" &&
+        if ((fields[3] == "none" && !params.isEmpty()) ||
+            (fields[3] == "array-any" &&
                 (params.size != 1 || !isActualArrayAny(params[0].ty)))) {
             throw IllegalArgumentException("invalid A export signature: ${callee.identifierWithoutPrefix}")
         }
     } else if (record.kind == "L") {
-        if (callee.parameters.size.toString() != record.fields[3] ||
-            callee.isMemberMethod().toString() != record.fields[4] ||
-            callee.isStatic().toString() != record.fields[5]) {
+        let fields = record.fields
+        if (callee.parameters.size.toString() != fields[3] ||
+            callee.isMemberMethod().toString() != fields[4] ||
+            callee.isStatic().toString() != fields[5]) {
             throw IllegalArgumentException("invalid L export signature: ${callee.identifierWithoutPrefix}")
         }
-        if (record.fields[0] != REPLACE_FUNC_BODY_ANNO_CLASS_NAME &&
+        if (fields[0] != REPLACE_FUNC_BODY_ANNO_CLASS_NAME &&
             callee.funcType.returnType != UnitType.get()) {
             throw IllegalArgumentException("invalid L Insert return: ${callee.identifierWithoutPrefix}")
         }
-        if (record.fields[6] == "true") {
+        if (fields[6] == "true") {
             let params = callee.parameters
             if (params.isEmpty() || !isActualArrayAny(params[params.size - 1].ty)) {
                 throw IllegalArgumentException("invalid L Array<Any> export: ${callee.identifierWithoutPrefix}")
@@ -180,7 +185,8 @@ protected func preflightRuleWeave(pkg: Package, wires: Array<RuleWirePackage>,
             let record = selection.record
             if (total >= 262144) { throw IllegalArgumentException("rule-limit: target package plan") }
             total++
-            let symbol = if (record.kind == "A") { record.fields[1] } else { record.fields[2] }
+            let fields = record.fields
+            let symbol = if (record.kind == "A") { fields[1] } else { fields[2] }
             let callee = pkg.getSpecifiedFunction(symbol).getOrThrow({ =>
                 IllegalArgumentException("unresolved advice symbol: ${symbol}")
             })
@@ -191,14 +197,14 @@ protected func preflightRuleWeave(pkg: Package, wires: Array<RuleWirePackage>,
             let call = RulePlannedCall(record, callee, selection.sourcePackage)
             checkActualAdvice(call)
             if (needsSnapshot(call)) { validateSnapshotTypes(pkg) }
-            if (record.kind == "L" && record.fields[6] != "true") {
-                let expected = if (record.fields[0] == REPLACE_FUNC_BODY_ANNO_CLASS_NAME) {
+            if (record.kind == "L" && fields[6] != "true") {
+                let expected = if (fields[0] == REPLACE_FUNC_BODY_ANNO_CLASS_NAME) {
                     call.callee.parameters.size - 1
                 } else { call.callee.parameters.size }
                 if (expected != 0 && f.parameters.size != expected) {
                     throw IllegalArgumentException("legacy typed parameter count mismatch: ${symbol}")
                 }
-                if (record.fields[0] == REPLACE_FUNC_BODY_ANNO_CLASS_NAME &&
+                if (fields[0] == REPLACE_FUNC_BODY_ANNO_CLASS_NAME &&
                     call.callee.funcType.returnType != f.funcType.returnType) {
                     throw IllegalArgumentException("legacy Replace return mismatch: ${symbol}")
                 }
@@ -212,7 +218,7 @@ protected func preflightRuleWeave(pkg: Package, wires: Array<RuleWirePackage>,
                         }
                     }
                 }
-                if (record.fields[0] == REPLACE_FUNC_BODY_ANNO_CLASS_NAME) {
+                if (fields[0] == REPLACE_FUNC_BODY_ANNO_CLASS_NAME) {
                     let originalType = call.callee.parameters[call.callee.parameters.size - 1].ty
                     if (let Some(functionType) <- (originalType as FuncType)) {
                         if (!replacementCallbackMatches(f, functionType)) {
@@ -303,9 +309,10 @@ private func snapshotArgs(pkg: Package, target: Function, anchor: ?Expression): 
 private func callArgs(target: Function, call: RulePlannedCall, snapshot: ?Value): Array<Value> {
     if (needsSnapshot(call)) {
         let args = ArrayList<Value>()
-        if (call.record.kind == "L" && call.record.fields[4] == "true" &&
-            call.record.fields[5] == "false") {
-            args.add(target.parameters[0])
+        if (call.record.kind == "L") {
+            let fields = call.record.fields
+            let needsReceiver = fields[4] == "true" && fields[5] == "false"
+            if (needsReceiver) { args.add(target.parameters[0]) }
         }
         args.add(snapshot.getOrThrow())
         return args.toArray()
@@ -411,9 +418,8 @@ private func applyRuleTarget(pkg: Package, plan: RuleTargetPlan): Unit {
         if (exit) { RuleExitVisitor(call.callee, callContext(call.callee, args)).walk(plan.target.body.getOrThrow()) }
     }
     for ((call, args) in prepared) {
-        if (call.record.kind != "L" || call.record.fields[0] != REPLACE_FUNC_BODY_ANNO_CLASS_NAME) {
-            continue
-        }
+        if (call.record.kind != "L") { continue }
+        if (call.record.fields[0] != REPLACE_FUNC_BODY_ANNO_CLASS_NAME) { continue }
         weaveReplacementBody(pkg, plan.target, call.callee)
     }
 }

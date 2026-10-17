@@ -109,6 +109,16 @@ python3 tests/aspect_cj_driver/toolchain_digest_smoke.py \
 
 该测试覆盖嵌套文件变更/恢复、目录及文件别名、外部链接目标内容变更、链接重定向、祖先目录环、断链、FIFO 和非目录根输入；只在独立临时目录创建测试数据，不修改 SDK。正式 LLT `rule_final_library_linking.cj` 还通过临时 SDK 链接布局验证真实构建、最终库链接及接口不一致拒绝。
 
+规则元数据的并发 GC 与副本隔离另有独立回归：
+
+```sh
+python3 tests/aspect_cj_driver/wire_gc_smoke.py \
+    --compiler /absolute/path/to/matching/cjc \
+    --stdx-directory "$STDX_DIR"
+```
+
+该脚本直接编译生产驱动源码，仅替换测试入口。默认及 `-O2` 分别真实收集、织入并运行包含 R/C/A/L 的混合切面；随后在 64 MiB 堆下并发请求 GC，完成 2000 轮完整编码/解码比对，并检查输入数组、返回字段和记录副本隔离。它保留临时目录及逐阶段日志，超时、异常或崩溃均失败，不自动重试。输出中的 `gcCalls` 是 GC API 调用次数，不等于运行时完成的独立回收次数。配套 cangjie_test 中的 `rule_wire_gc_whitebox.cj` 通过正式 Linux/CJNATIVE LLT 入口检查同类内核行为；此 Python 脚本本身仍需独立运行。
+
 规则内核与 CHIR 快照的可复跑单元测试位于 `tests/aspect_cj_driver`。快照测试需要同版本 stdx 构建的 CHIR 源码、对应 schema 生成文件、模块目录和 `flatbuffers.a`；四项参数同时提供时运行快照测试，否则只运行规则内核默认及 `-O2`。脚本不会误用源码目录中遗留的旧生成文件：
 
 ```sh

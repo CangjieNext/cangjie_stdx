@@ -24,7 +24,12 @@ protected struct RuleWireRecord {
     let line: Int64
     let column: Int64
     private let _fields: Array<String>
-    public prop fields: Array<String> { get() { _fields.clone() } }
+    // Keep defensive copies, with explicit managed String element reads.
+    // Bulk cloning here can promote the copy to a stack array whose String
+    // references are consumed without a read barrier during concurrent GC.
+    public prop fields: Array<String> {
+        get() { Array<String>(_fields.size, {i => _fields[i]}) }
+    }
 
     public init(kind: String, sourceFile: String, line: Int64, column: Int64, fields: Array<String>) {
         this.kind = ownedWireText(kind)
@@ -126,20 +131,20 @@ protected func validatedRuleWireGraph(wire: RuleWirePackage,
     for (record in records) {
         checkWireField(record.kind)
         checkWireField(record.sourceFile)
-        if (record.line < 0 || record.column < 0 || record.fields.size > 260) { badWire("record header") }
-        for (field in record.fields) { checkWireField(field) }
+        if (record.line < 0 || record.column < 0) { badWire("record header") }
+        let f = record.fields
+        if (f.size > 260) { badWire("record header") }
+        for (field in f) { checkWireField(field) }
         match (record.kind) {
             case "R" =>
-                if (record.fields.size != 8) { badWire("R field count") }
-                let f = record.fields
+                if (f.size != 8) { badWire("R field count") }
                 checkRuleReference(wire.sourcePackage, f[0])
                 let atom = RuleAtomSpec(f[1], f[2], f[3], f[4], f[5], boolText(f[6]), f[7])
                 validateRuleAtom(atom)
                 atoms[f[0]] = atom
                 definitions.add(RuleDefinition(f[0], f[1]))
             case "C" =>
-                if (record.fields.size < 4) { badWire("C field count") }
-                let f = record.fields
+                if (f.size < 4) { badWire("C field count") }
                 checkRuleReference(wire.sourcePackage, f[0])
                 if (!isValidPackageNamePattern(f[1])) { badWire("invalid C package scope") }
                 let count = decimal(f[2])
@@ -148,8 +153,7 @@ protected func validatedRuleWireGraph(wire: RuleWirePackage,
                 validateRuleProgram(wire.sourcePackage, program)
                 definitions.add(RuleDefinition(f[0], f[1], program))
             case "A" =>
-                if (record.fields.size != 5) { badWire("A field count") }
-                let f = record.fields
+                if (f.size != 5) { badWire("A field count") }
                 if (f[0] != "ENTRY" && f[0] != "EXIT") { badWire("A kind") }
                 if (f[1].isEmpty() || (f[2] != "global" && f[2] != "static") ||
                     (f[3] != "none" && f[3] != "array-any")) { badWire("A signature mode") }
@@ -160,8 +164,7 @@ protected func validatedRuleWireGraph(wire: RuleWirePackage,
                 newSymbols.add(f[1])
                 adviceCount++
             case "L" =>
-                if (record.fields.size != 13) { badWire("L field count") }
-                let f = record.fields
+                if (f.size != 13) { badWire("L field count") }
                 if (f[0] != INSERT_AT_ENTRY_ANNO_CLASS_NAME && f[0] != INSERT_AT_EXIT_ANNO_CLASS_NAME &&
                     f[0] != REPLACE_FUNC_BODY_ANNO_CLASS_NAME) { badWire("L control identity") }
                 if (f[1] != wire.sourcePackage || f[2].isEmpty()) { badWire("L source identity") }

@@ -269,7 +269,7 @@ private func publish(root: String, name: String, body: JsonObject): String {
     return ruleSha256(value.toArray())
 }
 
-private func digest(path: String): String { ruleSha256(File.readFrom(Path(path))) }
+private func digest(path: String): String { ruleFileSha256(Path(path)) }
 
 private func directoryDigest(directory: String): String {
     let root = canonicalize(Path(directory))

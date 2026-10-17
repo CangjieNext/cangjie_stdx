@@ -217,8 +217,9 @@ protected func matchQualifiedNamePattern(pattern: String, value: String): Bool {
             }
         } else {
             for (valueIndex in 1..valueSegments.size + 1) {
-                current[valueIndex] = previous[valueIndex - 1] &&
-                    matchNamePattern(patternSegment, valueSegments[valueIndex - 1])
+                if (previous[valueIndex - 1]) {
+                    current[valueIndex] = matchNamePattern(patternSegment, valueSegments[valueIndex - 1])
+                }
             }
         }
         previous = current

@@ -183,8 +183,8 @@ private func matchTypeBudgetedDepth(pattern: String, value: String,
         }
         return true
     }
-    return matchQualifiedNamePatternBudgeted(pattern, value, budget) ||
-        normalizeStdCoreTypeName(pattern) == normalizeStdCoreTypeName(value)
+    if (matchQualifiedNamePatternBudgeted(pattern, value, budget)) { return true }
+    return normalizeStdCoreTypeName(pattern) == normalizeStdCoreTypeName(value)
 }
 
 protected func matchFunctionTypePatternBudgeted(pattern: String, value: String,

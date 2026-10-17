@@ -206,6 +206,9 @@ private func checkLegacyInsert(f: Function, fields: RuleControlFields, usesArray
     }
     if (usesArray) { return }
     var params = f.funcType.paramTypes
+    // Legacy global/static advice with no parameters needs neither the target
+    // receiver nor its explicit arguments. Keep all field checks above this.
+    if (!f.isInstanceMemberMethod() && params.isEmpty()) { return }
     if (f.isInstanceMemberMethod()) {
         if (params.isEmpty()) {
             throw IllegalArgumentException("invalid-advice-signature: legacy receiver ${f.srcCodeName}")

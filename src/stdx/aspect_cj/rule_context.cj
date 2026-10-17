@@ -109,7 +109,12 @@ private func readSourceInput(reader: JsonReader): RuleSourceInput {
         metadataVersion: metadataVersion)
 }
 
-/** Stream parsing rejects duplicate JSON names before a map can overwrite them. */
+/**
+ * Decode and validate one bounded build action context.
+ * Stream parsing rejects duplicate JSON names before a map can overwrite them.
+ * @throws IllegalArgumentException if its size, keys or field values are invalid.
+ * @throws Exception if JSON decoding fails.
+ */
 protected func parseRuleActionContext(raw: Array<Byte>): RuleActionContext {
     if (raw.isEmpty() || raw.size > 8388608) {
         throw IllegalArgumentException("build-phase-invalid: context size")
@@ -158,8 +163,10 @@ protected func parseRuleActionContext(raw: Array<Byte>): RuleActionContext {
     if (reader.peek().isSome() || seen.size != 10 || schemaVersion != 1 ||
         !isLowerHex(sessionId, 32) || !isLowerHex(sourceActionKey, 64) ||
         !isLowerHex(toolchainAbiKey, 64) ||
-        (action != "collect" && action != "preselect" && action != "preflight" && action != "apply") ||
-        !safeRelativeFile(outputRelativePath) || sessionRoot.isEmpty() || packageName.isEmpty()) {
+        (action != "collect" && action != "preselect" && action != "preflight" && action != "apply")) {
+        throw IllegalArgumentException("build-phase-invalid: incomplete or unsupported context")
+    }
+    if (!safeRelativeFile(outputRelativePath) || sessionRoot.isEmpty() || packageName.isEmpty()) {
         throw IllegalArgumentException("build-phase-invalid: incomplete or unsupported context")
     }
     validateRuleSourcePackage(packageName)
@@ -196,6 +203,28 @@ protected func readRuleActionContextAny(packageName: String): RuleActionContext 
 protected func ruleSha256(bytes: Array<Byte>): String {
     let sha = SHA256()
     sha.write(bytes)
+    return toHexString(sha.finish())
+}
+
+/**
+ * Hash large toolchain artifacts without allocating a whole-file array.
+ * @throws IllegalArgumentException if the path does not resolve to a regular file.
+ * @throws Exception if path resolution, file I/O or SHA-256 computation fails.
+ */
+protected func ruleFileSha256(path: Path): String {
+    let resolved = canonicalize(path)
+    if (!FileInfo(resolved).isRegular()) {
+        throw IllegalArgumentException("build-input-mismatch: expected a regular file for digest")
+    }
+    let sha = SHA256()
+    try (input = File(resolved, OpenMode.Read)) {
+        let chunk = Array<Byte>(64 * 1024, repeat: 0)
+        var count = input.read(chunk)
+        while (count > 0) {
+            sha.write(chunk[..count])
+            count = input.read(chunk)
+        }
+    }
     return toHexString(sha.finish())
 }
 

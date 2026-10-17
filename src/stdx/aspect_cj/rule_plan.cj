@@ -176,8 +176,8 @@ protected func selectPreparedRuleAdvicesAcrossSources(sources: Array<PreparedRul
         for (record in source.select(target, annotationsComplete, budget)) {
             if (result.size >= 1024) { throw IllegalArgumentException("rule-limit: target calls exceed 1024") }
             if (record.kind == "A") { hasNew = true }
-            if (record.kind == "L" && record.fields[0] == REPLACE_FUNC_BODY_ANNO_CLASS_NAME) {
-                hasOldReplace = true
+            if (record.kind == "L") {
+                if (record.fields[0] == REPLACE_FUNC_BODY_ANNO_CLASS_NAME) { hasOldReplace = true }
             }
             result.add(RuleSelectedAdvice(source.sourcePackage, record))
         }
