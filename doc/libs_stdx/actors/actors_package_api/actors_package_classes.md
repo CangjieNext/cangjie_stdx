@@ -169,14 +169,14 @@ public init(enableReceiverPriority!: Bool = false)
 ### func post\<T>(() -> T, Int64)
 
 ```cangjie
-public func post<T>(task: () -> T, priority!: Int64 = 5): ActorFuture<T>
+public func post<T>(f: () -> T, priority!: Int64 = 5): ActorFuture<T>
 ```
 
 功能：将一个闭包提交给 dispatcher，该闭包将在 dispatcher 线程上排队并执行。此方法返回一个 [ActorFuture\<T>](actors_package_classes.md#class-actorfuture)，表示闭包的待定结果。如果这个 dispatcher 在构建时如果设置 enableReceiverPriority 为 true，优先值高的闭包会优先执行；如果设置 enableReceiverPriority 为 false 时，priority 值将不起作用。
 
 参数：
 
-- task: () -> T - 提交到 actor 的闭包。
+- f: () -> T - 提交到 actor 的闭包。
 - priority!: Int64 - 提交任务的优先级，1 <= priority <= 10，默认为 5。
 
 返回值：

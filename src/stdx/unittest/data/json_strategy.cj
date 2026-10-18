@@ -29,12 +29,12 @@ public class JsonStrategy<T> <: DataStrategy<T> where T <: Serializable<T> {
         let jsonData = JsonValue.fromStr(String.fromUtf8(File.readFrom(fileName)))
         match (jsonData) {
             case arr: JsonArray => this.data = arr
-            case _ => throw IllegalArgumentException("Error while reading ${fileName}: expected json array")
+            case _ => throw IllegalArgumentException("Error while reading '${fileName}': expected json array.")
         }
     }
 
     public override func provider(_: Configuration): SerializableProvider<T> {
-        let dm = DataModel.fromJson(data) as DataModelSeq ?? throw IllegalArgumentException()
+        let dm = DataModel.fromJson(data) as DataModelSeq ?? throw IllegalArgumentException("Expected DataModelSeq.")
         SerializableProvider(dm)
     }
 }
