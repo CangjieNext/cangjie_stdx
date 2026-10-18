@@ -25,11 +25,6 @@ public interface JsonSerializable {
     func toJson(w: JsonWriter): Unit
 }
 
-func isInvalidJsonFloat(buffer: Array<UInt8>, start: Int64, length: Int64): Bool {
-    let value = Float64.parse(String.fromUtf8(buffer[start..start+length]))
-    return value.isNaN() || value.isInf()
-}
-
 extend Int64 <: JsonSerializable {
     @OverflowWrapping
     public func toJson(w: JsonWriter): Unit {
@@ -103,12 +98,15 @@ extend UIntNative <: JsonSerializable {
 extend Float64 <: JsonSerializable {
     @OverflowWrapping
     public func toJson(w: JsonWriter): Unit {
+        if (isJsonFloatInfinite(this)) {
+            throw IllegalStateException("Failed to serialize JSON float.")
+        }
         w.beforeValue()
         unsafe {
             let dest = acquireArrayRawData(w.buffer)
             let printedLen = CJ_JSON_FloatPrint(this, dest.pointer + w.curPos, w.buffer.size - w.curPos)
             releaseArrayRawData(dest)
-            if (printedLen <= 0 || isInvalidJsonFloat(w.buffer, w.curPos, printedLen)) {
+            if (printedLen <= 0) {
                 throw IllegalStateException("Failed to serialize JSON float.")
             }
             w.curPos += printedLen
