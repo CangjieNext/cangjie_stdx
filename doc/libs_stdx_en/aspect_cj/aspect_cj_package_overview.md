@@ -6,7 +6,7 @@
 
 ## Feature Description
 
-The `stdx.aspect_cj` package provides annotations for Aspect-Oriented Programming (AOP) in Cangjie. When used in conjunction with the libstdx.collect_aspects and libstdx.weave_aspects compilation plugins, it enables function instrumentation (before/after) and implementation replacement.
+The `stdx.aspect_cj` package provides annotations for Aspect-Oriented Programming (AOP) in Cangjie. Legacy annotations work with the libstdx.collect_aspects and libstdx.weave_aspects compilation plugins to enable function instrumentation (before/after) and implementation replacement. Rule-based annotations select entry or normal-exit join points through reusable pointcuts and Boolean expressions, using separate rule plugins and a build driver.
 
 ## API List
 
@@ -25,9 +25,13 @@ The `stdx.aspect_cj` package provides annotations for Aspect-Oriented Programmin
 
 ### Specifications
 
+#### Legacy Annotation Mode
+
+This section applies to `InsertAtEntry`, `InsertAtExit`, and `ReplaceFuncBody`, not to the rule-based annotations described below.
+
 **Annotation Scope:**
 
-- Annotations currently do not support generic functions, nor can they weave into generic functions;
+- Advice functions must not be generic or belong to a generic type;
 - Annotations can only be applied to public functions;
 - Annotations can be applied to global functions, supporting:
     - Weaving into another global function,
@@ -40,33 +44,43 @@ The `stdx.aspect_cj` package provides annotations for Aspect-Oriented Programmin
 - Annotations can be applied to instance member functions, supporting:
     - Weaving into other instance member functions of the same type.
 
-**Global Variable Definition Constraints:**
-
-- In packages defining aspects, only global variables with literal values of basic types (integer, float, Rune, Bool) are allowed; otherwise, compilation will fail. To use out-of-spec global variables, they must be defined in another package and imported to avoid potential circular dependencies after compilation.
-
 **Parameter Constraints:**
 
 - Functions annotated with @InsertAtEntry/@InsertAtExit must have a return type of Unit;
 - Functions annotated with @ReplaceFuncBody should have the same return type as the function being woven into;
-- If functions annotated with @InsertAtEntry/@InsertAtExit/@ReplaceFuncBody have no parameters, they will always be called without parameters after weaving;
-- If functions annotated with @InsertAtEntry/@InsertAtExit/@ReplaceFuncBody have parameters, their parameter list should match the source parameter list of the function being woven into. Additionally:
-    - Specifically, if the function being woven into is an instance member function, the `this` parameter must be explicitly included in the parameter list;
-    - For functions annotated with @ReplaceFuncBody, an additional parameter must be added. The type of this parameter should match the function being woven into, representing the closure of the original version of the function.
+- A global or static @InsertAtEntry/@InsertAtExit advice with no explicit parameters receives none of the target function's explicit arguments. Instance-member advice follows the typed-parameter or `Array<Any>` mode below and uses its implicit `this` receiver;
+- An @InsertAtEntry/@InsertAtExit advice may receive target arguments through typed parameters matching the target function's source parameter list. For an instance target, global or static advice must also declare the target instance as the first parameter. Instance-member advice of the same type uses its implicit `this` and does not declare this parameter again;
+- An @ReplaceFuncBody advice must receive the original function's closure as its last explicit parameter, with a type matching the original function; this parameter cannot be omitted. For a global or static target, the advice may declare only this closure parameter. If it also receives target arguments, the parameters before the closure must match the target function's parameters. Instance targets follow the receiver rules above;
 - An @InsertAtEntry/@InsertAtExit aspect may instead declare exactly one explicit `Array<Any>` parameter. The array contains a shallow snapshot of the target function's explicit arguments in source order at function entry. It excludes the implicit `this`, and changing an array element does not write back to the target parameter;
 - The `Array<Any>` argument mode does not apply to @ReplaceFuncBody.
+
+#### Rule-Based Mode
+
+- `PointcutRule` and `PointcutExpression` annotate top-level, non-generic ordinary classes in the current aspect package to declare pointcut rules; they do not annotate advice functions;
+- `InsertAtEntryByRule` and `InsertAtExitByRule` only annotate public global or static advice functions, not instance-member advice. Advice must not be generic or belong to a generic type, and must return `Unit`;
+- Rule-based advice accepts either zero explicit parameters or one `Array<Any>` parameter, not individually typed target parameters. Zero-argument advice may reference a wildcard `PointcutRule` without switching to `Array<Any>`;
+- `Array<Any>` contains a shallow snapshot of the target function's explicit arguments at entry. It excludes the implicit `this`, and changing an array element does not write back to a target parameter. Exit advice also receives the entry snapshot, not the return value;
+- Rule targets may be ordinary global, static, or instance-member functions with executable bodies, including concrete instances of generic functions or generic types, but not generic template bodies. `main`, constructors/destructors, property accessors, annotation factories, lambdas, compiler helpers, and advice bodies are excluded;
+- `PointcutExpression` supports parentheses and `NOT`, `AND`, and `OR` in descending precedence. References are limited to the current aspect package. Each rule retains its own package scope; targets outside that scope cannot match through `NOT`.
+
+#### Constraints Shared by Both Modes
+
+**Global Variable Definition Constraints:**
+
+- In packages defining aspects, only global variables with literal values of basic types (integer, float, Rune, Bool) are allowed; otherwise, compilation will fail. To use out-of-spec global variables, they must be defined in another package and imported to avoid potential circular dependencies after compilation.
 
 **Pointcut Wildcards:**
 
 - `*` in `packageName`, `className`, and `methodName` matches zero or more characters within one name segment;
 - A complete `**` segment in `packageName` matches zero or more package-name segments;
 - In `funcTypeStr`, a standalone `*` matches one type and a standalone `**` in the parameter list matches zero or more parameters. Qualified type names use the same `*` and `**` rules;
-- At most one standalone `**` is allowed in a parameter list. A wildcard `funcTypeStr` must be used with the `Array<Any>` argument mode;
-- The `this` type of an instance-member aspect is statically fixed, so its `packageName` and `className` must be exact.
+- At most one standalone `**` is allowed in a parameter list. Legacy @InsertAtEntry/@InsertAtExit annotations require the `Array<Any>` argument mode when `funcTypeStr` contains wildcards. This restriction does not apply to zero-argument rule-based advice referencing a `PointcutRule`;
+- The `this` type of legacy instance-member advice is statically fixed, so its `packageName` and `className` must be exact. Rule-based mode does not support instance-member advice.
 - Write names and type patterns directly in configuration fields. Backslash escapes (including `\n`, `\r`, and `\u{...}` in string literals) are not supported. Control characters or escape text are rejected during collection rather than producing rules that cannot match.
 
 ### Usage
 
-To fully implement AOP functionality, in addition to using the aforementioned annotation classes to define aspects, two compilation plugins are required:
+Two compilation plugins are required when defining aspects with legacy annotations:
 
 - libstdx.collect_aspects.so(.dll/.dylib)
 - libstdx.weave_aspects.so(.dll/.dylib)
