@@ -3,9 +3,7 @@
 ## class InsertAtEntry
 
 ```cangjie
-public class InsertAtEntry {
-    public const init(packageName!: String, className!: String, methodName!: String, isStatic!: Bool, recursive!: Bool, funcTypeStr!: String)
-}
+public class InsertAtEntry {}
 ```
 
 Function: Weaves a call to the annotated function at the entry point of the method specified by the annotation. Both the annotated method and the target function must comply with the [Specification Constraints](../aspect_cj_package_overview.md#specifications-and-usage).
@@ -38,9 +36,7 @@ Parameters:
 ## class InsertAtExit
 
 ```cangjie
-public class InsertAtExit {
-    public const init(packageName!: String, className!: String, methodName!: String, isStatic!: Bool, recursive!: Bool, funcTypeStr!: String)
-}
+public class InsertAtExit {}
 ```
 
 Function: Weaves a call to the annotated function at the exit point of the method specified by the annotation. Both the annotated method and the target function must comply with the [Specification Constraints](../aspect_cj_package_overview.md#specifications-and-usage).
@@ -73,9 +69,7 @@ Parameters:
 ## class ReplaceFuncBody
 
 ```cangjie
-public class ReplaceFuncBody {
-    public const init(packageName!: String, className!: String, methodName!: String, isStatic!: Bool, recursive!: Bool)
-}
+public class ReplaceFuncBody {}
 ```
 
 Function: Replaces the method body specified by the annotation with a call to the annotated function. Both the annotated method and the target function must comply with the [Specification Constraints](../aspect_cj_package_overview.md#specifications-and-usage).
@@ -107,40 +101,87 @@ Parameters:
 ## class PointcutRule
 
 ```cangjie
-public class PointcutRule {
-    public const init(packageName!: String, className!: String, methodName!: String,
-        funcTypeStr!: String, targetKind!: String, recursive!: Bool, annotationName!: String)
-}
+public class PointcutRule {}
 ```
 
-Defines a reusable atomic pointcut on a top-level ordinary class in the aspect package. The first four fields follow the existing wildcard syntax. `targetKind` is `any`, `global`, `static`, or `instance`. A nonempty `annotationName` matches the resolved fully qualified class name of a direct business annotation, not a source alias or an unrelated class with the same short name. `recursive` extends receiver-type matching to ancestors; it does not inherit annotations. All named arguments are required.
+Function: Defines a reusable atomic pointcut on a top-level ordinary class in the aspect package. A target must satisfy all conditions. Name and type patterns follow the [pointcut wildcard rules](../aspect_cj_package_overview.md#specifications-and-usage).
+
+### const init(String, String, String, String, String, Bool, String)
+
+```cangjie
+public const init(packageName!: String, className!: String, methodName!: String,
+    funcTypeStr!: String, targetKind!: String, recursive!: Bool, annotationName!: String)
+```
+
+Function: Creates a [PointcutRule](#class-pointcutrule) object. All parameters are required named parameters.
+
+Parameters:
+
+- packageName!: String - The target function's package-name pattern. Supports `*` within a name segment and a complete `**` package segment.
+- className!: String - The target member's declaring-type name pattern, supporting `*` within a name segment. A global function has an empty type name. This parameter must be empty when `targetKind` is `global`.
+- methodName!: String - The target function-name pattern, supporting `*` within a name segment.
+- funcTypeStr!: String - The target function-type pattern, without spaces or implicit `this`. A standalone `*` matches one type; a standalone `**` in the parameter list matches zero or more parameters, for example `(**)->*`.
+- targetKind!: String - The target kind. Accepts only `any`, `global`, `static`, or `instance`, meaning any kind, global functions, static member functions, or instance member functions, respectively.
+- recursive!: Bool - Whether to extend matching of the member's declaring-type name to its ancestor types. This does not inherit business annotations. When `true`, `className` must be nonempty and `targetKind` must not be `global`.
+- annotationName!: String - The fully qualified class name of a business annotation directly applied to the target function's source declaration, for example `example.annotations.Trace`. An empty string imposes no annotation condition. Otherwise, matching uses the resolved declaration identity, not a source alias or an unrelated class with the same short name. Wildcards are not supported.
 
 ## class PointcutExpression
 
 ```cangjie
-public class PointcutExpression {
-    public const init(packageScope!: String, expression!: String)
-}
+public class PointcutExpression {}
 ```
 
-Combines rule class names from the same aspect package using parentheses, `NOT`, `AND`, and `OR` (in descending precedence). `packageScope` limits this rule's own target-package scope. Both named arguments are required.
+Function: Annotates a top-level ordinary class in the aspect package to combine reusable pointcut rules with a Boolean expression.
+
+### const init(String, String)
+
+```cangjie
+public const init(packageScope!: String, expression!: String)
+```
+
+Function: Creates a [PointcutExpression](#class-pointcutexpression) object. All parameters are required named parameters.
+
+Parameters:
+
+- packageScope!: String - The target-package pattern allowed by this rule. Supports `*` within a name segment and a complete `**` package segment. Each rule retains its own scope; an outer scope does not override the scopes of referenced rules. `NOT` cannot match a target outside this scope.
+- expression!: String - An expression referencing source names of rule classes in the same aspect package, for example `ReadRule AND NOT InternalRule`. Supports parentheses and the uppercase operators `NOT`, `AND`, and `OR`, in descending precedence. Unknown references, cycles, or invalid expressions fail during collection.
 
 ## class InsertAtEntryByRule
 
 ```cangjie
-public class InsertAtEntryByRule {
-    public const init(rule!: String)
-}
+public class InsertAtEntryByRule {}
 ```
 
-Calls the annotated public global or static advice at the entry of targets selected by the fully qualified `rule` ID. Advice returns `Unit` and accepts either no explicit argument or one exact `Array<Any>`. The array excludes implicit `this` and does not write back target parameters.
+Function: Calls the annotated public global or static advice at the entry of matching targets. Advice returns `Unit` and accepts either no explicit argument or one exact `Array<Any>`. The array is a shallow snapshot in the order of explicit arguments at target entry, excluding implicit `this`. Changing an array element does not write back to the target parameter.
+
+### const init(String)
+
+```cangjie
+public const init(rule!: String)
+```
+
+Function: Creates an [InsertAtEntryByRule](#class-insertatentrybyrule) object.
+
+Parameters:
+
+- rule!: String - A required named parameter specifying the fully qualified canonical ID of a rule class in the same aspect package: its declaring package name plus class name, for example `example.aspect.TraceRule`. The class must be annotated with [PointcutRule](#class-pointcutrule) or [PointcutExpression](#class-pointcutexpression). This is not an expression or wildcard pattern. An unknown reference fails during collection.
 
 ## class InsertAtExitByRule
 
 ```cangjie
-public class InsertAtExitByRule {
-    public const init(rule!: String)
-}
+public class InsertAtExitByRule {}
 ```
 
-Uses the same rule and advice signature as `InsertAtEntryByRule`, but runs only at normal exits. An uncaught target exception does not run this exit advice.
+Function: Calls the annotated public global or static advice at normal exits of matching targets. An uncaught target exception does not run this exit advice. Advice signatures and argument snapshots follow [InsertAtEntryByRule](#class-insertatentrybyrule): the snapshot is still taken at target entry, not from the return value.
+
+### const init(String)
+
+```cangjie
+public const init(rule!: String)
+```
+
+Function: Creates an [InsertAtExitByRule](#class-insertatexitbyrule) object.
+
+Parameters:
+
+- rule!: String - A required named parameter specifying the fully qualified canonical ID of a rule class in the same aspect package, for example `example.aspect.TraceRule`. The class must be annotated with [PointcutRule](#class-pointcutrule) or [PointcutExpression](#class-pointcutexpression). This is not an expression or wildcard pattern. An unknown reference fails during collection.

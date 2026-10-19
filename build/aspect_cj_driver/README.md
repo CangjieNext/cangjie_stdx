@@ -1,5 +1,7 @@
 # aspect_cj 分阶段构建驱动（cjnative / Linux）
 
+开发参考：[规则切点实现设计](../../doc/design/aspect_cj_rule_design.md)说明内部架构；[2026-10-13 本地验证记录](../../tests/aspect_cj_driver/validation_20261013.md)保留当时的结果与后续失败复核，不代表当前提交的 CI 状态。用户公共接口另见[API 类文档](../../doc/libs_stdx/aspect_cj/aspect_cj_package_api/aspect_cj_package_classes.md)。
+
 本驱动负责把规则来源包的收集、目标包的纯来源选择、预检和正式织入串成同一次全量构建。它需要带有 `--emit-chir-annotation-metadata` 与 `--aspect-import-symbols` 支持的配套仓颉编译器，以及本仓库构建出的 `stdx.aspect_cj`、`collect_rules`、`weave_rules`。不要把它与旧版编译器或插件混用。
 
 Linux 原生的 stdx 全量构建会生成并安装 `aspect-cj-driver` 到目标三元组的 `bin` 目录。开发中如配套编译器的 `StdxChirFormat.fbs` 尚未随 SDK 安装，可通过 `CANGJIE_CHIR_FORMAT_FBS` 指定该匹配版本 Schema 的绝对路径；正式发布仍应使用同版本 SDK 自带 Schema。也可手工构建可执行文件（从仓库根目录运行；`STDX_DIR` 指向已安装的动态 `stdx` 库目录）：

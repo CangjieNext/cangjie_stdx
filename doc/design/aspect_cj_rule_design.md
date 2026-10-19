@@ -1,5 +1,7 @@
 # stdx.aspect_cj 规则切点实现设计
 
+本文面向实现维护者，记录跨编译器、插件和构建驱动的设计及历史验收边界，不属于用户 API 参考。公共接口见[类文档](../libs_stdx/aspect_cj/aspect_cj_package_api/aspect_cj_package_classes.md)，构建配置与复跑命令见[驱动说明](../../build/aspect_cj_driver/README.md)。
+
 本设计对应 [UsersForum #2248](https://gitcode.com/Cangjie/UsersForum/issues/2248) 中的业务注解切点及 AND/OR/NOT 规则组合，建立在原有通配符与 `Array<Any>` 实参能力之上。实现仍使用编译期 CHIR 插件织入，不引入宏、反射代理或业务侧胶水代码。
 
 ## 公共接口与语义

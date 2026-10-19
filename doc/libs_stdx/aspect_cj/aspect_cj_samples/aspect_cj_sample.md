@@ -101,9 +101,13 @@ package AOP_demo4
 
 import stdx.aspect_cj.*
 
+// AOP_* 匹配本示例包，handle* 匹配两个业务函数名。
+// 全局函数的类型名为空，className 中的 * 也能匹配空字符串。
+// (**)->* 表示任意参数列表和返回类型，切面用 Array<Any> 接收实参。
 @InsertAtEntry[packageName: "AOP_*", className: "*", methodName: "handle*", isStatic: false,
     recursive: false, funcTypeStr: "(**)->*"]
 public func traceArguments(args: Array<Any>) {
+    // 实参按目标函数参数顺序排列：handleOne 为 1 项，handleTwo 为 2 项。
     println("arguments=${args.size}")
 }
 
@@ -117,6 +121,7 @@ public func handleTwo(id: Int64, name: String): String {
 }
 
 main() {
+    // 每次业务调用之前都会先执行 traceArguments。
     handleOne(1)
     println(handleTwo(2, "Cangjie"))
     0
@@ -126,6 +131,7 @@ main() {
 linux 平台编译命令：
 
 ```shell
+# 在同一工作目录先收集切面，再利用生成的元数据织入并重新生成 main。
 cjc aop_demo4.cj -L $CANGJIE_STDX_PATH --import-path $CANGJIE_STDX_PATH -lstdx.aspect_cj --plugin=$CANGJIE_STDX_PATH/libstdx.collect_aspects.so -o main
 cjc aop_demo4.cj -L $CANGJIE_STDX_PATH --import-path $CANGJIE_STDX_PATH -lstdx.aspect_cj --plugin=$CANGJIE_STDX_PATH/libstdx.weave_aspects.so -o main
 ```
