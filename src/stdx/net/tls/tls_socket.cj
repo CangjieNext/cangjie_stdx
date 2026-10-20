@@ -13,7 +13,7 @@ import stdx.crypto.x509.*
 import stdx.crypto.common.*
 import std.net.{StreamingSocket, SocketAddress}
 import std.sync.*
-import std.collection.HashMap
+import std.collection.concurrent.ConcurrentHashMap
 
 foreign {
     /* For keyless provider */
@@ -28,7 +28,14 @@ foreign {
 public class TlsSocket <: TlsConnection & Equatable<TlsSocket> & Hashable {
     private static let idCounter = AtomicInt64(1)
 
-    static var keylessCallback = HashMap<String, (KeylessSignFunc, ?KeylessDecryptFunc)>()
+    // Process-global keyless sign/decrypt callback registry. Written by
+    // TlsSocket.server(...) on whatever thread creates a keyless server
+    // socket, and read by the native sign/decrypt callback wrappers
+    // (handshake.cj) on whatever thread runs a keyless handshake - different
+    // threads, no other synchronization. Must be a concurrent map: a plain
+    // HashMap here lost registrations permanently under concurrent
+    // TlsSocket.server() calls (non-atomic appendIndex RMW / resize races).
+    static var keylessCallback = ConcurrentHashMap<String, (KeylessSignFunc, ?KeylessDecryptFunc)>()
 
     static let defaultTimeout: Duration = Duration.second * 30
 
