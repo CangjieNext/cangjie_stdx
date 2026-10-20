@@ -1,0 +1,15 @@
+build/common/modules/AddCangjieSource.cmake
+  h_7fa24ec5a32f2d 350,355
+  h_7fa24ec5a32f2d 352,357
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "fb9d9bdef8ea067e14d79205b4fe7146e3dc7f47",
+  "prompts": {},
+  "humans": {
+    "h_7fa24ec5a32f2d": {
+      "author": "kkkkkkkbbbbbbb <songjian59@huawei.com>"
+    }
+  }
+}
