@@ -35,7 +35,10 @@ public class TlsSocket <: TlsConnection & Equatable<TlsSocket> & Hashable {
     // threads, no other synchronization. Must be a concurrent map: a plain
     // HashMap here lost registrations permanently under concurrent
     // TlsSocket.server() calls (non-atomic appendIndex RMW / resize races).
-    static var keylessCallback = ConcurrentHashMap<String, (KeylessSignFunc, ?KeylessDecryptFunc)>()
+    // static let: the map reference itself is never reassigned (only
+    // add/get on the ConcurrentHashMap), and let prevents accidental
+    // re-assignment that would silently reintroduce an unsynchronized map.
+    static let keylessCallback = ConcurrentHashMap<String, (KeylessSignFunc, ?KeylessDecryptFunc)>()
 
     static let defaultTimeout: Duration = Duration.second * 30
 
