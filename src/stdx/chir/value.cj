@@ -133,6 +133,15 @@ sealed abstract class Value <: Base & ToString & Hashable & Equatable<Value> {
     }
 
     /**
+     * Performs the public behavior of `appendAttributesFrom`.
+     * @param src The `src` parameter.
+     * @return The `Unit` result.
+     */
+    public func appendAttributesFrom(src: Value): Unit {
+        _attributes._attributesInfo |= src._attributes._attributesInfo
+    }
+
+    /**
      * Performs the public behavior of `dump`.
      * @return The `Unit` result.
      */

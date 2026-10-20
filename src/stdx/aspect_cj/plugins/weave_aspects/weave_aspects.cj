@@ -94,10 +94,11 @@ class WeaveAspects {
         return true
     }
 
+
     private func computeThisTypeOfCallee(callee: Function, args: Array<Value>): ?Type {
         if (callee.isMemberMethod()) {
             if (callee.isStatic()) {
-                return callee.outerType
+                return addRefIfFuncIsMutOrClass(callee.outerType.getOrThrow(), callee)
             }
             return args[0].ty
         }
@@ -111,6 +112,9 @@ class WeaveAspects {
         let paramTypes = mapArrayTo(args, {arg => arg.ty})
         var returnType: Type = UnitType.get()
         if (isReplaceBodyAnno(pi.annoClassName)) {
+            // Imported advice also takes a bound callback without the receiver.
+            // The temporary target value in args still has the raw CHIR type.
+            paramTypes[paramTypes.size - 1] = f.funcSrcCodeType
             returnType = f.funcType.returnType
         }
         let funcType = FuncType.get(paramTypes, returnType)

@@ -247,7 +247,8 @@ private func checkLegacyReplace(f: Function, fields: RuleControlFields): String 
     let className = fields.string("className")
     let isStatic = fields.boolean("isStatic")
     let packageName = fields.string("packageName")
-    if (!className.isEmpty() && !isStatic &&
+    let needsReceiver = !className.isEmpty() && !isStatic
+    if (needsReceiver &&
         params[0].ty.qualifiedName != "${packageName}.${className}") {
         throw IllegalArgumentException("invalid-advice-signature: legacy Replace receiver ${f.srcCodeName}")
     }
@@ -257,18 +258,16 @@ private func checkLegacyReplace(f: Function, fields: RuleControlFields): String 
             throw IllegalArgumentException("invalid-advice-signature: legacy Replace return ${f.srcCodeName}")
         }
         var (aspectParams, _) = params.splitAt(params.size - 1)
-        if (f.isInstanceMemberMethod()) {
-            if (aspectParams.isEmpty()) {
-                throw IllegalArgumentException("invalid-advice-signature: legacy Replace receiver ${f.srcCodeName}")
-            }
+        // Only global/static targets may omit forwarded arguments entirely.
+        if (aspectParams.isEmpty()) { return replacementPointcutType(f).qualifiedName }
+        if (needsReceiver) {
             (_, aspectParams) = aspectParams.splitAt(1)
         }
         let aspectTypes = mapArrayTo(aspectParams, {parameter => parameter.ty})
-        if (!aspectTypes.isEmpty() &&
-            FuncType.get(aspectTypes, f.funcType.returnType).toString() != lastType.toString()) {
+        if (FuncType.get(aspectTypes, f.funcType.returnType).toString() != lastType.toString()) {
             throw IllegalArgumentException("invalid-advice-signature: legacy Replace types ${f.srcCodeName}")
         }
-        return replacementPointcutType(f, !className.isEmpty() && !isStatic).qualifiedName
+        return replacementPointcutType(f).qualifiedName
     }
     throw IllegalArgumentException("invalid-advice-signature: legacy Replace function parameter ${f.srcCodeName}")
 }

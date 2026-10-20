@@ -36,6 +36,16 @@ protected class RuleMatchStatistics {
     var workUnits: Int64 = 0
 }
 
+private func legacyParameterMatches(target: Function, call: RulePlannedCall, index: Int64): Bool {
+    let actual = target.parameters[index].ty
+    let expected = call.callee.parameters[index].ty
+    if (qualifiedNameWithTypeArgs(actual) == qualifiedNameWithTypeArgs(expected)) { return true }
+    if (index != 0 || !target.isInstanceMemberMethod()) { return false }
+    if (actual.stripAllRefs() == expected.stripAllRefs()) { return true }
+    if (call.record.fields[0] != REPLACE_FUNC_BODY_ANNO_CLASS_NAME) { return false }
+    return canUpcastReplacementReceiver(actual, expected)
+}
+
 private func isRuleTarget(f: Function): Bool {
     if (!f.isAspectExecutableSourceBody() || f.srcCodeName == "main") { return false }
     let snapshot = f.annotationSnapshot
@@ -210,10 +220,7 @@ protected func preflightRuleWeave(pkg: Package, wires: Array<RuleWirePackage>,
                 }
                 if (expected > 0) {
                     for (index in 0..expected) {
-                        if (qualifiedNameWithTypeArgs(call.callee.parameters[index].ty) !=
-                            qualifiedNameWithTypeArgs(f.parameters[index].ty) &&
-                            !(index == 0 && f.isInstanceMemberMethod() &&
-                            call.callee.parameters[index].ty.stripAllRefs() == f.parameters[index].ty.stripAllRefs())) {
+                        if (!legacyParameterMatches(f, call, index)) {
                             throw IllegalArgumentException("legacy typed parameter mismatch: ${symbol}")
                         }
                     }
@@ -328,7 +335,9 @@ private func callArgs(target: Function, call: RulePlannedCall, snapshot: ?Value)
 
 private func callContext(callee: Function, args: Array<Value>): FuncCallContext {
     let receiver: ?Type = if (callee.isMemberMethod()) {
-        if (callee.isStatic()) { callee.outerType } else { Some(args[0].ty) }
+        if (callee.isStatic()) {
+            Some(addRefIfFuncIsMutOrClass(callee.outerType.getOrThrow(), callee))
+        } else { Some(args[0].ty) }
     } else { None }
     return FuncCallContext(args, Array<Type>(), receiver)
 }

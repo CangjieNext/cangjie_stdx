@@ -11,30 +11,30 @@ package stdx.aspect_cj
 import std.collection.*
 import stdx.chir.*
 
-/** The receiver in a global replacement callback is not a source-level pointcut parameter. */
-protected func replacementPointcutType(advice: Function, instanceTarget: Bool): FuncType {
-    let callback = (advice.parameters[advice.parameters.size - 1].ty as FuncType).getOrThrow()
-    if (instanceTarget && !advice.isInstanceMemberMethod()) {
-        let (_, explicitTypes) = callback.paramTypes.splitAt(1)
-        return FuncType.get(explicitTypes, callback.returnType)
-    }
-    return callback
+/** Original callbacks use source parameters only; their receiver is captured during weaving. */
+protected func replacementPointcutType(advice: Function): FuncType {
+    return (advice.parameters[advice.parameters.size - 1].ty as FuncType).getOrThrow()
 }
 
 protected func replacementCallbackMatches(target: Function, callback: FuncType): Bool {
-    if (callback == target.funcType || callback == target.funcSrcCodeType) { return true }
-    if (!target.isInstanceMemberMethod() || callback.paramTypes.size != target.parameters.size ||
-        callback.returnType != target.funcType.returnType) { return false }
-    for (i in 0..callback.paramTypes.size) {
-        let expected = target.parameters[i].ty
-        let actual = callback.paramTypes[i]
-        if (actual != expected && (i != 0 || actual.stripAllRefs() != expected.stripAllRefs())) { return false }
+    return callback == target.funcSrcCodeType
+}
+
+protected func canUpcastReplacementReceiver(actual: Type, expected: Type): Bool {
+    if (!actual.isRefType() || !expected.isRefType() ||
+        !actual.stripAllRefs().isClassLikeType() || !expected.stripAllRefs().isClassLikeType()) {
+        return false
     }
-    return true
+    return actual.isEqualOrSubTypeOf(expected)
 }
 
 private func adaptReplacementArgument(builder: CHIRBuilder, value: Value, expected: Type): Value {
     if (value.ty == expected) { return value }
+    // recursive:true may apply a base-class advice to an overriding method.
+    // Keep the derived receiver for original, but upcast it when calling advice.
+    if (canUpcastReplacementReceiver(value.ty, expected)) {
+        return builder.createStaticCast(value, expected).result
+    }
     if (value.ty.stripAllRefs() != expected.stripAllRefs() || !expected.stripAllRefs().isValueType()) {
         throw IllegalArgumentException("ReplaceFuncBody argument type mismatch.")
     }
@@ -47,8 +47,9 @@ private func adaptReplacementArgument(builder: CHIRBuilder, value: Value, expect
 private func originalBodyCallback(builder: CHIRBuilder, target: Function,
     original: Function, callbackType: FuncType): Value {
     if (callbackType == original.funcType) { return original }
-    // An instance advice receives a bound function, not a raw method whose
-    // hidden receiver would otherwise be missing from the callback call.
+    // Every instance target receives a bound callback, including global/static
+    // advice. The moved implementation is a private global helper, so it has
+    // no member ThisType; its explicit first parameter carries the receiver.
     let callback = builder.createLambda(callbackType,
         original.identifierWithoutPrefix + ".bound", "")
     let bodyBuilder = CHIRBuilder(callback.body.entryBlock)
@@ -87,7 +88,9 @@ protected func weaveReplacementBody(pkg: Package, target: Function, callee: Func
     }
     args.add(callback)
     let receiver: ?Type = if (callee.isMemberMethod()) {
-        if (callee.isStatic()) { callee.outerType } else { Some(args[0].ty) }
+        if (callee.isStatic()) {
+            Some(addRefIfFuncIsMutOrClass(callee.outerType.getOrThrow(), callee))
+        } else { Some(args[0].ty) }
     } else { None }
     let call = builder.createApply(callee, FuncCallContext(args.toArray(), [], receiver))
     builder.createStore(call.result, slot.result)
