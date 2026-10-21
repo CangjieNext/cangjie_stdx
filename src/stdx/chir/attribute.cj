@@ -61,14 +61,14 @@ internal enum Attribute <: ToString {
                      ///< On the block is used to search for it among other blocks of the function.
     Unsafe |   ///< Mark whether a function that was marked as `unsafe`
     // Native FFI attributes
-    JavaMirror |      ///< Mark whether it's @JavaMirror declaration (binding for a java type).
-    JavaImpl |        ///< Mark whether it's @JavaImpl declaration.
-    ObjCMirror |     ///< Mark whether it's @ObjCMirror declaration (binding for an Objective-C type).
+    JavaForeign |      ///< Mark whether it's java foreign declaration.
+    JavaExport |        ///< Mark whether it's a declaration exported to java.
+    ObjCForeign |     ///< Mark whether it's Objective-C foreign declaration.
     HasInitedField | ///< Mark whether a node is a special flag, which marks the class instance as initialized.
-    JavaHasDefault | ///< Mark whether JAVA_MIRROR interface has default method.
+    JavaHasDefault | ///< Mark whether `@Java` foreign interface has default method.
     PreviouslyDeserialized | ///< Mark that deserialization occurs not in the newly created node, but in an existing one.
     DoesNotThrow | ///< Mark that the function does not throw any exceptions by construction.
-    ObjCImpl | ///< Mark whether a Cangjie class is exported to Objective-C (successor of an Objective-C mirror).
+    ObjCExport | ///< Mark whether it's a declaration exported to Objective-C.
     MatchPattern | ///< Mark CFG nodes that evaluate patterns, excluding case bodies and nested expressions.
     PluginAdded | ///< Mark that the declaration is added by chir plugin.
 
@@ -112,14 +112,14 @@ internal enum Attribute <: ToString {
             case Deserialized           => "deserialized"
             case Initializer            => "initializer"
             case Unsafe                 => "unsafe"
-            case JavaMirror             => "javaMirror"
-            case JavaImpl               => "javaImpl"
-            case ObjCMirror             => "objCMirror"
+            case JavaForeign            => "javaForeign"
+            case JavaExport             => "javaExport"
+            case ObjCForeign            => "objCForeign"
             case HasInitedField         => "hasInitedField"
             case JavaHasDefault         => "javaHasDefault"
             case PreviouslyDeserialized => "previouslyDeserialized"
             case DoesNotThrow           => "doesNotThrow"
-            case ObjCImpl               => "objCImpl"
+            case ObjCExport             => "objCExport"
             case MatchPattern           => "matchPattern"
             case PluginAdded            => "pluginAdded"
             case AttrBegin | AttrEnd => "UNKNOWN"
@@ -160,15 +160,15 @@ internal enum Attribute <: ToString {
             case SkipAnalysis           => Deserialized
             case Deserialized           => Initializer
             case Initializer            => Unsafe
-            case Unsafe                 => JavaMirror
-            case JavaMirror             => JavaImpl
-            case JavaImpl               => ObjCMirror
-            case ObjCMirror             => HasInitedField
+            case Unsafe                 => JavaForeign
+            case JavaForeign            => JavaExport
+            case JavaExport             => ObjCForeign
+            case ObjCForeign            => HasInitedField
             case HasInitedField         => JavaHasDefault
             case JavaHasDefault         => PreviouslyDeserialized
             case PreviouslyDeserialized => DoesNotThrow
-            case DoesNotThrow           => ObjCImpl
-            case ObjCImpl               => MatchPattern
+            case DoesNotThrow           => ObjCExport
+            case ObjCExport             => MatchPattern
             case MatchPattern           => PluginAdded
             case PluginAdded            => AttrEnd
             case AttrEnd                => AttrEnd
@@ -210,14 +210,14 @@ internal enum Attribute <: ToString {
             case Deserialized           => 29
             case Initializer            => 30
             case Unsafe                 => 31
-            case JavaMirror             => 32
-            case JavaImpl               => 33
-            case ObjCMirror             => 34
+            case JavaForeign            => 32
+            case JavaExport             => 33
+            case ObjCForeign            => 34
             case HasInitedField         => 35
             case JavaHasDefault         => 36
             case PreviouslyDeserialized => 37
             case DoesNotThrow           => 38
-            case ObjCImpl               => 39
+            case ObjCExport             => 39
             case MatchPattern           => 40
             case PluginAdded            => 41
             case AttrEnd                => ATTR_SIZE  // Invalid, return size to indicate error
