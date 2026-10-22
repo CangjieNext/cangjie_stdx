@@ -1,0 +1,123 @@
+doc/libs_stdx/syntax/syntax_package_api/syntax_package_classes.md
+  s_25f5bf26ccf673::t_0fbdb1b2916f86 10522,10921,11286
+  h_6a43e5c473a09a 1174,6688,10144-10145,10523,10922,11287,15138,20961
+  s_25f5bf26ccf673::t_3e378ae229a2f7 66,450,1641,1994,2211,2422,3034,3259,3546,3917,4204,4945,5404,5905,6232,6970,7313,7460,7606,7706,7964,8346,8452,8631,8905,9585,9739,9950,10032,10304,11827,12364,12657,12931,14137,14423,16371,16945,17157,17952,18232,19051,19247,19567,19974,20375,20612,20679
+  s_e6e9eebf5e848f::t_27423c6b050132 1357-1360
+  s_e6e9eebf5e848f::t_e21f6c45bbd716 67,451,2423,3035,3918,4205,5405,6233,6689,7607,7965,8632,8906,9586,10305,14138,14424,16372,17158,19568,20376,20613,20680
+src/stdx/syntax/ffi.cj
+  s_9065f3448e5348::t_0e87c197a5d878 84
+  h_6a43e5c473a09a 36,52,57,76,106
+src/stdx/syntax/ast_visitor.cj
+  h_6a43e5c473a09a 141,185,297,543,562,680
+doc/libs_stdx/syntax/syntax_package_api/syntax_package_funcs.md
+  h_6a43e5c473a09a 21-23,59-61,103-105,156-158
+src/stdx/syntax/syntax_node_impl_creator.cj
+  s_9065f3448e5348::t_e46429cc869035 322
+  s_25f5bf26ccf673::t_46b0510cb33894 515
+  s_9065f3448e5348::t_f61150cf85aa8a 2009
+  s_89f5d71213ecfb::t_af353d9103128f 2510
+  s_9065f3448e5348::t_f0ca002c77cb98 1306
+  s_9065f3448e5348::t_aeb889fc8b201a 622
+  s_9065f3448e5348::t_acd15478b2bd1d 2509
+  s_9065f3448e5348::t_ede1223af24266 2288
+  s_9065f3448e5348::t_f285d4683ea413 174
+  s_25f5bf26ccf673::t_73bbb7360f397c 29,259,299,372-373,411,481,504,522,582,641,663-664,701,736,750,893,935,960-961,987,1001,1051-1052,1078-1079,1104-1105,1203,1373,1538-1539,1562-1563,1576-1577,1651-1652,1698,1801,1828,1900,1951,1995,2032,2129,2212,2227,2246-2247,2270,2298,2321,2429,2506
+  s_9065f3448e5348::t_aafb3b8e35299c 382-383
+  s_9065f3448e5348::t_93e473e1999c7c 2447
+  s_9065f3448e5348::t_39032be8dcac0b 2536
+  s_89f5d71213ecfb::t_f96a1696be417a 2592
+  s_9065f3448e5348::t_d7322e86c2801a 1916
+  s_9065f3448e5348::t_cb38138bd6a121 25
+  h_6a43e5c473a09a 216,361,478,482,487,494,501,505,512,516,523,527,897,906,934,943,1024,1041,1059,1127,1251,1273-1275,1284-1286,1374,1663,1739,1884,2066,2086,2109,2497,2624
+  s_9065f3448e5348::t_6e8f2308499ecd 2023
+  s_89f5d71213ecfb::t_932357bed6acb2 2448
+  s_89f5d71213ecfb::t_46c6e168959ffd 2537
+  s_9065f3448e5348::t_f5dff034535b2d 1464
+src/stdx/syntax/public_parse_apis.cj
+  h_6a43e5c473a09a 19,32,49-50,93,97
+  s_9065f3448e5348::t_7ba2b3144455f0 57
+  s_9065f3448e5348::t_cc3158ee7214e0 100
+src/stdx/syntax/parser.cj
+  s_9065f3448e5348::t_b46c770cacf4d8 162
+  s_9065f3448e5348::t_6b4406bd87e13f 165
+  h_6a43e5c473a09a 29,32,34,36,80
+src/stdx/syntax/ast_rewriter.cj
+  s_9065f3448e5348::t_48f3baa3d0c053 181
+  h_6a43e5c473a09a 85,180,326,509,535,542,555,633
+src/stdx/syntax/offset.cj
+  s_9065f3448e5348::t_fb7bbff1ba30ac 49
+  s_89f5d71213ecfb::t_54e82448a64f56 53
+  s_9065f3448e5348::t_45cbfc989af5e8 28
+src/stdx/syntax/package.cj
+  s_9065f3448e5348::t_d137a39e83fe77 559
+src/stdx/syntax/syntax_node_impl_translator.cj
+  s_89f5d71213ecfb::t_8e42724e4ece8e 20
+  s_9065f3448e5348::t_36b47caea8271b 2253,2255
+  s_9065f3448e5348::t_20e14e460ef3e9 2289
+  s_9065f3448e5348::t_0615cadb63bf02 2291
+  s_9065f3448e5348::t_10448875301bba 2434
+  s_9065f3448e5348::t_29c7329565b0ab 2436
+  s_9065f3448e5348::t_7337c1fcdce7c4 3504
+  s_9065f3448e5348::t_2efa78caf03f97 1889
+  s_9065f3448e5348::t_f24c169add2773 562
+  s_9065f3448e5348::t_2fe87810d65ba7 1233
+  s_9065f3448e5348::t_9ccbc7b6e83718 1944
+  s_9065f3448e5348::t_2cc34fbe024ddb 2197,2199
+  h_6a43e5c473a09a 47,50,89,114,226,795,832,1888,3743,3794,3819,3822
+src/stdx/syntax/parser_impl.cj
+  h_6a43e5c473a09a 203,217,222,248,253,285,296,303,2356
+  s_9065f3448e5348::t_c6e5a9ef625677 121
+  s_9065f3448e5348::t_2abdba1a4d07a0 347,1119,1324,3082
+  s_89f5d71213ecfb::t_66cd2490ec6325 1028
+  s_9065f3448e5348::t_852ed5c8fd6fec 82
+  s_89f5d71213ecfb::t_504c5def470c7e 281
+  s_89f5d71213ecfb::t_de4395d9aed89c 308
+  s_89f5d71213ecfb::t_31e0f15984ec3d 4679
+src/stdx/syntax/decl.cj
+  h_6a43e5c473a09a 1404,2886
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "ce9b200db4d997007dc1e1c376f792854cbd70df",
+  "prompts": {},
+  "humans": {
+    "h_6a43e5c473a09a": {
+      "author": "Xu Zhaoheng <xuzhaoheng1@huawei.com>"
+    }
+  },
+  "sessions": {
+    "s_25f5bf26ccf673": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "31a135fb-9882-4df2-a92f-154cb3dc00a5",
+        "model": "glm-5.3-flash"
+      },
+      "human_author": "Xu Zhaoheng <xuzhaoheng1@huawei.com>"
+    },
+    "s_89f5d71213ecfb": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "a16e0e87-e313-40f5-a4f0-a24b2c7c4895",
+        "model": "glm-5.3-flash"
+      },
+      "human_author": null
+    },
+    "s_9065f3448e5348": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "2cc40084-4665-4e6f-a487-b4199287a94e",
+        "model": "glm-5.3-flash"
+      },
+      "human_author": null
+    },
+    "s_e6e9eebf5e848f": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "e134f3e7-a696-4277-8d55-ceaf00c72c2f",
+        "model": "glm-5.3-flash"
+      },
+      "human_author": null
+    }
+  }
+}
