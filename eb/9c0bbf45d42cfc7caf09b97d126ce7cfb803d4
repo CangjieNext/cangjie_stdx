@@ -1,0 +1,22 @@
+build/libs/MakeCJNATIVEStdSharedLib.cmake
+  s_d08dfc83b8d560::t_1ec2979a4f1457 18
+  s_d08dfc83b8d560::t_b496c3d0dd247a 73-78,81,84
+build/libs/AddCJNATIVELibrary.cmake
+  s_d08dfc83b8d560::t_ecbd18a22151c6 1206
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "eb9c0bbf45d42cfc7caf09b97d126ce7cfb803d4",
+  "prompts": {},
+  "sessions": {
+    "s_d08dfc83b8d560": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "98161b7d-cabe-4528-b7a4-276071eb9067",
+        "model": "deepseek-v4-flash"
+      },
+      "human_author": "neilliuistaken <liujiajie12@huawei.com>"
+    }
+  }
+}
