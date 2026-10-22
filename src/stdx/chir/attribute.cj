@@ -64,7 +64,6 @@ internal enum Attribute <: ToString {
     JavaForeign |      ///< Mark whether it's java foreign declaration.
     JavaExport |        ///< Mark whether it's a declaration exported to java.
     ObjCForeign |     ///< Mark whether it's Objective-C foreign declaration.
-    HasInitedField | ///< Mark whether a node is a special flag, which marks the class instance as initialized.
     JavaHasDefault | ///< Mark whether `@Java` foreign interface has default method.
     PreviouslyDeserialized | ///< Mark that deserialization occurs not in the newly created node, but in an existing one.
     DoesNotThrow | ///< Mark that the function does not throw any exceptions by construction.
@@ -115,7 +114,6 @@ internal enum Attribute <: ToString {
             case JavaForeign            => "javaForeign"
             case JavaExport             => "javaExport"
             case ObjCForeign            => "objCForeign"
-            case HasInitedField         => "hasInitedField"
             case JavaHasDefault         => "javaHasDefault"
             case PreviouslyDeserialized => "previouslyDeserialized"
             case DoesNotThrow           => "doesNotThrow"
@@ -163,8 +161,7 @@ internal enum Attribute <: ToString {
             case Unsafe                 => JavaForeign
             case JavaForeign            => JavaExport
             case JavaExport             => ObjCForeign
-            case ObjCForeign            => HasInitedField
-            case HasInitedField         => JavaHasDefault
+            case ObjCForeign            => JavaHasDefault
             case JavaHasDefault         => PreviouslyDeserialized
             case PreviouslyDeserialized => DoesNotThrow
             case DoesNotThrow           => ObjCExport
@@ -213,13 +210,12 @@ internal enum Attribute <: ToString {
             case JavaForeign            => 32
             case JavaExport             => 33
             case ObjCForeign            => 34
-            case HasInitedField         => 35
-            case JavaHasDefault         => 36
-            case PreviouslyDeserialized => 37
-            case DoesNotThrow           => 38
-            case ObjCExport             => 39
-            case MatchPattern           => 40
-            case PluginAdded            => 41
+            case JavaHasDefault         => 35
+            case PreviouslyDeserialized => 36
+            case DoesNotThrow           => 37
+            case ObjCExport             => 38
+            case MatchPattern           => 39
+            case PluginAdded            => 40
             case AttrEnd                => ATTR_SIZE  // Invalid, return size to indicate error
         }
     }
