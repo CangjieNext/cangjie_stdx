@@ -194,6 +194,10 @@ func buildParseErrorMessage(parser: JsonParser): String {
     var errPos = parser.offset
     if (errPos >= strArr.size) {
         errPos = strArr.size - 1
+        // Report the final UTF-8 character from its leading byte.
+        while (errPos > 0 && (strArr[errPos] & 0xC0) == 0x80) {
+            errPos--
+        }
     }
     let errRowAndCol = getErrRowAndCol(strArr, errPos)
     let (errChr, _) = Rune.fromUtf8(strArr, errPos)
@@ -729,6 +733,10 @@ exclave func buildParseErrorMessage(parser: JsonParser @local!): String {
     var errPos = parser.offset
     if (errPos >= strArr.size) {
         errPos = strArr.size - 1
+        // Report the final UTF-8 character from its leading byte.
+        while (errPos > 0 && (strArr[errPos] & 0xC0) == 0x80) {
+            errPos--
+        }
     }
     let errRowAndCol = getErrRowAndCol(strArr, errPos)
     let (errChr, _) = Rune.fromUtf8(strArr, errPos)
