@@ -1,0 +1,35 @@
+src/stdx/syntax/native/NodeFormat.fbs
+  s_18ed60c515e61f::t_9d5f9b016f2b1b 939-941
+  s_18ed60c515e61f::t_d88cfeda8599de 575,596-601
+  s_18ed60c515e61f::t_a0f772ca60a314 15-27,602
+  s_6497230745231d::t_4d3e8f05f417cf 603
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "6beb4008a634f6ec306658e9c78b7cc50100c763",
+  "prompts": {},
+  "humans": {
+    "h_7fa24ec5a32f2d": {
+      "author": "kkkkkkkbbbbbbb <songjian59@huawei.com>"
+    }
+  },
+  "sessions": {
+    "s_18ed60c515e61f": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "e326ddbd-badc-4c61-a291-459e091a8447",
+        "model": "default"
+      },
+      "human_author": null
+    },
+    "s_6497230745231d": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "3feef7bf-db91-43f5-8c95-3b81f0fc6c71",
+        "model": "default"
+      },
+      "human_author": "kkkkkkkbbbbbbb <songjian59@huawei.com>"
+    }
+  }
+}
