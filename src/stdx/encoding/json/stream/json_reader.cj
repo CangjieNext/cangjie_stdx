@@ -163,6 +163,13 @@ public class JsonReader {
             case _ => () // top level value
         }
 
+        return startToken(nextByte)
+    }
+
+    // Classifies the byte that starts a new JSON value token, records the
+    // peeked state and returns the token; throws when the byte cannot
+    // start any token.
+    private func startToken(nextByte: Byte): JsonToken {
         match (nextByte) {
             case b'n' =>
                 peeked = PEEK_STATE_NULL
@@ -176,7 +183,7 @@ public class JsonReader {
             case b'0' | b'1' | b'2' | b'3' | b'4' | b'5' | b'6' | b'7' | b'8' | b'9' | b'-' =>
                 peeked = PEEK_STATE_NUMBER
                 return JsonToken.JsonNumber
-            case b'\"' =>
+            case b'"' =>
                 peeked = PEEK_STATE_STRING
                 return JsonToken.JsonString
             case b'{' =>
@@ -292,27 +299,30 @@ public class JsonReader {
     public func skip(): Unit {
         if (let Some(token) <- peek()) {
             match (token) {
-                case JsonNull | JsonBool | JsonNumber => skipValue()
-                case JsonString => skipString()
-                case BeginArray => skipArray()
-                case BeginObject => skipObject()
                 case EndArray | EndObject => return
                 case Name =>
                     skipName()
-                    if (let Some(token) <- peek()) {
-                        match (token) {
-                            case JsonNull | JsonBool | JsonNumber => skipValue()
-                            case JsonString => skipString()
-                            case BeginArray => skipArray()
-                            case BeginObject => skipObject()
-                            case _ => throw IllegalStateException("Name must be followed by JSON value.")
-                        }
+                    if (let Some(next) <- peek()) {
+                        skipValueToken(next)
                     } else {
                         throw IllegalStateException("The JSON stream ends at an incorrect location.")
                     }
+                case _ => skipValueToken(token)
             }
         }
         afterRead()
+    }
+
+    // Skips the value that `token` opens; throws when the token cannot
+    // start a value.
+    private func skipValueToken(token: JsonToken): Unit {
+        match (token) {
+            case JsonNull | JsonBool | JsonNumber => skipValue()
+            case JsonString => skipString()
+            case BeginArray => skipArray()
+            case BeginObject => skipObject()
+            case _ => throw IllegalStateException("Name must be followed by JSON value.")
+        }
     }
 
     // check the stack state of Json text
@@ -647,15 +657,15 @@ public class JsonReader {
                     if (inString) {
                         continue
                     }
-                    if (stacks.top == tagStackState(nextByte)) {
-                        stacks.pop()
-                        if (stacks.depth == depth) {
-                            endTag = nextByte
-                            break
-                        }
+                    if (stacks.top != tagStackState(nextByte)) {
+                        throw IllegalStateException("Failed to read symmetry end of '${Rune(start)}'.")
+                    }
+                    stacks.pop()
+                    if (stacks.depth != depth) {
                         continue
                     }
-                    throw IllegalStateException("Failed to read symmetry end of '${Rune(start)}'.")
+                    endTag = nextByte
+                    break
                 case _ =>
                     if (inString) {
                         checkJsonStringCharacter(nextByte)
@@ -757,43 +767,24 @@ public class JsonReader {
                         continue
                     }
                     throw IllegalStateException("Unexpected character: '\\'.")
-                case b'\"' => inString = !inString
-                case b'{' =>
+                case b'"' => inString = !inString
+                case b'{' | b'[' =>
                     if (!inString) {
-                        stacks.put(JsonStateStack.JSON_OBJECT)
+                        stacks.put(tagStackState(nextByte))
                     }
-                case b'[' =>
-                    if (!inString) {
-                        stacks.put(JsonStateStack.JSON_ARRAY)
-                    }
-                case b'}' =>
+                case b'}' | b']' =>
                     if (inString) {
                         continue
                     }
-                    if (stacks.top == JsonStateStack.JSON_OBJECT) {
-                        stacks.pop()
-                        if (stacks.depth == depth) {
-                            if (nextByte == end) {
-                                return
-                            }
-                            throw IllegalStateException("Failed to skip.")
-                        }
+                    if (stacks.top != tagStackState(nextByte)) {
+                        throw IllegalStateException("Failed to skip.")
+                    }
+                    stacks.pop()
+                    if (stacks.depth != depth) {
                         continue
                     }
-                    throw IllegalStateException("Failed to skip.")
-                case b']' =>
-                    if (inString) {
-                        continue
-                    }
-                    if (stacks.top == JsonStateStack.JSON_ARRAY) {
-                        stacks.pop()
-                        if (stacks.depth == depth) {
-                            if (nextByte == end) {
-                                return
-                            }
-                            throw IllegalStateException("Failed to skip.")
-                        }
-                        continue
+                    if (nextByte == end) {
+                        return
                     }
                     throw IllegalStateException("Failed to skip.")
                 case _ =>
@@ -843,27 +834,42 @@ public class JsonReader {
                 index = breakIndex + 1
                 handleEscape()
             // and continue
-            } else if (buffer[breakIndex] == b'\"') { // end of read string, break
+            } else if (buffer[breakIndex] == b'"') { // end of read string, break
                 break
             } else { // unexpected end of an utf-8 sequence
-                stringBuffer.appendAll(buffer[index..breakIndex])
-                availLen = availLen - (breakIndex - index)
-                index = breakIndex
-                let utf8Size = utf8SizeUnchecked(buffer[breakIndex])
-                if (utf8Size == 1 || utf8Size > 4) {
-                    throw IllegalStateException("Invalid UTF-8 byte sequence.")
-                }
-                fillInBuf(utf8Size) // if end, throw exception, continue
-                // and continue
+                refillPartialUtf8(breakIndex)
             }
         }
 
+        return readStringResult(breakIndex)
+    }
+
+    // Handles a stop in the middle of a multi-byte UTF-8 sequence: keeps
+    // the bytes read so far and refills until the sequence completes;
+    // throws when the stopping byte cannot begin a valid sequence.
+    @OverflowWrapping
+    private func refillPartialUtf8(breakIndex: Int64): Unit {
+        stringBuffer.appendAll(buffer[index..breakIndex])
+        availLen = availLen - (breakIndex - index)
+        index = breakIndex
+        let utf8Size = utf8SizeUnchecked(buffer[breakIndex])
+        if (utf8Size == 1 || utf8Size > 4) {
+            throw IllegalStateException("Invalid UTF-8 byte sequence.")
+        }
+        fillInBuf(utf8Size) // if end, throw exception, continue
+    }
+
+    // Builds the final string once the closing quote is reached: appends
+    // the remaining bytes, advances past them plus the quote, and returns
+    // the result from either the string buffer or the read buffer.
+    @OverflowWrapping
+    private func readStringResult(breakIndex: Int64): String {
         if (stringBuffer.size > 0) { // if buffered, append data left and return all
             stringBuffer.appendAll(buffer[index..breakIndex])
-            availLen = availLen - (breakIndex - index) - 1
-            index = breakIndex + 1
             let result = unsafe { String.fromUtf8Unchecked(stringBuffer.data[0..stringBuffer.size]) }
             stringBuffer.clear()
+            availLen = availLen - (breakIndex - index) - 1
+            index = breakIndex + 1
             return result
         } else { // return data directly
             let result = unsafe { String.fromUtf8Unchecked(buffer[index..breakIndex]) }
@@ -924,12 +930,19 @@ public class JsonReader {
         if (nextByte < b'0' || nextByte > b'9') {
             throw IllegalStateException("The next Token is not UInt64.")
         }
-
-        if (nextByte != b'0') {
-            return readUIntDecimal()
+        if (nextByte == b'0') {
+            return readUIntAfterZero()
         }
+        return readUIntDecimal()
+    }
 
-        index++
+    // Handles a number whose first digit is `0`: consumes the radix
+    // prefixes 0b/0o/0x/0d, rejects a following decimal digit (strict JSON
+    // forbids leading zeros) and falls back to the decimal path for a bare
+    // `0` (`0` itself, `0.5`, `0e1`).
+    @OverflowWrapping
+    private func readUIntAfterZero(): (UInt64, Bool) {
+        index++ // consume the leading '0'
         availLen--
         if (let Some(prefix) <- peekNext()) {
             match (prefix) {
@@ -1039,6 +1052,21 @@ public class JsonReader {
         }
 
         fillInBuf()
+        let (result, leftMove) = readFloatMantissa()
+        let value = sign * result / leftMove
+        if (isJsonFloatInfinite(value)) {
+            throw IllegalStateException("Invalid float detected.")
+        }
+        return value
+    }
+
+    // Scans the mantissa of a JSON float starting at buffer[index]: digits
+    // with at most one dot, stopping at the first byte that cannot continue
+    // the number. Rejects fragments with no integer digit, a trailing dot
+    // (`5.`) or leading zeros in the integer part, matching the
+    // String-based parser. Returns the digit value and the fractional
+    // scale factor.
+    private func readFloatMantissa(): (Float64, Float64) {
         var result = 0.0
         var pointNum = 0
         var leftMove = 1.0
@@ -1051,15 +1079,15 @@ public class JsonReader {
             }
             let c = buffer[index]
             if (c >= b'0' && c <= b'9') {
-                if (pointNum == 0) {
-                    if (!hasIntDigit) {
-                        leadingZero = (c == b'0')
-                        hasIntDigit = true
-                    } else if (leadingZero) {
-                        // Strict JSON forbids leading zeros in the integer part.
-                        throw IllegalStateException("Invalid number format.")
-                    }
-                } else {
+                if (pointNum == 0 && hasIntDigit && leadingZero) {
+                    // Strict JSON forbids leading zeros in the integer part.
+                    throw IllegalStateException("Invalid number format.")
+                }
+                if (pointNum == 0 && !hasIntDigit) {
+                    leadingZero = (c == b'0')
+                    hasIntDigit = true
+                }
+                if (pointNum > 0) {
                     hasFracDigit = true
                 }
                 result = result * 10.0 + Float64(c - b'0')
@@ -1080,11 +1108,7 @@ public class JsonReader {
             // String-based parser rejects as well.
             throw IllegalStateException("Invalid number format.")
         }
-        let value = sign * result / leftMove
-        if (isJsonFloatInfinite(value)) {
-            throw IllegalStateException("Invalid float detected.")
-        }
-        return value
+        return (result, leftMove)
     }
 
     @OverflowWrapping
@@ -1131,9 +1155,24 @@ public class JsonReader {
             index++
             availLen--
         }
+        let (expMag, expOverflow, hasExpDigit) = readExpMagnitude()
+        if (!hasExpDigit) {
+            throw IllegalStateException("Invalid number format.")
+        }
+        if (expOverflow) {
+            throw OverflowException("Overflow while reading JSON number.")
+        }
+        return toSignedExponent(expMag, negative)
+    }
+
+    // Reads the digit run of a JSON number exponent and returns the
+    // magnitude (frozen once accumulation overflows UInt64), the sticky
+    // overflow flag, and whether any digit was read at all.
+    @OverflowWrapping
+    private func readExpMagnitude(): (UInt64, Bool, Bool) {
         var expMag: UInt64 = 0
-        var hasExpDigit = false
         var expOverflow = false
+        var hasExpDigit = false
         while (true) {
             if (availLen <= 0) {
                 fillInBuf()
@@ -1145,35 +1184,35 @@ public class JsonReader {
             if (!isDecimalDigit(c)) {
                 break
             }
-            hasExpDigit = true
-            if (!expOverflow) {
-                if (expMag > DECIMAL_OVERFLOW_LIMIT_UI64) {
-                    expOverflow = true
-                } else {
-                    expMag = expMag * 10
-                    if (MAXVAL_UI64 - expMag < UInt64(c - b'0')) {
-                        expOverflow = true
-                    } else {
-                        expMag += UInt64(c - b'0')
-                    }
-                }
-            }
             index++
             availLen--
+            hasExpDigit = true
+            if (expOverflow) {
+                continue // magnitude saturated: keep consuming digits
+            }
+            if (expMag > DECIMAL_OVERFLOW_LIMIT_UI64) {
+                expOverflow = true
+                continue
+            }
+            expMag = expMag * 10
+            if (MAXVAL_UI64 - expMag < UInt64(c - b'0')) {
+                expOverflow = true
+            } else {
+                expMag += UInt64(c - b'0')
+            }
         }
-        if (!hasExpDigit) {
-            throw IllegalStateException("Invalid number format.")
-        }
-        // Per-sign magnitude limits, mirroring the pre-RFC8259 readInt path
-        // exactly: a positive exponent must fit Int64 (anything above
-        // Int64.Max overflows), while a negative exponent may use the full
-        // magnitude up to 2^63 — at exactly MAXABSVAL_I64 the Int64
-        // conversion wraps to Int64.Min and the negation wraps back, netting
-        // Int64.Min (all under @OverflowWrapping). Anything larger overflows
-        // for both signs.
-        if (expOverflow) {
-            throw OverflowException("Overflow while reading JSON number.")
-        }
+        return (expMag, expOverflow, hasExpDigit)
+    }
+
+    // Converts the parsed exponent magnitude to a signed Int64 under
+    // per-sign limits, mirroring the pre-RFC8259 readInt path: a positive
+    // exponent must fit Int64 (anything above Int64.Max overflows), while a
+    // negative exponent may use the full magnitude up to 2^63 — at exactly
+    // MAXABSVAL_I64 the Int64 conversion wraps to Int64.Min and the
+    // negation wraps back, netting Int64.Min (all under @OverflowWrapping).
+    // Anything larger overflows for both signs.
+    @OverflowWrapping
+    private func toSignedExponent(expMag: UInt64, negative: Bool): Int64 {
         if (negative) {
             if (expMag > MAXABSVAL_I64) {
                 throw OverflowException("Overflow while reading JSON number.")
