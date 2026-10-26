@@ -270,7 +270,7 @@ class HttpEngine1 {
             // reconnect and resend the request
             if (isIdempotentMethod(request.method)) {
                 httpLogDebug(logger, "[HttpEngine1#sendRequest] Client1_1 connection failed, reconnect and resend request")
-                return reconnectSendRequest(request, isToProxy)
+                return reconnectSendRequest(request, isToProxy, isToHttpsProxy)
             } else {
                 throw e
             }
@@ -279,7 +279,7 @@ class HttpEngine1 {
             if (isFromPool && isIdempotentMethod(request.method)) {
                 httpLogDebug(logger,
                     "[HttpEngine1#sendRequest] Client1_1 connection failed, reconnect and resend request")
-                return reconnectSendRequest(request, isToProxy)
+                return reconnectSendRequest(request, isToProxy, isToHttpsProxy)
             } else {
                 throw e
             }
@@ -289,13 +289,14 @@ class HttpEngine1 {
         }
     }
 
-    private func reconnectSendRequest(request: HttpRequest, isToProxy: Bool): HttpResponse {
+    private func reconnectSendRequest(request: HttpRequest, isToProxy: Bool, isToHttpsProxy: Bool): HttpResponse {
         let isTls = if (request.url.scheme == "https") {
             1
         } else {
             0
         }
-        let (connNode, _) = getConn(request, isTls, isToProxy, forceNew: true)
+        let (connNode, _) = getConn(request, isTls, isToProxy, forceNew: true,
+            isToHttpsProxy: isToHttpsProxy)
         try {
             return connNode.sendRequest(request)
         } catch (e: Exception) {
