@@ -53,8 +53,13 @@ public class DefaultTlsKit <: TlsKit {
     private func applyServerNameFallback(config: TlsConfig, hostName: ?String): TlsConfig {
         match (hostName) {
             case Some(host) =>
+                // Fail closed: an empty host name cannot be used for
+                // certificate verification (and SNI). Silently falling back
+                // here would skip hostname verification entirely, so reject
+                // it the same way `setHostNameForVerify` rejects invalid
+                // names.
                 if (host.isEmpty()) {
-                    return config
+                    throw TlsException("Failed to set hostname for verification: host name is empty.")
                 }
                 match (config as TlsClientConfig) {
                     case Some(clientConfig) =>
