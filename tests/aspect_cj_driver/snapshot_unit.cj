@@ -46,8 +46,8 @@ private func checkBodyTransfer(): Unit {
 }
 
 main() {
-    check(Attribute.ObjCImpl.toUInt64() == 39 && Attribute.MatchPattern.toUInt64() == 40 &&
-        Attribute.PluginAdded.toUInt64() == 41, "attribute ABI matches current compiler including ObjCImpl")
+    check(Attribute.ObjCExport.toUInt64() == 38 && Attribute.MatchPattern.toUInt64() == 39 &&
+        Attribute.PluginAdded.toUInt64() == 40, "attribute ABI matches current compiler including ObjCExport")
     checkBodyTransfer()
     let empty = AnnotationSnapshot("shop", "function1", [])
     check(empty.isComplete && empty.items.getOrThrow().isEmpty(), "known-empty is Complete")

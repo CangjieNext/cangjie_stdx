@@ -132,3 +132,11 @@ python3 tests/aspect_cj_driver/unit_smoke.py \
     --modules-directory /absolute/path/to/stdx-build/build_temp/build/modules/linux_x86_64_cjnative \
     --flatbuffers-archive /absolute/path/to/stdx-build/build_temp/build/modules/linux_x86_64_cjnative/flatbuffers.a
 ```
+
+CMake 增量构建依赖可独立检查：
+
+```sh
+python3 tests/aspect_cj_driver/cmake_dependency_smoke.py
+```
+
+该检查需要 Linux、Python 3、CMake、Ninja 和 Make。它在独立临时目录中加载实际驱动构建规则，用模拟编译器和包产物验证依赖变更后的重建、无变更构建及安装；不修改 SDK，也不替代上述真实仓颉编译与运行测试。

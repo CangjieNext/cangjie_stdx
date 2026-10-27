@@ -1051,19 +1051,29 @@ if(NOT CANGJIE_CJPM_BUILD_TYPE AND NOT CANGJIE_BUILD_WITHOUT_CHIR
     set(_aspect_driver_module_dir "${CMAKE_BINARY_DIR}/modules/${_aspect_driver_triple}")
     set(_aspect_driver_lib_dir "${CMAKE_BINARY_DIR}/lib/${_aspect_driver_triple}${SANITIZER_SUBPATH}")
     set(_aspect_driver_output "${CMAKE_BINARY_DIR}/bin/aspect-cj-driver")
+    # Match the current configure environment without caching a previous SDK.
+    get_filename_component(_aspect_driver_cjc cjc PROGRAM)
+    if(NOT _aspect_driver_cjc)
+        message(FATAL_ERROR "cjc is required to build aspect-cj-driver")
+    endif()
+    # Custom targets only enforce ordering. Track their real outputs as well,
+    # otherwise an existing driver survives changes to its imported packages.
+    cj_resolve_depends(_aspect_driver_depends
+        aspect_cj collect_rules weave_rules
+        cangjie${BACKEND_TYPE}Json cangjie${BACKEND_TYPE}JsonStream
+        encoding.json encoding.json.stream)
     add_custom_command(
         OUTPUT ${_aspect_driver_output}
         COMMAND ${CMAKE_COMMAND} -E make_directory "${CMAKE_BINARY_DIR}/bin"
         COMMAND ${CMAKE_COMMAND} -E env
             "CANGJIE_PATH=${_aspect_driver_module_dir}"
             "LD_LIBRARY_PATH=${_aspect_driver_lib_dir}:$ENV{LD_LIBRARY_PATH}"
-            cjc "${CMAKE_SOURCE_DIR}/build/aspect_cj_driver/main.cj" --experimental
+            "${_aspect_driver_cjc}" "${CMAKE_SOURCE_DIR}/build/aspect_cj_driver/main.cj" --experimental
             --import-path "${_aspect_driver_module_dir}/stdx" -L "${_aspect_driver_lib_dir}"
             -lstdx.aspect_cj -lstdx.encoding.json -lstdx.encoding.json.stream
             -o "${_aspect_driver_output}"
         DEPENDS "${CMAKE_SOURCE_DIR}/build/aspect_cj_driver/main.cj"
-            aspect_cj collect_rules weave_rules
-            cangjie${BACKEND_TYPE}Json cangjie${BACKEND_TYPE}JsonStream
+            "${_aspect_driver_cjc}" ${_aspect_driver_depends}
         VERBATIM
         COMMENT "Generating aspect-cj-driver")
     add_custom_target(aspect_cj_driver ALL DEPENDS ${_aspect_driver_output})

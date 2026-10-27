@@ -1246,7 +1246,7 @@ public class SM4 <: BlockCipher {
 
 不同的工作模式可能对应的加解密实现不同，安全性也不同。需要选择和场景适配的加解密工作模式。
 
-iv 初始化向量在 GCM 模式下可以设置推荐长度是 12 字节，在 CBC、OFB、CFB、CTR 模式下 iv 长度是 16 字节，在 ECB 模式下 iv 可以不设置。
+iv 初始化向量在 GCM 模式下不能为空，推荐长度为 12 字节；在 CBC、OFB、CFB、CTR 模式下必须为 16 字节，未传入或长度不为 16 字节时将抛出 [CryptoException](../../common/crypto_common_package_api/crypto_common_package_exceptions.md#class-cryptoexception)；在 ECB 模式下 iv 不参与运算，可以不设置。
 
 paddingMode 填充模式模式由 [PaddingMode](crypto_package_structs.md#struct-paddingmode) 定义， 目前支持 NoPadding 非填充、PKCS7Padding PKCS7 填充。默认是 PKCS7 填充。
 
