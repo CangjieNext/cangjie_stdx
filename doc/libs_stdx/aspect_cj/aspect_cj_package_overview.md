@@ -91,4 +91,4 @@
 
 应先使用 libstdx.collect_aspects，在编译时收集所有切面、连接点信息；再使用 libstdx.weave_aspects 进行二次编译，把之前收集的切面织入到连接点。
 
-新式规则模式还需要 `libstdx.collect_rules`、`libstdx.weave_rules` 与匹配版本的编译器。当前支持 Linux/cjnative，由安装后的 `aspect-cj-driver` 协调来源收集、来源选择、预检、织入和最终发布。规则参数见[类文档](./aspect_cj_package_api/aspect_cj_package_classes.md#class-pointcutrule)，构建配置及命令见[驱动说明](../../../build/aspect_cj_driver/README.md)。旧的两个插件不自动升级到规则模式。
+新式规则模式还需要 `libstdx.collect_rules`、`libstdx.weave_rules` 与匹配版本的编译器。当前支持 Linux/cjnative，由安装后的 `aspect-cj-driver` 协调来源收集、来源选择、预检、织入和最终发布。规则参数见[类文档](./aspect_cj_package_api/aspect_cj_package_classes.md#class-pointcutrule)，构建配置及命令见[驱动说明](../../design/aspect_cj_driver.md)。旧的两个插件不自动升级到规则模式。

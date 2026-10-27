@@ -1,6 +1,6 @@
 # stdx.aspect_cj 规则切点实现设计
 
-本文面向实现维护者，说明跨编译器、插件和构建驱动的设计、适用边界及验证入口，不属于用户 API 参考。公共接口见[类文档](../libs_stdx/aspect_cj/aspect_cj_package_api/aspect_cj_package_classes.md)，构建配置与复跑命令见[驱动说明](../../build/aspect_cj_driver/README.md)。
+本文面向实现维护者，说明跨编译器、插件和构建驱动的设计、适用边界及验证入口，不属于用户 API 参考。公共接口见[类文档](../libs_stdx/aspect_cj/aspect_cj_package_api/aspect_cj_package_classes.md)，构建配置见[驱动说明](aspect_cj_driver.md)。
 
 本设计对应 [UsersForum #2248](https://gitcode.com/Cangjie/UsersForum/issues/2248) 中的业务注解切点及 AND/OR/NOT 规则组合，建立在原有通配符与 `Array<Any>` 实参能力之上。实现仍使用编译期 CHIR 插件织入，不引入宏、反射代理或业务侧胶水代码。
 
@@ -78,7 +78,7 @@ legacy 类型匹配复用带预算的规则匹配器，保留泛型构造器名�
 
 ## 验收入口
 
-`tests/aspect_cj_driver/unit_smoke.py` 编译运行规则内核和 CHIR 快照单元测试；`semantic_smoke.py` 验证普通与 `-O2` 下的泛型专化、异常传播和合法递归；`smoke.py` 通过已安装驱动验证跨包/同包、复杂业务注解、关闭反射、旧新混合、失败发布屏障及循环依赖。三个脚本都要求与编译器 ABI 匹配的本地 stdx 构建。通过这些脚本不等于通过所有平台的社区 CI；提交前还需跑旧 AOP 回归及仓库门禁。
+独立回归脚本位于 [cangjie_test 的 testsuites/support/aspect_cj_driver](https://gitcode.com/Cangjie/cangjie_test/tree/main/testsuites/support/aspect_cj_driver)，运行参数见该目录的 README。`unit_smoke.py` 编译运行规则内核和 CHIR 快照单元测试；`semantic_smoke.py` 验证普通与 `-O2` 下的泛型专化、异常传播和合法递归；`smoke.py` 通过已安装驱动验证跨包/同包、复杂业务注解、关闭反射、旧新混合、失败发布屏障及循环依赖。需要实现源码的测试显式指定匹配的 stdx 源码路径，不在测试仓保留生产代码副本。通过这些脚本不等于通过所有平台的社区 CI；提交前还需跑旧 AOP 回归及仓库门禁。
 
 `unit_smoke.py --benchmark` 另记录一次准备、1024 条规则、512 条切面、1000 个零命中目标的默认及 `-O2` 耗时、峰值 RSS 和预算消耗；它是可复现的规模样本，不是上限 32768 条规则的完整压力验收，也不是新旧实现速度比。新增正式 Maple/LLT 在 `cangjie_test/testsuites/LLT/compiler/Plugins/AOP_tests/linux` 使用仓库已有指令格式：
 
