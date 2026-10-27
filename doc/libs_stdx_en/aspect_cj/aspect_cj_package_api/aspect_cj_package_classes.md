@@ -3,7 +3,7 @@
 ## class InsertAtEntry
 
 ```cangjie
-public class InsertAtEntry {}
+public class InsertAtEntry
 ```
 
 Function: Weaves a call to the annotated function at the entry point of the method specified by the annotation. Both the annotated method and the target function must comply with the [Specification Constraints](../aspect_cj_package_overview.md#specifications-and-usage).
@@ -36,7 +36,7 @@ Parameters:
 ## class InsertAtExit
 
 ```cangjie
-public class InsertAtExit {}
+public class InsertAtExit
 ```
 
 Function: Weaves a call to the annotated function at the exit point of the method specified by the annotation. Both the annotated method and the target function must comply with the [Specification Constraints](../aspect_cj_package_overview.md#specifications-and-usage).
@@ -69,7 +69,7 @@ Parameters:
 ## class ReplaceFuncBody
 
 ```cangjie
-public class ReplaceFuncBody {}
+public class ReplaceFuncBody
 ```
 
 Function: Replaces the method body specified by the annotation with a call to the annotated function. Both the annotated method and the target function must comply with the [Specification Constraints](../aspect_cj_package_overview.md#specifications-and-usage).
@@ -101,7 +101,7 @@ Parameters:
 ## class PointcutRule
 
 ```cangjie
-public class PointcutRule {}
+public class PointcutRule
 ```
 
 Function: Defines a reusable atomic pointcut on a top-level ordinary class in the aspect package. A target must satisfy all conditions. Name and type patterns follow the [pointcut wildcard rules](../aspect_cj_package_overview.md#specifications-and-usage).
@@ -128,7 +128,7 @@ Parameters:
 ## class PointcutExpression
 
 ```cangjie
-public class PointcutExpression {}
+public class PointcutExpression
 ```
 
 Function: Annotates a top-level ordinary class in the aspect package to combine reusable pointcut rules with a Boolean expression.
@@ -149,7 +149,7 @@ Parameters:
 ## class InsertAtEntryByRule
 
 ```cangjie
-public class InsertAtEntryByRule {}
+public class InsertAtEntryByRule
 ```
 
 Function: Calls the annotated public global or static advice at the entry of matching targets. Advice returns `Unit` and accepts either no explicit argument or one exact `Array<Any>`. The array is a shallow snapshot in the order of explicit arguments at target entry, excluding implicit `this`. Changing an array element does not write back to the target parameter.
@@ -169,7 +169,7 @@ Parameters:
 ## class InsertAtExitByRule
 
 ```cangjie
-public class InsertAtExitByRule {}
+public class InsertAtExitByRule
 ```
 
 Function: Calls the annotated public global or static advice at normal exits of matching targets. An uncaught target exception does not run this exit advice. Advice signatures and argument snapshots follow [InsertAtEntryByRule](#class-insertatentrybyrule): the snapshot is still taken at target entry, not from the return value.

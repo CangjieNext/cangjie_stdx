@@ -1,6 +1,6 @@
 # stdx.aspect_cj 规则切点实现设计
 
-本文面向实现维护者，记录跨编译器、插件和构建驱动的设计及历史验收边界，不属于用户 API 参考。公共接口见[类文档](../libs_stdx/aspect_cj/aspect_cj_package_api/aspect_cj_package_classes.md)，构建配置与复跑命令见[驱动说明](../../build/aspect_cj_driver/README.md)。
+本文面向实现维护者，说明跨编译器、插件和构建驱动的设计、适用边界及验证入口，不属于用户 API 参考。公共接口见[类文档](../libs_stdx/aspect_cj/aspect_cj_package_api/aspect_cj_package_classes.md)，构建配置与复跑命令见[驱动说明](../../build/aspect_cj_driver/README.md)。
 
 本设计对应 [UsersForum #2248](https://gitcode.com/Cangjie/UsersForum/issues/2248) 中的业务注解切点及 AND/OR/NOT 规则组合，建立在原有通配符与 `Array<Any>` 实参能力之上。实现仍使用编译期 CHIR 插件织入，不引入宏、反射代理或业务侧胶水代码。
 
@@ -82,7 +82,7 @@ legacy 类型匹配复用带预算的规则匹配器，保留泛型构造器名�
 
 `unit_smoke.py --benchmark` 另记录一次准备、1024 条规则、512 条切面、1000 个零命中目标的默认及 `-O2` 耗时、峰值 RSS 和预算消耗；它是可复现的规模样本，不是上限 32768 条规则的完整压力验收，也不是新旧实现速度比。新增正式 Maple/LLT 在 `cangjie_test/testsuites/LLT/compiler/Plugins/AOP_tests/linux` 使用仓库已有指令格式：
 
-| 审查修正 | 验证入口 | 检查点 |
+| 验证范围 | 验证入口 | 检查点 |
 |---|---|---|
 | 最终库不能退回未织入基线 | `rule_final_library_linking.cj`；`smoke.py` | 默认/O2、正逆序、多应用共享库，运行切面计数，清单无重复基线库 |
 | 同包声明及输入绑定 | `rule_final_library_linking.cj`；`smoke.py` | 声明不一致、基线模块修改、预检摘要修改、先前最终输出修改时拒绝 COMPLETE |
@@ -90,18 +90,4 @@ legacy 类型匹配复用带预算的规则匹配器，保留泛型构造器名�
 | 显式预编译依赖 | `rule_final_library_linking.cj`；`smoke.py` | 真实依赖构建/织入/链接/运行，编译器、平台及闭包不匹配时提前拒绝 |
 | 可排错匹配摘要 | `smoke.py` | 命中数、准备次数和预算统计，摘要与计划绑定 |
 
-这两个正式用例补齐上述修正的自动回归入口，不代表设计中 T01—T29 的所有子场景都已转为正式 LLT 或多平台 CI。
-
-### 本轮本地验证记录（2026-10-11）
-
-验证环境为 Ubuntu 22.04 / WSL2 / Linux x86_64 / cjnative、Clang 15、官方 SDK `1.3.0-alpha.20261010001050`，配套编译器提交 `f59c171476c47de65b47ec3817e2e70ed9c7726b`。stdx Release 构建与安装通过，规则驱动及插件使用本轮修正源码构建。
-
-| 验证入口 | 结果 |
-|---|---|
-| 规则内核，默认 / `-O2` | 各 `checks=201, failures=0` |
-| CHIR 注解快照 | `snapshot checks=37, failures=0` |
-| 泛型函数 / 泛型类 / 异常与递归，默认及 `-O2` | 6 组 PASS |
-| 驱动端到端，包括最终库、外部依赖与失败屏障 | 20 组输出均 PASS；组数不等于独立测试用例数 |
-| 官方 Maple/LLT AOP，默认 / `-O2` | 各 58/58 PASS，FAIL=0，UNRESOLVED=0；含上述两条新正式用例 |
-
-2026-10-12 提交前核对了已构建源码与提交源码，并再次运行规则内核，默认 / `-O2` 仍各 201 项通过。本表是本地结果，不是社区 CI 或全部平台验收结果；未重编官方运行时与标准库，也未声称已通过全部 T01—T29 子场景。
+上述入口用于复现各项行为和失败条件，不代替其他平台的独立验证；具体提交的测试结果以对应 PR 的验证记录和社区 CI 为准。

@@ -3,7 +3,7 @@
 ## class InsertAtEntry
 
 ```cangjie
-public class InsertAtEntry {}
+public class InsertAtEntry
 ```
 
 功能：在注解所指定方法的入口，织入对被注解标注的函数的调用。注解所指定的方法和被注解标注的函数，需满足[规格限制](../aspect_cj_package_overview.md#规格和使用)。
@@ -36,7 +36,7 @@ public const init(packageName!: String, className!: String, methodName!: String,
 ## class InsertAtExit
 
 ```cangjie
-public class InsertAtExit {}
+public class InsertAtExit
 ```
 
 功能：在注解所指定方法的退出点，织入对被注解标注的函数的调用。注解所指定的方法和被注解标注的函数，需满足[规格限制](../aspect_cj_package_overview.md#规格和使用)。
@@ -69,7 +69,7 @@ public const init(packageName!: String, className!: String, methodName!: String,
 ## class ReplaceFuncBody
 
 ```cangjie
-public class ReplaceFuncBody {}
+public class ReplaceFuncBody
 ```
 
 功能：将注解所指定方法的方法体，替换为对被注解标注的函数的调用。注解所指定的方法和被注解标注的函数，需满足[规格限制](../aspect_cj_package_overview.md#规格和使用)。
@@ -101,7 +101,7 @@ public const init(packageName!: String, className!: String, methodName!: String,
 ## class PointcutRule
 
 ```cangjie
-public class PointcutRule {}
+public class PointcutRule
 ```
 
 功能：标注当前切面包内的顶层普通类，定义一个可复用的原子切点。各条件同时满足时才匹配目标。名称和类型模式遵循[切点通配符规则](../aspect_cj_package_overview.md#规格和使用)。
@@ -128,7 +128,7 @@ public const init(packageName!: String, className!: String, methodName!: String,
 ## class PointcutExpression
 
 ```cangjie
-public class PointcutExpression {}
+public class PointcutExpression
 ```
 
 功能：标注当前切面包内的顶层普通类，以布尔表达式组合可复用的切点规则。
@@ -149,7 +149,7 @@ public const init(packageScope!: String, expression!: String)
 ## class InsertAtEntryByRule
 
 ```cangjie
-public class InsertAtEntryByRule {}
+public class InsertAtEntryByRule
 ```
 
 功能：标注 public 全局或静态切面函数，在规则匹配目标的入口织入调用。切面返回 `Unit`，显式参数只能为零个或单个 `Array<Any>`。数组按目标入口处的显式实参顺序保存浅快照，不包含隐式 `this`；修改数组元素不会回写目标形参。
@@ -169,7 +169,7 @@ public const init(rule!: String)
 ## class InsertAtExitByRule
 
 ```cangjie
-public class InsertAtExitByRule {}
+public class InsertAtExitByRule
 ```
 
 功能：标注 public 全局或静态切面函数，在规则匹配目标的正常返回点织入调用；目标未捕获异常时不执行该出口切面。切面签名和实参快照规则同 [InsertAtEntryByRule](#class-insertatentrybyrule)，快照仍取自目标入口，而非返回值。
