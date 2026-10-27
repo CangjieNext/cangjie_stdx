@@ -213,7 +213,15 @@ class WriteBuffer {
         _buffer = newArr
     }
 
+    public exclave func append(this @local!, arr: Array<Byte> @local!): WriteBuffer @local! {
+        appendBytes(arr)
+    }
+
     public exclave func append(this @local!, arr: Array<Byte> @local?): WriteBuffer @local! {
+        appendBytes(arr)
+    }
+
+    private exclave func appendBytes(this @local!, arr: Array<Byte> @local?): WriteBuffer @local! {
         checkAndExpend(arr.size)
 
         if (arr.size < 32) {
@@ -226,6 +234,10 @@ class WriteBuffer {
             _size += arr.size
         }
         this
+    }
+
+    public exclave func append(this @local!, str: String @local!): WriteBuffer @local! {
+        append(unsafe { str.rawData() })
     }
 
     public exclave func append(this @local!, str: String @local?): WriteBuffer @local! {
@@ -295,8 +307,15 @@ class WriteBuffer {
         this
     }
 
+    public exclave func appendEscape(this @local!, str: String @local!, htmlSafe!: Bool = true): WriteBuffer @local! {
+        appendEscapeOwned(str, htmlSafe)
+    }
+
     public exclave func appendEscape(this @local!, str: String @local?, htmlSafe!: Bool = true): WriteBuffer @local! {
-        let materialised: String @local! = str.toString()
+        appendEscapeOwned(str.toString(), htmlSafe)
+    }
+
+    private exclave func appendEscapeOwned(this @local!, materialised: String @local!, htmlSafe: Bool): WriteBuffer @local! {
         var escapenum = 0
 
         unsafe {

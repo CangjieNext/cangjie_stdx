@@ -95,8 +95,13 @@ sealed abstract class JsonValue <: ToString {
         parseString(s)
     }
 
-    // `@local?` keeps `JsonValue.fromStr("1")` unambiguous; a `String @local!` twin
-    // would match every string literal twice.
+    // An owned argument is parsed directly; the shared overload materialises an owned
+    // copy first. Overload resolution stays unambiguous: a literal or a heap String binds
+    // the plain overload above, `@local!` binds this one, `@local?` binds the shared one.
+    public exclave static func fromStr(s: String @local!): JsonValue @local! {
+        parseString(s)
+    }
+
     public exclave static func fromStr(s: String @local?): JsonValue @local! {
         let ls: String @local! = s.toString()
         parseString(ls)
