@@ -94,12 +94,11 @@ sealed abstract class JsonValue <: ToString {
     public static func fromStr(s: String): JsonValue {
         parseString(s)
     }
-
-    // `@local?` keeps `JsonValue.fromStr("1")` unambiguous; a `String @local!` twin
-    // would match every string literal twice.
     public exclave static func fromStr(s: String @local?): JsonValue @local! {
-        let ls: String @local! = s.toString()
-        parseString(ls)
+        parseString(s.toString())
+    }
+    public exclave static func fromStr(s: String @local!): JsonValue @local! {
+        parseString(s)
     }
 
     /**
