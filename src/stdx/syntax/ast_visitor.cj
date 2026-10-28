@@ -90,6 +90,7 @@ public open class ASTVisitor {
             case macroExpandDecl: MacroExpandDecl => visitMacroExpandDecl(macroExpandDecl)
             case macroExpandExpr: MacroExpandExpr => visitMacroExpandExpr(macroExpandExpr)
             case macroExpandParam: MacroExpandParam => visitMacroExpandParam(macroExpandParam)
+            case macroImportList: MacroImportList => visitMacroImportList(macroImportList)
             case mainDecl: MainDecl => visitMainDecl(mainDecl)
             case matchCase: MatchCase => visitMatchCase(matchCase)
             case matchExpr: MatchExpr => visitMatchExpr(matchExpr)
@@ -472,6 +473,19 @@ public open class ASTVisitor {
         walk(node.contents)
     }
 
+    private func visitMacroImportList(node: MacroImportList) {
+        for (item in node.items) {
+            walk(item)
+        }
+    }
+
+    private func visitMacroImportSpec(node: MacroImportSpec) {
+        for (anno in node.annotations) {
+            walk(anno)
+        }
+        walk(node.contents)
+    }
+
     private func visitImportMulti(node: ImportMulti) {
         for (content in node.contents) {
             walk(content)
@@ -715,6 +729,9 @@ public open class ASTVisitor {
         }
         for (importList in node.importLists) {
             walk(importList)
+        }
+        for (macroImportList in node.macroImports) {
+            walk(macroImportList)
         }
         for (decl in node.topLevelDecls) {
             walk(decl)
