@@ -979,6 +979,7 @@ table File {
   imports: [ImportSpec];
   decls: [Decl];
   feature: FeaturesDirective;
+  macroImports: [MacroImportList];
 }
 
 table FeatureId {
@@ -1058,6 +1059,23 @@ table ImportSpec {
   reExport:ReExportKind=REEXPORT_PRIVATE;
   importPos:Position;
   content:ImportContent;
+}
+
+table MacroImportSpec {
+  base: NodeBase;
+  importPos: Position;
+  content: ImportContent;
+  annotations: [Annotation]; // @When (block items only); empty for single form.
+}
+
+// One macro import statement (single form) or one block of macro imports.
+// lcurlPos/rcurlPos are invalid for the single form; set for the block form.
+table MacroImportList {
+  base: NodeBase;
+  macroPos: Position;
+  lcurlPos: Position;
+  rcurlPos: Position;
+  items: [MacroImportSpec];
 }
 
 table NodeBase {

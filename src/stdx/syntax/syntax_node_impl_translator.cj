@@ -158,6 +158,8 @@ class SyntaxNodeImplTranslator {
             case SyntaxNodeKind.LambdaParam => transLambdaParam(node, startPos, parent)
             case SyntaxNodeKind.ParameterList => transParameterList(node, startPos, parent)
             case SyntaxNodeKind.ImportSpec => transImportList(node, startPos, parent)
+            case SyntaxNodeKind.MacroImportList => transMacroImportList(node, startPos, parent)
+            case SyntaxNodeKind.MacroImportSpec => transMacroImportSpec(node, startPos, parent)
             case SyntaxNodeKind.LineStringLiteral | SyntaxNodeKind.MultiLineStringLiteral
                 | SyntaxNodeKind.MultiLineRawStringLiteral => transStringLitConstExpr(node, startPos, parent)
             case SyntaxNodeKind.RuneLiteral => transLitConstRuneExpr(node, startPos, parent)
@@ -253,6 +255,11 @@ class SyntaxNodeImplTranslator {
             importListsPropInfo.add(PropInfo(lp.cur - 1, lp.offset))
             lp.moveOffset(v)
         }
+        let macroImportListsPropInfo = ArrayList<PropInfo>()
+        while (let Some(v) <- lp.lookAndConsume(SyntaxNodeKind.MacroImportList)) {
+            macroImportListsPropInfo.add(PropInfo(lp.cur - 1, lp.offset))
+            lp.moveOffset(v)
+        }
         let predictDecl = {
             kind: SyntaxNodeKind => kind.isDecl()
         }
@@ -263,7 +270,7 @@ class SyntaxNodeImplTranslator {
             lp.moveOffset(declNode)
         }
         let propInfos = SourceFilePropInfos(importListsPropInfo.toArray(), pkgHeaderPropInfo, declsPropInfo.toArray(),
-            ftrDirectivePropInfo)
+            ftrDirectivePropInfo, macroImportListsPropInfo: macroImportListsPropInfo.toArray())
         lp.consumeToEnd()
         let commentsPropInfos = lp.commentGroupListPropInfos.toArray()
         SourceFile(node, beginPos, parent, fileName, filePath, propInfos, commentsPropInfos)
@@ -838,6 +845,62 @@ class SyntaxNodeImplTranslator {
         lp.consumeToEnd()
         let commentsPropInfos = lp.commentGroupListPropInfos.toArray()
         ImportList(node, startPos, None, posInfo, propInfo, kind, commentsPropInfos)
+    }
+
+    private func transMacroImportList(node: NonTerminal, startPos: CodePosition, parent: ?SyntaxTreeNode): MacroImportList {
+        // BNF: MACRO NL* (LCURL NL* macroImportSpec* RCURL | macroImportSpec)
+        let lp = LocalParser(node.children)
+        var macroPos = CodePosition()
+        var lcurlPos = CodePosition()
+        var rcurlPos = CodePosition()
+        var isBlock = false
+        if (let Some(macroNode) <- lp.consume(kind: SyntaxNodeKind.MacroToken)) {
+            macroPos = startPos + lp.offset
+            lp.moveOffset(macroNode)
+        }
+        if (let Some(lcurlNode) <- lp.lookAndConsume(SyntaxNodeKind.LCurlToken)) {
+            lcurlPos = startPos + lp.offset
+            lp.moveOffset(lcurlNode)
+            isBlock = true
+        }
+        let itemsPropInfo = ArrayList<PropInfo>()
+        while (lp.look(SyntaxNodeKind.MacroImportSpec)) {
+            let itemNode = lp.consume()
+            itemsPropInfo.add(PropInfo(lp.cur - 1, lp.offset))
+            lp.moveOffset(itemNode)
+        }
+        if (let Some(rcurlNode) <- lp.lookAndConsume(SyntaxNodeKind.RCurlToken)) {
+            rcurlPos = startPos + lp.offset
+            lp.moveOffset(rcurlNode)
+        }
+        let posInfos = MacroImportListPosInfos(macroPos, lcurlPos, rcurlPos, isBlock)
+        let propInfos = MacroImportListPropInfos(itemsPropInfo.toArray())
+        lp.consumeToEnd()
+        let commentsPropInfos = lp.commentGroupListPropInfos.toArray()
+        MacroImportList(node, startPos, parent, posInfos, propInfos, commentsPropInfos)
+    }
+
+    private func transMacroImportSpec(node: NonTerminal, startPos: CodePosition, parent: ?SyntaxTreeNode): MacroImportSpec {
+        // BNF: annotationList? NL* IMPORT NL* importContent end+
+        let lp = LocalParser(node.children)
+        var annotationsPropInfo: ?PropInfo = None
+        if (let Some(annoNode) <- lp.lookAndConsume(SyntaxNodeKind.AnnotationList)) {
+            annotationsPropInfo = PropInfo(lp.cur - 1, lp.offset)
+            lp.moveOffset(annoNode)
+        }
+        let importNode = lp.consume(kind: SyntaxNodeKind.ImportToken)
+        let importKeyWordPos = startPos + lp.offset
+        lp.moveOffset(importNode)
+        var contentsPropInfo = PropInfo()
+        if (let Some(contentNode) <- lp.consume()) {
+            contentsPropInfo = PropInfo(lp.cur - 1, lp.offset)
+            lp.moveOffset(contentNode)
+        }
+        let posInfos = MacroImportSpecPosInfos(importKeyWordPos)
+        let propInfos = MacroImportSpecPropInfos(contentsPropInfo, annotationsPropInfo)
+        lp.consumeToEnd()
+        let commentsPropInfos = lp.commentGroupListPropInfos.toArray()
+        MacroImportSpec(node, startPos, parent, posInfos, propInfos, commentsPropInfos)
     }
 
     private func transGenericConstraint(node: NonTerminal, startPos: CodePosition, parent: ?SyntaxTreeNode): GenericConstraint {

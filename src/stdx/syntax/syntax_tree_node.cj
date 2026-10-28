@@ -1240,12 +1240,16 @@ class SourceFilePropInfos {
 
     let ftrDirectivePropInfo: Option<PropInfo>
 
+    let macroImportListsPropInfo: Array<PropInfo>
+
     init(importListsPropInfo: Array<PropInfo>, pkgHeaderPropInfo: Option<PropInfo>,
-        topLevelDeclsPropInfo: Array<PropInfo>, ftrDirectivePropInfo: Option<PropInfo>) {
+        topLevelDeclsPropInfo: Array<PropInfo>, ftrDirectivePropInfo: Option<PropInfo>,
+        macroImportListsPropInfo!: Array<PropInfo> = []) {
         this.importListsPropInfo = importListsPropInfo
         this.pkgHeaderPropInfo = pkgHeaderPropInfo
         this.topLevelDeclsPropInfo = topLevelDeclsPropInfo
         this.ftrDirectivePropInfo = ftrDirectivePropInfo
+        this.macroImportListsPropInfo = macroImportListsPropInfo
     }
 }
 
@@ -1283,10 +1287,11 @@ public class SourceFile <: SyntaxTreeNode {
      * @brief Initialize node with import list, file name, file path, package header, top level declrations and features directive.
      */
     public init(importLists: Array<ImportList>, name: String, path: String, pkgHeader: Option<PackageHeader>,
-        topLevelDecls: Array<Decl>, ftrDirective!: Option<FeaturesDirective> = None, comments!: Array<Comment> = []) {
+        topLevelDecls: Array<Decl>, ftrDirective!: Option<FeaturesDirective> = None, comments!: Array<Comment> = [],
+        macroImports!: Array<MacroImportList> = []) {
         super(
             SyntaxNodeImplCreator.createSourceFileImpl(importLists, pkgHeader, topLevelDecls, ftrDirective: ftrDirective,
-                comments: comments))
+                comments: comments, macroImports: macroImports))
         let startPos = DEFAULT_START_POS
         let curNode = (this.nodeImpl as NonTerminal).getOrThrow()
         let redNode = cast<SourceFile>(SyntaxNodeImplTranslator.translateFile(curNode, path, parent: None)).getOrThrow()
@@ -1311,6 +1316,24 @@ public class SourceFile <: SyntaxTreeNode {
                     cast<ImportList>(SyntaxNodeImplTranslator.translate(curNode, startPos + offset, this)).getOrThrow())
             }
             imports.toArray()
+        }
+    }
+
+    /**
+     * @brief The macro import lists of the source file.
+     *
+     * This array field contains the macro import declarations of the source file.
+     */
+    public prop macroImports: Array<MacroImportList> {
+        get() {
+            let macroImportLists = ArrayList<MacroImportList>()
+            for (propInfo in propInfos.macroImportListsPropInfo) {
+                let curNode = (nodeImpl as NonTerminal).getOrThrow().children[propInfo.index]
+                let offset = propInfo.offset
+                macroImportLists.add(cast<MacroImportList>(
+                    SyntaxNodeImplTranslator.translate(curNode, startPos + offset, this)).getOrThrow())
+            }
+            macroImportLists.toArray()
         }
     }
 

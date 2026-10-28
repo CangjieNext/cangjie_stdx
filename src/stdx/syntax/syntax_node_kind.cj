@@ -45,6 +45,8 @@ enum SyntaxNodeKind <: ToString {
     | Modifier
     | GenericParam
     | ImportSpec
+    | MacroImportList
+    | MacroImportSpec
     // ImportCotent
     | ImportAlias
     | ImportAll
