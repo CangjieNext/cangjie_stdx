@@ -61,6 +61,8 @@ using AstFile = Ptr<const Cangjie::AST::File>;
 using AstFeaturesDirective = Ptr<const Cangjie::AST::FeaturesDirective>;
 using AstPackageSpec = Ptr<const Cangjie::AST::PackageSpec>;
 using AstImportSpec = Ptr<const Cangjie::AST::ImportSpec>;
+using AstMacroImportSpec = Ptr<const Cangjie::AST::MacroImportSpec>;
+using AstMacroImportList = Ptr<const Cangjie::AST::MacroImportList>;
 using AstCommentGroups = const Cangjie::AST::CommentGroups;
 using AstCommentGroup = const Cangjie::AST::CommentGroup;
 using AstComment = const Cangjie::AST::Comment;
@@ -228,6 +230,8 @@ private:
 
     flatbuffers::Offset<SyntaxFormat::File> SerializeFile(AstFile file, SourceManager* sm = nullptr);
     flatbuffers::Offset<SyntaxFormat::ImportSpec> SerializeImportSpec(AstImportSpec importSpec);
+    flatbuffers::Offset<SyntaxFormat::MacroImportSpec> SerializeMacroImportSpec(AstMacroImportSpec macroImportSpec);
+    flatbuffers::Offset<SyntaxFormat::MacroImportList> SerializeMacroImportList(AstMacroImportList macroImportList);
     flatbuffers::Offset<SyntaxFormat::ImportContent> SerializeImportContent(const AST::ImportContent& content);
     flatbuffers::Offset<SyntaxFormat::PackageSpec> SerializePackageSpec(AstPackageSpec packageSpec);
     flatbuffers::Offset<SyntaxFormat::FeaturesDirective> SerializeFeaturesDirective(AstFeaturesDirective featureDirective);

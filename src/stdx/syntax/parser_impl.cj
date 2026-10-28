@@ -745,6 +745,63 @@ private class FlatbufferNodeTranslator {
         builder.buildNonTerminal(SyntaxNodeKind.ImportSpec, ret.toArray())
     }
 
+    private func transMacroImportList(macroImports: SyntaxFormat_MacroImportList): ?SyntaxNodeImpl {
+        addWhitespaceAndMoveCursorToBegin(macroImports.GetBase())
+        let ret = ArrayList<SyntaxNodeImpl>()
+        addLeadCommentNodesToRet(ret)
+        curChildren = ret
+
+        let nodeBase = macroImports.GetBase()
+        let (leadCmts, innerCmts, trailCmts) = getCommentGroups(nodeBase)
+        addLeadingComments(nodeBase, ret, leadCmts)
+        innerComments = innerCmts
+
+        transBasicTerminal(macroImports.GetMacroPos(), SyntaxNodeKind.MacroToken)
+        transBasicTerminal(macroImports.GetLcurlPos(), SyntaxNodeKind.LCurlToken)
+        let items = macroImports.GetItems()
+        for (item in items) {
+            if (let Some(spec) <- item) {
+                addChild(ret, transMacroImportSpec(spec))
+                resetGlobalVariables(ret, innerCmts)
+            }
+        }
+        transBasicTerminal(macroImports.GetRcurlPos(), SyntaxNodeKind.RCurlToken)
+        if (trailCmts.size > 0) {
+            addChild(ret, transCommentGroupList(trailCmts))
+            resetGlobalVariables(ret, innerCmts)
+        }
+        innerComments = Array<Option<SyntaxFormat_CommentGroup>>()
+        builder.buildNonTerminal(SyntaxNodeKind.MacroImportList, ret.toArray())
+    }
+
+    private func transMacroImportSpec(spec: SyntaxFormat_MacroImportSpec): ?SyntaxNodeImpl {
+        addWhitespaceAndMoveCursorToBegin(spec.GetBase())
+        let ret = ArrayList<SyntaxNodeImpl>()
+        addLeadCommentNodesToRet(ret)
+        curChildren = ret
+
+        let nodeBase = spec.GetBase()
+        let (leadCmts, innerCmts, trailCmts) = getCommentGroups(nodeBase)
+        addLeadingComments(nodeBase, ret, leadCmts)
+        innerComments = innerCmts
+
+        let annos = spec.GetAnnotations()
+        if (annos.size > 0) {
+            addChild(ret, transAnnotations(annos))
+            resetGlobalVariables(ret, innerCmts)
+        }
+        transBasicTerminal(spec.GetImportPos(), SyntaxNodeKind.ImportToken)
+        if (let Some(v) <- spec.GetContent()) {
+            addChild(ret, transImportContent(v))
+        }
+        if (trailCmts.size > 0) {
+            addChild(ret, transCommentGroupList(trailCmts))
+            resetGlobalVariables(ret, innerCmts)
+        }
+        innerComments = Array<Option<SyntaxFormat_CommentGroup>>()
+        builder.buildNonTerminal(SyntaxNodeKind.MacroImportSpec, ret.toArray())
+    }
+
     private func getPrimitiveTypeKind(num: UInt16): SyntaxNodeKind {
         match (num) {
             case 1 /*UNIT*/ => SyntaxNodeKind.UnitToken
@@ -1141,11 +1198,30 @@ private class FlatbufferNodeTranslator {
             resetGlobalVariables(ret, innerCmts)
         }
         let imports = file.GetImports()
+        let macroImports = file.GetMacroImports()
+        // 'import' and 'macro import' can be interleaved in the source code, so they
+        // are merged back into source order before translation. Emitting them in two
+        // separate loops would move the cursor backwards and corrupt the output text.
+        var macroIdx = 0
         for (imp in imports) {
-            if (let Some(import1) <- imp) {
-                addChild(ret, transImportList(import1))
+            if (let Some(importList) <- imp) {
+                while (macroIdx < macroImports.size && isMacroImportBefore(macroImports[macroIdx], importList)) {
+                    if (let Some(macroImport) <- macroImports[macroIdx]) {
+                        addChild(ret, transMacroImportList(macroImport))
+                        resetGlobalVariables(ret, innerCmts)
+                    }
+                    macroIdx++
+                }
+                addChild(ret, transImportList(importList))
                 resetGlobalVariables(ret, innerCmts)
             }
+        }
+        while (macroIdx < macroImports.size) {
+            if (let Some(macroImport) <- macroImports[macroIdx]) {
+                addChild(ret, transMacroImportList(macroImport))
+                resetGlobalVariables(ret, innerCmts)
+            }
+            macroIdx++
         }
 
         let decls: Array<Option<SyntaxFormat_Decl>> = file.GetDecls()
@@ -1162,6 +1238,21 @@ private class FlatbufferNodeTranslator {
         }
         innerComments = Array<Option<SyntaxFormat_CommentGroup>>()
         builder.buildNonTerminal(SyntaxNodeKind.File, ret.toArray())
+    }
+
+    // Checks whether a macro import precedes a plain import in source order,
+    // based on the begin positions recorded in their node bases.
+    private func isMacroImportBefore(macroImport: ?SyntaxFormat_MacroImportList, importSpec: SyntaxFormat_ImportSpec): Bool {
+        if (let Some(m) <- macroImport) {
+            if (let Some(mBase) <- m.GetBase()) {
+                if (let Some(iBase) <- importSpec.GetBase()) {
+                    let mBegin = mBase.GetBegin()
+                    let iBegin = iBase.GetBegin()
+                    return mBegin.line < iBegin.line || (mBegin.line == iBegin.line && mBegin.column < iBegin.column)
+                }
+            }
+        }
+        return false
     }
 
     private func transFeatureId(ftr: SyntaxFormat_FeatureId): ?SyntaxNodeImpl {

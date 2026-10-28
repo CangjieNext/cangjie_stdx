@@ -223,6 +223,37 @@ flatbuffers::Offset<SyntaxFormat::ImportSpec> NodeWriter::SerializeImportSpec(As
     return SyntaxFormat::CreateImportSpec(builder, imNodeBase, reExport, &importPos, content);
 }
 
+flatbuffers::Offset<SyntaxFormat::MacroImportSpec> NodeWriter::SerializeMacroImportSpec(AstMacroImportSpec macroImportSpec)
+{
+    if (macroImportSpec == nullptr) {
+        return flatbuffers::Offset<SyntaxFormat::MacroImportSpec>();
+    }
+    auto miNodeBase = SerializeNodeBase(macroImportSpec);
+    auto importPos = SyntaxFormat::Position(
+        macroImportSpec->importPos.fileID, macroImportSpec->importPos.line, macroImportSpec->importPos.column);
+    auto content = SerializeImportContent(macroImportSpec->content);
+    auto annotations = FlatVectorCreateHelper<SyntaxFormat::Annotation, Annotation, AstAnnotation>(
+        macroImportSpec->annotations, &NodeWriter::SerializeAnnotation);
+    return SyntaxFormat::CreateMacroImportSpec(builder, miNodeBase, &importPos, content, annotations);
+}
+
+flatbuffers::Offset<SyntaxFormat::MacroImportList> NodeWriter::SerializeMacroImportList(AstMacroImportList macroImportList)
+{
+    if (macroImportList == nullptr) {
+        return flatbuffers::Offset<SyntaxFormat::MacroImportList>();
+    }
+    auto mlNodeBase = SerializeNodeBase(macroImportList);
+    auto macroPos = SyntaxFormat::Position(
+        macroImportList->macroPos.fileID, macroImportList->macroPos.line, macroImportList->macroPos.column);
+    auto lcurlPos = SyntaxFormat::Position(
+        macroImportList->lcurlPos.fileID, macroImportList->lcurlPos.line, macroImportList->lcurlPos.column);
+    auto rcurlPos = SyntaxFormat::Position(
+        macroImportList->rcurlPos.fileID, macroImportList->rcurlPos.line, macroImportList->rcurlPos.column);
+    auto items = FlatVectorCreateHelper<SyntaxFormat::MacroImportSpec, MacroImportSpec, AstMacroImportSpec>(
+        macroImportList->items, &NodeWriter::SerializeMacroImportSpec);
+    return SyntaxFormat::CreateMacroImportList(builder, mlNodeBase, &macroPos, &lcurlPos, &rcurlPos, items);
+}
+
 flatbuffers::Offset<SyntaxFormat::File> NodeWriter::SerializeFile(AstFile file, SourceManager* sm)
 {
     if (file == nullptr) {
@@ -243,7 +274,12 @@ flatbuffers::Offset<SyntaxFormat::File> NodeWriter::SerializeFile(AstFile file, 
     }
     auto imports = builder.CreateVector(importsVec);
     auto decls = FlatVectorCreateHelper<SyntaxFormat::Decl, Decl, AstDecl>(file->decls, &NodeWriter::SerializeDecl);
-    return SyntaxFormat::CreateFile(builder, fNodeBase, fileName, filePath, package, imports, decls, feature);
+    auto macroImports = file->package
+        ? FlatVectorCreateHelper<SyntaxFormat::MacroImportList, MacroImportList, AstMacroImportList>(
+            file->package->macroImports, &NodeWriter::SerializeMacroImportList)
+        : builder.CreateVector(std::vector<flatbuffers::Offset<SyntaxFormat::MacroImportList>>{});
+    return SyntaxFormat::CreateFile(builder, fNodeBase, fileName, filePath, package, imports, decls, feature,
+        macroImports);
 }
 
 flatbuffers::Offset<SyntaxFormat::MatchCase> NodeWriter::SerializeMatchCase(AstMatchCase matchcase)
