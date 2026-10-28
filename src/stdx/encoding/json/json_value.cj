@@ -98,11 +98,13 @@ sealed abstract class JsonValue <: ToString {
     // An owned argument is parsed directly; the shared overload materialises an owned
     // copy first. Overload resolution stays unambiguous: a literal or a heap String binds
     // the plain overload above, `@local!` binds this one, `@local?` binds the shared one.
-    public exclave static func fromStr(s: String @local!): JsonValue @local! {
+    // The same-name overloads are required by the local-mode adaptation, so the shadow
+    // warning does not apply.
+    public exclave static func fromStr(s: String @local!): JsonValue @local! { // cjlint-ignore !G.DCL.01
         parseString(s)
     }
 
-    public exclave static func fromStr(s: String @local?): JsonValue @local! {
+    public exclave static func fromStr(s: String @local?): JsonValue @local! { // cjlint-ignore !G.DCL.01
         let ls: String @local! = s.toString()
         parseString(ls)
     }

@@ -217,7 +217,7 @@ class WriteBuffer {
         appendBytes(arr)
     }
 
-    public exclave func append(this @local!, arr: Array<Byte> @local?): WriteBuffer @local! {
+    public exclave func append(this @local!, arr: Array<Byte> @local?): WriteBuffer @local! { // cjlint-ignore !G.DCL.01
         appendBytes(arr)
     }
 
@@ -236,11 +236,11 @@ class WriteBuffer {
         this
     }
 
-    public exclave func append(this @local!, str: String @local!): WriteBuffer @local! {
+    public exclave func append(this @local!, str: String @local!): WriteBuffer @local! { // cjlint-ignore !G.DCL.01
         append(unsafe { str.rawData() })
     }
 
-    public exclave func append(this @local!, str: String @local?): WriteBuffer @local! {
+    public exclave func append(this @local!, str: String @local?): WriteBuffer @local! { // cjlint-ignore !G.DCL.01
         append(unsafe { str.toString().rawData() })
     }
 
@@ -307,11 +307,11 @@ class WriteBuffer {
         this
     }
 
-    public exclave func appendEscape(this @local!, str: String @local!, htmlSafe!: Bool = true): WriteBuffer @local! {
+    public exclave func appendEscape(this @local!, str: String @local!, htmlSafe!: Bool = true): WriteBuffer @local! { // cjlint-ignore !G.DCL.01
         appendEscapeOwned(str, htmlSafe)
     }
 
-    public exclave func appendEscape(this @local!, str: String @local?, htmlSafe!: Bool = true): WriteBuffer @local! {
+    public exclave func appendEscape(this @local!, str: String @local?, htmlSafe!: Bool = true): WriteBuffer @local! { // cjlint-ignore !G.DCL.01
         appendEscapeOwned(str.toString(), htmlSafe)
     }
 
