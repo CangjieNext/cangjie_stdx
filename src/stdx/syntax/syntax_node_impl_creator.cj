@@ -1752,6 +1752,48 @@ class SyntaxNodeImplCreator {
         builder.buildNonTerminal(SyntaxNodeKind.ImportSpec, parts.toArray())
     }
 
+    static func createMacroImportListImpl(items: Array<MacroImportSpec>, isBlock: Bool, comments!: Array<Comment> = []) {
+        let builder = SyntaxNodeBuilder()
+        let parts = ArrayList<SyntaxNodeImpl>()
+        addCommentToNode(parts, comments)
+        parts.add(builder.buildBasicTerminal(SyntaxNodeKind.MacroToken))
+        if (isBlock) {
+            parts.add(builder.buildSpace(1))
+            parts.add(builder.buildBasicTerminal(SyntaxNodeKind.LCurlToken))
+            parts.add(builder.buildNewline(1))
+        } else {
+            parts.add(builder.buildSpace(1))
+        }
+        for (i in 0..items.size) {
+            parts.add(items[i].nodeImpl)
+            if (i + 1 < items.size) {
+                parts.add(builder.buildNewline(1))
+            }
+        }
+        if (isBlock) {
+            if (items.size > 0) {
+                parts.add(builder.buildNewline(1))
+            }
+            parts.add(builder.buildBasicTerminal(SyntaxNodeKind.RCurlToken))
+        }
+        builder.buildNonTerminal(SyntaxNodeKind.MacroImportList, parts.toArray())
+    }
+
+    static func createMacroImportSpecImpl(contents: ImportContent, annotations: Array<Annotation>,
+        comments!: Array<Comment> = []) {
+        let builder = SyntaxNodeBuilder()
+        let parts = ArrayList<SyntaxNodeImpl>()
+        addCommentToNode(parts, comments)
+        if (annotations.size > 0) {
+            parts.add(createAnnotationList(annotations))
+            parts.add(builder.buildNewline(1))
+        }
+        parts.add(builder.buildBasicTerminal(SyntaxNodeKind.ImportToken))
+        parts.add(builder.buildSpace(1))
+        parts.add(contents.nodeImpl)
+        builder.buildNonTerminal(SyntaxNodeKind.MacroImportSpec, parts.toArray())
+    }
+
     static func createImportSingleImpl(prefixes: Array<String>, identifier: String, comments!: Array<Comment> = []) {
         unsafe { checkIdentifier(identifier, "identifier", "ImportSingle") }
         let builder = SyntaxNodeBuilder()
@@ -2628,7 +2670,8 @@ class SyntaxNodeImplCreator {
     }
 
     static func createSourceFileImpl(importLists: Array<ImportList>, pkgHeader: Option<PackageHeader>,
-        topLevelDecls: Array<Decl>, ftrDirective!: Option<FeaturesDirective> = None, comments!: Array<Comment> = []) {
+        topLevelDecls: Array<Decl>, ftrDirective!: Option<FeaturesDirective> = None, comments!: Array<Comment> = [],
+        macroImports!: Array<MacroImportList> = []) {
         let builder = SyntaxNodeBuilder()
         let parts = ArrayList<SyntaxNodeImpl>()
         if (let Some(f) <- ftrDirective) {
@@ -2641,6 +2684,10 @@ class SyntaxNodeImplCreator {
         }
         for (i in importLists) {
             parts.add(i.nodeImpl)
+            parts.add(builder.buildNewline(1))
+        }
+        for (mi in macroImports) {
+            parts.add(mi.nodeImpl)
             parts.add(builder.buildNewline(1))
         }
         for (d in topLevelDecls) {

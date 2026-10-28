@@ -352,6 +352,242 @@ public class ImportList <: SyntaxTreeNode {
 }
 
 /**
+ * @brief Represents position information for a macro import list.
+ */
+class MacroImportListPosInfos {
+    let macroPos: CodePosition
+    let lcurlPos: CodePosition
+    let rcurlPos: CodePosition
+    let isBlock: Bool
+
+    init(macroPos: CodePosition, lcurlPos: CodePosition, rcurlPos: CodePosition, isBlock: Bool) {
+        this.macroPos = macroPos
+        this.lcurlPos = lcurlPos
+        this.rcurlPos = rcurlPos
+        this.isBlock = isBlock
+    }
+}
+
+class MacroImportListPropInfos {
+    let itemsPropInfo: Array<PropInfo>
+
+    init(itemsPropInfo: Array<PropInfo>) {
+        this.itemsPropInfo = itemsPropInfo
+    }
+}
+
+/**
+ * @brief Validates the form of a macro import list under construction.
+ *
+ * A single-form macro import requires exactly one item and does not allow
+ * annotations (the compiler rejects `@When` outside the block form); an empty
+ * item list is only valid for the block form (`macro {}`).
+ */
+func checkMacroImportListForm(items: Array<MacroImportSpec>, isBlock: Bool): Bool {
+    if (!isBlock && items.size != 1) {
+        throw IllegalArgumentException(
+            "A single-form macro import requires exactly one item; use the block form 'macro { ... }' instead.")
+    }
+    if (!isBlock) {
+        for (item in items) {
+            if (item.annotations.size > 0) {
+                throw IllegalArgumentException(
+                    "A single-form macro import does not allow annotations; use the block form 'macro { ... }' instead.")
+            }
+        }
+    }
+    return isBlock
+}
+
+/**
+ * @brief Represents a macro import declaration, which contains one or more macro import specs.
+ */
+public class MacroImportList <: SyntaxTreeNode {
+    private let startPos: CodePosition
+    private let posInfos: MacroImportListPosInfos
+    private let propInfos: MacroImportListPropInfos
+    /**
+     * @brief Gets the position range of the 'macro' keyword in the macro import declaration.
+     *
+     * @return A CodePositionRange representing the position range of the 'macro' keyword.
+     */
+    public func getMacroPos(): CodePositionRange {
+        let endPos = posInfos.macroPos + SyntaxNodeKind.MacroToken.size
+        return CodePositionRange(posInfos.macroPos, endPos)
+    }
+
+    /**
+     * @brief Gets the position range of the left curly brace in the block form.
+     *
+     * @return The position range of the left curly brace, or None if the macro import
+     * is not in block form.
+     */
+    public func getLCurlPos(): Option<CodePositionRange> {
+        if (!posInfos.isBlock) {
+            return None
+        }
+        let endPos = posInfos.lcurlPos + SyntaxNodeKind.LCurlToken.size
+        return Some(CodePositionRange(posInfos.lcurlPos, endPos))
+    }
+
+    /**
+     * @brief Gets the position range of the right curly brace in the block form.
+     *
+     * @return The position range of the right curly brace, or None if the macro import
+     * is not in block form.
+     */
+    public func getRCurlPos(): Option<CodePositionRange> {
+        if (!posInfos.isBlock) {
+            return None
+        }
+        let endPos = posInfos.rcurlPos + SyntaxNodeKind.RCurlToken.size
+        return Some(CodePositionRange(posInfos.rcurlPos, endPos))
+    }
+
+    init(nodeImpl: SyntaxNodeImpl, startPos: CodePosition, parentNode: ?SyntaxTreeNode,
+        posInfos: MacroImportListPosInfos, propInfos: MacroImportListPropInfos, commentsPropInfo: Array<PropInfo>) {
+        super(CodePositionRange(startPos, startPos + nodeImpl.offset), nodeImpl, parentNode, commentsPropInfo)
+        this.startPos = startPos
+        this.posInfos = posInfos
+        this.propInfos = propInfos
+    }
+
+    /**
+     * @brief Initialize node with macro import spec items.
+     *
+     * @param items The macro import specs of the list.
+     * @param isBlock Whether the macro import uses the block form (`macro { ... }`).
+     * Defaults to true only when more than one item is given. Note that a single-form
+     * macro import accepts exactly one item without annotations.
+     * @param comments The comments attached to the macro import list.
+     */
+    public init(items: Array<MacroImportSpec>, isBlock!: Bool = items.size > 1, comments!: Array<Comment> = []) {
+        super(SyntaxNodeImplCreator.createMacroImportListImpl(items, checkMacroImportListForm(items, isBlock),
+            comments: comments))
+        let startPos = DEFAULT_START_POS
+        let curNode = (this.nodeImpl as NonTerminal).getOrThrow()
+        let redNode = cast<MacroImportList>(SyntaxNodeImplTranslator.translate(curNode, startPos, None)).getOrThrow()
+        this.startPos = startPos
+        this.posInfos = redNode.posInfos
+        this.propInfos = redNode.propInfos
+    }
+
+    /**
+     * @brief The items of the macro import list.
+     */
+    public prop items: Array<MacroImportSpec> {
+        get() {
+            let items = ArrayList<MacroImportSpec>()
+            for (propInfo in propInfos.itemsPropInfo) {
+                let curNode = (nodeImpl as NonTerminal).getOrThrow().children[propInfo.index]
+                items.add(cast<MacroImportSpec>(
+                    SyntaxNodeImplTranslator.translate(curNode, startPos + propInfo.offset, this)).getOrThrow())
+            }
+            items.toArray()
+        }
+    }
+
+    /**
+     * @brief Whether the macro import is in block form (`macro { ... }`).
+     */
+    public prop isBlock: Bool {
+        get() {
+            posInfos.isBlock
+        }
+    }
+}
+
+/**
+ * @brief Represents position information for a macro import spec.
+ */
+class MacroImportSpecPosInfos {
+    let importKeyWordPos: CodePosition
+
+    init(importKeyWordPos: CodePosition) {
+        this.importKeyWordPos = importKeyWordPos
+    }
+}
+
+class MacroImportSpecPropInfos {
+    let contentsPropInfo: Option<PropInfo>
+    let annotationsPropInfo: Option<PropInfo>
+
+    init(contentsPropInfo: Option<PropInfo>, annotationsPropInfo: Option<PropInfo>) {
+        this.contentsPropInfo = contentsPropInfo
+        this.annotationsPropInfo = annotationsPropInfo
+    }
+}
+
+/**
+ * @brief Represents one macro import statement, which is an item of a MacroImportList.
+ */
+public class MacroImportSpec <: SyntaxTreeNode {
+    private let startPos: CodePosition
+    private let posInfos: MacroImportSpecPosInfos
+    private let propInfos: MacroImportSpecPropInfos
+    /**
+     * @brief Gets the position range of the 'import' keyword in the macro import statement.
+     *
+     * @return A CodePositionRange representing the position range of the 'import' keyword.
+     */
+    public func getImportKeyWordPos(): CodePositionRange {
+        let endPos = posInfos.importKeyWordPos + SyntaxNodeKind.ImportToken.size
+        return CodePositionRange(posInfos.importKeyWordPos, endPos)
+    }
+
+    init(nodeImpl: SyntaxNodeImpl, startPos: CodePosition, parentNode: ?SyntaxTreeNode,
+        posInfos: MacroImportSpecPosInfos, propInfos: MacroImportSpecPropInfos, commentsPropInfo: Array<PropInfo>) {
+        super(CodePositionRange(startPos, startPos + nodeImpl.offset), nodeImpl, parentNode, commentsPropInfo)
+        this.startPos = startPos
+        this.posInfos = posInfos
+        this.propInfos = propInfos
+    }
+
+    /**
+     * @brief Initialize node with imported content and annotations.
+     */
+    public init(contents: ImportContent, annotations!: Array<Annotation> = [], comments!: Array<Comment> = []) {
+        super(SyntaxNodeImplCreator.createMacroImportSpecImpl(contents, annotations, comments: comments))
+        let startPos = DEFAULT_START_POS
+        let curNode = (this.nodeImpl as NonTerminal).getOrThrow()
+        let redNode = cast<MacroImportSpec>(SyntaxNodeImplTranslator.translate(curNode, startPos, None)).getOrThrow()
+        this.startPos = startPos
+        this.posInfos = redNode.posInfos
+        this.propInfos = redNode.propInfos
+    }
+
+    /**
+     * @brief Contents of the macro import.
+     */
+    public prop contents: ImportContent {
+        get() {
+            let propInfo = match (propInfos.contentsPropInfo) {
+                case Some(p) => p
+                case None => throw IllegalArgumentException(
+                    "The macro import spec does not contain any import content.")
+            }
+            let curNode = (nodeImpl as NonTerminal).getOrThrow().children[propInfo.index]
+            cast<ImportContent>(SyntaxNodeImplTranslator.translate(curNode, startPos + propInfo.offset, this))
+                .getOrThrow()
+        }
+    }
+
+    /**
+     * @brief The annotations (e.g. @When) attached to the macro import.
+     */
+    public prop annotations: Array<Annotation> {
+        get() {
+            var annos = Array<Annotation>()
+            if (let Some(propInfo) <- propInfos.annotationsPropInfo) {
+                annos = SyntaxNodeImplTranslator.translateList<Annotation>(
+                    (nodeImpl as NonTerminal).getOrThrow().children[propInfo.index], startPos + propInfo.offset, this)
+            }
+            return annos
+        }
+    }
+}
+
+/**
  * @brief Represents position information for a multi-import statement.
  */
 class ImportMultiPosInfos {

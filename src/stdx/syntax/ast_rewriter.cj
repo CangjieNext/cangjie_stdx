@@ -652,8 +652,20 @@ class ChildCollector <: ASTVisitor {
                 if (let Some(pkgHeader) <- sourceFile.pkgHeader) {
                     childNodes.add(pkgHeader)
                 }
+                // The impl tree stores imports and macro imports interleaved in source
+                // order, so the collection order must match that interleaving.
+                var macroIdx = 0
+                let macroImports = sourceFile.macroImports
                 for (importList in sourceFile.importLists) {
+                    while (macroIdx < macroImports.size && isBefore(macroImports[macroIdx], importList)) {
+                        childNodes.add(macroImports[macroIdx])
+                        macroIdx++
+                    }
                     childNodes.add(importList)
+                }
+                while (macroIdx < macroImports.size) {
+                    childNodes.add(macroImports[macroIdx])
+                    macroIdx++
                 }
                 for (decl in sourceFile.topLevelDecls) {
                     childNodes.add(decl)
@@ -765,9 +777,25 @@ class ChildCollector <: ASTVisitor {
                 for (f in featuresSet.content) {
                     childNodes.add(f)
                 }
+            case macroImportList: MacroImportList =>
+                for (item in macroImportList.items) {
+                    childNodes.add(item)
+                }
+            case macroImportSpec: MacroImportSpec =>
+                for (a in macroImportSpec.annotations) {
+                    childNodes.add(a)
+                }
+                childNodes.add(macroImportSpec.contents)
             case _ => return
             // For SyntaxTreeNode without child nodes, do not add anything
         }
+    }
+
+    // Checks whether the left node begins before the right node in source order.
+    private func isBefore(left: SyntaxTreeNode, right: SyntaxTreeNode): Bool {
+        let lb = left.nodePos.begin
+        let rb = right.nodePos.begin
+        return lb.line < rb.line || (lb.line == rb.line && lb.column < rb.column)
     }
 
     func getChildNodes(): ArrayList<SyntaxTreeNode> {
