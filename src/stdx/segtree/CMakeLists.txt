@@ -5,11 +5,6 @@
 #
 # See https://cangjie-lang.cn/pages/LICENSE for license information.
 
-set(SEGTREE_CJ_SOURCES
+set(SEGTREE_SRCS
     segment_tree.cj
-)
-
-cangjie_add_module(stdx_segtree STATIC SHARED
-    SOURCES
-        
-)
+    CACHE INTERNAL "")
