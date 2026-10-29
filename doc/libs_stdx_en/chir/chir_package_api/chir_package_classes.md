@@ -10339,7 +10339,7 @@ func_isConst: false
 public func isExternalLinkage(): Bool
 ```
 
-Function: Checks whether this global value has external linkage (`LinkType.External`).
+Function: Checks whether this global value has external linkage (`LinkType.External`). Returns `true` by default when no linkage annotation is set.
 
 Return Value:
 
@@ -10362,6 +10362,44 @@ Output:
 
 ```text
 func_isExternalLinkage: true
+```
+
+### func setExternalLinkage()
+
+```cangjie
+public func setExternalLinkage(): Unit
+```
+
+Function: Sets this global value's linkage to external, replacing any existing linkage annotation. Applies to functions and global variables; repeated calls do not add duplicate annotations.
+
+Note: When no linkage annotation is set, linkage already defaults to external and `isExternalLinkage()` returns `true`. This method is mainly used to override an existing non-external linkage annotation, for example after deserialization; when unset, it adds an explicit external-linkage annotation.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    let gv = pkg.addGlobalVar(IntType.getInt32(), "g_m", "g", "demo")
+    println("explicit_linkage_before: ${f.toString().contains("linkType: external")} ${gv.toString().contains("linkType: external")}")
+    f.setExternalLinkage()
+    gv.setExternalLinkage()
+    println("function_external: ${f.isExternalLinkage()}")
+    println("global_external: ${gv.isExternalLinkage()}")
+    println("explicit_linkage_after: ${f.toString().contains("linkType: external")} ${gv.toString().contains("linkType: external")}")
+}
+```
+
+Output:
+
+```text
+explicit_linkage_before: false false
+function_external: true
+global_external: true
+explicit_linkage_after: true true
 ```
 
 ### func isForeign()

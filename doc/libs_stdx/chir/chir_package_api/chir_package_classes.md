@@ -10340,7 +10340,7 @@ func_isConst: false
 public func isExternalLinkage(): Bool
 ```
 
-功能：判断该全局值是否具有外部链接（`LinkType.External`）。
+功能：判断该全局值是否具有外部链接（`LinkType.External`）。 未设置链接类型注解时，默认返回 `true`。
 
 返回值：
 
@@ -10363,6 +10363,44 @@ main() {
 
 ```text
 func_isExternalLinkage: true
+```
+
+### func setExternalLinkage()
+
+```cangjie
+public func setExternalLinkage(): Unit
+```
+
+功能：将该全局值的链接类型设置为外部链接，替换已有的链接类型注解。适用于函数和全局变量；重复调用不会添加重复注解。
+
+说明：未设置链接类型注解时，默认链接类型已为外部链接，因此 `isExternalLinkage()` 返回 `true`。此方法主要用于将已有的非外部链接注解（例如反序列化后得到的注解）改为外部链接；没有注解时会添加显式的外部链接注解。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    let gv = pkg.addGlobalVar(IntType.getInt32(), "g_m", "g", "demo")
+    println("explicit_linkage_before: ${f.toString().contains("linkType: external")} ${gv.toString().contains("linkType: external")}")
+    f.setExternalLinkage()
+    gv.setExternalLinkage()
+    println("function_external: ${f.isExternalLinkage()}")
+    println("global_external: ${gv.isExternalLinkage()}")
+    println("explicit_linkage_after: ${f.toString().contains("linkType: external")} ${gv.toString().contains("linkType: external")}")
+}
+```
+
+运行结果：
+
+```text
+explicit_linkage_before: false false
+function_external: true
+global_external: true
+explicit_linkage_after: true true
 ```
 
 ### func isForeign()
