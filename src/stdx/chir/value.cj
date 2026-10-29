@@ -701,6 +701,14 @@ sealed abstract class GlobalValue <: Value & Equatable<GlobalValue> {
     }
 
     /**
+     * Sets this global value's linkage to external, replacing any existing linkage annotation.
+     * @return The `Unit` result.
+     */
+    public func setExternalLinkage(): Unit {
+        setAnno<LinkTypeInfo, LinkType>(LinkType.External)
+    }
+
+    /**
      * Performs the public behavior of `isForeign`.
      * @return The `Bool` result.
      */

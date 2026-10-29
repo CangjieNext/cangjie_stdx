@@ -9599,7 +9599,7 @@ main() {
     let pkg = Package("demo", AccessLevel.Public)
     let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
     f.initBody()
-    f.body.getOrThrow().destroySelf() 
+    f.body.getOrThrow().destroySelf()
     println("fn_destroySelf_after: ${f.body.isNone()}")
 }
 ```
@@ -9607,7 +9607,7 @@ main() {
 运行结果：
 
 ```text
-fn_destroySelf_before: true
+fn_destroySelf_after: true
 ```
 
 ### func setEntryBlock(Block)
@@ -10363,6 +10363,38 @@ main() {
 
 ```text
 func_isExternalLinkage: true
+```
+
+### func setExternalLinkage()
+
+```cangjie
+public func setExternalLinkage(): Unit
+```
+
+功能：将该全局值的链接类型设置为外部链接，替换已有的链接类型注解。适用于函数和全局变量；重复调用不会添加重复注解。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    let gv = pkg.addGlobalVar(IntType.getInt32(), "g_m", "g", "demo")
+    f.setExternalLinkage()
+    gv.setExternalLinkage()
+    println("function_external: ${f.isExternalLinkage()}")
+    println("global_external: ${gv.isExternalLinkage()}")
+}
+```
+
+运行结果：
+
+```text
+function_external: true
+global_external: true
 ```
 
 ### func isForeign()
