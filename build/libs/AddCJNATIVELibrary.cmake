@@ -654,6 +654,20 @@ add_library(
 set_target_properties(stdx.string_intern PROPERTIES LINKER_LANGUAGE C)
 install(TARGETS stdx.string_intern DESTINATION ${output_triple_name}_${CJNATIVE_BACKEND}/static/stdx)
 
+make_cangjie_lib(
+    segtree IS_SHARED
+    DEPENDS cangjie${BACKEND_TYPE}Segtree
+    CANGJIE_STD_LIB_LINK
+        std-core
+        std-collection
+    OBJECTS ${output_cj_object_dir}/stdx/segtree.o)
+
+add_library(
+    stdx.segtree STATIC
+    ${output_cj_object_dir}/stdx/segtree.o)
+set_target_properties(stdx.segtree PROPERTIES LINKER_LANGUAGE C)
+install(TARGETS stdx.segtree DESTINATION ${output_triple_name}_${CJNATIVE_BACKEND}/static/stdx)
+
 
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 
@@ -1180,6 +1194,17 @@ add_cangjie_library(
     MODULE_NAME "stdx"
     SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/stdx/string_intern
     DEPENDS ${STRING_INTERN_DEPENDENCIES})
+
+add_cangjie_library(
+    cangjie${BACKEND_TYPE}Segtree
+    NO_SUB_PKG
+    IS_PACKAGE
+    IS_CJNATIVE_BACKEND
+    PACKAGE_NAME "segtree"
+    MODULE_NAME "stdx"
+    SOURCES ${SEGTREE_SRCS}
+    SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/stdx/segtree
+    DEPENDS ${SEGTREE_DEPENDENCIES})
 
 add_cangjie_library(
     cangjie${BACKEND_TYPE}Tls

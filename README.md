@@ -18,6 +18,7 @@ Architecture Diagram:
 - log: Provides a single logging API.
 - logger: Provides log printing functions in text format and JSON format.
 - net: Provides network communication and secure transmission functions.
+- segtree: Provides iterative segment trees for range queries and range updates.
 - serialization: Provides the capability of serialization and deserialization.
 - string_intern: Provides polled caching capability for string objects.
 - syntax: Provides Cangjie source code syntax parsing functions.
@@ -108,6 +109,7 @@ The following platform and architecture combinations are currently supported:
 │       ├── log                 # Provides logging related
 │       ├── logger              # Provides log printing functions in text format and JSON format
 │       ├── net                 # Provide network communication and other capabilities
+│       ├── segtree             # Provides iterative segment trees for range queries and updates
 │       ├── serialization       # Provides serialization and deserialization
 │       ├── string_intern       # Provides polled caching capability for string objects
 │       ├── syntax              # Provides syntax parsing functions

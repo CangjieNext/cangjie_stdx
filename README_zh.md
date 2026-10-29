@@ -18,6 +18,7 @@
 - log: 提供了一个单一的日志 API。
 - logger: 提供了文本格式和 JSON 格式日志打印功能。
 - net: 提供了网络通信和安全传输功能。
+- segtree: 提供了迭代式线段树，支持区间查询和区间更新。
 - serialization: 提供了序列化和反序列化的能力。
 - syntax：提供了对仓颉源码进行语法解析的功能。
 - unittest: 提供了在编写仓颉项目单元测试代码时输入序列化格式的测试数据的能力。
@@ -107,6 +108,7 @@ irm https://raw.gitcode.com/Cangjie/cangjie_stdx/raw/main/downloader.ps1 -OutFil
 │       ├── log                 # 提供了日志记录相关的能力
 │       ├── logger              # 提供文本格式和 JSON 格式日志打印功能
 │       ├── net                 # 提供网络通信等能力
+│       ├── segtree             # 提供迭代式线段树，支持区间查询与区间更新
 │       ├── serialization       # 提供序列化和反序列化能力
 │       ├── string_intern       # 提供string对象的池化缓存能力
 │       ├── syntax              # 提供语法解析能力

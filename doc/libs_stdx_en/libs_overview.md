@@ -169,5 +169,6 @@ stdx includes several packages that offer rich extension functionalities:
 | [net.http](./net/http/http_package_overview.md)                        | The http package provides server and client implementations for HTTP/1.1, HTTP/2, and WebSocket protocols. |
 | [net.tls](./net/tls/tls_package_overview.md)                        | The tls package is used for secure encrypted network communication, providing capabilities such as creating TLS servers, performing TLS handshakes based on protocols, sending and receiving encrypted data, and resuming TLS sessions.|
 | [net.tls.common](./net/tls/common/tls_common_package_overview.md)   | The common package provides TLS-related abstract interfaces for adapting to multiple TLS implementations. |
+| [segtree](./segtree/segtree_package_overview.md) | The segtree package provides iterative segment trees that answer range queries and apply range updates in O(log n). |
 | [serialization](./serialization/serialization_package_overview.md)                        | The serialization package provides serialization and deserialization capabilities. |
 | [unittest.data](./unittest/data/data_package_overview.md)                        | The unittest module provides extended unit testing capabilities. |

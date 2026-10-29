@@ -19,6 +19,7 @@ add_subdirectory(net)
 add_subdirectory(unittest)
 add_subdirectory(actors)
 add_subdirectory(string_intern)
+add_subdirectory(segtree)
 
 message(STATUS "CMAKE_BUILD_STAGE ${CMAKE_BUILD_STAGE}")
 if(NOT CANGJIE_CJPM_BUILD_TYPE AND NOT CANGJIE_BUILD_WITHOUT_CHIR)
