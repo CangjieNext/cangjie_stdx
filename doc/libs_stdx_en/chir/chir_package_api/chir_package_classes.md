@@ -9599,14 +9599,15 @@ main() {
     let pkg = Package("demo", AccessLevel.Public)
     let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
     f.initBody()
-    println("fn_destroySelf_before: ${f.body.isSome()}")
+    f.body.getOrThrow().destroySelf()
+    println("fn_destroySelf_after: ${f.body.isNone()}")
 }
 ```
 
 Output:
 
 ```text
-fn_destroySelf_before: true
+fn_destroySelf_after: true
 ```
 
 ### func setEntryBlock(Block)
@@ -10362,6 +10363,38 @@ Output:
 
 ```text
 func_isExternalLinkage: true
+```
+
+### func setExternalLinkage()
+
+```cangjie
+public func setExternalLinkage(): Unit
+```
+
+Function: Sets this global value's linkage to external, replacing any existing linkage annotation. Applies to functions and global variables; repeated calls do not add duplicate annotations.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    let gv = pkg.addGlobalVar(IntType.getInt32(), "g_m", "g", "demo")
+    f.setExternalLinkage()
+    gv.setExternalLinkage()
+    println("function_external: ${f.isExternalLinkage()}")
+    println("global_external: ${gv.isExternalLinkage()}")
+}
+```
+
+Output:
+
+```text
+function_external: true
+global_external: true
 ```
 
 ### func isForeign()
