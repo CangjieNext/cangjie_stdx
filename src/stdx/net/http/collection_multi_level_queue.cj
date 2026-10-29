@@ -37,7 +37,7 @@ private class PriorityMaxTracker {
     var d: Array<Int64>  // segment tree: d[1..2*size-1], d[i] = max child
 
     init(n: Int64) {
-        self.n = n
+        this.n = n
         size = computeSize(n)
         d = Array<Int64>(2 * size, { _ => 0 })
     }
@@ -124,7 +124,7 @@ class SPMCLevelQueue<T> {
                 sendqSizes[priority].fetchAdd(1)
                 // Re-read real count after atomic op — this is the authoritative value
                 let realCount = sendqSizes[priority].load()
-                tracker.update(pos: priority, value: realCount)
+                tracker.update(priority, realCount)
             }
             if (recvqSize.load() == 0) {
                 return true
@@ -199,7 +199,7 @@ class SPMCLevelQueue<T> {
                 // from a lost-update race between send() and a prior tryReceive().
                 if (p >= 0 && sendqSizes[p].load() == 0) {
                     // Tracker entry is stale-high — fix it with real value
-                    tracker.update(pos: p, value: 0)
+                    tracker.update(p, 0)
                     -1  // Force retry
                 } else {
                     p
@@ -221,7 +221,7 @@ class SPMCLevelQueue<T> {
                     sendqSizes[priority].fetchSub(1)
                     // Re-read authoritative count — not the stale (atomic - 1) we used before!
                     let realCount = sendqSizes[priority].load()
-                    tracker.update(pos: priority, value: realCount)
+                    tracker.update(priority, realCount)
                 }
                 size.fetchSub(1)
                 return v
@@ -231,7 +231,7 @@ class SPMCLevelQueue<T> {
             // Refresh this priority's tracker entry with real count and retry loop.
             synchronized(lock) {
                 let realCount = sendqSizes[priority].load()
-                tracker.update(pos: priority, value: realCount)
+                tracker.update(priority, realCount)
             }
             // Loop continues → will pick next-highest non-zero priority on retry
         }
@@ -249,7 +249,7 @@ class SPMCLevelQueue<T> {
             }
             synchronized(lock) {
                 for (p in 0..levels) {
-                    tracker.update(pos: p, value: 0)
+                    tracker.update(p, 0)
                 }
             }
             size.store(0)
