@@ -9,10 +9,9 @@
 /**
  * @file
  *
- * This file defines a ConcurrentPriorityQueue class for a given capacity (Default 10).
- * Optimized: find-non-empty-priority is O(log P) via iterative max-segment tree,
- * replacing the previous O(P) linear scan (Issue #408).
- * Inspired by segmenttree4cj's IterativeSegmentTree.
+ * ConcurrentPriorityQueue for Actor mailbox, O(log P) priority lookup
+ * via iterative 2-array max-segment tree replacing O(P) linear scan.
+ * Issue #408. Inspired by segmenttree4cj IterativeSegmentTree.
  *
  */
 
@@ -22,18 +21,19 @@ import std.collection.concurrent.ArrayBlockingQueue
 
 private const DEFAULT_NUM_OF_PRIORITIES = 10
 
-// Lightweight iterative segment tree for tracking max queue size per priority.
-// 2-array iterative layout, O(log P) update + O(log P) find-non-zero.
-// Inspired by segmenttree4cj IterativeSegmentTree.
+// Lightweight iterative max-segment-tree tracking queue size per priority.
+// 2-array layout, O(log P) update + O(log P) find-non-zero.
+// NOTE: thread-safety (Monitor lock, non-blocking dequeue, bounded retry)
+// handled in PR#902 — this file only fixes compilation errors for PR#903.
 private class PriorityTracker {
     let n: Int64
-    let size: Int64       // next power of two >= n
-    var d: Array<Int64>  // d[1..2*size-1], max child per node
+    let size: Int64
+    var d: Array<Int64>
 
     init(n: Int64) {
-        self.n = n
-        size = computeSize(n)
-        d = Array<Int64>(2 * size, { _ => 0 })
+        this.n = n
+        this.size = computeSize(n)
+        this.d = Array<Int64>(2 * this.size, { _ => 0 })
     }
 
     private static func computeSize(n: Int64): Int64 {
@@ -43,7 +43,9 @@ private class PriorityTracker {
     }
 
     func update(pos: Int64, value: Int64): Unit {
-        assert(pos >= 0 && pos < n, "PriorityTracker.update: pos $pos out of [0, $n)")
+        if (pos < 0 || pos >= n) {
+            throw Exception("PriorityTracker.update: pos $pos out of range")
+        }
         var p = pos + size
         d[p] = value
         p = p >> 1
@@ -57,7 +59,6 @@ private class PriorityTracker {
         }
     }
 
-    // O(log P): find highest-index priority with non-zero queue size
     func findHighestNonZero(): Int64 {
         if (d[1] == 0) { return -1 }
         var p: Int64 = 1
@@ -81,18 +82,19 @@ class ConcurrentPriorityQueue<T> {
 
     init(numOfPriorities: Int64, capacity: Int64) {
         this.numOfPriorities = numOfPriorities
-        this.queuePool = Array<ArrayBlockingQueue<T>>(numOfPriorities, { _ => ArrayBlockingQueue<T>(capacity) })
-        this.tracker = PriorityTracker(n: numOfPriorities)
+        this.queuePool = Array<ArrayBlockingQueue<T>>(numOfPriorities,
+            { _ => ArrayBlockingQueue<T>(capacity) })
+        this.tracker = PriorityTracker(numOfPriorities)
     }
 
     func add(item: T, priority: Int64): Unit {
         if (priority <= 0 || priority > numOfPriorities) {
-            throw IllegalArgumentException("Invalid argument 'priority': expected a value in [1..${numOfPriorities}], got '${priority}'.")
+            throw IllegalArgumentException(
+                "Invalid argument 'priority': expected [1..${numOfPriorities}], got '${priority}'.")
         }
         queuePool[priority - 1].add(item)
-        // Update tracker in O(log P)
         let qsize = queuePool[priority - 1].size
-        tracker.update(pos: priority - 1, value: qsize)
+        tracker.update(priority - 1, qsize)
         semaphore.signal()
     }
 
@@ -101,16 +103,14 @@ class ConcurrentPriorityQueue<T> {
             return None
         }
 
-        // O(log P) find highest-priority non-empty queue (replaces O(P) for loop)
         let priority: Int64 = tracker.findHighestNonZero()
         if (priority == -1) {
             return None
         }
 
         let result = queuePool[priority].remove()
-        // Update tracker after removal
         let newSize = queuePool[priority].size
-        tracker.update(pos: priority, value: newSize)
-        return result
+        tracker.update(priority, newSize)
+        return Some(result)
     }
 }
