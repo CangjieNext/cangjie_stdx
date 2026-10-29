@@ -70,6 +70,7 @@ internal enum Attribute <: ToString {
     ObjCExport | ///< Mark whether it's a declaration exported to Objective-C.
     MatchPattern | ///< Mark CFG nodes that evaluate patterns, excluding case bodies and nested expressions.
     PluginAdded | ///< Mark that the declaration is added by chir plugin.
+    SrcExported | ///< Mark a declaration another package may reference by name, see AST::Attribute.
 
     AttrEnd
 
@@ -120,6 +121,7 @@ internal enum Attribute <: ToString {
             case ObjCExport             => "objCExport"
             case MatchPattern           => "matchPattern"
             case PluginAdded            => "pluginAdded"
+            case SrcExported            => "srcExported"
             case AttrBegin | AttrEnd => "UNKNOWN"
         }
     }
@@ -167,7 +169,8 @@ internal enum Attribute <: ToString {
             case DoesNotThrow           => ObjCExport
             case ObjCExport             => MatchPattern
             case MatchPattern           => PluginAdded
-            case PluginAdded            => AttrEnd
+            case PluginAdded            => SrcExported
+            case SrcExported            => AttrEnd
             case AttrEnd                => AttrEnd
         }
     }
@@ -216,6 +219,7 @@ internal enum Attribute <: ToString {
             case ObjCExport             => 38
             case MatchPattern           => 39
             case PluginAdded            => 40
+            case SrcExported            => 41
             case AttrEnd                => ATTR_SIZE  // Invalid, return size to indicate error
         }
     }
