@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Copyright (c) Huawei Technologies Co., Ltd. 2025. All rights reserved.
  * This source file is part of the Cangjie project, licensed under Apache-2.0
  * with Runtime Library Exception.
@@ -43,6 +43,7 @@ private class PriorityTracker {
     }
 
     func update(pos: Int64, value: Int64): Unit {
+        assert(pos >= 0 && pos < n, "PriorityTracker.update: pos $pos out of [0, $n)")
         var p = pos + size
         d[p] = value
         p = p >> 1
