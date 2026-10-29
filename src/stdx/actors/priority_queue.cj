@@ -9,10 +9,14 @@
 /**
  * @file
  *
- * This file defines a ConcurrentPriorityQueue class for a given capacity (Default 10).
- * Optimized: find-non-empty-priority is O(log P) via iterative max-segment tree,
- * replacing the previous O(P) linear scan (Issue #408).
- * Inspired by segmenttree4cj's IterativeSegmentTree.
+ * ConcurrentPriorityQueue for Actor mailbox — O(log P) priority lookup
+ * via iterative 2-array max-segment tree replacing O(P) linear scan.
+ * Issue #408. Inspired by segmenttree4cj IterativeSegmentTree.
+ *
+ * secbot vul-002 fixed: PriorityTracker protected by Monitor lock
+ * (eliminates data races in multi-producer add); remove() uses
+ * non-blocking tryRemove() with bounded retry loop (never hangs on
+ * empty queue; bounded convergence under contention).
  *
  */
 
@@ -23,19 +27,19 @@ import std.sync.Monitor
 
 private const DEFAULT_NUM_OF_PRIORITIES = 10
 
-// Thread-safe iterative segment tree for tracking max queue size per priority.
-// 2-array iterative layout, O(log P) update + O(log P) find-non-zero.
-// All reads/writes protected by Monitor to prevent data races in multi-producer scenarios.
+// Thread-safe iterative max-segment-tree tracking queue size per priority.
+// 2-array layout: d[1..2*size-1], d[leaf+size]=queue size, d[internal]=max(children).
+// Monitor-protected: all update() and findHighestNonZero() run synchronized(lock).
 private class PriorityTracker {
     let n: Int64
-    let size: Int64       // next power of two >= n
-    var d: Array<Int64>  // d[1..2*size-1], max child per node
+    let size: Int64
+    var d: Array<Int64>
     private let lock: Monitor = Monitor()
 
     init(n: Int64) {
-        self.n = n
-        size = computeSize(n)
-        d = Array<Int64>(2 * size, { _ => 0 })
+        this.n = n
+        this.size = computeSize(n)
+        this.d = Array<Int64>(2 * this.size, { _ => 0 })
     }
 
     private static func computeSize(n: Int64): Int64 {
@@ -46,6 +50,9 @@ private class PriorityTracker {
 
     func update(pos: Int64, value: Int64): Unit {
         synchronized(lock) {
+            if (pos < 0 || pos >= n) {
+                throw Exception("PriorityTracker.update: pos $pos out of range [0, $n)")
+            }
             var p = pos + size
             d[p] = value
             p = p >> 1
@@ -60,8 +67,7 @@ private class PriorityTracker {
         }
     }
 
-    // O(log P): find highest-index priority with non-zero queue size.
-    // Returns -1 when all priorities are zero.
+    // Returns highest-index priority with non-zero queue size, or -1.
     func findHighestNonZero(): Int64 {
         synchronized(lock) {
             if (d[1] == 0) { return -1 }
@@ -87,18 +93,19 @@ class ConcurrentPriorityQueue<T> {
 
     init(numOfPriorities: Int64, capacity: Int64) {
         this.numOfPriorities = numOfPriorities
-        this.queuePool = Array<ArrayBlockingQueue<T>>(numOfPriorities, { _ => ArrayBlockingQueue<T>(capacity) })
-        this.tracker = PriorityTracker(n: numOfPriorities)
+        this.queuePool = Array<ArrayBlockingQueue<T>>(numOfPriorities,
+            { _ => ArrayBlockingQueue<T>(capacity) })
+        this.tracker = PriorityTracker(numOfPriorities)
     }
 
     func add(item: T, priority: Int64): Unit {
         if (priority <= 0 || priority > numOfPriorities) {
-            throw IllegalArgumentException("Invalid argument 'priority': expected a value in [1..${numOfPriorities}], got '${priority}'.")
+            throw IllegalArgumentException(
+                "Invalid argument 'priority': expected [1..${numOfPriorities}], got '${priority}'.")
         }
         queuePool[priority - 1].add(item)
-        // Update tracker in O(log P) — tracker.update is internally synchronized
         let qsize = queuePool[priority - 1].size
-        tracker.update(pos: priority - 1, value: qsize)
+        tracker.update(priority - 1, qsize)
         semaphore.signal()
     }
 
@@ -107,34 +114,36 @@ class ConcurrentPriorityQueue<T> {
             return None
         }
 
-        // Retry loop to handle tracker/queue divergence (stale-high / stale-low).
-        // poll() is non-blocking — we never wait on a possibly-empty queue.
+        // Bounded retry: tracker may be stale-high from concurrent add() race.
+        // tryRemove() is non-blocking — never wait on empty queue.
+        // On stale-high hit (tracker says non-zero but queue is empty), refresh
+        // tracker with real size and retry. Converges within numOfPriorities+1.
         var attempts: Int64 = 0
         while (attempts < numOfPriorities + 1) {
             attempts = attempts + 1
 
-            // O(log P) find highest-priority non-empty queue
             let priority: Int64 = tracker.findHighestNonZero()
             if (priority == -1) {
-                // Tracker says all empty but semaphore was signaled — retry once
-                continue
+                // Tracker says all empty but semaphore was signaled — race consumed
+                // our wakeup. Return None (timeout was semaphore-based; caller
+                // will retry or fail up the stack).
+                return None
             }
 
-            // poll() never blocks; returns null immediately if queue is empty
-            let result = queuePool[priority].poll()
-            if (result != null) {
-                // Successful removal — refresh tracker with real queue size
+            // Non-blocking dequeue — ArrayBlockingQueue.tryRemove() returns Option<T>
+            if (let Some(v) <- queuePool[priority].tryRemove()) {
+                // Successful removal — refresh tracker with real post-removal size
                 let newSize = queuePool[priority].size
-                tracker.update(pos: priority, value: newSize)
-                return Option<T>(result as T)
+                tracker.update(priority, newSize)
+                return Some(v)
             }
 
-            // poll() returned null — tracker was stale-high (another consumer raced us).
-            // Refresh this priority's tracker entry and retry.
-            tracker.update(pos: priority, value: queuePool[priority].size)
+            // tracker was stale-high: another consumer raced us for this queue's item.
+            // Refresh tracker entry and retry — will pick next-highest on retry.
+            tracker.update(priority, queuePool[priority].size)
         }
 
-        // All retries exhausted — semaphore was burned by race. Return None.
+        // All retries exhausted under extreme contention. Return None.
         return None
     }
 }
