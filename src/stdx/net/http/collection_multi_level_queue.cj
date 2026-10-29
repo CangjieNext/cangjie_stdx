@@ -31,7 +31,7 @@ private class PriorityMaxTracker {
     var d: Array<Int64>  // segment tree: d[1..2*size-1], d[i] = max child
 
     init(n: Int64) {
-        self.n = n
+        this.n = n
         size = computeSize(n)
         d = Array<Int64>(2 * size, { _ => 0 })
     }
@@ -114,7 +114,7 @@ class SPMCLevelQueue<T> {
             size.fetchAdd(1)
             let newCount = sendqSizes[priority].fetchAdd(1) + 1
             synchronized(lock) {
-                tracker.update(pos: priority, value: newCount)
+                tracker.update(priority, newCount)
             }
             if (recvqSize.load() == 0) {
                 return true
@@ -182,7 +182,7 @@ class SPMCLevelQueue<T> {
         if (let Some(v) <- queues[priority].dequeue()) {
             let newCount = sendqSizes[priority].fetchSub(1) - 1
             synchronized(lock) {
-                tracker.update(pos: priority, value: newCount)
+                tracker.update(priority, newCount)
             }
             size.fetchSub(1)
             return v
@@ -198,7 +198,7 @@ class SPMCLevelQueue<T> {
             }
             synchronized(lock) {
                 for (p in 0..levels) {
-                    tracker.update(pos: p, value: 0)
+                    tracker.update(p, 0)
                 }
             }
             size.store(0)
