@@ -95,7 +95,7 @@ class SPMCLevelQueue<T> {
     let closed: AtomicBool = AtomicBool(false)
     let queues: Array<ClosableNonBlockingQueue<T>>
     let sendqSizes: Array<AtomicInt64>
-    let tracker: PriorityMaxTracker
+    private let tracker: PriorityMaxTracker
     let lock: Monitor = Monitor()
 
     let recvMon: Monitor = Monitor()
@@ -105,7 +105,7 @@ class SPMCLevelQueue<T> {
         this.levels = levels
         this.sendqSizes = Array<AtomicInt64>(levels, {_ => AtomicInt64(0)})
         this.reverse = reverse
-        this.tracker = PriorityMaxTracker(n: levels)
+        this.tracker = PriorityMaxTracker(levels)
         this.queues = Array<ClosableNonBlockingQueue<T>>(levels, {
             _ => ClosableNonBlockingQueue<T>()
         })
@@ -207,8 +207,9 @@ class SPMCLevelQueue<T> {
             }
 
             if (priority < 0) {
-                // All priorities verified empty (either by tracker or sendqSizes fallback)
-                return None
+                // The tracker entry we picked was stale-high and has just been corrected.
+                // Other priorities may still be non-empty, so retry instead of reporting empty.
+                continue
             }
 
             // Step 2: Attempt non-blocking dequeue outside the lock.
@@ -236,8 +237,24 @@ class SPMCLevelQueue<T> {
             // Loop continues → will pick next-highest non-zero priority on retry
         }
 
-        // Bounded retries exhausted — under extreme contention we gave up.
-        // This matches old O(P) scan fallback semantics.
+        // The bounded retries above are only exhausted when many consumers race for the same
+        // priorities. Fall back to the authoritative per-priority counters, so that a queue which
+        // still holds elements is never reported as empty. This is the same O(P) scan the original
+        // implementation used, taken only on the slow path.
+        var i: Int64 = if (reverse) { 0 } else { levels - 1 }
+        while (i >= 0 && i < levels) {
+            if (sendqSizes[i].load() > 0) {
+                if (let Some(v) <- queues[i].dequeue()) {
+                    synchronized(lock) {
+                        sendqSizes[i].fetchSub(1)
+                        tracker.update(i, sendqSizes[i].load())
+                    }
+                    size.fetchSub(1)
+                    return v
+                }
+            }
+            i = if (reverse) { i + 1 } else { i - 1 }
+        }
         return None
     }
 
