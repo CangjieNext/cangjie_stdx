@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Copyright (c) Huawei Technologies Co., Ltd. 2025. All rights reserved.
  * This source file is part of the Cangjie project, licensed under Apache-2.0
  * with Runtime Library Exception.
@@ -31,7 +31,7 @@ private class PriorityMaxTracker {
     var d: Array<Int64>  // segment tree: d[1..2*size-1], d[i] = max child
 
     init(n: Int64) {
-        self.n = n
+        this.n = n
         size = computeSize(n)
         d = Array<Int64>(2 * size, { _ => 0 })
     }
@@ -89,7 +89,7 @@ class SPMCLevelQueue<T> {
     let closed: AtomicBool = AtomicBool(false)
     let queues: Array<ClosableNonBlockingQueue<T>>
     let sendqSizes: Array<AtomicInt64>
-    let tracker: PriorityMaxTracker
+    private let tracker: PriorityMaxTracker
     let lock: Monitor = Monitor()
 
     let recvMon: Monitor = Monitor()
@@ -99,7 +99,7 @@ class SPMCLevelQueue<T> {
         this.levels = levels
         this.sendqSizes = Array<AtomicInt64>(levels, {_ => AtomicInt64(0)})
         this.reverse = reverse
-        this.tracker = PriorityMaxTracker(n: levels)
+        this.tracker = PriorityMaxTracker(levels)
         this.queues = Array<ClosableNonBlockingQueue<T>>(levels, {
             _ => ClosableNonBlockingQueue<T>()
         })
@@ -112,9 +112,12 @@ class SPMCLevelQueue<T> {
 
         if (queues[priority].enqueue(elem)) {
             size.fetchAdd(1)
-            let newCount = sendqSizes[priority].fetchAdd(1) + 1
+            // secbot VULN-001 fix: the counter increment and tracker write share one
+            // critical section, so a consumer can never overwrite this value with a
+            // stale snapshot taken outside the lock (lost-update → permanently stuck queue).
             synchronized(lock) {
-                tracker.update(pos: priority, value: newCount)
+                let newCount = sendqSizes[priority].fetchAdd(1) + 1
+                tracker.update(priority, newCount)
             }
             if (recvqSize.load() == 0) {
                 return true
@@ -165,27 +168,44 @@ class SPMCLevelQueue<T> {
         tryReceive()
     }
 
-    // Optimized: O(log P) using segment tree instead of O(P) linear scan
+    // Optimized: O(log P) using segment tree instead of O(P) linear scan.
+    // Bounded retry (at most levels+1 rounds): if the tracker entry is stale-high
+    // (another consumer already took that element), refresh it from the authoritative
+    // counter and try the next priority instead of reporting a false "empty".
+    // This restores the self-healing property of the old full scan without reintroducing O(P).
     func tryReceive(): ?T {
-        let priority: Int64 = synchronized(lock) {
-            if (reverse) {
-                tracker.findNonZeroLowestPriority()
-            } else {
-                tracker.findNonZeroHighestPriority()
+        var attempts: Int64 = 0
+        while (attempts <= levels) {
+            attempts = attempts + 1
+
+            let priority: Int64 = synchronized(lock) {
+                if (reverse) {
+                    tracker.findNonZeroLowestPriority()
+                } else {
+                    tracker.findNonZeroHighestPriority()
+                }
             }
-        }
 
-        if (priority < 0) {
-            return None
-        }
+            if (priority < 0) {
+                return None
+            }
 
-        if (let Some(v) <- queues[priority].dequeue()) {
-            let newCount = sendqSizes[priority].fetchSub(1) - 1
+            if (let Some(v) <- queues[priority].dequeue()) {
+                // secbot VULN-001 fix: decrement and tracker write stay in one critical section.
+                synchronized(lock) {
+                    let newCount = sendqSizes[priority].fetchSub(1) - 1
+                    tracker.update(priority, if (newCount > 0) { newCount } else { 0 })
+                }
+                size.fetchSub(1)
+                return v
+            }
+
+            // Stale-high entry: dequeue() on a non-blocking queue returns None only when
+            // the queue is empty, so resync the tracker with the authoritative counter.
             synchronized(lock) {
-                tracker.update(pos: priority, value: newCount)
+                let realCount = sendqSizes[priority].load()
+                tracker.update(priority, if (realCount > 0) { realCount } else { 0 })
             }
-            size.fetchSub(1)
-            return v
         }
         return None
     }
@@ -198,7 +218,7 @@ class SPMCLevelQueue<T> {
             }
             synchronized(lock) {
                 for (p in 0..levels) {
-                    tracker.update(pos: p, value: 0)
+                    tracker.update(p, 0)
                 }
             }
             size.store(0)
