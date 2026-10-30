@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Copyright (c) Huawei Technologies Co., Ltd. 2025. All rights reserved.
  * This source file is part of the Cangjie project, licensed under Apache-2.0
  * with Runtime Library Exception.
@@ -20,18 +20,24 @@ import std.sync.*
 
     Optimization: An iterative segment tree tracks the max queue size across all priorities
     in O(log P). receive() no longer scans all P priorities.
+
+    Thread-safety notes:
+    - tracker.update() and sendqSizes read/write are atomic within synchronized(lock)
+    - No TOCTOU: fetchAdd/fetchSub happen inside the same monitor as tracker.update
+    - dequeue() failure (stale tracker) falls back to real sendqSizes check + retry loop
  */
 
-// Lightweight iterative segment tree for tracking max queue size per priority.
+// Thread-safe iterative segment tree for tracking max queue size per priority.
 // Inspired by segmenttree4cj's IterativeSegmentTree - 2-array iterative layout,
 // O(log n) point update + O(log n) find-first-non-zero.
+// All reads/writes must be externally synchronized by the caller (SPMCLevelQueue.lock).
 private class PriorityMaxTracker {
     let n: Int64         // number of priorities
     let size: Int64      // next power of two >= n
     var d: Array<Int64>  // segment tree: d[1..2*size-1], d[i] = max child
 
     init(n: Int64) {
-        self.n = n
+        this.n = n
         size = computeSize(n)
         d = Array<Int64>(2 * size, { _ => 0 })
     }
@@ -42,7 +48,7 @@ private class PriorityMaxTracker {
         return s
     }
 
-    // O(log P): set queue size at priority pos
+    // O(log P): set queue size at priority pos. Caller must hold lock.
     func update(pos: Int64, value: Int64) {
         var p = pos + size
         d[p] = value
@@ -57,7 +63,8 @@ private class PriorityMaxTracker {
         }
     }
 
-    // O(log P): find highest-index priority with non-zero queue size
+    // O(log P): find highest-index priority with non-zero queue size.
+    // Caller must hold lock.
     func findNonZeroHighestPriority(): Int64 {
         if (d[1] == 0) { return -1 }
         var p: Int64 = 1
@@ -68,7 +75,8 @@ private class PriorityMaxTracker {
         return if (result < n) { result } else { -1 }
     }
 
-    // O(log P): find lowest-index priority with non-zero queue size
+    // O(log P): find lowest-index priority with non-zero queue size.
+    // Caller must hold lock.
     func findNonZeroLowestPriority(): Int64 {
         if (d[1] == 0) { return -1 }
         var p: Int64 = 1
@@ -78,8 +86,6 @@ private class PriorityMaxTracker {
         let result = p - size
         return if (result < n) { result } else { -1 }
     }
-
-    func isEmpty(): Bool { return d[1] == 0 }
 }
 
 class SPMCLevelQueue<T> {
@@ -89,7 +95,7 @@ class SPMCLevelQueue<T> {
     let closed: AtomicBool = AtomicBool(false)
     let queues: Array<ClosableNonBlockingQueue<T>>
     let sendqSizes: Array<AtomicInt64>
-    let tracker: PriorityMaxTracker
+    private let tracker: PriorityMaxTracker
     let lock: Monitor = Monitor()
 
     let recvMon: Monitor = Monitor()
@@ -99,7 +105,7 @@ class SPMCLevelQueue<T> {
         this.levels = levels
         this.sendqSizes = Array<AtomicInt64>(levels, {_ => AtomicInt64(0)})
         this.reverse = reverse
-        this.tracker = PriorityMaxTracker(n: levels)
+        this.tracker = PriorityMaxTracker(levels)
         this.queues = Array<ClosableNonBlockingQueue<T>>(levels, {
             _ => ClosableNonBlockingQueue<T>()
         })
@@ -112,9 +118,13 @@ class SPMCLevelQueue<T> {
 
         if (queues[priority].enqueue(elem)) {
             size.fetchAdd(1)
-            let newCount = sendqSizes[priority].fetchAdd(1) + 1
+            // Atomic increment + tracker update must be in the same synchronized block
+            // to prevent lost-update race between concurrent send() and tryReceive().
             synchronized(lock) {
-                tracker.update(pos: priority, value: newCount)
+                sendqSizes[priority].fetchAdd(1)
+                // Re-read real count after atomic op — this is the authoritative value
+                let realCount = sendqSizes[priority].load()
+                tracker.update(priority, realCount)
             }
             if (recvqSize.load() == 0) {
                 return true
@@ -165,27 +175,85 @@ class SPMCLevelQueue<T> {
         tryReceive()
     }
 
-    // Optimized: O(log P) using segment tree instead of O(P) linear scan
+    // Optimized: O(log P) using segment tree instead of O(P) linear scan.
+    // Retry loop handles tracker/queue divergence (stale-high from lost updates):
+    //   - dequeue fails → refresh tracker with real sendqSizes[priority].load() → retry
+    //   - tracker claims non-zero but sendqSizes says zero → skip → retry
     func tryReceive(): ?T {
-        let priority: Int64 = synchronized(lock) {
-            if (reverse) {
-                tracker.findNonZeroLowestPriority()
-            } else {
-                tracker.findNonZeroHighestPriority()
+        // Retry bounded by levels to avoid infinite loops under pathological contention
+        var attempts: Int64 = 0
+        while (attempts < levels + 1) {
+            attempts = attempts + 1
+
+            // Step 1: Lock-protected query of tracker + authoritative sendqSizes check
+            let priority: Int64 = synchronized(lock) {
+                // Pick highest or lowest non-zero from tracker
+                let p = if (reverse) {
+                    tracker.findNonZeroLowestPriority()
+                } else {
+                    tracker.findNonZeroHighestPriority()
+                }
+
+                // If tracker says non-zero, double-check against real sendqSizes.
+                // This is the critical TOCTOU defense: tracker could be stale-high
+                // from a lost-update race between send() and a prior tryReceive().
+                if (p >= 0 && sendqSizes[p].load() == 0) {
+                    // Tracker entry is stale-high — fix it with real value
+                    tracker.update(p, 0)
+                    -1  // Force retry
+                } else {
+                    p
+                }
             }
-        }
 
-        if (priority < 0) {
-            return None
-        }
+            if (priority < 0) {
+                // The tracker entry we picked was stale-high and has just been corrected.
+                // Other priorities may still be non-empty, so retry instead of reporting empty.
+                continue
+            }
 
-        if (let Some(v) <- queues[priority].dequeue()) {
-            let newCount = sendqSizes[priority].fetchSub(1) - 1
+            // Step 2: Attempt non-blocking dequeue outside the lock.
+            // This avoids holding lock during the queue operation (which can block
+            // on internal queue locks under contention).
+            if (let Some(v) <- queues[priority].dequeue()) {
+                // Step 3: Lock-protected fetchSub + tracker update — same monitor,
+                // so this consumer's decrement is atomic with any concurrent send's increment.
+                synchronized(lock) {
+                    sendqSizes[priority].fetchSub(1)
+                    // Re-read authoritative count — not the stale (atomic - 1) we used before!
+                    let realCount = sendqSizes[priority].load()
+                    tracker.update(priority, realCount)
+                }
+                size.fetchSub(1)
+                return v
+            }
+
+            // dequeue() returned None — another consumer raced us for this queue's item.
+            // Refresh this priority's tracker entry with real count and retry loop.
             synchronized(lock) {
-                tracker.update(pos: priority, value: newCount)
+                let realCount = sendqSizes[priority].load()
+                tracker.update(priority, realCount)
             }
-            size.fetchSub(1)
-            return v
+            // Loop continues → will pick next-highest non-zero priority on retry
+        }
+
+        // The bounded retries above are only exhausted when many consumers race for the same
+        // priorities. Fall back to the authoritative per-priority counters, so that a queue which
+        // still holds elements is never reported as empty. This is the same O(P) scan the original
+        // implementation used, taken only on the slow path.
+        var i: Int64 = if (reverse) { 0 } else { levels - 1 }
+        while (i >= 0 && i < levels) {
+            if (sendqSizes[i].load() > 0) {
+                if (let Some(v) <- queues[i].dequeue()) {
+                    synchronized(lock) {
+                        sendqSizes[i].fetchSub(1)
+                        tracker.update(i, sendqSizes[i].load())
+                    }
+                    size.fetchSub(1)
+                    return v
+                }
+            }
+            i = if (reverse) { i + 1 } else { i - 1 }
         }
         return None
     }
@@ -198,7 +266,7 @@ class SPMCLevelQueue<T> {
             }
             synchronized(lock) {
                 for (p in 0..levels) {
-                    tracker.update(pos: p, value: 0)
+                    tracker.update(p, 0)
                 }
             }
             size.store(0)
@@ -216,4 +284,3 @@ class SPMCLevelQueue<T> {
         return size.load() == 0
     }
 }
-
