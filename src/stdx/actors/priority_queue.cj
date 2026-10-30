@@ -48,6 +48,11 @@ private class PriorityTracker {
         return s
     }
 
+    /**
+     * Set the queue size of one priority and refresh the ancestors on the path.
+     *
+     * @throws Exception if `pos` is outside `[0, n)`.
+     */
     func update(pos: Int64, value: Int64): Unit {
         synchronized(lock) {
             if (pos < 0 || pos >= n) {
@@ -98,6 +103,11 @@ class ConcurrentPriorityQueue<T> {
         this.tracker = PriorityTracker(numOfPriorities)
     }
 
+    /**
+     * Add an item to the queue of the given priority.
+     *
+     * @throws IllegalArgumentException if `priority` is outside `[1, numOfPriorities]`.
+     */
     func add(item: T, priority: Int64): Unit {
         if (priority <= 0 || priority > numOfPriorities) {
             throw IllegalArgumentException(
