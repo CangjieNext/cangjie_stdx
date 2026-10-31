@@ -1,0 +1,24 @@
+build/common/modules/AddCangjieSource.cmake
+  s_da4e28ed8cf9b9::t_78f0f88290d863 252-253
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "385d2d36c34f02148703eafabbcda818077246ea",
+  "prompts": {},
+  "humans": {
+    "h_7fa24ec5a32f2d": {
+      "author": "kkkkkkkbbbbbbb <songjian59@huawei.com>"
+    }
+  },
+  "sessions": {
+    "s_da4e28ed8cf9b9": {
+      "agent_id": {
+        "tool": "trae",
+        "id": "6adf19f45d9c5b6f1f6b5f10",
+        "model": "DeepSeek-V4.1-Flash-1017__dev"
+      },
+      "human_author": "kkkkkkkbbbbbbb <songjian59@huawei.com>"
+    }
+  }
+}
