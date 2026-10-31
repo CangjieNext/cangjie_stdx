@@ -811,12 +811,9 @@ public class URL <: ToString {
         if (let Some(v) <- path) {
             replacePath(newUrl, v)
         }
-        var noUserInfo = true
-        if (let Some(v) <- newUrl._userInfo) {
-            if (!v.username().isEmpty()) {
-                noUserInfo = false
-            }
-        }
+        // Share the userinfo definition with serialization, otherwise a URL built here can
+        // pass validation while toString() renders something else (or nothing) in its place.
+        let noUserInfo = !URL.hasUserInfo(newUrl._userInfo)
         match ((newUrl._scheme.isEmpty(), noUserInfo, newUrl._host.hostname.isEmpty(), newUrl._port.isEmpty(),
             newUrl._path.isEmpty())) {
             case (true, _, false, _, _) => throw UrlSyntaxException("Hostname exists but scheme is empty.")
@@ -908,7 +905,9 @@ public class URL <: ToString {
         if (!ref.scheme.isEmpty()) {
             result._rawPath = toAbsolutePath(mergePaths(ref.rawPath, ""))
         } else {
-            if (ref.hostName.isEmpty() && ref.userInfo.username().isEmpty()) {
+            // Same userinfo definition as serialization: ":pass@host" is a reference to another
+            // authority, so the base path/authority must not be inherited (RFC 3986 5.2.2).
+            if (ref.hostName.isEmpty() && !URL.hasUserInfo(ref._userInfo)) {
                 result._rawPath = toAbsolutePath(mergePaths(_rawPath, ref.rawPath))
                 result._path = decode(result.rawPath)
                 if (ref.rawPath.isEmpty() && ref._rawQuery.isEmpty() && !_rawQuery.isEmpty()) {
@@ -972,6 +971,25 @@ public class URL <: ToString {
         return resultPath.toString()
     }
 
+    /*
+     * Whether a userinfo carries any information.
+     *
+     * RFC 3986 allows an empty username together with a non-empty password (":pass@host"),
+     * so testing the username alone would conflate "no userinfo" with "empty username".
+     * All the places that ask "does this URL have userinfo" must share this definition,
+     * otherwise serialization, replace() validation and resolveURL() disagree and a URL
+     * can be built that cannot be rendered back to a string.
+     *
+     * @param userinfo The userinfo to inspect, None when the URL has no userinfo at all.
+     * @return true when either the username or the password carries information.
+     */
+    private static func hasUserInfo(userinfo: ?UserInfo): Bool {
+        match (userinfo) {
+            case Some(v) => !v.username().isEmpty() || v.password().isSome()
+            case None => false
+        }
+    }
+
     /**
      * Reassembles the URL into a valid URL string.
      *
@@ -1012,18 +1030,12 @@ public class URL <: ToString {
 
     private func writeUserHostPath(result: StringBuilder): Unit {
         if (!_scheme.isEmpty()) {
-            // RFC 3986 allows an empty username together with a non-empty password (":pass@host").
-            // Testing username() alone conflates "no userinfo" with "empty username", which
-            // silently dropped the credentials during serialization.
-            let hasUserInfo = match (_rawUserInfo) {
-                case Some(v) => !v.username().isEmpty() || v.password().isSome()
-                case None => false
-            }
-            if (!_host.hostname.isEmpty() || !_port.isEmpty() || !_rawPath.isEmpty() || hasUserInfo) {
+            let userInfoExists = URL.hasUserInfo(_rawUserInfo)
+            if (!_host.hostname.isEmpty() || !_port.isEmpty() || !_rawPath.isEmpty() || userInfoExists) {
                 result.append("//")
             }
             if (let Some(v) <- _rawUserInfo) {
-                if (hasUserInfo) {
+                if (userInfoExists) {
                     result.append(v.toString())
                     result.append(r'@')
                 }
