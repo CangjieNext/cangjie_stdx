@@ -1012,15 +1012,18 @@ public class URL <: ToString {
 
     private func writeUserHostPath(result: StringBuilder): Unit {
         if (!_scheme.isEmpty()) {
-            if (!_host.hostname.isEmpty() || !_port.isEmpty() || !_rawPath.isEmpty()) {
+            // RFC 3986 allows an empty username together with a non-empty password (":pass@host").
+            // Testing username() alone conflates "no userinfo" with "empty username", which
+            // silently dropped the credentials during serialization.
+            let hasUserInfo = match (_rawUserInfo) {
+                case Some(v) => !v.username().isEmpty() || v.password().isSome()
+                case None => false
+            }
+            if (!_host.hostname.isEmpty() || !_port.isEmpty() || !_rawPath.isEmpty() || hasUserInfo) {
                 result.append("//")
-            } else if (let Some(v) <- _rawUserInfo) {
-                if (!v.username().isEmpty()) {
-                    result.append("//")
-                }
             }
             if (let Some(v) <- _rawUserInfo) {
-                if (!v.username().isEmpty()) {
+                if (hasUserInfo) {
                     result.append(v.toString())
                     result.append(r'@')
                 }
