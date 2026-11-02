@@ -960,26 +960,7 @@ public class JsonArray <: JsonValue {
     public operator func [](index: Int64): JsonValue {
         return match (items.get(index)) {
             case Some(v) => v
-<<<<<<< HEAD
             case None => throw JsonException("Index '${index}' does not exist in JsonArray.")
-||||||| constructed merge base
-            case None => throw JsonException("The index ${index} of JsonArray does not exist.")
-=======
-            case None => throw JsonException("Index '${index}' does not exist in JsonArray.")
-        }
-    }
-    public exclave operator func [](this @local!, index: Int64): JsonValue @local! {
-        match (items.get(index)) {
-            case Some(v) => v
-            case None => throw JsonException("The index ${index} of JsonArray does not exist.")
-        }
-    }
-
-    public exclave operator func [](this @local?, index: Int64): JsonValue @local? {
-        match (items.get(index)) {
-            case Some(v) => v
-            case None => throw JsonException("The index ${index} of JsonArray does not exist.")
->>>>>>> feat: local mode
         }
     }
 
@@ -1271,26 +1252,20 @@ public class JsonObject <: JsonValue {
     public operator func [](key: String): JsonValue {
         return match (fields.get(key)) {
             case Some(v) => v
-<<<<<<< HEAD
-            case None => throw JsonException("Key '${key}' does not exist in JsonObject.")
-||||||| constructed merge base
-            case None => throw JsonException("The Value of JsonObject does not exist")
-=======
             case None => throw JsonException("Key '${key}' does not exist in JsonObject.")
         }
     }
     public exclave operator func [](this @local!, key: String @local?): JsonValue @local! {
         match (get(key)) {
             case Some(value) => value
-            case None => throw JsonException("The Value of JsonObject does not exist")
+            case None => throw JsonException("Key '${key}' does not exist in JsonObject.")
         }
     }
 
     public exclave operator func [](this @local?, key: String @local?): JsonValue @local? {
         match (get(key)) {
             case Some(value) => value
-            case None => throw JsonException("The Value of JsonObject does not exist")
->>>>>>> feat: local mode
+            case None => throw JsonException("Key '${key}' does not exist in JsonObject.")
         }
     }
 

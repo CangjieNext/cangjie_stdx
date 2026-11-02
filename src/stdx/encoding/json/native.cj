@@ -616,18 +616,11 @@ func parseJsonString(parser: JsonParser): JsonString {
         if (next == b'\\') {
             break
         }
-<<<<<<< HEAD
         // JSON strings must escape all control characters (U+0000..U+001F).
         // Accepting them here creates values that strict JSON parsers reject.
         if (next < 0x20) {
             throw JsonException()
         }
-||||||| constructed merge base
-=======
-        if (next < 0x20) {
-            throw JsonException()
-        }
->>>>>>> feat: local mode
         parser.offset++
     }
 
@@ -719,11 +712,6 @@ func handleEscape(parser: JsonParser): Unit {
                 let str = Rune((((UInt32(num1)) << 10) | (UInt32(num2))) + 0x10000).toString()
                 unsafe { parser.strCache.add(all: str.rawData()) }
             }
-<<<<<<< HEAD
-        case _ => throw JsonException("Failed to parse JSON string.")
-||||||| constructed merge base
-        case _ => throw JsonException("Fail to parseJsonString")
-=======
         case _ => throw JsonException("Failed to parse JSON string.")
     }
 }
@@ -1275,6 +1263,5 @@ exclave func handleEscape(parser: JsonParser @local!): Unit {
                 appendLocalBytes(parser.strCache, unsafe { str.rawData() })
             }
         case _ => throw JsonException("Fail to parseJsonString")
->>>>>>> feat: local mode
     }
 }
