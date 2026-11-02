@@ -11049,6 +11049,22 @@ Output:
 mut_prop_returnValue: true
 ```
 
+### func getFirstInitializerCall()
+
+```cangjie
+public func getFirstInitializerCall(): ?Expression
+```
+
+Function: Uses [CHIRVisitor](#class-chirvisitor) to return the first expression visited after the first `Preinitialize` intrinsic in this package initializer. Traversal follows stored block-group, block, and expression order, descends into nested block groups, skips initializer calls belonging to other packages, and stops when the result is found.
+
+Return Value:
+
+- ?[Expression](#class-expression) - The first expression after the intrinsic; `None` if the body, matching intrinsic, or following expression is absent, or the next expression is `Exit`.
+
+Exceptions:
+
+- [CHIRException](#class-chirexception) - Thrown when this function lacks the initializer flag or compiler-generated package-initializer name; ordinary functions and file, variable, and literal initializers cannot use this method.
+
 ### func initBody()
 
 ```cangjie

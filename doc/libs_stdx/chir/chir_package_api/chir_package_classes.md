@@ -11050,6 +11050,22 @@ main() {
 mut_prop_returnValue: true
 ```
 
+### func getFirstInitializerCall()
+
+```cangjie
+public func getFirstInitializerCall(): ?Expression
+```
+
+功能：使用 [CHIRVisitor](#class-chirvisitor) 遍历此包初始化函数，返回第一个 `Preinitialize` 内建调用之后访问到的第一个表达式。遍历按基本块组、基本块及表达式的存储顺序进行，并进入嵌套基本块组；跳过其他包的初始化调用，找到结果后立即停止。
+
+返回值：
+
+- ?[Expression](#class-expression) - 内建调用之后的第一个表达式；没有函数体、没有匹配的内建调用、其后没有表达式或紧接着为 `Exit` 时返回 `None`。
+
+异常：
+
+- [CHIRException](#class-chirexception) - 此函数不具有初始化标记或编译器生成的包初始化函数名称时抛出；普通函数以及文件、变量和字面量初始化函数不能调用此方法。
+
 ### func initBody()
 
 ```cangjie

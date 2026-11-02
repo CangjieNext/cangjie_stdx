@@ -11,6 +11,43 @@ package stdx.chir
 import std.deriving.*
 import stdx.chir.to_string_macro.*
 
+internal class FirstInitializerCallVisitor <: CHIRVisitor {
+    private let packageName: String
+    private var seenPreinitialize = false
+    internal var result: ?Expression = None
+
+    internal init(packageName: String) {
+        this.packageName = packageName
+    }
+
+    public override func action(expr: Expression): IRActionMode {
+        match (expr) {
+            case call: Intrinsic =>
+                if (!seenPreinitialize && call._calleeKind == IntrinsicKind.Preinitialize) {
+                    seenPreinitialize = true
+                    return IRActionMode.Continue
+                }
+            case call: Apply =>
+                match (call.callee) {
+                    case callee: Function =>
+                        if (seenPreinitialize && callee.isInitializer() && callee.packageName != packageName) {
+                            return IRActionMode.Continue
+                        }
+                    case _ => ()
+                }
+            case _ => ()
+        }
+        if (!seenPreinitialize) {
+            return IRActionMode.Continue
+        }
+        // Exit is not an initializer when no calls for this package remain.
+        if (!expr.isExit()) {
+            result = Some(expr)
+        }
+        return IRActionMode.Stop
+    }
+}
+
 @Derive[Equatable]
 @CHIREnumToString
 internal enum FuncKind {
@@ -997,6 +1034,20 @@ public class Function <: GlobalValue & Equatable<Function> {
     internal init(ty: FuncType, identifier: String, srcName: String, pkgName: String) {
         super(ValueKind.Func, ty, identifier, srcName, pkgName)
         this._hashCode = calculateHashCode()
+    }
+
+    /**
+     * Finds the first expression after the preinitialization intrinsic in this package initializer.
+     * Expressions are searched in CHIRVisitor traversal order, skipping other packages' initializer calls.
+     * @return The next expression, or `None` if the intrinsic or following expression is absent, or `Exit` follows.
+     * @exception CHIRException if this function is not the package initialization function.
+     */
+    public func getFirstInitializerCall(): ?Expression {
+        assert(isInitializer() && srcCodeName.startsWith("_CGP") && srcCodeName.endsWith("iiHv"),
+            "getFirstInitializerCall is only available on the package initialization function")
+        let visitor = FirstInitializerCallVisitor(packageName)
+        visitor.walk(this)
+        return visitor.result
     }
 
     /**
