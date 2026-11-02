@@ -514,13 +514,7 @@ public class BlockGroup <: Value & Equatable<BlockGroup> {
             } else if (let Some(expr) <- _ownerExpression) {
                 return expr.topLevelFunc
             } else {
-<<<<<<< HEAD
-                throw CHIRException("Invalid owner '${_owner.toString()}'.")
-||||||| constructed merge base
-                throw CHIRException("Invalid owner: ${_owner.toString()}")
-=======
-                throw CHIRException("BlockGroup: owner is not set")
->>>>>>> feat: local mode
+                throw CHIRException("Block group has no owning function or expression.")
             }
         }
     }
@@ -567,18 +561,8 @@ public class BlockGroup <: Value & Equatable<BlockGroup> {
                 expr._blockGroups.removeIf({ bg => bg == this })
             } else if (let Some(f) <- _ownerFunc) {
                 f._body = None
-<<<<<<< HEAD
-            } else if (let Some(lv) <- (_owner as LocalVar)) {
-                lv.expr._blockGroups.removeIf({ bg => bg == this })
             } else {
-                throw CHIRException("Invalid owner '${_owner.toString()}'.")
-||||||| constructed merge base
-            } else if (let Some(lv) <- (_owner as LocalVar)) {
-                lv.expr._blockGroups.removeIf({ bg => bg == this })
-            } else {
-                throw CHIRException("Invalid owner: ${_owner.toString()}")
-=======
->>>>>>> feat: local mode
+                throw CHIRException("Block group has no owning function or expression.")
             }
         }
         _kind = ValueKind.Invalid

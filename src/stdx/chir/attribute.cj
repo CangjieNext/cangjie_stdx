@@ -66,17 +66,12 @@ internal enum Attribute <: ToString {
     ObjCForeign |     ///< Mark whether it's Objective-C foreign declaration.
     JavaHasDefault | ///< Mark whether `@Java` foreign interface has default method.
     PreviouslyDeserialized | ///< Mark that deserialization occurs not in the newly created node, but in an existing one.
-<<<<<<< HEAD
     DoesNotThrow | ///< Mark that the function does not throw any exceptions by construction.
     ObjCExport | ///< Mark whether it's a declaration exported to Objective-C.
     MatchPattern | ///< Mark CFG nodes that evaluate patterns, excluding case bodies and nested expressions.
-||||||| constructed merge base
-=======
+    PluginAdded | ///< Mark that the declaration is added by chir plugin.
     Demode | ///< Mark instance member as @Demode (@~local regardless of receiver modal).
     Exclave | ///< Mark a function whether it's exclave.
-    // Stdx-only: must stay after compiler ATTR_END so the bit does not alias Demode/Exclave on roundtrip.
->>>>>>> feat: local mode
-    PluginAdded | ///< Mark that the declaration is added by chir plugin.
 
     AttrEnd
 
@@ -123,17 +118,13 @@ internal enum Attribute <: ToString {
             case ObjCForeign            => "objCForeign"
             case JavaHasDefault         => "javaHasDefault"
             case PreviouslyDeserialized => "previouslyDeserialized"
-<<<<<<< HEAD
             case DoesNotThrow           => "doesNotThrow"
             case ObjCExport             => "objCExport"
             case MatchPattern           => "matchPattern"
-||||||| constructed merge base
-=======
+            case PluginAdded            => "pluginAdded"
             case Demode                 => "demode"
             case Exclave                => "exclave"
->>>>>>> feat: local mode
-            case PluginAdded            => "pluginAdded"
-            case AttrBegin | AttrEnd => "UNKNOWN"
+            case AttrBegin | AttrEnd    => "UNKNOWN"
         }
     }
 
@@ -176,19 +167,13 @@ internal enum Attribute <: ToString {
             case JavaExport             => ObjCForeign
             case ObjCForeign            => JavaHasDefault
             case JavaHasDefault         => PreviouslyDeserialized
-<<<<<<< HEAD
             case PreviouslyDeserialized => DoesNotThrow
             case DoesNotThrow           => ObjCExport
             case ObjCExport             => MatchPattern
             case MatchPattern           => PluginAdded
-||||||| constructed merge base
-            case PreviouslyDeserialized => PluginAdded
-=======
-            case PreviouslyDeserialized => Demode
+            case PluginAdded            => Demode
             case Demode                 => Exclave
-            case Exclave                => PluginAdded
->>>>>>> feat: local mode
-            case PluginAdded            => AttrEnd
+            case Exclave                => AttrEnd
             case AttrEnd                => AttrEnd
         }
     }
@@ -228,7 +213,6 @@ internal enum Attribute <: ToString {
             case Deserialized           => 29
             case Initializer            => 30
             case Unsafe                 => 31
-<<<<<<< HEAD
             case JavaForeign            => 32
             case JavaExport             => 33
             case ObjCForeign            => 34
@@ -238,25 +222,8 @@ internal enum Attribute <: ToString {
             case ObjCExport             => 38
             case MatchPattern           => 39
             case PluginAdded            => 40
-||||||| constructed merge base
-            case JavaMirror             => 32
-            case JavaImpl               => 33
-            case ObjCMirror             => 34
-            case HasInitedField         => 35
-            case JavaHasDefault         => 36
-            case PreviouslyDeserialized => 37
-            case PluginAdded            => 38
-=======
-            case JavaMirror             => 32
-            case JavaImpl               => 33
-            case ObjCMirror             => 34
-            case HasInitedField         => 35
-            case JavaHasDefault         => 36
-            case PreviouslyDeserialized => 37
-            case Demode                 => 38
-            case Exclave                => 39
-            case PluginAdded            => 40
->>>>>>> feat: local mode
+            case Demode                 => 41
+            case Exclave                => 42
             case AttrEnd                => ATTR_SIZE  // Invalid, return size to indicate error
         }
     }
