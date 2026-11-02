@@ -1357,6 +1357,7 @@ class SyntaxNodeImplTranslator {
 
     private func transBody(node: NonTerminal, startPos: CodePosition, parent: ?SyntaxTreeNode): Body {
         var memberDeclsPropInfo = ArrayList<PropInfo>()
+        let memberLeadingCommentsPropInfo = ArrayList<Array<PropInfo>>()
         let bitOrsPos = ArrayList<CodePosition>()
         var ellipsisPos: ?CodePosition = None
         let lp = LocalParser(node.children)
@@ -1367,18 +1368,31 @@ class SyntaxNodeImplTranslator {
         let predictDecl = {
             kind: SyntaxNodeKind => kind.isDecl()
         }
+        // Comments located before a member decl prefixed by '|' (e.g. the doc comment of
+        // an enum constructor written as '| Ctor') belong to that member instead of the body.
+        var commentMark = lp.commentsCount()
+        var bitOrBeforeMember = false
         if (let Some(v) <- lp.lookAndConsume(SyntaxNodeKind.BitOrToken)) {
             bitOrsPos.add(startPos + lp.offset)
             lp.offset.move(v.offset)
+            bitOrBeforeMember = true
         }
         while (lp.look(predictDecl)) {
             let declNode = lp.consume()
             memberDeclsPropInfo.add(PropInfo(lp.cur - 1, lp.offset))
+            if (bitOrBeforeMember) {
+                memberLeadingCommentsPropInfo.add(lp.takeCommentsFrom(commentMark))
+            } else {
+                memberLeadingCommentsPropInfo.add(Array<PropInfo>())
+            }
+            commentMark = lp.commentsCount()
+            bitOrBeforeMember = false
             lp.offset.move(declNode?.offset)
 
             if (let Some(v) <- lp.lookAndConsume(SyntaxNodeKind.BitOrToken)) {
                 bitOrsPos.add(startPos + lp.offset)
                 lp.offset.move(v.offset)
+                bitOrBeforeMember = true
             }
             if (let Some(v) <- lp.lookAndConsume(SyntaxNodeKind.EllipsisToken)) {
                 ellipsisPos = startPos + lp.offset
@@ -1390,11 +1404,11 @@ class SyntaxNodeImplTranslator {
         let rCurlPos = startPos + lp.offset
         lp.offset.move(rCurlNode?.offset)
 
-        let propInfos = BodyPropInfos(memberDeclsPropInfo.toArray())
+        let propInfos = BodyPropInfos(memberDeclsPropInfo.toArray(), memberLeadingCommentsPropInfo.toArray())
         let enumBodyPosInfos = EnumBodyPosInfos(bitOrsPos.toArray(), ellipsisPos)
         let posInfos = BodyPosInfos(lCurlPos, rCurlPos)
         lp.consumeToEnd()
-        let commentsPropInfos = lp.commentGroupListPropInfos.toArray()
+        let commentsPropInfos = lp.remainingComments()
         Body(node, startPos, parent, posInfos, enumBodyPosInfos, propInfos, commentsPropInfos)
     }
 
@@ -3903,6 +3917,55 @@ class LocalParser {
                 break
             }
         }
+    }
+
+    // Ranges [start, end) of comment PropInfos already handed out by
+    // takeCommentsFrom. Kept instead of removing entries eagerly so each call
+    // stays O(range length), not O(list size).
+    private let takenCommentRanges = ArrayList<(Int64, Int64)>()
+
+    func commentsCount(): Int64 {
+        commentGroupListPropInfos.size
+    }
+
+    // Take out the comment PropInfos collected after `mark`. They are the comments
+    // located before the member decl about to be consumed and should be attached
+    // to that member instead of the enclosing node.
+    func takeCommentsFrom(mark: Int64): Array<PropInfo> {
+        let total = commentGroupListPropInfos.size
+        if (total <= mark) {
+            return Array<PropInfo>()
+        }
+        takenCommentRanges.add((mark, total))
+        let ret = ArrayList<PropInfo>()
+        for (i in mark..total) {
+            ret.add(commentGroupListPropInfos[i])
+        }
+        ret.toArray()
+    }
+
+    // Comment PropInfos left for the enclosing node, in green order, excluding
+    // those already handed out via takeCommentsFrom.
+    func remainingComments(): Array<PropInfo> {
+        let ret = ArrayList<PropInfo>()
+        var rangeIdx = 0
+        var i = 0
+        while (i < commentGroupListPropInfos.size) {
+            if (rangeIdx < takenCommentRanges.size) {
+                let (start, end) = takenCommentRanges[rangeIdx]
+                if (i >= end) {
+                    rangeIdx += 1
+                    continue
+                }
+                if (i >= start) {
+                    i = end
+                    continue
+                }
+            }
+            ret.add(commentGroupListPropInfos[i])
+            i += 1
+        }
+        ret.toArray()
     }
 
     func consumeToEnd() {

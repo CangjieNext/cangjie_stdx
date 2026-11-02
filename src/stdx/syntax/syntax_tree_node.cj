@@ -11,6 +11,7 @@ package stdx.syntax
 import std.collection.ArrayList
 import std.deriving.*
 import std.ast.ToTokens
+import std.sort.*
 
 extend Token {
     func addPosition(pos: CodePosition) {
@@ -40,6 +41,8 @@ sealed abstract class SyntaxTreeNode <: ToString & ToTokens & Hashable & Equatab
     let nodeImpl: SyntaxNodeImpl
 
     let commentsPropInfo: Array<PropInfo>
+
+    private var leadingComments: Array<Comment> = Array<Comment>()
 
     /**
      * @brief Returns a string representation of the node.
@@ -218,6 +221,34 @@ sealed abstract class SyntaxTreeNode <: ToString & ToTokens & Hashable & Equatab
         elements.toArray()
     }
 
+    func setLeadingComments(comments: Array<Comment>) {
+        leadingComments = comments
+    }
+
+    func commentsFromPropInfos(propInfos: Array<PropInfo>): Array<Comment> {
+        let cmts = ArrayList<Comment>()
+        for (propInfo in propInfos) {
+            let curNode = (nodeImpl as NonTerminal).getOrThrow().children[propInfo.index]
+            let offset = propInfo.offset
+            let stPos = CodePosition(nodePos.beginLine, nodePos.beginColumn,
+                FileInfos(nodePos.fileName, nodePos.filePath))
+            let commentGroupList = transCommentGroupList((curNode as NonTerminal).getOrThrow(), stPos + offset, this)
+            for (commentGroup in commentGroupList) {
+                cmts.add(all: commentGroup.elements)
+            }
+        }
+        cmts.toArray()
+    }
+
+    // Comments paired with the CommentGroupList children in this node's green
+    // tree when rewriting. Leading comments attached by the enclosing Body are
+    // excluded here: their green CommentGroupList nodes are children of the
+    // Body, so the rewriter pairs them through the Body's queue instead (see
+    // Body.commentsForRewrite).
+    protected open func commentsForRewrite(): Array<Comment> {
+        commentsFromPropInfos(commentsPropInfo)
+    }
+
     /**
      * @brief The comments array of the SyntaxTreeNode.
      *
@@ -226,17 +257,8 @@ sealed abstract class SyntaxTreeNode <: ToString & ToTokens & Hashable & Equatab
     public prop comments: Array<Comment> {
         get() {
             let cmts = ArrayList<Comment>()
-
-            for (propInfo in commentsPropInfo) {
-                let curNode = (nodeImpl as NonTerminal).getOrThrow().children[propInfo.index]
-                let offset = propInfo.offset
-                let stPos = CodePosition(nodePos.beginLine, nodePos.beginColumn,
-                    FileInfos(nodePos.fileName, nodePos.filePath))
-                let commentGroupList = transCommentGroupList((curNode as NonTerminal).getOrThrow(), stPos + offset, this)
-                for (commentGroup in commentGroupList) {
-                    cmts.add(all: commentGroup.elements)
-                }
-            }
+            cmts.add(all: leadingComments)
+            cmts.add(all: commentsFromPropInfos(commentsPropInfo))
             cmts.toArray()
         }
     }
@@ -684,9 +706,11 @@ class EnumBodyPosInfos {
 
 class BodyPropInfos {
     let memberDeclsPropInfo: Array<PropInfo>
+    let memberLeadingCommentsPropInfo: Array<Array<PropInfo>>
 
-    init(memberDeclsPropInfo: Array<PropInfo>) {
+    init(memberDeclsPropInfo: Array<PropInfo>, memberLeadingCommentsPropInfo: Array<Array<PropInfo>>) {
         this.memberDeclsPropInfo = memberDeclsPropInfo
+        this.memberLeadingCommentsPropInfo = memberLeadingCommentsPropInfo
     }
 }
 
@@ -754,6 +778,39 @@ public class Body <: SyntaxTreeNode {
         this.enumBodyPosInfos = redNode.enumBodyPosInfos
     }
 
+    // The green tree keeps member leading comments as CommentGroupList children
+    // of the Body even though they are reported through the members' comments.
+    // The rewriter pairs every green CommentGroupList child of the Body with
+    // this queue, so it must contain both parts, merged in green child order.
+    protected override func commentsForRewrite(): Array<Comment> {
+        let propInfoList = ArrayList<PropInfo>(commentsPropInfo)
+        for (memberLeading in propInfos.memberLeadingCommentsPropInfo) {
+            propInfoList.add(all: memberLeading)
+        }
+        let merged = propInfoList.toArray()
+        let comparator = {l: PropInfo, r: PropInfo => l.index.compare(r.index)}
+        sort(merged, by: comparator)
+        commentsFromPropInfos(merged)
+    }
+
+    func buildMemberLeadingComments(index: Int64, parent: SyntaxTreeNode): Array<Comment> {
+        let cmts = ArrayList<Comment>()
+        if (index < propInfos.memberLeadingCommentsPropInfo.size) {
+            for (propInfo in propInfos.memberLeadingCommentsPropInfo[index]) {
+                let curNode = (nodeImpl as NonTerminal).getOrThrow().children[propInfo.index]
+                let offset = propInfo.offset
+                let stPos = CodePosition(nodePos.beginLine, nodePos.beginColumn,
+                    FileInfos(nodePos.fileName, nodePos.filePath))
+                let commentGroupList = transCommentGroupList((curNode as NonTerminal).getOrThrow(), stPos + offset,
+                    parent)
+                for (commentGroup in commentGroupList) {
+                    cmts.add(all: commentGroup.elements)
+                }
+            }
+        }
+        cmts.toArray()
+    }
+
     /**
      * @brief The array of member declarations in the body.
      *
@@ -762,10 +819,16 @@ public class Body <: SyntaxTreeNode {
     public prop memberDecls: Array<Decl> {
         get() {
             let decls = ArrayList<Decl>()
-            for (propInfo in propInfos.memberDeclsPropInfo) {
+            for (i in 0..propInfos.memberDeclsPropInfo.size) {
+                let propInfo = propInfos.memberDeclsPropInfo[i]
                 let curNode = (nodeImpl as NonTerminal).getOrThrow().children[propInfo.index]
                 let offset = propInfo.offset
-                decls.add(cast<Decl>(SyntaxNodeImplTranslator.translate(curNode, startPos + offset, this)).getOrThrow())
+                let decl = cast<Decl>(SyntaxNodeImplTranslator.translate(curNode, startPos + offset, this)).getOrThrow()
+                let leadingComments = buildMemberLeadingComments(i, decl)
+                if (leadingComments.size > 0) {
+                    decl.setLeadingComments(leadingComments)
+                }
+                decls.add(decl)
             }
             decls.toArray()
         }
