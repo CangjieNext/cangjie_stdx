@@ -21,9 +21,11 @@ const SM4_BUFFER_SIZE: Int64 = 1024
 const SM4_GCM_TAG_SIZE: Int64 = SM4_BLOCK_SIZE
 const SM4_GCM_TAG_MIN_SIZE: Int64 = 12
 const SM4_DIGEST_ALGORITHM_NAME = "SM4"
+// control codes of EVP_CIPHER_CTX_ctrl, matching OpenSSL evp.h:
+// EVP_CTRL_AEAD_SET_IVLEN = 0x9, EVP_CTRL_AEAD_GET_TAG = 0x10, EVP_CTRL_AEAD_SET_TAG = 0x11
 const AEAD_SET_IVLEN: Int32 = 9
-const AEAD_GET_TAG: Int32 = 10
-const AEAD_SET_TAG: Int32 = 11
+const AEAD_GET_TAG: Int32 = 16
+const AEAD_SET_TAG: Int32 = 17
 
 public struct OperationMode <: ToString & Equatable<OperationMode> {
     public static let ECB: OperationMode = OperationMode("ECB")
