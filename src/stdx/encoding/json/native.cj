@@ -1026,7 +1026,10 @@ exclave func parseJsonNumberSlow(parser: JsonParser @local!): JsonValue @local! 
             let ptr = acquireArrayRawData(parser.data)
             let value = CJ_JSON_ParseFloat64(ptr.pointer, leftIndex, rightIndex)
             releaseArrayRawData(ptr)
-            let localValue: Float64 @local! = ensureFiniteJsonFloat(value)
+            if (isJsonFloatInfinite(value)) {
+                throw JsonException("Invalid float detected.")
+            }
+            let localValue: Float64 @local! = value
             return JsonFloat(localValue) @local!
         }
     }
