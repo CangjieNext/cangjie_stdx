@@ -116,8 +116,9 @@ public class ECDSAPrivateKey <: PrivateKey {
 
     public func sign(digest: Array<Byte>): Array<Byte> {
         let ctx = EVPKEYCTX(pkey)
+        let result = sign(ctx, pkey, digest)
         keepAlive(this)
-        sign(ctx, pkey, digest)
+        result
     }
 
     public override func toString(): String {

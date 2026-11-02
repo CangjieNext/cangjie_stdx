@@ -8,6 +8,7 @@
 
 package stdx.crypto.digest
 
+import std.sync.AtomicReference
 import stdx.crypto.common.CryptoException
 
 const SM3_DIGEST_LENGTH: Int64 = 32
@@ -411,4 +412,12 @@ func cryptoMemcmp(a: CPointer<UInt8>, b: CPointer<UInt8>, len: UIntNative): Int3
     let res = unsafe { DYN_CRYPTO_memcmp(a, b, len, dynMsgPtr) }
     checkError(dynMsgPtr)
     return res
+}
+
+let _keepAlivePhantom = Object()
+let _keepAliveRef = AtomicReference<Object>(_keepAlivePhantom)
+
+func keepAlive(o: Object) {
+    _keepAliveRef.store(o)
+    _keepAliveRef.store(_keepAlivePhantom)
 }

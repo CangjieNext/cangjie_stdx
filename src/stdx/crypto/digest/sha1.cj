@@ -64,6 +64,7 @@ public class SHA1 <: Digest {
 
     public func reset(): Unit {
         sha1Init(this.sha1Ctx.ptr)
+        keepAlive(this.sha1Ctx)
         this.hasFinished = false
     }
 }
@@ -78,6 +79,7 @@ func sha1Update(c: SHACTX, data: Array<Byte>): Unit {
             releaseArrayRawData(p)
         }
         checkError(dynMsgPtr)
+        keepAlive(c)
         if (res != 1) {
             throw CryptoException("SHA1 write operation failed.")
         }
@@ -94,6 +96,7 @@ func sha1Final(c: SHACTX, md: Array<Byte>): Unit {
             releaseArrayRawData(p)
         }
         checkError(dynMsgPtr)
+        keepAlive(c)
         if (res != 1) {
             throw CryptoException("SHA1 finish operation failed.")
         }

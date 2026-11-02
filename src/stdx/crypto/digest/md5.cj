@@ -64,6 +64,7 @@ public class MD5 <: Digest {
 
     public func reset(): Unit {
         md5Init(this.md5Ctx.ptr)
+        keepAlive(this.md5Ctx)
         this.hasFinished = false
     }
 }
@@ -78,6 +79,7 @@ func md5Update(c: MD5CTX, data: Array<Byte>): Unit {
             releaseArrayRawData(p)
         }
         checkError(dynMsgPtr)
+        keepAlive(c)
         if (res != 1) {
             throw CryptoException("MD5 write operation failed.")
         }
@@ -94,6 +96,7 @@ func md5Final(c: MD5CTX, md: Array<Byte>): Unit {
             releaseArrayRawData(p)
         }
         checkError(dynMsgPtr)
+        keepAlive(c)
         if (res != 1) {
             throw CryptoException("MD5 finish operation failed.")
         }

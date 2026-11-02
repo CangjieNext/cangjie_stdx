@@ -195,6 +195,7 @@ public class HMAC <: Digest {
             throw CryptoException("Digest calculation already completed.")
         }
         hmacUpdateC(this.ctxPtr, buffer, UIntNative(buffer.size))
+        keepAlive(this)
     }
 
     /*
@@ -217,6 +218,7 @@ public class HMAC <: Digest {
             throw CryptoException("Output length '${to.size}' does not match digest length '${size}'.")
         }
         hmacFinalC(this.ctxPtr, to)
+        keepAlive(this)
         this.hasFinished = true
         this.ctxPtr = CPointer<Unit>()
     }
@@ -238,6 +240,7 @@ public class HMAC <: Digest {
         this.ctxPtr = ctxPtr
         try {
             hmacInitC(this.ctxPtr, this.key, Int32(this.key.size), this.hashName)
+            keepAlive(this)
         } catch (e: Exception) {
             hmacCtxFree(this.ctxPtr)
             this.ctxPtr = CPointer<Unit>()

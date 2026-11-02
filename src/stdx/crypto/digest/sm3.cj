@@ -61,6 +61,7 @@ public class SM3 <: Digest {
             throw CryptoException("Digest calculation already completed.")
         }
         sm3Update(sm3Ctx, buffer)
+        keepAlive(this)
     }
 
     public func finish(): Array<Byte> {
@@ -77,6 +78,7 @@ public class SM3 <: Digest {
             throw CryptoException("Output length '${to.size}' does not match digest length '${size}'.")
         }
         sm3Final(sm3Ctx, to)
+        keepAlive(this)
         hasFinished = true
     }
 
@@ -92,6 +94,7 @@ public class SM3 <: Digest {
             }
             try {
                 var res = digestInitEx(sm3Ctx, sm3())
+                keepAlive(this)
                 if (res != 1) {
                     throw CryptoException("Failed to initialize SM3 context.")
                 }

@@ -64,6 +64,7 @@ public class SHA384 <: Digest {
 
     public func reset(): Unit {
         sha384Init(this.sha384Ctx.ptr)
+        keepAlive(this.sha384Ctx)
         this.hasFinished = false
     }
 }
@@ -78,6 +79,7 @@ func sha384Update(c: SHA384CTX, data: Array<Byte>): Unit {
             releaseArrayRawData(p)
         }
         checkError(dynMsgPtr)
+        keepAlive(c)
         if (res != 1) {
             throw CryptoException("SHA384 write operation failed.")
         }
@@ -94,6 +96,7 @@ func sha384Final(c: SHA384CTX, md: Array<Byte>): Unit {
             releaseArrayRawData(p)
         }
         checkError(dynMsgPtr)
+        keepAlive(c)
         if (res != 1) {
             throw CryptoException("SHA384 finish operation failed.")
         }

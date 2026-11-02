@@ -12,6 +12,7 @@ import std.crypto.cipher.*
 import std.io.{InputStream, OutputStream, ByteBuffer}
 import std.collection.ArrayList
 import stdx.crypto.digest.*
+import std.sync.AtomicReference
 import stdx.crypto.common.CryptoException
 
 const SM4_BLOCK_SIZE: Int64 = 16
@@ -281,6 +282,7 @@ public class SM4 <: BlockCipher {
                     }
                     output.write(tag)
                 }
+                keepAlive(this)
             } finally {
                 releaseArrayRawData(inBlock)
                 releaseArrayRawData(outBlock)
@@ -401,6 +403,7 @@ public class SM4 <: BlockCipher {
                         output.write(writebuff[..Int64(outlen2Ptr.value.read())])
                     }
                 }
+                keepAlive(this)
             } finally {
                 releaseArrayRawData(inBlock)
                 releaseArrayRawData(outBlock)
@@ -592,4 +595,12 @@ func checkError(dynMsgPtr: CPointer<DynMsg>): Unit {
             FreeDynMsg(dynMsgPtr)
         }
     }
+}
+
+let _keepAlivePhantom = Object()
+let _keepAliveRef = AtomicReference<Object>(_keepAlivePhantom)
+
+func keepAlive(o: Object) {
+    _keepAliveRef.store(o)
+    _keepAliveRef.store(_keepAlivePhantom)
 }

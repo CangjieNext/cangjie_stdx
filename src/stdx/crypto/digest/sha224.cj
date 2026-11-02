@@ -64,6 +64,7 @@ public class SHA224 <: Digest {
 
     public func reset(): Unit {
         sha224Init(this.sha224Ctx.ptr)
+        keepAlive(this.sha224Ctx)
         this.hasFinished = false
     }
 }
@@ -78,6 +79,7 @@ func sha224Update(c: SHA224CTX, data: Array<Byte>): Unit {
             releaseArrayRawData(p)
         }
         checkError(dynMsgPtr)
+        keepAlive(c)
         if (res != 1) {
             throw CryptoException("SHA224 write operation failed.")
         }
@@ -94,6 +96,7 @@ func sha224Final(c: SHA224CTX, md: Array<Byte>): Unit {
             releaseArrayRawData(p)
         }
         checkError(dynMsgPtr)
+        keepAlive(c)
         if (res != 1) {
             throw CryptoException("SHA224 finish operation failed.")
         }

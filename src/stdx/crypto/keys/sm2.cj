@@ -92,13 +92,15 @@ public class SM2PrivateKey <: PrivateKey {
     }
 
     public func sign(data: Array<Byte>): Array<Byte> {
+        let result = signSM2(pkey, data, defaultUid)
         keepAlive(this)
-        return signSM2(pkey, data, defaultUid)
+        return result
     }
 
     public func decrypt(input: Array<Byte>): Array<Byte> {
+        let result = decryptSM2(pkey, input)
         keepAlive(this)
-        return decryptSM2(pkey, input)
+        return result
     }
 
     public override func toString(): String {
@@ -154,13 +156,15 @@ public class SM2PublicKey <: PublicKey {
     }
 
     public func verify(data: Array<Byte>, sig: Array<Byte>): Bool {
+        let result = verifySM2(pkey, data, sig, defaultUid)
         keepAlive(this)
-        return verifySM2(pkey, data, sig, defaultUid)
+        return result
     }
 
     public func encrypt(input: Array<Byte>): Array<Byte> {
+        let result = encryptSM2(pkey, input)
         keepAlive(this)
-        return encryptSM2(pkey, input)
+        return result
     }
 
     public override func toString(): String {

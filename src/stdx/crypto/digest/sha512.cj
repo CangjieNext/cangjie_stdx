@@ -64,6 +64,7 @@ public class SHA512 <: Digest {
 
     public func reset(): Unit {
         sha512Init(this.sha512Ctx.ptr)
+        keepAlive(this.sha512Ctx)
         this.hasFinished = false
     }
 }
@@ -78,6 +79,7 @@ func sha512Update(c: SHA512CTX, data: Array<Byte>): Unit {
             releaseArrayRawData(p)
         }
         checkError(dynMsgPtr)
+        keepAlive(c)
         if (res != 1) {
             throw CryptoException("SHA512 write operation failed.")
         }
@@ -94,6 +96,7 @@ func sha512Final(c: SHA512CTX, md: Array<Byte>): Unit {
             releaseArrayRawData(p)
         }
         checkError(dynMsgPtr)
+        keepAlive(c)
         if (res != 1) {
             throw CryptoException("SHA512 finish operation failed.")
         }

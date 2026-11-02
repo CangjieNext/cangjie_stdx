@@ -64,6 +64,7 @@ public class SHA256 <: Digest {
 
     public func reset(): Unit {
         sha256Init(this.sha256Ctx.ptr)
+        keepAlive(this.sha256Ctx)
         this.hasFinished = false
     }
 }
@@ -78,6 +79,7 @@ func sha256Update(c: SHA256CTX, data: Array<Byte>): Unit {
             releaseArrayRawData(p)
         }
         checkError(dynMsgPtr)
+        keepAlive(c)
         if (res != 1) {
             throw CryptoException("SHA256 write operation failed.")
         }
@@ -94,6 +96,7 @@ func sha256Final(c: SHA256CTX, md: Array<Byte>): Unit {
             releaseArrayRawData(p)
         }
         checkError(dynMsgPtr)
+        keepAlive(c)
         if (res != 1) {
             throw CryptoException("SHA256 finish operation failed.")
         }
