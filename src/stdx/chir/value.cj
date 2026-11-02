@@ -465,9 +465,9 @@ public class Block <: Value & Equatable<Block> {
  */
 public class BlockGroup <: Value & Equatable<BlockGroup> {
     internal var _blocks = ArrayList<Block>()
-    // owner is lambda(LocalVar) or global function(Function)
     internal var _entryBlock: ?Block = None
-    internal var _owner: Value
+    internal var _ownerFunc: ?Function = None
+    internal var _ownerExpression: ?Expression = None
 
     /**
      * Gets the `blocks` property.
@@ -494,12 +494,12 @@ public class BlockGroup <: Value & Equatable<BlockGroup> {
     }
 
     /**
-     * Gets the `owner` property.
-     * @type { Value }
+     * Gets the `ownerFunc` property.
+     * @type { ?Function }
      */
-    public prop owner: Value {
+    public prop ownerFunc: ?Function {
         get() {
-            return _owner
+            return _ownerFunc
         }
     }
 
@@ -509,19 +509,31 @@ public class BlockGroup <: Value & Equatable<BlockGroup> {
      */
     public prop topLevelFunc: Function {
         get() {
-            if (let Some(f) <- (_owner as Function)) {
+            if (let Some(f) <- _ownerFunc) {
                 return f
-            } else if (let Some(lv) <- (_owner as LocalVar)) {
-                return lv.topLevelFunc
+            } else if (let Some(expr) <- _ownerExpression) {
+                return expr.topLevelFunc
             } else {
+<<<<<<< HEAD
                 throw CHIRException("Invalid owner '${_owner.toString()}'.")
+||||||| constructed merge base
+                throw CHIRException("Invalid owner: ${_owner.toString()}")
+=======
+                throw CHIRException("BlockGroup: owner is not set")
+>>>>>>> feat: local mode
             }
         }
     }
 
-    internal init(identifier: String, owner: Value) {
+    internal init(identifier: String, ownerFunc: Function) {
         super(ValueKind.BlockGroup, identifier)
-        this._owner = owner
+        this._ownerFunc = ownerFunc
+        this._hashCode = calculateHashCode()
+    }
+
+    internal init(identifier: String, ownerExpression: Expression) {
+        super(ValueKind.BlockGroup, identifier)
+        this._ownerExpression = ownerExpression
         this._hashCode = calculateHashCode()
     }
 
@@ -551,12 +563,22 @@ public class BlockGroup <: Value & Equatable<BlockGroup> {
         _blocks.clear()
         _entryBlock = None
         if (removeFromOwner) {
-            if (let Some(f) <- (_owner as Function)) {
+            if (let Some(expr) <- _ownerExpression) {
+                expr._blockGroups.removeIf({ bg => bg == this })
+            } else if (let Some(f) <- _ownerFunc) {
                 f._body = None
+<<<<<<< HEAD
             } else if (let Some(lv) <- (_owner as LocalVar)) {
                 lv.expr._blockGroups.removeIf({ bg => bg == this })
             } else {
                 throw CHIRException("Invalid owner '${_owner.toString()}'.")
+||||||| constructed merge base
+            } else if (let Some(lv) <- (_owner as LocalVar)) {
+                lv.expr._blockGroups.removeIf({ bg => bg == this })
+            } else {
+                throw CHIRException("Invalid owner: ${_owner.toString()}")
+=======
+>>>>>>> feat: local mode
             }
         }
         _kind = ValueKind.Invalid
@@ -898,7 +920,7 @@ public class Function <: GlobalValue & Equatable<Function> {
     internal var _isFastNative: Bool = false
     internal var _localId: UInt64 = 0
     internal var _originalLambdaInfo: ?FuncSigInfo = None
-    internal var _paramDftValHostFunc: ?Function = None
+    internal var _paramDftValHostParam: ?Parameter = None
     internal var _parameters = ArrayList<Parameter>()
     internal var _propLocation: DebugLocation = DebugLocation.invalid()
     internal var _retValue: ?LocalVar = None
@@ -1923,6 +1945,7 @@ public class LocalVar <: Value & Equatable<LocalVar> {
 public class Parameter <: Value & Equatable<Parameter> {
     internal var _annoInfo: AnnoInfo = AnnoInfo()
     internal var _owner: Value
+    internal var _paramDftValFunc: ?Value = None
     internal var _srcCodeName: String = ""
 
     /**

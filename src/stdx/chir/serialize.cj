@@ -291,6 +291,21 @@ class CHIRSerializerImpl {
         return CHIRFormat_Base.createBase(fbBuilder, annoTypesVec, annosVec, locOffset, attributes)
     }
 
+    private func serializeMode(local: Mode): PackageFormat_Mode {
+        return match (local) {
+            case Mode.Absent => PackageFormat_Mode.Mode_NONE
+            case Mode.Maybe => PackageFormat_Mode.Mode_MAYBE
+            case Mode.Must => PackageFormat_Mode.Mode_MUST
+        }
+    }
+
+    private func serializeModalInfo(modal: ModalInfo): UInt32 {
+        if (!modal.isModal()) {
+            return UInt32(0)
+        }
+        return PackageFormat_ModalInfo.createModalInfo(fbBuilder, serializeMode(modal.local))
+    }
+
     private func serializeType(obj: Type): UInt32 {
         let kind = serializeTypeKind(obj._kind)
         let argTys = getTypeIdList(obj._typeArgs)
@@ -299,7 +314,14 @@ class CHIRSerializerImpl {
         } else {
             fbBuilder.createUInt32Vector(argTys)
         }
+<<<<<<< HEAD
         return CHIRFormat_Type.createType(fbBuilder, kind, argTysVec)
+||||||| constructed merge base
+        return PackageFormat_Type.createType(fbBuilder, kind, argTysVec)
+=======
+        let modal = serializeModalInfo(obj.modalInfo)
+        return PackageFormat_Type.createType(fbBuilder, kind, argTysVec, modal)
+>>>>>>> feat: local mode
     }
 
     private func serializeTypeKind(kind: TypeKind): CHIRFormat_CHIRTypeKind {
@@ -471,7 +493,20 @@ class CHIRSerializerImpl {
         valueKind[Int64(valueId) - 1] = EnumCHIRFormat_ValueElemValues(CHIRFormat_ValueElem.ValueElem_PARAMETER)
         let srcCodeName = fbBuilder.createString(obj._srcCodeName)
         let annoInfo = serializeAnnoInfo(obj._annoInfo)
+<<<<<<< HEAD
         return CHIRFormat_Parameter.createParameter(fbBuilder, base, ownedFunc, ownedLambda, srcCodeName, annoInfo)
+||||||| constructed merge base
+        return PackageFormat_Parameter.createParameter(fbBuilder, base, ownedFunc, ownedLambda, srcCodeName, annoInfo)
+=======
+        var paramDftValFunc: UInt32 = 0
+        if (let Some(dftFunc) <- obj._paramDftValFunc) {
+            if (dftFunc.isFunction()) {
+                paramDftValFunc = getId(dftFunc)
+            }
+        }
+        return PackageFormat_Parameter.createParameter(
+            fbBuilder, base, ownedFunc, ownedLambda, srcCodeName, annoInfo, paramDftValFunc)
+>>>>>>> feat: local mode
     }
 
     private func serializeLocalVar(obj: LocalVar, base: UInt32, valueId: UInt32): UInt32 {
@@ -512,9 +547,9 @@ class CHIRSerializerImpl {
         } else {
             fbBuilder.createUInt32Vector(genericTypeParams)
         }
-        var paramDftValHostFunc: UInt32 = 0
-        if (let Some(host) <- obj._paramDftValHostFunc) {
-            paramDftValHostFunc = getId(host)
+        var paramDftValHostParam: UInt32 = 0
+        if (let Some(host) <- obj._paramDftValHostParam) {
+            paramDftValHostParam = getId(host)
         }
         valueKind[Int64(valueId) - 1] = EnumCHIRFormat_ValueElemValues(CHIRFormat_ValueElem.ValueElem_FUNCTION)
         let globalValueBase = serializeGlobalValue(obj, base)
@@ -535,7 +570,7 @@ class CHIRSerializerImpl {
         let propLoc = serializeDebugLocation(obj._propLocation)
         return CHIRFormat_Function.createFunction(
             fbBuilder, globalValueBase, genericDecl, funcKind, isFastNative, isCFFIWrapper,
-            originalLambdaInfo, genericTypeParamsVec, paramDftValHostFunc, body, paramsVec, retVal, propLoc,
+            originalLambdaInfo, genericTypeParamsVec, paramDftValHostParam, body, paramsVec, retVal, propLoc,
             obj._localId, obj._blockId, obj._blockGroupId
         )
     }
@@ -594,10 +629,10 @@ class CHIRSerializerImpl {
         let blocksVec = if (blocks.size == 0) { UInt32(0) } else { fbBuilder.createUInt32Vector(blocks) }
         var ownedFunc: UInt32 = 0
         var ownedExpression: UInt32 = 0
-        if (obj.owner.isFunction()) {
-            ownedFunc = getId(obj.owner)
-        } else {
-            ownedExpression = getId((obj.owner as LocalVar).getOrThrow().expr)
+        if (let Some(expr) <- obj._ownerExpression) {
+            ownedExpression = getId(expr)
+        } else if (let Some(f) <- obj._ownerFunc) {
+            ownedFunc = getId(f)
         }
         valueKind[Int64(valueId) - 1] = EnumCHIRFormat_ValueElemValues(CHIRFormat_ValueElem.ValueElem_BLOCKGROUP)
         return CHIRFormat_BlockGroup.createBlockGroup(fbBuilder, base, entryBlock, blocksVec, ownedFunc, ownedExpression)
@@ -680,6 +715,7 @@ class CHIRSerializerImpl {
 
     private func serializeExprKind(kind: ExprKind): CHIRFormat_CHIRExprKind {
         return match (kind) {
+<<<<<<< HEAD
             case ExprKind.Goto => CHIRFormat_CHIRExprKind.CHIRExprKind_GOTO
             case ExprKind.Branch => CHIRFormat_CHIRExprKind.CHIRExprKind_BRANCH
             case ExprKind.MultiBranch => CHIRFormat_CHIRExprKind.CHIRExprKind_MULTIBRANCH
@@ -766,6 +802,184 @@ class CHIRSerializerImpl {
             case ExprKind.GetRtti => CHIRFormat_CHIRExprKind.CHIRExprKind_GETRTTI
             case ExprKind.GetRttiStatic => CHIRFormat_CHIRExprKind.CHIRExprKind_GETRTTISTATIC
             case _ => throw CHIRException("Invalid expression kind '${kind.toString()}'.")
+||||||| constructed merge base
+            case ExprKind.Goto => PackageFormat_CHIRExprKind.CHIRExprKind_GOTO
+            case ExprKind.Branch => PackageFormat_CHIRExprKind.CHIRExprKind_BRANCH
+            case ExprKind.MultiBranch => PackageFormat_CHIRExprKind.CHIRExprKind_MULTIBRANCH
+            case ExprKind.Exit => PackageFormat_CHIRExprKind.CHIRExprKind_EXIT
+
+            case ExprKind.TryApply => PackageFormat_CHIRExprKind.CHIRExprKind_TRYAPPLY
+            case ExprKind.TryInvoke => PackageFormat_CHIRExprKind.CHIRExprKind_TRYINVOKE
+            case ExprKind.TryIntrinsic => PackageFormat_CHIRExprKind.CHIRExprKind_TRYINTRINSIC
+            case ExprKind.RaiseException => PackageFormat_CHIRExprKind.CHIRExprKind_RAISEEXCEPTION
+            case ExprKind.TrySpawn => PackageFormat_CHIRExprKind.CHIRExprKind_TRYSPAWN
+            case ExprKind.TryNumericCast => PackageFormat_CHIRExprKind.CHIRExprKind_TRYNUMERICCAST
+            case ExprKind.TryAllocate => PackageFormat_CHIRExprKind.CHIRExprKind_TRYALLOCATE
+            case ExprKind.TryRawArrayAllocate => PackageFormat_CHIRExprKind.CHIRExprKind_TRYRAWARRAYALLOCATE
+            case ExprKind.TryNeg => PackageFormat_CHIRExprKind.CHIRExprKind_TRYNEG
+            case ExprKind.TryAdd => PackageFormat_CHIRExprKind.CHIRExprKind_TRYADD
+            case ExprKind.TrySub => PackageFormat_CHIRExprKind.CHIRExprKind_TRYSUB
+            case ExprKind.TryMul => PackageFormat_CHIRExprKind.CHIRExprKind_TRYMUL
+            case ExprKind.TryDiv => PackageFormat_CHIRExprKind.CHIRExprKind_TRYDIV
+            case ExprKind.TryMod => PackageFormat_CHIRExprKind.CHIRExprKind_TRYMOD
+            case ExprKind.TryExp => PackageFormat_CHIRExprKind.CHIRExprKind_TRYEXP
+            case ExprKind.TryLShift => PackageFormat_CHIRExprKind.CHIRExprKind_TRYLSHIFT
+            case ExprKind.TryRShift => PackageFormat_CHIRExprKind.CHIRExprKind_TRYRSHIFT
+
+            case ExprKind.Neg => PackageFormat_CHIRExprKind.CHIRExprKind_NEG
+            case ExprKind.Not => PackageFormat_CHIRExprKind.CHIRExprKind_NOT
+            case ExprKind.BitNot => PackageFormat_CHIRExprKind.CHIRExprKind_BITNOT
+
+            case ExprKind.Add => PackageFormat_CHIRExprKind.CHIRExprKind_ADD
+            case ExprKind.Sub => PackageFormat_CHIRExprKind.CHIRExprKind_SUB
+            case ExprKind.Mul => PackageFormat_CHIRExprKind.CHIRExprKind_MUL
+            case ExprKind.Div => PackageFormat_CHIRExprKind.CHIRExprKind_DIV
+            case ExprKind.Mod => PackageFormat_CHIRExprKind.CHIRExprKind_MOD
+            case ExprKind.Exp => PackageFormat_CHIRExprKind.CHIRExprKind_EXP
+            case ExprKind.LShift => PackageFormat_CHIRExprKind.CHIRExprKind_LSHIFT
+            case ExprKind.RShift => PackageFormat_CHIRExprKind.CHIRExprKind_RSHIFT
+            case ExprKind.BitAnd => PackageFormat_CHIRExprKind.CHIRExprKind_BITAND
+            case ExprKind.BitOr => PackageFormat_CHIRExprKind.CHIRExprKind_BITOR
+            case ExprKind.BitXor => PackageFormat_CHIRExprKind.CHIRExprKind_BITXOR
+            case ExprKind.LT => PackageFormat_CHIRExprKind.CHIRExprKind_LT
+            case ExprKind.GT => PackageFormat_CHIRExprKind.CHIRExprKind_GT
+            case ExprKind.LE => PackageFormat_CHIRExprKind.CHIRExprKind_LE
+            case ExprKind.GE => PackageFormat_CHIRExprKind.CHIRExprKind_GE
+            case ExprKind.Equal => PackageFormat_CHIRExprKind.CHIRExprKind_EQUAL
+            case ExprKind.NotEqual => PackageFormat_CHIRExprKind.CHIRExprKind_NOTEQUAL
+            case ExprKind.And => PackageFormat_CHIRExprKind.CHIRExprKind_AND
+            case ExprKind.Or => PackageFormat_CHIRExprKind.CHIRExprKind_OR
+
+            case ExprKind.Allocate => PackageFormat_CHIRExprKind.CHIRExprKind_ALLOCATE
+            case ExprKind.Load => PackageFormat_CHIRExprKind.CHIRExprKind_LOAD
+            case ExprKind.Store => PackageFormat_CHIRExprKind.CHIRExprKind_STORE
+            case ExprKind.GetElementByName => PackageFormat_CHIRExprKind.CHIRExprKind_GETELEMENTBYNAME
+            case ExprKind.GetElementRef => PackageFormat_CHIRExprKind.CHIRExprKind_GETELEMENTREF
+            case ExprKind.StoreElementByName => PackageFormat_CHIRExprKind.CHIRExprKind_STOREELEMENTBYNAME
+            case ExprKind.StoreElementRef => PackageFormat_CHIRExprKind.CHIRExprKind_STOREELEMENTREF
+
+            case ExprKind.Lambda => PackageFormat_CHIRExprKind.CHIRExprKind_LAMBDA
+            case ExprKind.Constant => PackageFormat_CHIRExprKind.CHIRExprKind_CONSTANT
+            case ExprKind.Debug => PackageFormat_CHIRExprKind.CHIRExprKind_DEBUG
+            case ExprKind.Tuple => PackageFormat_CHIRExprKind.CHIRExprKind_TUPLE
+            case ExprKind.Field => PackageFormat_CHIRExprKind.CHIRExprKind_FIELD
+            case ExprKind.FieldByName => PackageFormat_CHIRExprKind.CHIRExprKind_FIELDBYNAME
+
+            case ExprKind.Apply => PackageFormat_CHIRExprKind.CHIRExprKind_APPLY
+            case ExprKind.Invoke => PackageFormat_CHIRExprKind.CHIRExprKind_INVOKE
+            case ExprKind.InstanceOf => PackageFormat_CHIRExprKind.CHIRExprKind_INSTANCEOF
+            case ExprKind.StaticCast => PackageFormat_CHIRExprKind.CHIRExprKind_STATICCAST
+            case ExprKind.Box => PackageFormat_CHIRExprKind.CHIRExprKind_BOX
+            case ExprKind.UnboxToValue => PackageFormat_CHIRExprKind.CHIRExprKind_UNBOXTOVALUE
+            case ExprKind.UnboxToRef => PackageFormat_CHIRExprKind.CHIRExprKind_UNBOXTOREF
+            case ExprKind.NumericCast => PackageFormat_CHIRExprKind.CHIRExprKind_NUMERICCAST
+            case ExprKind.CastToConcrete => PackageFormat_CHIRExprKind.CHIRExprKind_CASTTOCONCRETE
+            case ExprKind.CastToGeneric => PackageFormat_CHIRExprKind.CHIRExprKind_CASTTOGENERIC
+
+            case ExprKind.GetException => PackageFormat_CHIRExprKind.CHIRExprKind_GETEXCEPTION
+            case ExprKind.RawArrayAllocate => PackageFormat_CHIRExprKind.CHIRExprKind_RAWARRAYALLOCATE
+            case ExprKind.RawArrayLiteralInit => PackageFormat_CHIRExprKind.CHIRExprKind_RAWARRAYLITERALINIT
+            case ExprKind.RawArrayInitByValue => PackageFormat_CHIRExprKind.CHIRExprKind_RAWARRAYINITBYVALUE
+            case ExprKind.VArrayExpr => PackageFormat_CHIRExprKind.CHIRExprKind_VARRAYEXPR
+            case ExprKind.VArrayBuilder => PackageFormat_CHIRExprKind.CHIRExprKind_VARRAYBUILDER
+
+            case ExprKind.Intrinsic => PackageFormat_CHIRExprKind.CHIRExprKind_INTRINSIC
+            case ExprKind.Spawn => PackageFormat_CHIRExprKind.CHIRExprKind_SPAWN
+            case ExprKind.GetInstantiateValue => PackageFormat_CHIRExprKind.CHIRExprKind_GETINSTANTIATEVALUE
+            case ExprKind.GetRtti => PackageFormat_CHIRExprKind.CHIRExprKind_GETRTTI
+            case ExprKind.GetRttiStatic => PackageFormat_CHIRExprKind.CHIRExprKind_GETRTTISTATIC
+            case _ => throw CHIRException("Unknown Expr Kind: ${kind.toString()}")
+=======
+            case ExprKind.Goto => PackageFormat_CHIRExprKind.CHIRExprKind_GOTO
+            case ExprKind.Branch => PackageFormat_CHIRExprKind.CHIRExprKind_BRANCH
+            case ExprKind.MultiBranch => PackageFormat_CHIRExprKind.CHIRExprKind_MULTIBRANCH
+            case ExprKind.Exit => PackageFormat_CHIRExprKind.CHIRExprKind_EXIT
+            case ExprKind.Exclave => PackageFormat_CHIRExprKind.CHIRExprKind_EXCLAVE
+
+            case ExprKind.TryApply => PackageFormat_CHIRExprKind.CHIRExprKind_TRYAPPLY
+            case ExprKind.TryInvoke => PackageFormat_CHIRExprKind.CHIRExprKind_TRYINVOKE
+            case ExprKind.TryIntrinsic => PackageFormat_CHIRExprKind.CHIRExprKind_TRYINTRINSIC
+            case ExprKind.RaiseException => PackageFormat_CHIRExprKind.CHIRExprKind_RAISEEXCEPTION
+            case ExprKind.TrySpawn => PackageFormat_CHIRExprKind.CHIRExprKind_TRYSPAWN
+            case ExprKind.TryNumericCast => PackageFormat_CHIRExprKind.CHIRExprKind_TRYNUMERICCAST
+            case ExprKind.TryAllocate => PackageFormat_CHIRExprKind.CHIRExprKind_TRYALLOCATE
+            case ExprKind.TryRawArrayAllocate => PackageFormat_CHIRExprKind.CHIRExprKind_TRYRAWARRAYALLOCATE
+            case ExprKind.TryNeg => PackageFormat_CHIRExprKind.CHIRExprKind_TRYNEG
+            case ExprKind.TryAdd => PackageFormat_CHIRExprKind.CHIRExprKind_TRYADD
+            case ExprKind.TrySub => PackageFormat_CHIRExprKind.CHIRExprKind_TRYSUB
+            case ExprKind.TryMul => PackageFormat_CHIRExprKind.CHIRExprKind_TRYMUL
+            case ExprKind.TryDiv => PackageFormat_CHIRExprKind.CHIRExprKind_TRYDIV
+            case ExprKind.TryMod => PackageFormat_CHIRExprKind.CHIRExprKind_TRYMOD
+            case ExprKind.TryExp => PackageFormat_CHIRExprKind.CHIRExprKind_TRYEXP
+            case ExprKind.TryLShift => PackageFormat_CHIRExprKind.CHIRExprKind_TRYLSHIFT
+            case ExprKind.TryRShift => PackageFormat_CHIRExprKind.CHIRExprKind_TRYRSHIFT
+
+            case ExprKind.Neg => PackageFormat_CHIRExprKind.CHIRExprKind_NEG
+            case ExprKind.Not => PackageFormat_CHIRExprKind.CHIRExprKind_NOT
+            case ExprKind.BitNot => PackageFormat_CHIRExprKind.CHIRExprKind_BITNOT
+
+            case ExprKind.Add => PackageFormat_CHIRExprKind.CHIRExprKind_ADD
+            case ExprKind.Sub => PackageFormat_CHIRExprKind.CHIRExprKind_SUB
+            case ExprKind.Mul => PackageFormat_CHIRExprKind.CHIRExprKind_MUL
+            case ExprKind.Div => PackageFormat_CHIRExprKind.CHIRExprKind_DIV
+            case ExprKind.Mod => PackageFormat_CHIRExprKind.CHIRExprKind_MOD
+            case ExprKind.Exp => PackageFormat_CHIRExprKind.CHIRExprKind_EXP
+            case ExprKind.LShift => PackageFormat_CHIRExprKind.CHIRExprKind_LSHIFT
+            case ExprKind.RShift => PackageFormat_CHIRExprKind.CHIRExprKind_RSHIFT
+            case ExprKind.BitAnd => PackageFormat_CHIRExprKind.CHIRExprKind_BITAND
+            case ExprKind.BitOr => PackageFormat_CHIRExprKind.CHIRExprKind_BITOR
+            case ExprKind.BitXor => PackageFormat_CHIRExprKind.CHIRExprKind_BITXOR
+            case ExprKind.LT => PackageFormat_CHIRExprKind.CHIRExprKind_LT
+            case ExprKind.GT => PackageFormat_CHIRExprKind.CHIRExprKind_GT
+            case ExprKind.LE => PackageFormat_CHIRExprKind.CHIRExprKind_LE
+            case ExprKind.GE => PackageFormat_CHIRExprKind.CHIRExprKind_GE
+            case ExprKind.Equal => PackageFormat_CHIRExprKind.CHIRExprKind_EQUAL
+            case ExprKind.NotEqual => PackageFormat_CHIRExprKind.CHIRExprKind_NOTEQUAL
+            case ExprKind.And => PackageFormat_CHIRExprKind.CHIRExprKind_AND
+            case ExprKind.Or => PackageFormat_CHIRExprKind.CHIRExprKind_OR
+
+            case ExprKind.Allocate => PackageFormat_CHIRExprKind.CHIRExprKind_ALLOCATE
+            case ExprKind.Load => PackageFormat_CHIRExprKind.CHIRExprKind_LOAD
+            case ExprKind.Store => PackageFormat_CHIRExprKind.CHIRExprKind_STORE
+            case ExprKind.GetElementByName => PackageFormat_CHIRExprKind.CHIRExprKind_GETELEMENTBYNAME
+            case ExprKind.GetElementRef => PackageFormat_CHIRExprKind.CHIRExprKind_GETELEMENTREF
+            case ExprKind.StoreElementByName => PackageFormat_CHIRExprKind.CHIRExprKind_STOREELEMENTBYNAME
+            case ExprKind.StoreElementRef => PackageFormat_CHIRExprKind.CHIRExprKind_STOREELEMENTREF
+
+            case ExprKind.Lambda => PackageFormat_CHIRExprKind.CHIRExprKind_LAMBDA
+            case ExprKind.Constant => PackageFormat_CHIRExprKind.CHIRExprKind_CONSTANT
+            case ExprKind.Debug => PackageFormat_CHIRExprKind.CHIRExprKind_DEBUG
+            case ExprKind.Tuple => PackageFormat_CHIRExprKind.CHIRExprKind_TUPLE
+            case ExprKind.Field => PackageFormat_CHIRExprKind.CHIRExprKind_FIELD
+            case ExprKind.FieldByName => PackageFormat_CHIRExprKind.CHIRExprKind_FIELDBYNAME
+
+            case ExprKind.Apply => PackageFormat_CHIRExprKind.CHIRExprKind_APPLY
+            case ExprKind.Invoke => PackageFormat_CHIRExprKind.CHIRExprKind_INVOKE
+            case ExprKind.InstanceOf => PackageFormat_CHIRExprKind.CHIRExprKind_INSTANCEOF
+            case ExprKind.StaticCast => PackageFormat_CHIRExprKind.CHIRExprKind_STATICCAST
+            case ExprKind.Box => PackageFormat_CHIRExprKind.CHIRExprKind_BOX
+            case ExprKind.UnboxToValue => PackageFormat_CHIRExprKind.CHIRExprKind_UNBOXTOVALUE
+            case ExprKind.UnboxToRef => PackageFormat_CHIRExprKind.CHIRExprKind_UNBOXTOREF
+            case ExprKind.NumericCast => PackageFormat_CHIRExprKind.CHIRExprKind_NUMERICCAST
+            case ExprKind.CastToConcrete => PackageFormat_CHIRExprKind.CHIRExprKind_CASTTOCONCRETE
+            case ExprKind.CastToGeneric => PackageFormat_CHIRExprKind.CHIRExprKind_CASTTOGENERIC
+
+            case ExprKind.GetException => PackageFormat_CHIRExprKind.CHIRExprKind_GETEXCEPTION
+            case ExprKind.RawArrayAllocate => PackageFormat_CHIRExprKind.CHIRExprKind_RAWARRAYALLOCATE
+            case ExprKind.RawArrayLiteralInit => PackageFormat_CHIRExprKind.CHIRExprKind_RAWARRAYLITERALINIT
+            case ExprKind.RawArrayInitByValue => PackageFormat_CHIRExprKind.CHIRExprKind_RAWARRAYINITBYVALUE
+            case ExprKind.VArrayExpr => PackageFormat_CHIRExprKind.CHIRExprKind_VARRAYEXPR
+            case ExprKind.VArrayBuilder => PackageFormat_CHIRExprKind.CHIRExprKind_VARRAYBUILDER
+
+            case ExprKind.Intrinsic => PackageFormat_CHIRExprKind.CHIRExprKind_INTRINSIC
+            case ExprKind.Spawn => PackageFormat_CHIRExprKind.CHIRExprKind_SPAWN
+            case ExprKind.GetInstantiateValue => PackageFormat_CHIRExprKind.CHIRExprKind_GETINSTANTIATEVALUE
+            case ExprKind.GetRtti => PackageFormat_CHIRExprKind.CHIRExprKind_GETRTTI
+            case ExprKind.GetRttiStatic => PackageFormat_CHIRExprKind.CHIRExprKind_GETRTTISTATIC
+            case ExprKind.StartRegion => PackageFormat_CHIRExprKind.CHIRExprKind_STARTREGION
+            case ExprKind.EndRegion => PackageFormat_CHIRExprKind.CHIRExprKind_ENDREGION
+            case _ => throw CHIRException("Unknown Expr Kind: ${kind.toString()}")
+>>>>>>> feat: local mode
         }
     }
 
@@ -1232,7 +1446,21 @@ class CHIRSerializerImpl {
                 let body = getId(e.body)
                 let retVal = getId(e._returnValue.getOrThrow())
                 let isCompileTimeValue = e._isCompileTimeValue
+<<<<<<< HEAD
                 CHIRFormat_Lambda.createLambda(fbBuilder, base, funcTy, isLocalFunc, identifier, srcCodeName, paramsVec, genericTypeParamsVec, body, retVal, isCompileTimeValue)
+||||||| constructed merge base
+                PackageFormat_Lambda.createLambda(fbBuilder, base, funcTy, isLocalFunc, identifier, srcCodeName, paramsVec, genericTypeParamsVec, body, retVal, isCompileTimeValue)
+=======
+                var paramDftValHostParam: UInt32 = 0
+                if (let Some(host) <- e._paramDftValHostParam) {
+                    paramDftValHostParam = getId(host)
+                }
+                var genericDecl: UInt32 = 0
+                if (let Some(gDecl) <- e._genericDecl) {
+                    genericDecl = getId(gDecl)
+                }
+                PackageFormat_Lambda.createLambda(fbBuilder, base, funcTy, isLocalFunc, identifier, srcCodeName, paramsVec, genericTypeParamsVec, body, retVal, isCompileTimeValue, paramDftValHostParam, genericDecl)
+>>>>>>> feat: local mode
             case e: MultiBranch =>
                 exprKind[Int64(exprId) - 1] = EnumCHIRFormat_ExpressionElemValues(CHIRFormat_ExpressionElem.ExpressionElem_MULTIBRANCH)
                 let caseValues = Array<UInt64>(e.caseValues.size, { i => e.caseValues[i] })

@@ -159,8 +159,30 @@ class CHIRDeserializerImpl {
         }
     }
 
+<<<<<<< HEAD
     private func getBasicTypeFromBuilder(typeFormat: CHIRFormat_CHIRTypeKind) : Option<Type> {
+||||||| constructed merge base
+    private func getBasicTypeFromBuilder(typeFormat: PackageFormat_CHIRTypeKind) : Option<Type> {
+=======
+    private func convertMode(local: PackageFormat_Mode): Mode {
+        return match (local) {
+            case PackageFormat_Mode.Mode_NONE => Mode.Absent
+            case PackageFormat_Mode.Mode_MAYBE => Mode.Maybe
+            case PackageFormat_Mode.Mode_MUST => Mode.Must
+        }
+    }
+
+    private func readModalInfo(base: PackageFormat_Type): ModalInfo {
+        if (let Some(m) <- base.GetModal()) {
+            return ModalInfo(local: convertMode(m.GetLocal()))
+        }
+        return ModalInfo()
+    }
+
+    private func getBasicTypeFromBuilder(typeFormat: PackageFormat_CHIRTypeKind, modal: ModalInfo): Option<Type> {
+>>>>>>> feat: local mode
         return match (typeFormat) {
+<<<<<<< HEAD
             case CHIRFormat_CHIRTypeKind.CHIRTypeKind_BOOLEAN => BoolType.get()
             case CHIRFormat_CHIRTypeKind.CHIRTypeKind_INT8 => IntType.getInt8()
             case CHIRFormat_CHIRTypeKind.CHIRTypeKind_INT16 => IntType.getInt16()
@@ -180,6 +202,47 @@ class CHIRDeserializerImpl {
             case CHIRFormat_CHIRTypeKind.CHIRTypeKind_NOTHING => NothingType.get()
             case CHIRFormat_CHIRTypeKind.CHIRTypeKind_RUNE => RuneType.get()
             case CHIRFormat_CHIRTypeKind.CHIRTypeKind_THIS => ThisType.get()
+||||||| constructed merge base
+            case PackageFormat_CHIRTypeKind.CHIRTypeKind_BOOLEAN => BoolType.get()
+            case PackageFormat_CHIRTypeKind.CHIRTypeKind_INT8 => IntType.getInt8()
+            case PackageFormat_CHIRTypeKind.CHIRTypeKind_INT16 => IntType.getInt16()
+            case PackageFormat_CHIRTypeKind.CHIRTypeKind_INT32 => IntType.getInt32()
+            case PackageFormat_CHIRTypeKind.CHIRTypeKind_INT64 => IntType.getInt64()
+            case PackageFormat_CHIRTypeKind.CHIRTypeKind_INT_NATIVE => IntType.getIntNative()
+            case PackageFormat_CHIRTypeKind.CHIRTypeKind_UINT8 => IntType.getUInt8()
+            case PackageFormat_CHIRTypeKind.CHIRTypeKind_UINT16 => IntType.getUInt16()
+            case PackageFormat_CHIRTypeKind.CHIRTypeKind_UINT32 => IntType.getUInt32()
+            case PackageFormat_CHIRTypeKind.CHIRTypeKind_UINT64 => IntType.getUInt64()
+            case PackageFormat_CHIRTypeKind.CHIRTypeKind_UINT_NATIVE => IntType.getUIntNative()
+            case PackageFormat_CHIRTypeKind.CHIRTypeKind_FLOAT16 => FloatType.getFloat16()
+            case PackageFormat_CHIRTypeKind.CHIRTypeKind_FLOAT32 => FloatType.getFloat32()
+            case PackageFormat_CHIRTypeKind.CHIRTypeKind_FLOAT64 => FloatType.getFloat64()
+            case PackageFormat_CHIRTypeKind.CHIRTypeKind_C_STRING => CStringType.get()
+            case PackageFormat_CHIRTypeKind.CHIRTypeKind_UNIT => UnitType.get()
+            case PackageFormat_CHIRTypeKind.CHIRTypeKind_NOTHING => NothingType.get()
+            case PackageFormat_CHIRTypeKind.CHIRTypeKind_RUNE => RuneType.get()
+            case PackageFormat_CHIRTypeKind.CHIRTypeKind_THIS => ThisType.get()
+=======
+            case PackageFormat_CHIRTypeKind.CHIRTypeKind_BOOLEAN => BoolType.get(modal: modal)
+            case PackageFormat_CHIRTypeKind.CHIRTypeKind_INT8 => IntType.getInt8(modal: modal)
+            case PackageFormat_CHIRTypeKind.CHIRTypeKind_INT16 => IntType.getInt16(modal: modal)
+            case PackageFormat_CHIRTypeKind.CHIRTypeKind_INT32 => IntType.getInt32(modal: modal)
+            case PackageFormat_CHIRTypeKind.CHIRTypeKind_INT64 => IntType.getInt64(modal: modal)
+            case PackageFormat_CHIRTypeKind.CHIRTypeKind_INT_NATIVE => IntType.getIntNative(modal: modal)
+            case PackageFormat_CHIRTypeKind.CHIRTypeKind_UINT8 => IntType.getUInt8(modal: modal)
+            case PackageFormat_CHIRTypeKind.CHIRTypeKind_UINT16 => IntType.getUInt16(modal: modal)
+            case PackageFormat_CHIRTypeKind.CHIRTypeKind_UINT32 => IntType.getUInt32(modal: modal)
+            case PackageFormat_CHIRTypeKind.CHIRTypeKind_UINT64 => IntType.getUInt64(modal: modal)
+            case PackageFormat_CHIRTypeKind.CHIRTypeKind_UINT_NATIVE => IntType.getUIntNative(modal: modal)
+            case PackageFormat_CHIRTypeKind.CHIRTypeKind_FLOAT16 => FloatType.getFloat16(modal: modal)
+            case PackageFormat_CHIRTypeKind.CHIRTypeKind_FLOAT32 => FloatType.getFloat32(modal: modal)
+            case PackageFormat_CHIRTypeKind.CHIRTypeKind_FLOAT64 => FloatType.getFloat64(modal: modal)
+            case PackageFormat_CHIRTypeKind.CHIRTypeKind_C_STRING => CStringType.get(modal: modal)
+            case PackageFormat_CHIRTypeKind.CHIRTypeKind_UNIT => UnitType.get(modal: modal)
+            case PackageFormat_CHIRTypeKind.CHIRTypeKind_NOTHING => NothingType.get(modal: modal)
+            case PackageFormat_CHIRTypeKind.CHIRTypeKind_RUNE => RuneType.get(modal: modal)
+            case PackageFormat_CHIRTypeKind.CHIRTypeKind_THIS => ThisType.get(modal: modal)
+>>>>>>> feat: local mode
             case _ => None
         }
     }
@@ -221,8 +284,16 @@ class CHIRDeserializerImpl {
         }
     }
 
+<<<<<<< HEAD
     private func getBasicTypeFromBuilder(typeFormat: UInt32) : Option<Type> {
         return getBasicTypeFromBuilder(EnumValuesCHIRFormat_CHIRTypeKind(UInt8(typeFormat)))
+||||||| constructed merge base
+    private func getBasicTypeFromBuilder(typeFormat: UInt32) : Option<Type> {
+        return getBasicTypeFromBuilder(EnumValuesPackageFormat_CHIRTypeKind(UInt8(typeFormat)))
+=======
+    private func getBasicTypeFromBuilder(typeFormat: UInt32, modal!: ModalInfo = ModalInfo()): Option<Type> {
+        return getBasicTypeFromBuilder(EnumValuesPackageFormat_CHIRTypeKind(UInt8(typeFormat)), modal)
+>>>>>>> feat: local mode
     }
 
     private func getType(id: UInt32): Type {
@@ -236,8 +307,9 @@ class CHIRDeserializerImpl {
             case CHIRFormat_TypeElem.TypeElem_TYPE =>
                 let t = pkgFormat.GetTypesAsType(id - 1).getOrThrow()
                 let kind = t.GetKind()
+                let modal = readModalInfo(t)
                 // some types, that don't have argTys, can be directly constructed from kind
-                let basicType = getBasicTypeFromBuilder(kind)
+                let basicType = getBasicTypeFromBuilder(kind, modal)
                 if (let Some(ty) <- basicType) {
                     ty
                 } else {
@@ -245,56 +317,106 @@ class CHIRDeserializerImpl {
                     let tk = convertTypeKind(kind)
                     match (tk) {
                         case TypeKind.Tuple =>
-                            TupleType.get(argTys.toArray())
+                            TupleType.get(argTys.toArray(), modal: modal)
                         case TypeKind.Ref =>
                             RefType.get(argTys[0])
                         case TypeKind.Box =>
                             BoxType.get(argTys[0])
                         case TypeKind.CPointer =>
+<<<<<<< HEAD
                             CPointerType.get(argTys[0])
                         case _ => throw IllegalArgumentException("Unsupported type kind '${tk}'.")
+||||||| constructed merge base
+                            CPointerType.get(argTys[0])
+                        case _ => throw IllegalArgumentException("Unsupported TYPE kind: ${tk}")
+=======
+                            CPointerType.get(argTys[0], modal: modal)
+                        case _ => throw IllegalArgumentException("Unsupported TYPE kind: ${tk}")
+>>>>>>> feat: local mode
                     }
                 }
             case CHIRFormat_TypeElem.TypeElem_RAWARRAYTYPE =>
                 let rawArrayType = pkgFormat.GetTypesAsRawArrayType(id - 1).getOrThrow()
-                let elemTy = getType(rawArrayType.GetBase().getOrThrow().GetArgTys().first.getOrThrow())
+                let base = rawArrayType.GetBase().getOrThrow()
+                let modal = readModalInfo(base)
+                let elemTy = getType(base.GetArgTys().first.getOrThrow())
                 let dims = rawArrayType.GetDims()
+<<<<<<< HEAD
                 RawArrayType.get(elemTy, dims)
             case CHIRFormat_TypeElem.TypeElem_VARRAYTYPE =>
+||||||| constructed merge base
+                RawArrayType.get(elemTy, dims)
+            case PackageFormat_TypeElem.TypeElem_VARRAYTYPE =>
+=======
+                RawArrayType.get(elemTy, dims, modal: modal)
+            case PackageFormat_TypeElem.TypeElem_VARRAYTYPE =>
+>>>>>>> feat: local mode
                 let varrayType = pkgFormat.GetTypesAsVArrayType(id - 1).getOrThrow()
-                let elemTy = getType(varrayType.GetBase().getOrThrow().GetArgTys().first.getOrThrow())
+                let base = varrayType.GetBase().getOrThrow()
+                let modal = readModalInfo(base)
+                let elemTy = getType(base.GetArgTys().first.getOrThrow())
                 let size = varrayType.GetSize()
+<<<<<<< HEAD
                 VArrayType.get(elemTy, size)
             case CHIRFormat_TypeElem.TypeElem_FUNCTYPE =>
+||||||| constructed merge base
+                VArrayType.get(elemTy, size)
+            case PackageFormat_TypeElem.TypeElem_FUNCTYPE =>
+=======
+                VArrayType.get(elemTy, size, modal: modal)
+            case PackageFormat_TypeElem.TypeElem_FUNCTYPE =>
+>>>>>>> feat: local mode
                 let funcType = pkgFormat.GetTypesAsFuncType(id - 1).getOrThrow()
-                let argTyIndices = funcType.GetBase().getOrThrow().GetArgTys()
+                let base = funcType.GetBase().getOrThrow()
+                let modal = readModalInfo(base)
+                let argTyIndices = base.GetArgTys()
                 let retTy = getType(argTyIndices.last.getOrThrow())
                 let argTys = collectArrayList<Type>(getTypeAs<Type>(argTyIndices.slice(0, argTyIndices.size - 1))).toArray()
                 let hasVarArg = funcType.GetHasVarArg()
                 let isCFuncType = funcType.GetIsCFuncType()
+<<<<<<< HEAD
                 FuncType.get(argTys, retTy, varArg: hasVarArg, cFunc: isCFuncType)
             case CHIRFormat_TypeElem.TypeElem_CUSTOMTYPE =>
+||||||| constructed merge base
+                FuncType.get(argTys, retTy, varArg: hasVarArg, cFunc: isCFuncType)
+            case PackageFormat_TypeElem.TypeElem_CUSTOMTYPE =>
+=======
+                FuncType.get(argTys, retTy, varArg: hasVarArg, cFunc: isCFuncType, modal: modal)
+            case PackageFormat_TypeElem.TypeElem_CUSTOMTYPE =>
+>>>>>>> feat: local mode
                 let customType = pkgFormat.GetTypesAsCustomType(id - 1).getOrThrow()
-                let typeKind = convertTypeKind(customType.GetBase().getOrThrow().GetKind())
+                let base = customType.GetBase().getOrThrow()
+                let modal = readModalInfo(base)
+                let typeKind = convertTypeKind(base.GetKind())
                 let def = customType.GetCustomTypeDef()
-                let typeArgs = getType(customType.GetBase().getOrThrow().GetArgTys())
+                let typeArgs = getType(base.GetArgTys())
                 match (typeKind) {
                     case TypeKind.ClassLike =>
                         let classDef = getCustomTypeDefAs<ClassLikeDef>(def)
-                        ClassLikeType.get(classDef, typeArgs)
+                        ClassLikeType.get(classDef, typeArgs, modal: modal)
                     case TypeKind.Struct =>
                         let structDef = getCustomTypeDefAs<StructDef>(def)
-                        StructType.get(structDef, typeArgs)
+                        StructType.get(structDef, typeArgs, modal: modal)
                     case TypeKind.Enum =>
                         let enumDef = getCustomTypeDefAs<EnumDef>(def)
+<<<<<<< HEAD
                         EnumType.get(enumDef, typeArgs)
                     case _ => throw IllegalArgumentException("Invalid custom type kind '${typeKind}'.")
+||||||| constructed merge base
+                        EnumType.get(enumDef, typeArgs)
+                    case _ => throw IllegalArgumentException("Illegal custom type kind: ${typeKind}")
+=======
+                        EnumType.get(enumDef, typeArgs, modal: modal)
+                    case _ => throw IllegalArgumentException("Illegal custom type kind: ${typeKind}")
+>>>>>>> feat: local mode
                 }
             case CHIRFormat_TypeElem.TypeElem_GENERICTYPE =>
                 let genericType = pkgFormat.GetTypesAsGenericType(id - 1).getOrThrow()
+                let base = genericType.GetBase().getOrThrow()
+                let modal = readModalInfo(base)
                 let identifier = genericType.GetIdentifier()
                 let srcCodeIdentifier = genericType.GetSrcCodeIdentifier()
-                let result = GenericType.get(identifier, srcCodeIdentifier)
+                let result = GenericType.get(identifier, srcCodeIdentifier, modal: modal)
                 genericTypeConfig.add((result, genericType))
                 result
             case CHIRFormat_TypeElem.TypeElem_NONE =>
@@ -647,10 +769,18 @@ class CHIRDeserializerImpl {
         var result: BlockGroup
         if (let Some(owner) <- tryGetValueAs<Function>(blockGroupFormat.GetOwnedFunc())) {
             result = BlockGroup("", owner)
-        } else if (let Some(owner) <- tryGetExpressionAs<Lambda>(blockGroupFormat.GetOwnedExpression())) {
-            result = BlockGroup("", owner._result.getOrThrow())
+        } else if (let Some(lambda) <- tryGetExpressionAs<Lambda>(blockGroupFormat.GetOwnedExpression())) {
+            result = BlockGroup("", lambda)
+        } else if (let Some(owner) <- tryGetExpressionAs<Exclave>(blockGroupFormat.GetOwnedExpression())) {
+            result = BlockGroup("", owner)
         } else {
+<<<<<<< HEAD
             throw CHIRException("Invalid owner: expected a function or lambda.")
+||||||| constructed merge base
+            throw CHIRException("Invalid owner, neither Function or Lambda")
+=======
+            throw CHIRException("Invalid owner, neither Function, Lambda, nor Exclave")
+>>>>>>> feat: local mode
         }
         return result
     }
@@ -890,10 +1020,21 @@ class CHIRDeserializerImpl {
             lambda._parameters.add(getValueAs<Parameter>(id))
         }
         lambda._returnValue = getValueAs<LocalVar>(buffer.GetRetVal())
+        // Nested default-value funcs stay Lambda until closure conversion.
+        // The reverse edge points at the Lambda result LocalVar, same as compiler SetParamDftValHostParam.
+        if (let Some(v) <- tryGetValueAs<Parameter>(buffer.GetParamDftValHostParam())) {
+            lambda._paramDftValHostParam = v
+            v._paramDftValFunc = lambda.result
+        }
+        // Instantiated nested local func points at the generic Lambda (exprs id).
+        if (let Some(v) <- tryGetExpressionAs<Lambda>(buffer.GetGenericDecl())) {
+            lambda._genericDecl = v
+        }
     }
 
     private func convertExprKind(kind: CHIRFormat_CHIRExprKind): ExprKind {
         return match (kind) {
+<<<<<<< HEAD
             case CHIRFormat_CHIRExprKind.CHIRExprKind_INVALID => throw IllegalArgumentException("Invalid expression kind.")
             case CHIRFormat_CHIRExprKind.CHIRExprKind_GOTO => ExprKind.Goto
             case CHIRFormat_CHIRExprKind.CHIRExprKind_BRANCH => ExprKind.Branch
@@ -976,6 +1117,176 @@ class CHIRDeserializerImpl {
     }
 
     private func convertOverflowStrategy(strategy: CHIRFormat_OverflowStrategy): OverflowStrategy {
+||||||| constructed merge base
+            case PackageFormat_CHIRExprKind.CHIRExprKind_INVALID => throw IllegalArgumentException("Invalid ExprKind")
+            case PackageFormat_CHIRExprKind.CHIRExprKind_GOTO => ExprKind.Goto
+            case PackageFormat_CHIRExprKind.CHIRExprKind_BRANCH => ExprKind.Branch
+            case PackageFormat_CHIRExprKind.CHIRExprKind_MULTIBRANCH => ExprKind.MultiBranch
+            case PackageFormat_CHIRExprKind.CHIRExprKind_EXIT => ExprKind.Exit
+            case PackageFormat_CHIRExprKind.CHIRExprKind_TRYAPPLY => ExprKind.TryApply
+            case PackageFormat_CHIRExprKind.CHIRExprKind_TRYINVOKE => ExprKind.TryInvoke
+            case PackageFormat_CHIRExprKind.CHIRExprKind_TRYINTRINSIC => ExprKind.TryIntrinsic
+            case PackageFormat_CHIRExprKind.CHIRExprKind_RAISEEXCEPTION => ExprKind.RaiseException
+            case PackageFormat_CHIRExprKind.CHIRExprKind_TRYSPAWN => ExprKind.TrySpawn
+            case PackageFormat_CHIRExprKind.CHIRExprKind_TRYNUMERICCAST => ExprKind.TryNumericCast
+            case PackageFormat_CHIRExprKind.CHIRExprKind_TRYALLOCATE => ExprKind.TryAllocate
+            case PackageFormat_CHIRExprKind.CHIRExprKind_TRYRAWARRAYALLOCATE => ExprKind.TryRawArrayAllocate
+            case PackageFormat_CHIRExprKind.CHIRExprKind_TRYNEG => ExprKind.TryNeg
+            case PackageFormat_CHIRExprKind.CHIRExprKind_TRYADD => ExprKind.TryAdd
+            case PackageFormat_CHIRExprKind.CHIRExprKind_TRYSUB => ExprKind.TrySub
+            case PackageFormat_CHIRExprKind.CHIRExprKind_TRYMUL => ExprKind.TryMul
+            case PackageFormat_CHIRExprKind.CHIRExprKind_TRYDIV => ExprKind.TryDiv
+            case PackageFormat_CHIRExprKind.CHIRExprKind_TRYMOD => ExprKind.TryMod
+            case PackageFormat_CHIRExprKind.CHIRExprKind_TRYEXP => ExprKind.TryExp
+            case PackageFormat_CHIRExprKind.CHIRExprKind_TRYLSHIFT => ExprKind.TryLShift
+            case PackageFormat_CHIRExprKind.CHIRExprKind_TRYRSHIFT => ExprKind.TryRShift
+            case PackageFormat_CHIRExprKind.CHIRExprKind_NEG => ExprKind.Neg
+            case PackageFormat_CHIRExprKind.CHIRExprKind_NOT => ExprKind.Not
+            case PackageFormat_CHIRExprKind.CHIRExprKind_BITNOT => ExprKind.BitNot
+            case PackageFormat_CHIRExprKind.CHIRExprKind_ADD => ExprKind.Add
+            case PackageFormat_CHIRExprKind.CHIRExprKind_SUB => ExprKind.Sub
+            case PackageFormat_CHIRExprKind.CHIRExprKind_MUL => ExprKind.Mul
+            case PackageFormat_CHIRExprKind.CHIRExprKind_DIV => ExprKind.Div
+            case PackageFormat_CHIRExprKind.CHIRExprKind_MOD => ExprKind.Mod
+            case PackageFormat_CHIRExprKind.CHIRExprKind_EXP => ExprKind.Exp
+            case PackageFormat_CHIRExprKind.CHIRExprKind_LSHIFT => ExprKind.LShift
+            case PackageFormat_CHIRExprKind.CHIRExprKind_RSHIFT => ExprKind.RShift
+            case PackageFormat_CHIRExprKind.CHIRExprKind_BITAND => ExprKind.BitAnd
+            case PackageFormat_CHIRExprKind.CHIRExprKind_BITOR => ExprKind.BitOr
+            case PackageFormat_CHIRExprKind.CHIRExprKind_BITXOR => ExprKind.BitXor
+            case PackageFormat_CHIRExprKind.CHIRExprKind_LT => ExprKind.LT
+            case PackageFormat_CHIRExprKind.CHIRExprKind_GT => ExprKind.GT
+            case PackageFormat_CHIRExprKind.CHIRExprKind_LE => ExprKind.LE
+            case PackageFormat_CHIRExprKind.CHIRExprKind_GE => ExprKind.GE
+            case PackageFormat_CHIRExprKind.CHIRExprKind_EQUAL => ExprKind.Equal
+            case PackageFormat_CHIRExprKind.CHIRExprKind_NOTEQUAL => ExprKind.NotEqual
+            case PackageFormat_CHIRExprKind.CHIRExprKind_AND => ExprKind.And
+            case PackageFormat_CHIRExprKind.CHIRExprKind_OR => ExprKind.Or
+            case PackageFormat_CHIRExprKind.CHIRExprKind_STATICCAST => ExprKind.StaticCast
+            case PackageFormat_CHIRExprKind.CHIRExprKind_BOX => ExprKind.Box
+            case PackageFormat_CHIRExprKind.CHIRExprKind_UNBOXTOVALUE => ExprKind.UnboxToValue
+            case PackageFormat_CHIRExprKind.CHIRExprKind_UNBOXTOREF => ExprKind.UnboxToRef
+            case PackageFormat_CHIRExprKind.CHIRExprKind_NUMERICCAST => ExprKind.NumericCast
+            case PackageFormat_CHIRExprKind.CHIRExprKind_CASTTOCONCRETE => ExprKind.CastToConcrete
+            case PackageFormat_CHIRExprKind.CHIRExprKind_CASTTOGENERIC => ExprKind.CastToGeneric
+            case PackageFormat_CHIRExprKind.CHIRExprKind_ALLOCATE => ExprKind.Allocate
+            case PackageFormat_CHIRExprKind.CHIRExprKind_LOAD => ExprKind.Load
+            case PackageFormat_CHIRExprKind.CHIRExprKind_STORE => ExprKind.Store
+            case PackageFormat_CHIRExprKind.CHIRExprKind_GETELEMENTBYNAME => ExprKind.GetElementByName
+            case PackageFormat_CHIRExprKind.CHIRExprKind_GETELEMENTREF => ExprKind.GetElementRef
+            case PackageFormat_CHIRExprKind.CHIRExprKind_STOREELEMENTBYNAME => ExprKind.StoreElementByName
+            case PackageFormat_CHIRExprKind.CHIRExprKind_STOREELEMENTREF => ExprKind.StoreElementRef
+            case PackageFormat_CHIRExprKind.CHIRExprKind_FIELD => ExprKind.Field
+            case PackageFormat_CHIRExprKind.CHIRExprKind_FIELDBYNAME => ExprKind.FieldByName
+            case PackageFormat_CHIRExprKind.CHIRExprKind_RAWARRAYALLOCATE => ExprKind.RawArrayAllocate
+            case PackageFormat_CHIRExprKind.CHIRExprKind_RAWARRAYLITERALINIT => ExprKind.RawArrayLiteralInit
+            case PackageFormat_CHIRExprKind.CHIRExprKind_RAWARRAYINITBYVALUE => ExprKind.RawArrayInitByValue
+            case PackageFormat_CHIRExprKind.CHIRExprKind_VARRAYEXPR => ExprKind.VArrayExpr
+            case PackageFormat_CHIRExprKind.CHIRExprKind_VARRAYBUILDER => ExprKind.VArrayBuilder
+            case PackageFormat_CHIRExprKind.CHIRExprKind_CONSTANT => ExprKind.Constant
+            case PackageFormat_CHIRExprKind.CHIRExprKind_DEBUG => ExprKind.Debug
+            case PackageFormat_CHIRExprKind.CHIRExprKind_TUPLE => ExprKind.Tuple
+            case PackageFormat_CHIRExprKind.CHIRExprKind_INSTANCEOF => ExprKind.InstanceOf
+            case PackageFormat_CHIRExprKind.CHIRExprKind_GETEXCEPTION => ExprKind.GetException
+            case PackageFormat_CHIRExprKind.CHIRExprKind_SPAWN => ExprKind.Spawn
+            case PackageFormat_CHIRExprKind.CHIRExprKind_LAMBDA => ExprKind.Lambda
+            case PackageFormat_CHIRExprKind.CHIRExprKind_GETINSTANTIATEVALUE => ExprKind.GetInstantiateValue
+            case PackageFormat_CHIRExprKind.CHIRExprKind_APPLY => ExprKind.Apply
+            case PackageFormat_CHIRExprKind.CHIRExprKind_INVOKE => ExprKind.Invoke
+            case PackageFormat_CHIRExprKind.CHIRExprKind_INTRINSIC => ExprKind.Intrinsic
+            case PackageFormat_CHIRExprKind.CHIRExprKind_GETRTTI => ExprKind.GetRtti
+            case PackageFormat_CHIRExprKind.CHIRExprKind_GETRTTISTATIC => ExprKind.GetRttiStatic
+        }
+    }
+
+    private func convertOverflowStrategy(strategy: PackageFormat_OverflowStrategy): OverflowStrategy {
+=======
+            case PackageFormat_CHIRExprKind.CHIRExprKind_INVALID => throw IllegalArgumentException("Invalid ExprKind")
+            case PackageFormat_CHIRExprKind.CHIRExprKind_GOTO => ExprKind.Goto
+            case PackageFormat_CHIRExprKind.CHIRExprKind_BRANCH => ExprKind.Branch
+            case PackageFormat_CHIRExprKind.CHIRExprKind_MULTIBRANCH => ExprKind.MultiBranch
+            case PackageFormat_CHIRExprKind.CHIRExprKind_EXIT => ExprKind.Exit
+            case PackageFormat_CHIRExprKind.CHIRExprKind_EXCLAVE => ExprKind.Exclave
+            case PackageFormat_CHIRExprKind.CHIRExprKind_TRYAPPLY => ExprKind.TryApply
+            case PackageFormat_CHIRExprKind.CHIRExprKind_TRYINVOKE => ExprKind.TryInvoke
+            case PackageFormat_CHIRExprKind.CHIRExprKind_TRYINTRINSIC => ExprKind.TryIntrinsic
+            case PackageFormat_CHIRExprKind.CHIRExprKind_RAISEEXCEPTION => ExprKind.RaiseException
+            case PackageFormat_CHIRExprKind.CHIRExprKind_TRYSPAWN => ExprKind.TrySpawn
+            case PackageFormat_CHIRExprKind.CHIRExprKind_TRYNUMERICCAST => ExprKind.TryNumericCast
+            case PackageFormat_CHIRExprKind.CHIRExprKind_TRYALLOCATE => ExprKind.TryAllocate
+            case PackageFormat_CHIRExprKind.CHIRExprKind_TRYRAWARRAYALLOCATE => ExprKind.TryRawArrayAllocate
+            case PackageFormat_CHIRExprKind.CHIRExprKind_TRYNEG => ExprKind.TryNeg
+            case PackageFormat_CHIRExprKind.CHIRExprKind_TRYADD => ExprKind.TryAdd
+            case PackageFormat_CHIRExprKind.CHIRExprKind_TRYSUB => ExprKind.TrySub
+            case PackageFormat_CHIRExprKind.CHIRExprKind_TRYMUL => ExprKind.TryMul
+            case PackageFormat_CHIRExprKind.CHIRExprKind_TRYDIV => ExprKind.TryDiv
+            case PackageFormat_CHIRExprKind.CHIRExprKind_TRYMOD => ExprKind.TryMod
+            case PackageFormat_CHIRExprKind.CHIRExprKind_TRYEXP => ExprKind.TryExp
+            case PackageFormat_CHIRExprKind.CHIRExprKind_TRYLSHIFT => ExprKind.TryLShift
+            case PackageFormat_CHIRExprKind.CHIRExprKind_TRYRSHIFT => ExprKind.TryRShift
+            case PackageFormat_CHIRExprKind.CHIRExprKind_NEG => ExprKind.Neg
+            case PackageFormat_CHIRExprKind.CHIRExprKind_NOT => ExprKind.Not
+            case PackageFormat_CHIRExprKind.CHIRExprKind_BITNOT => ExprKind.BitNot
+            case PackageFormat_CHIRExprKind.CHIRExprKind_ADD => ExprKind.Add
+            case PackageFormat_CHIRExprKind.CHIRExprKind_SUB => ExprKind.Sub
+            case PackageFormat_CHIRExprKind.CHIRExprKind_MUL => ExprKind.Mul
+            case PackageFormat_CHIRExprKind.CHIRExprKind_DIV => ExprKind.Div
+            case PackageFormat_CHIRExprKind.CHIRExprKind_MOD => ExprKind.Mod
+            case PackageFormat_CHIRExprKind.CHIRExprKind_EXP => ExprKind.Exp
+            case PackageFormat_CHIRExprKind.CHIRExprKind_LSHIFT => ExprKind.LShift
+            case PackageFormat_CHIRExprKind.CHIRExprKind_RSHIFT => ExprKind.RShift
+            case PackageFormat_CHIRExprKind.CHIRExprKind_BITAND => ExprKind.BitAnd
+            case PackageFormat_CHIRExprKind.CHIRExprKind_BITOR => ExprKind.BitOr
+            case PackageFormat_CHIRExprKind.CHIRExprKind_BITXOR => ExprKind.BitXor
+            case PackageFormat_CHIRExprKind.CHIRExprKind_LT => ExprKind.LT
+            case PackageFormat_CHIRExprKind.CHIRExprKind_GT => ExprKind.GT
+            case PackageFormat_CHIRExprKind.CHIRExprKind_LE => ExprKind.LE
+            case PackageFormat_CHIRExprKind.CHIRExprKind_GE => ExprKind.GE
+            case PackageFormat_CHIRExprKind.CHIRExprKind_EQUAL => ExprKind.Equal
+            case PackageFormat_CHIRExprKind.CHIRExprKind_NOTEQUAL => ExprKind.NotEqual
+            case PackageFormat_CHIRExprKind.CHIRExprKind_AND => ExprKind.And
+            case PackageFormat_CHIRExprKind.CHIRExprKind_OR => ExprKind.Or
+            case PackageFormat_CHIRExprKind.CHIRExprKind_STATICCAST => ExprKind.StaticCast
+            case PackageFormat_CHIRExprKind.CHIRExprKind_BOX => ExprKind.Box
+            case PackageFormat_CHIRExprKind.CHIRExprKind_UNBOXTOVALUE => ExprKind.UnboxToValue
+            case PackageFormat_CHIRExprKind.CHIRExprKind_UNBOXTOREF => ExprKind.UnboxToRef
+            case PackageFormat_CHIRExprKind.CHIRExprKind_NUMERICCAST => ExprKind.NumericCast
+            case PackageFormat_CHIRExprKind.CHIRExprKind_CASTTOCONCRETE => ExprKind.CastToConcrete
+            case PackageFormat_CHIRExprKind.CHIRExprKind_CASTTOGENERIC => ExprKind.CastToGeneric
+            case PackageFormat_CHIRExprKind.CHIRExprKind_ALLOCATE => ExprKind.Allocate
+            case PackageFormat_CHIRExprKind.CHIRExprKind_LOAD => ExprKind.Load
+            case PackageFormat_CHIRExprKind.CHIRExprKind_STORE => ExprKind.Store
+            case PackageFormat_CHIRExprKind.CHIRExprKind_GETELEMENTBYNAME => ExprKind.GetElementByName
+            case PackageFormat_CHIRExprKind.CHIRExprKind_GETELEMENTREF => ExprKind.GetElementRef
+            case PackageFormat_CHIRExprKind.CHIRExprKind_STOREELEMENTBYNAME => ExprKind.StoreElementByName
+            case PackageFormat_CHIRExprKind.CHIRExprKind_STOREELEMENTREF => ExprKind.StoreElementRef
+            case PackageFormat_CHIRExprKind.CHIRExprKind_FIELD => ExprKind.Field
+            case PackageFormat_CHIRExprKind.CHIRExprKind_FIELDBYNAME => ExprKind.FieldByName
+            case PackageFormat_CHIRExprKind.CHIRExprKind_RAWARRAYALLOCATE => ExprKind.RawArrayAllocate
+            case PackageFormat_CHIRExprKind.CHIRExprKind_RAWARRAYLITERALINIT => ExprKind.RawArrayLiteralInit
+            case PackageFormat_CHIRExprKind.CHIRExprKind_RAWARRAYINITBYVALUE => ExprKind.RawArrayInitByValue
+            case PackageFormat_CHIRExprKind.CHIRExprKind_VARRAYEXPR => ExprKind.VArrayExpr
+            case PackageFormat_CHIRExprKind.CHIRExprKind_VARRAYBUILDER => ExprKind.VArrayBuilder
+            case PackageFormat_CHIRExprKind.CHIRExprKind_CONSTANT => ExprKind.Constant
+            case PackageFormat_CHIRExprKind.CHIRExprKind_DEBUG => ExprKind.Debug
+            case PackageFormat_CHIRExprKind.CHIRExprKind_TUPLE => ExprKind.Tuple
+            case PackageFormat_CHIRExprKind.CHIRExprKind_INSTANCEOF => ExprKind.InstanceOf
+            case PackageFormat_CHIRExprKind.CHIRExprKind_GETEXCEPTION => ExprKind.GetException
+            case PackageFormat_CHIRExprKind.CHIRExprKind_SPAWN => ExprKind.Spawn
+            case PackageFormat_CHIRExprKind.CHIRExprKind_LAMBDA => ExprKind.Lambda
+            case PackageFormat_CHIRExprKind.CHIRExprKind_GETINSTANTIATEVALUE => ExprKind.GetInstantiateValue
+            case PackageFormat_CHIRExprKind.CHIRExprKind_APPLY => ExprKind.Apply
+            case PackageFormat_CHIRExprKind.CHIRExprKind_INVOKE => ExprKind.Invoke
+            case PackageFormat_CHIRExprKind.CHIRExprKind_INTRINSIC => ExprKind.Intrinsic
+            case PackageFormat_CHIRExprKind.CHIRExprKind_GETRTTI => ExprKind.GetRtti
+            case PackageFormat_CHIRExprKind.CHIRExprKind_GETRTTISTATIC => ExprKind.GetRttiStatic
+            case PackageFormat_CHIRExprKind.CHIRExprKind_STARTREGION => ExprKind.StartRegion
+            case PackageFormat_CHIRExprKind.CHIRExprKind_ENDREGION => ExprKind.EndRegion
+        }
+    }
+
+    private func convertOverflowStrategy(strategy: PackageFormat_OverflowStrategy): OverflowStrategy {
+>>>>>>> feat: local mode
         return match (strategy) {
             case CHIRFormat_OverflowStrategy.OverflowStrategy_WRAPPING => OverflowStrategy.Wrapping
             case CHIRFormat_OverflowStrategy.OverflowStrategy_THROWING => OverflowStrategy.Throwing
@@ -1395,6 +1706,12 @@ class CHIRDeserializerImpl {
                 Constant(getValueAs<LiteralValue>(operands[0]))
             case ExprKind.Exit =>
                 Exit()
+            case ExprKind.Exclave =>
+                Exclave()
+            case ExprKind.StartRegion =>
+                StartRegion()
+            case ExprKind.EndRegion =>
+                EndRegion()
             case ExprKind.GetException =>
                 GetException()
             case ExprKind.GetRtti =>
@@ -1833,9 +2150,10 @@ class CHIRDeserializerImpl {
             function._originalLambdaInfo = deserializeFuncSigInfo(v)
         }
 
-        // Set paramDftValHostFunc
-        if (let Some(v) <- tryGetValueAs<Function>(funcFormat.GetParamDftValHostFunc())) {
-            function._paramDftValHostFunc = v
+        // Set paramDftValHostParam
+        if (let Some(v) <- tryGetValueAs<Parameter>(funcFormat.GetParamDftValHostParam())) {
+            function._paramDftValHostParam = v
+            v._paramDftValFunc = function
         }
 
         // Set parameters
