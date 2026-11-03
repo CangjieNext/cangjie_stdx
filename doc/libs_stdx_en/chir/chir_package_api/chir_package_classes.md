@@ -10364,44 +10364,6 @@ Output:
 func_isExternalLinkage: true
 ```
 
-### func setExternalLinkage()
-
-```cangjie
-public func setExternalLinkage(): Unit
-```
-
-Function: Sets this global value's linkage to external, replacing any existing linkage annotation. Applies to functions and global variables; repeated calls do not add duplicate annotations.
-
-Note: When no linkage annotation is set, linkage already defaults to external and `isExternalLinkage()` returns `true`. This method is mainly used to override an existing non-external linkage annotation, for example after deserialization; when unset, it adds an explicit external-linkage annotation.
-
-Example:
-
-<!-- verify -->
-```cangjie
-import stdx.chir.*
-
-main() {
-    let pkg = Package("demo", AccessLevel.Public)
-    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
-    let gv = pkg.addGlobalVar(IntType.getInt32(), "g_m", "g", "demo")
-    println("explicit_linkage_before: ${f.toString().contains("linkType: external")} ${gv.toString().contains("linkType: external")}")
-    f.setExternalLinkage()
-    gv.setExternalLinkage()
-    println("function_external: ${f.isExternalLinkage()}")
-    println("global_external: ${gv.isExternalLinkage()}")
-    println("explicit_linkage_after: ${f.toString().contains("linkType: external")} ${gv.toString().contains("linkType: external")}")
-}
-```
-
-Output:
-
-```text
-explicit_linkage_before: false false
-function_external: true
-global_external: true
-explicit_linkage_after: true true
-```
-
 ### func isForeign()
 
 ```cangjie
@@ -10709,6 +10671,51 @@ Output:
 
 ```text
 func_setInternal: true
+```
+
+### func setLinkageType(LinkType)
+
+```cangjie
+public func setLinkageType(lt: LinkType): Unit
+```
+
+Function: Sets the linkage of a function or global variable. The selected linkage replaces the previous linkage, disabling all other kinds;
+repeated calls do not add duplicate annotations.
+
+Note: Unset linkage defaults to `LinkType.External`. Linkage is independent of access level; selecting `LinkType.Internal` does not change visibility. The example starts with internal linkage, then applies each linkage kind in alphabetical order.
+
+Parameters:
+
+- lt: [LinkType](./chir_package_enums.md#enum-linktype) - The linkage to enable.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    let gv = pkg.addGlobalVar(IntType.getInt32(), "g_m", "g", "demo")
+    f.setLinkageType(LinkType.Internal)
+    gv.setLinkageType(LinkType.Internal)
+    for (item in [LinkType.External, LinkType.ExternalWeak, LinkType.Internal, LinkType.LinkonceOdr, LinkType.WeakOdr]) {
+        f.setLinkageType(item)
+        gv.setLinkageType(item)
+        println("${item}: ${f.isExternalLinkage()} ${gv.isExternalLinkage()}")
+    }
+}
+```
+
+Output:
+
+```text
+external: true true
+external_weak: false false
+internal: false false
+linkonce_odr: false false
+weak_odr: false false
 ```
 
 ### func setPrivate()

@@ -10365,44 +10365,6 @@ main() {
 func_isExternalLinkage: true
 ```
 
-### func setExternalLinkage()
-
-```cangjie
-public func setExternalLinkage(): Unit
-```
-
-功能：将该全局值的链接类型设置为外部链接，替换已有的链接类型注解。适用于函数和全局变量；重复调用不会添加重复注解。
-
-说明：未设置链接类型注解时，默认链接类型已为外部链接，因此 `isExternalLinkage()` 返回 `true`。此方法主要用于将已有的非外部链接注解（例如反序列化后得到的注解）改为外部链接；没有注解时会添加显式的外部链接注解。
-
-示例：
-
-<!-- verify -->
-```cangjie
-import stdx.chir.*
-
-main() {
-    let pkg = Package("demo", AccessLevel.Public)
-    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
-    let gv = pkg.addGlobalVar(IntType.getInt32(), "g_m", "g", "demo")
-    println("explicit_linkage_before: ${f.toString().contains("linkType: external")} ${gv.toString().contains("linkType: external")}")
-    f.setExternalLinkage()
-    gv.setExternalLinkage()
-    println("function_external: ${f.isExternalLinkage()}")
-    println("global_external: ${gv.isExternalLinkage()}")
-    println("explicit_linkage_after: ${f.toString().contains("linkType: external")} ${gv.toString().contains("linkType: external")}")
-}
-```
-
-运行结果：
-
-```text
-explicit_linkage_before: false false
-function_external: true
-global_external: true
-explicit_linkage_after: true true
-```
-
 ### func isForeign()
 
 ```cangjie
@@ -10710,6 +10672,50 @@ main() {
 
 ```text
 func_setInternal: true
+```
+
+### func setLinkageType(LinkType)
+
+```cangjie
+public func setLinkageType(lt: LinkType): Unit
+```
+
+功能：设置函数或全局变量的链接类型。新链接类型替换原有链接类型，使另一种链接类型不再生效；重复调用不会添加重复注解。
+
+说明：未设置链接类型注解时，默认链接类型为 `LinkType.External`。链接类型与访问级别相互独立，设置 `LinkType.Internal` 不会更改访问级别。以下示例先设置内部链接，再按字母顺序设置每种链接类型。
+
+参数：
+
+- lt: [LinkType](./chir_package_enums.md#enum-linktype) - 要启用的链接类型。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    let gv = pkg.addGlobalVar(IntType.getInt32(), "g_m", "g", "demo")
+    f.setLinkageType(LinkType.Internal)
+    gv.setLinkageType(LinkType.Internal)
+    for (item in [LinkType.External, LinkType.ExternalWeak, LinkType.Internal, LinkType.LinkonceOdr, LinkType.WeakOdr]) {
+        f.setLinkageType(item)
+        gv.setLinkageType(item)
+        println("${item}: ${f.isExternalLinkage()} ${gv.isExternalLinkage()}")
+    }
+}
+```
+
+运行结果：
+
+```text
+external: true true
+external_weak: false false
+internal: false false
+linkonce_odr: false false
+weak_odr: false false
 ```
 
 ### func setPrivate()
