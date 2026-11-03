@@ -26,7 +26,7 @@ Architecture Diagram:
 ## Operating Instructions
 
 For APIs related to stdx, please refer to [API Interface Description](./doc/summary_cjnative_EN.md).
-For relevant guidance, please refer to [Development Guide](https://gitcode.com/Cangjie/cangjie_docs/).
+For relevant guidance, please refer to [Development Guide](https://atomgit.com/Cangjie/cangjie_docs/).
 
 ## Quick Start
 
@@ -39,7 +39,7 @@ This requires `curl` and `unzip`. Please ensure these tools are installed in you
 Execute directly in your command line (note the arguments at the end, modify as needed):
 
 ```shell
-bash -c "$(curl -fsSL https://raw.gitcode.com/Cangjie/cangjie_stdx/raw/main/downloader.sh)" -- 1.0.0.1
+bash -c "$(curl -fsSL https://raw.atomgit.com/Cangjie/cangjie_stdx/raw/main/downloader.sh)" -- 1.0.0.1
 ```
 
 ### Windows
@@ -55,7 +55,7 @@ Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
 Then, run the script in a regular PowerShell window (note the arguments at the end, modify as needed):
 
 ```powershell
-irm https://raw.gitcode.com/Cangjie/cangjie_stdx/raw/main/downloader.ps1 -OutFile "$env:TEMP\downloader.ps1"; & "$env:TEMP\downloader.ps1" 1.0.0.1
+irm https://raw.atomgit.com/Cangjie/cangjie_stdx/raw/main/downloader.ps1 -OutFile "$env:TEMP\downloader.ps1"; & "$env:TEMP\downloader.ps1" 1.0.0.1
 ```
 
 ### Parameters
@@ -68,12 +68,12 @@ irm https://raw.gitcode.com/Cangjie/cangjie_stdx/raw/main/downloader.ps1 -OutFil
 
 ```shell
 # On Linux/macOS, download the ohos-aarch64 version of v1.0.0.1 and extract it to the ./cangjie_libs directory
-bash -c "$(curl -fsSL https://raw.gitcode.com/Cangjie/cangjie_stdx/raw/main/downloader.sh)" -- 1.0.0.1 -p ohos-aarch64 -d ./cangjie_libs
+bash -c "$(curl -fsSL https://raw.atomgit.com/Cangjie/cangjie_stdx/raw/main/downloader.sh)" -- 1.0.0.1 -p ohos-aarch64 -d ./cangjie_libs
 ```
 
 ```powershell
 # On Windows, download the windows-x64 version of v1.0.0.1 and extract it to the C:\cangjie_libs directory
-irm https://raw.gitcode.com/Cangjie/cangjie_stdx/raw/main/downloader.ps1 -OutFile "$env:TEMP\downloader.ps1"; & "$env:TEMP\downloader.ps1" 1.0.0.1 -p windows-x64 -d C:\cangjie_libs
+irm https://raw.atomgit.com/Cangjie/cangjie_stdx/raw/main/downloader.ps1 -OutFile "$env:TEMP\downloader.ps1"; & "$env:TEMP\downloader.ps1" 1.0.0.1 -p windows-x64 -d C:\cangjie_libs
 ```
 
 ### Supported \<platform-arch>
@@ -119,7 +119,7 @@ The following platform and architecture combinations are currently supported:
 
 ## Constraints
 
-Support for building `stdx` in Ubuntu/macOS (x86_64, aarch64), Cangjie SDK 1.0.0 and above versions, please refer to the [Build Dependency Tools](https://gitcode.com/Cangjie/cangjie_build/blob/main/doc_en/env.md).
+Support for building `stdx` in Ubuntu/macOS (x86_64, aarch64), Cangjie SDK 1.0.0 and above versions, please refer to the [Build Dependency Tools](https://atomgit.com/Cangjie/cangjie_build/blob/main/doc_en/env.md).
 
 Note: Future versions of this extension library may contain incompatible changes, and cross-version backward compatibility is not guaranteed. Please fully assess the version adaptation risks before use.
 
@@ -146,7 +146,7 @@ cjc -v
 Download the source code
 
 ```bash
-git clone https://gitcode.com/Cangjie/cangjie_stdx.git
+git clone https://atomgit.com/Cangjie/cangjie_stdx.git
 ```
 
 #### Build Command
@@ -181,7 +181,7 @@ Currently, stdx (main branch) also supports building via cjpm, and the build com
 cjpm build
 ```
 
-For detailed usage of cjpm, refer to [cjpm Documentation](https://gitcode.com/Cangjie/cangjie_docs/blob/main/docs/tools/source_en/cmd-tools/cjpm_manual.md)
+For detailed usage of cjpm, refer to [cjpm Documentation](https://atomgit.com/Cangjie/cangjie_docs/blob/main/docs/tools/source_en/cmd-tools/cjpm_manual.md)
 
 Building via cjpm has some dependencies, see [dependency list](./doc/libs_stdx_en/source_code_dependency.md#Dependencies).
 
@@ -189,7 +189,7 @@ Currently, the stdx binary packages built via cjpm do not include aspect_cj and 
 
 ### Integration Build Guide
 
-For integration building, please refer to the [Cangjie SDK Integration Build Guide](https://gitcode.com/Cangjie/cangjie_build/blob/main/README_zh.md).
+For integration building, please refer to the [Cangjie SDK Integration Build Guide](https://atomgit.com/Cangjie/cangjie_build/blob/main/README_zh.md).
 
 ## Instructions for use
 

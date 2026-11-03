@@ -25,7 +25,7 @@
 ## 使用说明
 
 `stdx` 相关 API 请参见 [API 接口说明](./doc/summary_cjnative.md)。
-相关指导请参见 [开发指南](https://gitcode.com/Cangjie/cangjie_docs/)。
+相关指导请参见 [开发指南](https://atomgit.com/Cangjie/cangjie_docs/)。
 
 ## 快速获取
 
@@ -38,7 +38,7 @@
 在命令行中直接执行（注意尾部的参数，按需修改）：
 
 ```shell
-bash -c "$(curl -fsSL https://raw.gitcode.com/Cangjie/cangjie_stdx/raw/main/downloader.sh)" -- 1.0.0.1
+bash -c "$(curl -fsSL https://raw.atomgit.com/Cangjie/cangjie_stdx/raw/main/downloader.sh)" -- 1.0.0.1
 ```
 
 ### Windows
@@ -54,7 +54,7 @@ Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
 然后，在普通 PowerShell 窗口中执行脚本（注意尾部的参数，按需修改）：
 
 ```powershell
-irm https://raw.gitcode.com/Cangjie/cangjie_stdx/raw/main/downloader.ps1 -OutFile "$env:TEMP\downloader.ps1"; & "$env:TEMP\downloader.ps1" 1.0.0.1
+irm https://raw.atomgit.com/Cangjie/cangjie_stdx/raw/main/downloader.ps1 -OutFile "$env:TEMP\downloader.ps1"; & "$env:TEMP\downloader.ps1" 1.0.0.1
 ```
 
 ### 参数说明
@@ -67,12 +67,12 @@ irm https://raw.gitcode.com/Cangjie/cangjie_stdx/raw/main/downloader.ps1 -OutFil
 
 ```shell
 # 在 Linux/macOS 下载 v1.0.0.1 的 ohos-aarch64 版本，并解压到 ./cangjie_libs 目录
-bash -c "$(curl -fsSL https://raw.gitcode.com/Cangjie/cangjie_stdx/raw/main/downloader.sh)" -- 1.0.0.1 -p ohos-aarch64 -d ./cangjie_libs
+bash -c "$(curl -fsSL https://raw.atomgit.com/Cangjie/cangjie_stdx/raw/main/downloader.sh)" -- 1.0.0.1 -p ohos-aarch64 -d ./cangjie_libs
 ```
 
 ```powershell
 # 在 Windows 下载 v1.0.0.1 的 windows-x64 版本，并解压到 C:\cangjie_libs 目录
-irm https://raw.gitcode.com/Cangjie/cangjie_stdx/raw/main/downloader.ps1 -OutFile "$env:TEMP\downloader.ps1"; & "$env:TEMP\downloader.ps1" 1.0.0.1 -p windows-x64 -d C:\cangjie_libs
+irm https://raw.atomgit.com/Cangjie/cangjie_stdx/raw/main/downloader.ps1 -OutFile "$env:TEMP\downloader.ps1"; & "$env:TEMP\downloader.ps1" 1.0.0.1 -p windows-x64 -d C:\cangjie_libs
 ```
 
 ### 支持的 <平台-架构>
@@ -118,7 +118,7 @@ irm https://raw.gitcode.com/Cangjie/cangjie_stdx/raw/main/downloader.ps1 -OutFil
 
 ## 约束
 
-支持在 Ubuntu/macOS(x86_64, aarch64)、Cangjie SDK 1.0.0 及以上版本中对 `stdx` 构建。更详细的环境及工具依赖请参阅 [构建依赖工具](https://gitcode.com/Cangjie/cangjie_build/blob/main/docs/env.md)。
+支持在 Ubuntu/macOS(x86_64, aarch64)、Cangjie SDK 1.0.0 及以上版本中对 `stdx` 构建。更详细的环境及工具依赖请参阅 [构建依赖工具](https://atomgit.com/Cangjie/cangjie_build/blob/main/docs/env.md)。
 
 注意：本拓展库后续版本可能存在不兼容变更，不承诺跨版本 API/ABI 兼容性，使用前请充分评估版本适配风险。
 
@@ -143,7 +143,7 @@ cjc -v
 下载源码
 
 ```bash
-git clone https://gitcode.com/Cangjie/cangjie_stdx.git
+git clone https://atomgit.com/Cangjie/cangjie_stdx.git
 ```
 
 #### 构建命令
@@ -176,7 +176,7 @@ python3 build.py install
 cjpm build
 ```
 
-cjpm 的详细使用可以参考 [cjpm 文档](https://gitcode.com/Cangjie/cangjie_docs/blob/main/docs/tools/source_zh_cn/cmd-tools/cjpm_manual.md)
+cjpm 的详细使用可以参考 [cjpm 文档](https://atomgit.com/Cangjie/cangjie_docs/blob/main/docs/tools/source_zh_cn/cmd-tools/cjpm_manual.md)
 
 通过 cjpm 进行构建存在一些依赖，参见[依赖列表](./doc/libs_stdx/source_code_dependency.md#依赖)。
 
@@ -184,7 +184,7 @@ cjpm 的详细使用可以参考 [cjpm 文档](https://gitcode.com/Cangjie/cangj
 
 ### 集成构建指导
 
-集成构建请参阅 [仓颉 SDK 集成构建指导书](https://gitcode.com/Cangjie/cangjie_build/blob/main/README_zh.md)。
+集成构建请参阅 [仓颉 SDK 集成构建指导书](https://atomgit.com/Cangjie/cangjie_build/blob/main/README_zh.md)。
 
 ## 使用指导
 

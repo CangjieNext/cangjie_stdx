@@ -10,7 +10,7 @@ stdx 有三种源码集成方式：git 源码依赖、本地源码依赖和仓�
 
 ```toml
 [dependencies]
-  stdx = { git = "https://gitcode.com/Cangjie/cangjie_stdx.git", branch = "main", output-type = "dynamic" }
+  stdx = { git = "https://atomgit.com/Cangjie/cangjie_stdx.git", branch = "main", output-type = "dynamic" }
 ```
 
 在工程的 cjpm.toml 文件所在目录，执行 `cjpm update` 命令即可同步更新本仓源码。
@@ -52,7 +52,7 @@ stdx 有三种源码集成方式：git 源码依赖、本地源码依赖和仓�
 
 ## 交叉编译 OpenHarmony
 
-Linux 和 macOS 平台交叉编译 OpenHarmony 需要配置交叉编译工具链的环境变量（非 DevEco Studio 项目），[请参考编译 ohos-x86_64、ohos-aarch64 工具链](https://gitcode.com/Cangjie/cangjie_build/blob/main/docs/linux_ohos_toolchain.md)
+Linux 和 macOS 平台交叉编译 OpenHarmony 需要配置交叉编译工具链的环境变量（非 DevEco Studio 项目），[请参考编译 ohos-x86_64、ohos-aarch64 工具链](https://atomgit.com/Cangjie/cangjie_build/blob/main/docs/linux_ohos_toolchain.md)
 
 1. OHOS_TOOLCHAIN_PATH (编译工具链中 Clang/LLVM 编译器的二进制目录，如 /opt/buildtools/ohos_root/prebuilts/clang/ohos/linux-x86_64/llvm/bin)
 
