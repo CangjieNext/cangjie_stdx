@@ -28,18 +28,39 @@ public init()
 
 Functionality: Creates an empty [JsonArray](encoding_json_package_classes.md#class-jsonarray).
 
-### init(ArrayList\<JsonValue>)
+<!--Del-->
+### init(this @local!)
 
 ```cangjie
-public init(list: ArrayList<JsonValue>)
+public exclave init(this @local!)
 ```
 
-Functionality: Encapsulates the specified ArrayList instance into a [JsonArray](encoding_json_package_classes.md#class-jsonarray) instance.
+Function: Creates an empty `@local!` [JsonArray](encoding_json_package_classes.md#class-jsonarray) instance in the local region.
 
-Parameters:
+> **Note:**
+>
+> Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+>
+> Platform not supported: OpenHarmony.
 
-- list: ArrayList\<[JsonValue](encoding_json_package_classes.md#class-jsonvalue)> - The ArrayList used to create the [JsonArray](encoding_json_package_classes.md#class-jsonarray).
+Example:
 
+<!-- verify -->
+```cangjie
+import stdx.encoding.json.*
+
+main() {
+    let ja: JsonArray @local! = JsonArray() @local!
+    println("size=${ja.size()}")
+}
+```
+
+Output:
+
+```text
+size=0
+```
+<!--DelEnd-->
 ### init(Array\<JsonValue>)
 
 ```cangjie
@@ -52,6 +73,107 @@ Parameters:
 
 - list: Array\<[JsonValue](encoding_json_package_classes.md#class-jsonvalue)> - The Array used to create the [JsonArray](encoding_json_package_classes.md#class-jsonarray).
 
+<!--Del-->
+### init(this @local!, Array\<JsonValue> @local!)
+
+```cangjie
+public exclave init(this @local!, list: Array<JsonValue> @local!)
+```
+
+Function: Constructs a `@local!` [JsonArray](encoding_json_package_classes.md#class-jsonarray) instance from the specified `@local!` Array in the local region.
+
+> **Note:**
+>
+> Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+>
+> Platform not supported: OpenHarmony.
+
+Parameters:
+
+- list: Array\<[JsonValue](encoding_json_package_classes.md#class-jsonvalue)> @local! - The `@local!` Array used to create the [JsonArray](encoding_json_package_classes.md#class-jsonarray).
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.encoding.json.*
+
+main() {
+    let v1: JsonValue @local! = JsonInt(1) @local!
+    let v2: JsonValue @local! = JsonInt(2) @local!
+    let arr: Array<JsonValue> @local! = [v1, v2]
+    let ja: JsonArray @local! = JsonArray(arr) @local!
+    let s: String @local! = ja.toString()
+    println("ja=${String(s)}")
+    println("size=${ja.size()}")
+}
+```
+
+Output:
+
+```text
+ja=[1,2]
+size=2
+```
+<!--DelEnd-->
+### init(ArrayList\<JsonValue>)
+
+```cangjie
+public init(list: ArrayList<JsonValue>)
+```
+
+Functionality: Encapsulates the specified ArrayList instance into a [JsonArray](encoding_json_package_classes.md#class-jsonarray) instance.
+
+Parameters:
+
+- list: ArrayList\<[JsonValue](encoding_json_package_classes.md#class-jsonvalue)> - The ArrayList used to create the [JsonArray](encoding_json_package_classes.md#class-jsonarray).
+
+<!--Del-->
+### init(this @local!, ArrayList\<JsonValue> @local!)
+
+```cangjie
+public exclave init(this @local!, list: ArrayList<JsonValue> @local!)
+```
+
+Function: Constructs a `@local!` [JsonArray](encoding_json_package_classes.md#class-jsonarray) instance from the specified `@local!` ArrayList in the local region.
+
+> **Note:**
+>
+> Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+>
+> Platform not supported: OpenHarmony.
+
+Parameters:
+
+- list: ArrayList\<[JsonValue](encoding_json_package_classes.md#class-jsonvalue)> @local! - The `@local!` ArrayList used to create the [JsonArray](encoding_json_package_classes.md#class-jsonarray).
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.encoding.json.*
+import std.collection.*
+
+main() {
+    let list: ArrayList<JsonValue> @local! = ArrayList<JsonValue>() @local!
+    let v1: JsonValue @local! = JsonInt(1) @local!
+    let v2: JsonValue @local! = JsonInt(2) @local!
+    list.add(v1)
+    list.add(v2)
+    let ja: JsonArray @local! = JsonArray(list) @local!
+    let s: String @local! = ja.toString()
+    println("ja=${String(s)}")
+    println("size=${ja.size()}")
+}
+```
+
+Output:
+
+```text
+ja=[1,2]
+size=2
+```
+<!--DelEnd-->
 ### func add(JsonValue)
 
 ```cangjie
@@ -68,6 +190,54 @@ Return Value:
 
 - [JsonArray](encoding_json_package_classes.md#class-jsonarray) - The [JsonArray](encoding_json_package_classes.md#class-jsonarray) after adding the data.
 
+<!--Del-->
+### func add(this @local!, JsonValue @local!)
+
+```cangjie
+public exclave func add(this @local!, jv: JsonValue @local!): JsonArray @local!
+```
+
+Function: Adds [JsonValue](encoding_json_package_classes.md#class-jsonvalue) data to the `@local!` [JsonArray](encoding_json_package_classes.md#class-jsonarray).
+
+> **Note:**
+>
+> Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+>
+> Platform not supported: OpenHarmony.
+
+Parameters:
+
+- jv: [JsonValue](encoding_json_package_classes.md#class-jsonvalue) @local! - The [JsonValue](encoding_json_package_classes.md#class-jsonvalue) data to be added.
+
+Return Value:
+
+- [JsonArray](encoding_json_package_classes.md#class-jsonarray) @local! - The [JsonArray](encoding_json_package_classes.md#class-jsonarray) after adding the data.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.encoding.json.*
+
+main() {
+    let ja: JsonArray @local! = JsonArray() @local!
+    let v1: JsonValue @local! = JsonInt(1) @local!
+    let v2: JsonValue @local! = JsonInt(2) @local!
+    ja.add(v1)
+    ja.add(v2)
+    let s: String @local! = ja.toString()
+    println("ja=${String(s)}")
+    println("size=${ja.size()}")
+}
+```
+
+Output:
+
+```text
+ja=[1,2]
+size=2
+```
+<!--DelEnd-->
 ### func get(Int64)
 
 ```cangjie
@@ -84,6 +254,111 @@ Return Value:
 
 - Option\<[JsonValue](encoding_json_package_classes.md#class-jsonvalue)> - The encapsulated [JsonValue](encoding_json_package_classes.md#class-jsonvalue) data at the corresponding index.
 
+<!--Del-->
+### func get(this @local!, Int64)
+
+```cangjie
+public exclave func get(this @local!, index: Int64): Option<JsonValue> @local!
+```
+
+Function: Gets the [JsonValue](encoding_json_package_classes.md#class-jsonvalue) at the specified index in the `@local!` [JsonArray](encoding_json_package_classes.md#class-jsonarray), encapsulated in an Option\<[JsonValue](encoding_json_package_classes.md#class-jsonvalue)>.
+
+> **Note:**
+>
+> Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+>
+> Platform not supported: OpenHarmony.
+
+Parameters:
+
+- index: Int64 - The specified index.
+
+Return Value:
+
+- Option\<[JsonValue](encoding_json_package_classes.md#class-jsonvalue)> @local! - The [JsonValue](encoding_json_package_classes.md#class-jsonvalue) at the specified index, encapsulated in an Option.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.encoding.json.*
+
+main() {
+    let ja: JsonArray @local! = JsonArray() @local!
+    let v1: JsonValue @local! = JsonInt(1) @local!
+    let v2: JsonValue @local! = JsonInt(2) @local!
+    ja.add(v1)
+    ja.add(v2)
+    match (ja.get(0)) {
+        case Some(v) =>
+            let sv: String @local! = v.toString()
+            println("first=${String(sv)}")
+        case None => println("none")
+    }
+}
+```
+
+Output:
+
+```text
+first=1
+```
+<!--DelEnd-->
+<!--Del-->
+### func get(this @local?, Int64)
+
+```cangjie
+public exclave func get(this @local?, index: Int64): Option<JsonValue> @local?
+```
+
+Function: Gets the [JsonValue](encoding_json_package_classes.md#class-jsonvalue) at the specified index in the `@local?` [JsonArray](encoding_json_package_classes.md#class-jsonarray), encapsulated in an Option\<[JsonValue](encoding_json_package_classes.md#class-jsonvalue)>.
+
+> **Note:**
+>
+> Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+>
+> Platform not supported: OpenHarmony.
+
+Parameters:
+
+- index: Int64 - The specified index.
+
+Return Value:
+
+- Option\<[JsonValue](encoding_json_package_classes.md#class-jsonvalue)> @local? - The [JsonValue](encoding_json_package_classes.md#class-jsonvalue) at the specified index, encapsulated in an Option.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.encoding.json.*
+
+exclave func makeArray(): JsonArray @local? {
+    let ja: JsonArray @local! = JsonArray() @local!
+    let v1: JsonValue @local! = JsonInt(1) @local!
+    let v2: JsonValue @local! = JsonInt(2) @local!
+    ja.add(v1)
+    ja.add(v2)
+    ja
+}
+
+main() {
+    let ja: JsonArray @local? = makeArray()
+    match (ja.get(1)) {
+        case Some(v) =>
+            let sv: String @local! = v.toString()
+            println("second=${String(sv)}")
+        case None => println("none")
+    }
+}
+```
+
+Output:
+
+```text
+second=2
+```
+<!--DelEnd-->
 ### func getItems()
 
 ```cangjie
@@ -96,6 +371,97 @@ Return Value:
 
 - ArrayList\<[JsonValue](encoding_json_package_classes.md#class-jsonvalue)> - The items data of the [JsonArray](encoding_json_package_classes.md#class-jsonarray).
 
+<!--Del-->
+### func getItems(this @local!)
+
+```cangjie
+public exclave func getItems(this @local!): ArrayList<JsonValue> @local!
+```
+
+Function: Gets the items data from the `@local!` [JsonArray](encoding_json_package_classes.md#class-jsonarray).
+
+> **Note:**
+>
+> Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+>
+> Platform not supported: OpenHarmony.
+
+Return Value:
+
+- ArrayList\<[JsonValue](encoding_json_package_classes.md#class-jsonvalue)> @local! - The items data of the [JsonArray](encoding_json_package_classes.md#class-jsonarray).
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.encoding.json.*
+import std.collection.*
+
+main() {
+    let ja: JsonArray @local! = JsonArray() @local!
+    let v1: JsonValue @local! = JsonInt(1) @local!
+    let v2: JsonValue @local! = JsonInt(2) @local!
+    ja.add(v1)
+    ja.add(v2)
+    let items: ArrayList<JsonValue> @local! = ja.getItems()
+    println("size=${items.size}")
+}
+```
+
+Output:
+
+```text
+size=2
+```
+<!--DelEnd-->
+<!--Del-->
+### func getItems(this @local?)
+
+```cangjie
+public func getItems(this @local?): ArrayList<JsonValue> @local?
+```
+
+Function: Gets the items data from the `@local?` [JsonArray](encoding_json_package_classes.md#class-jsonarray).
+
+> **Note:**
+>
+> Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+>
+> Platform not supported: OpenHarmony.
+
+Return Value:
+
+- ArrayList\<[JsonValue](encoding_json_package_classes.md#class-jsonvalue)> @local? - The items data of the [JsonArray](encoding_json_package_classes.md#class-jsonarray).
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.encoding.json.*
+import std.collection.*
+
+exclave func makeArray(): JsonArray @local? {
+    let ja: JsonArray @local! = JsonArray() @local!
+    let v1: JsonValue @local! = JsonInt(1) @local!
+    let v2: JsonValue @local! = JsonInt(2) @local!
+    ja.add(v1)
+    ja.add(v2)
+    ja
+}
+
+main() {
+    let ja: JsonArray @local? = makeArray()
+    let items: ArrayList<JsonValue> @local? = ja.getItems()
+    println("size=${items.size}")
+}
+```
+
+Output:
+
+```text
+size=2
+```
+<!--DelEnd-->
 ### func kind()
 
 ```cangjie
@@ -108,6 +474,55 @@ Return Value:
 
 - [JsonKind](encoding_json_package_enums.md#enum-jsonkind) - The [JsonKind](encoding_json_package_enums.md#enum-jsonkind) type (JsArray) to which the current [JsonArray](encoding_json_package_classes.md#class-jsonarray) belongs.
 
+<!--Del-->
+### func kind(this @local?)
+
+```cangjie
+public func kind(this @local?): JsonKind
+```
+
+Function: Returns the [JsonKind](encoding_json_package_enums.md#enum-jsonkind) type (JsArray) to which the current `@local?` [JsonArray](encoding_json_package_classes.md#class-jsonarray) belongs.
+
+> **Note:**
+>
+> Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+>
+> Platform not supported: OpenHarmony.
+
+Return Value:
+
+- [JsonKind](encoding_json_package_enums.md#enum-jsonkind) - The [JsonKind](encoding_json_package_enums.md#enum-jsonkind) type (JsArray) to which the current `@local?` [JsonArray](encoding_json_package_classes.md#class-jsonarray) belongs.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.encoding.json.*
+
+exclave func makeArray(): JsonArray @local? {
+    let ja: JsonArray @local! = JsonArray() @local!
+    let v1: JsonValue @local! = JsonInt(1) @local!
+    let v2: JsonValue @local! = JsonInt(2) @local!
+    ja.add(v1)
+    ja.add(v2)
+    ja
+}
+
+main() {
+    let ja: JsonArray @local? = makeArray()
+    match (ja.kind()) {
+        case JsonKind.JsArray => println("kind is JsArray")
+        case _ => println("kind is not JsArray")
+    }
+}
+```
+
+Output:
+
+```text
+kind is JsArray
+```
+<!--DelEnd-->
 ### func size()
 
 ```cangjie
@@ -120,6 +535,52 @@ Return Value:
 
 - Int64 - The number of [JsonValue](encoding_json_package_classes.md#class-jsonvalue) elements in the [JsonArray](encoding_json_package_classes.md#class-jsonarray).
 
+<!--Del-->
+### func size(this @local?)
+
+```cangjie
+public func size(this @local?): Int64
+```
+
+Function: Gets the number of [JsonValue](encoding_json_package_classes.md#class-jsonvalue) elements in the `@local?` [JsonArray](encoding_json_package_classes.md#class-jsonarray).
+
+> **Note:**
+>
+> Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+>
+> Platform not supported: OpenHarmony.
+
+Return Value:
+
+- Int64 - The number of [JsonValue](encoding_json_package_classes.md#class-jsonvalue) elements in the current [JsonArray](encoding_json_package_classes.md#class-jsonarray).
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.encoding.json.*
+
+exclave func makeArray(): JsonArray @local? {
+    let ja: JsonArray @local! = JsonArray() @local!
+    let v1: JsonValue @local! = JsonInt(1) @local!
+    let v2: JsonValue @local! = JsonInt(2) @local!
+    ja.add(v1)
+    ja.add(v2)
+    ja
+}
+
+main() {
+    let ja: JsonArray @local? = makeArray()
+    println("size=${ja.size()}")
+}
+```
+
+Output:
+
+```text
+size=2
+```
+<!--DelEnd-->
 ### func toJsonString()
 
 ```cangjie
@@ -132,6 +593,109 @@ Return Value:
 
 - String - The converted JSON-formatted string.
 
+<!--Del-->
+### func toJsonString(this @local!)
+
+```cangjie
+public exclave func toJsonString(this @local!): String @local!
+```
+
+Function: Converts the current `@local!` [JsonArray](encoding_json_package_classes.md#class-jsonarray) into a JSON-formatted string (with spaces and line breaks).
+
+> **Note:**
+>
+> Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+>
+> Platform not supported: OpenHarmony.
+
+Return Value:
+
+- String @local! - The converted JSON-formatted string.
+
+Exceptions:
+
+- [JsonException](encoding_json_package_exceptions.md#class-jsonexception) - Thrown if conversion fails.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.encoding.json.*
+
+main() {
+    let ja: JsonArray @local! = JsonArray() @local!
+    let v1: JsonValue @local! = JsonInt(1) @local!
+    let v2: JsonValue @local! = JsonInt(2) @local!
+    ja.add(v1)
+    ja.add(v2)
+    let s: String @local! = ja.toJsonString()
+    println(String(s))
+}
+```
+
+Output:
+
+```text
+[
+  1,
+  2
+]
+```
+<!--DelEnd-->
+<!--Del-->
+### func toJsonString(this @local?)
+
+```cangjie
+public func toJsonString(this @local?): String
+```
+
+Function: Converts the current `@local?` [JsonArray](encoding_json_package_classes.md#class-jsonarray) into a JSON-formatted string (with spaces and line breaks).
+
+> **Note:**
+>
+> Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+>
+> Platform not supported: OpenHarmony.
+
+Return Value:
+
+- String - The converted JSON-formatted string.
+
+Exceptions:
+
+- [JsonException](encoding_json_package_exceptions.md#class-jsonexception) - Thrown if conversion fails.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.encoding.json.*
+
+exclave func makeArray(): JsonArray @local? {
+    let ja: JsonArray @local! = JsonArray() @local!
+    let v1: JsonValue @local! = JsonInt(1) @local!
+    let v2: JsonValue @local! = JsonInt(2) @local!
+    ja.add(v1)
+    ja.add(v2)
+    ja
+}
+
+main() {
+    let ja: JsonArray @local? = makeArray()
+    let s: String = ja.toJsonString()
+    println(s)
+}
+```
+
+Output:
+
+```text
+[
+  1,
+  2
+]
+```
+<!--DelEnd-->
 ### func toJsonString(Int64, Bool, String)
 
 ```cangjie
@@ -154,6 +718,121 @@ Exceptions:
 
 - IllegalArgumentException - Thrown if depth is negative or if indent contains characters other than ' ' and '\t'.
 
+<!--Del-->
+### func toJsonString(this @local!, Int64, Bool, String @~local)
+
+```cangjie
+public exclave func toJsonString(this @local!, depth: Int64, bracketInNewLine!: Bool = false, indent!: String @~local = "  "): String @local!
+```
+
+Function: Converts the current `@local!` [JsonArray](encoding_json_package_classes.md#class-jsonarray) into a JSON-formatted string. This function specifies the initial indentation depth, whether to place the first bracket on a new line, and the indentation string.
+
+> **Note:**
+>
+> Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+>
+> Platform not supported: OpenHarmony.
+
+Parameters:
+
+- depth: Int64 - Indentation depth.
+- bracketInNewLine!: Bool - Whether the first bracket should be on a new line. If `true`, the first bracket will start on a new line and be indented to the specified depth.
+- indent!: String @~local - The specified indentation string. The indentation string can only consist of spaces and tabs. Defaults to two spaces.
+
+Return Value:
+
+- String @local! - The converted JSON-formatted string.
+
+Exceptions:
+
+- IllegalArgumentException - Thrown if `depth` is negative or if `indent` contains characters other than ' ' or '\t'.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.encoding.json.*
+
+main() {
+    let ja: JsonArray @local! = JsonArray() @local!
+    let v1: JsonValue @local! = JsonInt(1) @local!
+    let v2: JsonValue @local! = JsonInt(2) @local!
+    ja.add(v1)
+    ja.add(v2)
+    let s: String @local! = ja.toJsonString(1, bracketInNewLine: true, indent: " ")
+    println(String(s))
+}
+```
+
+Output:
+
+```text
+ [
+  1,
+  2
+ ]
+```
+<!--DelEnd-->
+<!--Del-->
+### func toJsonString(this @local?, Int64, Bool, String @local?)
+
+```cangjie
+public func toJsonString(this @local?, depth: Int64, bracketInNewLine!: Bool = false, indent!: String @local? = "  "): String
+```
+
+Function: Converts the current `@local?` [JsonArray](encoding_json_package_classes.md#class-jsonarray) into a JSON-formatted string. This function specifies the initial indentation depth, whether to place the first bracket on a new line, and the indentation string.
+
+> **Note:**
+>
+> Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+>
+> Platform not supported: OpenHarmony.
+
+Parameters:
+
+- depth: Int64 - Indentation depth.
+- bracketInNewLine!: Bool - Whether the first bracket should be on a new line. If `true`, the first bracket will start on a new line and be indented to the specified depth.
+- indent!: String @local? - The specified indentation string. The indentation string can only consist of spaces and tabs. Defaults to two spaces.
+
+Return Value:
+
+- String - The converted JSON-formatted string.
+
+Exceptions:
+
+- IllegalArgumentException - Thrown if `depth` is negative or if `indent` contains characters other than ' ' or '\t'.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.encoding.json.*
+
+exclave func makeArray(): JsonArray @local? {
+    let ja: JsonArray @local! = JsonArray() @local!
+    let v1: JsonValue @local! = JsonInt(1) @local!
+    let v2: JsonValue @local! = JsonInt(2) @local!
+    ja.add(v1)
+    ja.add(v2)
+    ja
+}
+
+main() {
+    let ja: JsonArray @local? = makeArray()
+    let s: String = ja.toJsonString(1, bracketInNewLine: true, indent: " ")
+    println(s)
+}
+```
+
+Output:
+
+```text
+ [
+  1,
+  2
+ ]
+```
+<!--DelEnd-->
 ### func toJsonStringWithoutEscaping()
 
 ```cangjie
@@ -166,6 +845,109 @@ Return Value:
 
 - String - The converted JSON-formatted string.
 
+<!--Del-->
+### func toJsonStringWithoutEscaping(this @local!)
+
+```cangjie
+public exclave func toJsonStringWithoutEscaping(this @local!): String @local!
+```
+
+Function: Converts the current `@local!` [JsonArray](encoding_json_package_classes.md#class-jsonarray) into a JSON-formatted string (with spaces and line breaks) without escaping the HTML special character `&`.
+
+> **Note:**
+>
+> Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+>
+> Platform not supported: OpenHarmony.
+
+Return Value:
+
+- String @local! - The converted JSON-formatted string.
+
+Exceptions:
+
+- [JsonException](encoding_json_package_exceptions.md#class-jsonexception) - Thrown if conversion fails.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.encoding.json.*
+
+main() {
+    let ja: JsonArray @local! = JsonArray() @local!
+    let v1: JsonValue @local! = JsonInt(1) @local!
+    let v2: JsonValue @local! = JsonInt(2) @local!
+    ja.add(v1)
+    ja.add(v2)
+    let s: String @local! = ja.toJsonStringWithoutEscaping()
+    println(String(s))
+}
+```
+
+Output:
+
+```text
+[
+  1,
+  2
+]
+```
+<!--DelEnd-->
+<!--Del-->
+### func toJsonStringWithoutEscaping(this @local?)
+
+```cangjie
+public func toJsonStringWithoutEscaping(this @local?): String
+```
+
+Function: Converts the current `@local?` [JsonArray](encoding_json_package_classes.md#class-jsonarray) into a JSON-formatted string (with spaces and line breaks) without escaping the HTML special character `&`.
+
+> **Note:**
+>
+> Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+>
+> Platform not supported: OpenHarmony.
+
+Return Value:
+
+- String - The converted JSON-formatted string.
+
+Exceptions:
+
+- [JsonException](encoding_json_package_exceptions.md#class-jsonexception) - Thrown if conversion fails.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.encoding.json.*
+
+exclave func makeArray(): JsonArray @local? {
+    let ja: JsonArray @local! = JsonArray() @local!
+    let v1: JsonValue @local! = JsonInt(1) @local!
+    let v2: JsonValue @local! = JsonInt(2) @local!
+    ja.add(v1)
+    ja.add(v2)
+    ja
+}
+
+main() {
+    let ja: JsonArray @local? = makeArray()
+    let s: String = ja.toJsonStringWithoutEscaping()
+    println(s)
+}
+```
+
+Output:
+
+```text
+[
+  1,
+  2
+]
+```
+<!--DelEnd-->
 ### func toJsonStringWithoutEscaping(Int64, Bool, String)
 
 ```cangjie
@@ -188,6 +970,121 @@ Exceptions:
 
 - IllegalArgumentException - Throws an exception if depth is negative or if indent contains characters other than ' ' and '\t'.
 
+<!--Del-->
+### func toJsonStringWithoutEscaping(this @local!, Int64, Bool, String @~local)
+
+```cangjie
+public exclave func toJsonStringWithoutEscaping(this @local!, depth: Int64, bracketInNewLine!: Bool = false, indent!: String @~local = "  "): String @local!
+```
+
+Function: Converts the current `@local!` [JsonArray](encoding_json_package_classes.md#class-jsonarray) into a JSON-formatted string. This function specifies the initial indentation depth, whether to place the first bracket on a new line, and the indentation string, without escaping the HTML special character `&`.
+
+> **Note:**
+>
+> Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+>
+> Platform not supported: OpenHarmony.
+
+Parameters:
+
+- depth: Int64 - Indentation depth.
+- bracketInNewLine!: Bool - Whether the first bracket should be on a new line. If `true`, the first bracket will start on a new line and be indented to the specified depth.
+- indent!: String @~local - The specified indentation string. The indentation string can only consist of spaces and tabs. Defaults to two spaces.
+
+Return Value:
+
+- String @local! - The converted JSON-formatted string.
+
+Exceptions:
+
+- IllegalArgumentException - Thrown if `depth` is negative or if `indent` contains characters other than ' ' or '\t'.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.encoding.json.*
+
+main() {
+    let ja: JsonArray @local! = JsonArray() @local!
+    let v1: JsonValue @local! = JsonInt(1) @local!
+    let v2: JsonValue @local! = JsonInt(2) @local!
+    ja.add(v1)
+    ja.add(v2)
+    let s: String @local! = ja.toJsonStringWithoutEscaping(1, bracketInNewLine: true, indent: " ")
+    println(String(s))
+}
+```
+
+Output:
+
+```text
+ [
+  1,
+  2
+ ]
+```
+<!--DelEnd-->
+<!--Del-->
+### func toJsonStringWithoutEscaping(this @local?, Int64, Bool, String @local?)
+
+```cangjie
+public func toJsonStringWithoutEscaping(this @local?, depth: Int64, bracketInNewLine!: Bool = false, indent!: String @local? = "  "): String
+```
+
+Function: Converts the current `@local?` [JsonArray](encoding_json_package_classes.md#class-jsonarray) into a JSON-formatted string. This function specifies the initial indentation depth, whether to place the first bracket on a new line, and the indentation string, without escaping the HTML special character `&`.
+
+> **Note:**
+>
+> Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+>
+> Platform not supported: OpenHarmony.
+
+Parameters:
+
+- depth: Int64 - Indentation depth.
+- bracketInNewLine!: Bool - Whether the first bracket should be on a new line. If `true`, the first bracket will start on a new line and be indented to the specified depth.
+- indent!: String @local? - The specified indentation string. The indentation string can only consist of spaces and tabs. Defaults to two spaces.
+
+Return Value:
+
+- String - The converted JSON-formatted string.
+
+Exceptions:
+
+- IllegalArgumentException - Thrown if `depth` is negative or if `indent` contains characters other than ' ' or '\t'.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.encoding.json.*
+
+exclave func makeArray(): JsonArray @local? {
+    let ja: JsonArray @local! = JsonArray() @local!
+    let v1: JsonValue @local! = JsonInt(1) @local!
+    let v2: JsonValue @local! = JsonInt(2) @local!
+    ja.add(v1)
+    ja.add(v2)
+    ja
+}
+
+main() {
+    let ja: JsonArray @local? = makeArray()
+    let s: String = ja.toJsonStringWithoutEscaping(1, bracketInNewLine: true, indent: " ")
+    println(s)
+}
+```
+
+Output:
+
+```text
+ [
+  1,
+  2
+ ]
+```
+<!--DelEnd-->
 ### func toString()
 
 ```cangjie
@@ -200,6 +1097,57 @@ Return Value:
 
 - String - The converted string.
 
+<!--Del-->
+### func toString(this @local?)
+
+```cangjie
+public exclave func toString(this @local?): String @local!
+```
+
+Function: Converts the current `@local?` [JsonArray](encoding_json_package_classes.md#class-jsonarray) into a string.
+
+> **Note:**
+>
+> Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+>
+> Platform not supported: OpenHarmony.
+
+Return Value:
+
+- String @local! - The converted `@local!` string.
+
+Exceptions:
+
+- [JsonException](encoding_json_package_exceptions.md#class-jsonexception) - Thrown if conversion fails.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.encoding.json.*
+
+exclave func makeArray(): JsonArray @local? {
+    let ja: JsonArray @local! = JsonArray() @local!
+    let v1: JsonValue @local! = JsonInt(1) @local!
+    let v2: JsonValue @local! = JsonInt(2) @local!
+    ja.add(v1)
+    ja.add(v2)
+    ja
+}
+
+main() {
+    let ja: JsonArray @local? = makeArray()
+    let s: String @local! = ja.toString()
+    println("ja=${String(s)}")
+}
+```
+
+Output:
+
+```text
+ja=[1,2]
+```
+<!--DelEnd-->
 ### func toStringWithoutEscaping()
 
 ```cangjie
@@ -212,6 +1160,103 @@ Return Value:
 
 - String - The converted string.
 
+<!--Del-->
+### func toStringWithoutEscaping(this @local!)
+
+```cangjie
+public exclave func toStringWithoutEscaping(this @local!): String @local!
+```
+
+Function: Converts the current `@local!` [JsonArray](encoding_json_package_classes.md#class-jsonarray) into a string without escaping the HTML special character `&`.
+
+> **Note:**
+>
+> Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+>
+> Platform not supported: OpenHarmony.
+
+Return Value:
+
+- String @local! - The converted string.
+
+Exceptions:
+
+- [JsonException](encoding_json_package_exceptions.md#class-jsonexception) - Thrown if conversion fails.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.encoding.json.*
+
+main() {
+    let ja: JsonArray @local! = JsonArray() @local!
+    let v1: JsonValue @local! = JsonInt(1) @local!
+    let v2: JsonValue @local! = JsonInt(2) @local!
+    ja.add(v1)
+    ja.add(v2)
+    let s: String @local! = ja.toStringWithoutEscaping()
+    println("ja=${String(s)}")
+}
+```
+
+Output:
+
+```text
+ja=[1,2]
+```
+<!--DelEnd-->
+<!--Del-->
+### func toStringWithoutEscaping(this @local?)
+
+```cangjie
+public func toStringWithoutEscaping(this @local?): String
+```
+
+Function: Converts the current `@local?` [JsonArray](encoding_json_package_classes.md#class-jsonarray) into a string without escaping the HTML special character `&`.
+
+> **Note:**
+>
+> Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+>
+> Platform not supported: OpenHarmony.
+
+Return Value:
+
+- String - The converted string.
+
+Exceptions:
+
+- [JsonException](encoding_json_package_exceptions.md#class-jsonexception) - Thrown if conversion fails.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.encoding.json.*
+
+exclave func makeArray(): JsonArray @local? {
+    let ja: JsonArray @local! = JsonArray() @local!
+    let v1: JsonValue @local! = JsonInt(1) @local!
+    let v2: JsonValue @local! = JsonInt(2) @local!
+    ja.add(v1)
+    ja.add(v2)
+    ja
+}
+
+main() {
+    let ja: JsonArray @local? = makeArray()
+    let s: String = ja.toStringWithoutEscaping()
+    println("ja=${s}")
+}
+```
+
+Output:
+
+```text
+ja=[1,2]
+```
+<!--DelEnd-->
 ### operator func [](Int64)
 
 ```cangjie
@@ -232,6 +1277,113 @@ Exceptions:
 
 - [JsonException](encoding_json_package_exceptions.md#class-jsonexception) - Thrown if the index is not a valid index for the [JsonArray](encoding_json_package_classes.md#class-jsonarray).
 
+<!--Del-->
+### operator func \[](this @local!, Int64)
+
+```cangjie
+public exclave operator func [](this @local!, index: Int64): JsonValue @local!
+```
+
+Function: Gets the [JsonValue](encoding_json_package_classes.md#class-jsonvalue) at the specified index in the `@local!` [JsonArray](encoding_json_package_classes.md#class-jsonarray).
+
+> **Note:**
+>
+> Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+>
+> Platform not supported: OpenHarmony.
+
+Parameters:
+
+- index: Int64 - The specified index.
+
+Return Value:
+
+- [JsonValue](encoding_json_package_classes.md#class-jsonvalue) @local! - The [JsonValue](encoding_json_package_classes.md#class-jsonvalue) at the specified index.
+
+Exceptions:
+
+- [JsonException](encoding_json_package_exceptions.md#class-jsonexception) - Thrown if the index does not exist in the [JsonArray](encoding_json_package_classes.md#class-jsonarray).
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.encoding.json.*
+
+main() {
+    let ja: JsonArray @local! = JsonArray() @local!
+    let v1: JsonValue @local! = JsonInt(10) @local!
+    let v2: JsonValue @local! = JsonInt(20) @local!
+    ja.add(v1)
+    ja.add(v2)
+    let v: JsonValue @local! = ja[0]
+    let ji: JsonInt @local! = v.asInt()
+    println("first=${ji.getValue()}")
+}
+```
+
+Output:
+
+```text
+first=10
+```
+<!--DelEnd-->
+<!--Del-->
+### operator func \[](this @local?, Int64)
+
+```cangjie
+public exclave operator func [](this @local?, index: Int64): JsonValue @local?
+```
+
+Function: Gets the [JsonValue](encoding_json_package_classes.md#class-jsonvalue) at the specified index in the `@local?` [JsonArray](encoding_json_package_classes.md#class-jsonarray).
+
+> **Note:**
+>
+> Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+>
+> Platform not supported: OpenHarmony.
+
+Parameters:
+
+- index: Int64 - The specified index.
+
+Return Value:
+
+- [JsonValue](encoding_json_package_classes.md#class-jsonvalue) @local? - The [JsonValue](encoding_json_package_classes.md#class-jsonvalue) at the specified index.
+
+Exceptions:
+
+- [JsonException](encoding_json_package_exceptions.md#class-jsonexception) - Thrown if the index does not exist in the [JsonArray](encoding_json_package_classes.md#class-jsonarray).
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.encoding.json.*
+
+exclave func makeArray(): JsonArray @local? {
+    let ja: JsonArray @local! = JsonArray() @local!
+    let v1: JsonValue @local! = JsonInt(1) @local!
+    let v2: JsonValue @local! = JsonInt(2) @local!
+    ja.add(v1)
+    ja.add(v2)
+    ja
+}
+
+main() {
+    let ja: JsonArray @local? = makeArray()
+    let v: JsonValue @local? = ja[1]
+    let s: String @local! = v.toString()
+    println("second=${String(s)}")
+}
+```
+
+Output:
+
+```text
+second=2
+```
+<!--DelEnd-->
 ## class JsonBool
 
 ```cangjie
@@ -258,6 +1410,43 @@ Parameters:
 
 - bv: Bool - The Bool type.
 
+<!--Del-->
+### init(this @local!, Bool)
+
+```cangjie
+public exclave init(this @local!, bv: Bool)
+```
+
+Function: Encapsulates the specified Bool instance into a `@local!` [JsonBool](encoding_json_package_classes.md#class-jsonbool) instance in the local region.
+
+> **Note:**
+>
+> Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+>
+> Platform not supported: OpenHarmony.
+
+Parameters:
+
+- bv: Bool - The Bool value used to create the [JsonBool](encoding_json_package_classes.md#class-jsonbool).
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.encoding.json.*
+
+main() {
+    let jb: JsonBool @local! = JsonBool(true) @local!
+    println("value=${jb.getValue()}")
+}
+```
+
+Output:
+
+```text
+value=true
+```
+<!--DelEnd-->
 ### func getValue()
 
 ```cangjie
@@ -270,6 +1459,48 @@ Return Value:
 
 - Bool - The actual value of the value.
 
+<!--Del-->
+### func getValue(this @local?)
+
+```cangjie
+public func getValue(this @local?): Bool
+```
+
+Function: Gets the actual value of value in the `@local?` [JsonBool](encoding_json_package_classes.md#class-jsonbool).
+
+> **Note:**
+>
+> Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+>
+> Platform not supported: OpenHarmony.
+
+Return Value:
+
+- Bool - The actual value of value.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.encoding.json.*
+
+exclave func makeBool(): JsonBool @local? {
+    let b: JsonBool @local! = JsonBool(true) @local!
+    b
+}
+
+main() {
+    let jb: JsonBool @local? = makeBool()
+    println("value=${jb.getValue()}")
+}
+```
+
+Output:
+
+```text
+value=true
+```
+<!--DelEnd-->
 ### func kind()
 
 ```cangjie
@@ -282,6 +1513,51 @@ Return Value:
 
 - [JsonKind](encoding_json_package_enums.md#enum-jsonkind) - The [JsonKind](encoding_json_package_enums.md#enum-jsonkind) type (JsBool) to which the current [JsonBool](encoding_json_package_classes.md#class-jsonbool) belongs.
 
+<!--Del-->
+### func kind(this @local?)
+
+```cangjie
+public func kind(this @local?): JsonKind
+```
+
+Function: Returns the [JsonKind](encoding_json_package_enums.md#enum-jsonkind) type (JsBool) to which the current `@local?` [JsonBool](encoding_json_package_classes.md#class-jsonbool) belongs.
+
+> **Note:**
+>
+> Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+>
+> Platform not supported: OpenHarmony.
+
+Return Value:
+
+- [JsonKind](encoding_json_package_enums.md#enum-jsonkind) - The [JsonKind](encoding_json_package_enums.md#enum-jsonkind) type (JsBool) to which the current `@local?` [JsonBool](encoding_json_package_classes.md#class-jsonbool) belongs.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.encoding.json.*
+
+exclave func makeBool(): JsonBool @local? {
+    let b: JsonBool @local! = JsonBool(true) @local!
+    b
+}
+
+main() {
+    let jb: JsonBool @local? = makeBool()
+    match (jb.kind()) {
+        case JsonKind.JsBool => println("kind is JsBool")
+        case _ => println("kind is not JsBool")
+    }
+}
+```
+
+Output:
+
+```text
+kind is JsBool
+```
+<!--DelEnd-->
 ### func toJsonString()
 
 ```cangjie
@@ -294,6 +1570,44 @@ Return Value:
 
 - String - The converted JSON-formatted string.
 
+<!--Del-->
+### func toJsonString(this @local!)
+
+```cangjie
+public exclave func toJsonString(this @local!): String @local!
+```
+
+Function: Converts the current `@local!` [JsonBool](encoding_json_package_classes.md#class-jsonbool) into a JSON-formatted string (with spaces and line breaks).
+
+> **Note:**
+>
+> Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+>
+> Platform not supported: OpenHarmony.
+
+Return Value:
+
+- String @local! - The converted JSON-formatted string.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.encoding.json.*
+
+main() {
+    let jb: JsonBool @local! = JsonBool(true) @local!
+    let s: String @local! = jb.toJsonString()
+    println("s=${String(s)}")
+}
+```
+
+Output:
+
+```text
+s=true
+```
+<!--DelEnd-->
 ### func toJsonStringWithoutEscaping()
 
 ```cangjie
@@ -306,6 +1620,44 @@ Return Value:
 
 - String - The converted JSON-formatted string.
 
+<!--Del-->
+### func toJsonStringWithoutEscaping(this @local!)
+
+```cangjie
+public exclave func toJsonStringWithoutEscaping(this @local!): String @local!
+```
+
+Function: Converts the current `@local!` [JsonBool](encoding_json_package_classes.md#class-jsonbool) into a JSON-formatted string (with spaces and line breaks).
+
+> **Note:**
+>
+> Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+>
+> Platform not supported: OpenHarmony.
+
+Return Value:
+
+- String @local! - The converted JSON-formatted string.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.encoding.json.*
+
+main() {
+    let jb: JsonBool @local! = JsonBool(true) @local!
+    let s: String @local! = jb.toJsonStringWithoutEscaping()
+    println("s=${String(s)}")
+}
+```
+
+Output:
+
+```text
+s=true
+```
+<!--DelEnd-->
 ### func toString()
 
 ```cangjie
@@ -318,6 +1670,49 @@ Return Value:
 
 - String - The converted string.
 
+<!--Del-->
+### func toString(this @local?)
+
+```cangjie
+public exclave func toString(this @local?): String @local!
+```
+
+Function: Converts the current `@local?` [JsonBool](encoding_json_package_classes.md#class-jsonbool) into a string.
+
+> **Note:**
+>
+> Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+>
+> Platform not supported: OpenHarmony.
+
+Return Value:
+
+- String @local! - The converted `@local!` string.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.encoding.json.*
+
+exclave func makeBool(): JsonBool @local? {
+    let b: JsonBool @local! = JsonBool(true) @local!
+    b
+}
+
+main() {
+    let jb: JsonBool @local? = makeBool()
+    let s: String @local! = jb.toString()
+    println("s=${String(s)}")
+}
+```
+
+Output:
+
+```text
+s=true
+```
+<!--DelEnd-->
 ### func toStringWithoutEscaping()
 
 ```cangjie
@@ -330,6 +1725,44 @@ Return Value:
 
 - String - The converted string.
 
+<!--Del-->
+### func toStringWithoutEscaping(this @local!)
+
+```cangjie
+public exclave func toStringWithoutEscaping(this @local!): String @local!
+```
+
+Function: Converts the current `@local!` [JsonBool](encoding_json_package_classes.md#class-jsonbool) into a string.
+
+> **Note:**
+>
+> Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+>
+> Platform not supported: OpenHarmony.
+
+Return Value:
+
+- String @local! - The converted string.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.encoding.json.*
+
+main() {
+    let jb: JsonBool @local! = JsonBool(true) @local!
+    let s: String @local! = jb.toStringWithoutEscaping()
+    println("s=${String(s)}")
+}
+```
+
+Output:
+
+```text
+s=true
+```
+<!--DelEnd-->
 ## class JsonFloat
 
 ```cangjie
@@ -357,6 +1790,43 @@ Parameters:
 
 - fv: Float64 - The Float64 type.
 
+<!--Del-->
+### init(this @local!, Float64)
+
+```cangjie
+public exclave init(this @local!, fv: Float64)
+```
+
+Function: Encapsulates the specified Float64 instance into a `@local!` [JsonFloat](encoding_json_package_classes.md#class-jsonfloat) instance in the local region.
+
+> **Note:**
+>
+> Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+>
+> Platform not supported: OpenHarmony.
+
+Parameters:
+
+- fv: Float64 - The Float64 value used to create the [JsonFloat](encoding_json_package_classes.md#class-jsonfloat).
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.encoding.json.*
+
+main() {
+    let jf: JsonFloat @local! = JsonFloat(1.5) @local!
+    println("value=${jf.getValue()}")
+}
+```
+
+Output:
+
+```text
+value=1.500000
+```
+<!--DelEnd-->
 ### init(Int64)
 
 ```cangjie
@@ -369,6 +1839,43 @@ Parameters:
 
 - v: Int64 - The Int64 type.
 
+<!--Del-->
+### init(this @local!, Int64)
+
+```cangjie
+public exclave init(this @local!, v: Int64)
+```
+
+Function: Encapsulates the specified Int64 instance into a `@local!` [JsonFloat](encoding_json_package_classes.md#class-jsonfloat) instance in the local region.
+
+> **Note:**
+>
+> Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+>
+> Platform not supported: OpenHarmony.
+
+Parameters:
+
+- v: Int64 - The Int64 value used to create the [JsonFloat](encoding_json_package_classes.md#class-jsonfloat).
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.encoding.json.*
+
+main() {
+    let jf: JsonFloat @local! = JsonFloat(42) @local!
+    println("value=${jf.getValue()}")
+}
+```
+
+Output:
+
+```text
+value=42.000000
+```
+<!--DelEnd-->
 ### func getValue()
 
 ```cangjie
@@ -381,6 +1888,48 @@ Return Value:
 
 - Float64 - The actual value of the value.
 
+<!--Del-->
+### func getValue(this @local?)
+
+```cangjie
+public func getValue(this @local?): Float64
+```
+
+Function: Gets the actual value of value in the `@local?` [JsonFloat](encoding_json_package_classes.md#class-jsonfloat).
+
+> **Note:**
+>
+> Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+>
+> Platform not supported: OpenHarmony.
+
+Return Value:
+
+- Float64 - The actual value of value.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.encoding.json.*
+
+exclave func makeFloat(): JsonFloat @local? {
+    let f: JsonFloat @local! = JsonFloat(3.5) @local!
+    f
+}
+
+main() {
+    let jf: JsonFloat @local? = makeFloat()
+    println("value=${jf.getValue()}")
+}
+```
+
+Output:
+
+```text
+value=3.500000
+```
+<!--DelEnd-->
 ### func kind()
 
 ```cangjie
@@ -393,6 +1942,51 @@ Return Value:
 
 - [JsonKind](encoding_json_package_enums.md#enum-jsonkind) - The [JsonKind](encoding_json_package_enums.md#enum-jsonkind) type (JsFloat) to which the current [JsonFloat](encoding_json_package_classes.md#class-jsonfloat) belongs.
 
+<!--Del-->
+### func kind(this @local?)
+
+```cangjie
+public func kind(this @local?): JsonKind
+```
+
+Function: Returns the [JsonKind](encoding_json_package_enums.md#enum-jsonkind) type (JsFloat) to which the current `@local?` [JsonFloat](encoding_json_package_classes.md#class-jsonfloat) belongs.
+
+> **Note:**
+>
+> Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+>
+> Platform not supported: OpenHarmony.
+
+Return Value:
+
+- [JsonKind](encoding_json_package_enums.md#enum-jsonkind) - The [JsonKind](encoding_json_package_enums.md#enum-jsonkind) type (JsFloat) to which the current `@local?` [JsonFloat](encoding_json_package_classes.md#class-jsonfloat) belongs.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.encoding.json.*
+
+exclave func makeFloat(): JsonFloat @local? {
+    let f: JsonFloat @local! = JsonFloat(3.5) @local!
+    f
+}
+
+main() {
+    let jf: JsonFloat @local? = makeFloat()
+    match (jf.kind()) {
+        case JsonKind.JsFloat => println("kind is JsFloat")
+        case _ => println("kind is not JsFloat")
+    }
+}
+```
+
+Output:
+
+```text
+kind is JsFloat
+```
+<!--DelEnd-->
 ### func toJsonString()
 
 ```cangjie
@@ -405,6 +1999,44 @@ Return Value:
 
 - String - The converted JSON-formatted string.
 
+<!--Del-->
+### func toJsonString(this @local!)
+
+```cangjie
+public exclave func toJsonString(this @local!): String @local!
+```
+
+Function: Converts the current `@local!` [JsonFloat](encoding_json_package_classes.md#class-jsonfloat) into a JSON-formatted string (with spaces and line breaks).
+
+> **Note:**
+>
+> Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+>
+> Platform not supported: OpenHarmony.
+
+Return Value:
+
+- String @local! - The converted JSON-formatted string.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.encoding.json.*
+
+main() {
+    let jf: JsonFloat @local! = JsonFloat(3.5) @local!
+    let s: String @local! = jf.toJsonString()
+    println("s=${String(s)}")
+}
+```
+
+Output:
+
+```text
+s=3.500000
+```
+<!--DelEnd-->
 ### func toJsonStringWithoutEscaping()
 
 ```cangjie
@@ -417,6 +2049,44 @@ Return Value:
 
 - String - The converted JSON-formatted string.
 
+<!--Del-->
+### func toJsonStringWithoutEscaping(this @local!)
+
+```cangjie
+public exclave func toJsonStringWithoutEscaping(this @local!): String @local!
+```
+
+Function: Converts the current `@local!` [JsonFloat](encoding_json_package_classes.md#class-jsonfloat) into a JSON-formatted string (with spaces and line breaks).
+
+> **Note:**
+>
+> Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+>
+> Platform not supported: OpenHarmony.
+
+Return Value:
+
+- String @local! - The converted JSON-formatted string.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.encoding.json.*
+
+main() {
+    let jf: JsonFloat @local! = JsonFloat(3.5) @local!
+    let s: String @local! = jf.toJsonStringWithoutEscaping()
+    println("s=${String(s)}")
+}
+```
+
+Output:
+
+```text
+s=3.500000
+```
+<!--DelEnd-->
 ### func toString()
 
 ```cangjie
@@ -429,6 +2099,49 @@ Return Value:
 
 - String - The converted string.
 
+<!--Del-->
+### func toString(this @local?)
+
+```cangjie
+public exclave func toString(this @local?): String @local!
+```
+
+Function: Converts the current `@local?` [JsonFloat](encoding_json_package_classes.md#class-jsonfloat) into a string.
+
+> **Note:**
+>
+> Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+>
+> Platform not supported: OpenHarmony.
+
+Return Value:
+
+- String @local! - The converted `@local!` string.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.encoding.json.*
+
+exclave func makeFloat(): JsonFloat @local? {
+    let f: JsonFloat @local! = JsonFloat(3.5) @local!
+    f
+}
+
+main() {
+    let jf: JsonFloat @local? = makeFloat()
+    let s: String @local! = jf.toString()
+    println("s=${String(s)}")
+}
+```
+
+Output:
+
+```text
+s=3.500000
+```
+<!--DelEnd-->
 ### func toStringWithoutEscaping()
 
 ```cangjie
@@ -441,6 +2154,44 @@ Return Value:
 
 - String - The converted string.
 
+<!--Del-->
+### func toStringWithoutEscaping(this @local!)
+
+```cangjie
+public exclave func toStringWithoutEscaping(this @local!): String @local!
+```
+
+Function: Converts the current `@local!` [JsonFloat](encoding_json_package_classes.md#class-jsonfloat) into a string.
+
+> **Note:**
+>
+> Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+>
+> Platform not supported: OpenHarmony.
+
+Return Value:
+
+- String @local! - The converted string.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.encoding.json.*
+
+main() {
+    let jf: JsonFloat @local! = JsonFloat(3.5) @local!
+    let s: String @local! = jf.toStringWithoutEscaping()
+    println("s=${String(s)}")
+}
+```
+
+Output:
+
+```text
+s=3.500000
+```
+<!--DelEnd-->
 ## class JsonInt
 
 ```cangjie
@@ -467,6 +2218,43 @@ Parameters:
 
 - iv: Int64 - The Int64 used to create [JsonInt](encoding_json_package_classes.md#class-jsonint).
 
+<!--Del-->
+### init(this @local!, Int64)
+
+```cangjie
+public exclave init(this @local!, iv: Int64)
+```
+
+Function: Encapsulates the specified Int64 instance into a `@local!` [JsonInt](encoding_json_package_classes.md#class-jsonint) instance in the local region.
+
+> **Note:**
+>
+> Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+>
+> Platform not supported: OpenHarmony.
+
+Parameters:
+
+- iv: Int64 - The Int64 value used to create the [JsonInt](encoding_json_package_classes.md#class-jsonint).
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.encoding.json.*
+
+main() {
+    let ji: JsonInt @local! = JsonInt(123) @local!
+    println("value=${ji.getValue()}")
+}
+```
+
+Output:
+
+```text
+value=123
+```
+<!--DelEnd-->
 ### func getValue()
 
 ```cangjie
@@ -479,6 +2267,48 @@ Return Value:
 
 - Int64 - The actual value of the value.
 
+<!--Del-->
+### func getValue(this @local?)
+
+```cangjie
+public func getValue(this @local?): Int64
+```
+
+Function: Gets the actual value of value in the `@local?` [JsonInt](encoding_json_package_classes.md#class-jsonint).
+
+> **Note:**
+>
+> Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+>
+> Platform not supported: OpenHarmony.
+
+Return Value:
+
+- Int64 - The actual value of value.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.encoding.json.*
+
+exclave func makeInt(): JsonInt @local? {
+    let i: JsonInt @local! = JsonInt(123) @local!
+    i
+}
+
+main() {
+    let ji: JsonInt @local? = makeInt()
+    println("value=${ji.getValue()}")
+}
+```
+
+Output:
+
+```text
+value=123
+```
+<!--DelEnd-->
 ### func kind()
 
 ```cangjie
@@ -491,6 +2321,51 @@ Return Value:
 
 - [JsonKind](encoding_json_package_enums.md#enum-jsonkind) - The [JsonKind](encoding_json_package_enums.md#enum-jsonkind) type (JsInt) to which the current [JsonInt](encoding_json_package_classes.md#class-jsonint) belongs.
 
+<!--Del-->
+### func kind(this @local?)
+
+```cangjie
+public func kind(this @local?): JsonKind
+```
+
+Function: Returns the [JsonKind](encoding_json_package_enums.md#enum-jsonkind) type (JsInt) to which the current `@local?` [JsonInt](encoding_json_package_classes.md#class-jsonint) belongs.
+
+> **Note:**
+>
+> Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+>
+> Platform not supported: OpenHarmony.
+
+Return Value:
+
+- [JsonKind](encoding_json_package_enums.md#enum-jsonkind) - The [JsonKind](encoding_json_package_enums.md#enum-jsonkind) type (JsInt) to which the current `@local?` [JsonInt](encoding_json_package_classes.md#class-jsonint) belongs.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.encoding.json.*
+
+exclave func makeInt(): JsonInt @local? {
+    let i: JsonInt @local! = JsonInt(123) @local!
+    i
+}
+
+main() {
+    let ji: JsonInt @local? = makeInt()
+    match (ji.kind()) {
+        case JsonKind.JsInt => println("kind is JsInt")
+        case _ => println("kind is not JsInt")
+    }
+}
+```
+
+Output:
+
+```text
+kind is JsInt
+```
+<!--DelEnd-->
 ### func toJsonString()
 
 ```cangjie
@@ -503,6 +2378,44 @@ Return Value:
 
 - String - The converted JSON-formatted string.
 
+<!--Del-->
+### func toJsonString(this @local!)
+
+```cangjie
+public exclave func toJsonString(this @local!): String @local!
+```
+
+Function: Converts the current `@local!` [JsonInt](encoding_json_package_classes.md#class-jsonint) into a JSON-formatted string (with spaces and line breaks).
+
+> **Note:**
+>
+> Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+>
+> Platform not supported: OpenHarmony.
+
+Return Value:
+
+- String @local! - The converted JSON-formatted string.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.encoding.json.*
+
+main() {
+    let ji: JsonInt @local! = JsonInt(123) @local!
+    let s: String @local! = ji.toJsonString()
+    println("s=${String(s)}")
+}
+```
+
+Output:
+
+```text
+s=123
+```
+<!--DelEnd-->
 ### func toJsonStringWithoutEscaping()
 
 ```cangjie
@@ -515,6 +2428,44 @@ Return value:
 
 - String - The converted JSON-formatted string.
 
+<!--Del-->
+### func toJsonStringWithoutEscaping(this @local!)
+
+```cangjie
+public exclave func toJsonStringWithoutEscaping(this @local!): String @local!
+```
+
+Function: Converts the current `@local!` [JsonInt](encoding_json_package_classes.md#class-jsonint) into a JSON-formatted string (with spaces and line breaks).
+
+> **Note:**
+>
+> Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+>
+> Platform not supported: OpenHarmony.
+
+Return Value:
+
+- String @local! - The converted JSON-formatted string.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.encoding.json.*
+
+main() {
+    let ji: JsonInt @local! = JsonInt(123) @local!
+    let s: String @local! = ji.toJsonStringWithoutEscaping()
+    println("s=${String(s)}")
+}
+```
+
+Output:
+
+```text
+s=123
+```
+<!--DelEnd-->
 ### func toString()
 
 ```cangjie
@@ -527,6 +2478,49 @@ Return Value:
 
 - String - The converted string.
 
+<!--Del-->
+### func toString(this @local?)
+
+```cangjie
+public exclave func toString(this @local?): String @local!
+```
+
+Function: Converts the current `@local?` [JsonInt](encoding_json_package_classes.md#class-jsonint) into a string.
+
+> **Note:**
+>
+> Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+>
+> Platform not supported: OpenHarmony.
+
+Return Value:
+
+- String @local! - The converted `@local!` string.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.encoding.json.*
+
+exclave func makeInt(): JsonInt @local? {
+    let i: JsonInt @local! = JsonInt(123) @local!
+    i
+}
+
+main() {
+    let ji: JsonInt @local? = makeInt()
+    let s: String @local! = ji.toString()
+    println("s=${String(s)}")
+}
+```
+
+Output:
+
+```text
+s=123
+```
+<!--DelEnd-->
 ### func toStringWithoutEscaping()
 
 ```cangjie
@@ -539,6 +2533,44 @@ Return Value:
 
 - String - The converted string.
 
+<!--Del-->
+### func toStringWithoutEscaping(this @local!)
+
+```cangjie
+public exclave func toStringWithoutEscaping(this @local!): String @local!
+```
+
+Function: Converts the current `@local!` [JsonInt](encoding_json_package_classes.md#class-jsonint) into a string.
+
+> **Note:**
+>
+> Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+>
+> Platform not supported: OpenHarmony.
+
+Return Value:
+
+- String @local! - The converted string.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.encoding.json.*
+
+main() {
+    let ji: JsonInt @local! = JsonInt(123) @local!
+    let s: String @local! = ji.toStringWithoutEscaping()
+    println("s=${String(s)}")
+}
+```
+
+Output:
+
+```text
+s=123
+```
+<!--DelEnd-->
 ## class JsonNull
 
 ```cangjie
@@ -563,6 +2595,51 @@ Return Value:
 
 - [JsonKind](encoding_json_package_enums.md#enum-jsonkind) - The [JsonKind](encoding_json_package_enums.md#enum-jsonkind) type (JsNull) to which the current [JsonNull](encoding_json_package_classes.md#class-jsonnull) belongs.
 
+<!--Del-->
+### func kind(this @local?)
+
+```cangjie
+public func kind(this @local?): JsonKind
+```
+
+Function: Returns the [JsonKind](encoding_json_package_enums.md#enum-jsonkind) type (JsNull) to which the current `@local?` [JsonNull](encoding_json_package_classes.md#class-jsonnull) belongs.
+
+> **Note:**
+>
+> Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+>
+> Platform not supported: OpenHarmony.
+
+Return Value:
+
+- [JsonKind](encoding_json_package_enums.md#enum-jsonkind) - The [JsonKind](encoding_json_package_enums.md#enum-jsonkind) type (JsNull) to which the current `@local?` [JsonNull](encoding_json_package_classes.md#class-jsonnull) belongs.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.encoding.json.*
+
+exclave func makeNull(): JsonNull @local? {
+    let n: JsonNull @local! = JsonNull() @local!
+    n
+}
+
+main() {
+    let n: JsonNull @local? = makeNull()
+    match (n.kind()) {
+        case JsonKind.JsNull => println("kind is JsNull")
+        case _ => println("kind is not JsNull")
+    }
+}
+```
+
+Output:
+
+```text
+kind is JsNull
+```
+<!--DelEnd-->
 ### func toJsonString()
 
 ```cangjie
@@ -575,6 +2652,44 @@ Return Value:
 
 - String - The converted JSON-formatted string.
 
+<!--Del-->
+### func toJsonString(this @local!)
+
+```cangjie
+public exclave func toJsonString(this @local!): String @local!
+```
+
+Function: Converts the current `@local!` [JsonNull](encoding_json_package_classes.md#class-jsonnull) into a JSON-formatted string (with spaces and line breaks).
+
+> **Note:**
+>
+> Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+>
+> Platform not supported: OpenHarmony.
+
+Return Value:
+
+- String @local! - The converted JSON-formatted string.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.encoding.json.*
+
+main() {
+    let n: JsonNull @local! = JsonNull() @local!
+    let s: String @local! = n.toJsonString()
+    println("s=${String(s)}")
+}
+```
+
+Output:
+
+```text
+s=null
+```
+<!--DelEnd-->
 ### func toJsonStringWithoutEscaping()
 
 ```cangjie
@@ -587,6 +2702,44 @@ Return value:
 
 - String - The converted JSON-formatted string.
 
+<!--Del-->
+### func toJsonStringWithoutEscaping(this @local!)
+
+```cangjie
+public exclave func toJsonStringWithoutEscaping(this @local!): String @local!
+```
+
+Function: Converts the current `@local!` [JsonNull](encoding_json_package_classes.md#class-jsonnull) into a JSON-formatted string (with spaces and line breaks).
+
+> **Note:**
+>
+> Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+>
+> Platform not supported: OpenHarmony.
+
+Return Value:
+
+- String @local! - The converted JSON-formatted string.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.encoding.json.*
+
+main() {
+    let n: JsonNull @local! = JsonNull() @local!
+    let s: String @local! = n.toJsonStringWithoutEscaping()
+    println("s=${String(s)}")
+}
+```
+
+Output:
+
+```text
+s=null
+```
+<!--DelEnd-->
 ### func toString()
 
 ```cangjie
@@ -599,6 +2752,49 @@ Return Value:
 
 - String - The converted string.
 
+<!--Del-->
+### func toString(this @local?)
+
+```cangjie
+public exclave func toString(this @local?): String @local!
+```
+
+Function: Converts the current `@local?` [JsonNull](encoding_json_package_classes.md#class-jsonnull) into a string.
+
+> **Note:**
+>
+> Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+>
+> Platform not supported: OpenHarmony.
+
+Return Value:
+
+- String @local! - The converted `@local!` string.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.encoding.json.*
+
+exclave func makeNull(): JsonNull @local? {
+    let n: JsonNull @local! = JsonNull() @local!
+    n
+}
+
+main() {
+    let n: JsonNull @local? = makeNull()
+    let s: String @local! = n.toString()
+    println("s=${String(s)}")
+}
+```
+
+Output:
+
+```text
+s=null
+```
+<!--DelEnd-->
 ### func toStringWithoutEscaping()
 
 ```cangjie
@@ -611,6 +2807,44 @@ Return Value:
 
 - String - The converted string.
 
+<!--Del-->
+### func toStringWithoutEscaping(this @local!)
+
+```cangjie
+public exclave func toStringWithoutEscaping(this @local!): String @local!
+```
+
+Function: Converts the current `@local!` [JsonNull](encoding_json_package_classes.md#class-jsonnull) into a string.
+
+> **Note:**
+>
+> Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+>
+> Platform not supported: OpenHarmony.
+
+Return Value:
+
+- String @local! - The converted string.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.encoding.json.*
+
+main() {
+    let n: JsonNull @local! = JsonNull() @local!
+    let s: String @local! = n.toStringWithoutEscaping()
+    println("s=${String(s)}")
+}
+```
+
+Output:
+
+```text
+s=null
+```
+<!--DelEnd-->
 ## class JsonObject
 
 ```cangjie
@@ -634,6 +2868,39 @@ public init()
 
 Function: Creates an empty [JsonObject](encoding_json_package_classes.md#class-jsonobject).
 
+<!--Del-->
+### init(this @local!)
+
+```cangjie
+public exclave init(this @local!)
+```
+
+Function: Creates an empty `@local!` [JsonObject](encoding_json_package_classes.md#class-jsonobject) instance in the local region.
+
+> **Note:**
+>
+> Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+>
+> Platform not supported: OpenHarmony.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.encoding.json.*
+
+main() {
+    let jo: JsonObject @local! = JsonObject() @local!
+    println("size=${jo.size()}")
+}
+```
+
+Output:
+
+```text
+size=0
+```
+<!--DelEnd-->
 ### init(HashMap\<String, JsonValue>)
 
 ```cangjie
@@ -646,6 +2913,51 @@ Parameters:
 
 - map: HashMap\<String, [JsonValue](encoding_json_package_classes.md#class-jsonvalue)> - data.
 
+<!--Del-->
+### init(this @local!, HashMap\<String, JsonValue> @local!)
+
+```cangjie
+public exclave init(this @local!, map: HashMap<String, JsonValue> @local!)
+```
+
+Function: Constructs a `@local!` [JsonObject](encoding_json_package_classes.md#class-jsonobject) instance from the specified `@local!` HashMap in the local region.
+
+> **Note:**
+>
+> Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+>
+> Platform not supported: OpenHarmony.
+
+Parameters:
+
+- map: HashMap\<String, [JsonValue](encoding_json_package_classes.md#class-jsonvalue)> @local! - The `@local!` HashMap used to create the [JsonObject](encoding_json_package_classes.md#class-jsonobject).
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.encoding.json.*
+import std.collection.*
+
+main() {
+    let map: HashMap<String, JsonValue> @local! = HashMap<String, JsonValue>() @local!
+    let k: String @local! = "hello"
+    let v: JsonValue @local! = JsonString("world") @local!
+    map.add(k, v)
+    let jo: JsonObject @local! = JsonObject(map) @local!
+    let s: String @local! = jo.toString()
+    println("jo=${String(s)}")
+    println("size=${jo.size()}")
+}
+```
+
+Output:
+
+```text
+jo={"hello":"world"}
+size=1
+```
+<!--DelEnd-->
 ### func containsKey(String)
 
 ```cangjie
@@ -662,6 +2974,59 @@ Return Value:
 
 - Bool - Returns true if the key exists, otherwise false.
 
+<!--Del-->
+### func containsKey(this @local?, String @local?)
+
+```cangjie
+public func containsKey(this @local?, key: String @local?): Bool
+```
+
+Function: Determines whether the key exists in the `@local?` [JsonObject](encoding_json_package_classes.md#class-jsonobject).
+
+> **Note:**
+>
+> Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+>
+> Platform not supported: OpenHarmony.
+
+Parameters:
+
+- key: String @local? - The specified key.
+
+Return Value:
+
+- Bool - Returns true if the key exists, otherwise false.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.encoding.json.*
+
+exclave func makeObject(): JsonObject @local? {
+    let jo: JsonObject @local! = JsonObject() @local!
+    let k: String @local! = "hello"
+    let v: JsonValue @local! = JsonString("world") @local!
+    jo.put(k, v)
+    jo
+}
+
+main() {
+    let jo: JsonObject @local? = makeObject()
+    let k: String @local? = "hello"
+    println("contains=${jo.containsKey(k)}")
+    let missing: String @local? = "foo"
+    println("missing=${jo.containsKey(missing)}")
+}
+```
+
+Output:
+
+```text
+contains=true
+missing=false
+```
+<!--DelEnd-->
 ### func get(String)
 
 ```cangjie
@@ -678,6 +3043,110 @@ Return Value:
 
 - Option\<[JsonValue](encoding_json_package_classes.md#class-jsonvalue)> - The encapsulated form of the [JsonValue](encoding_json_package_classes.md#class-jsonvalue) corresponding to the key.
 
+<!--Del-->
+### func get(this @local!, String @local!)
+
+```cangjie
+public exclave func get(this @local!, key: String @local!): Option<JsonValue> @local!
+```
+
+Function: Gets the [JsonValue](encoding_json_package_classes.md#class-jsonvalue) corresponding to the key in the `@local!` [JsonObject](encoding_json_package_classes.md#class-jsonobject), encapsulated in an Option\<[JsonValue](encoding_json_package_classes.md#class-jsonvalue)>.
+
+> **Note:**
+>
+> Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+>
+> Platform not supported: OpenHarmony.
+
+Parameters:
+
+- key: String @local! - The specified key.
+
+Return Value:
+
+- Option\<[JsonValue](encoding_json_package_classes.md#class-jsonvalue)> @local! - The [JsonValue](encoding_json_package_classes.md#class-jsonvalue) corresponding to the key, encapsulated in an Option.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.encoding.json.*
+
+main() {
+    let jo: JsonObject @local! = JsonObject() @local!
+    let k: String @local! = "hello"
+    let v: JsonValue @local! = JsonString("world") @local!
+    jo.put(k, v)
+    match (jo.get("hello")) {
+        case Some(found) =>
+            let sv: String @local! = found.toString()
+            println("found=${String(sv)}")
+        case None => println("none")
+    }
+}
+```
+
+Output:
+
+```text
+found="world"
+```
+<!--DelEnd-->
+<!--Del-->
+### func get(this @local?, String @local?)
+
+```cangjie
+public exclave func get(this @local?, key: String @local?): Option<JsonValue> @local?
+```
+
+Function: Gets the [JsonValue](encoding_json_package_classes.md#class-jsonvalue) corresponding to the key in the `@local?` [JsonObject](encoding_json_package_classes.md#class-jsonobject), encapsulated in an Option\<[JsonValue](encoding_json_package_classes.md#class-jsonvalue)>.
+
+> **Note:**
+>
+> Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+>
+> Platform not supported: OpenHarmony.
+
+Parameters:
+
+- key: String @local? - The specified key.
+
+Return Value:
+
+- Option\<[JsonValue](encoding_json_package_classes.md#class-jsonvalue)> @local? - The [JsonValue](encoding_json_package_classes.md#class-jsonvalue) corresponding to the key, encapsulated in an Option.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.encoding.json.*
+
+exclave func makeObject(): JsonObject @local? {
+    let jo: JsonObject @local! = JsonObject() @local!
+    let k: String @local! = "hello"
+    let v: JsonValue @local! = JsonString("world") @local!
+    jo.put(k, v)
+    jo
+}
+
+main() {
+    let jo: JsonObject @local? = makeObject()
+    let k: String @local? = "hello"
+    match (jo.get(k)) {
+        case Some(found) =>
+            let sv: String @local! = found.toString()
+            println("found=${String(sv)}")
+        case None => println("none")
+    }
+}
+```
+
+Output:
+
+```text
+found="world"
+```
+<!--DelEnd-->
 ### func getFields()
 
 ```cangjie
@@ -690,6 +3159,99 @@ Return Value:
 
 - HashMap\<String, [JsonValue](encoding_json_package_classes.md#class-jsonvalue)> - The fields data of [JsonObject](encoding_json_package_classes.md#class-jsonobject).
 
+<!--Del-->
+### func getFields(this @local!)
+
+```cangjie
+public exclave func getFields(this @local!): HashMap<String, JsonValue> @local!
+```
+
+Function: Gets the fields data from the `@local!` [JsonObject](encoding_json_package_classes.md#class-jsonobject).
+
+> **Note:**
+>
+> Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+>
+> Platform not supported: OpenHarmony.
+
+Return Value:
+
+- HashMap\<String, [JsonValue](encoding_json_package_classes.md#class-jsonvalue)> @local! - The fields data of the [JsonObject](encoding_json_package_classes.md#class-jsonobject).
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.encoding.json.*
+import std.collection.*
+
+main() {
+    let jo: JsonObject @local! = JsonObject() @local!
+    let k: String @local! = "hello"
+    let v: JsonValue @local! = JsonString("world") @local!
+    jo.put(k, v)
+    let fields: HashMap<String, JsonValue> @local! = jo.getFields()
+    println("size=${jo.size()}")
+    println("empty=${fields.isEmpty()}")
+}
+```
+
+Output:
+
+```text
+size=1
+empty=false
+```
+<!--DelEnd-->
+<!--Del-->
+### func getFields(this @local?)
+
+```cangjie
+public func getFields(this @local?): HashMap<String, JsonValue> @local?
+```
+
+Function: Gets the fields data from the `@local?` [JsonObject](encoding_json_package_classes.md#class-jsonobject).
+
+> **Note:**
+>
+> Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+>
+> Platform not supported: OpenHarmony.
+
+Return Value:
+
+- HashMap\<String, [JsonValue](encoding_json_package_classes.md#class-jsonvalue)> @local? - The fields data of the [JsonObject](encoding_json_package_classes.md#class-jsonobject).
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.encoding.json.*
+import std.collection.*
+
+exclave func makeObject(): JsonObject @local? {
+    let jo: JsonObject @local! = JsonObject() @local!
+    let k: String @local! = "hello"
+    let v: JsonValue @local! = JsonString("world") @local!
+    jo.put(k, v)
+    jo
+}
+
+main() {
+    let jo: JsonObject @local? = makeObject()
+    let fields: HashMap<String, JsonValue> @local? = jo.getFields()
+    println("size=${jo.size()}")
+    println("empty=${fields.isEmpty()}")
+}
+```
+
+Output:
+
+```text
+size=1
+empty=false
+```
+<!--DelEnd-->
 ### func kind()
 
 ```cangjie
@@ -702,6 +3264,54 @@ Return Value:
 
 - [JsonKind](encoding_json_package_enums.md#enum-jsonkind) - The [JsonKind](encoding_json_package_enums.md#enum-jsonkind) type (JsObject) to which the current [JsonObject](encoding_json_package_classes.md#class-jsonobject) belongs.
 
+<!--Del-->
+### func kind(this @local?)
+
+```cangjie
+public func kind(this @local?): JsonKind
+```
+
+Function: Returns the [JsonKind](encoding_json_package_enums.md#enum-jsonkind) type (JsObject) to which the current `@local?` [JsonObject](encoding_json_package_classes.md#class-jsonobject) belongs.
+
+> **Note:**
+>
+> Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+>
+> Platform not supported: OpenHarmony.
+
+Return Value:
+
+- [JsonKind](encoding_json_package_enums.md#enum-jsonkind) - The [JsonKind](encoding_json_package_enums.md#enum-jsonkind) type (JsObject) to which the current `@local?` [JsonObject](encoding_json_package_classes.md#class-jsonobject) belongs.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.encoding.json.*
+
+exclave func makeObject(): JsonObject @local? {
+    let jo: JsonObject @local! = JsonObject() @local!
+    let k: String @local! = "hello"
+    let v: JsonValue @local! = JsonString("world") @local!
+    jo.put(k, v)
+    jo
+}
+
+main() {
+    let jo: JsonObject @local? = makeObject()
+    match (jo.kind()) {
+        case JsonKind.JsObject => println("kind is JsObject")
+        case _ => println("kind is not JsObject")
+    }
+}
+```
+
+Output:
+
+```text
+kind is JsObject
+```
+<!--DelEnd-->
 ### func put(String, JsonValue)
 
 ```cangjie
@@ -715,6 +3325,90 @@ Parameters:
 - key: String - The key to be added.
 - v: [JsonValue](encoding_json_package_classes.md#class-jsonvalue) - The [JsonValue](encoding_json_package_classes.md#class-jsonvalue) corresponding to the key.
 
+<!--Del-->
+### func put(this @local!, String @local!, JsonValue @local!)
+
+```cangjie
+public exclave func put(this @local!, key: String @local!, v: JsonValue @local!): Unit
+```
+
+Function: Adds key-[JsonValue](encoding_json_package_classes.md#class-jsonvalue) data to the `@local!` [JsonObject](encoding_json_package_classes.md#class-jsonobject).
+
+> **Note:**
+>
+> Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+>
+> Platform not supported: OpenHarmony.
+
+Parameters:
+
+- key: String @local! - The specified key.
+- v: [JsonValue](encoding_json_package_classes.md#class-jsonvalue) @local! - The [JsonValue](encoding_json_package_classes.md#class-jsonvalue) data corresponding to the key.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.encoding.json.*
+
+main() {
+    let jo: JsonObject @local! = JsonObject() @local!
+    let k: String @local! = "hello"
+    let v: JsonValue @local! = JsonString("world") @local!
+    jo.put(k, v)
+    let s: String @local! = jo.toString()
+    println("jo=${String(s)}")
+}
+```
+
+Output:
+
+```text
+jo={"hello":"world"}
+```
+<!--DelEnd-->
+<!--Del-->
+### func put(this @local!, String @local?, JsonValue @local!)
+
+```cangjie
+public exclave func put(this @local!, key: String @local?, v: JsonValue @local!): Unit
+```
+
+Function: Adds key-[JsonValue](encoding_json_package_classes.md#class-jsonvalue) data to the `@local!` [JsonObject](encoding_json_package_classes.md#class-jsonobject). The `@local?` key is deep-copied into an owned `String @local!` when stored.
+
+> **Note:**
+>
+> Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+>
+> Platform not supported: OpenHarmony.
+
+Parameters:
+
+- key: String @local? - The specified key.
+- v: [JsonValue](encoding_json_package_classes.md#class-jsonvalue) @local! - The [JsonValue](encoding_json_package_classes.md#class-jsonvalue) data corresponding to the key.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.encoding.json.*
+
+main() {
+    let jo: JsonObject @local! = JsonObject() @local!
+    let k: String @local? = "hello"
+    let v: JsonValue @local! = JsonString("world") @local!
+    jo.put(k, v)
+    let s: String @local! = jo.toString()
+    println("jo=${String(s)}")
+}
+```
+
+Output:
+
+```text
+jo={"hello":"world"}
+```
+<!--DelEnd-->
 ### func size()
 
 ```cangjie
@@ -727,6 +3421,51 @@ Return Value:
 
 - Int64 - The size of the fields in [JsonObject](encoding_json_package_classes.md#class-jsonobject).
 
+<!--Del-->
+### func size(this @local?)
+
+```cangjie
+public func size(this @local?): Int64
+```
+
+Function: Gets the number of string-[JsonValue](encoding_json_package_classes.md#class-jsonvalue) pairs stored in the fields of the `@local?` [JsonObject](encoding_json_package_classes.md#class-jsonobject).
+
+> **Note:**
+>
+> Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+>
+> Platform not supported: OpenHarmony.
+
+Return Value:
+
+- Int64 - The size of the fields in the [JsonObject](encoding_json_package_classes.md#class-jsonobject).
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.encoding.json.*
+
+exclave func makeObject(): JsonObject @local? {
+    let jo: JsonObject @local! = JsonObject() @local!
+    let k: String @local! = "hello"
+    let v: JsonValue @local! = JsonString("world") @local!
+    jo.put(k, v)
+    jo
+}
+
+main() {
+    let jo: JsonObject @local? = makeObject()
+    println("size=${jo.size()}")
+}
+```
+
+Output:
+
+```text
+size=1
+```
+<!--DelEnd-->
 ### func toJsonString()
 
 ```cangjie
@@ -739,6 +3478,105 @@ Return Value:
 
 - String - The converted JSON-formatted string.
 
+<!--Del-->
+### func toJsonString(this @local!)
+
+```cangjie
+public exclave func toJsonString(this @local!): String @local!
+```
+
+Function: Converts the current `@local!` [JsonObject](encoding_json_package_classes.md#class-jsonobject) into a JSON-formatted string (with spaces and line breaks).
+
+> **Note:**
+>
+> Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+>
+> Platform not supported: OpenHarmony.
+
+Return Value:
+
+- String @local! - The converted JSON-formatted string.
+
+Exceptions:
+
+- [JsonException](encoding_json_package_exceptions.md#class-jsonexception) - Thrown if conversion fails.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.encoding.json.*
+
+main() {
+    let jo: JsonObject @local! = JsonObject() @local!
+    let k: String @local! = "hello"
+    let v: JsonValue @local! = JsonString("world") @local!
+    jo.put(k, v)
+    let s: String @local! = jo.toJsonString()
+    println(String(s))
+}
+```
+
+Output:
+
+```text
+{
+  "hello": "world"
+}
+```
+<!--DelEnd-->
+<!--Del-->
+### func toJsonString(this @local?)
+
+```cangjie
+public func toJsonString(this @local?): String
+```
+
+Function: Converts the current `@local?` [JsonObject](encoding_json_package_classes.md#class-jsonobject) into a JSON-formatted string (with spaces and line breaks).
+
+> **Note:**
+>
+> Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+>
+> Platform not supported: OpenHarmony.
+
+Return Value:
+
+- String - The converted JSON-formatted string.
+
+Exceptions:
+
+- [JsonException](encoding_json_package_exceptions.md#class-jsonexception) - Thrown if conversion fails.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.encoding.json.*
+
+exclave func makeObject(): JsonObject @local? {
+    let jo: JsonObject @local! = JsonObject() @local!
+    let k: String @local! = "hello"
+    let v: JsonValue @local! = JsonString("world") @local!
+    jo.put(k, v)
+    jo
+}
+
+main() {
+    let jo: JsonObject @local? = makeObject()
+    let s: String = jo.toJsonString()
+    println(s)
+}
+```
+
+Output:
+
+```text
+{
+  "hello": "world"
+}
+```
+<!--DelEnd-->
 ### func toJsonString(Int64, Bool, String)
 
 ```cangjie
@@ -761,6 +3599,117 @@ Exceptions:
 
 - IllegalArgumentException - Thrown if `depth` is negative or if `indent` contains characters other than ' ' or '\t'.
 
+<!--Del-->
+### func toJsonString(this @local!, Int64, Bool, String @~local)
+
+```cangjie
+public exclave func toJsonString(this @local!, depth: Int64, bracketInNewLine!: Bool = false, indent!: String @~local = "  "): String @local!
+```
+
+Function: Converts the current `@local!` [JsonObject](encoding_json_package_classes.md#class-jsonobject) into a JSON-formatted string. This function specifies the initial indentation depth, whether to place the first bracket on a new line, and the indentation string.
+
+> **Note:**
+>
+> Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+>
+> Platform not supported: OpenHarmony.
+
+Parameters:
+
+- depth: Int64 - Indentation depth.
+- bracketInNewLine!: Bool - Whether the first bracket should be on a new line. If `true`, the first bracket will start on a new line and be indented to the specified depth.
+- indent!: String @~local - The specified indentation string. The indentation string can only consist of spaces and tabs. Defaults to two spaces.
+
+Return Value:
+
+- String @local! - The converted JSON-formatted string.
+
+Exceptions:
+
+- IllegalArgumentException - Thrown if `depth` is negative or if `indent` contains characters other than ' ' or '\t'.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.encoding.json.*
+
+main() {
+    let jo: JsonObject @local! = JsonObject() @local!
+    let k: String @local! = "hello"
+    let v: JsonValue @local! = JsonString("world") @local!
+    jo.put(k, v)
+    let s: String @local! = jo.toJsonString(1, bracketInNewLine: true, indent: " ")
+    println(String(s))
+}
+```
+
+Output:
+
+```text
+ {
+  "hello": "world"
+ }
+```
+<!--DelEnd-->
+<!--Del-->
+### func toJsonString(this @local?, Int64, Bool, String @local?)
+
+```cangjie
+public func toJsonString(this @local?, depth: Int64, bracketInNewLine!: Bool = false, indent!: String @local? = "  "): String
+```
+
+Function: Converts the current `@local?` [JsonObject](encoding_json_package_classes.md#class-jsonobject) into a JSON-formatted string. This function specifies the initial indentation depth, whether to place the first bracket on a new line, and the indentation string.
+
+> **Note:**
+>
+> Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+>
+> Platform not supported: OpenHarmony.
+
+Parameters:
+
+- depth: Int64 - Indentation depth.
+- bracketInNewLine!: Bool - Whether the first bracket should be on a new line. If `true`, the first bracket will start on a new line and be indented to the specified depth.
+- indent!: String @local? - The specified indentation string. The indentation string can only consist of spaces and tabs. Defaults to two spaces.
+
+Return Value:
+
+- String - The converted JSON-formatted string.
+
+Exceptions:
+
+- IllegalArgumentException - Thrown if `depth` is negative or if `indent` contains characters other than ' ' or '\t'.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.encoding.json.*
+
+exclave func makeObject(): JsonObject @local? {
+    let jo: JsonObject @local! = JsonObject() @local!
+    let k: String @local! = "hello"
+    let v: JsonValue @local! = JsonString("world") @local!
+    jo.put(k, v)
+    jo
+}
+
+main() {
+    let jo: JsonObject @local? = makeObject()
+    let s: String = jo.toJsonString(1, bracketInNewLine: true, indent: " ")
+    println(s)
+}
+```
+
+Output:
+
+```text
+ {
+  "hello": "world"
+ }
+```
+<!--DelEnd-->
 ### func toJsonStringWithoutEscaping()
 
 ```cangjie
@@ -773,6 +3722,105 @@ Return Value:
 
 - String - The converted JSON-formatted string.
 
+<!--Del-->
+### func toJsonStringWithoutEscaping(this @local!)
+
+```cangjie
+public exclave func toJsonStringWithoutEscaping(this @local!): String @local!
+```
+
+Function: Converts the current `@local!` [JsonObject](encoding_json_package_classes.md#class-jsonobject) into a JSON-formatted string (with spaces and line breaks) without escaping the HTML special character `&`.
+
+> **Note:**
+>
+> Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+>
+> Platform not supported: OpenHarmony.
+
+Return Value:
+
+- String @local! - The converted JSON-formatted string.
+
+Exceptions:
+
+- [JsonException](encoding_json_package_exceptions.md#class-jsonexception) - Thrown if conversion fails.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.encoding.json.*
+
+main() {
+    let jo: JsonObject @local! = JsonObject() @local!
+    let k: String @local! = "hello"
+    let v: JsonValue @local! = JsonString("world") @local!
+    jo.put(k, v)
+    let s: String @local! = jo.toJsonStringWithoutEscaping()
+    println(String(s))
+}
+```
+
+Output:
+
+```text
+{
+  "hello": "world"
+}
+```
+<!--DelEnd-->
+<!--Del-->
+### func toJsonStringWithoutEscaping(this @local?)
+
+```cangjie
+public func toJsonStringWithoutEscaping(this @local?): String
+```
+
+Function: Converts the current `@local?` [JsonObject](encoding_json_package_classes.md#class-jsonobject) into a JSON-formatted string (with spaces and line breaks) without escaping the HTML special character `&`.
+
+> **Note:**
+>
+> Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+>
+> Platform not supported: OpenHarmony.
+
+Return Value:
+
+- String - The converted JSON-formatted string.
+
+Exceptions:
+
+- [JsonException](encoding_json_package_exceptions.md#class-jsonexception) - Thrown if conversion fails.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.encoding.json.*
+
+exclave func makeObject(): JsonObject @local? {
+    let jo: JsonObject @local! = JsonObject() @local!
+    let k: String @local! = "hello"
+    let v: JsonValue @local! = JsonString("world") @local!
+    jo.put(k, v)
+    jo
+}
+
+main() {
+    let jo: JsonObject @local? = makeObject()
+    let s: String = jo.toJsonStringWithoutEscaping()
+    println(s)
+}
+```
+
+Output:
+
+```text
+{
+  "hello": "world"
+}
+```
+<!--DelEnd-->
 ### func toJsonStringWithoutEscaping(Int64, Bool, String)
 
 ```cangjie
@@ -795,6 +3843,117 @@ Exceptions:
 
 - IllegalArgumentException - Throws an exception if the depth is negative or if the indentation string contains characters other than ' ' and '\t'.
 
+<!--Del-->
+### func toJsonStringWithoutEscaping(this @local!, Int64, Bool, String @~local)
+
+```cangjie
+public exclave func toJsonStringWithoutEscaping(this @local!, depth: Int64, bracketInNewLine!: Bool = false, indent!: String @~local = "  "): String @local!
+```
+
+Function: Converts the current `@local!` [JsonObject](encoding_json_package_classes.md#class-jsonobject) into a JSON-formatted string. This function specifies the initial indentation depth, whether to place the first bracket on a new line, and the indentation string, without escaping the HTML special character `&`.
+
+> **Note:**
+>
+> Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+>
+> Platform not supported: OpenHarmony.
+
+Parameters:
+
+- depth: Int64 - Indentation depth.
+- bracketInNewLine!: Bool - Whether the first bracket should be on a new line. If `true`, the first bracket will start on a new line and be indented to the specified depth.
+- indent!: String @~local - The specified indentation string. The indentation string can only consist of spaces and tabs. Defaults to two spaces.
+
+Return Value:
+
+- String @local! - The converted JSON-formatted string.
+
+Exceptions:
+
+- IllegalArgumentException - Thrown if `depth` is negative or if `indent` contains characters other than ' ' or '\t'.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.encoding.json.*
+
+main() {
+    let jo: JsonObject @local! = JsonObject() @local!
+    let k: String @local! = "hello"
+    let v: JsonValue @local! = JsonString("world") @local!
+    jo.put(k, v)
+    let s: String @local! = jo.toJsonStringWithoutEscaping(1, bracketInNewLine: true, indent: " ")
+    println(String(s))
+}
+```
+
+Output:
+
+```text
+ {
+  "hello": "world"
+ }
+```
+<!--DelEnd-->
+<!--Del-->
+### func toJsonStringWithoutEscaping(this @local?, Int64, Bool, String @local?)
+
+```cangjie
+public func toJsonStringWithoutEscaping(this @local?, depth: Int64, bracketInNewLine!: Bool = false, indent!: String @local? = "  "): String
+```
+
+Function: Converts the current `@local?` [JsonObject](encoding_json_package_classes.md#class-jsonobject) into a JSON-formatted string. This function specifies the initial indentation depth, whether to place the first bracket on a new line, and the indentation string, without escaping the HTML special character `&`.
+
+> **Note:**
+>
+> Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+>
+> Platform not supported: OpenHarmony.
+
+Parameters:
+
+- depth: Int64 - Indentation depth.
+- bracketInNewLine!: Bool - Whether the first bracket should be on a new line. If `true`, the first bracket will start on a new line and be indented to the specified depth.
+- indent!: String @local? - The specified indentation string. The indentation string can only consist of spaces and tabs. Defaults to two spaces.
+
+Return Value:
+
+- String - The converted JSON-formatted string.
+
+Exceptions:
+
+- IllegalArgumentException - Thrown if `depth` is negative or if `indent` contains characters other than ' ' or '\t'.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.encoding.json.*
+
+exclave func makeObject(): JsonObject @local? {
+    let jo: JsonObject @local! = JsonObject() @local!
+    let k: String @local! = "hello"
+    let v: JsonValue @local! = JsonString("world") @local!
+    jo.put(k, v)
+    jo
+}
+
+main() {
+    let jo: JsonObject @local? = makeObject()
+    let s: String = jo.toJsonStringWithoutEscaping(1, bracketInNewLine: true, indent: " ")
+    println(s)
+}
+```
+
+Output:
+
+```text
+ {
+  "hello": "world"
+ }
+```
+<!--DelEnd-->
 ### func toString()
 
 ```cangjie
@@ -807,6 +3966,56 @@ Return Value:
 
 - String - The converted string.
 
+<!--Del-->
+### func toString(this @local?)
+
+```cangjie
+public exclave func toString(this @local?): String @local!
+```
+
+Function: Converts the current `@local?` [JsonObject](encoding_json_package_classes.md#class-jsonobject) into a string.
+
+> **Note:**
+>
+> Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+>
+> Platform not supported: OpenHarmony.
+
+Return Value:
+
+- String @local! - The converted `@local!` string.
+
+Exceptions:
+
+- [JsonException](encoding_json_package_exceptions.md#class-jsonexception) - Thrown if conversion fails.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.encoding.json.*
+
+exclave func makeObject(): JsonObject @local? {
+    let jo: JsonObject @local! = JsonObject() @local!
+    let k: String @local! = "hello"
+    let v: JsonValue @local! = JsonString("world") @local!
+    jo.put(k, v)
+    jo
+}
+
+main() {
+    let jo: JsonObject @local? = makeObject()
+    let s: String @local! = jo.toString()
+    println("jo=${String(s)}")
+}
+```
+
+Output:
+
+```text
+jo={"hello":"world"}
+```
+<!--DelEnd-->
 ### func toStringWithoutEscaping()
 
 ```cangjie
@@ -819,6 +4028,101 @@ Return value:
 
 - String - The converted string.
 
+<!--Del-->
+### func toStringWithoutEscaping(this @local!)
+
+```cangjie
+public exclave func toStringWithoutEscaping(this @local!): String @local!
+```
+
+Function: Converts the current `@local!` [JsonObject](encoding_json_package_classes.md#class-jsonobject) into a string without escaping the HTML special character `&`.
+
+> **Note:**
+>
+> Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+>
+> Platform not supported: OpenHarmony.
+
+Return Value:
+
+- String @local! - The converted string.
+
+Exceptions:
+
+- [JsonException](encoding_json_package_exceptions.md#class-jsonexception) - Thrown if conversion fails.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.encoding.json.*
+
+main() {
+    let jo: JsonObject @local! = JsonObject() @local!
+    let k: String @local! = "hello"
+    let v: JsonValue @local! = JsonString("world") @local!
+    jo.put(k, v)
+    let s: String @local! = jo.toStringWithoutEscaping()
+    println("jo=${String(s)}")
+}
+```
+
+Output:
+
+```text
+jo={"hello":"world"}
+```
+<!--DelEnd-->
+<!--Del-->
+### func toStringWithoutEscaping(this @local?)
+
+```cangjie
+public func toStringWithoutEscaping(this @local?): String
+```
+
+Function: Converts the current `@local?` [JsonObject](encoding_json_package_classes.md#class-jsonobject) into a string without escaping the HTML special character `&`.
+
+> **Note:**
+>
+> Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+>
+> Platform not supported: OpenHarmony.
+
+Return Value:
+
+- String - The converted string.
+
+Exceptions:
+
+- [JsonException](encoding_json_package_exceptions.md#class-jsonexception) - Thrown if conversion fails.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.encoding.json.*
+
+exclave func makeObject(): JsonObject @local? {
+    let jo: JsonObject @local! = JsonObject() @local!
+    let k: String @local! = "hello"
+    let v: JsonValue @local! = JsonString("world") @local!
+    jo.put(k, v)
+    jo
+}
+
+main() {
+    let jo: JsonObject @local? = makeObject()
+    let s: String = jo.toStringWithoutEscaping()
+    println("jo=${s}")
+}
+```
+
+Output:
+
+```text
+jo={"hello":"world"}
+```
+<!--DelEnd-->
 ### operator func [](String)
 
 ```cangjie
@@ -839,6 +4143,113 @@ Exceptions:
 
 - [JsonException](encoding_json_package_exceptions.md#class-jsonexception) - Thrown if the `key` is not a valid key in the [JsonObject](encoding_json_package_classes.md#class-jsonobject).
 
+<!--Del-->
+### operator func \[](this @local!, String @local!)
+
+```cangjie
+public exclave operator func [](this @local!, key: String @local!): JsonValue @local!
+```
+
+Function: Gets the [JsonValue](encoding_json_package_classes.md#class-jsonvalue) corresponding to the key in the `@local!` [JsonObject](encoding_json_package_classes.md#class-jsonobject).
+
+> **Note:**
+>
+> Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+>
+> Platform not supported: OpenHarmony.
+
+Parameters:
+
+- key: String @local! - The specified key.
+
+Return Value:
+
+- [JsonValue](encoding_json_package_classes.md#class-jsonvalue) @local! - The [JsonValue](encoding_json_package_classes.md#class-jsonvalue) corresponding to the key.
+
+Exceptions:
+
+- [JsonException](encoding_json_package_exceptions.md#class-jsonexception) - Thrown if the key does not exist in the [JsonObject](encoding_json_package_classes.md#class-jsonobject).
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.encoding.json.*
+
+main() {
+    let jo: JsonObject @local! = JsonObject() @local!
+    let k: String @local! = "hello"
+    let v: JsonValue @local! = JsonString("world") @local!
+    jo.put(k, v)
+    let v2: JsonValue @local! = jo[k]
+    let js: JsonString @local! = v2.asString()
+    let sv: String @local! = js.getValue()
+    println("value=${String(sv)}")
+}
+```
+
+Output:
+
+```text
+value=world
+```
+<!--DelEnd-->
+<!--Del-->
+### operator func \[](this @local?, String @local?)
+
+```cangjie
+public exclave operator func [](this @local?, key: String @local?): JsonValue @local?
+```
+
+Function: Gets the [JsonValue](encoding_json_package_classes.md#class-jsonvalue) corresponding to the key in the `@local?` [JsonObject](encoding_json_package_classes.md#class-jsonobject).
+
+> **Note:**
+>
+> Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+>
+> Platform not supported: OpenHarmony.
+
+Parameters:
+
+- key: String @local? - The specified key.
+
+Return Value:
+
+- [JsonValue](encoding_json_package_classes.md#class-jsonvalue) @local? - The [JsonValue](encoding_json_package_classes.md#class-jsonvalue) corresponding to the key.
+
+Exceptions:
+
+- [JsonException](encoding_json_package_exceptions.md#class-jsonexception) - Thrown if the key does not exist in the [JsonObject](encoding_json_package_classes.md#class-jsonobject).
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.encoding.json.*
+
+exclave func makeObject(): JsonObject @local? {
+    let jo: JsonObject @local! = JsonObject() @local!
+    let k: String @local! = "hello"
+    let v: JsonValue @local! = JsonString("world") @local!
+    jo.put(k, v)
+    jo
+}
+
+main() {
+    let jo: JsonObject @local? = makeObject()
+    let k: String @local? = "hello"
+    let v: JsonValue @local? = jo[k]
+    let s: String @local! = v.toString()
+    println("value=${String(s)}")
+}
+```
+
+Output:
+
+```text
+value="world"
+```
+<!--DelEnd-->
 ## class JsonString
 
 ```cangjie
@@ -865,6 +4276,45 @@ Parameters:
 
 - sv: String - The String type.
 
+<!--Del-->
+### init(this @local!, String @local!)
+
+```cangjie
+public exclave init(this @local!, sv: String @local!)
+```
+
+Function: Constructs a `@local!` [JsonString](encoding_json_package_classes.md#class-jsonstring) instance from the specified `@local!` string in the local region.
+
+> **Note:**
+>
+> Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+>
+> Platform not supported: OpenHarmony.
+
+Parameters:
+
+- sv: String @local! - The `@local!` string used to create the [JsonString](encoding_json_package_classes.md#class-jsonstring).
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.encoding.json.*
+
+main() {
+    let s: String @local! = "hello"
+    let js: JsonString @local! = JsonString(s) @local!
+    let v: String @local! = js.getValue()
+    println("value=${String(v)}")
+}
+```
+
+Output:
+
+```text
+value=hello
+```
+<!--DelEnd-->
 ### func getValue()
 
 ```cangjie
@@ -877,6 +4327,89 @@ Return Value:
 
 - String - The actual value of `value`.
 
+<!--Del-->
+### func getValue(this @local!)
+
+```cangjie
+public exclave func getValue(this @local!): String @local!
+```
+
+Function: Gets the actual value of value in the `@local!` [JsonString](encoding_json_package_classes.md#class-jsonstring), returned as a `@local!` string.
+
+> **Note:**
+>
+> Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+>
+> Platform not supported: OpenHarmony.
+
+Return Value:
+
+- String @local! - The actual value of value.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.encoding.json.*
+
+main() {
+    let s: String @local! = "hello"
+    let js: JsonString @local! = JsonString(s) @local!
+    let v: String @local! = js.getValue()
+    println("value=${String(v)}")
+}
+```
+
+Output:
+
+```text
+value=hello
+```
+<!--DelEnd-->
+<!--Del-->
+### func getValue(this @local?)
+
+```cangjie
+public exclave func getValue(this @local?): String @local?
+```
+
+Function: Gets the actual value of value in the `@local?` [JsonString](encoding_json_package_classes.md#class-jsonstring), returned as a `@local?` string.
+
+> **Note:**
+>
+> Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+>
+> Platform not supported: OpenHarmony.
+
+Return Value:
+
+- String @local? - The actual value of value.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.encoding.json.*
+
+exclave func makeStr(): JsonString @local? {
+    let s: String @local! = "hello"
+    let js: JsonString @local! = JsonString(s) @local!
+    js
+}
+
+main() {
+    let js: JsonString @local? = makeStr()
+    let v: String @local? = js.getValue()
+    println("value=${String(v)}")
+}
+```
+
+Output:
+
+```text
+value=hello
+```
+<!--DelEnd-->
 ### func kind()
 
 ```cangjie
@@ -889,6 +4422,52 @@ Return Value:
 
 - [JsonKind](encoding_json_package_enums.md#enum-jsonkind) - The [JsonKind](encoding_json_package_enums.md#enum-jsonkind) type (JsString) of the current [JsonString](encoding_json_package_classes.md#class-jsonstring).
 
+<!--Del-->
+### func kind(this @local?)
+
+```cangjie
+public func kind(this @local?): JsonKind
+```
+
+Function: Returns the [JsonKind](encoding_json_package_enums.md#enum-jsonkind) type (JsString) to which the current `@local?` [JsonString](encoding_json_package_classes.md#class-jsonstring) belongs.
+
+> **Note:**
+>
+> Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+>
+> Platform not supported: OpenHarmony.
+
+Return Value:
+
+- [JsonKind](encoding_json_package_enums.md#enum-jsonkind) - The [JsonKind](encoding_json_package_enums.md#enum-jsonkind) type (JsString) to which the current `@local?` [JsonString](encoding_json_package_classes.md#class-jsonstring) belongs.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.encoding.json.*
+
+exclave func makeStr(): JsonString @local? {
+    let s: String @local! = "hello"
+    let js: JsonString @local! = JsonString(s) @local!
+    js
+}
+
+main() {
+    let js: JsonString @local? = makeStr()
+    match (js.kind()) {
+        case JsonKind.JsString => println("kind is JsString")
+        case _ => println("kind is not JsString")
+    }
+}
+```
+
+Output:
+
+```text
+kind is JsString
+```
+<!--DelEnd-->
 ### func toJsonString()
 
 ```cangjie
@@ -901,6 +4480,45 @@ Return Value:
 
 - String - The converted JSON-formatted string.
 
+<!--Del-->
+### func toJsonString(this @local!)
+
+```cangjie
+public exclave func toJsonString(this @local!): String @local!
+```
+
+Function: Converts the current `@local!` [JsonString](encoding_json_package_classes.md#class-jsonstring) into a JSON-formatted string (with spaces and line breaks).
+
+> **Note:**
+>
+> Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+>
+> Platform not supported: OpenHarmony.
+
+Return Value:
+
+- String @local! - The converted JSON-formatted string.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.encoding.json.*
+
+main() {
+    let s: String @local! = "hello"
+    let js: JsonString @local! = JsonString(s) @local!
+    let r: String @local! = js.toJsonString()
+    println("s=${String(r)}")
+}
+```
+
+Output:
+
+```text
+s="hello"
+```
+<!--DelEnd-->
 ### func toJsonStringWithoutEscaping()
 
 ```cangjie
@@ -913,6 +4531,45 @@ Return Value:
 
 - String - The converted JSON-formatted string.
 
+<!--Del-->
+### func toJsonStringWithoutEscaping(this @local!)
+
+```cangjie
+public exclave func toJsonStringWithoutEscaping(this @local!): String @local!
+```
+
+Function: Converts the current `@local!` [JsonString](encoding_json_package_classes.md#class-jsonstring) into a JSON-formatted string (with spaces and line breaks) without escaping the HTML special character `&`.
+
+> **Note:**
+>
+> Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+>
+> Platform not supported: OpenHarmony.
+
+Return Value:
+
+- String @local! - The converted JSON-formatted string.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.encoding.json.*
+
+main() {
+    let s: String @local! = "hello"
+    let js: JsonString @local! = JsonString(s) @local!
+    let r: String @local! = js.toJsonStringWithoutEscaping()
+    println("s=${String(r)}")
+}
+```
+
+Output:
+
+```text
+s="hello"
+```
+<!--DelEnd-->
 ### func toString()
 
 ```cangjie
@@ -925,6 +4582,50 @@ Return Value:
 
 - String - The converted string.
 
+<!--Del-->
+### func toString(this @local?)
+
+```cangjie
+public exclave func toString(this @local?): String @local!
+```
+
+Function: Converts the current `@local?` [JsonString](encoding_json_package_classes.md#class-jsonstring) into a string.
+
+> **Note:**
+>
+> Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+>
+> Platform not supported: OpenHarmony.
+
+Return Value:
+
+- String @local! - The converted `@local!` string.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.encoding.json.*
+
+exclave func makeStr(): JsonString @local? {
+    let s: String @local! = "hello"
+    let js: JsonString @local! = JsonString(s) @local!
+    js
+}
+
+main() {
+    let js: JsonString @local? = makeStr()
+    let s: String @local! = js.toString()
+    println("s=${String(s)}")
+}
+```
+
+Output:
+
+```text
+s="hello"
+```
+<!--DelEnd-->
 ### func toStringWithoutEscaping()
 
 ```cangjie
@@ -937,6 +4638,45 @@ Return Value:
 
 - String - The converted string.
 
+<!--Del-->
+### func toStringWithoutEscaping(this @local!)
+
+```cangjie
+public exclave func toStringWithoutEscaping(this @local!): String @local!
+```
+
+Function: Converts the current `@local!` [JsonString](encoding_json_package_classes.md#class-jsonstring) into a string without escaping the HTML special character `&`.
+
+> **Note:**
+>
+> Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+>
+> Platform not supported: OpenHarmony.
+
+Return Value:
+
+- String @local! - The converted string.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.encoding.json.*
+
+main() {
+    let s: String @local! = "hello"
+    let js: JsonString @local! = JsonString(s) @local!
+    let r: String @local! = js.toStringWithoutEscaping()
+    println("s=${String(r)}")
+}
+```
+
+Output:
+
+```text
+s="hello"
+```
+<!--DelEnd-->
 ## class JsonValue
 
 ```cangjie
@@ -1011,6 +4751,105 @@ Output:
 "/"
 ```
 
+<!--Del-->
+### static func fromStr(String @local!)
+
+```cangjie
+public exclave static func fromStr(s: String @local!): JsonValue @local!
+```
+
+Function: Parses `@local!` string data into a [JsonValue](encoding_json_package_classes.md#class-jsonvalue).
+
+> **Note:**
+>
+> Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+>
+> Platform not supported: OpenHarmony.
+
+Parameters:
+
+- s: String @local! - The input string.
+
+Return Value:
+
+- [JsonValue](encoding_json_package_classes.md#class-jsonvalue) @local! - The parsed [JsonValue](encoding_json_package_classes.md#class-jsonvalue).
+
+Exceptions:
+
+- [JsonException](encoding_json_package_exceptions.md#class-jsonexception) - Thrown if memory allocation fails or string parsing fails.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.encoding.json.*
+
+main() {
+    let s: String @local! = ##"[1, 2, 3]"##
+    let v: JsonValue @local! = JsonValue.fromStr(s)
+    let a: JsonArray @local! = v.asArray()
+    println("size=${a.size()}")
+}
+```
+
+Output:
+
+```text
+size=3
+```
+<!--DelEnd-->
+<!--Del-->
+### static func fromStr(String @local?)
+
+```cangjie
+public exclave static func fromStr(s: String @local?): JsonValue @local!
+```
+
+Function: Parses `@local?` string data into a [JsonValue](encoding_json_package_classes.md#class-jsonvalue). The string is first deep-copied into a `@local!` string before parsing.
+
+> **Note:**
+>
+> Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+>
+> Platform not supported: OpenHarmony.
+
+Parameters:
+
+- s: String @local? - The input string.
+
+Return Value:
+
+- [JsonValue](encoding_json_package_classes.md#class-jsonvalue) @local! - The parsed [JsonValue](encoding_json_package_classes.md#class-jsonvalue).
+
+Exceptions:
+
+- [JsonException](encoding_json_package_exceptions.md#class-jsonexception) - Thrown if memory allocation fails or string parsing fails.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.encoding.json.*
+
+exclave func makeStr(): String @local? {
+    let s: String @local! = ##"123"##
+    s
+}
+
+main() {
+    let s: String @local? = makeStr()
+    let v: JsonValue @local! = JsonValue.fromStr(s)
+    let ji: JsonInt @local! = v.asInt()
+    println("value=${ji.getValue()}")
+}
+```
+
+Output:
+
+```text
+value=123
+```
+<!--DelEnd-->
 ### func asArray()
 
 ```cangjie
@@ -1027,6 +4866,53 @@ Exceptions:
 
 - [JsonException](encoding_json_package_exceptions.md#class-jsonexception) - Thrown if conversion fails.
 
+<!--Del-->
+### func asArray(this @local!)
+
+```cangjie
+public exclave func asArray(this @local!): JsonArray @local!
+```
+
+Function: Converts the current `@local!` [JsonValue](encoding_json_package_classes.md#class-jsonvalue) into a [JsonArray](encoding_json_package_classes.md#class-jsonarray).
+
+> **Note:**
+>
+> Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+>
+> Platform not supported: OpenHarmony.
+
+Return Value:
+
+- [JsonArray](encoding_json_package_classes.md#class-jsonarray) @local! - The converted [JsonArray](encoding_json_package_classes.md#class-jsonarray).
+
+Exceptions:
+
+- [JsonException](encoding_json_package_exceptions.md#class-jsonexception) - Thrown if conversion fails.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.encoding.json.*
+
+main() {
+    let ja: JsonArray @local! = JsonArray() @local!
+    let v1: JsonValue @local! = JsonInt(1) @local!
+    let v2: JsonValue @local! = JsonInt(2) @local!
+    ja.add(v1)
+    ja.add(v2)
+    let v: JsonValue @local! = ja
+    let a: JsonArray @local! = v.asArray()
+    println("size=${a.size()}")
+}
+```
+
+Output:
+
+```text
+size=2
+```
+<!--DelEnd-->
 ### func asBool()
 
 ```cangjie
@@ -1043,6 +4929,48 @@ Exceptions:
 
 - [JsonException](encoding_json_package_exceptions.md#class-jsonexception) - Thrown if conversion fails.
 
+<!--Del-->
+### func asBool(this @local!)
+
+```cangjie
+public exclave func asBool(this @local!): JsonBool @local!
+```
+
+Function: Converts the current `@local!` [JsonValue](encoding_json_package_classes.md#class-jsonvalue) into a [JsonBool](encoding_json_package_classes.md#class-jsonbool).
+
+> **Note:**
+>
+> Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+>
+> Platform not supported: OpenHarmony.
+
+Return Value:
+
+- [JsonBool](encoding_json_package_classes.md#class-jsonbool) @local! - The converted [JsonBool](encoding_json_package_classes.md#class-jsonbool).
+
+Exceptions:
+
+- [JsonException](encoding_json_package_exceptions.md#class-jsonexception) - Thrown if conversion fails.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.encoding.json.*
+
+main() {
+    let v: JsonValue @local! = JsonBool(true) @local!
+    let jb: JsonBool @local! = v.asBool()
+    println("value=${jb.getValue()}")
+}
+```
+
+Output:
+
+```text
+value=true
+```
+<!--DelEnd-->
 ### func asFloat()
 
 ```cangjie
@@ -1059,6 +4987,48 @@ Exceptions:
 
 - [JsonException](encoding_json_package_exceptions.md#class-jsonexception) - Thrown if conversion fails.
 
+<!--Del-->
+### func asFloat(this @local!)
+
+```cangjie
+public exclave func asFloat(this @local!): JsonFloat @local!
+```
+
+Function: Converts the current `@local!` [JsonValue](encoding_json_package_classes.md#class-jsonvalue) into a [JsonFloat](encoding_json_package_classes.md#class-jsonfloat). If the current object is a [JsonInt](encoding_json_package_classes.md#class-jsonint), the [JsonFloat](encoding_json_package_classes.md#class-jsonfloat) is constructed from its integer value.
+
+> **Note:**
+>
+> Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+>
+> Platform not supported: OpenHarmony.
+
+Return Value:
+
+- [JsonFloat](encoding_json_package_classes.md#class-jsonfloat) @local! - The converted [JsonFloat](encoding_json_package_classes.md#class-jsonfloat).
+
+Exceptions:
+
+- [JsonException](encoding_json_package_exceptions.md#class-jsonexception) - Thrown if conversion fails.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.encoding.json.*
+
+main() {
+    let v: JsonValue @local! = JsonInt(42) @local!
+    let jf: JsonFloat @local! = v.asFloat()
+    println("value=${jf.getValue()}")
+}
+```
+
+Output:
+
+```text
+value=42.000000
+```
+<!--DelEnd-->
 ### func asInt()
 
 ```cangjie
@@ -1075,6 +5045,48 @@ Exceptions:
 
 - [JsonException](encoding_json_package_exceptions.md#class-jsonexception) - Thrown if conversion fails.
 
+<!--Del-->
+### func asInt(this @local!)
+
+```cangjie
+public exclave func asInt(this @local!): JsonInt @local!
+```
+
+Function: Converts the current `@local!` [JsonValue](encoding_json_package_classes.md#class-jsonvalue) into a [JsonInt](encoding_json_package_classes.md#class-jsonint).
+
+> **Note:**
+>
+> Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+>
+> Platform not supported: OpenHarmony.
+
+Return Value:
+
+- [JsonInt](encoding_json_package_classes.md#class-jsonint) @local! - The converted [JsonInt](encoding_json_package_classes.md#class-jsonint).
+
+Exceptions:
+
+- [JsonException](encoding_json_package_exceptions.md#class-jsonexception) - Thrown if conversion fails.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.encoding.json.*
+
+main() {
+    let v: JsonValue @local! = JsonInt(123) @local!
+    let ji: JsonInt @local! = v.asInt()
+    println("value=${ji.getValue()}")
+}
+```
+
+Output:
+
+```text
+value=123
+```
+<!--DelEnd-->
 ### func asNull()
 
 ```cangjie
@@ -1091,6 +5103,49 @@ Exceptions:
 
 - [JsonException](encoding_json_package_exceptions.md#class-jsonexception) - Thrown if conversion fails.
 
+<!--Del-->
+### func asNull(this @local!)
+
+```cangjie
+public exclave func asNull(this @local!): JsonNull @local!
+```
+
+Function: Converts the current `@local!` [JsonValue](encoding_json_package_classes.md#class-jsonvalue) into a [JsonNull](encoding_json_package_classes.md#class-jsonnull).
+
+> **Note:**
+>
+> Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+>
+> Platform not supported: OpenHarmony.
+
+Return Value:
+
+- [JsonNull](encoding_json_package_classes.md#class-jsonnull) @local! - The converted [JsonNull](encoding_json_package_classes.md#class-jsonnull).
+
+Exceptions:
+
+- [JsonException](encoding_json_package_exceptions.md#class-jsonexception) - Thrown if conversion fails.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.encoding.json.*
+
+main() {
+    let v: JsonValue @local! = JsonNull() @local!
+    let n: JsonNull @local! = v.asNull()
+    let s: String @local! = n.toString()
+    println("n=${String(s)}")
+}
+```
+
+Output:
+
+```text
+n=null
+```
+<!--DelEnd-->
 ### func asObject()
 
 ```cangjie
@@ -1107,6 +5162,52 @@ Exceptions:
 
 - [JsonException](encoding_json_package_exceptions.md#class-jsonexception) - Thrown if conversion fails.
 
+<!--Del-->
+### func asObject(this @local!)
+
+```cangjie
+public exclave func asObject(this @local!): JsonObject @local!
+```
+
+Function: Converts the current `@local!` [JsonValue](encoding_json_package_classes.md#class-jsonvalue) into a [JsonObject](encoding_json_package_classes.md#class-jsonobject).
+
+> **Note:**
+>
+> Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+>
+> Platform not supported: OpenHarmony.
+
+Return Value:
+
+- [JsonObject](encoding_json_package_classes.md#class-jsonobject) @local! - The converted [JsonObject](encoding_json_package_classes.md#class-jsonobject).
+
+Exceptions:
+
+- [JsonException](encoding_json_package_exceptions.md#class-jsonexception) - Thrown if conversion fails.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.encoding.json.*
+
+main() {
+    let jo: JsonObject @local! = JsonObject() @local!
+    let k: String @local! = "hello"
+    let v: JsonValue @local! = JsonString("world") @local!
+    jo.put(k, v)
+    let v2: JsonValue @local! = jo
+    let o: JsonObject @local! = v2.asObject()
+    println("size=${o.size()}")
+}
+```
+
+Output:
+
+```text
+size=1
+```
+<!--DelEnd-->
 ### func asString()
 
 ```cangjie
@@ -1123,6 +5224,50 @@ Exceptions:
 
 - [JsonException](encoding_json_package_exceptions.md#class-jsonexception) - Thrown if conversion fails.
 
+<!--Del-->
+### func asString(this @local!)
+
+```cangjie
+public exclave func asString(this @local!): JsonString @local!
+```
+
+Function: Converts the current `@local!` [JsonValue](encoding_json_package_classes.md#class-jsonvalue) into a [JsonString](encoding_json_package_classes.md#class-jsonstring).
+
+> **Note:**
+>
+> Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+>
+> Platform not supported: OpenHarmony.
+
+Return Value:
+
+- [JsonString](encoding_json_package_classes.md#class-jsonstring) @local! - The converted [JsonString](encoding_json_package_classes.md#class-jsonstring).
+
+Exceptions:
+
+- [JsonException](encoding_json_package_exceptions.md#class-jsonexception) - Thrown if conversion fails.
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.encoding.json.*
+
+main() {
+    let s: String @local! = "hello"
+    let v: JsonValue @local! = JsonString(s) @local!
+    let js: JsonString @local! = v.asString()
+    let sv: String @local! = js.getValue()
+    println("value=${String(sv)}")
+}
+```
+
+Output:
+
+```text
+value=hello
+```
+<!--DelEnd-->
 ### func kind()
 
 ```cangjie
@@ -1135,6 +5280,55 @@ Return Value:
 
 - [JsonKind](encoding_json_package_enums.md#enum-jsonkind) - The [JsonKind](encoding_json_package_enums.md#enum-jsonkind) type of the current [JsonValue](encoding_json_package_classes.md#class-jsonvalue).
 
+<!--Del-->
+### func kind(this @local?)
+
+```cangjie
+public open func kind(this @local?): JsonKind
+```
+
+Function: Returns the [JsonKind](encoding_json_package_enums.md#enum-jsonkind) type to which the current `@local?` [JsonValue](encoding_json_package_classes.md#class-jsonvalue) belongs.
+
+> **Note:**
+>
+> Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+>
+> Platform not supported: OpenHarmony.
+
+Return Value:
+
+- [JsonKind](encoding_json_package_enums.md#enum-jsonkind) - The [JsonKind](encoding_json_package_enums.md#enum-jsonkind) type to which the current `@local?` [JsonValue](encoding_json_package_classes.md#class-jsonvalue) belongs.
+
+Exceptions:
+
+- UnimplementedException - Thrown if the call is bound to the default [JsonValue](encoding_json_package_classes.md#class-jsonvalue) implementation (the concrete subclass does not override the local version of this method).
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.encoding.json.*
+
+exclave func makeValue(): JsonValue @local? {
+    let v: JsonValue @local! = JsonInt(123) @local!
+    v
+}
+
+main() {
+    let v: JsonValue @local? = makeValue()
+    match (v.kind()) {
+        case JsonKind.JsInt => println("kind is JsInt")
+        case _ => println("kind is not JsInt")
+    }
+}
+```
+
+Output:
+
+```text
+kind is JsInt
+```
+<!--DelEnd-->
 ### func toJsonString()
 
 ```cangjie
@@ -1147,6 +5341,48 @@ Return Value:
 
 - String - The converted JSON-formatted string.
 
+<!--Del-->
+### func toJsonString(this @local!)
+
+```cangjie
+public open func toJsonString(this @local!): String @local!
+```
+
+Function: Converts the current `@local!` [JsonValue](encoding_json_package_classes.md#class-jsonvalue) into a JSON-formatted string (with spaces and line breaks).
+
+> **Note:**
+>
+> Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+>
+> Platform not supported: OpenHarmony.
+
+Return Value:
+
+- String @local! - The converted JSON-formatted string.
+
+Exceptions:
+
+- UnimplementedException - Thrown if the call is bound to the default [JsonValue](encoding_json_package_classes.md#class-jsonvalue) implementation (the concrete subclass does not override the local version of this method).
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.encoding.json.*
+
+main() {
+    let v: JsonValue @local! = JsonInt(123) @local!
+    let s: String @local! = v.toJsonString()
+    println("s=${String(s)}")
+}
+```
+
+Output:
+
+```text
+s=123
+```
+<!--DelEnd-->
 ### func toJsonStringWithoutEscaping()
 
 ```cangjie
@@ -1159,6 +5395,48 @@ Return Value:
 
 - String - The converted JSON-formatted string.
 
+<!--Del-->
+### func toJsonStringWithoutEscaping(this @local!)
+
+```cangjie
+public open func toJsonStringWithoutEscaping(this @local!): String @local!
+```
+
+Function: Converts the current `@local!` [JsonValue](encoding_json_package_classes.md#class-jsonvalue) into a JSON-formatted string (with spaces and line breaks) without escaping the HTML special character `&`.
+
+> **Note:**
+>
+> Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+>
+> Platform not supported: OpenHarmony.
+
+Return Value:
+
+- String @local! - The converted JSON-formatted string.
+
+Exceptions:
+
+- UnimplementedException - Thrown if the call is bound to the default [JsonValue](encoding_json_package_classes.md#class-jsonvalue) implementation (the concrete subclass does not override the local version of this method).
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.encoding.json.*
+
+main() {
+    let v: JsonValue @local! = JsonInt(123) @local!
+    let s: String @local! = v.toJsonStringWithoutEscaping()
+    println("s=${String(s)}")
+}
+```
+
+Output:
+
+```text
+s=123
+```
+<!--DelEnd-->
 ### func toString()
 
 ```cangjie
@@ -1171,6 +5449,53 @@ Return Value:
 
 - String - The converted string.
 
+<!--Del-->
+### func toString(this @local?)
+
+```cangjie
+public open func toString(this @local?): String @local!
+```
+
+Function: Converts the current `@local?` [JsonValue](encoding_json_package_classes.md#class-jsonvalue) into a string.
+
+> **Note:**
+>
+> Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+>
+> Platform not supported: OpenHarmony.
+
+Return Value:
+
+- String @local! - The converted `@local!` string.
+
+Exceptions:
+
+- UnimplementedException - Thrown if the call is bound to the default [JsonValue](encoding_json_package_classes.md#class-jsonvalue) implementation (the concrete subclass does not override the local version of this method).
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.encoding.json.*
+
+exclave func makeValue(): JsonValue @local? {
+    let v: JsonValue @local! = JsonInt(123) @local!
+    v
+}
+
+main() {
+    let v: JsonValue @local? = makeValue()
+    let s: String @local! = v.toString()
+    println("s=${String(s)}")
+}
+```
+
+Output:
+
+```text
+s=123
+```
+<!--DelEnd-->
 ### func toStringWithoutEscaping()
 
 ```cangjie
@@ -1182,3 +5507,46 @@ Function: Converts [JsonValue](encoding_json_package_classes.md#class-jsonvalue)
 Return Value:
 
 - String - The converted string.
+
+<!--Del-->
+### func toStringWithoutEscaping(this @local!)
+
+```cangjie
+public open func toStringWithoutEscaping(this @local!): String @local!
+```
+
+Function: Converts the current `@local!` [JsonValue](encoding_json_package_classes.md#class-jsonvalue) into a string without escaping the HTML special character `&`.
+
+> **Note:**
+>
+> Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+>
+> Platform not supported: OpenHarmony.
+
+Return Value:
+
+- String @local! - The converted string.
+
+Exceptions:
+
+- UnimplementedException - Thrown if the call is bound to the default [JsonValue](encoding_json_package_classes.md#class-jsonvalue) implementation (the concrete subclass does not override the local version of this method).
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.encoding.json.*
+
+main() {
+    let v: JsonValue @local! = JsonInt(123) @local!
+    let s: String @local! = v.toStringWithoutEscaping()
+    println("s=${String(s)}")
+}
+```
+
+Output:
+
+```text
+s=123
+```
+<!--DelEnd-->
