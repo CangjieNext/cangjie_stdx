@@ -1,0 +1,20 @@
+build/common/modules/AddCangjieSource.cmake
+  h_7fa24ec5a32f2d 252-254
+cjpm.toml
+  h_7fa24ec5a32f2d 21,59,63,67,71,75
+src/stdx/encoding/json/json_object.cj
+  h_7fa24ec5a32f2d 167-176,287-296,407-416,543-552,667-689,833-850,1129-1148,1333,1365
+src/stdx/encoding/json/json_value.cj
+  h_7fa24ec5a32f2d 124-146
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "80578bf2f9c71dbfa520213a0af935cbd7e1f0f9",
+  "prompts": {},
+  "humans": {
+    "h_7fa24ec5a32f2d": {
+      "author": "kkkkkkkbbbbbbb <songjian59@huawei.com>"
+    }
+  }
+}
