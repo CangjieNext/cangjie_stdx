@@ -10969,6 +10969,35 @@ main() {
 prop_funcType: () -> Unit
 ```
 
+### prop genericDecl
+
+```cangjie
+public prop genericDecl: ?Function
+```
+
+功能：当前函数实例化所依据的泛型函数声明。此属性只读；未关联泛型函数声明时返回 `None`。
+
+类型: ?[Function](#class-function)
+
+示例:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    println("prop_genericDecl: ${f.genericDecl.isNone()}")
+}
+```
+
+运行结果:
+
+```text
+prop_genericDecl: true
+```
+
 ### prop genericTypeParams
 
 ```cangjie

@@ -986,6 +986,17 @@ public class Function <: GlobalValue & Equatable<Function> {
     }
 
     /**
+     * Gets the generic declaration from which this function was instantiated.
+     * Returns `None` when no generic declaration is associated with this function.
+     * @type { ?Function }
+     */
+    public prop genericDecl: ?Function {
+        get() {
+            return _genericDecl
+        }
+    }
+
+    /**
      * Gets the `genericTypeParams` property.
      * @type { Array<GenericType> }
      */

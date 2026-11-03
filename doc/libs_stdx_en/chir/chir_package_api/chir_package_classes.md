@@ -10969,6 +10969,35 @@ Output:
 prop_funcType: () -> Unit
 ```
 
+### prop genericDecl
+
+```cangjie
+public prop genericDecl: ?Function
+```
+
+Function: The generic declaration from which this function was instantiated. This property is read-only and returns `None` when no generic declaration is associated with the function.
+
+Type: ?[Function](#class-function)
+
+Example:
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    println("prop_genericDecl: ${f.genericDecl.isNone()}")
+}
+```
+
+Output:
+
+```text
+prop_genericDecl: true
+```
+
 ### prop genericTypeParams
 
 ```cangjie
