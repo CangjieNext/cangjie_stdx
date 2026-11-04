@@ -39,9 +39,8 @@ Function: Creates an empty `@local!` [JsonArray](encoding_json_package_classes.m
 
 > **Note:**
 >
-> Experimental API, for test verification only; the specification and implementation may still change; use with caution.
->
-> Platform not supported: OpenHarmony.
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
 
 Example:
 
@@ -84,9 +83,8 @@ Function: Constructs a `@local!` [JsonArray](encoding_json_package_classes.md#cl
 
 > **Note:**
 >
-> Experimental API, for test verification only; the specification and implementation may still change; use with caution.
->
-> Platform not supported: OpenHarmony.
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
 
 Parameters:
 
@@ -139,9 +137,8 @@ Function: Constructs a `@local!` [JsonArray](encoding_json_package_classes.md#cl
 
 > **Note:**
 >
-> Experimental API, for test verification only; the specification and implementation may still change; use with caution.
->
-> Platform not supported: OpenHarmony.
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
 
 Parameters:
 
@@ -201,9 +198,8 @@ Function: Adds [JsonValue](encoding_json_package_classes.md#class-jsonvalue) dat
 
 > **Note:**
 >
-> Experimental API, for test verification only; the specification and implementation may still change; use with caution.
->
-> Platform not supported: OpenHarmony.
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
 
 Parameters:
 
@@ -265,9 +261,8 @@ Function: Gets the [JsonValue](encoding_json_package_classes.md#class-jsonvalue)
 
 > **Note:**
 >
-> Experimental API, for test verification only; the specification and implementation may still change; use with caution.
->
-> Platform not supported: OpenHarmony.
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
 
 Parameters:
 
@@ -315,9 +310,8 @@ Function: Gets the [JsonValue](encoding_json_package_classes.md#class-jsonvalue)
 
 > **Note:**
 >
-> Experimental API, for test verification only; the specification and implementation may still change; use with caution.
->
-> Platform not supported: OpenHarmony.
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
 
 Parameters:
 
@@ -382,9 +376,8 @@ Function: Gets the items data from the `@local!` [JsonArray](encoding_json_packa
 
 > **Note:**
 >
-> Experimental API, for test verification only; the specification and implementation may still change; use with caution.
->
-> Platform not supported: OpenHarmony.
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
 
 Return Value:
 
@@ -425,9 +418,8 @@ Function: Gets the items data from the `@local?` [JsonArray](encoding_json_packa
 
 > **Note:**
 >
-> Experimental API, for test verification only; the specification and implementation may still change; use with caution.
->
-> Platform not supported: OpenHarmony.
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
 
 Return Value:
 
@@ -485,9 +477,8 @@ Function: Returns the [JsonKind](encoding_json_package_enums.md#enum-jsonkind) t
 
 > **Note:**
 >
-> Experimental API, for test verification only; the specification and implementation may still change; use with caution.
->
-> Platform not supported: OpenHarmony.
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
 
 Return Value:
 
@@ -546,9 +537,8 @@ Function: Gets the number of [JsonValue](encoding_json_package_classes.md#class-
 
 > **Note:**
 >
-> Experimental API, for test verification only; the specification and implementation may still change; use with caution.
->
-> Platform not supported: OpenHarmony.
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
 
 Return Value:
 
@@ -604,9 +594,8 @@ Function: Converts the current `@local!` [JsonArray](encoding_json_package_class
 
 > **Note:**
 >
-> Experimental API, for test verification only; the specification and implementation may still change; use with caution.
->
-> Platform not supported: OpenHarmony.
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
 
 Return Value:
 
@@ -653,9 +642,8 @@ Function: Converts the current `@local?` [JsonArray](encoding_json_package_class
 
 > **Note:**
 >
-> Experimental API, for test verification only; the specification and implementation may still change; use with caution.
->
-> Platform not supported: OpenHarmony.
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
 
 Return Value:
 
@@ -729,9 +717,8 @@ Function: Converts the current `@local!` [JsonArray](encoding_json_package_class
 
 > **Note:**
 >
-> Experimental API, for test verification only; the specification and implementation may still change; use with caution.
->
-> Platform not supported: OpenHarmony.
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
 
 Parameters:
 
@@ -784,9 +771,8 @@ Function: Converts the current `@local?` [JsonArray](encoding_json_package_class
 
 > **Note:**
 >
-> Experimental API, for test verification only; the specification and implementation may still change; use with caution.
->
-> Platform not supported: OpenHarmony.
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
 
 Parameters:
 
@@ -856,9 +842,8 @@ Function: Converts the current `@local!` [JsonArray](encoding_json_package_class
 
 > **Note:**
 >
-> Experimental API, for test verification only; the specification and implementation may still change; use with caution.
->
-> Platform not supported: OpenHarmony.
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
 
 Return Value:
 
@@ -905,9 +890,8 @@ Function: Converts the current `@local?` [JsonArray](encoding_json_package_class
 
 > **Note:**
 >
-> Experimental API, for test verification only; the specification and implementation may still change; use with caution.
->
-> Platform not supported: OpenHarmony.
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
 
 Return Value:
 
@@ -981,9 +965,8 @@ Function: Converts the current `@local!` [JsonArray](encoding_json_package_class
 
 > **Note:**
 >
-> Experimental API, for test verification only; the specification and implementation may still change; use with caution.
->
-> Platform not supported: OpenHarmony.
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
 
 Parameters:
 
@@ -1036,9 +1019,8 @@ Function: Converts the current `@local?` [JsonArray](encoding_json_package_class
 
 > **Note:**
 >
-> Experimental API, for test verification only; the specification and implementation may still change; use with caution.
->
-> Platform not supported: OpenHarmony.
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
 
 Parameters:
 
@@ -1108,9 +1090,8 @@ Function: Converts the current `@local?` [JsonArray](encoding_json_package_class
 
 > **Note:**
 >
-> Experimental API, for test verification only; the specification and implementation may still change; use with caution.
->
-> Platform not supported: OpenHarmony.
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
 
 Return Value:
 
@@ -1171,9 +1152,8 @@ Function: Converts the current `@local!` [JsonArray](encoding_json_package_class
 
 > **Note:**
 >
-> Experimental API, for test verification only; the specification and implementation may still change; use with caution.
->
-> Platform not supported: OpenHarmony.
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
 
 Return Value:
 
@@ -1217,9 +1197,8 @@ Function: Converts the current `@local?` [JsonArray](encoding_json_package_class
 
 > **Note:**
 >
-> Experimental API, for test verification only; the specification and implementation may still change; use with caution.
->
-> Platform not supported: OpenHarmony.
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
 
 Return Value:
 
@@ -1288,9 +1267,8 @@ Function: Gets the [JsonValue](encoding_json_package_classes.md#class-jsonvalue)
 
 > **Note:**
 >
-> Experimental API, for test verification only; the specification and implementation may still change; use with caution.
->
-> Platform not supported: OpenHarmony.
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
 
 Parameters:
 
@@ -1339,9 +1317,8 @@ Function: Gets the [JsonValue](encoding_json_package_classes.md#class-jsonvalue)
 
 > **Note:**
 >
-> Experimental API, for test verification only; the specification and implementation may still change; use with caution.
->
-> Platform not supported: OpenHarmony.
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
 
 Parameters:
 
@@ -1421,9 +1398,8 @@ Function: Encapsulates the specified Bool instance into a `@local!` [JsonBool](e
 
 > **Note:**
 >
-> Experimental API, for test verification only; the specification and implementation may still change; use with caution.
->
-> Platform not supported: OpenHarmony.
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
 
 Parameters:
 
@@ -1470,9 +1446,8 @@ Function: Gets the actual value of value in the `@local?` [JsonBool](encoding_js
 
 > **Note:**
 >
-> Experimental API, for test verification only; the specification and implementation may still change; use with caution.
->
-> Platform not supported: OpenHarmony.
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
 
 Return Value:
 
@@ -1524,9 +1499,8 @@ Function: Returns the [JsonKind](encoding_json_package_enums.md#enum-jsonkind) t
 
 > **Note:**
 >
-> Experimental API, for test verification only; the specification and implementation may still change; use with caution.
->
-> Platform not supported: OpenHarmony.
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
 
 Return Value:
 
@@ -1581,9 +1555,8 @@ Function: Converts the current `@local!` [JsonBool](encoding_json_package_classe
 
 > **Note:**
 >
-> Experimental API, for test verification only; the specification and implementation may still change; use with caution.
->
-> Platform not supported: OpenHarmony.
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
 
 Return Value:
 
@@ -1631,9 +1604,8 @@ Function: Converts the current `@local!` [JsonBool](encoding_json_package_classe
 
 > **Note:**
 >
-> Experimental API, for test verification only; the specification and implementation may still change; use with caution.
->
-> Platform not supported: OpenHarmony.
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
 
 Return Value:
 
@@ -1681,9 +1653,8 @@ Function: Converts the current `@local?` [JsonBool](encoding_json_package_classe
 
 > **Note:**
 >
-> Experimental API, for test verification only; the specification and implementation may still change; use with caution.
->
-> Platform not supported: OpenHarmony.
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
 
 Return Value:
 
@@ -1736,9 +1707,8 @@ Function: Converts the current `@local!` [JsonBool](encoding_json_package_classe
 
 > **Note:**
 >
-> Experimental API, for test verification only; the specification and implementation may still change; use with caution.
->
-> Platform not supported: OpenHarmony.
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
 
 Return Value:
 
@@ -1801,9 +1771,8 @@ Function: Encapsulates the specified Float64 instance into a `@local!` [JsonFloa
 
 > **Note:**
 >
-> Experimental API, for test verification only; the specification and implementation may still change; use with caution.
->
-> Platform not supported: OpenHarmony.
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
 
 Parameters:
 
@@ -1850,9 +1819,8 @@ Function: Encapsulates the specified Int64 instance into a `@local!` [JsonFloat]
 
 > **Note:**
 >
-> Experimental API, for test verification only; the specification and implementation may still change; use with caution.
->
-> Platform not supported: OpenHarmony.
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
 
 Parameters:
 
@@ -1899,9 +1867,8 @@ Function: Gets the actual value of value in the `@local?` [JsonFloat](encoding_j
 
 > **Note:**
 >
-> Experimental API, for test verification only; the specification and implementation may still change; use with caution.
->
-> Platform not supported: OpenHarmony.
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
 
 Return Value:
 
@@ -1953,9 +1920,8 @@ Function: Returns the [JsonKind](encoding_json_package_enums.md#enum-jsonkind) t
 
 > **Note:**
 >
-> Experimental API, for test verification only; the specification and implementation may still change; use with caution.
->
-> Platform not supported: OpenHarmony.
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
 
 Return Value:
 
@@ -2010,9 +1976,8 @@ Function: Converts the current `@local!` [JsonFloat](encoding_json_package_class
 
 > **Note:**
 >
-> Experimental API, for test verification only; the specification and implementation may still change; use with caution.
->
-> Platform not supported: OpenHarmony.
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
 
 Return Value:
 
@@ -2060,9 +2025,8 @@ Function: Converts the current `@local!` [JsonFloat](encoding_json_package_class
 
 > **Note:**
 >
-> Experimental API, for test verification only; the specification and implementation may still change; use with caution.
->
-> Platform not supported: OpenHarmony.
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
 
 Return Value:
 
@@ -2110,9 +2074,8 @@ Function: Converts the current `@local?` [JsonFloat](encoding_json_package_class
 
 > **Note:**
 >
-> Experimental API, for test verification only; the specification and implementation may still change; use with caution.
->
-> Platform not supported: OpenHarmony.
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
 
 Return Value:
 
@@ -2165,9 +2128,8 @@ Function: Converts the current `@local!` [JsonFloat](encoding_json_package_class
 
 > **Note:**
 >
-> Experimental API, for test verification only; the specification and implementation may still change; use with caution.
->
-> Platform not supported: OpenHarmony.
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
 
 Return Value:
 
@@ -2229,9 +2191,8 @@ Function: Encapsulates the specified Int64 instance into a `@local!` [JsonInt](e
 
 > **Note:**
 >
-> Experimental API, for test verification only; the specification and implementation may still change; use with caution.
->
-> Platform not supported: OpenHarmony.
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
 
 Parameters:
 
@@ -2278,9 +2239,8 @@ Function: Gets the actual value of value in the `@local?` [JsonInt](encoding_jso
 
 > **Note:**
 >
-> Experimental API, for test verification only; the specification and implementation may still change; use with caution.
->
-> Platform not supported: OpenHarmony.
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
 
 Return Value:
 
@@ -2332,9 +2292,8 @@ Function: Returns the [JsonKind](encoding_json_package_enums.md#enum-jsonkind) t
 
 > **Note:**
 >
-> Experimental API, for test verification only; the specification and implementation may still change; use with caution.
->
-> Platform not supported: OpenHarmony.
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
 
 Return Value:
 
@@ -2389,9 +2348,8 @@ Function: Converts the current `@local!` [JsonInt](encoding_json_package_classes
 
 > **Note:**
 >
-> Experimental API, for test verification only; the specification and implementation may still change; use with caution.
->
-> Platform not supported: OpenHarmony.
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
 
 Return Value:
 
@@ -2439,9 +2397,8 @@ Function: Converts the current `@local!` [JsonInt](encoding_json_package_classes
 
 > **Note:**
 >
-> Experimental API, for test verification only; the specification and implementation may still change; use with caution.
->
-> Platform not supported: OpenHarmony.
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
 
 Return Value:
 
@@ -2489,9 +2446,8 @@ Function: Converts the current `@local?` [JsonInt](encoding_json_package_classes
 
 > **Note:**
 >
-> Experimental API, for test verification only; the specification and implementation may still change; use with caution.
->
-> Platform not supported: OpenHarmony.
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
 
 Return Value:
 
@@ -2544,9 +2500,8 @@ Function: Converts the current `@local!` [JsonInt](encoding_json_package_classes
 
 > **Note:**
 >
-> Experimental API, for test verification only; the specification and implementation may still change; use with caution.
->
-> Platform not supported: OpenHarmony.
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
 
 Return Value:
 
@@ -2606,9 +2561,8 @@ Function: Returns the [JsonKind](encoding_json_package_enums.md#enum-jsonkind) t
 
 > **Note:**
 >
-> Experimental API, for test verification only; the specification and implementation may still change; use with caution.
->
-> Platform not supported: OpenHarmony.
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
 
 Return Value:
 
@@ -2663,9 +2617,8 @@ Function: Converts the current `@local!` [JsonNull](encoding_json_package_classe
 
 > **Note:**
 >
-> Experimental API, for test verification only; the specification and implementation may still change; use with caution.
->
-> Platform not supported: OpenHarmony.
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
 
 Return Value:
 
@@ -2713,9 +2666,8 @@ Function: Converts the current `@local!` [JsonNull](encoding_json_package_classe
 
 > **Note:**
 >
-> Experimental API, for test verification only; the specification and implementation may still change; use with caution.
->
-> Platform not supported: OpenHarmony.
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
 
 Return Value:
 
@@ -2763,9 +2715,8 @@ Function: Converts the current `@local?` [JsonNull](encoding_json_package_classe
 
 > **Note:**
 >
-> Experimental API, for test verification only; the specification and implementation may still change; use with caution.
->
-> Platform not supported: OpenHarmony.
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
 
 Return Value:
 
@@ -2818,9 +2769,8 @@ Function: Converts the current `@local!` [JsonNull](encoding_json_package_classe
 
 > **Note:**
 >
-> Experimental API, for test verification only; the specification and implementation may still change; use with caution.
->
-> Platform not supported: OpenHarmony.
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
 
 Return Value:
 
@@ -2879,9 +2829,8 @@ Function: Creates an empty `@local!` [JsonObject](encoding_json_package_classes.
 
 > **Note:**
 >
-> Experimental API, for test verification only; the specification and implementation may still change; use with caution.
->
-> Platform not supported: OpenHarmony.
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
 
 Example:
 
@@ -2924,9 +2873,8 @@ Function: Constructs a `@local!` [JsonObject](encoding_json_package_classes.md#c
 
 > **Note:**
 >
-> Experimental API, for test verification only; the specification and implementation may still change; use with caution.
->
-> Platform not supported: OpenHarmony.
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
 
 Parameters:
 
@@ -2985,9 +2933,8 @@ Function: Determines whether the key exists in the `@local?` [JsonObject](encodi
 
 > **Note:**
 >
-> Experimental API, for test verification only; the specification and implementation may still change; use with caution.
->
-> Platform not supported: OpenHarmony.
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
 
 Parameters:
 
@@ -3054,9 +3001,8 @@ Function: Gets the [JsonValue](encoding_json_package_classes.md#class-jsonvalue)
 
 > **Note:**
 >
-> Experimental API, for test verification only; the specification and implementation may still change; use with caution.
->
-> Platform not supported: OpenHarmony.
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
 
 Parameters:
 
@@ -3103,9 +3049,8 @@ Function: Gets the [JsonValue](encoding_json_package_classes.md#class-jsonvalue)
 
 > **Note:**
 >
-> Experimental API, for test verification only; the specification and implementation may still change; use with caution.
->
-> Platform not supported: OpenHarmony.
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
 
 Parameters:
 
@@ -3170,9 +3115,8 @@ Function: Gets the fields data from the `@local!` [JsonObject](encoding_json_pac
 
 > **Note:**
 >
-> Experimental API, for test verification only; the specification and implementation may still change; use with caution.
->
-> Platform not supported: OpenHarmony.
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
 
 Return Value:
 
@@ -3214,9 +3158,8 @@ Function: Gets the fields data from the `@local?` [JsonObject](encoding_json_pac
 
 > **Note:**
 >
-> Experimental API, for test verification only; the specification and implementation may still change; use with caution.
->
-> Platform not supported: OpenHarmony.
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
 
 Return Value:
 
@@ -3275,9 +3218,8 @@ Function: Returns the [JsonKind](encoding_json_package_enums.md#enum-jsonkind) t
 
 > **Note:**
 >
-> Experimental API, for test verification only; the specification and implementation may still change; use with caution.
->
-> Platform not supported: OpenHarmony.
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
 
 Return Value:
 
@@ -3336,9 +3278,8 @@ Function: Adds key-[JsonValue](encoding_json_package_classes.md#class-jsonvalue)
 
 > **Note:**
 >
-> Experimental API, for test verification only; the specification and implementation may still change; use with caution.
->
-> Platform not supported: OpenHarmony.
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
 
 Parameters:
 
@@ -3378,9 +3319,8 @@ Function: Adds key-[JsonValue](encoding_json_package_classes.md#class-jsonvalue)
 
 > **Note:**
 >
-> Experimental API, for test verification only; the specification and implementation may still change; use with caution.
->
-> Platform not supported: OpenHarmony.
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
 
 Parameters:
 
@@ -3432,9 +3372,8 @@ Function: Gets the number of string-[JsonValue](encoding_json_package_classes.md
 
 > **Note:**
 >
-> Experimental API, for test verification only; the specification and implementation may still change; use with caution.
->
-> Platform not supported: OpenHarmony.
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
 
 Return Value:
 
@@ -3489,9 +3428,8 @@ Function: Converts the current `@local!` [JsonObject](encoding_json_package_clas
 
 > **Note:**
 >
-> Experimental API, for test verification only; the specification and implementation may still change; use with caution.
->
-> Platform not supported: OpenHarmony.
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
 
 Return Value:
 
@@ -3536,9 +3474,8 @@ Function: Converts the current `@local?` [JsonObject](encoding_json_package_clas
 
 > **Note:**
 >
-> Experimental API, for test verification only; the specification and implementation may still change; use with caution.
->
-> Platform not supported: OpenHarmony.
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
 
 Return Value:
 
@@ -3610,9 +3547,8 @@ Function: Converts the current `@local!` [JsonObject](encoding_json_package_clas
 
 > **Note:**
 >
-> Experimental API, for test verification only; the specification and implementation may still change; use with caution.
->
-> Platform not supported: OpenHarmony.
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
 
 Parameters:
 
@@ -3663,9 +3599,8 @@ Function: Converts the current `@local?` [JsonObject](encoding_json_package_clas
 
 > **Note:**
 >
-> Experimental API, for test verification only; the specification and implementation may still change; use with caution.
->
-> Platform not supported: OpenHarmony.
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
 
 Parameters:
 
@@ -3733,9 +3668,8 @@ Function: Converts the current `@local!` [JsonObject](encoding_json_package_clas
 
 > **Note:**
 >
-> Experimental API, for test verification only; the specification and implementation may still change; use with caution.
->
-> Platform not supported: OpenHarmony.
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
 
 Return Value:
 
@@ -3780,9 +3714,8 @@ Function: Converts the current `@local?` [JsonObject](encoding_json_package_clas
 
 > **Note:**
 >
-> Experimental API, for test verification only; the specification and implementation may still change; use with caution.
->
-> Platform not supported: OpenHarmony.
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
 
 Return Value:
 
@@ -3854,9 +3787,8 @@ Function: Converts the current `@local!` [JsonObject](encoding_json_package_clas
 
 > **Note:**
 >
-> Experimental API, for test verification only; the specification and implementation may still change; use with caution.
->
-> Platform not supported: OpenHarmony.
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
 
 Parameters:
 
@@ -3907,9 +3839,8 @@ Function: Converts the current `@local?` [JsonObject](encoding_json_package_clas
 
 > **Note:**
 >
-> Experimental API, for test verification only; the specification and implementation may still change; use with caution.
->
-> Platform not supported: OpenHarmony.
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
 
 Parameters:
 
@@ -3977,9 +3908,8 @@ Function: Converts the current `@local?` [JsonObject](encoding_json_package_clas
 
 > **Note:**
 >
-> Experimental API, for test verification only; the specification and implementation may still change; use with caution.
->
-> Platform not supported: OpenHarmony.
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
 
 Return Value:
 
@@ -4039,9 +3969,8 @@ Function: Converts the current `@local!` [JsonObject](encoding_json_package_clas
 
 > **Note:**
 >
-> Experimental API, for test verification only; the specification and implementation may still change; use with caution.
->
-> Platform not supported: OpenHarmony.
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
 
 Return Value:
 
@@ -4084,9 +4013,8 @@ Function: Converts the current `@local?` [JsonObject](encoding_json_package_clas
 
 > **Note:**
 >
-> Experimental API, for test verification only; the specification and implementation may still change; use with caution.
->
-> Platform not supported: OpenHarmony.
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
 
 Return Value:
 
@@ -4154,9 +4082,8 @@ Function: Gets the [JsonValue](encoding_json_package_classes.md#class-jsonvalue)
 
 > **Note:**
 >
-> Experimental API, for test verification only; the specification and implementation may still change; use with caution.
->
-> Platform not supported: OpenHarmony.
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
 
 Parameters:
 
@@ -4205,9 +4132,8 @@ Function: Gets the [JsonValue](encoding_json_package_classes.md#class-jsonvalue)
 
 > **Note:**
 >
-> Experimental API, for test verification only; the specification and implementation may still change; use with caution.
->
-> Platform not supported: OpenHarmony.
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
 
 Parameters:
 
@@ -4287,9 +4213,8 @@ Function: Constructs a `@local!` [JsonString](encoding_json_package_classes.md#c
 
 > **Note:**
 >
-> Experimental API, for test verification only; the specification and implementation may still change; use with caution.
->
-> Platform not supported: OpenHarmony.
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
 
 Parameters:
 
@@ -4338,9 +4263,8 @@ Function: Gets the actual value of value in the `@local!` [JsonString](encoding_
 
 > **Note:**
 >
-> Experimental API, for test verification only; the specification and implementation may still change; use with caution.
->
-> Platform not supported: OpenHarmony.
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
 
 Return Value:
 
@@ -4377,9 +4301,8 @@ Function: Gets the actual value of value in the `@local?` [JsonString](encoding_
 
 > **Note:**
 >
-> Experimental API, for test verification only; the specification and implementation may still change; use with caution.
->
-> Platform not supported: OpenHarmony.
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
 
 Return Value:
 
@@ -4433,9 +4356,8 @@ Function: Returns the [JsonKind](encoding_json_package_enums.md#enum-jsonkind) t
 
 > **Note:**
 >
-> Experimental API, for test verification only; the specification and implementation may still change; use with caution.
->
-> Platform not supported: OpenHarmony.
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
 
 Return Value:
 
@@ -4491,9 +4413,8 @@ Function: Converts the current `@local!` [JsonString](encoding_json_package_clas
 
 > **Note:**
 >
-> Experimental API, for test verification only; the specification and implementation may still change; use with caution.
->
-> Platform not supported: OpenHarmony.
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
 
 Return Value:
 
@@ -4542,9 +4463,8 @@ Function: Converts the current `@local!` [JsonString](encoding_json_package_clas
 
 > **Note:**
 >
-> Experimental API, for test verification only; the specification and implementation may still change; use with caution.
->
-> Platform not supported: OpenHarmony.
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
 
 Return Value:
 
@@ -4593,9 +4513,8 @@ Function: Converts the current `@local?` [JsonString](encoding_json_package_clas
 
 > **Note:**
 >
-> Experimental API, for test verification only; the specification and implementation may still change; use with caution.
->
-> Platform not supported: OpenHarmony.
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
 
 Return Value:
 
@@ -4649,9 +4568,8 @@ Function: Converts the current `@local!` [JsonString](encoding_json_package_clas
 
 > **Note:**
 >
-> Experimental API, for test verification only; the specification and implementation may still change; use with caution.
->
-> Platform not supported: OpenHarmony.
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
 
 Return Value:
 
@@ -4762,9 +4680,8 @@ Function: Parses `@local!` string data into a [JsonValue](encoding_json_package_
 
 > **Note:**
 >
-> Experimental API, for test verification only; the specification and implementation may still change; use with caution.
->
-> Platform not supported: OpenHarmony.
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
 
 Parameters:
 
@@ -4809,9 +4726,8 @@ Function: Parses `@local?` string data into a [JsonValue](encoding_json_package_
 
 > **Note:**
 >
-> Experimental API, for test verification only; the specification and implementation may still change; use with caution.
->
-> Platform not supported: OpenHarmony.
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
 
 Parameters:
 
@@ -4877,9 +4793,8 @@ Function: Converts the current `@local!` [JsonValue](encoding_json_package_class
 
 > **Note:**
 >
-> Experimental API, for test verification only; the specification and implementation may still change; use with caution.
->
-> Platform not supported: OpenHarmony.
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
 
 Return Value:
 
@@ -4940,9 +4855,8 @@ Function: Converts the current `@local!` [JsonValue](encoding_json_package_class
 
 > **Note:**
 >
-> Experimental API, for test verification only; the specification and implementation may still change; use with caution.
->
-> Platform not supported: OpenHarmony.
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
 
 Return Value:
 
@@ -4998,9 +4912,8 @@ Function: Converts the current `@local!` [JsonValue](encoding_json_package_class
 
 > **Note:**
 >
-> Experimental API, for test verification only; the specification and implementation may still change; use with caution.
->
-> Platform not supported: OpenHarmony.
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
 
 Return Value:
 
@@ -5056,9 +4969,8 @@ Function: Converts the current `@local!` [JsonValue](encoding_json_package_class
 
 > **Note:**
 >
-> Experimental API, for test verification only; the specification and implementation may still change; use with caution.
->
-> Platform not supported: OpenHarmony.
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
 
 Return Value:
 
@@ -5114,9 +5026,8 @@ Function: Converts the current `@local!` [JsonValue](encoding_json_package_class
 
 > **Note:**
 >
-> Experimental API, for test verification only; the specification and implementation may still change; use with caution.
->
-> Platform not supported: OpenHarmony.
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
 
 Return Value:
 
@@ -5173,9 +5084,8 @@ Function: Converts the current `@local!` [JsonValue](encoding_json_package_class
 
 > **Note:**
 >
-> Experimental API, for test verification only; the specification and implementation may still change; use with caution.
->
-> Platform not supported: OpenHarmony.
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
 
 Return Value:
 
@@ -5235,9 +5145,8 @@ Function: Converts the current `@local!` [JsonValue](encoding_json_package_class
 
 > **Note:**
 >
-> Experimental API, for test verification only; the specification and implementation may still change; use with caution.
->
-> Platform not supported: OpenHarmony.
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
 
 Return Value:
 
@@ -5291,9 +5200,8 @@ Function: Returns the [JsonKind](encoding_json_package_enums.md#enum-jsonkind) t
 
 > **Note:**
 >
-> Experimental API, for test verification only; the specification and implementation may still change; use with caution.
->
-> Platform not supported: OpenHarmony.
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
 
 Return Value:
 
@@ -5352,9 +5260,8 @@ Function: Converts the current `@local!` [JsonValue](encoding_json_package_class
 
 > **Note:**
 >
-> Experimental API, for test verification only; the specification and implementation may still change; use with caution.
->
-> Platform not supported: OpenHarmony.
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
 
 Return Value:
 
@@ -5406,9 +5313,8 @@ Function: Converts the current `@local!` [JsonValue](encoding_json_package_class
 
 > **Note:**
 >
-> Experimental API, for test verification only; the specification and implementation may still change; use with caution.
->
-> Platform not supported: OpenHarmony.
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
 
 Return Value:
 
@@ -5460,9 +5366,8 @@ Function: Converts the current `@local?` [JsonValue](encoding_json_package_class
 
 > **Note:**
 >
-> Experimental API, for test verification only; the specification and implementation may still change; use with caution.
->
-> Platform not supported: OpenHarmony.
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
 
 Return Value:
 
@@ -5519,9 +5424,8 @@ Function: Converts the current `@local!` [JsonValue](encoding_json_package_class
 
 > **Note:**
 >
-> Experimental API, for test verification only; the specification and implementation may still change; use with caution.
->
-> Platform not supported: OpenHarmony.
+> - Experimental API, for test verification only; the specification and implementation may still change; use with caution.
+> - Platform not supported: OpenHarmony.
 
 Return Value:
 

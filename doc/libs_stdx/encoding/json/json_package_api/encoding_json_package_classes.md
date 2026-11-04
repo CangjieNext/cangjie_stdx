@@ -59,9 +59,8 @@ public exclave init(this @local!)
 
 > **注意：**
 >
-> 实验性 API，仅用于测试验证，规范和实现仍可能发生变化，请谨慎使用。
->
-> 不支持平台：OpenHarmony。
+> - 实验性 API，仅用于测试验证，规范和实现仍可能发生变化，请谨慎使用。
+> - 不支持平台：OpenHarmony。
 
 示例：
 
@@ -131,9 +130,8 @@ public exclave init(this @local!, list: Array<JsonValue> @local!)
 
 > **注意：**
 >
-> 实验性 API，仅用于测试验证，规范和实现仍可能发生变化，请谨慎使用。
->
-> 不支持平台：OpenHarmony。
+> - 实验性 API，仅用于测试验证，规范和实现仍可能发生变化，请谨慎使用。
+> - 不支持平台：OpenHarmony。
 
 参数：
 
@@ -218,9 +216,8 @@ public exclave init(this @local!, list: ArrayList<JsonValue> @local!)
 
 > **注意：**
 >
-> 实验性 API，仅用于测试验证，规范和实现仍可能发生变化，请谨慎使用。
->
-> 不支持平台：OpenHarmony。
+> - 实验性 API，仅用于测试验证，规范和实现仍可能发生变化，请谨慎使用。
+> - 不支持平台：OpenHarmony。
 
 参数：
 
@@ -326,9 +323,8 @@ public exclave func add(this @local!, jv: JsonValue @local!): JsonArray @local!
 
 > **注意：**
 >
-> 实验性 API，仅用于测试验证，规范和实现仍可能发生变化，请谨慎使用。
->
-> 不支持平台：OpenHarmony。
+> - 实验性 API，仅用于测试验证，规范和实现仍可能发生变化，请谨慎使用。
+> - 不支持平台：OpenHarmony。
 
 参数：
 
@@ -439,9 +435,8 @@ public exclave func get(this @local!, index: Int64): Option<JsonValue> @local!
 
 > **注意：**
 >
-> 实验性 API，仅用于测试验证，规范和实现仍可能发生变化，请谨慎使用。
->
-> 不支持平台：OpenHarmony。
+> - 实验性 API，仅用于测试验证，规范和实现仍可能发生变化，请谨慎使用。
+> - 不支持平台：OpenHarmony。
 
 参数：
 
@@ -489,9 +484,8 @@ public exclave func get(this @local?, index: Int64): Option<JsonValue> @local?
 
 > **注意：**
 >
-> 实验性 API，仅用于测试验证，规范和实现仍可能发生变化，请谨慎使用。
->
-> 不支持平台：OpenHarmony。
+> - 实验性 API，仅用于测试验证，规范和实现仍可能发生变化，请谨慎使用。
+> - 不支持平台：OpenHarmony。
 
 参数：
 
@@ -599,9 +593,8 @@ public exclave func getItems(this @local!): ArrayList<JsonValue> @local!
 
 > **注意：**
 >
-> 实验性 API，仅用于测试验证，规范和实现仍可能发生变化，请谨慎使用。
->
-> 不支持平台：OpenHarmony。
+> - 实验性 API，仅用于测试验证，规范和实现仍可能发生变化，请谨慎使用。
+> - 不支持平台：OpenHarmony。
 
 返回值：
 
@@ -642,9 +635,8 @@ public func getItems(this @local?): ArrayList<JsonValue> @local?
 
 > **注意：**
 >
-> 实验性 API，仅用于测试验证，规范和实现仍可能发生变化，请谨慎使用。
->
-> 不支持平台：OpenHarmony。
+> - 实验性 API，仅用于测试验证，规范和实现仍可能发生变化，请谨慎使用。
+> - 不支持平台：OpenHarmony。
 
 返回值：
 
@@ -733,9 +725,8 @@ public func kind(this @local?): JsonKind
 
 > **注意：**
 >
-> 实验性 API，仅用于测试验证，规范和实现仍可能发生变化，请谨慎使用。
->
-> 不支持平台：OpenHarmony。
+> - 实验性 API，仅用于测试验证，规范和实现仍可能发生变化，请谨慎使用。
+> - 不支持平台：OpenHarmony。
 
 返回值：
 
@@ -825,9 +816,8 @@ public func size(this @local?): Int64
 
 > **注意：**
 >
-> 实验性 API，仅用于测试验证，规范和实现仍可能发生变化，请谨慎使用。
->
-> 不支持平台：OpenHarmony。
+> - 实验性 API，仅用于测试验证，规范和实现仍可能发生变化，请谨慎使用。
+> - 不支持平台：OpenHarmony。
 
 返回值：
 
@@ -930,9 +920,8 @@ public exclave func toJsonString(this @local!): String @local!
 
 > **注意：**
 >
-> 实验性 API，仅用于测试验证，规范和实现仍可能发生变化，请谨慎使用。
->
-> 不支持平台：OpenHarmony。
+> - 实验性 API，仅用于测试验证，规范和实现仍可能发生变化，请谨慎使用。
+> - 不支持平台：OpenHarmony。
 
 返回值：
 
@@ -979,9 +968,8 @@ public func toJsonString(this @local?): String
 
 > **注意：**
 >
-> 实验性 API，仅用于测试验证，规范和实现仍可能发生变化，请谨慎使用。
->
-> 不支持平台：OpenHarmony。
+> - 实验性 API，仅用于测试验证，规范和实现仍可能发生变化，请谨慎使用。
+> - 不支持平台：OpenHarmony。
 
 返回值：
 
@@ -1104,9 +1092,8 @@ public exclave func toJsonString(this @local!, depth: Int64, bracketInNewLine!: 
 
 > **注意：**
 >
-> 实验性 API，仅用于测试验证，规范和实现仍可能发生变化，请谨慎使用。
->
-> 不支持平台：OpenHarmony。
+> - 实验性 API，仅用于测试验证，规范和实现仍可能发生变化，请谨慎使用。
+> - 不支持平台：OpenHarmony。
 
 参数：
 
@@ -1159,9 +1146,8 @@ public func toJsonString(this @local?, depth: Int64, bracketInNewLine!: Bool = f
 
 > **注意：**
 >
-> 实验性 API，仅用于测试验证，规范和实现仍可能发生变化，请谨慎使用。
->
-> 不支持平台：OpenHarmony。
+> - 实验性 API，仅用于测试验证，规范和实现仍可能发生变化，请谨慎使用。
+> - 不支持平台：OpenHarmony。
 
 参数：
 
@@ -1266,9 +1252,8 @@ public exclave func toJsonStringWithoutEscaping(this @local!): String @local!
 
 > **注意：**
 >
-> 实验性 API，仅用于测试验证，规范和实现仍可能发生变化，请谨慎使用。
->
-> 不支持平台：OpenHarmony。
+> - 实验性 API，仅用于测试验证，规范和实现仍可能发生变化，请谨慎使用。
+> - 不支持平台：OpenHarmony。
 
 返回值：
 
@@ -1315,9 +1300,8 @@ public func toJsonStringWithoutEscaping(this @local?): String
 
 > **注意：**
 >
-> 实验性 API，仅用于测试验证，规范和实现仍可能发生变化，请谨慎使用。
->
-> 不支持平台：OpenHarmony。
+> - 实验性 API，仅用于测试验证，规范和实现仍可能发生变化，请谨慎使用。
+> - 不支持平台：OpenHarmony。
 
 返回值：
 
@@ -1426,9 +1410,8 @@ public exclave func toJsonStringWithoutEscaping(this @local!, depth: Int64, brac
 
 > **注意：**
 >
-> 实验性 API，仅用于测试验证，规范和实现仍可能发生变化，请谨慎使用。
->
-> 不支持平台：OpenHarmony。
+> - 实验性 API，仅用于测试验证，规范和实现仍可能发生变化，请谨慎使用。
+> - 不支持平台：OpenHarmony。
 
 参数：
 
@@ -1481,9 +1464,8 @@ public func toJsonStringWithoutEscaping(this @local?, depth: Int64, bracketInNew
 
 > **注意：**
 >
-> 实验性 API，仅用于测试验证，规范和实现仍可能发生变化，请谨慎使用。
->
-> 不支持平台：OpenHarmony。
+> - 实验性 API，仅用于测试验证，规范和实现仍可能发生变化，请谨慎使用。
+> - 不支持平台：OpenHarmony。
 
 参数：
 
@@ -1580,9 +1562,8 @@ public exclave func toString(this @local?): String @local!
 
 > **注意：**
 >
-> 实验性 API，仅用于测试验证，规范和实现仍可能发生变化，请谨慎使用。
->
-> 不支持平台：OpenHarmony。
+> - 实验性 API，仅用于测试验证，规范和实现仍可能发生变化，请谨慎使用。
+> - 不支持平台：OpenHarmony。
 
 返回值：
 
@@ -1670,9 +1651,8 @@ public exclave func toStringWithoutEscaping(this @local!): String @local!
 
 > **注意：**
 >
-> 实验性 API，仅用于测试验证，规范和实现仍可能发生变化，请谨慎使用。
->
-> 不支持平台：OpenHarmony。
+> - 实验性 API，仅用于测试验证，规范和实现仍可能发生变化，请谨慎使用。
+> - 不支持平台：OpenHarmony。
 
 返回值：
 
@@ -1716,9 +1696,8 @@ public func toStringWithoutEscaping(this @local?): String
 
 > **注意：**
 >
-> 实验性 API，仅用于测试验证，规范和实现仍可能发生变化，请谨慎使用。
->
-> 不支持平台：OpenHarmony。
+> - 实验性 API，仅用于测试验证，规范和实现仍可能发生变化，请谨慎使用。
+> - 不支持平台：OpenHarmony。
 
 返回值：
 
@@ -1838,9 +1817,8 @@ public exclave operator func [](this @local!, index: Int64): JsonValue @local!
 
 > **注意：**
 >
-> 实验性 API，仅用于测试验证，规范和实现仍可能发生变化，请谨慎使用。
->
-> 不支持平台：OpenHarmony。
+> - 实验性 API，仅用于测试验证，规范和实现仍可能发生变化，请谨慎使用。
+> - 不支持平台：OpenHarmony。
 
 参数：
 
@@ -1889,9 +1867,8 @@ public exclave operator func [](this @local?, index: Int64): JsonValue @local?
 
 > **注意：**
 >
-> 实验性 API，仅用于测试验证，规范和实现仍可能发生变化，请谨慎使用。
->
-> 不支持平台：OpenHarmony。
+> - 实验性 API，仅用于测试验证，规范和实现仍可能发生变化，请谨慎使用。
+> - 不支持平台：OpenHarmony。
 
 参数：
 
@@ -1990,9 +1967,8 @@ public exclave init(this @local!, bv: Bool)
 
 > **注意：**
 >
-> 实验性 API，仅用于测试验证，规范和实现仍可能发生变化，请谨慎使用。
->
-> 不支持平台：OpenHarmony。
+> - 实验性 API，仅用于测试验证，规范和实现仍可能发生变化，请谨慎使用。
+> - 不支持平台：OpenHarmony。
 
 参数：
 
@@ -2060,9 +2036,8 @@ public func getValue(this @local?): Bool
 
 > **注意：**
 >
-> 实验性 API，仅用于测试验证，规范和实现仍可能发生变化，请谨慎使用。
->
-> 不支持平台：OpenHarmony。
+> - 实验性 API，仅用于测试验证，规范和实现仍可能发生变化，请谨慎使用。
+> - 不支持平台：OpenHarmony。
 
 返回值：
 
@@ -2139,9 +2114,8 @@ public func kind(this @local?): JsonKind
 
 > **注意：**
 >
-> 实验性 API，仅用于测试验证，规范和实现仍可能发生变化，请谨慎使用。
->
-> 不支持平台：OpenHarmony。
+> - 实验性 API，仅用于测试验证，规范和实现仍可能发生变化，请谨慎使用。
+> - 不支持平台：OpenHarmony。
 
 返回值：
 
@@ -2217,9 +2191,8 @@ public exclave func toJsonString(this @local!): String @local!
 
 > **注意：**
 >
-> 实验性 API，仅用于测试验证，规范和实现仍可能发生变化，请谨慎使用。
->
-> 不支持平台：OpenHarmony。
+> - 实验性 API，仅用于测试验证，规范和实现仍可能发生变化，请谨慎使用。
+> - 不支持平台：OpenHarmony。
 
 返回值：
 
@@ -2288,9 +2261,8 @@ public exclave func toJsonStringWithoutEscaping(this @local!): String @local!
 
 > **注意：**
 >
-> 实验性 API，仅用于测试验证，规范和实现仍可能发生变化，请谨慎使用。
->
-> 不支持平台：OpenHarmony。
+> - 实验性 API，仅用于测试验证，规范和实现仍可能发生变化，请谨慎使用。
+> - 不支持平台：OpenHarmony。
 
 返回值：
 
@@ -2359,9 +2331,8 @@ public exclave func toString(this @local?): String @local!
 
 > **注意：**
 >
-> 实验性 API，仅用于测试验证，规范和实现仍可能发生变化，请谨慎使用。
->
-> 不支持平台：OpenHarmony。
+> - 实验性 API，仅用于测试验证，规范和实现仍可能发生变化，请谨慎使用。
+> - 不支持平台：OpenHarmony。
 
 返回值：
 
@@ -2435,9 +2406,8 @@ public exclave func toStringWithoutEscaping(this @local!): String @local!
 
 > **注意：**
 >
-> 实验性 API，仅用于测试验证，规范和实现仍可能发生变化，请谨慎使用。
->
-> 不支持平台：OpenHarmony。
+> - 实验性 API，仅用于测试验证，规范和实现仍可能发生变化，请谨慎使用。
+> - 不支持平台：OpenHarmony。
 
 返回值：
 
@@ -2519,9 +2489,8 @@ public exclave init(this @local!, fv: Float64)
 
 > **注意：**
 >
-> 实验性 API，仅用于测试验证，规范和实现仍可能发生变化，请谨慎使用。
->
-> 不支持平台：OpenHarmony。
+> - 实验性 API，仅用于测试验证，规范和实现仍可能发生变化，请谨慎使用。
+> - 不支持平台：OpenHarmony。
 
 参数：
 
@@ -2587,9 +2556,8 @@ public exclave init(this @local!, v: Int64)
 
 > **注意：**
 >
-> 实验性 API，仅用于测试验证，规范和实现仍可能发生变化，请谨慎使用。
->
-> 不支持平台：OpenHarmony。
+> - 实验性 API，仅用于测试验证，规范和实现仍可能发生变化，请谨慎使用。
+> - 不支持平台：OpenHarmony。
 
 参数：
 
@@ -2657,9 +2625,8 @@ public func getValue(this @local?): Float64
 
 > **注意：**
 >
-> 实验性 API，仅用于测试验证，规范和实现仍可能发生变化，请谨慎使用。
->
-> 不支持平台：OpenHarmony。
+> - 实验性 API，仅用于测试验证，规范和实现仍可能发生变化，请谨慎使用。
+> - 不支持平台：OpenHarmony。
 
 返回值：
 
@@ -2736,9 +2703,8 @@ public func kind(this @local?): JsonKind
 
 > **注意：**
 >
-> 实验性 API，仅用于测试验证，规范和实现仍可能发生变化，请谨慎使用。
->
-> 不支持平台：OpenHarmony。
+> - 实验性 API，仅用于测试验证，规范和实现仍可能发生变化，请谨慎使用。
+> - 不支持平台：OpenHarmony。
 
 返回值：
 
@@ -2814,9 +2780,8 @@ public exclave func toJsonString(this @local!): String @local!
 
 > **注意：**
 >
-> 实验性 API，仅用于测试验证，规范和实现仍可能发生变化，请谨慎使用。
->
-> 不支持平台：OpenHarmony。
+> - 实验性 API，仅用于测试验证，规范和实现仍可能发生变化，请谨慎使用。
+> - 不支持平台：OpenHarmony。
 
 返回值：
 
@@ -2885,9 +2850,8 @@ public exclave func toJsonStringWithoutEscaping(this @local!): String @local!
 
 > **注意：**
 >
-> 实验性 API，仅用于测试验证，规范和实现仍可能发生变化，请谨慎使用。
->
-> 不支持平台：OpenHarmony。
+> - 实验性 API，仅用于测试验证，规范和实现仍可能发生变化，请谨慎使用。
+> - 不支持平台：OpenHarmony。
 
 返回值：
 
@@ -2956,9 +2920,8 @@ public exclave func toString(this @local?): String @local!
 
 > **注意：**
 >
-> 实验性 API，仅用于测试验证，规范和实现仍可能发生变化，请谨慎使用。
->
-> 不支持平台：OpenHarmony。
+> - 实验性 API，仅用于测试验证，规范和实现仍可能发生变化，请谨慎使用。
+> - 不支持平台：OpenHarmony。
 
 返回值：
 
@@ -3032,9 +2995,8 @@ public exclave func toStringWithoutEscaping(this @local!): String @local!
 
 > **注意：**
 >
-> 实验性 API，仅用于测试验证，规范和实现仍可能发生变化，请谨慎使用。
->
-> 不支持平台：OpenHarmony。
+> - 实验性 API，仅用于测试验证，规范和实现仍可能发生变化，请谨慎使用。
+> - 不支持平台：OpenHarmony。
 
 返回值：
 
@@ -3115,9 +3077,8 @@ public exclave init(this @local!, iv: Int64)
 
 > **注意：**
 >
-> 实验性 API，仅用于测试验证，规范和实现仍可能发生变化，请谨慎使用。
->
-> 不支持平台：OpenHarmony。
+> - 实验性 API，仅用于测试验证，规范和实现仍可能发生变化，请谨慎使用。
+> - 不支持平台：OpenHarmony。
 
 参数：
 
@@ -3185,9 +3146,8 @@ public func getValue(this @local?): Int64
 
 > **注意：**
 >
-> 实验性 API，仅用于测试验证，规范和实现仍可能发生变化，请谨慎使用。
->
-> 不支持平台：OpenHarmony。
+> - 实验性 API，仅用于测试验证，规范和实现仍可能发生变化，请谨慎使用。
+> - 不支持平台：OpenHarmony。
 
 返回值：
 
@@ -3264,9 +3224,8 @@ public func kind(this @local?): JsonKind
 
 > **注意：**
 >
-> 实验性 API，仅用于测试验证，规范和实现仍可能发生变化，请谨慎使用。
->
-> 不支持平台：OpenHarmony。
+> - 实验性 API，仅用于测试验证，规范和实现仍可能发生变化，请谨慎使用。
+> - 不支持平台：OpenHarmony。
 
 返回值：
 
@@ -3342,9 +3301,8 @@ public exclave func toJsonString(this @local!): String @local!
 
 > **注意：**
 >
-> 实验性 API，仅用于测试验证，规范和实现仍可能发生变化，请谨慎使用。
->
-> 不支持平台：OpenHarmony。
+> - 实验性 API，仅用于测试验证，规范和实现仍可能发生变化，请谨慎使用。
+> - 不支持平台：OpenHarmony。
 
 返回值：
 
@@ -3413,9 +3371,8 @@ public exclave func toJsonStringWithoutEscaping(this @local!): String @local!
 
 > **注意：**
 >
-> 实验性 API，仅用于测试验证，规范和实现仍可能发生变化，请谨慎使用。
->
-> 不支持平台：OpenHarmony。
+> - 实验性 API，仅用于测试验证，规范和实现仍可能发生变化，请谨慎使用。
+> - 不支持平台：OpenHarmony。
 
 返回值：
 
@@ -3484,9 +3441,8 @@ public exclave func toString(this @local?): String @local!
 
 > **注意：**
 >
-> 实验性 API，仅用于测试验证，规范和实现仍可能发生变化，请谨慎使用。
->
-> 不支持平台：OpenHarmony。
+> - 实验性 API，仅用于测试验证，规范和实现仍可能发生变化，请谨慎使用。
+> - 不支持平台：OpenHarmony。
 
 返回值：
 
@@ -3560,9 +3516,8 @@ public exclave func toStringWithoutEscaping(this @local!): String @local!
 
 > **注意：**
 >
-> 实验性 API，仅用于测试验证，规范和实现仍可能发生变化，请谨慎使用。
->
-> 不支持平台：OpenHarmony。
+> - 实验性 API，仅用于测试验证，规范和实现仍可能发生变化，请谨慎使用。
+> - 不支持平台：OpenHarmony。
 
 返回值：
 
@@ -3646,9 +3601,8 @@ public func kind(this @local?): JsonKind
 
 > **注意：**
 >
-> 实验性 API，仅用于测试验证，规范和实现仍可能发生变化，请谨慎使用。
->
-> 不支持平台：OpenHarmony。
+> - 实验性 API，仅用于测试验证，规范和实现仍可能发生变化，请谨慎使用。
+> - 不支持平台：OpenHarmony。
 
 返回值：
 
@@ -3723,9 +3677,8 @@ public exclave func toJsonString(this @local!): String @local!
 
 > **注意：**
 >
-> 实验性 API，仅用于测试验证，规范和实现仍可能发生变化，请谨慎使用。
->
-> 不支持平台：OpenHarmony。
+> - 实验性 API，仅用于测试验证，规范和实现仍可能发生变化，请谨慎使用。
+> - 不支持平台：OpenHarmony。
 
 返回值：
 
@@ -3794,9 +3747,8 @@ public exclave func toJsonStringWithoutEscaping(this @local!): String @local!
 
 > **注意：**
 >
-> 实验性 API，仅用于测试验证，规范和实现仍可能发生变化，请谨慎使用。
->
-> 不支持平台：OpenHarmony。
+> - 实验性 API，仅用于测试验证，规范和实现仍可能发生变化，请谨慎使用。
+> - 不支持平台：OpenHarmony。
 
 返回值：
 
@@ -3864,9 +3816,8 @@ public exclave func toString(this @local?): String @local!
 
 > **注意：**
 >
-> 实验性 API，仅用于测试验证，规范和实现仍可能发生变化，请谨慎使用。
->
-> 不支持平台：OpenHarmony。
+> - 实验性 API，仅用于测试验证，规范和实现仍可能发生变化，请谨慎使用。
+> - 不支持平台：OpenHarmony。
 
 返回值：
 
@@ -3940,9 +3891,8 @@ public exclave func toStringWithoutEscaping(this @local!): String @local!
 
 > **注意：**
 >
-> 实验性 API，仅用于测试验证，规范和实现仍可能发生变化，请谨慎使用。
->
-> 不支持平台：OpenHarmony。
+> - 实验性 API，仅用于测试验证，规范和实现仍可能发生变化，请谨慎使用。
+> - 不支持平台：OpenHarmony。
 
 返回值：
 
@@ -4020,9 +3970,8 @@ public exclave init(this @local!)
 
 > **注意：**
 >
-> 实验性 API，仅用于测试验证，规范和实现仍可能发生变化，请谨慎使用。
->
-> 不支持平台：OpenHarmony。
+> - 实验性 API，仅用于测试验证，规范和实现仍可能发生变化，请谨慎使用。
+> - 不支持平台：OpenHarmony。
 
 示例：
 
@@ -4091,9 +4040,8 @@ public exclave init(this @local!, map: HashMap<String, JsonValue> @local!)
 
 > **注意：**
 >
-> 实验性 API，仅用于测试验证，规范和实现仍可能发生变化，请谨慎使用。
->
-> 不支持平台：OpenHarmony。
+> - 实验性 API，仅用于测试验证，规范和实现仍可能发生变化，请谨慎使用。
+> - 不支持平台：OpenHarmony。
 
 参数：
 
@@ -4178,9 +4126,8 @@ public func containsKey(this @local?, key: String @local?): Bool
 
 > **注意：**
 >
-> 实验性 API，仅用于测试验证，规范和实现仍可能发生变化，请谨慎使用。
->
-> 不支持平台：OpenHarmony。
+> - 实验性 API，仅用于测试验证，规范和实现仍可能发生变化，请谨慎使用。
+> - 不支持平台：OpenHarmony。
 
 参数：
 
@@ -4292,9 +4239,8 @@ public exclave func get(this @local!, key: String @local!): Option<JsonValue> @l
 
 > **注意：**
 >
-> 实验性 API，仅用于测试验证，规范和实现仍可能发生变化，请谨慎使用。
->
-> 不支持平台：OpenHarmony。
+> - 实验性 API，仅用于测试验证，规范和实现仍可能发生变化，请谨慎使用。
+> - 不支持平台：OpenHarmony。
 
 参数：
 
@@ -4341,9 +4287,8 @@ public exclave func get(this @local?, key: String @local?): Option<JsonValue> @l
 
 > **注意：**
 >
-> 实验性 API，仅用于测试验证，规范和实现仍可能发生变化，请谨慎使用。
->
-> 不支持平台：OpenHarmony。
+> - 实验性 API，仅用于测试验证，规范和实现仍可能发生变化，请谨慎使用。
+> - 不支持平台：OpenHarmony。
 
 参数：
 
@@ -4435,9 +4380,8 @@ public exclave func getFields(this @local!): HashMap<String, JsonValue> @local!
 
 > **注意：**
 >
-> 实验性 API，仅用于测试验证，规范和实现仍可能发生变化，请谨慎使用。
->
-> 不支持平台：OpenHarmony。
+> - 实验性 API，仅用于测试验证，规范和实现仍可能发生变化，请谨慎使用。
+> - 不支持平台：OpenHarmony。
 
 返回值：
 
@@ -4479,9 +4423,8 @@ public func getFields(this @local?): HashMap<String, JsonValue> @local?
 
 > **注意：**
 >
-> 实验性 API，仅用于测试验证，规范和实现仍可能发生变化，请谨慎使用。
->
-> 不支持平台：OpenHarmony。
+> - 实验性 API，仅用于测试验证，规范和实现仍可能发生变化，请谨慎使用。
+> - 不支持平台：OpenHarmony。
 
 返回值：
 
@@ -4566,9 +4509,8 @@ public func kind(this @local?): JsonKind
 
 > **注意：**
 >
-> 实验性 API，仅用于测试验证，规范和实现仍可能发生变化，请谨慎使用。
->
-> 不支持平台：OpenHarmony。
+> - 实验性 API，仅用于测试验证，规范和实现仍可能发生变化，请谨慎使用。
+> - 不支持平台：OpenHarmony。
 
 返回值：
 
@@ -4650,9 +4592,8 @@ public exclave func put(this @local!, key: String @local!, v: JsonValue @local!)
 
 > **注意：**
 >
-> 实验性 API，仅用于测试验证，规范和实现仍可能发生变化，请谨慎使用。
->
-> 不支持平台：OpenHarmony。
+> - 实验性 API，仅用于测试验证，规范和实现仍可能发生变化，请谨慎使用。
+> - 不支持平台：OpenHarmony。
 
 参数：
 
@@ -4692,9 +4633,8 @@ public exclave func put(this @local!, key: String @local?, v: JsonValue @local!)
 
 > **注意：**
 >
-> 实验性 API，仅用于测试验证，规范和实现仍可能发生变化，请谨慎使用。
->
-> 不支持平台：OpenHarmony。
+> - 实验性 API，仅用于测试验证，规范和实现仍可能发生变化，请谨慎使用。
+> - 不支持平台：OpenHarmony。
 
 参数：
 
@@ -4777,9 +4717,8 @@ public func size(this @local?): Int64
 
 > **注意：**
 >
-> 实验性 API，仅用于测试验证，规范和实现仍可能发生变化，请谨慎使用。
->
-> 不支持平台：OpenHarmony。
+> - 实验性 API，仅用于测试验证，规范和实现仍可能发生变化，请谨慎使用。
+> - 不支持平台：OpenHarmony。
 
 返回值：
 
@@ -4863,9 +4802,8 @@ public exclave func toJsonString(this @local!): String @local!
 
 > **注意：**
 >
-> 实验性 API，仅用于测试验证，规范和实现仍可能发生变化，请谨慎使用。
->
-> 不支持平台：OpenHarmony。
+> - 实验性 API，仅用于测试验证，规范和实现仍可能发生变化，请谨慎使用。
+> - 不支持平台：OpenHarmony。
 
 返回值：
 
@@ -4910,9 +4848,8 @@ public func toJsonString(this @local?): String
 
 > **注意：**
 >
-> 实验性 API，仅用于测试验证，规范和实现仍可能发生变化，请谨慎使用。
->
-> 不支持平台：OpenHarmony。
+> - 实验性 API，仅用于测试验证，规范和实现仍可能发生变化，请谨慎使用。
+> - 不支持平台：OpenHarmony。
 
 返回值：
 
@@ -5022,9 +4959,8 @@ public exclave func toJsonString(this @local!, depth: Int64, bracketInNewLine!: 
 
 > **注意：**
 >
-> 实验性 API，仅用于测试验证，规范和实现仍可能发生变化，请谨慎使用。
->
-> 不支持平台：OpenHarmony。
+> - 实验性 API，仅用于测试验证，规范和实现仍可能发生变化，请谨慎使用。
+> - 不支持平台：OpenHarmony。
 
 参数：
 
@@ -5075,9 +5011,8 @@ public func toJsonString(this @local?, depth: Int64, bracketInNewLine!: Bool = f
 
 > **注意：**
 >
-> 实验性 API，仅用于测试验证，规范和实现仍可能发生变化，请谨慎使用。
->
-> 不支持平台：OpenHarmony。
+> - 实验性 API，仅用于测试验证，规范和实现仍可能发生变化，请谨慎使用。
+> - 不支持平台：OpenHarmony。
 
 参数：
 
@@ -5179,9 +5114,8 @@ public exclave func toJsonStringWithoutEscaping(this @local!): String @local!
 
 > **注意：**
 >
-> 实验性 API，仅用于测试验证，规范和实现仍可能发生变化，请谨慎使用。
->
-> 不支持平台：OpenHarmony。
+> - 实验性 API，仅用于测试验证，规范和实现仍可能发生变化，请谨慎使用。
+> - 不支持平台：OpenHarmony。
 
 返回值：
 
@@ -5226,9 +5160,8 @@ public func toJsonStringWithoutEscaping(this @local?): String
 
 > **注意：**
 >
-> 实验性 API，仅用于测试验证，规范和实现仍可能发生变化，请谨慎使用。
->
-> 不支持平台：OpenHarmony。
+> - 实验性 API，仅用于测试验证，规范和实现仍可能发生变化，请谨慎使用。
+> - 不支持平台：OpenHarmony。
 
 返回值：
 
@@ -5335,9 +5268,8 @@ public exclave func toJsonStringWithoutEscaping(this @local!, depth: Int64, brac
 
 > **注意：**
 >
-> 实验性 API，仅用于测试验证，规范和实现仍可能发生变化，请谨慎使用。
->
-> 不支持平台：OpenHarmony。
+> - 实验性 API，仅用于测试验证，规范和实现仍可能发生变化，请谨慎使用。
+> - 不支持平台：OpenHarmony。
 
 参数：
 
@@ -5388,9 +5320,8 @@ public func toJsonStringWithoutEscaping(this @local?, depth: Int64, bracketInNew
 
 > **注意：**
 >
-> 实验性 API，仅用于测试验证，规范和实现仍可能发生变化，请谨慎使用。
->
-> 不支持平台：OpenHarmony。
+> - 实验性 API，仅用于测试验证，规范和实现仍可能发生变化，请谨慎使用。
+> - 不支持平台：OpenHarmony。
 
 参数：
 
@@ -5482,9 +5413,8 @@ public exclave func toString(this @local?): String @local!
 
 > **注意：**
 >
-> 实验性 API，仅用于测试验证，规范和实现仍可能发生变化，请谨慎使用。
->
-> 不支持平台：OpenHarmony。
+> - 实验性 API，仅用于测试验证，规范和实现仍可能发生变化，请谨慎使用。
+> - 不支持平台：OpenHarmony。
 
 返回值：
 
@@ -5570,9 +5500,8 @@ public exclave func toStringWithoutEscaping(this @local!): String @local!
 
 > **注意：**
 >
-> 实验性 API，仅用于测试验证，规范和实现仍可能发生变化，请谨慎使用。
->
-> 不支持平台：OpenHarmony。
+> - 实验性 API，仅用于测试验证，规范和实现仍可能发生变化，请谨慎使用。
+> - 不支持平台：OpenHarmony。
 
 返回值：
 
@@ -5615,9 +5544,8 @@ public func toStringWithoutEscaping(this @local?): String
 
 > **注意：**
 >
-> 实验性 API，仅用于测试验证，规范和实现仍可能发生变化，请谨慎使用。
->
-> 不支持平台：OpenHarmony。
+> - 实验性 API，仅用于测试验证，规范和实现仍可能发生变化，请谨慎使用。
+> - 不支持平台：OpenHarmony。
 
 返回值：
 
@@ -5713,9 +5641,8 @@ public exclave operator func [](this @local!, key: String @local!): JsonValue @l
 
 > **注意：**
 >
-> 实验性 API，仅用于测试验证，规范和实现仍可能发生变化，请谨慎使用。
->
-> 不支持平台：OpenHarmony。
+> - 实验性 API，仅用于测试验证，规范和实现仍可能发生变化，请谨慎使用。
+> - 不支持平台：OpenHarmony。
 
 参数：
 
@@ -5764,9 +5691,8 @@ public exclave operator func [](this @local?, key: String @local?): JsonValue @l
 
 > **注意：**
 >
-> 实验性 API，仅用于测试验证，规范和实现仍可能发生变化，请谨慎使用。
->
-> 不支持平台：OpenHarmony。
+> - 实验性 API，仅用于测试验证，规范和实现仍可能发生变化，请谨慎使用。
+> - 不支持平台：OpenHarmony。
 
 参数：
 
@@ -5865,9 +5791,8 @@ public exclave init(this @local!, sv: String @local!)
 
 > **注意：**
 >
-> 实验性 API，仅用于测试验证，规范和实现仍可能发生变化，请谨慎使用。
->
-> 不支持平台：OpenHarmony。
+> - 实验性 API，仅用于测试验证，规范和实现仍可能发生变化，请谨慎使用。
+> - 不支持平台：OpenHarmony。
 
 参数：
 
@@ -5937,9 +5862,8 @@ public exclave func getValue(this @local!): String @local!
 
 > **注意：**
 >
-> 实验性 API，仅用于测试验证，规范和实现仍可能发生变化，请谨慎使用。
->
-> 不支持平台：OpenHarmony。
+> - 实验性 API，仅用于测试验证，规范和实现仍可能发生变化，请谨慎使用。
+> - 不支持平台：OpenHarmony。
 
 返回值：
 
@@ -5976,9 +5900,8 @@ public exclave func getValue(this @local?): String @local?
 
 > **注意：**
 >
-> 实验性 API，仅用于测试验证，规范和实现仍可能发生变化，请谨慎使用。
->
-> 不支持平台：OpenHarmony。
+> - 实验性 API，仅用于测试验证，规范和实现仍可能发生变化，请谨慎使用。
+> - 不支持平台：OpenHarmony。
 
 返回值：
 
@@ -6057,9 +5980,8 @@ public func kind(this @local?): JsonKind
 
 > **注意：**
 >
-> 实验性 API，仅用于测试验证，规范和实现仍可能发生变化，请谨慎使用。
->
-> 不支持平台：OpenHarmony。
+> - 实验性 API，仅用于测试验证，规范和实现仍可能发生变化，请谨慎使用。
+> - 不支持平台：OpenHarmony。
 
 返回值：
 
@@ -6136,9 +6058,8 @@ public exclave func toJsonString(this @local!): String @local!
 
 > **注意：**
 >
-> 实验性 API，仅用于测试验证，规范和实现仍可能发生变化，请谨慎使用。
->
-> 不支持平台：OpenHarmony。
+> - 实验性 API，仅用于测试验证，规范和实现仍可能发生变化，请谨慎使用。
+> - 不支持平台：OpenHarmony。
 
 返回值：
 
@@ -6211,9 +6132,8 @@ public exclave func toJsonStringWithoutEscaping(this @local!): String @local!
 
 > **注意：**
 >
-> 实验性 API，仅用于测试验证，规范和实现仍可能发生变化，请谨慎使用。
->
-> 不支持平台：OpenHarmony。
+> - 实验性 API，仅用于测试验证，规范和实现仍可能发生变化，请谨慎使用。
+> - 不支持平台：OpenHarmony。
 
 返回值：
 
@@ -6283,9 +6203,8 @@ public exclave func toString(this @local?): String @local!
 
 > **注意：**
 >
-> 实验性 API，仅用于测试验证，规范和实现仍可能发生变化，请谨慎使用。
->
-> 不支持平台：OpenHarmony。
+> - 实验性 API，仅用于测试验证，规范和实现仍可能发生变化，请谨慎使用。
+> - 不支持平台：OpenHarmony。
 
 返回值：
 
@@ -6363,9 +6282,8 @@ public exclave func toStringWithoutEscaping(this @local!): String @local!
 
 > **注意：**
 >
-> 实验性 API，仅用于测试验证，规范和实现仍可能发生变化，请谨慎使用。
->
-> 不支持平台：OpenHarmony。
+> - 实验性 API，仅用于测试验证，规范和实现仍可能发生变化，请谨慎使用。
+> - 不支持平台：OpenHarmony。
 
 返回值：
 
@@ -6490,9 +6408,8 @@ public exclave static func fromStr(s: String @local!): JsonValue @local!
 
 > **注意：**
 >
-> 实验性 API，仅用于测试验证，规范和实现仍可能发生变化，请谨慎使用。
->
-> 不支持平台：OpenHarmony。
+> - 实验性 API，仅用于测试验证，规范和实现仍可能发生变化，请谨慎使用。
+> - 不支持平台：OpenHarmony。
 
 参数：
 
@@ -6537,9 +6454,8 @@ public exclave static func fromStr(s: String @local?): JsonValue @local!
 
 > **注意：**
 >
-> 实验性 API，仅用于测试验证，规范和实现仍可能发生变化，请谨慎使用。
->
-> 不支持平台：OpenHarmony。
+> - 实验性 API，仅用于测试验证，规范和实现仍可能发生变化，请谨慎使用。
+> - 不支持平台：OpenHarmony。
 
 参数：
 
@@ -6639,9 +6555,8 @@ public exclave func asArray(this @local!): JsonArray @local!
 
 > **注意：**
 >
-> 实验性 API，仅用于测试验证，规范和实现仍可能发生变化，请谨慎使用。
->
-> 不支持平台：OpenHarmony。
+> - 实验性 API，仅用于测试验证，规范和实现仍可能发生变化，请谨慎使用。
+> - 不支持平台：OpenHarmony。
 
 返回值：
 
@@ -6736,9 +6651,8 @@ public exclave func asBool(this @local!): JsonBool @local!
 
 > **注意：**
 >
-> 实验性 API，仅用于测试验证，规范和实现仍可能发生变化，请谨慎使用。
->
-> 不支持平台：OpenHarmony。
+> - 实验性 API，仅用于测试验证，规范和实现仍可能发生变化，请谨慎使用。
+> - 不支持平台：OpenHarmony。
 
 返回值：
 
@@ -6828,9 +6742,8 @@ public exclave func asFloat(this @local!): JsonFloat @local!
 
 > **注意：**
 >
-> 实验性 API，仅用于测试验证，规范和实现仍可能发生变化，请谨慎使用。
->
-> 不支持平台：OpenHarmony。
+> - 实验性 API，仅用于测试验证，规范和实现仍可能发生变化，请谨慎使用。
+> - 不支持平台：OpenHarmony。
 
 返回值：
 
@@ -6920,9 +6833,8 @@ public exclave func asInt(this @local!): JsonInt @local!
 
 > **注意：**
 >
-> 实验性 API，仅用于测试验证，规范和实现仍可能发生变化，请谨慎使用。
->
-> 不支持平台：OpenHarmony。
+> - 实验性 API，仅用于测试验证，规范和实现仍可能发生变化，请谨慎使用。
+> - 不支持平台：OpenHarmony。
 
 返回值：
 
@@ -7000,9 +6912,8 @@ public exclave func asNull(this @local!): JsonNull @local!
 
 > **注意：**
 >
-> 实验性 API，仅用于测试验证，规范和实现仍可能发生变化，请谨慎使用。
->
-> 不支持平台：OpenHarmony。
+> - 实验性 API，仅用于测试验证，规范和实现仍可能发生变化，请谨慎使用。
+> - 不支持平台：OpenHarmony。
 
 返回值：
 
@@ -7093,9 +7004,8 @@ public exclave func asObject(this @local!): JsonObject @local!
 
 > **注意：**
 >
-> 实验性 API，仅用于测试验证，规范和实现仍可能发生变化，请谨慎使用。
->
-> 不支持平台：OpenHarmony。
+> - 实验性 API，仅用于测试验证，规范和实现仍可能发生变化，请谨慎使用。
+> - 不支持平台：OpenHarmony。
 
 返回值：
 
@@ -7189,9 +7099,8 @@ public exclave func asString(this @local!): JsonString @local!
 
 > **注意：**
 >
-> 实验性 API，仅用于测试验证，规范和实现仍可能发生变化，请谨慎使用。
->
-> 不支持平台：OpenHarmony。
+> - 实验性 API，仅用于测试验证，规范和实现仍可能发生变化，请谨慎使用。
+> - 不支持平台：OpenHarmony。
 
 返回值：
 
@@ -7276,9 +7185,8 @@ public open func kind(this @local?): JsonKind
 
 > **注意：**
 >
-> 实验性 API，仅用于测试验证，规范和实现仍可能发生变化，请谨慎使用。
->
-> 不支持平台：OpenHarmony。
+> - 实验性 API，仅用于测试验证，规范和实现仍可能发生变化，请谨慎使用。
+> - 不支持平台：OpenHarmony。
 
 返回值：
 
@@ -7367,9 +7275,8 @@ public open func toJsonString(this @local!): String @local!
 
 > **注意：**
 >
-> 实验性 API，仅用于测试验证，规范和实现仍可能发生变化，请谨慎使用。
->
-> 不支持平台：OpenHarmony。
+> - 实验性 API，仅用于测试验证，规范和实现仍可能发生变化，请谨慎使用。
+> - 不支持平台：OpenHarmony。
 
 返回值：
 
@@ -7452,9 +7359,8 @@ public open func toJsonStringWithoutEscaping(this @local!): String @local!
 
 > **注意：**
 >
-> 实验性 API，仅用于测试验证，规范和实现仍可能发生变化，请谨慎使用。
->
-> 不支持平台：OpenHarmony。
+> - 实验性 API，仅用于测试验证，规范和实现仍可能发生变化，请谨慎使用。
+> - 不支持平台：OpenHarmony。
 
 返回值：
 
@@ -7528,9 +7434,8 @@ public open func toString(this @local?): String @local!
 
 > **注意：**
 >
-> 实验性 API，仅用于测试验证，规范和实现仍可能发生变化，请谨慎使用。
->
-> 不支持平台：OpenHarmony。
+> - 实验性 API，仅用于测试验证，规范和实现仍可能发生变化，请谨慎使用。
+> - 不支持平台：OpenHarmony。
 
 返回值：
 
@@ -7612,9 +7517,8 @@ public open func toStringWithoutEscaping(this @local!): String @local!
 
 > **注意：**
 >
-> 实验性 API，仅用于测试验证，规范和实现仍可能发生变化，请谨慎使用。
->
-> 不支持平台：OpenHarmony。
+> - 实验性 API，仅用于测试验证，规范和实现仍可能发生变化，请谨慎使用。
+> - 不支持平台：OpenHarmony。
 
 返回值：
 
