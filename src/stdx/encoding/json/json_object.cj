@@ -964,6 +964,20 @@ public class JsonArray <: JsonValue {
         }
     }
 
+    public exclave operator func [](this @local!, index: Int64): JsonValue @local! {
+        match (get(index)) {
+            case Some(v) => v
+            case None => throw JsonException("Index '${index}' does not exist in JsonArray.")
+        }
+    }
+
+    public exclave operator func [](this @local?, index: Int64): JsonValue @local? {
+        match (get(index)) {
+            case Some(v) => v
+            case None => throw JsonException("Index '${index}' does not exist in JsonArray.")
+        }
+    }
+
     /**
      * Get the items data of JsonArray.
      *
