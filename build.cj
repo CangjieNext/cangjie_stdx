@@ -111,7 +111,9 @@ main(): Int64 {
     match (getCommandLine()[1]) {
         case "pre-build" =>
             ensurePsutilInstalled(pyCommand)
-            stagePreBuild(pyCommand)              
+            stagePreBuild(pyCommand)
+        // update/check/tree also need flatbuffers.cjo for bin-dependencies verification.
+        case "pre-update" | "pre-check" | "pre-tree" => buildPrivateFlatbuffers()
         case "post-build" => stagePostBuild(pyCommand)
         case "pre-clean" => stagePreClean(pyCommand)
         case _ => 0
@@ -160,7 +162,15 @@ func generateFlatbuffersCjSources(): Int64 {
         println("Error: CANGJIE_HOME is not set; cannot generate flatbuffers Cangjie sources.")
         return 1
     }
-    let flatc = home + "/third_party/flatbuffers/bin/flatc"
+    // The compiler installs target flatc as flatc${CMAKE_EXECUTABLE_SUFFIX}
+    // (flatc.exe on Windows). This script runs on the host; native stdx builds
+    // use a same-OS SDK, so the host OS selects the suffix. Do not hardcode "flatc".
+    let flatcName = if (isWin) {
+        "flatc.exe"
+    } else {
+        "flatc"
+    }
+    let flatc = home + "/third_party/flatbuffers/bin/" + flatcName
     if (!exists(Path(flatc))) {
         println("Error: flatc not found: ${flatc}")
         return 1
@@ -206,8 +216,12 @@ func buildPrivateFlatbuffers(): Int64 {
     let outLib = outDir + "/libflatbuffers.a"
     let outCjo = outDir + "/flatbuffers.cjo"
 
+    // Directory.create throws if the path already exists (unlike mkdir -p).
+    // cjpm may invoke pre-build more than once, so skip creation when present.
     try {
-        Directory.create(Path(outDir), recursive: true)
+        if (!exists(Path(outDir))) {
+            Directory.create(Path(outDir), recursive: true)
+        }
     } catch (e: Exception) {
         println("Error: failed to create ${outDir}: ${e}")
         return 1

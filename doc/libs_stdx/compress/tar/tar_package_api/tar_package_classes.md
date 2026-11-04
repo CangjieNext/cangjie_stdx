@@ -366,7 +366,7 @@ public func getPaxData(key: String): ?String
 
 返回值：
 
-- ?\<String> - 如果存在对应键的 Pax 数据，则返回其值，否则返回 None。
+- ?String - 如果存在对应键的 Pax 数据，则返回其值，否则返回 None。
 
 示例：
 

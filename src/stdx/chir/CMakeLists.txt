@@ -7,6 +7,19 @@
 
 set(_chir_flatbuffer_sources)
 
+# Attribute bits are shared with the compiler. Compare this package with the header
+# installed at $CANGJIE_HOME/include, not with a compiler source checkout.
+find_program(_chir_attr_python NAMES python3 python)
+if(NOT _chir_attr_python)
+    message(FATAL_ERROR "python3 is required to check CHIR Attribute against the compiler SDK")
+endif()
+execute_process(
+    COMMAND "${_chir_attr_python}" "${CMAKE_CURRENT_SOURCE_DIR}/test/check_chir_attributes.py"
+    RESULT_VARIABLE _chir_attr_sync_result)
+if(NOT _chir_attr_sync_result EQUAL 0)
+    message(FATAL_ERROR "stdx CHIR Attribute does not match the compiler SDK")
+endif()
+
 # Generate StdxChirFormat_generated.cj from the compiler SDK schema (flatc from CANGJIE_HOME).
 if(NOT CANGJIE_CJPM_BUILD_TYPE)
     include(CangjieFlatbuffers)

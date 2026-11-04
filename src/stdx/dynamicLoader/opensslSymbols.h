@@ -13,12 +13,16 @@
 #undef X509_NAME
 #endif
 #include <openssl/bio.h>
+#include <openssl/bn.h>
 #include <openssl/dh.h>
+#include <openssl/dsa.h>
+#include <openssl/ec.h>
 #include <openssl/err.h>
 #include <openssl/evp.h>
 #include <openssl/md5.h>
 #include <openssl/pem.h>
 #include <openssl/pkcs12.h>
+#include <openssl/rsa.h>
 #include <openssl/ssl.h>
 #include <openssl/x509.h>
 #include <stdbool.h>

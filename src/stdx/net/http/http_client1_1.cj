@@ -270,7 +270,7 @@ class HttpEngine1 {
             // reconnect and resend the request
             if (isIdempotentMethod(request.method)) {
                 httpLogDebug(logger, "[HttpEngine1#sendRequest] Client1_1 connection failed, reconnect and resend request")
-                return reconnectSendRequest(request, isToProxy)
+                return reconnectSendRequest(request, isToProxy, isToHttpsProxy)
             } else {
                 throw e
             }
@@ -279,7 +279,7 @@ class HttpEngine1 {
             if (isFromPool && isIdempotentMethod(request.method)) {
                 httpLogDebug(logger,
                     "[HttpEngine1#sendRequest] Client1_1 connection failed, reconnect and resend request")
-                return reconnectSendRequest(request, isToProxy)
+                return reconnectSendRequest(request, isToProxy, isToHttpsProxy)
             } else {
                 throw e
             }
@@ -289,13 +289,14 @@ class HttpEngine1 {
         }
     }
 
-    private func reconnectSendRequest(request: HttpRequest, isToProxy: Bool): HttpResponse {
+    private func reconnectSendRequest(request: HttpRequest, isToProxy: Bool, isToHttpsProxy: Bool): HttpResponse {
         let isTls = if (request.url.scheme == "https") {
             1
         } else {
             0
         }
-        let (connNode, _) = getConn(request, isTls, isToProxy, forceNew: true)
+        let (connNode, _) = getConn(request, isTls, isToProxy, forceNew: true,
+            isToHttpsProxy: isToHttpsProxy)
         try {
             return connNode.sendRequest(request)
         } catch (e: Exception) {
@@ -382,6 +383,11 @@ class HttpEngine1 {
         if (connNode.isClosed.load()) {
             return
         }
+        let capturedState = connNode.lifeState.load()
+        if ((capturedState % 4) != 0 || !connNode.lifeState.compareAndSwap(capturedState, capturedState + 4)) {
+            closeConnInUse(connNode)
+            return
+        }
         if (connNode.shouldClose.load()) {
             closeConnInUse(connNode)
             return
@@ -417,7 +423,17 @@ class HttpEngine1 {
         }
         httpLogDebug(logger,"[HttpEngine1#connect] get conn finish")
         if (isTls) {
-            let tlsConn = getGlobalTlsKit().getTlsClient(conn, tlsConfig.getOrThrow(), session: None)
+            // The TLS handshake always targets the origin server (also when it
+            // happens inside a proxy tunnel), so certificates are verified
+            // against the request host name; otherwise the TLS peer is the
+            // engine peer address itself.
+            let tlsHost = if (isToHttpsProxy) {
+                request.url.hostName
+            } else {
+                addrport.addr
+            }
+            let effectiveConfig = withTlsServerNameFallback(tlsConfig.getOrThrow(), tlsHost)
+            let tlsConn = getGlobalTlsKit().getTlsClient(conn, effectiveConfig, session: None)
             try {
                 tlsConn.handshake(timeout: None)
             } catch (e: Exception) {
@@ -557,6 +573,27 @@ class ConnNode <: BodyProviderConn {
     let shouldClose = AtomicBool(false)
     let continueMonitor = Monitor()
     var isClosed = AtomicBool(false)
+
+    // Lifecycle state resolving the timer cancel-vs-reuse race.
+    // - timer task (setReadTimer/setWriteTimer): CAS(captured, captured + 1).
+    //   Wins only if the value is unchanged since this timer was armed, i.e. the
+    //   conn is still in the SAME use - so a stale task can never kill a pooled
+    //   or reused connection. A write-timer win followed by a late read-timer fire
+    //   may add a second +1 (captured % 4 == 2) and misattribute the failure as a read
+    //   timeout - accepted: the error type is unchanged and the conn is closed
+    //   anyway.
+    // - returnConn: requires captured % 4 == 0 and CAS(v, v + 4); any
+    //   failure discards the conn instead of pooling it. Phase != 0 guarantees a
+    //   timer task won during this use, so a closed conn can never re-enter the
+    //   pool and affect the NEXT request - which is the actual invariant.
+    // Why +4 / % 4: 
+    // - +2 not work. Both timers may win their CAS during one use (write timer
+    //   wins, then a late read-timer fire adds another +1), so a per-use stride
+    //   of +2 could no longer tell that this use was already terminated by a timer.
+    // - +3 / %3 (stride 3, phase = v % 3) would also be correct, but 4 is a power of two:
+    //   the compiler lowers `v % 4` to a bitwise AND while `% 3` needs a real
+    //   division, so +4 gives the modulo check a chance to be optimized.
+    let lifeState = AtomicInt64(0)
 
     let conn: BufferedConn
     let logger: Logger
@@ -797,11 +834,15 @@ class ConnNode <: BodyProviderConn {
     }
 
     private func setWriteTimer(writeTimeout: Duration) {
+        let capturedState = lifeState.load()
         writeTimer = HttpTimer(
             start: writeTimeout,
             task: {
                 =>
                 if (isClosed.load()) {
+                    return
+                }
+                if (!lifeState.compareAndSwap(capturedState, capturedState + 1)) {
                     return
                 }
                 httpLogWarn(logger, "[ConnNode#sendRequestTimeout] Client1.1 write request timeout")
@@ -812,11 +853,15 @@ class ConnNode <: BodyProviderConn {
     }
 
     private func setReadTimer(readTimeout: Duration) {
+        let capturedState = lifeState.load()
         readTimer = HttpTimer(
             start: readTimeout,
             task: {
                 =>
                 if (isClosed.load()) {
+                    return
+                }
+                if (!lifeState.compareAndSwap(capturedState, capturedState + 1)) {
                     return
                 }
                 httpLogWarn(logger, "[ConnNode#sendRequestTimeout readTimer] Client1.1 read response timeout")
@@ -867,7 +912,7 @@ class ConnNode <: BodyProviderConn {
             if (request.url.path.isEmpty()) {
                 requestTarget.append(ASTERISK)
             } else {
-                requestTarget.append(canonicalPath(request.url.path))
+                requestTarget.append(canonicalPath(request.url.rawPath))
             }
 
         // when making a request to a proxy, other than a CONNECT or server-wide OPTIONS request,
@@ -878,10 +923,15 @@ class ConnNode <: BodyProviderConn {
         // origin-form
         // absolute-path ["?" query]
         } else {
-            requestTarget.append(canonicalPath(request.url.path))
-            if (let Some(query) <- request.url.query && !query.isEmpty()) {
+            requestTarget.append(canonicalPath(request.url.rawPath))
+            if (let Some(rawQuery) <- request.url.rawQuery && !rawQuery.isEmpty()) {
+                // security: do not remove this read. Accessing url.query triggers
+                // checkAndDecode on the raw query, rejecting literal control
+                // characters and invalid escapes (including %00) before rawQuery
+                // is written to the request line.
+                _ = request.url.query
                 requestTarget.append("?")
-                requestTarget.append(query)
+                requestTarget.append(rawQuery)
             }
         }
         return requestTarget

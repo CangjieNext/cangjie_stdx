@@ -138,6 +138,8 @@ if(CMAKE_CROSSCOMPILING)
         set(_target_cangjie_path "${CMAKE_BINARY_DIR}/modules/${_target_cj_lib_dir}")
         set(_host_library_path
             "${CMAKE_BINARY_DIR}/lib${STDX_HOST_PATH_SEP}$ENV{LIBRARY_PATH}")
+        cj_get_host_library_config(_host_stdx_lib_dir _host_library_env)
+        cj_resolve_depends(_host_depends ${HOSTLIB_DEPENDS})
 
         # With VERBATIM, write "-L${path}" (quotes are CMake delimiters). Do not use
         # -L"${path}" — that embeds literal quotes into the linker argument.
@@ -149,6 +151,7 @@ if(CMAKE_CROSSCOMPILING)
             COMMAND ${CMAKE_COMMAND} -E env
                 "CANGJIE_PATH=${_target_cangjie_path}"
                 "LIBRARY_PATH=${_host_library_path}"
+                "${_host_library_env}"
                 ${STDX_HOST_CJC}
                 --no-sub-pkg
                 --trimpath ${CMAKE_SOURCE_DIR}/src/
@@ -174,7 +177,7 @@ if(CMAKE_CROSSCOMPILING)
                 -L${STDX_HOST_RUNTIME_LIB_PATH}
                 -L${STDX_HOST_CJ_LIB_PATH}
                 ${_host_link_libs}
-            DEPENDS ${HOSTLIB_DEPENDS}
+            DEPENDS ${_host_depends}
             COMMENT "Generating host libstdx.${lib_name}${STDX_HOST_SHLIB_SUFFIX}"
             VERBATIM)
 
@@ -204,6 +207,7 @@ if(CMAKE_CROSSCOMPILING)
         set(_target_cangjie_path "${CMAKE_BINARY_DIR}/modules/${_target_cj_lib_dir}")
         set(_host_library_path
             "${CMAKE_BINARY_DIR}/lib${STDX_HOST_PATH_SEP}$ENV{LIBRARY_PATH}")
+        cj_get_host_library_config(_host_stdx_lib_dir _host_library_env)
 
         add_custom_command(
             OUTPUT ${_host_fb_lib}
@@ -212,6 +216,7 @@ if(CMAKE_CROSSCOMPILING)
             COMMAND ${CMAKE_COMMAND} -E env
                 "CANGJIE_PATH=${_target_cangjie_path}"
                 "LIBRARY_PATH=${_host_library_path}"
+                "${_host_library_env}"
                 ${STDX_HOST_CJC}
                 --no-sub-pkg
                 --trimpath ${_fb_src}/

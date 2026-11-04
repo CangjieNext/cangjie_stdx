@@ -229,13 +229,20 @@ public class HMAC <: Digest {
     public func reset(): Unit {
         if (!this.hasFinished) {
             hmacCtxFree(this.ctxPtr)
+            this.ctxPtr = CPointer<Unit>()
         }
         var ctxPtr = hmacCtxNew()
         if (ctxPtr.isNull()) {
             throw CryptoException("Failed to allocate HMAC context.")
         }
         this.ctxPtr = ctxPtr
-        hmacInitC(this.ctxPtr, this.key, Int32(this.key.size), this.hashName)
+        try {
+            hmacInitC(this.ctxPtr, this.key, Int32(this.key.size), this.hashName)
+        } catch (e: Exception) {
+            hmacCtxFree(this.ctxPtr)
+            this.ctxPtr = CPointer<Unit>()
+            throw e
+        }
         this.hasFinished = false
     }
 

@@ -13,7 +13,7 @@ import stdx.aspect_cj.*
 import std.time.DateTime
 
 @InsertAtEntry[packageName: "AOP_demo1", className: "", methodName: "printCurrentTime", isStatic: false,
-    funcTypeStr: "()->Unit", recursive: false]
+    recursive: false, funcTypeStr: "()->Unit"]
 public func printCurrentTimeImpl() {
     println("----- ${DateTime.now()} -----")
 }
@@ -57,7 +57,7 @@ import stdx.aspect_cj.*
 import std.time.DateTime
 
 @InsertAtExit[packageName: "AOP_demo2", className: "", methodName: "printCurrentTime", isStatic: false,
-    funcTypeStr: "()->std.core:String", recursive: false]
+    recursive: false, funcTypeStr: "()->std.core.String"]
 public func printCurrentTimeImpl() {
     println("----- ${DateTime.now()} -----")
 }
