@@ -14,7 +14,6 @@ import std.convert.*
 const MAX_JSON_PARSE_DEPTH = 100
 const INITIAL_JSON_OBJECT_CAPACITY = 8
 const INITIAL_JSON_ARRAY_CAPACITY = 8
-const INVALID_JSON_STRING_CONTROL_CHARACTER = "Unescaped control character in JSON string."
 
 @FastNative
 foreign func CJ_JSON_ReplaceEscapeChar(input: CPointer<UInt8>, inputlen: Int64, buffer: CPointer<UInt8>, htmlSafe: Bool): Int64
@@ -578,6 +577,8 @@ func isHexNum(char: UInt8): Bool {
 }
 
 func parseJsonString(parser: JsonParser): JsonString {
+    const INVALID_JSON_STRING_CONTROL_CHARACTER = "Unescaped control character in JSON string."
+
     if (requireCurrentByte(parser) != b'\"') {
         throw JsonException("Failed to parse JSON string.")
     }
