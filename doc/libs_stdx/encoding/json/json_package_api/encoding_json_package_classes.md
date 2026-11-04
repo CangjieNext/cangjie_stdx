@@ -1810,7 +1810,7 @@ JsonArray 内容: [null,true,123,"hello\u0026world",{"hello":"world"}]
 索引 1 的值: true
 索引 3 的值: "hello\u0026world"
 测试越界访问:
-捕获到异常: The index 10 of JsonArray does not exist.
+捕获到异常: Index '10' does not exist in JsonArray.
 ```
 
 <!--Del-->
