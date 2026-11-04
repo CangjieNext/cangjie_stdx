@@ -529,6 +529,9 @@ public class JsonFloat <: JsonValue {
     }
 
     public exclave func toString(this @local?): String @local! {
+        if (isJsonFloatInfinite(value)) {
+            throw JsonException("Failed to serialize JSON float.")
+        }
         value.toString()
     }
 
@@ -557,7 +560,7 @@ public class JsonFloat <: JsonValue {
     }
 
     public exclave func toStringWithoutEscaping(this @local!): String @local! {
-        value.toString()
+        toString()
     }
 
     /**
