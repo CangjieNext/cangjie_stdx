@@ -142,6 +142,19 @@ class CHIRDeserializerImpl {
 
         // 8. add all extends
         addAllExtends()
+
+        // 9. recompute the cached hash codes, now that all identifiers and owners are restored.
+        //    Values are created before their identifiers are read from the format, so their
+        //    cached hash code is derived from an empty identifier, or is still the `0`
+        //    placeholder set by the `LocalVar` constructor. Keeping that stale hash code would
+        //    make all values of a function share a single bucket, which turns the hash maps used
+        //    by serialization into linear scans (issue #415).
+        for (id in 1..=pkgFormat.GetValuesSize()) {
+            let index = UInt32(id)
+            if (let Some(value) <- id2Value.get(index)) {
+                value.recalculateHashCode()
+            }
+        }
     }
 
     private func addExtends(extendDef: ExtendDef) : Unit {

@@ -407,6 +407,10 @@ sealed abstract class CustomTypeDef <: Base & Equatable<CustomTypeDef> & Hashabl
         this._identifier = identifier
         this._srcCodeName = srcName
         this._packageName = pkgName
+        // The identifier never changes, so it is a stable hash source. It has to be assigned
+        // here: leaving `0` would put every definition of a package into a single bucket of the
+        // maps used by serialization and make them degrade into linear scans (issue #415).
+        this._hashCode = identifier.hashCode()
     }
 
     /**

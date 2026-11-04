@@ -222,6 +222,20 @@ sealed abstract class Value <: Base & ToString & Hashable & Equatable<Value> {
 
     protected open func calculateHashCode(): Int64
 
+    /**
+     * Recomputes and caches the hash code from the current identifier and owner information.
+     *
+     * Hash codes are derived from identifiers, but some values (`Block`, `BlockGroup`,
+     * `Parameter` and `LocalVar`) are constructed before their identifier is assigned, so the
+     * cached value may be computed from an empty identifier or still be the `0` placeholder.
+     * Deserialization restores identifiers after construction and therefore has to refresh the
+     * hash code; otherwise every restored value of a function ends up in the same hash bucket
+     * and the hash maps used by serialization degrade into linear scans (issue #415).
+     */
+    internal func recalculateHashCode(): Unit {
+        _hashCode = calculateHashCode()
+    }
+
     internal func isInvalid(): Bool {
         return _kind == ValueKind.Invalid
     }

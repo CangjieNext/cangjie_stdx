@@ -713,10 +713,22 @@ sealed abstract class Expression <: Base & ToString & Hashable & Equatable<Expre
 
     /**
      * Computes hash code based on result value.
+     *
+     * Expressions without a result (terminators such as `GoTo` or `Exit`) have no `LocalVar`
+     * to hash, so they are hashed by their owning block and kind instead of returning a
+     * constant. A constant hash would put every terminator of a function into one bucket.
      * @return The hash code value.
      */
     public func hashCode(): Int64 {
-        return if (let Some(v) <- _result) { v.hashCode() } else { 0 }
+        if (let Some(v) <- _result) {
+            return v.hashCode()
+        }
+        let ownerId = if (let Some(bb) <- _owner) {
+            bb.identifier
+        } else {
+            String.empty
+        }
+        return (ownerId + "#" + _kind.toString()).hashCode()
     }
 
     /**
