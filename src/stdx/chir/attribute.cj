@@ -52,7 +52,7 @@ internal enum Attribute <: ToString {
     Unreachable |     ///< Mark a Block is unreachable.
     NoSideEffect |  ///< Mark a Func does't have side effect.
     Common |          ///< Mark whether it's common declaration.
-    Platform |        ///< Mark whether it's platform declaration.
+    Specific |        ///< Mark whether it's specific declaration.
     SkipAnalysis |   ///< Mark node that is not used for analysis.
                      ///< e.g. Node can be skiped if it has no body when creating 'common part'
     Deserialized |    ///< Node deserialized from .chir file
@@ -61,13 +61,13 @@ internal enum Attribute <: ToString {
                      ///< On the block is used to search for it among other blocks of the function.
     Unsafe |   ///< Mark whether a function that was marked as `unsafe`
     // Native FFI attributes
-    JavaMirror |      ///< Mark whether it's @JavaMirror declaration (binding for a java type).
-    JavaImpl |        ///< Mark whether it's @JavaImpl declaration.
-    ObjCMirror |     ///< Mark whether it's @ObjCMirror declaration (binding for an Objective-C type).
-    HasInitedField | ///< Mark whether a node is a special flag, which marks the class instance as initialized.
-    JavaHasDefault | ///< Mark whether JAVA_MIRROR interface has default method.
+    JavaForeign |      ///< Mark whether it's java foreign declaration.
+    JavaExport |        ///< Mark whether it's a declaration exported to java.
+    ObjCForeign |     ///< Mark whether it's Objective-C foreign declaration.
+    JavaHasDefault | ///< Mark whether `@Java` foreign interface has default method.
     PreviouslyDeserialized | ///< Mark that deserialization occurs not in the newly created node, but in an existing one.
     DoesNotThrow | ///< Mark that the function does not throw any exceptions by construction.
+    ObjCExport | ///< Mark whether it's a declaration exported to Objective-C.
     MatchPattern | ///< Mark CFG nodes that evaluate patterns, excluding case bodies and nested expressions.
     PluginAdded | ///< Mark that the declaration is added by chir plugin.
 
@@ -106,18 +106,18 @@ internal enum Attribute <: ToString {
             case NoSideEffect           => "noSideEffect"
             case Final                  => "final"
             case Common                 => "common"
-            case Platform               => "platform"
+            case Specific               => "specific"
             case SkipAnalysis           => "skip_analysis"
             case Deserialized           => "deserialized"
             case Initializer            => "initializer"
             case Unsafe                 => "unsafe"
-            case JavaMirror             => "javaMirror"
-            case JavaImpl               => "javaImpl"
-            case ObjCMirror             => "objCMirror"
-            case HasInitedField         => "hasInitedField"
+            case JavaForeign            => "javaForeign"
+            case JavaExport             => "javaExport"
+            case ObjCForeign            => "objCForeign"
             case JavaHasDefault         => "javaHasDefault"
             case PreviouslyDeserialized => "previouslyDeserialized"
             case DoesNotThrow           => "doesNotThrow"
+            case ObjCExport             => "objCExport"
             case MatchPattern           => "matchPattern"
             case PluginAdded            => "pluginAdded"
             case AttrBegin | AttrEnd => "UNKNOWN"
@@ -153,19 +153,19 @@ internal enum Attribute <: ToString {
             case NonRecompile           => Unreachable
             case Unreachable            => NoSideEffect
             case NoSideEffect           => Common
-            case Common                 => Platform
-            case Platform               => SkipAnalysis
+            case Common                 => Specific
+            case Specific               => SkipAnalysis
             case SkipAnalysis           => Deserialized
             case Deserialized           => Initializer
             case Initializer            => Unsafe
-            case Unsafe                 => JavaMirror
-            case JavaMirror             => JavaImpl
-            case JavaImpl               => ObjCMirror
-            case ObjCMirror             => HasInitedField
-            case HasInitedField         => JavaHasDefault
+            case Unsafe                 => JavaForeign
+            case JavaForeign            => JavaExport
+            case JavaExport             => ObjCForeign
+            case ObjCForeign            => JavaHasDefault
             case JavaHasDefault         => PreviouslyDeserialized
             case PreviouslyDeserialized => DoesNotThrow
-            case DoesNotThrow           => MatchPattern
+            case DoesNotThrow           => ObjCExport
+            case ObjCExport             => MatchPattern
             case MatchPattern           => PluginAdded
             case PluginAdded            => AttrEnd
             case AttrEnd                => AttrEnd
@@ -202,18 +202,18 @@ internal enum Attribute <: ToString {
             case Unreachable            => 24
             case NoSideEffect           => 25
             case Common                 => 26
-            case Platform               => 27
+            case Specific               => 27
             case SkipAnalysis           => 28
             case Deserialized           => 29
             case Initializer            => 30
             case Unsafe                 => 31
-            case JavaMirror             => 32
-            case JavaImpl               => 33
-            case ObjCMirror             => 34
-            case HasInitedField         => 35
-            case JavaHasDefault         => 36
-            case PreviouslyDeserialized => 37
-            case DoesNotThrow           => 38
+            case JavaForeign            => 32
+            case JavaExport             => 33
+            case ObjCForeign            => 34
+            case JavaHasDefault         => 35
+            case PreviouslyDeserialized => 36
+            case DoesNotThrow           => 37
+            case ObjCExport             => 38
             case MatchPattern           => 39
             case PluginAdded            => 40
             case AttrEnd                => ATTR_SIZE  // Invalid, return size to indicate error
@@ -329,5 +329,45 @@ internal struct AttributeInfo <: ToString {
 
     internal func isImported(): Bool {
         return testAttr(Attribute.Imported)
+    }
+
+    internal func isMut(): Bool {
+        return testAttr(Attribute.Mut)
+    }
+
+    internal func isInitializer(): Bool {
+        return testAttr(Attribute.Initializer)
+    }
+
+    internal func isOverride(): Bool {
+        return testAttr(Attribute.Override)
+    }
+
+    internal mut func setOverride(enable: Bool): Unit {
+        setAttr(Attribute.Override, enable)
+    }
+
+    internal func isFinal(): Bool {
+        return testAttr(Attribute.Final)
+    }
+
+    internal mut func setFinal(enable: Bool): Unit {
+        setAttr(Attribute.Final, enable)
+    }
+
+    internal func isNoInline(): Bool {
+        return testAttr(Attribute.NoInline)
+    }
+
+    internal mut func setNoInline(enable: Bool): Unit {
+        setAttr(Attribute.NoInline, enable)
+    }
+
+    internal func isSkipAnalysis(): Bool {
+        return testAttr(Attribute.SkipAnalysis)
+    }
+
+    internal mut func setSkipAnalysis(enable: Bool): Unit {
+        setAttr(Attribute.SkipAnalysis, enable)
     }
 }

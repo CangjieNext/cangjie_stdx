@@ -45,10 +45,14 @@
 
 - 被标注 @InsertAtEntry/@InsertAtExit 的函数，其返回类型只能是 Unit；
 - 被标注 @ReplaceFuncBody 的函数，其返回类型应和被织入的函数的返回类型相同；
-- 被标注 @InsertAtEntry/@InsertAtExit/@ReplaceFuncBody 的函数如果没有形参，那么其织入后总是被无参调用 ；
-- 被标注 @InsertAtEntry/@InsertAtExit/@ReplaceFuncBody 的函数如果有形参，其形参列表应和被织入函数的源码形参列表相同，此外：
-    - 特别地，如果被织入的函数是实例成员函数，那么需要将 this 参数显式地写在形参中；
-    - 对于被标注 @ReplaceFuncBody 的函数，需要额外添加一个形参，形参的类型和被织入的函数相同，该形参表示被织入函数原始版本的闭包。
+- 被标注 @InsertAtEntry/@InsertAtExit/@ReplaceFuncBody 的函数如果没有形参，那么其织入后总是被无参调用；
+- 被标注 @InsertAtEntry/@InsertAtExit/@ReplaceFuncBody 的函数如果有形参，收集阶段先按切面形态去掉 receiver，再比较其余形参和被织入函数的源码形参：
+    - 切面本身是被织入类型的实例成员时，receiver 就是该切面的隐式 `this`，源码形参里不再声明。收集阶段去掉这个隐式 `this` 之后，其余形参和被织入函数的源码形参相同。这种切面只能织入同一类型的实例成员；
+    - 切面是全局函数或静态成员，并且被织入的函数是实例成员时，源码第一个形参显式写成该实例类型，例如 `self: T`。校验的是类型，必须等于注解中的 `packageName.className`；形参名不参与校验。去掉这个形参之后，其余形参和被织入函数的源码形参相同；
+    - 被织入的函数是全局函数或静态成员时，切面不能是实例成员，形参列表直接和被织入函数的源码形参相同。
+- 被标注 @ReplaceFuncBody 的函数在上面的形参之后，最后再增加一个形参，表示被织入函数的原始实现。该形参是函数类型，只包含被织入函数的源码形参和返回类型，receiver 不在其中。切面的返回类型必须与被织入函数以及该形参的返回类型相同。被织入 `func foo(x: Int64): Int64` 时：
+    - 成员切面写作 `func aspect(x: Int64, original: (Int64) -> Int64): Int64`；
+    - 全局或静态切面写作 `func aspect(self: T, x: Int64, original: (Int64) -> Int64): Int64`。
 
 ### 使用
 

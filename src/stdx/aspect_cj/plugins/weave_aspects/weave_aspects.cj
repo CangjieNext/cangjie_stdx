@@ -53,6 +53,25 @@ class WeaveAspects {
             visitor.walk(f.body.getOrThrow())
         } else if (isReplaceBodyAnno(pi.annoClassName)) {
             let wrapperFunc = pkg.addFunction(f.funcType, f.identifierWithoutPrefix, f.srcCodeName, f.packageName)
+            // Call sites keep ThisType. The replacement entry must stay a member of the same parent.
+            if (let Some(parent) <- f.declaredParent) {
+                parent.appendMethod(wrapperFunc)
+            }
+            // Add the original declaration attributes. addFunction already set PluginAdded;
+            // that bit stays, it is not replaced.
+            wrapperFunc.appendAttributesFrom(f)
+            // GenerateVTable runs after this plugin. It collects every public or protected
+            // method and matches candidates by srcCodeName plus signature. The renamed
+            // original stays on the same parent, so it would share the wrapper's slot or
+            // add a second one. Open dispatch and interface dispatch could then call the
+            // original and skip the aspect. The wrapper keeps the copied VIRTUAL, OVERRIDE,
+            // and visibility bits. The original leaves that candidate set.
+            if (f.isMemberMethod()) {
+                f.setOpen(false)
+                f.setOverride(false)
+                f.setAbstract(false)
+                f.setPrivate()
+            }
             f.replaceWith(wrapperFunc)
             wrapperFunc.initBody()
             let builder = CHIRBuilder(wrapperFunc.body.getOrThrow().entryBlock)
@@ -63,6 +82,14 @@ class WeaveAspects {
                     funcCallCxt.setArg(i, wrapperFunc.parameters[i])
                 }
             }
+            // Member functions cannot be passed as `original` directly. An Apply of a
+            // member needs ThisType, and an instance `original` does not take the
+            // receiver: the lambda captures this wrapper's receiver and calls the
+            // old body with it.
+            if (f.isMemberMethod()) {
+                let bound = createBoundOriginal(builder, f, wrapperFunc)
+                funcCallCxt.setArg(args.size - 1, bound)
+            }
             let apply = builder.createApply(callee, funcCallCxt)
             builder.createStore(apply.result, allocate.result)
             builder.createExit()
@@ -72,10 +99,78 @@ class WeaveAspects {
         }
     }
 
+    // The value returned here is a lambda expression inside CA.foo, not a
+    // package-level function. replaceFuncBody_into_instance.cj before weave:
+    //
+    //   class CA {
+    //       @ReplaceBody[package: "default", class: "CA", method: "foo", isStatic: false, recursive: false]
+    //       func aspect(x: Int64, original: (Int64) -> Int64): Int64 {
+    //           let r = original(x)
+    //           r
+    //       }
+    //       func foo(x: Int64): Int64 { x }   // CHIR type (CA&, Int64) -> Int64
+    //   }
+    //   main() { CA().foo(1) }
+    //
+    // After weave, `aspect` is unchanged. The old `foo` body stays on `CA`, renamed
+    // foo.original and made private so it is not a vtable candidate. The name foo is a
+    // new member of CA and keeps the original VIRTUAL/OVERRIDE bits. main's CA().foo(1)
+    // enters this member. `bound` is a local lambda in this member's body:
+    //
+    //   class CA {
+    //       @ReplaceBody[package: "default", class: "CA", method: "foo", isStatic: false, recursive: false]
+    //       func aspect(x: Int64, original: (Int64) -> Int64): Int64 {
+    //           let r = original(x)
+    //           r
+    //       }
+    //       private func `foo.original`(x: Int64): Int64 { x }
+    //       func foo(x: Int64): Int64 {
+    //           let bound: (Int64) -> Int64 = { x => this.`foo.original`(x) }
+    //           this.aspect(x, bound)
+    //       }
+    //   }
+    //
+    // `original` does not take the receiver. The lambda captures the wrapper's
+    // `this` and passes it, with ThisType, to foo.original. A static member has
+    // no receiver to capture; ThisType comes from the parent type.
+    //
+    // Create the lambda after replaceWith. That rewrite only retargets users
+    // that already exist, so the Apply inside the lambda stays on foo.original.
+    // Creating it earlier would retarget that Apply to foo and recurse.
+    private func createBoundOriginal(builder: CHIRBuilder, original: Function, wrapper: Function): Value {
+        var paramTypes = original.funcType.paramTypes
+        var capturedReceiver: ?Value = None
+        if (original.isInstanceMemberMethod()) {
+            let (_, rest) = paramTypes.splitAt(1)
+            paramTypes = rest
+            capturedReceiver = wrapper.parameters[0]
+        }
+        let boundTy = FuncType.get(paramTypes, original.funcType.returnType)
+        let lambda = builder.createLambda(boundTy, wrapper.identifierWithoutPrefix + ".bound", "original")
+        let lambdaBuilder = CHIRBuilder(lambda.body.entryBlock)
+        let retSlot = lambdaBuilder.createAllocate(boundTy.returnType)
+        lambda.returnValue = retSlot.result
+        let callArgs = ArrayList<Value>()
+        let thisType = match (capturedReceiver) {
+            case Some(recv) =>
+                callArgs.add(recv)
+                addRefIfFuncIsMutOrClass(recv.ty, original)
+            case None => addRefIfFuncIsMutOrClass(original.outerType.getOrThrow(), original)
+        }
+        for (param in lambda.parameters) {
+            callArgs.add(param)
+        }
+        let callCtx = FuncCallContext(callArgs.toArray(), Array<Type>(), Some(thisType))
+        let apply = lambdaBuilder.createApply(original, callCtx)
+        lambdaBuilder.createStore(apply.result, retSlot.result)
+        lambdaBuilder.createExit()
+        return lambda.result
+    }
+
     private func computeThisTypeOfCallee(callee: Function, args: Array<Value>): ?Type {
         if (callee.isMemberMethod()) {
             if (callee.isStatic()) {
-                return callee.outerType
+                return addRefIfFuncIsMutOrClass(callee.outerType.getOrThrow(), callee)
             }
             return args[0].ty
         }

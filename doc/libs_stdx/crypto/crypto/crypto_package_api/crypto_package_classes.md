@@ -8,10 +8,6 @@ public class SecureRandom <: RandomGenerator {
 }
 ```
 
-父类型：
-
-- [RandomGenerator](../../common/crypto_common_package_api/crypto_common_package_interfaces.md#interface-randomgenerator)
-
 功能：用于生成加密安全的伪随机数。
 
 和 Random 相比，主要有三个方面不同：
@@ -21,6 +17,10 @@ public class SecureRandom <: RandomGenerator {
 - 安全性： Random 不能用于加密安全的应用或者隐私数据的保护，可以使用 [SecureRandom](crypto_package_classes.md#class-securerandom)。
 
 使用示例见 [SecureRandom 使用](../crypto_samples/sample_secure_random.md)。
+
+父类型：
+
+- [RandomGenerator](../../common/crypto_common_package_api/crypto_common_package_interfaces.md#interface-randomgenerator)
 
 ### init(Bool)
 
@@ -74,7 +74,7 @@ public func nextBits(bits: UInt64): UInt64
 
 返回值：
 
-- UInt64 - 生成的用户指定位长的随机数。
+- UInt64 - 生成的指定位长的随机数。
 
 异常：
 
@@ -1246,7 +1246,7 @@ public class SM4 <: BlockCipher {
 
 不同的工作模式可能对应的加解密实现不同，安全性也不同。需要选择和场景适配的加解密工作模式。
 
-iv 初始化向量在 GCM 模式下可以设置推荐长度是 12 字节，在 CBC、OFB、CFB、CTR 模式下 iv 长度是 16 字节，在 ECB 模式下 iv 可以不设置。
+iv 初始化向量在 GCM 模式下不能为空，推荐长度为 12 字节；在 CBC、OFB、CFB、CTR 模式下必须为 16 字节，未传入或长度不为 16 字节时将抛出 [CryptoException](../../common/crypto_common_package_api/crypto_common_package_exceptions.md#class-cryptoexception)；在 ECB 模式下 iv 不参与运算，可以不设置。
 
 paddingMode 填充模式模式由 [PaddingMode](crypto_package_structs.md#struct-paddingmode) 定义， 目前支持 NoPadding 非填充、PKCS7Padding PKCS7 填充。默认是 PKCS7 填充。
 

@@ -364,6 +364,7 @@ make_cangjie_lib(
         encoding.url
         log
         logger
+        net.tls
         net.tls.common
         crypto.common
     CANGJIE_STD_LIB_LINK
@@ -844,6 +845,8 @@ if(NOT CANGJIE_CJPM_BUILD_TYPE AND NOT CANGJIE_BUILD_WITHOUT_CHIR
         add_custom_target(
             cangjie${BACKEND_TYPE}PluginMacroHost ALL
             DEPENDS ${_plugin_macro_modules})
+        set_target_properties(cangjie${BACKEND_TYPE}PluginMacroHost PROPERTIES
+            CJ_OUTPUT_FILE "${_plugin_macro_modules}")
     endif()
 endif()
 

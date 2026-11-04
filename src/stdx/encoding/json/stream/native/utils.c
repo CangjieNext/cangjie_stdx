@@ -10,6 +10,7 @@
 #include "securec.h"
 
 #define FL_TO_STR_MAX 310 /* 310 is the maxlength of double to string size */
+#define JSON_CONTROL_CHARACTER (-2)
 
 extern int64_t CJ_ReadString(const uint8_t* str, int64_t left, int64_t right)
 {
@@ -20,6 +21,10 @@ extern int64_t CJ_ReadString(const uint8_t* str, int64_t left, int64_t right)
             // ASCII character
             if (str[i] == '\"' || str[i] == '\\') {
                 return i;
+            }
+            // RFC 8259 forbids unescaped control characters in strings.
+            if (c < 0x20) {
+                return JSON_CONTROL_CHARACTER;
             }
             i++;
             continue;

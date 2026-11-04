@@ -20,6 +20,7 @@ import argparse
 import logging
 import multiprocessing
 import glob
+import json
 import os
 import platform
 import re
@@ -37,7 +38,6 @@ BUILD_TARGET = ""
 DEVECO_OH_NATIVE_HOME = None
 HAS_DEBUG_FLAG = False
 BUILD_TYPE_CJPM = "release"
-WMIC_PATH = "C:/Windows/System32/wbem/wmic.exe"
 IS_MOCK = False
 
 def get_platform():
@@ -81,19 +81,75 @@ def get_cmdline_macos(pid):
     return []
 
 
-def get_cmdline_windows(pid):
-    cmd = "{} process where processid={} get CommandLine /value".format(WMIC_PATH, pid)
-    out = run_command(cmd)
-    if not out:
-        return []
-    for line in out.splitlines():
-        if line.strip().startswith("CommandLine="):
-            import shlex
+def _powershell_exe():
+    system_root = os.environ.get("SystemRoot", r"C:\Windows")
+    return os.path.join(system_root, "System32", "WindowsPowerShell", "v1.0", "powershell.exe")
 
-            val = line.strip().split("=", 1)[1]
-            # Windows command lines can be tricky. shlex might not be perfect for cmd/powershell but is better than space split.
-            return val.split()
-    return []
+
+def _query_process_psutil(pid):
+    import psutil
+
+    process = psutil.Process(int(pid))
+    exe = None
+    cwd = None
+    try:
+        exe = process.exe()
+    except (psutil.AccessDenied, psutil.NoSuchProcess):
+        exe = None
+    try:
+        cwd = process.cwd()
+    except (psutil.AccessDenied, psutil.NoSuchProcess):
+        cwd = None
+    return {
+        "ppid": process.ppid(),
+        "name": process.name(),
+        "exe": exe,
+        "cmdline": process.cmdline(),
+        "cwd": cwd,
+    }
+
+
+def _query_process_cim(pid):
+    """Query one process via PowerShell CIM. Replaces the removed wmic.exe."""
+    try:
+        # int() is the injection barrier: a non-numeric pid raises before it is
+        # interpolated into the PowerShell script. Do not drop this conversion.
+        script = (
+            "[Console]::OutputEncoding = [System.Text.Encoding]::UTF8; "
+            "$p = Get-CimInstance -ClassName Win32_Process -Filter \"ProcessId={}\"; "
+            "if ($null -eq $p) {{ exit 0 }}; "
+            "[PSCustomObject]@{{ ParentProcessId = $p.ParentProcessId; Name = $p.Name; "
+            "ExecutablePath = $p.ExecutablePath; CommandLine = $p.CommandLine }} "
+            "| ConvertTo-Json -Compress"
+        ).format(int(pid))
+        output = subprocess.check_output(
+            [_powershell_exe(), "-NoProfile", "-NonInteractive", "-Command", script],
+            stderr=subprocess.DEVNULL,
+        )
+    except (OSError, subprocess.CalledProcessError, TypeError, ValueError):
+        return None
+    text = output.decode("utf-8-sig", errors="ignore").strip()
+    if not text:
+        return None
+    try:
+        info = json.loads(text)
+    except ValueError:
+        return None
+    cmdline = info.get("CommandLine") or ""
+    return {
+        "ppid": info.get("ParentProcessId"),
+        "name": info.get("Name"),
+        "exe": info.get("ExecutablePath"),
+        "cmdline": cmdline.split() if cmdline else [],
+        "cwd": None,
+    }
+
+
+def get_process_windows(pid):
+    try:
+        return _query_process_psutil(pid)
+    except Exception:
+        return _query_process_cim(pid)
 
 
 def extract_target_value(args):
@@ -154,28 +210,24 @@ def get_cwd_macos(pid):
     return "/tmp/stdx"
 
 
-def get_cwd_windows(pid, debug=False):
+def get_cwd_windows(pid, exe_path=None, debug=False):
     """
     Get the current working directory of a process on Windows.
-    
-    Args:
-        pid (int): Process ID
-        debug (bool): Debug flag
-        
-    Returns:
-        str: Current working directory of the process or None if failed
+
+    psutil can read another process's cwd. Without it, fall back to the
+    build-script executable path, because Win32_Process does not expose cwd.
     """
-    # Try using psutil if available (most reliable)
     try:
         import psutil
-        process = psutil.Process(pid)
-        return process.cwd()
+        return psutil.Process(int(pid)).cwd()
     except ImportError:
-        return None
-    except (psutil.NoSuchProcess, psutil.AccessDenied):
+        pass
+    except Exception:
         if debug:
-            print(f"Failed to get cwd for pid {pid} using psutil")
-        return None
+            print("Failed to get cwd for pid {} using psutil".format(pid))
+    if exe_path and "build-script" in exe_path:
+        return exe_path.split("build-script-cache")[0]
+    return None
 
 def find_ancestor_and_cwd(target_name="cjpm"):
     global BUILD_TARGET
@@ -216,29 +268,20 @@ def find_ancestor_and_cwd(target_name="cjpm"):
                 name = os.path.basename(name_str.strip())
 
         elif plat == "windows":
-            cmd = "{} process where processid={} get ParentProcessId,Name,ExecutablePath /value".format(WMIC_PATH, current_pid)
-            out = run_command(cmd)
-            if out:
-                info = {}
-                for line in out.splitlines():
-                    if "=" in line:
-                        k, v = line.strip().split("=", 1)
-                        info[k] = v
-                if "ParentProcessId" in info:
-                    ppid = int(info["ParentProcessId"])
-                if "Name" in info:
-                    name = info["Name"]
-                # Try to get working directory using our new function
-                temp_cwd = get_cwd_windows(current_pid)
+            info = get_process_windows(current_pid)
+            if info:
+                if info.get("ppid") is not None:
+                    ppid = int(info["ppid"])
+                name = info.get("name")
+                temp_cwd = info.get("cwd") or get_cwd_windows(current_pid, info.get("exe"))
                 if temp_cwd:
                     win_cwd = temp_cwd
-                # Fallback to the original logic if needed
-                elif "ExecutablePath" in info and "build-script" in info["ExecutablePath"]:
-                    win_cwd = info["ExecutablePath"].split("build-script-cache")[0]
-                    print("Using fallback cwd from executable path: " + win_cwd)
+                    if info.get("cwd") is None and info.get("exe") and "build-script" in info["exe"]:
+                        print("Using fallback cwd from executable path: " + win_cwd)
                 if DEVECO_OH_NATIVE_HOME != "" and win_cwd:
                     DEVECO_CUR_DIR = win_cwd
                     print("DEVECO_CUR_DIR:", DEVECO_CUR_DIR)
+            win_cmdline = info.get("cmdline") if info else None
 
         if not ppid or not name:
             break
@@ -260,7 +303,7 @@ def find_ancestor_and_cwd(target_name="cjpm"):
             elif plat == "macos":
                 cmdline = get_cmdline_macos(current_pid)
             elif plat == "windows":
-                cmdline = get_cmdline_windows(current_pid)
+                cmdline = win_cmdline or []
 
             target_val = extract_target_value(cmdline)
             BUILD_TARGET = target_val

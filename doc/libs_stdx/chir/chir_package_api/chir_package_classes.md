@@ -8647,6 +8647,41 @@ main() {
 prop_users: 0
 ```
 
+### func appendAttributesFrom(Value)
+
+```cangjie
+public func appendAttributesFrom(src: Value): Unit
+```
+
+功能：把 `src` 已置位的属性合并到当前值上。当前值已经置位的属性保留。
+
+参数：
+
+- src: [Value](#class-value) - 提供属性位的值。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let src = pkg.addFunction(FuncType.get([], UnitType.get()), "src_m", "src", "demo")
+    src.setPublic()
+    src.setStatic(true)
+    let dst = pkg.addFunction(FuncType.get([], UnitType.get()), "dst_m", "dst", "demo")
+    dst.appendAttributesFrom(src)
+    println("appendAttributesFrom: ${dst.isPublic() && dst.isStatic()}")
+}
+```
+
+运行结果：
+
+```text
+appendAttributesFrom: true
+```
+
 ### func dump()
 
 ```cangjie
@@ -11036,6 +11071,105 @@ main() {
 fn_isAbstract: false
 ```
 
+### func isClassConstructor()
+
+```cangjie
+public func isClassConstructor(): Bool
+```
+
+功能：判断该函数是否为类构造函数，包括普通构造函数和主构造函数。
+
+返回值：
+
+- Bool - 为普通类构造函数或主类构造函数时返回 `true`，否则返回 `false`。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    println("fn_isClassConstructor_before: ${f.isClassConstructor()}")
+    f.setClassConstructor()
+    println("fn_isClassConstructor: ${f.isClassConstructor()}")
+}
+```
+
+运行结果：
+
+```text
+fn_isClassConstructor_before: false
+fn_isClassConstructor: true
+```
+
+### func isStructConstructor()
+
+```cangjie
+public func isStructConstructor(): Bool
+```
+
+功能：判断该函数是否为结构体构造函数，包括普通构造函数和主构造函数。
+
+返回值：
+
+- Bool - 为普通结构体构造函数或主结构体构造函数时返回 `true`，否则返回 `false`。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    println("fn_isStructConstructor_before: ${f.isStructConstructor()}")
+    f.setStructConstructor()
+    println("fn_isStructConstructor: ${f.isStructConstructor()}")
+}
+```
+
+运行结果：
+
+```text
+fn_isStructConstructor_before: false
+fn_isStructConstructor: true
+```
+
+### func isAnnoFactoryFunc()
+
+```cangjie
+public func isAnnoFactoryFunc(): Bool
+```
+
+功能：判断该函数是否为注解工厂函数。
+
+返回值：
+
+- Bool - 为注解工厂函数时返回 `true`，否则返回 `false`。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    println("fn_isAnnoFactoryFunc: ${f.isAnnoFactoryFunc()}")
+}
+```
+
+运行结果：
+
+```text
+fn_isAnnoFactoryFunc: false
+```
+
 ### func isDeclaredInCurPackage()
 
 ```cangjie
@@ -11158,6 +11292,68 @@ main() {
 
 ```text
 fn_isMemberMethod: false
+```
+
+### func isMut()
+
+```cangjie
+public func isMut(): Bool
+```
+
+功能：判断该函数是否带有 `mut` 标记。
+
+返回值：
+
+- Bool - 带有 `mut` 标记时返回 `true`，否则返回 `false`。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    println("fn_isMut: ${f.isMut()}")
+}
+```
+
+运行结果：
+
+```text
+fn_isMut: false
+```
+
+### func isInitializer()
+
+```cangjie
+public func isInitializer(): Bool
+```
+
+功能：判断该函数是否带有初始化标记，例如包、文件或变量的初始化函数。该标记与构造函数种类独立，设置构造函数种类不会设置此标记。
+
+返回值：
+
+- Bool - 带有初始化标记时返回 `true`，否则返回 `false`。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    println("fn_isInitializer: ${f.isInitializer()}")
+}
+```
+
+运行结果：
+
+```text
+fn_isInitializer: false
 ```
 
 ### func isOpen()
@@ -11350,6 +11546,350 @@ main() {
 
 ```text
 fn_setAbstract: true
+```
+
+### func setClassConstructor()
+
+```cangjie
+public func setClassConstructor(): Unit
+```
+
+功能：将该函数的种类设置为类构造函数，替换原有函数种类。此操作仅设置函数种类，不创建函数体，也不设置初始化标记。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.setClassConstructor()
+    println("fn_setClassConstructor: ${f.isClassConstructor()}")
+}
+```
+
+运行结果：
+
+```text
+fn_setClassConstructor: true
+```
+
+### func setStructConstructor()
+
+```cangjie
+public func setStructConstructor(): Unit
+```
+
+功能：将该函数的种类设置为结构体构造函数，替换原有函数种类。此操作仅设置函数种类，不创建函数体，也不设置初始化标记。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.setStructConstructor()
+    println("fn_setStructConstructor: ${f.isStructConstructor()}")
+}
+```
+
+运行结果：
+
+```text
+fn_setStructConstructor: true
+```
+
+### func isOverride()
+
+```cangjie
+public func isOverride(): Bool
+```
+
+功能：判断该函数是否设置了 `override` 标记。
+
+返回值：
+
+- Bool - 设置了该标记时返回 `true`，否则返回 `false`。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    println("default: ${f.isOverride()}")
+    f.setOverride(true)
+    println("enabled: ${f.isOverride()}")
+    f.setOverride(false)
+    println("cleared: ${f.isOverride()}")
+}
+```
+
+运行结果：
+
+```text
+default: false
+enabled: true
+cleared: false
+```
+
+### func setOverride(Bool)
+
+```cangjie
+public func setOverride(enable: Bool): Unit
+```
+
+功能：设置或清除该函数的 `override`（重写）标记。
+
+参数：
+
+- enable: Bool - `true` 表示设置标记，`false` 表示清除标记。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.setOverride(true)
+    println("fn_setOverride: ${f.isOverride()}")
+    f.setOverride(false)
+    println("fn_setOverride_cleared: ${!f.isOverride()}")
+}
+```
+
+运行结果：
+
+```text
+fn_setOverride: true
+fn_setOverride_cleared: true
+```
+
+### func isFinal()
+
+```cangjie
+public func isFinal(): Bool
+```
+
+功能：判断该函数是否设置了 `final` 标记。
+
+返回值：
+
+- Bool - 设置了该标记时返回 `true`，否则返回 `false`。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    println("default: ${f.isFinal()}")
+    f.setFinal(true)
+    println("enabled: ${f.isFinal()}")
+    f.setFinal(false)
+    println("cleared: ${f.isFinal()}")
+}
+```
+
+运行结果：
+
+```text
+default: false
+enabled: true
+cleared: false
+```
+
+### func setFinal(Bool)
+
+```cangjie
+public func setFinal(enable: Bool): Unit
+```
+
+功能：设置或清除该函数的 `final` 标记。
+
+参数：
+
+- enable: Bool - `true` 表示设置标记，`false` 表示清除标记。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.setFinal(true)
+    println("fn_setFinal: ${f.isFinal()}")
+    f.setFinal(false)
+    println("fn_setFinal_cleared: ${!f.isFinal()}")
+}
+```
+
+运行结果：
+
+```text
+fn_setFinal: true
+fn_setFinal_cleared: true
+```
+
+### func isNoInline()
+
+```cangjie
+public func isNoInline(): Bool
+```
+
+功能：判断该函数是否设置了 `noInline` 标记。
+
+返回值：
+
+- Bool - 设置了该标记时返回 `true`，否则返回 `false`。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    println("default: ${f.isNoInline()}")
+    f.setNoInline(true)
+    println("enabled: ${f.isNoInline()}")
+    f.setNoInline(false)
+    println("cleared: ${f.isNoInline()}")
+}
+```
+
+运行结果：
+
+```text
+default: false
+enabled: true
+cleared: false
+```
+
+### func setNoInline(Bool)
+
+```cangjie
+public func setNoInline(enable: Bool): Unit
+```
+
+功能：设置或清除该函数的 `noInline`（禁止内联）标记。
+
+参数：
+
+- enable: Bool - `true` 表示设置标记，`false` 表示清除标记。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.setNoInline(true)
+    println("fn_setNoInline: ${f.isNoInline()}")
+    f.setNoInline(false)
+    println("fn_setNoInline_cleared: ${!f.isNoInline()}")
+}
+```
+
+运行结果：
+
+```text
+fn_setNoInline: true
+fn_setNoInline_cleared: true
+```
+
+### func isSkipAnalysis()
+
+```cangjie
+public func isSkipAnalysis(): Bool
+```
+
+功能：判断该函数是否设置了 `skip_analysis` 标记。
+
+返回值：
+
+- Bool - 设置了该标记时返回 `true`，否则返回 `false`。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    println("default: ${f.isSkipAnalysis()}")
+    f.setSkipAnalysis(true)
+    println("enabled: ${f.isSkipAnalysis()}")
+    f.setSkipAnalysis(false)
+    println("cleared: ${f.isSkipAnalysis()}")
+}
+```
+
+运行结果：
+
+```text
+default: false
+enabled: true
+cleared: false
+```
+
+### func setSkipAnalysis(Bool)
+
+```cangjie
+public func setSkipAnalysis(enable: Bool): Unit
+```
+
+功能：设置或清除该函数的 `skip_analysis`（跳过分析）标记。
+
+参数：
+
+- enable: Bool - `true` 表示设置标记，`false` 表示清除标记。
+
+示例：
+
+<!-- verify -->
+```cangjie
+import stdx.chir.*
+
+main() {
+    let pkg = Package("demo", AccessLevel.Public)
+    let f = pkg.addFunction(FuncType.get([], UnitType.get()), "f_m", "f", "demo")
+    f.setSkipAnalysis(true)
+    println("fn_setSkipAnalysis: ${f.isSkipAnalysis()}")
+    f.setSkipAnalysis(false)
+    println("fn_setSkipAnalysis_cleared: ${!f.isSkipAnalysis()}")
+}
+```
+
+运行结果：
+
+```text
+fn_setSkipAnalysis: true
+fn_setSkipAnalysis_cleared: true
 ```
 
 ### func setOpen(Bool)
@@ -18360,7 +18900,7 @@ main() {
     f.body.getOrThrow().entryBlock.appendExpr(expr)
     let lv = expr.result
     let raise = RaiseException.create(lv)
-    println("static_create_noSuccessor: ${raise.result.toString().size > 0}")
+    println("static_create_noSuccessor: ${raise.isTerminator() && raise.tryGetResult().isNone()}")
 }
 ```
 
@@ -24842,3 +25382,20 @@ public func freeSerializedMemory(): Unit
 ```
 
 功能：释放上次序列化产生的共享 FlatBuffers 构建器状态。
+
+## func addRefIfFuncIsMutOrClass(Type, Function)
+
+```cangjie
+public func addRefIfFuncIsMutOrClass(thisType: Type, callee: Function): Type
+```
+
+功能：按成员调用的 `ThisType` 规则，决定 receiver 类型是否需要再包一层 [RefType](#class-reftype)。`thisType` 已经是引用类型时原样返回。`thisType` 是类或原始数组，或者 `callee` 是 `mut` 函数、类构造函数或结构体构造函数时，返回 `RefType.get(thisType)`，否则返回 `thisType`。
+
+参数：
+
+- thisType: [Type](#class-type) - 调用点上的 receiver 类型；静态成员没有 receiver 时，传入该函数的外部类型。
+- callee: [Function](#class-function) - 被调用的函数。
+
+返回值：
+
+- [Type](#class-type) - 写入 `Apply` 的 `ThisType` 的类型。

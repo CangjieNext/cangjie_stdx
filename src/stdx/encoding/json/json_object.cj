@@ -38,6 +38,13 @@ func jsonPrimitiveToString<T>(value: T): String where T <: ToString {
     value.toString()
 }
 
+func jsonFloatToString(value: Float64): String {
+    if (isJsonFloatInfinite(value)) {
+        throw JsonException("Failed to serialize JSON float.")
+    }
+    return value.toString()
+}
+
 func jsonArrayToFormattedString(
     value: JsonArray,
     depth: Int64,
@@ -346,7 +353,7 @@ public class JsonFloat <: JsonValue {
      * @since 0.17.4
      */
     public func toString(): String {
-        return jsonPrimitiveToString(value)
+        return jsonFloatToString(value)
     }
 
     /**
@@ -366,7 +373,7 @@ public class JsonFloat <: JsonValue {
      * @return json-converted String is value string data.
      */
     public func toStringWithoutEscaping(): String {
-        return jsonPrimitiveToString(value)
+        return jsonFloatToString(value)
     }
 
     /**
