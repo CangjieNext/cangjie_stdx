@@ -29,7 +29,7 @@ public init()
 Functionality: Creates an empty [JsonArray](encoding_json_package_classes.md#class-jsonarray).
 
 <!--Del-->
-### init(this @local!)
+### init()
 
 ```cangjie
 public exclave init(this @local!)
@@ -74,7 +74,7 @@ Parameters:
 - list: Array\<[JsonValue](encoding_json_package_classes.md#class-jsonvalue)> - The Array used to create the [JsonArray](encoding_json_package_classes.md#class-jsonarray).
 
 <!--Del-->
-### init(this @local!, Array\<JsonValue> @local!)
+### init(Array\<JsonValue>)
 
 ```cangjie
 public exclave init(this @local!, list: Array<JsonValue> @local!)
@@ -129,7 +129,7 @@ Parameters:
 - list: ArrayList\<[JsonValue](encoding_json_package_classes.md#class-jsonvalue)> - The ArrayList used to create the [JsonArray](encoding_json_package_classes.md#class-jsonarray).
 
 <!--Del-->
-### init(this @local!, ArrayList\<JsonValue> @local!)
+### init(ArrayList\<JsonValue>)
 
 ```cangjie
 public exclave init(this @local!, list: ArrayList<JsonValue> @local!)
@@ -191,7 +191,7 @@ Return Value:
 - [JsonArray](encoding_json_package_classes.md#class-jsonarray) - The [JsonArray](encoding_json_package_classes.md#class-jsonarray) after adding the data.
 
 <!--Del-->
-### func add(this @local!, JsonValue @local!)
+### func add(JsonValue)
 
 ```cangjie
 public exclave func add(this @local!, jv: JsonValue @local!): JsonArray @local!
@@ -255,7 +255,7 @@ Return Value:
 - Option\<[JsonValue](encoding_json_package_classes.md#class-jsonvalue)> - The encapsulated [JsonValue](encoding_json_package_classes.md#class-jsonvalue) data at the corresponding index.
 
 <!--Del-->
-### func get(this @local!, Int64)
+### func get(Int64)
 
 ```cangjie
 public exclave func get(this @local!, index: Int64): Option<JsonValue> @local!
@@ -305,7 +305,7 @@ first=1
 ```
 <!--DelEnd-->
 <!--Del-->
-### func get(this @local?, Int64)
+### func get(Int64)
 
 ```cangjie
 public exclave func get(this @local?, index: Int64): Option<JsonValue> @local?
@@ -372,7 +372,7 @@ Return Value:
 - ArrayList\<[JsonValue](encoding_json_package_classes.md#class-jsonvalue)> - The items data of the [JsonArray](encoding_json_package_classes.md#class-jsonarray).
 
 <!--Del-->
-### func getItems(this @local!)
+### func getItems()
 
 ```cangjie
 public exclave func getItems(this @local!): ArrayList<JsonValue> @local!
@@ -415,7 +415,7 @@ size=2
 ```
 <!--DelEnd-->
 <!--Del-->
-### func getItems(this @local?)
+### func getItems()
 
 ```cangjie
 public func getItems(this @local?): ArrayList<JsonValue> @local?
@@ -475,7 +475,7 @@ Return Value:
 - [JsonKind](encoding_json_package_enums.md#enum-jsonkind) - The [JsonKind](encoding_json_package_enums.md#enum-jsonkind) type (JsArray) to which the current [JsonArray](encoding_json_package_classes.md#class-jsonarray) belongs.
 
 <!--Del-->
-### func kind(this @local?)
+### func kind()
 
 ```cangjie
 public func kind(this @local?): JsonKind
@@ -536,7 +536,7 @@ Return Value:
 - Int64 - The number of [JsonValue](encoding_json_package_classes.md#class-jsonvalue) elements in the [JsonArray](encoding_json_package_classes.md#class-jsonarray).
 
 <!--Del-->
-### func size(this @local?)
+### func size()
 
 ```cangjie
 public func size(this @local?): Int64
@@ -594,7 +594,7 @@ Return Value:
 - String - The converted JSON-formatted string.
 
 <!--Del-->
-### func toJsonString(this @local!)
+### func toJsonString()
 
 ```cangjie
 public exclave func toJsonString(this @local!): String @local!
@@ -643,7 +643,7 @@ Output:
 ```
 <!--DelEnd-->
 <!--Del-->
-### func toJsonString(this @local?)
+### func toJsonString()
 
 ```cangjie
 public func toJsonString(this @local?): String
@@ -719,7 +719,7 @@ Exceptions:
 - IllegalArgumentException - Thrown if depth is negative or if indent contains characters other than ' ' and '\t'.
 
 <!--Del-->
-### func toJsonString(this @local!, Int64, Bool, String @~local)
+### func toJsonString(Int64, Bool, String)
 
 ```cangjie
 public exclave func toJsonString(this @local!, depth: Int64, bracketInNewLine!: Bool = false, indent!: String @~local = "  "): String @local!
@@ -774,7 +774,7 @@ Output:
 ```
 <!--DelEnd-->
 <!--Del-->
-### func toJsonString(this @local?, Int64, Bool, String @local?)
+### func toJsonString(Int64, Bool, String)
 
 ```cangjie
 public func toJsonString(this @local?, depth: Int64, bracketInNewLine!: Bool = false, indent!: String @local? = "  "): String
@@ -846,7 +846,7 @@ Return Value:
 - String - The converted JSON-formatted string.
 
 <!--Del-->
-### func toJsonStringWithoutEscaping(this @local!)
+### func toJsonStringWithoutEscaping()
 
 ```cangjie
 public exclave func toJsonStringWithoutEscaping(this @local!): String @local!
@@ -895,7 +895,7 @@ Output:
 ```
 <!--DelEnd-->
 <!--Del-->
-### func toJsonStringWithoutEscaping(this @local?)
+### func toJsonStringWithoutEscaping()
 
 ```cangjie
 public func toJsonStringWithoutEscaping(this @local?): String
@@ -971,7 +971,7 @@ Exceptions:
 - IllegalArgumentException - Throws an exception if depth is negative or if indent contains characters other than ' ' and '\t'.
 
 <!--Del-->
-### func toJsonStringWithoutEscaping(this @local!, Int64, Bool, String @~local)
+### func toJsonStringWithoutEscaping(Int64, Bool, String)
 
 ```cangjie
 public exclave func toJsonStringWithoutEscaping(this @local!, depth: Int64, bracketInNewLine!: Bool = false, indent!: String @~local = "  "): String @local!
@@ -1026,7 +1026,7 @@ Output:
 ```
 <!--DelEnd-->
 <!--Del-->
-### func toJsonStringWithoutEscaping(this @local?, Int64, Bool, String @local?)
+### func toJsonStringWithoutEscaping(Int64, Bool, String)
 
 ```cangjie
 public func toJsonStringWithoutEscaping(this @local?, depth: Int64, bracketInNewLine!: Bool = false, indent!: String @local? = "  "): String
@@ -1098,7 +1098,7 @@ Return Value:
 - String - The converted string.
 
 <!--Del-->
-### func toString(this @local?)
+### func toString()
 
 ```cangjie
 public exclave func toString(this @local?): String @local!
@@ -1161,7 +1161,7 @@ Return Value:
 - String - The converted string.
 
 <!--Del-->
-### func toStringWithoutEscaping(this @local!)
+### func toStringWithoutEscaping()
 
 ```cangjie
 public exclave func toStringWithoutEscaping(this @local!): String @local!
@@ -1207,7 +1207,7 @@ ja=[1,2]
 ```
 <!--DelEnd-->
 <!--Del-->
-### func toStringWithoutEscaping(this @local?)
+### func toStringWithoutEscaping()
 
 ```cangjie
 public func toStringWithoutEscaping(this @local?): String
@@ -1278,7 +1278,7 @@ Exceptions:
 - [JsonException](encoding_json_package_exceptions.md#class-jsonexception) - Thrown if the index is not a valid index for the [JsonArray](encoding_json_package_classes.md#class-jsonarray).
 
 <!--Del-->
-### operator func \[](this @local!, Int64)
+### operator func \[](Int64)
 
 ```cangjie
 public exclave operator func [](this @local!, index: Int64): JsonValue @local!
@@ -1329,7 +1329,7 @@ first=10
 ```
 <!--DelEnd-->
 <!--Del-->
-### operator func \[](this @local?, Int64)
+### operator func \[](Int64)
 
 ```cangjie
 public exclave operator func [](this @local?, index: Int64): JsonValue @local?
@@ -1411,7 +1411,7 @@ Parameters:
 - bv: Bool - The Bool type.
 
 <!--Del-->
-### init(this @local!, Bool)
+### init(Bool)
 
 ```cangjie
 public exclave init(this @local!, bv: Bool)
@@ -1460,7 +1460,7 @@ Return Value:
 - Bool - The actual value of the value.
 
 <!--Del-->
-### func getValue(this @local?)
+### func getValue()
 
 ```cangjie
 public func getValue(this @local?): Bool
@@ -1514,7 +1514,7 @@ Return Value:
 - [JsonKind](encoding_json_package_enums.md#enum-jsonkind) - The [JsonKind](encoding_json_package_enums.md#enum-jsonkind) type (JsBool) to which the current [JsonBool](encoding_json_package_classes.md#class-jsonbool) belongs.
 
 <!--Del-->
-### func kind(this @local?)
+### func kind()
 
 ```cangjie
 public func kind(this @local?): JsonKind
@@ -1571,7 +1571,7 @@ Return Value:
 - String - The converted JSON-formatted string.
 
 <!--Del-->
-### func toJsonString(this @local!)
+### func toJsonString()
 
 ```cangjie
 public exclave func toJsonString(this @local!): String @local!
@@ -1621,7 +1621,7 @@ Return Value:
 - String - The converted JSON-formatted string.
 
 <!--Del-->
-### func toJsonStringWithoutEscaping(this @local!)
+### func toJsonStringWithoutEscaping()
 
 ```cangjie
 public exclave func toJsonStringWithoutEscaping(this @local!): String @local!
@@ -1671,7 +1671,7 @@ Return Value:
 - String - The converted string.
 
 <!--Del-->
-### func toString(this @local?)
+### func toString()
 
 ```cangjie
 public exclave func toString(this @local?): String @local!
@@ -1726,7 +1726,7 @@ Return Value:
 - String - The converted string.
 
 <!--Del-->
-### func toStringWithoutEscaping(this @local!)
+### func toStringWithoutEscaping()
 
 ```cangjie
 public exclave func toStringWithoutEscaping(this @local!): String @local!
@@ -1791,7 +1791,7 @@ Parameters:
 - fv: Float64 - The Float64 type.
 
 <!--Del-->
-### init(this @local!, Float64)
+### init(Float64)
 
 ```cangjie
 public exclave init(this @local!, fv: Float64)
@@ -1840,7 +1840,7 @@ Parameters:
 - v: Int64 - The Int64 type.
 
 <!--Del-->
-### init(this @local!, Int64)
+### init(Int64)
 
 ```cangjie
 public exclave init(this @local!, v: Int64)
@@ -1889,7 +1889,7 @@ Return Value:
 - Float64 - The actual value of the value.
 
 <!--Del-->
-### func getValue(this @local?)
+### func getValue()
 
 ```cangjie
 public func getValue(this @local?): Float64
@@ -1943,7 +1943,7 @@ Return Value:
 - [JsonKind](encoding_json_package_enums.md#enum-jsonkind) - The [JsonKind](encoding_json_package_enums.md#enum-jsonkind) type (JsFloat) to which the current [JsonFloat](encoding_json_package_classes.md#class-jsonfloat) belongs.
 
 <!--Del-->
-### func kind(this @local?)
+### func kind()
 
 ```cangjie
 public func kind(this @local?): JsonKind
@@ -2000,7 +2000,7 @@ Return Value:
 - String - The converted JSON-formatted string.
 
 <!--Del-->
-### func toJsonString(this @local!)
+### func toJsonString()
 
 ```cangjie
 public exclave func toJsonString(this @local!): String @local!
@@ -2050,7 +2050,7 @@ Return Value:
 - String - The converted JSON-formatted string.
 
 <!--Del-->
-### func toJsonStringWithoutEscaping(this @local!)
+### func toJsonStringWithoutEscaping()
 
 ```cangjie
 public exclave func toJsonStringWithoutEscaping(this @local!): String @local!
@@ -2100,7 +2100,7 @@ Return Value:
 - String - The converted string.
 
 <!--Del-->
-### func toString(this @local?)
+### func toString()
 
 ```cangjie
 public exclave func toString(this @local?): String @local!
@@ -2155,7 +2155,7 @@ Return Value:
 - String - The converted string.
 
 <!--Del-->
-### func toStringWithoutEscaping(this @local!)
+### func toStringWithoutEscaping()
 
 ```cangjie
 public exclave func toStringWithoutEscaping(this @local!): String @local!
@@ -2219,7 +2219,7 @@ Parameters:
 - iv: Int64 - The Int64 used to create [JsonInt](encoding_json_package_classes.md#class-jsonint).
 
 <!--Del-->
-### init(this @local!, Int64)
+### init(Int64)
 
 ```cangjie
 public exclave init(this @local!, iv: Int64)
@@ -2268,7 +2268,7 @@ Return Value:
 - Int64 - The actual value of the value.
 
 <!--Del-->
-### func getValue(this @local?)
+### func getValue()
 
 ```cangjie
 public func getValue(this @local?): Int64
@@ -2322,7 +2322,7 @@ Return Value:
 - [JsonKind](encoding_json_package_enums.md#enum-jsonkind) - The [JsonKind](encoding_json_package_enums.md#enum-jsonkind) type (JsInt) to which the current [JsonInt](encoding_json_package_classes.md#class-jsonint) belongs.
 
 <!--Del-->
-### func kind(this @local?)
+### func kind()
 
 ```cangjie
 public func kind(this @local?): JsonKind
@@ -2379,7 +2379,7 @@ Return Value:
 - String - The converted JSON-formatted string.
 
 <!--Del-->
-### func toJsonString(this @local!)
+### func toJsonString()
 
 ```cangjie
 public exclave func toJsonString(this @local!): String @local!
@@ -2429,7 +2429,7 @@ Return value:
 - String - The converted JSON-formatted string.
 
 <!--Del-->
-### func toJsonStringWithoutEscaping(this @local!)
+### func toJsonStringWithoutEscaping()
 
 ```cangjie
 public exclave func toJsonStringWithoutEscaping(this @local!): String @local!
@@ -2479,7 +2479,7 @@ Return Value:
 - String - The converted string.
 
 <!--Del-->
-### func toString(this @local?)
+### func toString()
 
 ```cangjie
 public exclave func toString(this @local?): String @local!
@@ -2534,7 +2534,7 @@ Return Value:
 - String - The converted string.
 
 <!--Del-->
-### func toStringWithoutEscaping(this @local!)
+### func toStringWithoutEscaping()
 
 ```cangjie
 public exclave func toStringWithoutEscaping(this @local!): String @local!
@@ -2596,7 +2596,7 @@ Return Value:
 - [JsonKind](encoding_json_package_enums.md#enum-jsonkind) - The [JsonKind](encoding_json_package_enums.md#enum-jsonkind) type (JsNull) to which the current [JsonNull](encoding_json_package_classes.md#class-jsonnull) belongs.
 
 <!--Del-->
-### func kind(this @local?)
+### func kind()
 
 ```cangjie
 public func kind(this @local?): JsonKind
@@ -2653,7 +2653,7 @@ Return Value:
 - String - The converted JSON-formatted string.
 
 <!--Del-->
-### func toJsonString(this @local!)
+### func toJsonString()
 
 ```cangjie
 public exclave func toJsonString(this @local!): String @local!
@@ -2703,7 +2703,7 @@ Return value:
 - String - The converted JSON-formatted string.
 
 <!--Del-->
-### func toJsonStringWithoutEscaping(this @local!)
+### func toJsonStringWithoutEscaping()
 
 ```cangjie
 public exclave func toJsonStringWithoutEscaping(this @local!): String @local!
@@ -2753,7 +2753,7 @@ Return Value:
 - String - The converted string.
 
 <!--Del-->
-### func toString(this @local?)
+### func toString()
 
 ```cangjie
 public exclave func toString(this @local?): String @local!
@@ -2808,7 +2808,7 @@ Return Value:
 - String - The converted string.
 
 <!--Del-->
-### func toStringWithoutEscaping(this @local!)
+### func toStringWithoutEscaping()
 
 ```cangjie
 public exclave func toStringWithoutEscaping(this @local!): String @local!
@@ -2869,7 +2869,7 @@ public init()
 Function: Creates an empty [JsonObject](encoding_json_package_classes.md#class-jsonobject).
 
 <!--Del-->
-### init(this @local!)
+### init()
 
 ```cangjie
 public exclave init(this @local!)
@@ -2914,7 +2914,7 @@ Parameters:
 - map: HashMap\<String, [JsonValue](encoding_json_package_classes.md#class-jsonvalue)> - data.
 
 <!--Del-->
-### init(this @local!, HashMap\<String, JsonValue> @local!)
+### init(HashMap\<String, JsonValue>)
 
 ```cangjie
 public exclave init(this @local!, map: HashMap<String, JsonValue> @local!)
@@ -2975,7 +2975,7 @@ Return Value:
 - Bool - Returns true if the key exists, otherwise false.
 
 <!--Del-->
-### func containsKey(this @local?, String @local?)
+### func containsKey(String)
 
 ```cangjie
 public func containsKey(this @local?, key: String @local?): Bool
@@ -3044,7 +3044,7 @@ Return Value:
 - Option\<[JsonValue](encoding_json_package_classes.md#class-jsonvalue)> - The encapsulated form of the [JsonValue](encoding_json_package_classes.md#class-jsonvalue) corresponding to the key.
 
 <!--Del-->
-### func get(this @local!, String @local!)
+### func get(String)
 
 ```cangjie
 public exclave func get(this @local!, key: String @local!): Option<JsonValue> @local!
@@ -3093,7 +3093,7 @@ found="world"
 ```
 <!--DelEnd-->
 <!--Del-->
-### func get(this @local?, String @local?)
+### func get(String)
 
 ```cangjie
 public exclave func get(this @local?, key: String @local?): Option<JsonValue> @local?
@@ -3160,7 +3160,7 @@ Return Value:
 - HashMap\<String, [JsonValue](encoding_json_package_classes.md#class-jsonvalue)> - The fields data of [JsonObject](encoding_json_package_classes.md#class-jsonobject).
 
 <!--Del-->
-### func getFields(this @local!)
+### func getFields()
 
 ```cangjie
 public exclave func getFields(this @local!): HashMap<String, JsonValue> @local!
@@ -3204,7 +3204,7 @@ empty=false
 ```
 <!--DelEnd-->
 <!--Del-->
-### func getFields(this @local?)
+### func getFields()
 
 ```cangjie
 public func getFields(this @local?): HashMap<String, JsonValue> @local?
@@ -3265,7 +3265,7 @@ Return Value:
 - [JsonKind](encoding_json_package_enums.md#enum-jsonkind) - The [JsonKind](encoding_json_package_enums.md#enum-jsonkind) type (JsObject) to which the current [JsonObject](encoding_json_package_classes.md#class-jsonobject) belongs.
 
 <!--Del-->
-### func kind(this @local?)
+### func kind()
 
 ```cangjie
 public func kind(this @local?): JsonKind
@@ -3326,7 +3326,7 @@ Parameters:
 - v: [JsonValue](encoding_json_package_classes.md#class-jsonvalue) - The [JsonValue](encoding_json_package_classes.md#class-jsonvalue) corresponding to the key.
 
 <!--Del-->
-### func put(this @local!, String @local!, JsonValue @local!)
+### func put(String, JsonValue)
 
 ```cangjie
 public exclave func put(this @local!, key: String @local!, v: JsonValue @local!): Unit
@@ -3368,7 +3368,7 @@ jo={"hello":"world"}
 ```
 <!--DelEnd-->
 <!--Del-->
-### func put(this @local!, String @local?, JsonValue @local!)
+### func put(String, JsonValue)
 
 ```cangjie
 public exclave func put(this @local!, key: String @local?, v: JsonValue @local!): Unit
@@ -3422,7 +3422,7 @@ Return Value:
 - Int64 - The size of the fields in [JsonObject](encoding_json_package_classes.md#class-jsonobject).
 
 <!--Del-->
-### func size(this @local?)
+### func size()
 
 ```cangjie
 public func size(this @local?): Int64
@@ -3479,7 +3479,7 @@ Return Value:
 - String - The converted JSON-formatted string.
 
 <!--Del-->
-### func toJsonString(this @local!)
+### func toJsonString()
 
 ```cangjie
 public exclave func toJsonString(this @local!): String @local!
@@ -3526,7 +3526,7 @@ Output:
 ```
 <!--DelEnd-->
 <!--Del-->
-### func toJsonString(this @local?)
+### func toJsonString()
 
 ```cangjie
 public func toJsonString(this @local?): String
@@ -3600,7 +3600,7 @@ Exceptions:
 - IllegalArgumentException - Thrown if `depth` is negative or if `indent` contains characters other than ' ' or '\t'.
 
 <!--Del-->
-### func toJsonString(this @local!, Int64, Bool, String @~local)
+### func toJsonString(Int64, Bool, String)
 
 ```cangjie
 public exclave func toJsonString(this @local!, depth: Int64, bracketInNewLine!: Bool = false, indent!: String @~local = "  "): String @local!
@@ -3653,7 +3653,7 @@ Output:
 ```
 <!--DelEnd-->
 <!--Del-->
-### func toJsonString(this @local?, Int64, Bool, String @local?)
+### func toJsonString(Int64, Bool, String)
 
 ```cangjie
 public func toJsonString(this @local?, depth: Int64, bracketInNewLine!: Bool = false, indent!: String @local? = "  "): String
@@ -3723,7 +3723,7 @@ Return Value:
 - String - The converted JSON-formatted string.
 
 <!--Del-->
-### func toJsonStringWithoutEscaping(this @local!)
+### func toJsonStringWithoutEscaping()
 
 ```cangjie
 public exclave func toJsonStringWithoutEscaping(this @local!): String @local!
@@ -3770,7 +3770,7 @@ Output:
 ```
 <!--DelEnd-->
 <!--Del-->
-### func toJsonStringWithoutEscaping(this @local?)
+### func toJsonStringWithoutEscaping()
 
 ```cangjie
 public func toJsonStringWithoutEscaping(this @local?): String
@@ -3844,7 +3844,7 @@ Exceptions:
 - IllegalArgumentException - Throws an exception if the depth is negative or if the indentation string contains characters other than ' ' and '\t'.
 
 <!--Del-->
-### func toJsonStringWithoutEscaping(this @local!, Int64, Bool, String @~local)
+### func toJsonStringWithoutEscaping(Int64, Bool, String)
 
 ```cangjie
 public exclave func toJsonStringWithoutEscaping(this @local!, depth: Int64, bracketInNewLine!: Bool = false, indent!: String @~local = "  "): String @local!
@@ -3897,7 +3897,7 @@ Output:
 ```
 <!--DelEnd-->
 <!--Del-->
-### func toJsonStringWithoutEscaping(this @local?, Int64, Bool, String @local?)
+### func toJsonStringWithoutEscaping(Int64, Bool, String)
 
 ```cangjie
 public func toJsonStringWithoutEscaping(this @local?, depth: Int64, bracketInNewLine!: Bool = false, indent!: String @local? = "  "): String
@@ -3967,7 +3967,7 @@ Return Value:
 - String - The converted string.
 
 <!--Del-->
-### func toString(this @local?)
+### func toString()
 
 ```cangjie
 public exclave func toString(this @local?): String @local!
@@ -4029,7 +4029,7 @@ Return value:
 - String - The converted string.
 
 <!--Del-->
-### func toStringWithoutEscaping(this @local!)
+### func toStringWithoutEscaping()
 
 ```cangjie
 public exclave func toStringWithoutEscaping(this @local!): String @local!
@@ -4074,7 +4074,7 @@ jo={"hello":"world"}
 ```
 <!--DelEnd-->
 <!--Del-->
-### func toStringWithoutEscaping(this @local?)
+### func toStringWithoutEscaping()
 
 ```cangjie
 public func toStringWithoutEscaping(this @local?): String
@@ -4144,7 +4144,7 @@ Exceptions:
 - [JsonException](encoding_json_package_exceptions.md#class-jsonexception) - Thrown if the `key` is not a valid key in the [JsonObject](encoding_json_package_classes.md#class-jsonobject).
 
 <!--Del-->
-### operator func \[](this @local!, String @local!)
+### operator func \[](String)
 
 ```cangjie
 public exclave operator func [](this @local!, key: String @local!): JsonValue @local!
@@ -4195,7 +4195,7 @@ value=world
 ```
 <!--DelEnd-->
 <!--Del-->
-### operator func \[](this @local?, String @local?)
+### operator func \[](String)
 
 ```cangjie
 public exclave operator func [](this @local?, key: String @local?): JsonValue @local?
@@ -4277,7 +4277,7 @@ Parameters:
 - sv: String - The String type.
 
 <!--Del-->
-### init(this @local!, String @local!)
+### init(String)
 
 ```cangjie
 public exclave init(this @local!, sv: String @local!)
@@ -4328,7 +4328,7 @@ Return Value:
 - String - The actual value of `value`.
 
 <!--Del-->
-### func getValue(this @local!)
+### func getValue()
 
 ```cangjie
 public exclave func getValue(this @local!): String @local!
@@ -4367,7 +4367,7 @@ value=hello
 ```
 <!--DelEnd-->
 <!--Del-->
-### func getValue(this @local?)
+### func getValue()
 
 ```cangjie
 public exclave func getValue(this @local?): String @local?
@@ -4423,7 +4423,7 @@ Return Value:
 - [JsonKind](encoding_json_package_enums.md#enum-jsonkind) - The [JsonKind](encoding_json_package_enums.md#enum-jsonkind) type (JsString) of the current [JsonString](encoding_json_package_classes.md#class-jsonstring).
 
 <!--Del-->
-### func kind(this @local?)
+### func kind()
 
 ```cangjie
 public func kind(this @local?): JsonKind
@@ -4481,7 +4481,7 @@ Return Value:
 - String - The converted JSON-formatted string.
 
 <!--Del-->
-### func toJsonString(this @local!)
+### func toJsonString()
 
 ```cangjie
 public exclave func toJsonString(this @local!): String @local!
@@ -4532,7 +4532,7 @@ Return Value:
 - String - The converted JSON-formatted string.
 
 <!--Del-->
-### func toJsonStringWithoutEscaping(this @local!)
+### func toJsonStringWithoutEscaping()
 
 ```cangjie
 public exclave func toJsonStringWithoutEscaping(this @local!): String @local!
@@ -4583,7 +4583,7 @@ Return Value:
 - String - The converted string.
 
 <!--Del-->
-### func toString(this @local?)
+### func toString()
 
 ```cangjie
 public exclave func toString(this @local?): String @local!
@@ -4639,7 +4639,7 @@ Return Value:
 - String - The converted string.
 
 <!--Del-->
-### func toStringWithoutEscaping(this @local!)
+### func toStringWithoutEscaping()
 
 ```cangjie
 public exclave func toStringWithoutEscaping(this @local!): String @local!
@@ -4752,7 +4752,7 @@ Output:
 ```
 
 <!--Del-->
-### static func fromStr(String @local!)
+### static func fromStr(String)
 
 ```cangjie
 public exclave static func fromStr(s: String @local!): JsonValue @local!
@@ -4799,7 +4799,7 @@ size=3
 ```
 <!--DelEnd-->
 <!--Del-->
-### static func fromStr(String @local?)
+### static func fromStr(String)
 
 ```cangjie
 public exclave static func fromStr(s: String @local?): JsonValue @local!
@@ -4867,7 +4867,7 @@ Exceptions:
 - [JsonException](encoding_json_package_exceptions.md#class-jsonexception) - Thrown if conversion fails.
 
 <!--Del-->
-### func asArray(this @local!)
+### func asArray()
 
 ```cangjie
 public exclave func asArray(this @local!): JsonArray @local!
@@ -4930,7 +4930,7 @@ Exceptions:
 - [JsonException](encoding_json_package_exceptions.md#class-jsonexception) - Thrown if conversion fails.
 
 <!--Del-->
-### func asBool(this @local!)
+### func asBool()
 
 ```cangjie
 public exclave func asBool(this @local!): JsonBool @local!
@@ -4988,7 +4988,7 @@ Exceptions:
 - [JsonException](encoding_json_package_exceptions.md#class-jsonexception) - Thrown if conversion fails.
 
 <!--Del-->
-### func asFloat(this @local!)
+### func asFloat()
 
 ```cangjie
 public exclave func asFloat(this @local!): JsonFloat @local!
@@ -5046,7 +5046,7 @@ Exceptions:
 - [JsonException](encoding_json_package_exceptions.md#class-jsonexception) - Thrown if conversion fails.
 
 <!--Del-->
-### func asInt(this @local!)
+### func asInt()
 
 ```cangjie
 public exclave func asInt(this @local!): JsonInt @local!
@@ -5104,7 +5104,7 @@ Exceptions:
 - [JsonException](encoding_json_package_exceptions.md#class-jsonexception) - Thrown if conversion fails.
 
 <!--Del-->
-### func asNull(this @local!)
+### func asNull()
 
 ```cangjie
 public exclave func asNull(this @local!): JsonNull @local!
@@ -5163,7 +5163,7 @@ Exceptions:
 - [JsonException](encoding_json_package_exceptions.md#class-jsonexception) - Thrown if conversion fails.
 
 <!--Del-->
-### func asObject(this @local!)
+### func asObject()
 
 ```cangjie
 public exclave func asObject(this @local!): JsonObject @local!
@@ -5225,7 +5225,7 @@ Exceptions:
 - [JsonException](encoding_json_package_exceptions.md#class-jsonexception) - Thrown if conversion fails.
 
 <!--Del-->
-### func asString(this @local!)
+### func asString()
 
 ```cangjie
 public exclave func asString(this @local!): JsonString @local!
@@ -5281,7 +5281,7 @@ Return Value:
 - [JsonKind](encoding_json_package_enums.md#enum-jsonkind) - The [JsonKind](encoding_json_package_enums.md#enum-jsonkind) type of the current [JsonValue](encoding_json_package_classes.md#class-jsonvalue).
 
 <!--Del-->
-### func kind(this @local?)
+### func kind()
 
 ```cangjie
 public open func kind(this @local?): JsonKind
@@ -5342,7 +5342,7 @@ Return Value:
 - String - The converted JSON-formatted string.
 
 <!--Del-->
-### func toJsonString(this @local!)
+### func toJsonString()
 
 ```cangjie
 public open func toJsonString(this @local!): String @local!
@@ -5396,7 +5396,7 @@ Return Value:
 - String - The converted JSON-formatted string.
 
 <!--Del-->
-### func toJsonStringWithoutEscaping(this @local!)
+### func toJsonStringWithoutEscaping()
 
 ```cangjie
 public open func toJsonStringWithoutEscaping(this @local!): String @local!
@@ -5450,7 +5450,7 @@ Return Value:
 - String - The converted string.
 
 <!--Del-->
-### func toString(this @local?)
+### func toString()
 
 ```cangjie
 public open func toString(this @local?): String @local!
@@ -5509,7 +5509,7 @@ Return Value:
 - String - The converted string.
 
 <!--Del-->
-### func toStringWithoutEscaping(this @local!)
+### func toStringWithoutEscaping()
 
 ```cangjie
 public open func toStringWithoutEscaping(this @local!): String @local!

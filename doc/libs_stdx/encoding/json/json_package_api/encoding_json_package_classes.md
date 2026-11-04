@@ -49,7 +49,7 @@ JsonValue的数量: 0
 ```
 
 <!--Del-->
-### init(this @local!)
+### init()
 
 ```cangjie
 public exclave init(this @local!)
@@ -121,7 +121,7 @@ main() {
 ```
 
 <!--Del-->
-### init(this @local!, Array\<JsonValue> @local!)
+### init(Array\<JsonValue>)
 
 ```cangjie
 public exclave init(this @local!, list: Array<JsonValue> @local!)
@@ -208,7 +208,7 @@ main() {
 ```
 
 <!--Del-->
-### init(this @local!, ArrayList\<JsonValue> @local!)
+### init(ArrayList\<JsonValue>)
 
 ```cangjie
 public exclave init(this @local!, list: ArrayList<JsonValue> @local!)
@@ -316,7 +316,7 @@ main() {
 ```
 
 <!--Del-->
-### func add(this @local!, JsonValue @local!)
+### func add(JsonValue)
 
 ```cangjie
 public exclave func add(this @local!, jv: JsonValue @local!): JsonArray @local!
@@ -429,7 +429,7 @@ JsonArray 内容: [null,true,100,"hello",{"hello":"world"}]
 ```
 
 <!--Del-->
-### func get(this @local!, Int64)
+### func get(Int64)
 
 ```cangjie
 public exclave func get(this @local!, index: Int64): Option<JsonValue> @local!
@@ -479,7 +479,7 @@ first=1
 ```
 <!--DelEnd-->
 <!--Del-->
-### func get(this @local?, Int64)
+### func get(Int64)
 
 ```cangjie
 public exclave func get(this @local?, index: Int64): Option<JsonValue> @local?
@@ -589,7 +589,7 @@ JsonArray 内容: [null,true,100,"hello",{"hello":"world"}]
 ```
 
 <!--Del-->
-### func getItems(this @local!)
+### func getItems()
 
 ```cangjie
 public exclave func getItems(this @local!): ArrayList<JsonValue> @local!
@@ -632,7 +632,7 @@ size=2
 ```
 <!--DelEnd-->
 <!--Del-->
-### func getItems(this @local?)
+### func getItems()
 
 ```cangjie
 public func getItems(this @local?): ArrayList<JsonValue> @local?
@@ -723,7 +723,7 @@ main() {
 ```
 
 <!--Del-->
-### func kind(this @local?)
+### func kind()
 
 ```cangjie
 public func kind(this @local?): JsonKind
@@ -815,7 +815,7 @@ main() {
 ```
 
 <!--Del-->
-### func size(this @local?)
+### func size()
 
 ```cangjie
 public func size(this @local?): Int64
@@ -920,7 +920,7 @@ toString 结果: [null,true,123,"hello",{"hello":"world"}]
 ```
 
 <!--Del-->
-### func toJsonString(this @local!)
+### func toJsonString()
 
 ```cangjie
 public exclave func toJsonString(this @local!): String @local!
@@ -969,7 +969,7 @@ main() {
 ```
 <!--DelEnd-->
 <!--Del-->
-### func toJsonString(this @local?)
+### func toJsonString()
 
 ```cangjie
 public func toJsonString(this @local?): String
@@ -1094,7 +1094,7 @@ main() {
 ```
 
 <!--Del-->
-### func toJsonString(this @local!, Int64, Bool, String @~local)
+### func toJsonString(Int64, Bool, String)
 
 ```cangjie
 public exclave func toJsonString(this @local!, depth: Int64, bracketInNewLine!: Bool = false, indent!: String @~local = "  "): String @local!
@@ -1149,7 +1149,7 @@ main() {
 ```
 <!--DelEnd-->
 <!--Del-->
-### func toJsonString(this @local?, Int64, Bool, String @local?)
+### func toJsonString(Int64, Bool, String)
 
 ```cangjie
 public func toJsonString(this @local?, depth: Int64, bracketInNewLine!: Bool = false, indent!: String @local? = "  "): String
@@ -1256,7 +1256,7 @@ toJsonStringWithoutEscaping 结果（无转义）:
 ```
 
 <!--Del-->
-### func toJsonStringWithoutEscaping(this @local!)
+### func toJsonStringWithoutEscaping()
 
 ```cangjie
 public exclave func toJsonStringWithoutEscaping(this @local!): String @local!
@@ -1305,7 +1305,7 @@ main() {
 ```
 <!--DelEnd-->
 <!--Del-->
-### func toJsonStringWithoutEscaping(this @local?)
+### func toJsonStringWithoutEscaping()
 
 ```cangjie
 public func toJsonStringWithoutEscaping(this @local?): String
@@ -1416,7 +1416,7 @@ toJsonStringWithoutEscaping （带参数） 结果（无转义）:
 ```
 
 <!--Del-->
-### func toJsonStringWithoutEscaping(this @local!, Int64, Bool, String @~local)
+### func toJsonStringWithoutEscaping(Int64, Bool, String)
 
 ```cangjie
 public exclave func toJsonStringWithoutEscaping(this @local!, depth: Int64, bracketInNewLine!: Bool = false, indent!: String @~local = "  "): String @local!
@@ -1471,7 +1471,7 @@ main() {
 ```
 <!--DelEnd-->
 <!--Del-->
-### func toJsonStringWithoutEscaping(this @local?, Int64, Bool, String @local?)
+### func toJsonStringWithoutEscaping(Int64, Bool, String)
 
 ```cangjie
 public func toJsonStringWithoutEscaping(this @local?, depth: Int64, bracketInNewLine!: Bool = false, indent!: String @local? = "  "): String
@@ -1570,7 +1570,7 @@ toString 结果: [null,true,123,"hello\u0026world",{"hello":"world"}]
 ```
 
 <!--Del-->
-### func toString(this @local?)
+### func toString()
 
 ```cangjie
 public exclave func toString(this @local?): String @local!
@@ -1660,7 +1660,7 @@ toString 结果: [null,true,123,"hello&world",{"hello":"world"}]
 ```
 
 <!--Del-->
-### func toStringWithoutEscaping(this @local!)
+### func toStringWithoutEscaping()
 
 ```cangjie
 public exclave func toStringWithoutEscaping(this @local!): String @local!
@@ -1706,7 +1706,7 @@ ja=[1,2]
 ```
 <!--DelEnd-->
 <!--Del-->
-### func toStringWithoutEscaping(this @local?)
+### func toStringWithoutEscaping()
 
 ```cangjie
 public func toStringWithoutEscaping(this @local?): String
@@ -1828,7 +1828,7 @@ JsonArray 内容: [null,true,123,"hello\u0026world",{"hello":"world"}]
 ```
 
 <!--Del-->
-### operator func \[](this @local!, Int64)
+### operator func \[](Int64)
 
 ```cangjie
 public exclave operator func [](this @local!, index: Int64): JsonValue @local!
@@ -1879,7 +1879,7 @@ first=10
 ```
 <!--DelEnd-->
 <!--Del-->
-### operator func \[](this @local?, Int64)
+### operator func \[](Int64)
 
 ```cangjie
 public exclave operator func [](this @local?, index: Int64): JsonValue @local?
@@ -1980,7 +1980,7 @@ JsonBool(true) 创建的对象: true
 ```
 
 <!--Del-->
-### init(this @local!, Bool)
+### init(Bool)
 
 ```cangjie
 public exclave init(this @local!, bv: Bool)
@@ -2050,7 +2050,7 @@ JsonBool(true) 的值: true
 ```
 
 <!--Del-->
-### func getValue(this @local?)
+### func getValue()
 
 ```cangjie
 public func getValue(this @local?): Bool
@@ -2129,7 +2129,7 @@ main() {
 ```
 
 <!--Del-->
-### func kind(this @local?)
+### func kind()
 
 ```cangjie
 public func kind(this @local?): JsonKind
@@ -2207,7 +2207,7 @@ JsonBool(true) 的 JSON 字符串: true
 ```
 
 <!--Del-->
-### func toJsonString(this @local!)
+### func toJsonString()
 
 ```cangjie
 public exclave func toJsonString(this @local!): String @local!
@@ -2278,7 +2278,7 @@ main() {
 ```
 
 <!--Del-->
-### func toJsonStringWithoutEscaping(this @local!)
+### func toJsonStringWithoutEscaping()
 
 ```cangjie
 public exclave func toJsonStringWithoutEscaping(this @local!): String @local!
@@ -2349,7 +2349,7 @@ JsonBool(true) 的字符串表示: true
 ```
 
 <!--Del-->
-### func toString(this @local?)
+### func toString()
 
 ```cangjie
 public exclave func toString(this @local?): String @local!
@@ -2425,7 +2425,7 @@ main() {
 ```
 
 <!--Del-->
-### func toStringWithoutEscaping(this @local!)
+### func toStringWithoutEscaping()
 
 ```cangjie
 public exclave func toStringWithoutEscaping(this @local!): String @local!
@@ -2509,7 +2509,7 @@ JsonFloat(3.14159) 创建的对象: 3.141590
 ```
 
 <!--Del-->
-### init(this @local!, Float64)
+### init(Float64)
 
 ```cangjie
 public exclave init(this @local!, fv: Float64)
@@ -2577,7 +2577,7 @@ JsonFloat(42) 创建的对象: 42.000000
 ```
 
 <!--Del-->
-### init(this @local!, Int64)
+### init(Int64)
 
 ```cangjie
 public exclave init(this @local!, v: Int64)
@@ -2647,7 +2647,7 @@ JsonFloat(3.14159) 的值: 3.141590
 ```
 
 <!--Del-->
-### func getValue(this @local?)
+### func getValue()
 
 ```cangjie
 public func getValue(this @local?): Float64
@@ -2726,7 +2726,7 @@ main() {
 ```
 
 <!--Del-->
-### func kind(this @local?)
+### func kind()
 
 ```cangjie
 public func kind(this @local?): JsonKind
@@ -2804,7 +2804,7 @@ JsonFloat(3.14159) 的 JSON 字符串: 3.141590
 ```
 
 <!--Del-->
-### func toJsonString(this @local!)
+### func toJsonString()
 
 ```cangjie
 public exclave func toJsonString(this @local!): String @local!
@@ -2875,7 +2875,7 @@ main() {
 ```
 
 <!--Del-->
-### func toJsonStringWithoutEscaping(this @local!)
+### func toJsonStringWithoutEscaping()
 
 ```cangjie
 public exclave func toJsonStringWithoutEscaping(this @local!): String @local!
@@ -2946,7 +2946,7 @@ JsonFloat(3.14159) 的字符串表示: 3.141590
 ```
 
 <!--Del-->
-### func toString(this @local?)
+### func toString()
 
 ```cangjie
 public exclave func toString(this @local?): String @local!
@@ -3022,7 +3022,7 @@ main() {
 ```
 
 <!--Del-->
-### func toStringWithoutEscaping(this @local!)
+### func toStringWithoutEscaping()
 
 ```cangjie
 public exclave func toStringWithoutEscaping(this @local!): String @local!
@@ -3105,7 +3105,7 @@ JsonInt(42) 创建的对象: 42
 ```
 
 <!--Del-->
-### init(this @local!, Int64)
+### init(Int64)
 
 ```cangjie
 public exclave init(this @local!, iv: Int64)
@@ -3175,7 +3175,7 @@ JsonInt(42) 的值: 42
 ```
 
 <!--Del-->
-### func getValue(this @local?)
+### func getValue()
 
 ```cangjie
 public func getValue(this @local?): Int64
@@ -3254,7 +3254,7 @@ main() {
 ```
 
 <!--Del-->
-### func kind(this @local?)
+### func kind()
 
 ```cangjie
 public func kind(this @local?): JsonKind
@@ -3332,7 +3332,7 @@ JsonInt(42) 的 JSON 字符串: 42
 ```
 
 <!--Del-->
-### func toJsonString(this @local!)
+### func toJsonString()
 
 ```cangjie
 public exclave func toJsonString(this @local!): String @local!
@@ -3403,7 +3403,7 @@ main() {
 ```
 
 <!--Del-->
-### func toJsonStringWithoutEscaping(this @local!)
+### func toJsonStringWithoutEscaping()
 
 ```cangjie
 public exclave func toJsonStringWithoutEscaping(this @local!): String @local!
@@ -3474,7 +3474,7 @@ JsonInt(42) 的字符串表示: 42
 ```
 
 <!--Del-->
-### func toString(this @local?)
+### func toString()
 
 ```cangjie
 public exclave func toString(this @local?): String @local!
@@ -3550,7 +3550,7 @@ main() {
 ```
 
 <!--Del-->
-### func toStringWithoutEscaping(this @local!)
+### func toStringWithoutEscaping()
 
 ```cangjie
 public exclave func toStringWithoutEscaping(this @local!): String @local!
@@ -3636,7 +3636,7 @@ main() {
 ```
 
 <!--Del-->
-### func kind(this @local?)
+### func kind()
 
 ```cangjie
 public func kind(this @local?): JsonKind
@@ -3713,7 +3713,7 @@ JsonNull 的 JSON 字符串: null
 ```
 
 <!--Del-->
-### func toJsonString(this @local!)
+### func toJsonString()
 
 ```cangjie
 public exclave func toJsonString(this @local!): String @local!
@@ -3784,7 +3784,7 @@ main() {
 ```
 
 <!--Del-->
-### func toJsonStringWithoutEscaping(this @local!)
+### func toJsonStringWithoutEscaping()
 
 ```cangjie
 public exclave func toJsonStringWithoutEscaping(this @local!): String @local!
@@ -3854,7 +3854,7 @@ JsonNull 的字符串表示: null
 ```
 
 <!--Del-->
-### func toString(this @local?)
+### func toString()
 
 ```cangjie
 public exclave func toString(this @local?): String @local!
@@ -3930,7 +3930,7 @@ main() {
 ```
 
 <!--Del-->
-### func toStringWithoutEscaping(this @local!)
+### func toStringWithoutEscaping()
 
 ```cangjie
 public exclave func toStringWithoutEscaping(this @local!): String @local!
@@ -4010,7 +4010,7 @@ main() {
 ```
 
 <!--Del-->
-### init(this @local!)
+### init()
 
 ```cangjie
 public exclave init(this @local!)
@@ -4081,7 +4081,7 @@ main() {
 ```
 
 <!--Del-->
-### init(this @local!, HashMap\<String, JsonValue> @local!)
+### init(HashMap\<String, JsonValue>)
 
 ```cangjie
 public exclave init(this @local!, map: HashMap<String, JsonValue> @local!)
@@ -4168,7 +4168,7 @@ JsonObject是否包含address键: false
 ```
 
 <!--Del-->
-### func containsKey(this @local?, String @local?)
+### func containsKey(String)
 
 ```cangjie
 public func containsKey(this @local?, key: String @local?): Bool
@@ -4282,7 +4282,7 @@ address的值: 键不存在
 ```
 
 <!--Del-->
-### func get(this @local!, String @local!)
+### func get(String)
 
 ```cangjie
 public exclave func get(this @local!, key: String @local!): Option<JsonValue> @local!
@@ -4331,7 +4331,7 @@ found="world"
 ```
 <!--DelEnd-->
 <!--Del-->
-### func get(this @local?, String @local?)
+### func get(String)
 
 ```cangjie
 public exclave func get(this @local?, key: String @local?): Option<JsonValue> @local?
@@ -4425,7 +4425,7 @@ JsonObject的字段数据: {"name":"张三","age":25,"student":true}
 ```
 
 <!--Del-->
-### func getFields(this @local!)
+### func getFields()
 
 ```cangjie
 public exclave func getFields(this @local!): HashMap<String, JsonValue> @local!
@@ -4469,7 +4469,7 @@ empty=false
 ```
 <!--DelEnd-->
 <!--Del-->
-### func getFields(this @local?)
+### func getFields()
 
 ```cangjie
 public func getFields(this @local?): HashMap<String, JsonValue> @local?
@@ -4556,7 +4556,7 @@ main() {
 ```
 
 <!--Del-->
-### func kind(this @local?)
+### func kind()
 
 ```cangjie
 public func kind(this @local?): JsonKind
@@ -4640,7 +4640,7 @@ main() {
 ```
 
 <!--Del-->
-### func put(this @local!, String @local!, JsonValue @local!)
+### func put(String, JsonValue)
 
 ```cangjie
 public exclave func put(this @local!, key: String @local!, v: JsonValue @local!): Unit
@@ -4682,7 +4682,7 @@ jo={"hello":"world"}
 ```
 <!--DelEnd-->
 <!--Del-->
-### func put(this @local!, String @local?, JsonValue @local!)
+### func put(String, JsonValue)
 
 ```cangjie
 public exclave func put(this @local!, key: String @local?, v: JsonValue @local!): Unit
@@ -4767,7 +4767,7 @@ main() {
 ```
 
 <!--Del-->
-### func size(this @local?)
+### func size()
 
 ```cangjie
 public func size(this @local?): Int64
@@ -4853,7 +4853,7 @@ JsonObject转换为JSON字符串:
 ```
 
 <!--Del-->
-### func toJsonString(this @local!)
+### func toJsonString()
 
 ```cangjie
 public exclave func toJsonString(this @local!): String @local!
@@ -4900,7 +4900,7 @@ main() {
 ```
 <!--DelEnd-->
 <!--Del-->
-### func toJsonString(this @local?)
+### func toJsonString()
 
 ```cangjie
 public func toJsonString(this @local?): String
@@ -5012,7 +5012,7 @@ main() {
 ```
 
 <!--Del-->
-### func toJsonString(this @local!, Int64, Bool, String @~local)
+### func toJsonString(Int64, Bool, String)
 
 ```cangjie
 public exclave func toJsonString(this @local!, depth: Int64, bracketInNewLine!: Bool = false, indent!: String @~local = "  "): String @local!
@@ -5065,7 +5065,7 @@ main() {
 ```
 <!--DelEnd-->
 <!--Del-->
-### func toJsonString(this @local?, Int64, Bool, String @local?)
+### func toJsonString(Int64, Bool, String)
 
 ```cangjie
 public func toJsonString(this @local?, depth: Int64, bracketInNewLine!: Bool = false, indent!: String @local? = "  "): String
@@ -5169,7 +5169,7 @@ main() {
 ```
 
 <!--Del-->
-### func toJsonStringWithoutEscaping(this @local!)
+### func toJsonStringWithoutEscaping()
 
 ```cangjie
 public exclave func toJsonStringWithoutEscaping(this @local!): String @local!
@@ -5216,7 +5216,7 @@ main() {
 ```
 <!--DelEnd-->
 <!--Del-->
-### func toJsonStringWithoutEscaping(this @local?)
+### func toJsonStringWithoutEscaping()
 
 ```cangjie
 public func toJsonStringWithoutEscaping(this @local?): String
@@ -5325,7 +5325,7 @@ main() {
 ```
 
 <!--Del-->
-### func toJsonStringWithoutEscaping(this @local!, Int64, Bool, String @~local)
+### func toJsonStringWithoutEscaping(Int64, Bool, String)
 
 ```cangjie
 public exclave func toJsonStringWithoutEscaping(this @local!, depth: Int64, bracketInNewLine!: Bool = false, indent!: String @~local = "  "): String @local!
@@ -5378,7 +5378,7 @@ main() {
 ```
 <!--DelEnd-->
 <!--Del-->
-### func toJsonStringWithoutEscaping(this @local?, Int64, Bool, String @local?)
+### func toJsonStringWithoutEscaping(Int64, Bool, String)
 
 ```cangjie
 public func toJsonStringWithoutEscaping(this @local?, depth: Int64, bracketInNewLine!: Bool = false, indent!: String @local? = "  "): String
@@ -5472,7 +5472,7 @@ JsonObject的字符串表示: {"name":"张三","age":25,"student":true}
 ```
 
 <!--Del-->
-### func toString(this @local?)
+### func toString()
 
 ```cangjie
 public exclave func toString(this @local?): String @local!
@@ -5560,7 +5560,7 @@ main() {
 ```
 
 <!--Del-->
-### func toStringWithoutEscaping(this @local!)
+### func toStringWithoutEscaping()
 
 ```cangjie
 public exclave func toStringWithoutEscaping(this @local!): String @local!
@@ -5605,7 +5605,7 @@ jo={"hello":"world"}
 ```
 <!--DelEnd-->
 <!--Del-->
-### func toStringWithoutEscaping(this @local?)
+### func toStringWithoutEscaping()
 
 ```cangjie
 public func toStringWithoutEscaping(this @local?): String
@@ -5703,7 +5703,7 @@ main() {
 ```
 
 <!--Del-->
-### operator func \[](this @local!, String @local!)
+### operator func \[](String)
 
 ```cangjie
 public exclave operator func [](this @local!, key: String @local!): JsonValue @local!
@@ -5754,7 +5754,7 @@ value=world
 ```
 <!--DelEnd-->
 <!--Del-->
-### operator func \[](this @local?, String @local?)
+### operator func \[](String)
 
 ```cangjie
 public exclave operator func [](this @local?, key: String @local?): JsonValue @local?
@@ -5855,7 +5855,7 @@ JsonString("Hello, 世界") 创建的对象: "Hello, 世界"
 ```
 
 <!--Del-->
-### init(this @local!, String @local!)
+### init(String)
 
 ```cangjie
 public exclave init(this @local!, sv: String @local!)
@@ -5927,7 +5927,7 @@ JsonString("Hello, 世界") 的值: Hello, 世界
 ```
 
 <!--Del-->
-### func getValue(this @local!)
+### func getValue()
 
 ```cangjie
 public exclave func getValue(this @local!): String @local!
@@ -5966,7 +5966,7 @@ value=hello
 ```
 <!--DelEnd-->
 <!--Del-->
-### func getValue(this @local?)
+### func getValue()
 
 ```cangjie
 public exclave func getValue(this @local?): String @local?
@@ -6047,7 +6047,7 @@ main() {
 ```
 
 <!--Del-->
-### func kind(this @local?)
+### func kind()
 
 ```cangjie
 public func kind(this @local?): JsonKind
@@ -6126,7 +6126,7 @@ JsonString("Hello, 世界") 的 JSON 字符串: "Hello, 世界"
 ```
 
 <!--Del-->
-### func toJsonString(this @local!)
+### func toJsonString()
 
 ```cangjie
 public exclave func toJsonString(this @local!): String @local!
@@ -6201,7 +6201,7 @@ main() {
 ```
 
 <!--Del-->
-### func toJsonStringWithoutEscaping(this @local!)
+### func toJsonStringWithoutEscaping()
 
 ```cangjie
 public exclave func toJsonStringWithoutEscaping(this @local!): String @local!
@@ -6273,7 +6273,7 @@ JsonString("Hello, 世界") 的字符串表示: "Hello, 世界"
 ```
 
 <!--Del-->
-### func toString(this @local?)
+### func toString()
 
 ```cangjie
 public exclave func toString(this @local?): String @local!
@@ -6353,7 +6353,7 @@ main() {
 ```
 
 <!--Del-->
-### func toStringWithoutEscaping(this @local!)
+### func toStringWithoutEscaping()
 
 ```cangjie
 public exclave func toStringWithoutEscaping(this @local!): String @local!
@@ -6480,7 +6480,7 @@ Parse Error: [Line]: 1, [Pos]: 3, [Error]: Unexpected character: 'x'.
 ```
 
 <!--Del-->
-### static func fromStr(String @local!)
+### static func fromStr(String)
 
 ```cangjie
 public exclave static func fromStr(s: String @local!): JsonValue @local!
@@ -6527,7 +6527,7 @@ size=3
 ```
 <!--DelEnd-->
 <!--Del-->
-### static func fromStr(String @local?)
+### static func fromStr(String)
 
 ```cangjie
 public exclave static func fromStr(s: String @local?): JsonValue @local!
@@ -6629,7 +6629,7 @@ JsonValue转换为JsonArray: [1,2,3,"hello"]
 ```
 
 <!--Del-->
-### func asArray(this @local!)
+### func asArray()
 
 ```cangjie
 public exclave func asArray(this @local!): JsonArray @local!
@@ -6726,7 +6726,7 @@ JsonBool的值: true
 ```
 
 <!--Del-->
-### func asBool(this @local!)
+### func asBool()
 
 ```cangjie
 public exclave func asBool(this @local!): JsonBool @local!
@@ -6818,7 +6818,7 @@ JsonFloat的值: 3.141590
 ```
 
 <!--Del-->
-### func asFloat(this @local!)
+### func asFloat()
 
 ```cangjie
 public exclave func asFloat(this @local!): JsonFloat @local!
@@ -6910,7 +6910,7 @@ JsonInt的值: 42
 ```
 
 <!--Del-->
-### func asInt(this @local!)
+### func asInt()
 
 ```cangjie
 public exclave func asInt(this @local!): JsonInt @local!
@@ -6990,7 +6990,7 @@ JsonValue转换为JsonNull: null
 ```
 
 <!--Del-->
-### func asNull(this @local!)
+### func asNull()
 
 ```cangjie
 public exclave func asNull(this @local!): JsonNull @local!
@@ -7083,7 +7083,7 @@ JsonObject的大小: 3
 ```
 
 <!--Del-->
-### func asObject(this @local!)
+### func asObject()
 
 ```cangjie
 public exclave func asObject(this @local!): JsonObject @local!
@@ -7179,7 +7179,7 @@ JsonString的值: Hello, 世界
 ```
 
 <!--Del-->
-### func asString(this @local!)
+### func asString()
 
 ```cangjie
 public exclave func asString(this @local!): JsonString @local!
@@ -7266,7 +7266,7 @@ JsonValue的类型是JsObject
 ```
 
 <!--Del-->
-### func kind(this @local?)
+### func kind()
 
 ```cangjie
 public open func kind(this @local?): JsonKind
@@ -7357,7 +7357,7 @@ JsonValue转换为JSON字符串:
 ```
 
 <!--Del-->
-### func toJsonString(this @local!)
+### func toJsonString()
 
 ```cangjie
 public open func toJsonString(this @local!): String @local!
@@ -7442,7 +7442,7 @@ main() {
 ```
 
 <!--Del-->
-### func toJsonStringWithoutEscaping(this @local!)
+### func toJsonStringWithoutEscaping()
 
 ```cangjie
 public open func toJsonStringWithoutEscaping(this @local!): String @local!
@@ -7518,7 +7518,7 @@ JsonValue转换为字符串: {"name":"张三","age":25}
 ```
 
 <!--Del-->
-### func toString(this @local?)
+### func toString()
 
 ```cangjie
 public open func toString(this @local?): String @local!
@@ -7602,7 +7602,7 @@ main() {
 ```
 
 <!--Del-->
-### func toStringWithoutEscaping(this @local!)
+### func toStringWithoutEscaping()
 
 ```cangjie
 public open func toStringWithoutEscaping(this @local!): String @local!
