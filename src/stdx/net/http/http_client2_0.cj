@@ -496,12 +496,11 @@ class HttpClientEngine2 {
                 }
                 createPushStream(pf)
                 readAndDecodeHeaders(pf.streamId, pf.fieldBlock, pf.headerEnd, false, pushId: pf.promisedId)
-            // connection level flow control, send same size window update when read data frame
-            // except for receive data > window , receive would never block
+            // connection level flow control: the connection window is only re-credited
+            // when the DATA frame is consumed (dequeued by the user) or dropped, never
+            // on arrival. Re-crediting on arrival lets a malicious server grow the
+            // buffered response body unboundedly when the user never reads it.
             case df: DataFrame =>
-                if (localWindow.load() < 100 * 1024 * 1024) {
-                    sendWindowUpdate(100 * 1024 * 1024)
-                }
                 localWindow.fetchSub(df.payloadLen)
                 processStream(df)
             case _ => processStream(frame)
@@ -512,6 +511,12 @@ class HttpClientEngine2 {
     // the first HEADERS_FRAME or PUSH_PROMISE_FRAME is already read
     private func readAndDecodeHeaders(streamId: UInt32, fieldBlock: Array<UInt8>, headerEndFlag: Bool,
         streamEndFlag: Bool, pushId!: UInt32 = 0): Unit {
+        // limit the total bytes buffered for one field block, otherwise a malicious
+        // server can keep the header block open (never set END_HEADERS) and grow
+        // memory unboundedly before any validation happens.
+        // See RFC 9113, section 7.2.4.2 and RFC 7540, section 10.5.1.
+        let blockLimit = decoder.maxHeaderListSize
+        var blockBytes = Int64(fieldBlock.size)
         let fieldsBlocks = ArrayList<UInt8>()
         fieldsBlocks.add(all: fieldBlock)
         var headerEnd = headerEndFlag
@@ -529,6 +534,11 @@ class HttpClientEngine2 {
             if (cf.streamId != streamId) {
                 throw HttpConnectionException(ProtocolError, "Unexpected Continuation on stream '${streamId}'.")
             }
+            blockBytes += Int64(cf.fieldBlock.size)
+            if (blockLimit > 0 && blockBytes > blockLimit) {
+                throw HttpConnectionException(EnhanceYourCalm,
+                    "Accumulated header block size '${blockBytes}' exceeds maximum header list size '${blockLimit}'.")
+            }
             fieldsBlocks.add(all: cf.fieldBlock)
             headerEnd = cf.headerEnd
         }
@@ -545,6 +555,11 @@ class HttpClientEngine2 {
             // receive frame from purged streams or shutdown frame ,ignore
             case None =>
                 httpLogDebug(logger, "[HttpClientEngine2#processStream] get stream failed ${frame.streamId}")
+                // the frame is dropped without being buffered, re-credit the
+                // connection window so the peer can still send data on other streams
+                if (let Some(df) <- (frame as DataFrame)) {
+                    sendWindowUpdate(df.payloadLen)
+                }
                 return
         }
         try {
@@ -555,6 +570,11 @@ class HttpClientEngine2 {
             throw e
         } catch (e: HttpStreamException) {
             httpLogWarn(logger, "[HttpClientEngine2#processStream] stream exception occurred: ${e}")
+            // the frame was rejected before being buffered, re-credit the
+            // connection window so the peer can still send data on other streams
+            if (let Some(df) <- (frame as DataFrame)) {
+                sendWindowUpdate(df.payloadLen)
+            }
             stream.close(e.h2Error)
         }
     }
@@ -872,6 +892,14 @@ class HttpClientEngine2 {
         )
         localWindow.fetchAdd(increment)
         outputQueue.send(WindowUpdateFrame(0, increment), CONTROL_PRIORITY)
+    }
+
+    /*
+     * re-credit the connection window when a DATA frame has been consumed
+     * (dequeued by the user) or dropped; called from ClientStream
+     */
+    func onConnDataConsumed(increment: UInt32): Unit {
+        sendWindowUpdate(increment)
     }
 
     private func onSettingsRead(frame: SettingsFrame): Unit {

@@ -543,11 +543,26 @@ class ClientStream {
                 "Received data when remote closed.")
             case _ => throw HttpConnectionException(ProtocolError, "Received data in state '${status}'.")
         }
-        if (localWindow.load() < 5 * 1024 * 1024) {
-            sendWindowUpdate(5 * 1024 * 1024)
+        if (frame.payloadLen > 0) {
+            // NOTE: the stream window is re-credited only when the user consumes the
+            // data (see onDataConsumed), never on arrival. Re-crediting on arrival
+            // lets a malicious peer grow the buffered data unboundedly when the user
+            // never reads the body.
+            localWindow.fetchSub(frame.payloadLen)
         }
-        localWindow.fetchSub(frame.payloadLen)
         inputQueue.enqueue(frame)
+    }
+
+    /*
+     * re-credit the stream window and the connection window when a DATA frame
+     * has been consumed (dequeued by the user), see readBody/read of Http2ClientEngineConn
+     */
+    func onDataConsumed(payloadLen: UInt32): Unit {
+        if (payloadLen == 0) {
+            return
+        }
+        sendWindowUpdate(payloadLen)
+        engine.onConnDataConsumed(payloadLen)
     }
 
     private func sendWindowUpdate(increment: UInt32): Unit {
@@ -611,6 +626,9 @@ class ClientStream {
                 status = Closed
                 writeTimer.cancel()
                 readTimer.cancel()
+                // the stream is reset by the peer, buffered DATA frames will never
+                // be consumed by the user, re-credit the connection window
+                creditUnconsumedData()
                 engine.purgeStream(frame.streamId)
                 closeConn()
         }
@@ -645,9 +663,26 @@ class ClientStream {
 
     /**************************************** closing  ****************************************/
     func close(code: H2Error) {
+        // the stream is abandoned, buffered DATA frames will never be consumed
+        // by the user, re-credit the connection window before the stream is closed
+        creditUnconsumedData()
         // shutdown all thread, change status
         outputQueue.send(RstStreamFrame(streamId, code.code), CONTROL_PRIORITY)
         closeConn()
+    }
+
+    /*
+     * re-credit the connection window for DATA frames which are still buffered in
+     * the inputQueue and will never be consumed by the user; must only be called
+     * when the stream is abandoned/reset, never on normal completion (the user
+     * may still read the buffered body afterwards)
+     */
+    private func creditUnconsumedData(): Unit {
+        while (let Some(frame) <- inputQueue.tryDequeue()) {
+            if (let Some(df) <- (frame as DataFrame)) {
+                engine.onConnDataConsumed(df.payloadLen)
+            }
+        }
     }
 
     func closeConn() {
@@ -719,6 +754,9 @@ class Http2ClientEngineConn <: StreamingSocket {
         match (frame) {
             case Some(v) => match (v) {
                 case f: DataFrame =>
+                    // the data left the buffering queue, re-credit the flow control
+                    // windows so the peer can keep sending on this connection
+                    stream.onDataConsumed(f.payloadLen)
                     // not enough
                     return if (f.data.size <= buf.size) {
                     f.data.copyTo(buf, 0, 0, f.data.size)
@@ -793,6 +831,9 @@ class Http2ClientEngineConn <: StreamingSocket {
         }
         match (frame) {
             case f: DataFrame =>
+                // the data left the buffering queue, re-credit the flow control
+                // windows so the peer can keep sending on this connection
+                stream.onDataConsumed(f.payloadLen)
                 bodyReadEnd = f.streamEnd
                 let copyLen = min(buf.size, f.size)
                 // receive empty data frame but stream not end, there must be trailer

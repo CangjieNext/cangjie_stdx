@@ -40,7 +40,7 @@ public class ClientBuilder {
     private var _maxConcurrentStreams: UInt32 = UInt32(2 ** 31 - 1) // default no limit
     private var _initialWindowSize: UInt32 = DEFAULT_WINDOW_SIZE
     private var _maxFrameSize: UInt32 = MIN_FRAME_SIZE
-    private var _maxHeaderListSize: UInt32 = UInt32.Max
+    private var _maxHeaderListSize: UInt32 = DEFAULT_MAX_HEADER_LIST_SIZE
 
     public init() {}
 
@@ -336,7 +336,7 @@ public class Client { // cjlint-ignore !G.ENU.01
     var _maxConcurrentStreams: UInt32 = UInt32(2 ** 31 - 1)
     var _initialWindowSize: UInt32 = 65535
     var _maxFrameSize: UInt32 = MIN_FRAME_SIZE
-    var _maxHeaderListSize: UInt32 = UInt32.Max
+    var _maxHeaderListSize: UInt32 = DEFAULT_MAX_HEADER_LIST_SIZE
     // only used when create httpClient, seldom affects performance
     private let singletonLock: Mutex = Mutex()
 

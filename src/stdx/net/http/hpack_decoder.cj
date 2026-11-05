@@ -73,7 +73,7 @@ class Decoder {
     // cjlint-ignore -end
     func decode(headerBlock: Array<UInt8>): FieldsList {
         let headerList = FieldsList()
-        let iterator = ByteIterator(headerBlock.iterator())
+        let iterator = ByteIterator(headerBlock.iterator(), remaining: Int64(headerBlock.size))
 
         var totalHeaderListSize: Int64 = 0 // headerSize = name.size + value.size + 32
         var isFirstByte = true
@@ -294,6 +294,15 @@ class Decoder {
             throw HpackException(
                 "Header string length '${len}' exceeds maximum header list size '${maxHeaderListSize}'.")
         }
+        // check the declared length against the bytes actually remaining in the
+        // header block, before allocating. Otherwise an adversary can declare a
+        // huge string length (e.g. 256MiB) in a tiny block and force a huge
+        // allocation before any data is consumed.
+        let remaining = nextBytes.remainingBytes()
+        if (remaining >= 0 && len > remaining) {
+            throw HpackException(
+                "Header string length '${len}' exceeds remaining header block size '${remaining}'.")
+        }
         var bytes = Array<Byte>(len, {_ => nextBytes.nextByte()})
 
         let isHuff = (Int64(b) & 0x80) == 0x80
@@ -354,13 +363,34 @@ func decodeInt(b: Byte, n: Int64, nextBytes: ByteIterator): Int64 {
 }
 
 class ByteIterator {
-    ByteIterator(let it: Iterator<Byte>) {}
+    let it: Iterator<Byte>
+    // number of bytes that can still be read from `it`; -1 means unknown
+    private var remaining: Int64
+
+    init(it: Iterator<Byte>, remaining!: Int64) {
+        this.it = it
+        this.remaining = remaining
+    }
+
+    func remainingBytes(): Int64 {
+        return remaining
+    }
 
     func nextByte(): Byte {
-        return it.next() ?? throw HpackException("Failed to decode header block: unexpected end of data.") // cjlint-ignore !G.EXP.03
+        let b = it.next() ?? throw HpackException("Failed to decode header block: unexpected end of data.") // cjlint-ignore !G.EXP.03
+        if (remaining > 0) {
+            remaining -= 1
+        }
+        return b
     }
 
     func next(): Option<Byte> {
-        return it.next()
+        let b = it.next()
+        if (let Some(v) <- b) {
+            if (remaining > 0) {
+                remaining -= 1
+            }
+        }
+        return b
     }
 }

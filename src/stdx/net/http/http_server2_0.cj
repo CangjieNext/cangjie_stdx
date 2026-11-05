@@ -355,6 +355,12 @@ class HttpServer2 <: ProtocolService {
             decodeFields(decoder, hf.fieldBlock)
         } else {
             // slow path, HeadersFrame + ContinuationFrames
+            // limit the total bytes buffered for one field block, otherwise an
+            // adversary can keep the header block open (never set END_HEADERS)
+            // and grow memory unboundedly before any validation happens.
+            // See RFC 9113, section 7.2.4.2 and RFC 7540, section 10.5.1.
+            let blockLimit = decoder.maxHeaderListSize
+            var blockBytes = Int64(hf.fieldBlock.size)
             let cfs = ArrayList<Frame>(1)
             let fieldsBlocks = ArrayList<UInt8>()
             fieldsBlocks.add(all: hf.fieldBlock)
@@ -367,6 +373,15 @@ class HttpServer2 <: ProtocolService {
                 if (cf.streamId != streamId) {
                     throw HttpConnectionException(ProtocolError,
                         "Unexpected CONTINUATION frame on stream '${streamId}'.")
+                }
+                blockBytes += Int64(cf.fieldBlock.size)
+                if (blockLimit > 0 && blockBytes > blockLimit) {
+                    for (f in cfs) {
+                        f.recyclePayload(arrayPool)
+                    }
+                    cf.recyclePayload(arrayPool)
+                    throw HttpConnectionException(EnhanceYourCalm,
+                        "Accumulated header block size '${blockBytes}' exceeds maximum header list size '${blockLimit}'.")
                 }
                 cfs.add(cf)
                 fieldsBlocks.add(all: cf.fieldBlock)
@@ -901,6 +916,17 @@ class HttpServer2 <: ProtocolService {
     private func onPriorityUpdateRead(frame: PriorityUpdateFrame): Unit {
         let (streamOp, isPurged) = getStream(frame.prioritizedId)
         if (streamOp.isNone() && !isPurged) {
+            // do not create idle streams when the number of active client streams
+            // already reaches the configured limit. Otherwise an adversary can flood
+            // PRIORITY_UPDATE frames with never-seen stream ids without reading, and
+            // grow the streams map (and the RST write backlog) unboundedly.
+            if (activeClientStreamNum.load() >= localSettings[SettingsMaxConcurrentStreams.code]) {
+                if (logger.enabled(LogLevel.DEBUG)) {
+                    httpLogDebug(logger,
+                        "[HttpServer2#onPriorityUpdateRead] ignore PRIORITY_UPDATE on stream '${frame.prioritizedId}', num of active client streams has reached SettingsMaxConcurrentStreams.")
+                }
+                return
+            }
             if (let Some(stream) <- createClientStream(frame.prioritizedId, startReadTimer: false)) {
                 stream.queuePriority = MAX_URGENCY - parsePriority(frame.fieldValue)
             }
@@ -1031,7 +1057,11 @@ class HttpServer2 <: ProtocolService {
             return
         }
         sendGoaway(h2Error, this.lastClientStreamId, debugMsg)
-        shutdown()
+        // allow the write thread to pick up the GOAWAY before shutdown closes the
+        // response queue (a closed queue discards its remaining frames), otherwise
+        // the GOAWAY never reaches the peer. Same approach as HttpClientEngine2#close.
+        sleep(Duration.second)
+        shutdown(shouldSleep: false)
     }
 
     private func shutdown(shouldSleep!: Bool = true) {
