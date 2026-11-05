@@ -150,6 +150,9 @@ class HttpNormalBodyProvider <: SeekableInputStream & Resource {
     var readLen: Int64 = 0
     let conn: BufferedConn
     var eof = false
+    // Marks that read() has returned the connection to the engine's idle pool
+    // after the full body was consumed; close() must then leave it pooled.
+    var connReturned = false
 
     HttpNormalBodyProvider(let providerConn: BodyProviderConn, let contentLength: Int64, let timer: HttpTimer) {
         if (contentLength == 0) {
@@ -187,6 +190,7 @@ class HttpNormalBodyProvider <: SeekableInputStream & Resource {
         if (readLen >= contentLength) {
             timer.cancel()
             providerConn.returnConn()
+            connReturned = true
             eof = true
         }
         return len
@@ -194,6 +198,12 @@ class HttpNormalBodyProvider <: SeekableInputStream & Resource {
 
     public func close(): Unit {
         timer.cancel()
+        // read() already handed the connection back to the engine's idle pool
+        // for reuse; closing it here would kill a pooled keep-alive connection
+        // and leave a closed node pooled while connNum was already decremented.
+        if (connReturned) {
+            return
+        }
         providerConn.closeConn()
     }
 
@@ -223,6 +233,9 @@ class HttpNormalBodyProvider <: SeekableInputStream & Resource {
  */
 class HttpChunkedBodyProvider <: InputStream & Resource {
     var eof: Bool = false
+    // Marks that getRemainSize() has returned the connection to the engine's
+    // idle pool after the last chunk; close() must then leave it pooled.
+    var connReturned = false
     var contentLength = 0
     var remainChunkSize = 0
     var isLastChunk = false
@@ -286,6 +299,11 @@ class HttpChunkedBodyProvider <: InputStream & Resource {
 
     public func close(): Unit {
         timer.cancel()
+        // The connection has already been returned to the engine's idle pool
+        // once the last chunk was consumed; do not close a pooled connection.
+        if (connReturned) {
+            return
+        }
         providerConn.closeConn()
     }
 
@@ -308,6 +326,7 @@ class HttpChunkedBodyProvider <: InputStream & Resource {
                 updateBodySize()
                 timer.cancel()
                 providerConn.returnConn()
+                connReturned = true
             }
             return chunkSize
         }

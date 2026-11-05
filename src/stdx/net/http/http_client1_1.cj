@@ -498,6 +498,12 @@ class HttpEngine1 {
 
     private func closeConn(connNode: ConnNode): Unit {
         // close
+        // The connNode may already have been closed elsewhere, in which case
+        // connNum was decremented at that time; skip to keep the decrement
+        // exactly once per node.
+        if (connNode.isClosed.load()) {
+            return
+        }
         if (logger.enabled(LogLevel.TRACE)) {
             httpLogTrace(logger, "[HttpEngine1#closeConn] prepare to close connNode")
         }
