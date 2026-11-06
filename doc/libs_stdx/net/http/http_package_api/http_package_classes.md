@@ -1470,6 +1470,7 @@ public func send(req: HttpRequest): HttpResponse
 > - HTTP/1.1 默认对同一个服务器的连接数不超过 10 个。response 的 body 需要用户调用 `body.read(buf: Array<Byte>)` 函数去读。body 被读完后，连接才能被客户端对象复用，否则请求相同的服务器也会新建连接。新建连接时如果连接数超出限制则会抛出 [HttpException](http_package_exceptions.md#class-httpexception)；
 > - body.read 函数将 body 读完之后返回 0，如果读的时候连接断开会抛出 [ConnectionException](http_package_exceptions.md#class-connectionexception)；
 > - HTTP/1.1 的升级请求如果收到 101 响应，则表示切换协议，此连接便不归 client 管理；
+> - HTTP/2 场景下发送请求体受对端流控约束：当对端的流控窗口为 0（例如对端将 SETTINGS_INITIAL_WINDOW_SIZE 设置为 0 且尚未发送 WINDOW_UPDATE）或窗口已被耗尽时，客户端会阻塞等待对端发送 WINDOW_UPDATE 开窗后再继续发送，不会丢弃或截断请求体；若在写超时时间内窗口仍未打开，请求将以 [HttpTimeoutException](http_package_exceptions.md#class-httptimeoutexception) 结束。注意阻塞会一直占用调用线程：写超时取默认值（15 秒）或其他有限值时可正常解除阻塞；若将写超时设置为 Duration.Max（此时不创建写超时定时器），恶意或异常的对端（如始终不开窗）可导致客户端无限期阻塞，存在 DoS 风险，请按业务场景设置合理的写超时；
 > - 下文的快捷请求函数的注意点与 send 相同。
 
 参数：
