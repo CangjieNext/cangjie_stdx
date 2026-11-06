@@ -168,6 +168,17 @@ class ClientStream {
     private func writeNormalBody(body: InputStream, hasTrailer: Bool): Unit {
         var maxFrameSize = min(Int64(engine.remoteSettings[SettingsMaxFrameSize.code]), remoteWindow.load())
         while (true) {
+            // RFC 9113 section 6.9.1: a peer may advertise SETTINGS_INITIAL_WINDOW_SIZE of 0.
+            // Never read into a zero-size buffer, otherwise body.read returns 0 and the
+            // whole request body would be silently dropped as an empty DATA frame with
+            // END_STREAM; block for a WINDOW_UPDATE instead, like writeRawBody does.
+            if (maxFrameSize <= 0) {
+                if (status == Closed || (engineConn?.quit ?? false)) {
+                    return
+                }
+                maxFrameSize = blockForWindowUpdate()
+                continue
+            }
             let buf = Array<UInt8>(maxFrameSize, repeat: 0)
             let len = body.read(buf)
             if (len <= 0) {
@@ -178,9 +189,6 @@ class ClientStream {
             }
             engineConn?.writeBody(buf[0..len], false)
             maxFrameSize = min(Int64(engine.remoteSettings[SettingsMaxFrameSize.code]), remoteWindow.load())
-            if (maxFrameSize == 0) {
-                maxFrameSize = min(blockForWindowUpdate(), buf.size)
-            }
         }
         if (!hasTrailer) {
             engineConn?.writeBody("".toArray(), true)
