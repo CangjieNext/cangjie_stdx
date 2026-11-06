@@ -449,6 +449,7 @@ Function: General request function that sends [HttpRequest](http_package_classes
 > - HTTP/1.1 defaults to a maximum of 10 connections to the same server. The response body must be read by calling `body.read(buf: Array<Byte>)`. The connection can only be reused by the client object after the body is fully read; otherwise, new connections will be created for requests to the same server. If the connection limit is exceeded when creating a new connection, [HttpException](http_package_exceptions.md#class-httpexception) will be thrown.
 > - The body.read function returns 0 after the body is fully read. If the connection is interrupted during reading, [ConnectionException](http_package_exceptions.md#class-connectionexception) will be thrown.
 > - For HTTP/1.1 upgrade requests, receiving a 101 response indicates a protocol switch, and this connection is no longer managed by the client.
+> - For HTTP/2, sending a request body is subject to the peer's flow control: when the peer's flow-control window is 0 (for example, the peer advertises SETTINGS_INITIAL_WINDOW_SIZE as 0 and has not sent a WINDOW_UPDATE yet) or the window is exhausted, the client blocks waiting for the peer to send a WINDOW_UPDATE before sending more data; the request body is never dropped or truncated. If the window does not open within the write timeout, the request ends with [HttpTimeoutException](http_package_exceptions.md#class-httptimeoutexception).
 > - The notes for the following convenience request functions are the same as for send.
 
 Parameters:
