@@ -355,11 +355,17 @@ class HttpServer2 <: ProtocolService {
             decodeFields(decoder, hf.fieldBlock)
         } else {
             // slow path, HeadersFrame + ContinuationFrames
-            // limit the total bytes buffered for one field block, otherwise an
+            // limit the total wire bytes buffered for one field block, otherwise an
             // adversary can keep the header block open (never set END_HEADERS)
             // and grow memory unboundedly before any validation happens.
-            // See RFC 9113, section 7.2.4.2 and RFC 7540, section 10.5.1.
-            let blockLimit = decoder.maxHeaderListSize
+            // NOTE: maxHeaderListSize bounds the decoded header list size
+            // (RFC 9113, section 6.5.2); the wire envelope above it covers the
+            // HPACK Huffman expansion (see MAX_HEADER_BLOCK_WIRE_FACTOR). The
+            // authoritative decoded-size check still happens in Decoder.decode.
+            // See also RFC 9113, sections 10.5 and 10.5.1 (Limits on Field Block
+            // Size); closing the connection releases the block from further
+            // processing.
+            let blockLimit = decoder.maxHeaderListSize * MAX_HEADER_BLOCK_WIRE_FACTOR
             var blockBytes = Int64(hf.fieldBlock.size)
             let cfs = ArrayList<Frame>(1)
             let fieldsBlocks = ArrayList<UInt8>()
@@ -371,11 +377,18 @@ class HttpServer2 <: ProtocolService {
                 }) as ContinuationFrame ?? throw HttpConnectionException(ProtocolError, // cjlint-ignore !G.EXP.03
                     "Expected CONTINUATION frame.")
                 if (cf.streamId != streamId) {
+                    // release the payloads read so far before leaving
+                    hf.recyclePayload(arrayPool)
+                    for (f in cfs) {
+                        f.recyclePayload(arrayPool)
+                    }
                     throw HttpConnectionException(ProtocolError,
                         "Unexpected CONTINUATION frame on stream '${streamId}'.")
                 }
                 blockBytes += Int64(cf.fieldBlock.size)
                 if (blockLimit > 0 && blockBytes > blockLimit) {
+                    // release the payloads read so far before leaving
+                    hf.recyclePayload(arrayPool)
                     for (f in cfs) {
                         f.recyclePayload(arrayPool)
                     }
@@ -927,7 +940,9 @@ class HttpServer2 <: ProtocolService {
                 }
                 return
             }
-            if (let Some(stream) <- createClientStream(frame.prioritizedId, startReadTimer: false)) {
+            // start the read timers, so an idle stream which never receives HEADERS
+            // is self-healed when the server configures readHeaderTimeout/readTimeout
+            if (let Some(stream) <- createClientStream(frame.prioritizedId, startReadTimer: true)) {
                 stream.queuePriority = MAX_URGENCY - parsePriority(frame.fieldValue)
             }
         }
@@ -1057,11 +1072,7 @@ class HttpServer2 <: ProtocolService {
             return
         }
         sendGoaway(h2Error, this.lastClientStreamId, debugMsg)
-        // allow the write thread to pick up the GOAWAY before shutdown closes the
-        // response queue (a closed queue discards its remaining frames), otherwise
-        // the GOAWAY never reaches the peer. Same approach as HttpClientEngine2#close.
-        sleep(Duration.second)
-        shutdown(shouldSleep: false)
+        shutdown()
     }
 
     private func shutdown(shouldSleep!: Bool = true) {

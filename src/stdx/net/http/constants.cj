@@ -79,6 +79,15 @@ const INITIAL_MAX_CONCURRENT_STREAMS = 100u32
 const DEFAULT_MAX_CONCURRENT_STREAMS = 1000u32
 // default header list size
 const DEFAULT_MAX_HEADER_LIST_SIZE = 8192u32
+/*
+ * SETTINGS_MAX_HEADER_LIST_SIZE bounds the size of the DECODED header list
+ * (RFC 9113, section 6.5.2). The compressed field block on the wire can only
+ * exceed the decoded size through HPACK Huffman expansion (codes up to 30 bits,
+ * at most 30/8 = 3.75x) plus per-field framing overhead (~5 bytes per field),
+ * so 4x is an envelope which never rejects a field block that would decode
+ * within the configured limit, while keeping the pre-decode buffering bounded.
+ */
+const MAX_HEADER_BLOCK_WIRE_FACTOR: Int64 = 4
 // default max header count (security: prevent header count attack)
 const DEFAULT_MAX_HEADER_COUNT = 100
 // default body size limit is 2M

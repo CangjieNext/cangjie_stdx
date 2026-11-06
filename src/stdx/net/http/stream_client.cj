@@ -506,6 +506,9 @@ class ClientStream {
         status = Closed
         writeTimer.cancel()
         readTimer.cancel()
+        // any frame enqueued between the abandon (close) and the input queue
+        // close is stranded; re-credit the connection window for its data
+        creditUnconsumedData()
         engine.purgeStream(streamId)
         closeConn()
     }
@@ -550,7 +553,17 @@ class ClientStream {
             // never reads the body.
             localWindow.fetchSub(frame.payloadLen)
         }
-        inputQueue.enqueue(frame)
+        if (frame.payloadLen == 0 && !frame.streamEnd) {
+            // zero-length DATA without END_STREAM carries no data and consumes no
+            // flow-control credit; enqueueing it into the unbounded inputQueue would
+            // allow unbounded memory growth through empty frames. Drop it here.
+            return
+        }
+        if (!inputQueue.enqueue(frame)) {
+            // the stream is already closed and the frame will never be consumed,
+            // re-credit the connection window so the peer can still send data
+            engine.onConnDataConsumed(frame.payloadLen)
+        }
     }
 
     /*
@@ -663,12 +676,17 @@ class ClientStream {
 
     /**************************************** closing  ****************************************/
     func close(code: H2Error) {
-        // the stream is abandoned, buffered DATA frames will never be consumed
-        // by the user, re-credit the connection window before the stream is closed
+        // mark the stream as closed so frames arriving afterwards are rejected
+        // by the state machine and re-credited instead of being buffered
+        status = Closed
+        // close the input queue first: enqueue attempts after this point fail
+        // and are re-credited by the enqueue site in onDataRead
+        closeConn()
+        // buffered DATA frames will never be consumed by the user anymore,
+        // re-credit the connection window (dequeue also works after close)
         creditUnconsumedData()
         // shutdown all thread, change status
         outputQueue.send(RstStreamFrame(streamId, code.code), CONTROL_PRIORITY)
-        closeConn()
     }
 
     /*
@@ -820,43 +838,48 @@ class Http2ClientEngineConn <: StreamingSocket {
         if (remaining.remainLength > 0) {
             return remaining.read(buf)
         }
-        let frame = match (inputQueue.dequeue()) {
-            case Some(v) => v
-            case None =>
-                if (let Some(t) <- stream.timeout) {
-                    throw t
-                }
-                stream.readTimer.cancel()
-                throw HttpException("Failed to fetch data: connection or stream is closed.")
-        }
-        match (frame) {
-            case f: DataFrame =>
-                // the data left the buffering queue, re-credit the flow control
-                // windows so the peer can keep sending on this connection
-                stream.onDataConsumed(f.payloadLen)
-                bodyReadEnd = f.streamEnd
-                let copyLen = min(buf.size, f.size)
-                // receive empty data frame but stream not end, there must be trailer
-                if (copyLen == 0) {
-                    if (!f.streamEnd) {
-                        return readBody(buf)
-                    } else {
-                        return 0
+        while (true) {
+            let frame = match (inputQueue.dequeue()) {
+                case Some(v) => v
+                case None =>
+                    if (let Some(t) <- stream.timeout) {
+                        throw t
                     }
-                }
-                f.data.copyTo(buf, 0, 0, copyLen)
-                if (f.size > copyLen) {
-                    remaining.write(f.data[copyLen..])
-                }
-                return copyLen
-            case f: FieldsFrame =>
-                // read and decode trailer after read body end
-                // if no body but have trailer, must call body.read to get trailer
-                bodyReadEnd = true
-                stream.decodeTrailer(f.fields)
-                return 0
-            case _ => throw HttpStreamException(ProtocolError, "Unexpected frame: '${frame}'.")
+                    stream.readTimer.cancel()
+                    throw HttpException("Failed to fetch data: connection or stream is closed.")
+            }
+            match (frame) {
+                case f: DataFrame =>
+                    // the data left the buffering queue, re-credit the flow control
+                    // windows so the peer can keep sending on this connection
+                    stream.onDataConsumed(f.payloadLen)
+                    bodyReadEnd = f.streamEnd
+                    let copyLen = min(buf.size, f.size)
+                    // receive empty data frame but stream not end, there must be trailer
+                    if (copyLen == 0) {
+                        if (!f.streamEnd) {
+                            // loop instead of recursing, a long run of empty
+                            // frames must not build up call stack frames
+                            continue
+                        } else {
+                            return 0
+                        }
+                    }
+                    f.data.copyTo(buf, 0, 0, copyLen)
+                    if (f.size > copyLen) {
+                        remaining.write(f.data[copyLen..])
+                    }
+                    return copyLen
+                case f: FieldsFrame =>
+                    // read and decode trailer after read body end
+                    // if no body but have trailer, must call body.read to get trailer
+                    bodyReadEnd = true
+                    stream.decodeTrailer(f.fields)
+                    return 0
+                case _ => throw HttpStreamException(ProtocolError, "Unexpected frame: '${frame}'.")
+            }
         }
+        return 0 // unreachable, the loop above only exits via return/throw
     }
 
     public func close(): Unit {

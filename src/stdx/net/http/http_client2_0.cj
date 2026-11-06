@@ -327,7 +327,21 @@ class HttpClientEngine2 {
         spawn {
             httpLogTrace(logger, "[HttpClientEngine2#startReceiveLoop] read thread start")
             do {
-                receiveResponse()
+                try {
+                    receiveResponse()
+                } catch (e: HttpConnectionException) {
+                    // exceptions from frame dispatch (e.g. field block limit, hpack
+                    // errors) must not escape this coroutine, otherwise the engine
+                    // becomes a zombie: no GOAWAY, no close, and further requests
+                    // hang silently on the dead connection
+                    if (!quit.load()) {
+                        close(code: e.h2Error, msg: e.message)
+                    }
+                } catch (e: Exception) {
+                    if (!quit.load()) {
+                        close(code: H2Error.InternalError, msg: e.toString())
+                    }
+                }
             } while (!quit.load())
         }
     }
@@ -511,11 +525,17 @@ class HttpClientEngine2 {
     // the first HEADERS_FRAME or PUSH_PROMISE_FRAME is already read
     private func readAndDecodeHeaders(streamId: UInt32, fieldBlock: Array<UInt8>, headerEndFlag: Bool,
         streamEndFlag: Bool, pushId!: UInt32 = 0): Unit {
-        // limit the total bytes buffered for one field block, otherwise a malicious
+        // limit the total wire bytes buffered for one field block, otherwise a malicious
         // server can keep the header block open (never set END_HEADERS) and grow
         // memory unboundedly before any validation happens.
-        // See RFC 9113, section 7.2.4.2 and RFC 7540, section 10.5.1.
-        let blockLimit = decoder.maxHeaderListSize
+        // NOTE: maxHeaderListSize bounds the decoded header list size
+        // (RFC 9113, section 6.5.2); the wire envelope above it covers the
+        // HPACK Huffman expansion (see MAX_HEADER_BLOCK_WIRE_FACTOR). The
+        // authoritative decoded-size check still happens in Decoder.decode.
+        // See also RFC 9113, sections 10.5 and 10.5.1 (Limits on Field Block
+        // Size); closing the connection releases the block from further
+        // processing.
+        let blockLimit = decoder.maxHeaderListSize * MAX_HEADER_BLOCK_WIRE_FACTOR
         var blockBytes = Int64(fieldBlock.size)
         let fieldsBlocks = ArrayList<UInt8>()
         fieldsBlocks.add(all: fieldBlock)
