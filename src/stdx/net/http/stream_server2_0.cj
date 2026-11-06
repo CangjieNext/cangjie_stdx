@@ -665,9 +665,19 @@ class HttpEngineConn2 <: HttpEngineConn & InputStream {
             }
         }
         if (pseudoHeadersNum == 0) {
+            // release the trailer waiter, otherwise the connection read thread
+            // would park forever on headerSyncCounter.waitUntilZero()
+            headerSyncCounter.dec()
             throw HttpStreamException(ProtocolError, "Malformed request: pseudo headers not found.")
         }
-        checkAndSetPseudoHeaders(fields[..pseudoHeadersNum])
+        try {
+            checkAndSetPseudoHeaders(fields[..pseudoHeadersNum])
+        } catch (e: Exception) {
+            // every throw path of header validation must release the trailer waiter,
+            // the connection read thread parks on headerSyncCounter.waitUntilZero() otherwise
+            headerSyncCounter.dec()
+            throw e
+        }
         if (pseudoHeadersNum < fields.size) {
             checkAndSetRequestHeaders(fields[pseudoHeadersNum..])
         } else {
